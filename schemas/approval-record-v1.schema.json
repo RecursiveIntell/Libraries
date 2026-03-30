@@ -49,6 +49,7 @@
       "type": "object"
     },
     "CheckMethod": {
+      "description": "Verification method used by a check plan to evaluate a case.",
       "enum": [
         "exact_bounded_oracle",
         "conservative_oracle",
@@ -62,6 +63,7 @@
       "type": "string"
     },
     "PromotionClass": {
+      "description": "Priority tier for promotion eligibility (P0 = highest).",
       "enum": [
         "p0",
         "p1",

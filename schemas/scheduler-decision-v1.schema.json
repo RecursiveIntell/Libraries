@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "BudgetLineage": {
+      "description": "Budget and retry lineage for a scheduled verification plan.",
       "properties": {
         "budget_family": {
           "type": "string"
@@ -73,6 +74,7 @@
       "type": "string"
     },
     "DegradationMarker": {
+      "description": "A marker indicating degraded verification quality and whether it blocks promotion.",
       "properties": {
         "blocks_promotion": {
           "type": "boolean"
@@ -183,6 +185,7 @@
       "type": "string"
     },
     "QueueHop": {
+      "description": "A single queue-to-queue hop in the scheduler routing chain.",
       "properties": {
         "dequeued_at": {
           "type": [
@@ -214,6 +217,7 @@
       "type": "object"
     },
     "VerificationWorkloadClass": {
+      "description": "Scheduler workload class used for budgeting and queue routing.",
       "enum": [
         "orchestration",
         "oracle",
@@ -223,6 +227,7 @@
       "type": "string"
     }
   },
+  "description": "Scheduler decision record preserving budget, degradation, and routing lineage for a plan.",
   "properties": {
     "budget_lineage": {
       "$ref": "#/definitions/BudgetLineage"

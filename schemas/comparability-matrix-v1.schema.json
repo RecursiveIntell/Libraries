@@ -11,6 +11,7 @@
       "type": "string"
     }
   },
+  "description": "A matrix evaluating whether experimental conditions are comparable enough for valid inference.",
   "properties": {
     "admissibility_judgment": {
       "$ref": "#/definitions/EvidenceAdmissibilityV1"

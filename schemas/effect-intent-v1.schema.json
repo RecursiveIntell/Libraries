@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "BlastRadiusCeilingV1": {
+      "description": "Upper bound on the scope of impact an effect may have.",
       "enum": [
         "single_tenant",
         "single_service",
@@ -11,6 +12,7 @@
       "type": "string"
     },
     "EffectClassV1": {
+      "description": "Classification of the type of side-effect an intent describes.",
       "enum": [
         "external_write",
         "external_read",
@@ -21,6 +23,7 @@
       "type": "string"
     },
     "PublicationStatusV1": {
+      "description": "Whether an effect intent must be published to governance observers.",
       "enum": [
         "required",
         "advisory_only",
@@ -30,6 +33,7 @@
       "type": "string"
     },
     "ReversibilityClassV1": {
+      "description": "Classification of how reversible an effect is after execution.",
       "enum": [
         "compensatable",
         "replayable",
@@ -38,6 +42,7 @@
       "type": "string"
     },
     "RunModeV1": {
+      "description": "Execution mode governing whether an effect produces real side-effects.",
       "enum": [
         "live",
         "simulated",
@@ -47,6 +52,7 @@
       "type": "string"
     }
   },
+  "description": "Declaration of an intended effect including its class, target surface, blast radius, and approval requirements.\n\nThis is the entry point of the effect lifecycle. Live-mode intents require non-empty approval refs before they can proceed to preflight.",
   "properties": {
     "allowed_scope": {
       "type": "string"

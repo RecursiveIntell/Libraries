@@ -17,6 +17,7 @@
       "type": "string"
     },
     "CheckMethod": {
+      "description": "Verification method used by a check plan to evaluate a case.",
       "enum": [
         "exact_bounded_oracle",
         "conservative_oracle",
@@ -53,6 +54,7 @@
       "type": "object"
     }
   },
+  "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
   "properties": {
     "applicability_context_id": {
       "type": [

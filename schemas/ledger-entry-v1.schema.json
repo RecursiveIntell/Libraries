@@ -18,6 +18,7 @@
       "type": "object"
     },
     "CaseRegion": {
+      "description": "Scope and location metadata for a verification case target.",
       "properties": {
         "as_of_recorded_at": {
           "type": [
@@ -67,6 +68,7 @@
       "type": "object"
     },
     "CheapCheckKindV1": {
+      "description": "Kind of lightweight preflight check in the cheap-check ladder.",
       "enum": [
         "schema_validation",
         "provenance_audit",
@@ -77,6 +79,7 @@
       "type": "string"
     },
     "CheapCheckStatusV1": {
+      "description": "Status of a single cheap-check preflight evaluation.",
       "properties": {
         "check": {
           "$ref": "#/definitions/CheapCheckKindV1"
@@ -98,6 +101,7 @@
       "type": "object"
     },
     "CheckMethod": {
+      "description": "Verification method used by a check plan to evaluate a case.",
       "enum": [
         "exact_bounded_oracle",
         "conservative_oracle",
@@ -111,6 +115,7 @@
       "type": "string"
     },
     "CheckPlan": {
+      "description": "A check plan specifying the verification method, promotion class, and proof profile for a case.",
       "properties": {
         "advisory_only": {
           "type": "boolean"
@@ -205,6 +210,7 @@
       "type": "object"
     },
     "ConstitutionalContextStatus": {
+      "description": "Completeness status of the constitutional context payload on a review artifact.",
       "enum": [
         "missing",
         "partial",
@@ -213,6 +219,7 @@
       "type": "string"
     },
     "ControlActionKind": {
+      "description": "Kind of action recorded in a control receipt.",
       "enum": [
         "tool_execution",
         "orchestration_loop",
@@ -221,6 +228,7 @@
       "type": "string"
     },
     "ControlReceipt": {
+      "description": "An immutable receipt recording a control-plane action with full provenance.\n\nControl receipts carry constitutional citation context, budget context, retry ownership, and promotion eligibility. They are the atomic audit unit for the verification ledger.",
       "properties": {
         "action_kind": {
           "$ref": "#/definitions/ControlActionKind"
@@ -434,6 +442,7 @@
       "type": "object"
     },
     "ControlRetryOwnerV1": {
+      "description": "Which subsystem owns retry responsibility for a control action.",
       "enum": [
         "llm_pipeline",
         "agent_graph",
@@ -463,6 +472,7 @@
       "type": "string"
     },
     "LedgerEvent": {
+      "description": "An event in the verification case ledger.",
       "oneOf": [
         {
           "properties": {
@@ -561,6 +571,7 @@
       ]
     },
     "PromotionClass": {
+      "description": "Priority tier for promotion eligibility (P0 = highest).",
       "enum": [
         "p0",
         "p1",
@@ -570,6 +581,7 @@
       "type": "string"
     },
     "ProofProfileV1": {
+      "description": "Proof profile describing evidence admissibility, cheap-check status, and remaining obligations.",
       "properties": {
         "admissible_evidence": {
           "items": {
@@ -603,6 +615,7 @@
       "type": "object"
     },
     "ReceiptBudgetContext": {
+      "description": "Budget context attached to a control receipt for cost and time tracking.",
       "properties": {
         "budget_kind": {
           "type": [
@@ -638,6 +651,7 @@
       "type": "object"
     },
     "ReversibilityClass": {
+      "description": "How difficult it is to reverse a promoted verification result.",
       "enum": [
         "reversible_local",
         "reversible_scoped",
@@ -677,6 +691,7 @@
       "type": "object"
     },
     "TerminalDisposition": {
+      "description": "Terminal outcome of a closed verification case.",
       "enum": [
         "eligible_for_promotion",
         "advisory_only",
@@ -717,6 +732,7 @@
       "type": "object"
     },
     "VerificationAttempt": {
+      "description": "A single execution attempt within a verification case and plan.",
       "properties": {
         "advisory_only": {
           "type": "boolean"
@@ -772,6 +788,7 @@
       "type": "object"
     },
     "VerificationAttemptState": {
+      "description": "Execution state of a verification attempt.",
       "enum": [
         "scheduled",
         "running",
@@ -783,6 +800,7 @@
       "type": "string"
     },
     "VerificationCase": {
+      "description": "A single verification case tracking a governance issue from open to closed.\n\nCases are opened by the observation phase, assigned check plans, executed through verification attempts, and closed with a terminal disposition.",
       "properties": {
         "advisory_only": {
           "type": "boolean"
@@ -844,6 +862,7 @@
       "type": "object"
     },
     "VerificationCaseClass": {
+      "description": "Classification of the issue that opened a verification case.",
       "enum": [
         "active_syndrome",
         "fragile_node",
@@ -858,6 +877,7 @@
       "type": "string"
     },
     "VerificationCaseLifecycleState": {
+      "description": "Lifecycle state of a verification case from open to closed.",
       "enum": [
         "open",
         "planned",
@@ -867,6 +887,7 @@
       "type": "string"
     }
   },
+  "description": "A sequenced, timestamped entry in the verification case ledger.",
   "properties": {
     "case_id": {
       "type": "string"

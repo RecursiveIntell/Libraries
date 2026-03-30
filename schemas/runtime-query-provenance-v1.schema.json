@@ -129,6 +129,7 @@
       ]
     },
     "RuntimeView": {
+      "description": "Logical view through which a query leg is executed.",
       "enum": [
         "semantic",
         "temporal",
@@ -196,6 +197,7 @@
       "type": "object"
     },
     "WideningDisclosure": {
+      "description": "Disclosure record emitted when a query leg is widened or degraded from its requested view.",
       "properties": {
         "executed_view": {
           "$ref": "#/definitions/RuntimeView"
@@ -221,6 +223,7 @@
       "type": "object"
     }
   },
+  "description": "Versioned provenance record summarizing a full query execution for downstream audit.",
   "properties": {
     "classification_mode": {
       "type": "string"

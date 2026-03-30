@@ -10,6 +10,7 @@
       "type": "string"
     },
     "PromotionClass": {
+      "description": "Priority tier for promotion eligibility (P0 = highest).",
       "enum": [
         "p0",
         "p1",
@@ -19,6 +20,7 @@
       "type": "string"
     },
     "PromotionDecision": {
+      "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
       "properties": {
         "applicability_context_id": {
           "type": [
@@ -133,6 +135,7 @@
       "type": "string"
     },
     "RefutationDecision": {
+      "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
       "properties": {
         "applicability_context_id": {
           "type": [
@@ -233,6 +236,7 @@
       "type": "object"
     },
     "ReversibilityClass": {
+      "description": "How difficult it is to reverse a promoted verification result.",
       "enum": [
         "reversible_local",
         "reversible_scoped",
@@ -242,6 +246,7 @@
       "type": "string"
     },
     "RollbackPlan": {
+      "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
       "properties": {
         "affected_artifacts": {
           "default": [],
@@ -375,6 +380,7 @@
       "type": "string"
     },
     "TerminalDisposition": {
+      "description": "Terminal outcome of a closed verification case.",
       "enum": [
         "eligible_for_promotion",
         "advisory_only",

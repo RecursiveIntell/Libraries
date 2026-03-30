@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "ExperimentFinalDispositionV1": {
+      "description": "Terminal disposition of an experiment after completion.",
       "enum": [
         "pending",
         "promoted",
@@ -12,6 +13,7 @@
       "type": "string"
     },
     "ExperimentLifecycleStateV1": {
+      "description": "Lifecycle state of an experiment case from scheduled through completion.",
       "enum": [
         "scheduled",
         "running",
@@ -21,6 +23,7 @@
       "type": "string"
     },
     "ExperimentRiskClassV1": {
+      "description": "Risk classification for an experiment case.",
       "enum": [
         "promotion_adjacent",
         "observation_only",
@@ -29,6 +32,7 @@
       "type": "string"
     }
   },
+  "description": "A causal experiment case linking an intervention, outcome schema, cohort, comparability matrix, refuter suite, and budget into a single verifiable unit.",
   "properties": {
     "cohort_contract_id": {
       "type": "string"

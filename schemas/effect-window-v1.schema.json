@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "CloseMidflightBehaviorV1": {
+      "description": "Behavior to apply when an effect window closes while execution is still in flight.",
       "enum": [
         "abort_and_emit_receipt",
         "fail_closed",
@@ -11,6 +12,7 @@
       "type": "string"
     },
     "CommitAtomicityV1": {
+      "description": "Atomicity guarantee level for an effect commit operation.",
       "enum": [
         "bounded_multi_step",
         "exactly_once",
@@ -20,6 +22,7 @@
       "type": "string"
     },
     "RetryOwnerV1": {
+      "description": "Entity responsible for retrying a failed or timed-out effect.",
       "enum": [
         "effect_runtime",
         "forge_orchestration",
@@ -30,6 +33,7 @@
       "type": "string"
     }
   },
+  "description": "Temporal execution window that bounds when an effect may start, timeout, and how mid-flight closures are handled.",
   "properties": {
     "close_midflight_behavior": {
       "$ref": "#/definitions/CloseMidflightBehaviorV1"

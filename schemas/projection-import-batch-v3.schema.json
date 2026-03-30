@@ -1770,6 +1770,7 @@
       ]
     },
     "ImportProjectionRecordV3": {
+      "description": "A single import record enriched with export-time semantics for kernel compilation.",
       "properties": {
         "record": {
           "$ref": "#/definitions/ImportProjectionRecord"
@@ -2758,8 +2759,10 @@
       "type": "string"
     }
   },
+  "description": "Canonical kernel-oriented projection import batch produced by the bridge.\n\nV3 extends V2 with rich record semantics, support algebra artifacts, contradiction witnesses, retraction lineage, and v14/v15 experimental and exchange surfaces preserved verbatim from the Forge export.",
   "properties": {
     "artifact_admission_policies_v15": {
+      "description": "V15 artifact admission policy artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
@@ -2769,10 +2772,12 @@
       "type": "array"
     },
     "attestation_revocations_v15": {
+      "description": "V15 attestation revocation artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
     "attestation_supersessions_v15": {
+      "description": "V15 attestation supersession artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
@@ -2784,10 +2789,12 @@
       "type": "array"
     },
     "cohort_contracts_v14": {
+      "description": "V14 cohort contract artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
     "comparability_matrices_v14": {
+      "description": "V14 comparability matrix artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
@@ -2803,26 +2810,32 @@
       "type": "array"
     },
     "counterfactual_slices_v14": {
+      "description": "V14 counterfactual slice artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
     "cross_runtime_replay_tickets_v15": {
+      "description": "V15 cross-runtime replay ticket artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
     "decision_traces_v14": {
+      "description": "V14 decision trace artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
     "disclosure_budgets_v15": {
+      "description": "V15 disclosure budget artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
     "disclosure_policies_v15": {
+      "description": "V15 disclosure policy artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
     "dispute_bundles_v15": {
+      "description": "V15 dispute bundle artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
@@ -2860,10 +2873,12 @@
       "description": "Canonical v9 execution context artifact."
     },
     "experiment_budgets_v14": {
+      "description": "V14 experiment budget artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
     "experiment_cases_v14": {
+      "description": "V14 experiment case artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
@@ -2892,6 +2907,7 @@
       "type": "array"
     },
     "outcome_schemas_v14": {
+      "description": "V14 outcome schema definitions preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
@@ -2903,22 +2919,27 @@
       "type": "array"
     },
     "refuter_results_v14": {
+      "description": "V14 refuter result artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
     "refuter_suites_v14": {
+      "description": "V14 refuter suite definitions preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
     "remote_oracle_leases_v15": {
+      "description": "V15 remote oracle lease artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
     "remote_slice_requests_v15": {
+      "description": "V15 remote slice request artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
     "remote_slice_results_v15": {
+      "description": "V15 remote slice result artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
@@ -2930,10 +2951,12 @@
       "type": "array"
     },
     "rollback_decisions_v14": {
+      "description": "V14 rollback decision artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
     "rollout_decisions_v14": {
+      "description": "V14 rollout decision artifacts preserved verbatim from Forge.",
       "items": true,
       "type": "array"
     },
@@ -2984,10 +3007,12 @@
       "type": "string"
     },
     "transparency_receipts_v15": {
+      "description": "V15 transparency receipt artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     },
     "trust_root_sets_v15": {
+      "description": "V15 trust root set artifacts preserved verbatim.",
       "items": true,
       "type": "array"
     }

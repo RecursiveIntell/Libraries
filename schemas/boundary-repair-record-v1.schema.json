@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "BoundaryArtifactKind": {
+      "description": "Kind of artifact subject to boundary repair.",
       "enum": [
         "loop_report",
         "loop_iteration_report",
@@ -10,6 +11,7 @@
       "type": "string"
     }
   },
+  "description": "Record of a single field-level repair applied to a boundary artifact.",
   "properties": {
     "artifact_kind": {
       "$ref": "#/definitions/BoundaryArtifactKind"

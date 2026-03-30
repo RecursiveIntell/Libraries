@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "CheapCheckKindV1": {
+      "description": "Kind of lightweight preflight check in the cheap-check ladder.",
       "enum": [
         "schema_validation",
         "provenance_audit",
@@ -12,6 +13,7 @@
       "type": "string"
     },
     "CheapCheckStatusV1": {
+      "description": "Status of a single cheap-check preflight evaluation.",
       "properties": {
         "check": {
           "$ref": "#/definitions/CheapCheckKindV1"
@@ -51,6 +53,7 @@
       "type": "string"
     },
     "ProofProfileV1": {
+      "description": "Proof profile describing evidence admissibility, cheap-check status, and remaining obligations.",
       "properties": {
         "admissible_evidence": {
           "items": {
@@ -84,6 +87,7 @@
       "type": "object"
     }
   },
+  "description": "Serializable verification plan artifact emitted per iteration.\n\nCaptures proof obligations, admissible evidence, cheapest check ladders, and policy blockers for downstream adjudication.",
   "properties": {
     "admissible_evidence": {
       "default": [],

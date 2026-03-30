@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "EffectCommitDispositionV1": {
+      "description": "Authorization outcome of a commit decision: denied, advisory-only, or authorized for execution.",
       "enum": [
         "denied",
         "advisory_only",
@@ -10,7 +11,7 @@
       "type": "string"
     }
   },
-  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "description": "Authorization decision for committing an effect, linking intent and preflight report to an execution permit.\n\nAuthorized decisions must carry an execution permit and approver refs. Denied decisions must carry a refusal reason and must not mint permits.",
   "properties": {
     "applicability_context_id": {
       "type": "string"

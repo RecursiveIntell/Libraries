@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "ActionFamily": {
+      "description": "Broad classification of the action executed during the act phase.",
       "enum": [
         "oracle",
         "paired_patch",
@@ -162,6 +163,7 @@
       "type": "object"
     },
     "BlockedStepRecord": {
+      "description": "Record of a verification step that was blocked and the reason why.",
       "properties": {
         "reason": {
           "type": "string"
@@ -185,6 +187,7 @@
       "type": "string"
     },
     "BoundaryArtifactKind": {
+      "description": "Kind of artifact subject to boundary repair.",
       "enum": [
         "loop_report",
         "loop_iteration_report",
@@ -193,6 +196,7 @@
       "type": "string"
     },
     "BoundaryRepairRecord": {
+      "description": "Record of a single field-level repair applied to a boundary artifact.",
       "properties": {
         "artifact_kind": {
           "$ref": "#/definitions/BoundaryArtifactKind"
@@ -231,6 +235,7 @@
       "type": "object"
     },
     "BudgetClass": {
+      "description": "Execution budget tier assigned to a verification target.",
       "enum": [
         "micro",
         "standard",
@@ -239,6 +244,7 @@
       "type": "string"
     },
     "BudgetLineage": {
+      "description": "Budget and retry lineage for a scheduled verification plan.",
       "properties": {
         "budget_family": {
           "type": "string"
@@ -350,6 +356,7 @@
       "type": "object"
     },
     "CanonicalCaseClass": {
+      "description": "The canonical verification case class for a target.",
       "enum": [
         "contradiction_investigation",
         "promotion_candidate",
@@ -362,6 +369,7 @@
       "type": "string"
     },
     "CaseRegion": {
+      "description": "Scope and location metadata for a verification case target.",
       "properties": {
         "as_of_recorded_at": {
           "type": [
@@ -411,6 +419,7 @@
       "type": "object"
     },
     "CheapCheckKindV1": {
+      "description": "Kind of lightweight preflight check in the cheap-check ladder.",
       "enum": [
         "schema_validation",
         "provenance_audit",
@@ -421,6 +430,7 @@
       "type": "string"
     },
     "CheapCheckStatusV1": {
+      "description": "Status of a single cheap-check preflight evaluation.",
       "properties": {
         "check": {
           "$ref": "#/definitions/CheapCheckKindV1"
@@ -442,6 +452,7 @@
       "type": "object"
     },
     "CheckMethod": {
+      "description": "Verification method used by a check plan to evaluate a case.",
       "enum": [
         "exact_bounded_oracle",
         "conservative_oracle",
@@ -455,6 +466,7 @@
       "type": "string"
     },
     "CheckPlan": {
+      "description": "A check plan specifying the verification method, promotion class, and proof profile for a case.",
       "properties": {
         "advisory_only": {
           "type": "boolean"
@@ -549,6 +561,7 @@
       "type": "object"
     },
     "ConstitutionalContextStatus": {
+      "description": "Completeness status of the constitutional context payload on a review artifact.",
       "enum": [
         "missing",
         "partial",
@@ -557,6 +570,7 @@
       "type": "string"
     },
     "ControlActionKind": {
+      "description": "Kind of action recorded in a control receipt.",
       "enum": [
         "tool_execution",
         "orchestration_loop",
@@ -565,6 +579,7 @@
       "type": "string"
     },
     "ControlReceipt": {
+      "description": "An immutable receipt recording a control-plane action with full provenance.\n\nControl receipts carry constitutional citation context, budget context, retry ownership, and promotion eligibility. They are the atomic audit unit for the verification ledger.",
       "properties": {
         "action_kind": {
           "$ref": "#/definitions/ControlActionKind"
@@ -778,6 +793,7 @@
       "type": "object"
     },
     "ControlRetryOwnerV1": {
+      "description": "Which subsystem owns retry responsibility for a control action.",
       "enum": [
         "llm_pipeline",
         "agent_graph",
@@ -789,6 +805,7 @@
       "type": "string"
     },
     "DecisionAudit": {
+      "description": "Audit record capturing the decision rationale for a selected target.",
       "properties": {
         "advisory_only": {
           "type": "boolean"
@@ -861,6 +878,7 @@
       "type": "string"
     },
     "DegradationMarker": {
+      "description": "A marker indicating degraded verification quality and whether it blocks promotion.",
       "properties": {
         "blocks_promotion": {
           "type": "boolean"
@@ -1098,6 +1116,7 @@
       "type": "object"
     },
     "ExecutionLineageReceipt": {
+      "description": "Lineage receipt linking a verification case to its consumed and produced artifacts.",
       "properties": {
         "attempt_id": {
           "type": "string"
@@ -1150,6 +1169,7 @@
       "type": "object"
     },
     "ExportActionTraceV1": {
+      "description": "Trace record for the export-import roundtrip of an action's evidence bundle.",
       "properties": {
         "action_family": {
           "type": "string"
@@ -1300,6 +1320,7 @@
       "type": "object"
     },
     "HaltReason": {
+      "description": "Reason the OODA loop terminated.",
       "enum": [
         "max_iterations_reached",
         "time_budget_exhausted",
@@ -1320,6 +1341,7 @@
       "type": "string"
     },
     "ImportRecordDisposition": {
+      "description": "Disposition of the most recent canonical import record for the queried namespace.",
       "enum": [
         "found",
         "never_imported",
@@ -1338,6 +1360,7 @@
       "type": "string"
     },
     "LawfulStepKind": {
+      "description": "An individual verification step in the lawful step ladder for a target.",
       "enum": [
         "contract_schema_check",
         "provenance_receipt_audit",
@@ -1355,6 +1378,7 @@
       "type": "string"
     },
     "LoopBudgetReceipt": {
+      "description": "Budget parameters that governed the loop run.",
       "properties": {
         "cooldown_secs": {
           "format": "uint64",
@@ -1390,6 +1414,7 @@
       "type": "object"
     },
     "LoopIterationReport": {
+      "description": "Detailed report for a single OODA loop iteration.\n\nIncludes the verification case, check plan, attempt, policy decision, calibration, adjudication, and all produced receipts and artifacts.",
       "properties": {
         "action_family": {
           "anyOf": [
@@ -1623,6 +1648,7 @@
       "type": "object"
     },
     "LoopReceipt": {
+      "description": "Typed receipt summarizing a complete loop run for auditing and replay.",
       "properties": {
         "actions_executed": {
           "format": "uint32",
@@ -1744,6 +1770,7 @@
       "type": "object"
     },
     "ObservationDisposition": {
+      "description": "Overall readiness disposition of the observation for a namespace.",
       "enum": [
         "ready",
         "empty_workspace",
@@ -1755,6 +1782,7 @@
       "type": "string"
     },
     "ObservationPaths": {
+      "description": "Resolved filesystem paths and their availability for a configured namespace.",
       "properties": {
         "forge_db_path": {
           "type": "string"
@@ -1786,6 +1814,7 @@
       "type": "object"
     },
     "ObservationStatus": {
+      "description": "Machine-readable status summary for a namespace observation.\n\nIncludes import disposition, file counts, and a human-readable `exact_next_step` describing what the operator should do next.",
       "properties": {
         "available_forge_bundle_count": {
           "format": "uint",
@@ -1858,6 +1887,7 @@
       "type": "object"
     },
     "PathAvailability": {
+      "description": "Whether a filesystem path required for observation is present and valid.",
       "enum": [
         "present",
         "missing",
@@ -1866,6 +1896,7 @@
       "type": "string"
     },
     "PlannedStep": {
+      "description": "A single step in a verification plan with its cost and artifact requirements.",
       "properties": {
         "cost_rank": {
           "format": "uint8",
@@ -1890,6 +1921,7 @@
       "type": "object"
     },
     "PolicyDecision": {
+      "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
       "properties": {
         "applicability_context_id": {
           "type": [
@@ -2020,6 +2052,7 @@
       "type": "object"
     },
     "PromotionClass": {
+      "description": "Priority tier for promotion eligibility (P0 = highest).",
       "enum": [
         "p0",
         "p1",
@@ -2029,6 +2062,7 @@
       "type": "string"
     },
     "PromotionDecision": {
+      "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
       "properties": {
         "applicability_context_id": {
           "type": [
@@ -2136,6 +2170,7 @@
       "type": "object"
     },
     "ProofProfileV1": {
+      "description": "Proof profile describing evidence admissibility, cheap-check status, and remaining obligations.",
       "properties": {
         "admissible_evidence": {
           "items": {
@@ -2169,6 +2204,7 @@
       "type": "object"
     },
     "QueueHop": {
+      "description": "A single queue-to-queue hop in the scheduler routing chain.",
       "properties": {
         "dequeued_at": {
           "type": [
@@ -2200,6 +2236,7 @@
       "type": "object"
     },
     "ReceiptBudgetContext": {
+      "description": "Budget context attached to a control receipt for cost and time tracking.",
       "properties": {
         "budget_kind": {
           "type": [
@@ -2242,6 +2279,7 @@
       "type": "string"
     },
     "RefutationDecision": {
+      "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
       "properties": {
         "applicability_context_id": {
           "type": [
@@ -2342,6 +2380,7 @@
       "type": "object"
     },
     "RepairClassV1": {
+      "description": "Classification of a repair action taken during or after a loop iteration.",
       "enum": [
         "identity_repair",
         "temporal_repair",
@@ -2354,6 +2393,7 @@
       "type": "string"
     },
     "RepairRecordV1": {
+      "description": "Structured record of a repair action applied to verification state.\n\nIncludes blast radius, reversibility, and a link back to the execution context that triggered the repair.",
       "properties": {
         "action": {
           "type": "string"
@@ -2418,6 +2458,7 @@
       "type": "object"
     },
     "ReversibilityClass": {
+      "description": "How difficult it is to reverse a promoted verification result.",
       "enum": [
         "reversible_local",
         "reversible_scoped",
@@ -2427,6 +2468,7 @@
       "type": "string"
     },
     "RollbackPlan": {
+      "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
       "properties": {
         "affected_artifacts": {
           "default": [],
@@ -2560,6 +2602,7 @@
       "type": "string"
     },
     "SchedulerDecision": {
+      "description": "Scheduler decision record preserving budget, degradation, and routing lineage for a plan.",
       "properties": {
         "budget_lineage": {
           "$ref": "#/definitions/BudgetLineage"
@@ -2649,6 +2692,7 @@
       "type": "object"
     },
     "StopRuleEvaluation": {
+      "description": "Evaluation of the loop stop rule at the end of an iteration.",
       "properties": {
         "advisory_only": {
           "type": "boolean"
@@ -2680,6 +2724,7 @@
       "type": "object"
     },
     "TargetNormalization": {
+      "description": "Normalized representation of a target for cross-iteration comparability.",
       "properties": {
         "bounded_region_digest": {
           "type": "string"
@@ -2722,6 +2767,7 @@
       "type": "object"
     },
     "TerminalDisposition": {
+      "description": "Terminal outcome of a closed verification case.",
       "enum": [
         "eligible_for_promotion",
         "advisory_only",
@@ -2762,6 +2808,7 @@
       "type": "object"
     },
     "VerificationAttempt": {
+      "description": "A single execution attempt within a verification case and plan.",
       "properties": {
         "advisory_only": {
           "type": "boolean"
@@ -2817,6 +2864,7 @@
       "type": "object"
     },
     "VerificationAttemptState": {
+      "description": "Execution state of a verification attempt.",
       "enum": [
         "scheduled",
         "running",
@@ -2828,6 +2876,7 @@
       "type": "string"
     },
     "VerificationCase": {
+      "description": "A single verification case tracking a governance issue from open to closed.\n\nCases are opened by the observation phase, assigned check plans, executed through verification attempts, and closed with a terminal disposition.",
       "properties": {
         "advisory_only": {
           "type": "boolean"
@@ -2889,6 +2938,7 @@
       "type": "object"
     },
     "VerificationCaseClass": {
+      "description": "Classification of the issue that opened a verification case.",
       "enum": [
         "active_syndrome",
         "fragile_node",
@@ -2903,6 +2953,7 @@
       "type": "string"
     },
     "VerificationCaseLifecycleState": {
+      "description": "Lifecycle state of a verification case from open to closed.",
       "enum": [
         "open",
         "planned",
@@ -2925,6 +2976,7 @@
       "type": "string"
     },
     "VerificationPlanArtifact": {
+      "description": "Serializable verification plan artifact emitted per iteration.\n\nCaptures proof obligations, admissible evidence, cheapest check ladders, and policy blockers for downstream adjudication.",
       "properties": {
         "admissible_evidence": {
           "default": [],
@@ -3035,6 +3087,7 @@
       "type": "object"
     },
     "VerificationWorkloadClass": {
+      "description": "Scheduler workload class used for budgeting and queue routing.",
       "enum": [
         "orchestration",
         "oracle",
@@ -3044,6 +3097,7 @@
       "type": "string"
     }
   },
+  "description": "Top-level report for a complete OODA loop run.\n\nContains the loop receipt, all iteration reports, and aggregate counters for actions, exports, imports, and degradations.",
   "properties": {
     "actions_executed": {
       "format": "uint32",

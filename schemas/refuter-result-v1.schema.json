@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "RefuterKindV1": {
+      "description": "Kind of refutation check applied to an experiment.",
       "enum": [
         "negative_control",
         "placebo",
@@ -11,6 +12,7 @@
       "type": "string"
     },
     "RefuterPromotionImpactV1": {
+      "description": "Impact of a refuter result on promotion eligibility.",
       "enum": [
         "keeps_canary_eligible",
         "blocks_promotion",
@@ -19,6 +21,7 @@
       "type": "string"
     },
     "RefuterStateV1": {
+      "description": "Pass/fail/skip state of a refuter check.",
       "enum": [
         "pass",
         "fail",
@@ -27,6 +30,7 @@
       "type": "string"
     }
   },
+  "description": "Result of a single refuter check against a counterfactual slice.",
   "properties": {
     "counterfactual_slice_id": {
       "type": "string"

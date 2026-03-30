@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "ExecutionStateV1": {
+      "description": "Terminal or in-progress state of an effect or compensation execution.",
       "enum": [
         "completed",
         "partial",
@@ -13,7 +14,7 @@
       "type": "string"
     }
   },
-  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "description": "Record of an effect's execution outcome including state, partial-completion flags, and generated side-effects.\n\nThe `partial_execution` flag must be consistent with `execution_state`, and completed receipts must not carry a cancellation reason.",
   "properties": {
     "applicability_context_id": {
       "type": "string"

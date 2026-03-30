@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Routing record linking a syndrome to a repair candidate and its blast radius.",
   "properties": {
     "blast_radius_node_ids": {
       "items": {

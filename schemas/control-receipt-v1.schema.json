@@ -18,6 +18,7 @@
       "type": "object"
     },
     "ConstitutionalContextStatus": {
+      "description": "Completeness status of the constitutional context payload on a review artifact.",
       "enum": [
         "missing",
         "partial",
@@ -26,6 +27,7 @@
       "type": "string"
     },
     "ControlActionKind": {
+      "description": "Kind of action recorded in a control receipt.",
       "enum": [
         "tool_execution",
         "orchestration_loop",
@@ -34,6 +36,7 @@
       "type": "string"
     },
     "ControlRetryOwnerV1": {
+      "description": "Which subsystem owns retry responsibility for a control action.",
       "enum": [
         "llm_pipeline",
         "agent_graph",
@@ -45,6 +48,7 @@
       "type": "string"
     },
     "ReceiptBudgetContext": {
+      "description": "Budget context attached to a control receipt for cost and time tracking.",
       "properties": {
         "budget_kind": {
           "type": [
@@ -107,6 +111,7 @@
       "type": "object"
     }
   },
+  "description": "An immutable receipt recording a control-plane action with full provenance.\n\nControl receipts carry constitutional citation context, budget context, retry ownership, and promotion eligibility. They are the atomic audit unit for the verification ledger.",
   "properties": {
     "action_kind": {
       "$ref": "#/definitions/ControlActionKind"

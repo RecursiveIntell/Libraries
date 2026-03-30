@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "BudgetSufficiencyResultV1": {
+      "description": "Whether the budget allocation is sufficient for the intended effect.",
       "enum": [
         "sufficient",
         "insufficient"
@@ -9,6 +10,7 @@
       "type": "string"
     },
     "CheckResultV1": {
+      "description": "Binary pass/fail result for a preflight check gate.",
       "enum": [
         "pass",
         "fail"
@@ -16,6 +18,7 @@
       "type": "string"
     },
     "EffectPreflightDispositionV1": {
+      "description": "Outcome disposition of a preflight check determining whether an effect may proceed to commit.",
       "enum": [
         "blocked",
         "advisory_only",
@@ -24,7 +27,7 @@
       "type": "string"
     }
   },
-  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "description": "Result of preflight checks against an effect intent, gating commit eligibility.\n\nA `CommitEligible` disposition requires all check results to be passing and budget to be sufficient.",
   "properties": {
     "admission_check_result": {
       "$ref": "#/definitions/CheckResultV1"

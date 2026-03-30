@@ -26,6 +26,7 @@
       "type": "string"
     },
     "HaltReason": {
+      "description": "Reason the OODA loop terminated.",
       "enum": [
         "max_iterations_reached",
         "time_budget_exhausted",
@@ -46,6 +47,7 @@
       "type": "string"
     },
     "ImportRecordDisposition": {
+      "description": "Disposition of the most recent canonical import record for the queried namespace.",
       "enum": [
         "found",
         "never_imported",
@@ -56,6 +58,7 @@
       "type": "string"
     },
     "LoopBudgetReceipt": {
+      "description": "Budget parameters that governed the loop run.",
       "properties": {
         "cooldown_secs": {
           "format": "uint64",
@@ -91,6 +94,7 @@
       "type": "object"
     },
     "ObservationDisposition": {
+      "description": "Overall readiness disposition of the observation for a namespace.",
       "enum": [
         "ready",
         "empty_workspace",
@@ -102,6 +106,7 @@
       "type": "string"
     },
     "ObservationPaths": {
+      "description": "Resolved filesystem paths and their availability for a configured namespace.",
       "properties": {
         "forge_db_path": {
           "type": "string"
@@ -133,6 +138,7 @@
       "type": "object"
     },
     "ObservationStatus": {
+      "description": "Machine-readable status summary for a namespace observation.\n\nIncludes import disposition, file counts, and a human-readable `exact_next_step` describing what the operator should do next.",
       "properties": {
         "available_forge_bundle_count": {
           "format": "uint",
@@ -205,6 +211,7 @@
       "type": "object"
     },
     "PathAvailability": {
+      "description": "Whether a filesystem path required for observation is present and valid.",
       "enum": [
         "present",
         "missing",
@@ -240,6 +247,7 @@
       "type": "object"
     }
   },
+  "description": "Typed receipt summarizing a complete loop run for auditing and replay.",
   "properties": {
     "actions_executed": {
       "format": "uint32",

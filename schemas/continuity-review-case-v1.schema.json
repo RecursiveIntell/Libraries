@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "ConstitutionalContextStatus": {
+      "description": "Completeness status of the constitutional context payload on a review artifact.",
       "enum": [
         "missing",
         "partial",
@@ -10,6 +11,7 @@
       "type": "string"
     },
     "ContinuityReviewFinalStateV1": {
+      "description": "Terminal state of a continuity review case.",
       "enum": [
         "open_review",
         "closed"
@@ -17,6 +19,7 @@
       "type": "string"
     }
   },
+  "description": "A review case for continuity incidents (outage, recovery, exception handling).",
   "properties": {
     "applicability_context_id": {
       "type": [

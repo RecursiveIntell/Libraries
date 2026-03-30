@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "ExecutionStateV1": {
+      "description": "Terminal or in-progress state of an effect or compensation execution.",
       "enum": [
         "completed",
         "partial",
@@ -13,7 +14,7 @@
       "type": "string"
     }
   },
-  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "description": "Receipt recording the outcome of executing a compensation plan, including completed and failed steps.\n\nCompleted receipts must not list any failed steps.",
   "properties": {
     "applicability_context_id": {
       "type": "string"

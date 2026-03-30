@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "ClosureRecommendationV1": {
+      "description": "Recommended next action after observing an executed effect's outcome.",
       "enum": [
         "close_successfully",
         "open_compensation",
@@ -11,6 +12,7 @@
       "type": "string"
     },
     "ObservationStateV1": {
+      "description": "State of post-execution observation for an effect.",
       "enum": [
         "complete",
         "in_progress",
@@ -19,7 +21,7 @@
       "type": "string"
     }
   },
-  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "description": "Post-execution observation bundle that captures observed outcome, drift, and closure recommendation.\n\nComplete observations require non-empty external evidence refs.",
   "properties": {
     "applicability_context_id": {
       "type": "string"

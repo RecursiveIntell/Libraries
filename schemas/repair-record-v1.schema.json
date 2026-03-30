@@ -136,6 +136,7 @@
       "type": "object"
     },
     "RepairClassV1": {
+      "description": "Classification of a repair action taken during or after a loop iteration.",
       "enum": [
         "identity_repair",
         "temporal_repair",
@@ -175,6 +176,7 @@
       "type": "object"
     }
   },
+  "description": "Structured record of a repair action applied to verification state.\n\nIncludes blast radius, reversibility, and a link back to the execution context that triggered the repair.",
   "properties": {
     "action": {
       "type": "string"

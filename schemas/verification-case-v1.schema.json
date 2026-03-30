@@ -18,6 +18,7 @@
       "type": "object"
     },
     "CaseRegion": {
+      "description": "Scope and location metadata for a verification case target.",
       "properties": {
         "as_of_recorded_at": {
           "type": [
@@ -97,6 +98,7 @@
       "type": "object"
     },
     "TerminalDisposition": {
+      "description": "Terminal outcome of a closed verification case.",
       "enum": [
         "eligible_for_promotion",
         "advisory_only",
@@ -137,6 +139,7 @@
       "type": "object"
     },
     "VerificationCaseClass": {
+      "description": "Classification of the issue that opened a verification case.",
       "enum": [
         "active_syndrome",
         "fragile_node",
@@ -151,6 +154,7 @@
       "type": "string"
     },
     "VerificationCaseLifecycleState": {
+      "description": "Lifecycle state of a verification case from open to closed.",
       "enum": [
         "open",
         "planned",
@@ -160,6 +164,7 @@
       "type": "string"
     }
   },
+  "description": "A single verification case tracking a governance issue from open to closed.\n\nCases are opened by the observation phase, assigned check plans, executed through verification attempts, and closed with a terminal disposition.",
   "properties": {
     "advisory_only": {
       "type": "boolean"

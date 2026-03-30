@@ -22,6 +22,7 @@
       "type": "string"
     }
   },
+  "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
   "properties": {
     "applicability_context_id": {
       "type": [

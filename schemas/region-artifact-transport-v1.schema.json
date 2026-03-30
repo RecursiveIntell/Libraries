@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "RegionArtifactKind": {
+      "description": "Kind of artifact transported between compiled regions.",
       "enum": [
         "delta",
         "residual",
@@ -14,6 +15,7 @@
       "type": "string"
     }
   },
+  "description": "Transport record for an artifact crossing between compiled verification regions.",
   "properties": {
     "artifact_digest": {
       "type": "string"

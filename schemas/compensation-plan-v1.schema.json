@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "CompensationClassV1": {
+      "description": "Classification of the compensation strategy to be applied.",
       "enum": [
         "state_restore",
         "local_rollback",
@@ -11,7 +12,7 @@
       "type": "string"
     }
   },
-  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "description": "Plan describing the compensation steps required to reverse or mitigate a failed effect.\n\nWhen `compensation_required` is true, `compensation_steps` must be non-empty.",
   "properties": {
     "advisory_only": {
       "type": "boolean"

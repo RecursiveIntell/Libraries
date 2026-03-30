@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "PromotionClass": {
+      "description": "Priority tier for promotion eligibility (P0 = highest).",
       "enum": [
         "p0",
         "p1",
@@ -11,6 +12,7 @@
       "type": "string"
     },
     "ReversibilityClass": {
+      "description": "How difficult it is to reverse a promoted verification result.",
       "enum": [
         "reversible_local",
         "reversible_scoped",
@@ -42,6 +44,7 @@
       "type": "string"
     }
   },
+  "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
   "properties": {
     "applicability_context_id": {
       "type": [
