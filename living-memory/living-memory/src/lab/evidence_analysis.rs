@@ -31,6 +31,7 @@ pub struct CausalHypothesis {
 /// Phase 5 uses: Proposed, Supported, Contradicted, Neutral.
 /// `Confirmed` and `Refuted` are preserved as serde aliases for backward compatibility.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum HypothesisStatus {
     /// Newly proposed, awaiting evidence.
     Proposed,
@@ -108,6 +109,7 @@ fn default_informational() -> StepRequirement {
 /// Reproduce/Generalize/Negate/CrossProject/Ablation are defined but not
 /// executed by Phase 5 runners.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum VerificationType {
     /// Re-run the same edit and check for same effect.
     Reproduce,
@@ -131,6 +133,7 @@ pub enum VerificationType {
 
 /// Whether a verification step is required for promotion.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum StepRequirement {
     Required,
     Informational,
@@ -183,6 +186,7 @@ pub struct EvidenceAssessment {
 
 /// Assessment category (deterministic, policy-derived).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum AssessmentCategory {
     Strong,
     Adequate,
@@ -192,6 +196,7 @@ pub enum AssessmentCategory {
 
 /// Whether hypotheses are contradicted.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ContradictionState {
     /// No contradictions found.
     Clean,
@@ -203,6 +208,7 @@ pub enum ContradictionState {
 
 /// Level of sample support for claims.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SampleSupport {
     /// Sufficient trials for statistical claims.
     Sufficient,

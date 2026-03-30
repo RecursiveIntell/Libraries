@@ -94,6 +94,7 @@ pub struct RefutationAttempt {
 
 /// Result of a refutation attempt.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum RefutationResult {
     /// Refutation did not invalidate the original estimate.
     Passed {

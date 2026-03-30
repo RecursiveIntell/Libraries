@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 /// Kind of estimator used.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum EstimatorKind {
     /// Difference-in-differences.
     DiffInDiff,

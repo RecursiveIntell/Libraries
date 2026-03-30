@@ -12,6 +12,7 @@ use crate::exec::backend::{CheckResult, ExecutionBackendKind};
 
 /// How an experiment is structured.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ExperimentMode {
     /// Single baseline + single patched execution.
     Paired,
@@ -25,6 +26,7 @@ pub enum ExperimentMode {
 
 /// Classification of an observed effect from experiment comparison.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum EffectKind {
     CompileFailure,
     TestFailure,
@@ -79,12 +81,14 @@ pub struct TrialRecord {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum TrialSide {
     Baseline,
     Patched,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum CacheMode {
     Cold,
     Warm,

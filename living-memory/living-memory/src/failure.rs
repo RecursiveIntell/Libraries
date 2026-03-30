@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// Classification of failures for structured handling.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum FailureClass {
     /// Baseline execution timed out.
     BaselineTimeout,

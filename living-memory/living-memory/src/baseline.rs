@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// How a baseline was obtained.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum BaselineSourceKind {
     /// Clean checkout of a specific commit.
     GitCommit,

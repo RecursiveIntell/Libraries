@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// What kind of objective the patch is trying to achieve.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ObjectiveKind {
     BugFix,
     Refactor,
@@ -123,6 +124,7 @@ impl Default for ObjectivePolicy {
 
 /// Check comparability classification.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ComparabilityClass {
     /// Core checks whose results are directly comparable between baseline and patched.
     ComparableCore,

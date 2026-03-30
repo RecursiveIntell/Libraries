@@ -31,6 +31,7 @@ use tracing::warn;
 
 /// Authority marker for Forge-produced exports.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum ExportAuthority {
     /// Standard Forge verification pipeline.
     Forge,

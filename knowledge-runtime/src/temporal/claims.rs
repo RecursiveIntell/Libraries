@@ -63,6 +63,7 @@ impl TemporalClaim {
 
 /// Contradiction status between two temporal claims about the same entity.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum TemporalContradictionStatus {
     /// No contradiction detected.
     None,

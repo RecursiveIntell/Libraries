@@ -59,6 +59,7 @@ impl Display for AttestationReplayabilityClassV1 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum TrustRootExpirationPolicyV1 {
     #[serde(rename = "365d")]
     Days365,

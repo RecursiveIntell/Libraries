@@ -22,6 +22,7 @@ const LOCAL_AUTHORING_METADATA_KEY: &str = "living_memory_authoring";
 ///
 /// Phase 5 only supports `ProvisionalSinglePair`.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ClaimStrength {
     /// Provisional local attribution from one paired intervention on one fixed workload slice.
     #[default]
@@ -121,6 +122,7 @@ impl ReceiptRef {
 
 /// Kind of artifact a receipt covers.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ReceiptKind {
     TrialLog,
     TrialMetrics,
@@ -130,6 +132,7 @@ pub enum ReceiptKind {
 
 /// Where a receipt's artifact is stored.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ReceiptStorage {
     /// Stored inline in the receipt itself.
     Inline(String),
@@ -169,6 +172,7 @@ pub struct HypothesisEdge {
 
 /// What kind of causal relationship a hypothesis edge represents.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum HypothesisEdgeKind {
     /// The edit causes a regression (new failure in patched).
     CausesRegression,
@@ -180,6 +184,7 @@ pub enum HypothesisEdgeKind {
 
 /// Verification state for an edge.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum VerificationState {
     #[default]
     Unverified,
@@ -193,6 +198,7 @@ pub enum VerificationState {
 
 /// Which execution context the trial belongs to.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum BaselineOrPatch {
     /// Trial ran on the baseline workspace.
     Baseline,
@@ -218,6 +224,7 @@ pub struct VerificationTrial {
 
 /// Outcome of a named refutation artifact.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RefutationArtifactOutcome {
     /// Refutation did not weaken the original claim.
     Passed,
@@ -240,6 +247,7 @@ pub enum RefutationArtifactOutcome {
 
 /// Type of named falsification artifact emitted by verification infrastructure.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RefutationArtifactType {
     /// Inert control treatment/no-op on treatment assignment.
     Placebo,
@@ -274,6 +282,7 @@ pub struct RefutationArtifact {
 
 /// Which effect-derived export relation a lineage hint applies to.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum EffectRelationLineageSource {
     /// The `primary_effect_*` export relation for the bundle.
     PrimaryEffect,

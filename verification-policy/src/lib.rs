@@ -110,6 +110,7 @@ pub enum CompensationPolicyTriggerV1 {
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
+#[serde(rename_all = "snake_case")]
 pub enum DelegationRoleCombinationV1 {
     #[serde(rename = "requester+approver")]
     RequesterApprover,

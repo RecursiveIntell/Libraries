@@ -3,9 +3,9 @@
   "definitions": {
     "ActionFamily": {
       "enum": [
-        "Oracle",
-        "PairedPatch",
-        "AdvisoryOnly"
+        "oracle",
+        "paired_patch",
+        "advisory_only"
       ],
       "type": "string"
     },

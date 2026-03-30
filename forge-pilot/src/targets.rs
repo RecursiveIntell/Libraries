@@ -4,6 +4,7 @@ use stack_ids::ClaimVersionId;
 use verification_control::VerificationCaseClass;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum TargetPriority {
     ActiveSyndrome = 0,
     FragileNode = 1,
@@ -17,6 +18,7 @@ pub enum TargetPriority {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum TargetKind {
     FragileNode {
         node_id: String,

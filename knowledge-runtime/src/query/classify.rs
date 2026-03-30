@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 /// which route legs to plan. This is a rule-based heuristic; LLM-based
 /// classification is a future extension point.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum QueryMode {
     /// Pure semantic / free-text similarity search.
     SemanticLookup,

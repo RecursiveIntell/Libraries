@@ -139,10 +139,9 @@ pub enum RollbackScopeV1 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum RefutationClassV1 {
-    #[serde(rename = "none")]
     None,
-    #[serde(rename = "causal_refuted")]
     CausalRefuted,
 }
 

@@ -75,6 +75,7 @@ pub enum RemoteExactnessClassV1 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum RemoteDisclosureClassV1 {
     #[serde(rename = "non-sensitive")]
     NonSensitive,
@@ -89,6 +90,7 @@ pub enum RemoteReplayObligationV1 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum AttestationReplayImpactV1 {
     #[serde(rename = "replay ticket unchanged")]
     ReplayTicketUnchanged,

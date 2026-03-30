@@ -13,6 +13,7 @@ use std::time::Duration;
 /// These make runtime behavior transparent to callers — especially
 /// when the runtime falls back to simpler behavior than requested.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum QueryWarning {
     /// A temporal search leg was downgraded to hybrid search because
     /// temporal execution is not implemented.

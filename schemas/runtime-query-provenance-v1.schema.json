@@ -24,7 +24,7 @@
           "additionalProperties": false,
           "description": "A temporal search leg was downgraded to hybrid search because temporal execution is not implemented.",
           "properties": {
-            "TemporalDowngradedToHybrid": {
+            "temporal_downgraded_to_hybrid": {
               "properties": {
                 "temporal_expr": {
                   "description": "The original temporal expression from the query.",
@@ -38,7 +38,7 @@
             }
           },
           "required": [
-            "TemporalDowngradedToHybrid"
+            "temporal_downgraded_to_hybrid"
           ],
           "type": "object"
         },
@@ -46,7 +46,7 @@
           "additionalProperties": false,
           "description": "Scope enforcement is limited to namespace-only at the adapter level. Full scope (domain, workspace_id, repo_id) was used for runtime-owned logic but NOT enforced during upstream search.",
           "properties": {
-            "ScopePartiallyEnforced": {
+            "scope_partially_enforced": {
               "properties": {
                 "full_scope": {
                   "allOf": [
@@ -64,7 +64,7 @@
             }
           },
           "required": [
-            "ScopePartiallyEnforced"
+            "scope_partially_enforced"
           ],
           "type": "object"
         },
@@ -72,7 +72,7 @@
           "additionalProperties": false,
           "description": "Entity resolution fell back to a broader scope.",
           "properties": {
-            "EntityScopeFallback": {
+            "entity_scope_fallback": {
               "properties": {
                 "mention": {
                   "type": "string"
@@ -89,7 +89,7 @@
             }
           },
           "required": [
-            "EntityScopeFallback"
+            "entity_scope_fallback"
           ],
           "type": "object"
         },
@@ -97,7 +97,7 @@
           "additionalProperties": false,
           "description": "Projection data for this scope is stale due to import lag or failure.",
           "properties": {
-            "ProjectionImportStale": {
+            "projection_import_stale": {
               "properties": {
                 "last_import_at": {
                   "description": "When the last successful import occurred, if ever.",
@@ -122,7 +122,7 @@
             }
           },
           "required": [
-            "ProjectionImportStale"
+            "projection_import_stale"
           ],
           "type": "object"
         }

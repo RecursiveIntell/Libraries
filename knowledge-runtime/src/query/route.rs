@@ -30,6 +30,7 @@ pub struct RouteLeg {
 
 /// Retrieval strategy for a route leg.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RetrievalStrategy {
     /// Hybrid BM25 + vector search via `semantic-memory`.
     HybridSearch,

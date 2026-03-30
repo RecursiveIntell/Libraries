@@ -191,10 +191,10 @@ pub struct EffectBlockReceiptV1 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum EffectBlockReasonV1 {
-    #[serde(rename = "policy_required_obligations_outstanding")]
     PolicyRequiredObligationsOutstanding,
-    #[serde(rename = "budget_exhausted", alias = "budget exhausted")]
+    #[serde(alias = "budget exhausted")]
     BudgetExhausted,
 }
 
@@ -241,12 +241,11 @@ pub struct ReleaseGateCaseV1 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum ReleaseGateFinalStateV1 {
-    #[serde(rename = "approved")]
     Approved,
-    #[serde(rename = "approved_with_monitoring", alias = "approved_with_monitors")]
+    #[serde(alias = "approved_with_monitors")]
     ApprovedWithMonitoring,
-    #[serde(rename = "blocked")]
     Blocked,
 }
 

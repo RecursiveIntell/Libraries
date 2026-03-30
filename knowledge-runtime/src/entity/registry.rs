@@ -39,6 +39,7 @@ pub struct Entity {
 
 /// Match quality when resolving a mention to an entity.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum MatchQuality {
     /// Exact canonical name or ID match within the requested scope.
     ExactCanonical,

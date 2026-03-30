@@ -36,6 +36,7 @@ impl Default for MergePolicy {
 
 /// Score normalization strategy.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ScoreNormalization {
     /// COR-004: Global min-max normalization to [0, 1] range across all fused results.
     /// Applied after duplicate fusion, before multi-leg boosting.

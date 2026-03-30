@@ -21,6 +21,7 @@ pub const LOOP_ITERATION_REPORT_V1_SCHEMA: &str = "forge_pilot_loop_iteration_re
 pub const LOOP_REPORT_V1_SCHEMA: &str = "forge_pilot_loop_report_v1";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum HaltReason {
     MaxIterationsReached,
     TimeBudgetExhausted,

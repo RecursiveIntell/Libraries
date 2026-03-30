@@ -7,6 +7,7 @@ pub const ACCESS_PURPOSE_MATRIX_V1_SCHEMA: &str = "AccessPurposeMatrixV1";
 pub const AUDIT_EXTRACTION_POLICY_V1_SCHEMA: &str = "AuditExtractionPolicyV1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum PrivacyRetentionClassV1 {
     #[serde(rename = "customer_sensitive_365d")]
     CustomerSensitive365d,
@@ -31,6 +32,7 @@ pub enum RedactionReversibilityClassV1 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum RedactionApprovalRequirementV1 {
     #[serde(rename = "privacy-review")]
     PrivacyReview,

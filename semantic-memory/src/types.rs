@@ -386,6 +386,7 @@ pub struct SearchResult {
 
 /// Source information for a search result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SearchSource {
     /// Result came from the facts table.
     Fact {
@@ -626,6 +627,7 @@ pub struct GraphEdge {
 
 /// Type of relationship between graph nodes.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum GraphEdgeType {
     /// Semantic similarity. GraphEdgeType::Semantic variant.
     Semantic {

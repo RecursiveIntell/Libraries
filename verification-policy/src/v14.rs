@@ -50,6 +50,7 @@ pub enum ExperimentMaxExactnessV1 {
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
+#[serde(rename_all = "snake_case")]
 pub enum RefuterAllowanceV1 {
     #[serde(rename = "up_to_1")]
     UpTo1,
@@ -117,6 +118,7 @@ pub enum DisclosureReplayVisibilityV1 {
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
+#[serde(rename_all = "snake_case")]
 pub enum DisclosureRevealClassV1 {
     #[serde(rename = "structured-redacted")]
     StructuredRedacted,

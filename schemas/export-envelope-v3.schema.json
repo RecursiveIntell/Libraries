@@ -298,42 +298,42 @@
         {
           "description": "Difference-in-differences.",
           "enum": [
-            "DiffInDiff"
+            "diff_in_diff"
           ],
           "type": "string"
         },
         {
           "description": "Propensity score matching.",
           "enum": [
-            "PropensityScore"
+            "propensity_score"
           ],
           "type": "string"
         },
         {
           "description": "Instrumental variables.",
           "enum": [
-            "InstrumentalVariables"
+            "instrumental_variables"
           ],
           "type": "string"
         },
         {
           "description": "Ordinary least squares.",
           "enum": [
-            "OLS"
+            "o_l_s"
           ],
           "type": "string"
         },
         {
           "description": "Bayesian estimation.",
           "enum": [
-            "Bayesian"
+            "bayesian"
           ],
           "type": "string"
         },
         {
           "description": "Simple before/after comparison.",
           "enum": [
-            "BeforeAfter"
+            "before_after"
           ],
           "type": "string"
         },
@@ -341,12 +341,12 @@
           "additionalProperties": false,
           "description": "Custom estimator.",
           "properties": {
-            "Custom": {
+            "custom": {
               "type": "string"
             }
           },
           "required": [
-            "Custom"
+            "custom"
           ],
           "type": "object"
         }
@@ -681,7 +681,7 @@
         {
           "description": "Standard Forge verification pipeline.",
           "enum": [
-            "Forge"
+            "forge"
           ],
           "type": "string"
         },
@@ -689,7 +689,7 @@
           "additionalProperties": false,
           "description": "External authority (e.g., manual import, third-party tool).",
           "properties": {
-            "External": {
+            "external": {
               "properties": {
                 "name": {
                   "type": "string"
@@ -702,7 +702,7 @@
             }
           },
           "required": [
-            "External"
+            "external"
           ],
           "type": "object"
         }
@@ -1543,7 +1543,7 @@
           "additionalProperties": false,
           "description": "Refutation did not invalidate the original estimate.",
           "properties": {
-            "Passed": {
+            "passed": {
               "properties": {
                 "estimate_change": {
                   "description": "How much the estimate changed under the refutation test.",
@@ -1558,7 +1558,7 @@
             }
           },
           "required": [
-            "Passed"
+            "passed"
           ],
           "type": "object"
         },
@@ -1566,7 +1566,7 @@
           "additionalProperties": false,
           "description": "Refutation invalidated the original estimate.",
           "properties": {
-            "Failed": {
+            "failed": {
               "properties": {
                 "estimate_change": {
                   "description": "How much the estimate changed.",
@@ -1588,7 +1588,7 @@
             }
           },
           "required": [
-            "Failed"
+            "failed"
           ],
           "type": "object"
         },
@@ -1596,7 +1596,7 @@
           "additionalProperties": false,
           "description": "Refutation could not be completed.",
           "properties": {
-            "Inconclusive": {
+            "inconclusive": {
               "properties": {
                 "reason": {
                   "type": "string"
@@ -1609,7 +1609,7 @@
             }
           },
           "required": [
-            "Inconclusive"
+            "inconclusive"
           ],
           "type": "object"
         },
@@ -1617,7 +1617,7 @@
           "additionalProperties": false,
           "description": "Refutation was not attempted (e.g., not applicable).",
           "properties": {
-            "Skipped": {
+            "skipped": {
               "properties": {
                 "reason": {
                   "type": "string"
@@ -1630,7 +1630,7 @@
             }
           },
           "required": [
-            "Skipped"
+            "skipped"
           ],
           "type": "object"
         }
