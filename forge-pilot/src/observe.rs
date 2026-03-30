@@ -1,3 +1,9 @@
+//! Observation phase of the OODA loop.
+//!
+//! Inspects workspace paths, semantic-memory store contents, and kernel
+//! compilation state to produce a snapshot that the orient and decide
+//! phases consume.
+
 use crate::bootstrap::{
     current_state_from_latest_manifest, is_auxiliary_bootstrap_claim,
     is_supported_source_file_path, should_skip_workspace_dir,
@@ -27,6 +33,7 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+/// A degradation detected during scope observation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ObservationDegradation {
     pub kind: String,

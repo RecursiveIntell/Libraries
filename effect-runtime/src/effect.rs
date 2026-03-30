@@ -1,3 +1,9 @@
+//! Core effect lifecycle artifacts: window, intent, preflight, and commit decision.
+//!
+//! These types model the governed effect pipeline from intent declaration through
+//! commit authorization. Each artifact enforces owner-side invariants via its
+//! `validate()` method and is constructed through a builder pattern.
+
 use crate::error::{
     require_id, require_non_empty, require_non_empty_slice, require_schema_version,
     require_valid_timestamp, EffectRuntimeValidationError, EffectValidationResult,
@@ -15,6 +21,7 @@ use stack_ids::{
     EffectWindowId, ExecutionPermitId,
 };
 
+/// Outcome disposition of a preflight check determining whether an effect may proceed to commit.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectPreflightDispositionV1 {
@@ -23,6 +30,7 @@ pub enum EffectPreflightDispositionV1 {
     CommitEligible,
 }
 
+/// Authorization outcome of a commit decision: denied, advisory-only, or authorized for execution.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectCommitDispositionV1 {
@@ -31,6 +39,7 @@ pub enum EffectCommitDispositionV1 {
     Authorized,
 }
 
+/// Temporal execution window that bounds when an effect may start, timeout, and how mid-flight closures are handled.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectWindowV1 {
     pub schema_version: String,

@@ -42,6 +42,7 @@ pub enum QueryWarning {
     },
 }
 
+/// Logical view through which a query leg is executed.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RuntimeView {

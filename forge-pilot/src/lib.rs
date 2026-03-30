@@ -1,3 +1,10 @@
+//! OODA governance orchestrator for the RecursiveIntell stack.
+//!
+//! This crate drives the Observe-Orient-Decide-Act loop that inspects
+//! semantic-memory state, selects verification targets, executes oracle
+//! or paired-patch plans, and exports evidence bundles through the
+//! canonical Forge bridge path.
+
 pub mod act;
 pub mod bootstrap;
 pub mod bootstrap_source;
