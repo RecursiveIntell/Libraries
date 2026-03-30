@@ -144,10 +144,10 @@ fn evidence_bundle_crud() {
             "v0001",
             "trace-crud",
             r#"{"correctness": 0.9}"#,
-            r#"[{"hypothesis_id":"h1","cause_signature":"cause","effect_signature":"effect","confidence":0.8,"status":"Supported","support_count":2,"contradiction_count":0}]"#,
+            r#"[{"hypothesis_id":"h1","cause_signature":"cause","effect_signature":"effect","confidence":0.8,"status":"supported","support_count":2,"contradiction_count":0}]"#,
             Some(r#"{"plan_id":"p1","target_hypotheses":["h1"],"steps":[]}"#),
             Some(r#"{"effects":[],"regressions":0,"improvements":0,"stable_failures":0,"stable_passes":0,"statistically_meaningful":false,"sample_warning":null}"#),
-            Some(r#"{"reproducibility":"Strong","isolation":"Strong","contradiction_state":"Clean","sample_support":"Sufficient"}"#),
+            Some(r#"{"reproducibility":"strong","isolation":"strong","contradiction_state":"clean","sample_support":"sufficient"}"#),
             r#"["warning1"]"#,
         )
         .unwrap();
@@ -165,7 +165,7 @@ fn evidence_bundle_crud() {
         .unwrap()
         .contains("p1"));
     assert!(row.diff_json.as_deref().unwrap().contains("regressions"));
-    assert!(row.assessment_json.as_deref().unwrap().contains("Strong"));
+    assert!(row.assessment_json.as_deref().unwrap().contains("strong"));
     assert!(row.warnings_json.contains("warning1"));
     let canonical = row.canonical_bundle().unwrap();
     assert_eq!(canonical.id.as_str(), "eb-crud");
@@ -278,10 +278,10 @@ fn legacy_split_only_evidence_row_rebuilds_canonical_bundle() {
             "v0001",
             "trace-legacy",
             r#"{"correctness":0.8,"novelty":0.1,"stability":0.2,"weighted_total":0.7,"cea_confidence":null,"cea_predicted_correctness":null}"#,
-            r#"[{"hypothesis_id":"h-1","cause_signature":"cause","effect_signature":"effect","confidence":0.6,"status":"Proposed","support_count":1,"contradiction_count":0}]"#,
+            r#"[{"hypothesis_id":"h-1","cause_signature":"cause","effect_signature":"effect","confidence":0.6,"status":"proposed","support_count":1,"contradiction_count":0}]"#,
             r#"{"plan_id":"plan-1","target_hypotheses":["h-1"],"steps":[]}"#,
             Option::<&str>::None,
-            r#"{"reproducibility":"Strong","isolation":"Strong","contradiction_state":"Clean","sample_support":"Sufficient"}"#,
+            r#"{"reproducibility":"strong","isolation":"strong","contradiction_state":"clean","sample_support":"sufficient"}"#,
             r#"["legacy-row"]"#,
             "2026-03-12T00:00:00Z"
         ],

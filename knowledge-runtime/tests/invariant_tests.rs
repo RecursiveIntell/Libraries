@@ -348,7 +348,7 @@ fn projection_import_stale_warning_carries_metadata() {
 
     // Verify it serializes cleanly
     let json = serde_json::to_string(&warning).unwrap();
-    assert!(json.contains("ProjectionImportStale"));
+    assert!(json.contains("projection_import_stale"));
     assert!(json.contains("2024-01-01"));
 
     // Verify it deserializes cleanly

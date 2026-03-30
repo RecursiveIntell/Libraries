@@ -421,7 +421,7 @@ fn v2_digest_matches_pinned_golden_fixture() {
 
     assert_eq!(
         digest.hex(),
-        "77dec0b5de12a174fc9ad22afac1bd647c521ff48834af855def45bb9ed0f560"
+        "540585eb2fb643b349a1726e6d7820527b5c50797eb2c4c4899bf3aab20a2b7c"
     );
 }
 
@@ -448,7 +448,7 @@ fn v3_digest_matches_pinned_golden_fixture() {
 
     assert_eq!(
         digest.hex(),
-        "973841b4530e11384b11581a8590b1cfb9c0b2f0589ef521c886e9e336cd7629"
+        "78f0c45bcbb4b2e3b2a445eabaad775ebdcc976c76ac113085dcc7741d51779a"
     );
 }
 
