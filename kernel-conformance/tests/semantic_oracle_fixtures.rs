@@ -8,9 +8,7 @@ use forge_memory_bridge::{transform_envelope, ImportProjectionRecord};
 use semantic_memory_forge::{
     ExportClaim, ExportEnvelopeV1, ExportEpisode, ExportRecord, EXPORT_ENVELOPE_V1_SCHEMA,
 };
-use stack_ids::{
-    ClaimId, ClaimVersionId, ContentDigest, EntityId, EnvelopeId, EpisodeId, ScopeKey, TraceCtx,
-};
+use stack_ids::{ClaimId, ClaimVersionId, EntityId, EnvelopeId, EpisodeId, ScopeKey, TraceCtx};
 
 fn golden_v1_envelope() -> ExportEnvelopeV1 {
     let scope = ScopeKey::from_legacy_namespace("semantic-oracle-test");
