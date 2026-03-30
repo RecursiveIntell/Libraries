@@ -1,0 +1,18 @@
+{
+  "audit_mode": "superseded — see STATUS_EVIDENCE_MANIFEST.json",
+  "captured_at": "2026-03-22",
+  "supersession_note": "This scan was run against a prior snapshot. The two hotspot failures reference files that no longer exist. STATUS_EVIDENCE_MANIFEST.json is the current authority.",
+  "current_authority": "STATUS_EVIDENCE_MANIFEST.json",
+  "script_results": [
+    {
+      "status": "superseded",
+      "note": "This scan was run against a prior snapshot. The two hotspot failures reference files that no longer exist. STATUS_EVIDENCE_MANIFEST.json is the current authority."
+    }
+  ],
+  "metrics": {
+    "supersession_note": "Metrics from the prior snapshot are superseded. Current gate truth lives in STATUS_EVIDENCE_MANIFEST.json.",
+    "current_hotspots": {},
+    "duplicate_public_type_names_allowlisted": 0,
+    "doc_coverage": "see STATUS_EVIDENCE_MANIFEST.json for current coverage"
+  }
+}

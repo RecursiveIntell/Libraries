@@ -1,0 +1,26 @@
+{
+  "schema_version": "EffectIntentV1",
+  "effect_intent_id": "fxi_001",
+  "effect_class": "external_write",
+  "target_surface": "ticketing/api",
+  "intended_outcome": "apply approved configuration change",
+  "initiating_artifact_refs": [
+    "episode:ep_100",
+    "plan:pl_200"
+  ],
+  "required_capability_class": "cap_change_window",
+  "allowed_scope": "project:alpha",
+  "blast_radius_ceiling": "single-tenant",
+  "reversibility_class": "compensatable",
+  "idempotency_key": "idem_001",
+  "execution_window_id": "fxw_001",
+  "observability_obligation_refs": [
+    "obs:latency",
+    "obs:error_budget"
+  ],
+  "approval_refs": [
+    "approval:chg_881"
+  ],
+  "run_mode": "live",
+  "publication_status": "required"
+}

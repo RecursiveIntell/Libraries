@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "IncidentSeverityV1": {
+      "enum": [
+        "sev1",
+        "sev2",
+        "sev3",
+        "sev4"
+      ],
+      "type": "string"
+    },
+    "SeverityRuleV1": {
+      "properties": {
+        "condition": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/definitions/IncidentSeverityV1"
+        }
+      },
+      "required": [
+        "condition",
+        "severity"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "customer_impact_rubric": {
+      "type": "string"
+    },
+    "internal_impact_rubric": {
+      "type": "string"
+    },
+    "override_rule": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "severity_matrix_id": {
+      "type": "string"
+    },
+    "severity_rules": {
+      "items": {
+        "$ref": "#/definitions/SeverityRuleV1"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "customer_impact_rubric",
+    "internal_impact_rubric",
+    "override_rule",
+    "schema_version",
+    "severity_matrix_id"
+  ],
+  "title": "SeverityMatrixV1",
+  "type": "object"
+}

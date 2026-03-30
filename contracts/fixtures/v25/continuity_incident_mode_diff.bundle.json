@@ -1,0 +1,205 @@
+{
+  "fixture_name": "continuity_incident_mode_diff",
+  "wave": "v25",
+  "artifacts": {
+    "EffectiveConstitutionFromV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-203-from",
+      "applicability_context_ref": "applicability-context-203",
+      "profile_set_ref": "profile-set-203-normal",
+      "composition_rule_set_ref": "composition-rule-set-203",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "continuity-policy-profile-001",
+        "pager-route-profile-007"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "normal",
+      "hard_block_summary": [],
+      "active_warning_summary": [],
+      "approval_requirements": [],
+      "disclosure_obligations": [],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "latency_p95"
+      ],
+      "continuity_obligations": [
+        "pager_route:normal",
+        "escalation_ttl:30"
+      ],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [],
+      "valid_as_of": "2026-03-16T18:00:00Z",
+      "recorded_as_of": "2026-03-16T18:00:02Z",
+      "explanation_summary": "normal operating mode"
+    },
+    "CompiledObligationSetFromV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-203-from",
+      "effective_constitution_ref": "effective-constitution-203-from",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-203a",
+          "obligation_family": "continuity.escalation_ttl_minutes",
+          "obligation_key": "escalation_ttl",
+          "output_kind": "continuity",
+          "fold_class": "min_of_maxima",
+          "numeric_value": 30,
+          "blocking": false,
+          "source_profile_refs": [
+            "continuity-policy-profile-001"
+          ],
+          "source_exception_refs": [],
+          "explanation": "normal incident escalation ttl"
+        }
+      ],
+      "block_entries": [],
+      "required_approvals": [],
+      "required_checks": [],
+      "required_monitors": [
+        "latency_p95"
+      ],
+      "required_evidence_obligations": [],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [],
+      "promotion_eligibility_summary": "eligible_with_approvals",
+      "release_eligibility_summary": "eligible_with_approvals",
+      "effect_eligibility_summary": "eligible_with_approvals",
+      "unresolved_dependency_refs": []
+    },
+    "EffectiveConstitutionToV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-203-to",
+      "applicability_context_ref": "applicability-context-203",
+      "profile_set_ref": "profile-set-203-incident",
+      "composition_rule_set_ref": "composition-rule-set-203",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "continuity-policy-profile-001",
+        "pager-route-profile-007"
+      ],
+      "admitted_exception_refs": [
+        "profile-exception-bundle-203"
+      ],
+      "current_mode_classification": "incident",
+      "hard_block_summary": [],
+      "active_warning_summary": [
+        "incident_mode_tightening"
+      ],
+      "approval_requirements": [
+        "incident-commander"
+      ],
+      "disclosure_obligations": [],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "latency_p95",
+        "cross_region_replay_monitor"
+      ],
+      "continuity_obligations": [
+        "pager_route:sev1",
+        "escalation_ttl:5",
+        "forensic_freeze_required"
+      ],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [
+        "full_replay_provenance"
+      ],
+      "valid_as_of": "2026-03-16T18:05:00Z",
+      "recorded_as_of": "2026-03-16T18:05:02Z",
+      "explanation_summary": "incident mode tightened continuity posture and monitoring"
+    },
+    "CompiledObligationSetToV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-203-to",
+      "effective_constitution_ref": "effective-constitution-203-to",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-203b",
+          "obligation_family": "continuity.escalation_ttl_minutes",
+          "obligation_key": "escalation_ttl",
+          "output_kind": "continuity",
+          "fold_class": "min_of_maxima",
+          "numeric_value": 5,
+          "blocking": false,
+          "source_profile_refs": [
+            "continuity-policy-profile-001"
+          ],
+          "source_exception_refs": [
+            "profile-exception-bundle-203"
+          ],
+          "explanation": "incident mode tightened escalation ttl"
+        }
+      ],
+      "block_entries": [],
+      "required_approvals": [
+        "incident-commander"
+      ],
+      "required_checks": [],
+      "required_monitors": [
+        "latency_p95",
+        "cross_region_replay_monitor"
+      ],
+      "required_evidence_obligations": [],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [
+        "incident_mode_post_review"
+      ],
+      "promotion_eligibility_summary": "incident_review_required",
+      "release_eligibility_summary": "incident_review_required",
+      "effect_eligibility_summary": "incident_review_required",
+      "unresolved_dependency_refs": []
+    },
+    "PolicyImpactDiffV1": {
+      "schema_version": "PolicyImpactDiffV1",
+      "policy_impact_diff_id": "policy-impact-diff-203",
+      "from_effective_constitution_ref": "effective-constitution-203-from",
+      "to_effective_constitution_ref": "effective-constitution-203-to",
+      "changed_obligation_families": [
+        "continuity.escalation_ttl_minutes",
+        "monitor.required",
+        "continuity.forensic_freeze"
+      ],
+      "unchanged_obligation_families": [],
+      "newly_blocked_paths": [],
+      "newly_admitted_paths": [],
+      "changed_approval_behavior": [
+        "incident-commander"
+      ],
+      "changed_monitoring_behavior": [
+        "cross_region_replay_monitor"
+      ],
+      "changed_disclosure_behavior": [],
+      "changed_residency_behavior": [],
+      "changed_incident_behavior": [
+        "pager_route:sev1",
+        "forensic_freeze_required"
+      ],
+      "migration_consequences": [
+        "escalation clocks tighten",
+        "forensic freeze becomes mandatory"
+      ],
+      "simulation_only": false,
+      "explanation_summary": "switching from normal to incident mode tightened continuity obligations"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schema_version": "retraction_record_v1",
+  "retraction_record_id": "retraction-record-1",
+  "claim_id": "claim-123",
+  "retracted_claim_version_id": "claim-version-5",
+  "superseded_by_claim_version_id": "claim-version-6",
+  "effective_recorded_at": "2026-03-14T12:05:00Z",
+  "reason": "placebo refuter collapsed the estimated effect to approximately zero",
+  "cascade_required": true,
+  "delta_summary": "close tx interval for claim-version-5 and recompute downstream derived views"
+}

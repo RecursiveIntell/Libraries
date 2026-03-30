@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "GeneratedSurfaceGovernanceState": {
+      "enum": [
+        "advisory_baseline",
+        "challenge_pending",
+        "human_vetoed"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "admission_allowed": {
+      "type": "boolean"
+    },
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "generated_conformance_corpus_id": {
+      "type": "string"
+    },
+    "generated_interpreter_bundle_id": {
+      "type": "string"
+    },
+    "generated_migration_plan_id": {
+      "type": "string"
+    },
+    "generated_schema_bundle_id": {
+      "type": "string"
+    },
+    "governance_state": {
+      "$ref": "#/definitions/GeneratedSurfaceGovernanceState"
+    },
+    "human_veto_bundle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "meta_challenge_bundle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "proof_evaluation_receipt_id": {
+      "type": "string"
+    },
+    "rollback_required": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "self_hosting_build_receipt_id": {
+      "type": "string"
+    },
+    "spec_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "admission_allowed",
+    "advisory_only",
+    "generated_at",
+    "generated_conformance_corpus_id",
+    "generated_interpreter_bundle_id",
+    "generated_migration_plan_id",
+    "generated_schema_bundle_id",
+    "governance_state",
+    "proof_evaluation_receipt_id",
+    "rollback_required",
+    "schema_version",
+    "self_hosting_build_receipt_id",
+    "spec_bundle_id"
+  ],
+  "title": "SelfHostingBuildReceiptV1",
+  "type": "object"
+}

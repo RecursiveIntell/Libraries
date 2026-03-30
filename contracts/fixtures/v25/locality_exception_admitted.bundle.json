@@ -1,0 +1,214 @@
+{
+  "fixture_name": "locality_exception_admitted",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-102",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-16T14:00:00Z",
+      "recorded_as_of": "2026-03-16T14:00:05Z",
+      "target_surface_kind": "replay_export",
+      "actor_class": "auditor",
+      "role_refs": [
+        "role:auditor"
+      ],
+      "incident_mode": "incident",
+      "execution_context_ref": "execution-context-102",
+      "admitted_exception_refs": [
+        "profile-exception-bundle-102"
+      ]
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-102",
+      "applicability_context_ref": "applicability-context-102",
+      "profile_refs": {
+        "residency_policy_profile_id": "rpp_001",
+        "cross_boundary_transfer_class_ids": [
+          "cbt_001"
+        ],
+        "continuity_policy_profile_id": "continuity-policy-profile-001"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25",
+        "policy-catalog:payments-prod"
+      ],
+      "omissions": [],
+      "active_exception_refs": [
+        "profile-exception-bundle-102"
+      ],
+      "normalized_profile_order": [
+        "cbt_001",
+        "continuity-policy-profile-001",
+        "rpp_001"
+      ]
+    },
+    "ProfileExceptionBundleV1": {
+      "schema_version": "ProfileExceptionBundleV1",
+      "profile_exception_bundle_id": "profile-exception-bundle-102",
+      "affected_context_refs": [
+        "applicability-context-102"
+      ],
+      "affected_profile_refs": [
+        "rpp_001",
+        "cbt_001"
+      ],
+      "exception_class": "locality_exception",
+      "reason": "incident-scoped forensic replay approved by privacy board",
+      "scope": "incident/replay/eu-west",
+      "starts_at": "2026-03-16T13:30:00Z",
+      "expires_at": "2026-03-17T13:30:00Z",
+      "approval_refs": [
+        "approval:privacy-board-17"
+      ],
+      "residual_obligations": [
+        "encrypt_export",
+        "post_transfer_deletion"
+      ],
+      "added_monitoring_obligations": [
+        "cross_region_replay_monitor"
+      ],
+      "added_post_hoc_review_obligations": [
+        "locality_exception_post_review"
+      ],
+      "replay_expectations": [
+        "full_replay_provenance"
+      ],
+      "cleanup_obligations": [
+        "delete_temp_copy_after_review"
+      ],
+      "compensation_obligations": [],
+      "recorded_at": "2026-03-16T13:31:00Z"
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-102",
+      "applicability_context_ref": "applicability-context-102",
+      "profile_set_ref": "profile-set-102",
+      "composition_rule_set_ref": "composition-rule-set-101",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "cbt_001",
+        "continuity-policy-profile-001",
+        "rpp_001"
+      ],
+      "admitted_exception_refs": [
+        "profile-exception-bundle-102"
+      ],
+      "current_mode_classification": "incident",
+      "hard_block_summary": [],
+      "active_warning_summary": [
+        "incident_mode_active"
+      ],
+      "approval_requirements": [
+        "privacy-board-incident-review"
+      ],
+      "disclosure_obligations": [
+        "cross_boundary_disclosure_class:regulated_audit"
+      ],
+      "residency_obligations": [
+        "eu-west"
+      ],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "cross_region_replay_monitor"
+      ],
+      "continuity_obligations": [
+        "exception_ttl:60"
+      ],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [
+        "full_replay_provenance"
+      ],
+      "valid_as_of": "2026-03-16T14:00:00Z",
+      "recorded_as_of": "2026-03-16T14:00:05Z",
+      "explanation_summary": "incident-scoped locality exception admits one replay path with residual obligations"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-102",
+      "effective_constitution_ref": "effective-constitution-102",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-102a",
+          "obligation_family": "monitor.required",
+          "obligation_key": "incident_exception_monitors",
+          "output_kind": "monitor",
+          "fold_class": "union",
+          "string_values": [
+            "cross_region_replay_monitor"
+          ],
+          "blocking": false,
+          "source_profile_refs": [
+            "profile-exception-bundle-102"
+          ],
+          "source_exception_refs": [
+            "profile-exception-bundle-102"
+          ],
+          "explanation": "exception-added monitoring obligation"
+        },
+        {
+          "obligation_entry_id": "obligation-entry-102b",
+          "obligation_family": "review.post_hoc",
+          "obligation_key": "exception_post_review",
+          "output_kind": "post_hoc_review",
+          "fold_class": "union",
+          "string_values": [
+            "locality_exception_post_review"
+          ],
+          "blocking": false,
+          "source_profile_refs": [
+            "profile-exception-bundle-102"
+          ],
+          "source_exception_refs": [
+            "profile-exception-bundle-102"
+          ],
+          "explanation": "exception-added review obligation"
+        }
+      ],
+      "block_entries": [],
+      "required_approvals": [
+        "privacy-board-incident-review"
+      ],
+      "required_checks": [],
+      "required_monitors": [
+        "cross_region_replay_monitor"
+      ],
+      "required_evidence_obligations": [],
+      "required_disclosure_obligations": [
+        "cross_boundary_disclosure_class:regulated_audit"
+      ],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [
+        "locality_exception_post_review"
+      ],
+      "promotion_eligibility_summary": "incident_review_required",
+      "release_eligibility_summary": "incident_review_required",
+      "effect_eligibility_summary": "incident_review_required",
+      "unresolved_dependency_refs": []
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-102",
+      "applicability_context_ref": "applicability-context-102",
+      "profile_set_ref": "profile-set-102",
+      "composition_rule_set_ref": "composition-rule-set-101",
+      "effective_constitution_ref": "effective-constitution-102",
+      "compiled_obligation_set_ref": "compiled-obligation-set-102",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-102",
+      "replay_handle": "profile-runtime:applicability-context-102:profile-set-102:composition-rule-set-101",
+      "normalized_input_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+      "generated_at": "2026-03-16T14:00:06Z"
+    }
+  }
+}

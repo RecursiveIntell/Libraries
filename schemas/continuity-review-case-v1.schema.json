@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ConstitutionalContextStatus": {
+      "enum": [
+        "missing",
+        "partial",
+        "complete"
+      ],
+      "type": "string"
+    },
+    "ContinuityReviewFinalStateV1": {
+      "enum": [
+        "open_review",
+        "closed"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blocking_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "citation_status": {
+      "$ref": "#/definitions/ConstitutionalContextStatus"
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "continuity_exception_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "continuity_review_case_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "final_state": {
+      "$ref": "#/definitions/ContinuityReviewFinalStateV1"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "monitoring_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "obligation_refs_status": {
+      "$ref": "#/definitions/ConstitutionalContextStatus"
+    },
+    "post_hoc_review_due": {
+      "type": "boolean"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recovery_replay_slice_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "required_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "citation_status",
+    "continuity_review_case_id",
+    "final_state",
+    "incident_case_id",
+    "obligation_refs_status",
+    "post_hoc_review_due",
+    "schema_version"
+  ],
+  "title": "ContinuityReviewCaseV1",
+  "type": "object"
+}

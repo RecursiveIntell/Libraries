@@ -1,0 +1,51 @@
+{
+  "fixture_name": "delegation_revoked",
+  "wave": "v22",
+  "artifacts": {
+    "AuthorityLeaseV1": {
+      "schema_version": "AuthorityLeaseV1",
+      "authority_lease_id": "aul_001",
+      "capability_class_id": "cap_001",
+      "grantor": "person:alice",
+      "grantee": "agent:ops-runner",
+      "scope": "project:alpha",
+      "time_window": "2026-03-15T12:00:00Z/2026-03-15T18:00:00Z",
+      "allowed_effect_families": [
+        "external_write"
+      ],
+      "hard_ceilings": [
+        "single-service",
+        "no-secret-export"
+      ],
+      "revocation_conditions": [
+        "incident_open",
+        "window_expired"
+      ],
+      "required_receipts": [
+        "ActingOnBehalfReceiptV1"
+      ]
+    },
+    "AuthorityChainV1": {
+      "schema_version": "AuthorityChainV1",
+      "authority_chain_id": "auc_001",
+      "local_principal": "agent:ops-runner",
+      "delegated_principals": [
+        "person:alice"
+      ],
+      "external_principals": [],
+      "approval_refs": [
+        "approval:dc_001"
+      ],
+      "current_validity_state": "expired"
+    },
+    "DelegationRevocationV1": {
+      "schema_version": "DelegationRevocationV1",
+      "delegation_revocation_id": "drv_001",
+      "authority_lease_id": "aul_001",
+      "revoked_by": "person:alice",
+      "revocation_reason": "incident_opened",
+      "effective_at": "2026-03-15T12:30:00Z",
+      "supersedes_authority_chain_id": "auc_001"
+    }
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "fixture_name": "delegation_break_glass_depth",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-201",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-16T16:00:00Z",
+      "recorded_as_of": "2026-03-16T16:00:03Z",
+      "target_surface_kind": "effect_commit",
+      "actor_class": "incident_commander",
+      "role_refs": [
+        "role:incident-commander",
+        "role:ops-admin"
+      ],
+      "effect_class": "production_mutation",
+      "incident_mode": "sev1",
+      "execution_context_ref": "execution-context-201",
+      "admitted_exception_refs": [
+        "profile-exception-bundle-201"
+      ]
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-201",
+      "applicability_context_ref": "applicability-context-201",
+      "profile_refs": {
+        "delegation_policy_profile_id": "delegation-policy-profile-001",
+        "effect_policy_profile_id": "effect-policy-profile-001",
+        "approval_matrix_id": "am_001"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25",
+        "policy-catalog:payments-prod"
+      ],
+      "omissions": [],
+      "active_exception_refs": [
+        "profile-exception-bundle-201"
+      ],
+      "normalized_profile_order": [
+        "am_001",
+        "delegation-policy-profile-001",
+        "effect-policy-profile-001"
+      ]
+    },
+    "ProfileExceptionBundleV1": {
+      "schema_version": "ProfileExceptionBundleV1",
+      "profile_exception_bundle_id": "profile-exception-bundle-201",
+      "affected_context_refs": [
+        "applicability-context-201"
+      ],
+      "affected_profile_refs": [
+        "delegation-policy-profile-001"
+      ],
+      "exception_class": "break_glass",
+      "reason": "sev1 payment recovery requires one-time delegation depth extension",
+      "scope": "effect_commit/delegation-depth/incident-201",
+      "starts_at": "2026-03-16T15:55:00Z",
+      "expires_at": "2026-03-16T18:00:00Z",
+      "approval_refs": [
+        "approval:incident-director-7",
+        "approval:risk-ops-12"
+      ],
+      "residual_obligations": [
+        "typed_authority_chain",
+        "dual_control_for_live_cutover"
+      ],
+      "added_monitoring_obligations": [
+        "delegation_exception_monitor"
+      ],
+      "added_post_hoc_review_obligations": [
+        "delegation_break_glass_post_review"
+      ],
+      "replay_expectations": [
+        "receipt_linkage_required"
+      ],
+      "cleanup_obligations": [
+        "revoke_ephemeral_delegation"
+      ],
+      "compensation_obligations": [
+        "open_followup_rca"
+      ],
+      "recorded_at": "2026-03-16T15:56:00Z"
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-201",
+      "applicability_context_ref": "applicability-context-201",
+      "profile_set_ref": "profile-set-201",
+      "composition_rule_set_ref": "composition-rule-set-201",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "am_001",
+        "delegation-policy-profile-001",
+        "effect-policy-profile-001"
+      ],
+      "admitted_exception_refs": [
+        "profile-exception-bundle-201"
+      ],
+      "current_mode_classification": "incident",
+      "hard_block_summary": [],
+      "active_warning_summary": [
+        "delegation_depth_temporarily_extended"
+      ],
+      "approval_requirements": [
+        "incident-director",
+        "risk-ops"
+      ],
+      "disclosure_obligations": [],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "delegation_exception_monitor"
+      ],
+      "continuity_obligations": [
+        "break_glass_ttl:120"
+      ],
+      "effect_obligations": [
+        "live"
+      ],
+      "delegation_obligations": [
+        "delegation_depth:3",
+        "typed_authority_chain"
+      ],
+      "replay_obligations": [
+        "receipt_linkage_required"
+      ],
+      "valid_as_of": "2026-03-16T16:00:00Z",
+      "recorded_as_of": "2026-03-16T16:00:03Z",
+      "explanation_summary": "sev1 break-glass exception admitted a one-time delegation depth increase with dual-control residual obligations"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-201",
+      "effective_constitution_ref": "effective-constitution-201",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-201a",
+          "obligation_family": "delegation.max_depth",
+          "obligation_key": "delegation_depth",
+          "output_kind": "delegation",
+          "fold_class": "min_of_maxima",
+          "numeric_value": 3,
+          "blocking": false,
+          "source_profile_refs": [
+            "delegation-policy-profile-001"
+          ],
+          "source_exception_refs": [
+            "profile-exception-bundle-201"
+          ],
+          "explanation": "break-glass exception widened one delegation cap temporarily"
+        }
+      ],
+      "block_entries": [],
+      "required_approvals": [
+        "incident-director",
+        "risk-ops"
+      ],
+      "required_checks": [
+        "authority-chain-integrity"
+      ],
+      "required_monitors": [
+        "delegation_exception_monitor"
+      ],
+      "required_evidence_obligations": [],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [
+        "revoke_ephemeral_delegation"
+      ],
+      "required_compensation_obligations": [
+        "open_followup_rca"
+      ],
+      "required_post_hoc_review_obligations": [
+        "delegation_break_glass_post_review"
+      ],
+      "promotion_eligibility_summary": "eligible_with_break_glass_approvals",
+      "release_eligibility_summary": "eligible_with_break_glass_approvals",
+      "effect_eligibility_summary": "eligible_with_break_glass_approvals",
+      "unresolved_dependency_refs": []
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-201",
+      "applicability_context_ref": "applicability-context-201",
+      "profile_set_ref": "profile-set-201",
+      "composition_rule_set_ref": "composition-rule-set-201",
+      "effective_constitution_ref": "effective-constitution-201",
+      "compiled_obligation_set_ref": "compiled-obligation-set-201",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-201",
+      "replay_handle": "profile-runtime:applicability-context-201:profile-set-201:composition-rule-set-201",
+      "normalized_input_digest": "2012012012012012012012012012012012012012012012012012012012012012",
+      "generated_at": "2026-03-16T16:00:05Z"
+    }
+  }
+}

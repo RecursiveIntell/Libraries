@@ -1,0 +1,70 @@
+{
+  "fixture_name": "release_happy_path",
+  "wave": "v23",
+  "artifacts": {
+    "DeploymentProfileV1": {
+      "schema_version": "DeploymentProfileV1",
+      "deployment_profile_id": "dpf_001",
+      "system_name": "alpha-service",
+      "deployment_environment": "prod-us-central",
+      "criticality_class": "high",
+      "operating_envelope_id": "oen_001",
+      "assurance_case_id": "asc_001",
+      "publication_status": "required"
+    },
+    "OperatingEnvelopeV1": {
+      "schema_version": "OperatingEnvelopeV1",
+      "operating_envelope_id": "oen_001",
+      "allowed_regions": [
+        "us-central1",
+        "us-east1"
+      ],
+      "traffic_ceiling": "500rps",
+      "data_class_ceiling": "internal",
+      "dependency_constraints": [
+        "db version >= 14",
+        "feature flag safe-mode off"
+      ],
+      "degradation_behavior": "rollback_and_pause"
+    },
+    "AssuranceCaseV1": {
+      "schema_version": "AssuranceCaseV1",
+      "assurance_case_id": "asc_001",
+      "claim_summary": "deployment meets safety and reliability bar",
+      "evidence_refs": [
+        "test:integration_771",
+        "proof:budget_882"
+      ],
+      "argument_structure": "hazard -> control -> evidence",
+      "open_obligations": [
+        "monitor post-deploy error rate"
+      ],
+      "ready_for_release": true
+    },
+    "HazardRegisterV1": {
+      "schema_version": "HazardRegisterV1",
+      "hazard_register_id": "hzr_001",
+      "deployment_profile_id": "dpf_001",
+      "hazards": [
+        "bad migration",
+        "latency regression"
+      ],
+      "severity_class": "major",
+      "owner_ref": "team:reliability",
+      "last_reviewed_at": "2026-03-15T11:00:00Z"
+    },
+    "ReleaseReadinessDecisionV1": {
+      "schema_version": "ReleaseReadinessDecisionV1",
+      "release_readiness_decision_id": "rrd_001",
+      "deployment_profile_id": "dpf_001",
+      "decision_state": "approved_with_monitoring",
+      "blocking_gaps": [],
+      "required_monitors": [
+        "error_budget",
+        "latency_p95"
+      ],
+      "advisory_only": false,
+      "generated_at": "2026-03-15T12:03:00Z"
+    }
+  }
+}

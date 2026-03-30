@@ -1,0 +1,13 @@
+{
+  "schema_version": "experiment_case_v1",
+  "experiment_case_id": "exp-case-2026-03-14-001",
+  "intervention_id": "intervention-2026-03-14-alpha",
+  "outcome_schema_id": "outcome-latency-regression",
+  "cohort_contract_id": "cohort-core-contradictions",
+  "comparability_matrix_id": "comparability-2026-03-14-a",
+  "refuter_suite_id": "refuter-suite-core-causal",
+  "experiment_budget_id": "exp-budget-medium",
+  "risk_class": "promotion_adjacent",
+  "lifecycle_state": "scheduled",
+  "final_disposition": "pending"
+}

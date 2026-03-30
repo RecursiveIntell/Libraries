@@ -1,0 +1,16 @@
+{
+  "fit_run": {
+    "schema_version": "fit_run_v1",
+    "fit_run_id": "fit-v17-failure",
+    "mechanism_bundle_id": "mechanism-v17-1",
+    "theory_version_id": "theory-v17-2",
+    "simulation_contract_id": "simulation-v17-1",
+    "fit_score": 0.95,
+    "disposition": "promotion_blocked_missing_refuter",
+    "advisory_only": true,
+    "degraded": true,
+    "refuter_present": false,
+    "notes": ["promotion blocked until a typed refuter suite exists"],
+    "generated_at": "2026-03-14T00:00:00Z"
+  }
+}

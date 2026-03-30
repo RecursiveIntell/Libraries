@@ -1,0 +1,12 @@
+{
+  "schema_version": "ContainmentDecisionV1",
+  "containment_decision_id": "ctd_001",
+  "incident_case_id": "inc_001",
+  "decision": "rollback_and_freeze",
+  "justification": "protect error budget",
+  "approved_by": [
+    "person:oncall-1",
+    "person:manager-1"
+  ],
+  "generated_at": "2026-03-15T12:34:00Z"
+}

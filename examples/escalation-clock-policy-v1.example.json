@@ -1,0 +1,29 @@
+{
+  "schema_version": "EscalationClockPolicyV1",
+  "escalation_clock_policy_id": "ecp_001",
+  "severity_matrix_id": "sm_001",
+  "response_clock_minutes": [
+    {
+      "severity": "sev1",
+      "minutes": 5
+    },
+    {
+      "severity": "sev2",
+      "minutes": 15
+    }
+  ],
+  "postmortem_clock_hours": [
+    {
+      "severity": "sev1",
+      "hours": 72
+    },
+    {
+      "severity": "sev2",
+      "hours": 120
+    }
+  ],
+  "pause_rules": [
+    "pause_only_during_declared_external_outage"
+  ],
+  "exception_path": "incident-governance-review"
+}

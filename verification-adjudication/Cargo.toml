@@ -1,0 +1,18 @@
+[package]
+name = "verification-adjudication"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Canonical verification disposition, promotion, refutation, and rollback decisions"
+license = "MIT"
+
+[dependencies]
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+stack-ids = { path = "../stack-ids" }
+verification-calibration = { path = "../verification-calibration" }
+verification-control = { path = "../verification-control" }
+verification-policy = { path = "../verification-policy" }
+
+[dev-dependencies]
+serde_json = { workspace = true }

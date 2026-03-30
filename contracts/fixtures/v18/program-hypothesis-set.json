@@ -1,0 +1,8 @@
+{
+  "program_hypothesis_set": {
+    "schema_version": "program_hypothesis_set_v1",
+    "discovery_program_id": "discovery-v18-3",
+    "hypothesis_refs": ["hypothesis:uncertainty-frontier", "hypothesis:review-bottleneck"],
+    "horizon_only": false
+  }
+}

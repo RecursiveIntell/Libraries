@@ -1,0 +1,15 @@
+{
+  "schema_version": "composition_conflict_runtime_view_v1",
+  "composition_conflict_set_id": "composition-conflict-set-001",
+  "effective_constitution_id": "effective-constitution-002",
+  "blocking": true,
+  "conflict_keys": [
+    "disclosure.export_format:export_package_format"
+  ],
+  "review_paths": [
+    "human_constitution_review"
+  ],
+  "admissible_exception_classes": [
+    "disclosure_exception"
+  ]
+}

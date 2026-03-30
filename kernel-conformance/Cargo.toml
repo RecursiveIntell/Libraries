@@ -1,0 +1,36 @@
+[package]
+name = "kernel-conformance"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Conformance harness for recursive inference kernel authority, compiler, and oracle gates"
+license = "MIT"
+
+[dependencies]
+chrono = { workspace = true }
+constitutional-memory = { path = "../constitutional-memory" }
+constraint-compiler = { path = "../constraint-compiler" }
+discovery-portfolio = { path = "../discovery-portfolio" }
+federated-settlement = { path = "../federated-settlement" }
+forge-memory-bridge = { path = "../forge-memory-bridge" }
+knowledge-runtime = { path = "../knowledge-runtime" }
+kernel-execution = { path = "../kernel-execution" }
+kernel-oracles = { path = "../kernel-oracles" }
+mechanism-runtime = { path = "../mechanism-runtime" }
+recursive-kernel-core = { path = "../recursive-kernel-core" }
+semantic-memory = { path = "../semantic-memory" }
+semantic-memory-forge = { path = "../semantic-memory-forge" }
+spec-execution = { path = "../spec-execution" }
+verification-adjudication = { path = "../verification-adjudication" }
+verification-calibration = { path = "../verification-calibration" }
+verification-control = { path = "../verification-control" }
+verification-policy = { path = "../verification-policy" }
+serde_json = { workspace = true }
+stack-ids = { path = "../stack-ids" }
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+
+[dev-dependencies]
+forge-engine = { path = "../living-memory/living-memory" }
+forge-pilot = { path = "../forge-pilot" }
+proptest = { workspace = true }

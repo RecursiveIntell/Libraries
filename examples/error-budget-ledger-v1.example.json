@@ -1,0 +1,9 @@
+{
+  "schema_version": "ErrorBudgetLedgerV1",
+  "error_budget_ledger_id": "ebl_001",
+  "service_level_profile_id": "slp_001",
+  "window": "2026-03",
+  "budget_consumed_percent": 12.5,
+  "remaining_budget_percent": 87.5,
+  "last_updated_at": "2026-03-15T11:59:00Z"
+}

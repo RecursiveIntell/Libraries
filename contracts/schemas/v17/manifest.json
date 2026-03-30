@@ -1,0 +1,16 @@
+{
+  "wave": "v17",
+  "owner_crate": "mechanism-runtime",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "mechanism-bundle-v1.schema.json",
+    "theory-version-v1.schema.json",
+    "theory-library-v1.schema.json",
+    "hypothesis-library-v1.schema.json",
+    "simulation-contract-v1.schema.json",
+    "fit-run-v1.schema.json",
+    "theory-refuter-suite-v1.schema.json",
+    "rollout-stability-report-v1.schema.json"
+  ],
+  "truth_note": "Mechanism surfaces are typed scaffolds; fit runs stay advisory and now block explicitly on missing refuters or unstable rollout reports."
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "remote_oracle_lease_v1",
+  "remote_oracle_lease_id": "lease-2026-03-14-01",
+  "oracle_identity": "oracle.example/region-a",
+  "allowed_artifact_families": [
+    "remote_slice_request_v1",
+    "remote_slice_result_v1"
+  ],
+  "allowed_graph_or_slice_kinds": [
+    "bounded_exact_contradiction_slice"
+  ],
+  "exactness_class_ceiling": "bounded_exact",
+  "budget_ceiling": "medium",
+  "disclosure_ceiling": "redacted_structured_only",
+  "replay_obligation": "must_return_replay_ticket_or_nonreplayable_reason",
+  "lease_expiry": "2026-03-21T00:00:00Z",
+  "policy_owner_refs": [
+    "policy-snapshot-7"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-03-24",
+  "repo_snapshot": "libraries-source-clean-20260324.zip",
+  "pack_name": "constitutional_combat_strength_pack_20260324",
+  "files": [
+    "00_README.md",
+    "01_SOURCE_BASIS_AND_RECONCILIATION.md",
+    "02_MASTER_ISSUE_MATRIX.md",
+    "MASTER_ISSUE_MATRIX.json",
+    "MASTER_ISSUE_MATRIX.csv",
+    "MASTER_ISSUE_MATRIX.xlsx",
+    "03_IMPLEMENTATION_PLAYBOOK.md",
+    "04_TEST_AND_CONFORMANCE_PLAN.md",
+    "05_CRATE_BOUNDARY_AND_OWNER_MAP.md",
+    "06_EXACT_FILE_TOUCH_MAP.md",
+    "07_RELEASE_GATES_AND_ACCEPTANCE.md",
+    "08_RISK_REGISTER_AND_FORBIDDEN_SHORTCUTS.md",
+    "09_STATUS_DASHBOARD.md",
+    "10_CLAUDE_APPENDIX_TEMPLATE.md",
+    "AGENTS.md",
+    "PROMPT.md",
+    "PACK_MANIFEST.json"
+  ],
+  "lane_counts": {
+    "current-live-blocker": 6,
+    "current-live-hardening": 8,
+    "full-spec-gap": 6,
+    "reconciled-stale": 5
+  },
+  "priority_counts": {
+    "P0": 6,
+    "P1": 7,
+    "P2": 7
+  },
+  "wave_counts": {
+    "W1": 2,
+    "W2": 2,
+    "W3": 4,
+    "W4": 6,
+    "W5": 4,
+    "W6": 2,
+    "reconciled": 5
+  }
+}

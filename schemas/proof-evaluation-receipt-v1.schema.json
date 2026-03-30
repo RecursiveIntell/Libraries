@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "admission_allowed": {
+      "type": "boolean"
+    },
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "evaluated_at": {
+      "type": "string"
+    },
+    "generated_schema_bundle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "proof_evaluation_receipt_id": {
+      "type": "string"
+    },
+    "proof_obligation_set_id": {
+      "type": "string"
+    },
+    "satisfied_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "unsatisfied_blocking_obligations": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "admission_allowed",
+    "advisory_only",
+    "evaluated_at",
+    "proof_evaluation_receipt_id",
+    "proof_obligation_set_id",
+    "satisfied_count",
+    "schema_version"
+  ],
+  "title": "ProofEvaluationReceiptV1",
+  "type": "object"
+}

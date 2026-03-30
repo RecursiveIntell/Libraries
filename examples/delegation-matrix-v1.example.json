@@ -1,0 +1,25 @@
+{
+  "schema_version": "DelegationMatrixV1",
+  "delegation_matrix_id": "dm_001",
+  "allowed_edges": [
+    {
+      "from_role": "release-manager",
+      "to_role": "service-owner",
+      "capability": "release_approve"
+    },
+    {
+      "from_role": "ops-manager",
+      "to_role": "incident-commander",
+      "capability": "containment_authorize"
+    }
+  ],
+  "max_delegation_depth": 2,
+  "required_lease_classes": [
+    "bounded_time",
+    "bounded_scope"
+  ],
+  "forbidden_chain_patterns": [
+    "same_person_request_and_approve",
+    "cross_tenant_effect_without_dual_control"
+  ]
+}

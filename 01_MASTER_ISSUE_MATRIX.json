@@ -1,0 +1,21 @@
+{
+  "version": "v27",
+  "generated_at": "2026-03-25T00:00:00Z",
+  "source": "libraries-source-clean-20260325.zip",
+  "issues": [
+    {"id": "GOV-001", "severity": "P0", "category": "governance_integration", "title": "Zero governance crate integration into forge-pilot OODA loop", "crates": ["forge-pilot","assurance-runtime","attestation-exchange","authority-delegation","constitutional-memory","continuity-runtime","effect-runtime","mechanism-runtime"], "status": "open"},
+    {"id": "GOV-002", "severity": "P0", "category": "workspace_integrity", "title": "Missing constraint-compiler and profile-runtime from workspace", "crates": ["constraint-compiler","profile-runtime"], "status": "open"},
+    {"id": "GOV-003", "severity": "P0", "category": "administrative", "title": "SAM.gov registration incomplete", "crates": [], "status": "open"},
+    {"id": "ERR-001", "severity": "P1", "category": "error_handling", "title": "200+ unwrap() calls in production code across certified lane", "crates": ["semantic-memory-forge","kernel-conformance","knowledge-runtime","stack-ids","semantic-memory","llm-tool-runtime","forge-memory-bridge","contract-schema-gen","kernel-oracles","recursive-kernel-core"], "status": "open"},
+    {"id": "ERR-002", "severity": "P1", "category": "error_handling", "title": "Governance crates use string errors instead of typed errors", "crates": ["assurance-runtime","attestation-exchange","authority-delegation","constitutional-memory","mechanism-runtime"], "status": "open"},
+    {"id": "TST-001", "severity": "P1", "category": "test_coverage", "title": "llm-tool-runtime has only 3 tests", "crates": ["llm-tool-runtime"], "status": "open"},
+    {"id": "TST-002", "severity": "P1", "category": "test_coverage", "title": "verification-calibration has only 2 tests", "crates": ["verification-calibration"], "status": "open"},
+    {"id": "TST-003", "severity": "P1", "category": "test_coverage", "title": "recursive-kernel-core has only 3 tests", "crates": ["recursive-kernel-core"], "status": "open"},
+    {"id": "DOC-001", "severity": "P1", "category": "documentation", "title": "Governance crates lack integration documentation", "crates": ["assurance-runtime","attestation-exchange","authority-delegation","constitutional-memory","continuity-runtime","effect-runtime","mechanism-runtime"], "status": "open"},
+    {"id": "DEBT-001", "severity": "P2", "category": "code_quality", "title": "forge-pilot loop_runner.rs is 987 lines", "crates": ["forge-pilot"], "status": "open"},
+    {"id": "DEBT-002", "severity": "P2", "category": "error_handling", "title": "expect() calls in verification-policy and verification-adjudication", "crates": ["verification-policy","verification-adjudication"], "status": "open"},
+    {"id": "DEBT-003", "severity": "P2", "category": "error_handling", "title": "kernel-conformance uses 38 unwraps + 13 expects", "crates": ["kernel-conformance"], "status": "open"},
+    {"id": "DEBT-004", "severity": "P2", "category": "schema_completeness", "title": "contract-schema-gen should include governance crate schemas", "crates": ["contract-schema-gen"], "status": "open"},
+    {"id": "DEBT-005", "severity": "P2", "category": "benchmark_coverage", "title": "Stack Arena stack_governed lane unsupported for 5/8 scenarios", "crates": [], "status": "open"}
+  ]
+}

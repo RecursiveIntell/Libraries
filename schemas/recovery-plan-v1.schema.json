@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "approved_at": {
+      "type": "string"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "owner_ref": {
+      "type": "string"
+    },
+    "recovery_plan_id": {
+      "type": "string"
+    },
+    "recovery_steps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "success_criteria": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "approved_at",
+    "incident_case_id",
+    "owner_ref",
+    "recovery_plan_id",
+    "recovery_steps",
+    "schema_version",
+    "success_criteria"
+  ],
+  "title": "RecoveryPlanV1",
+  "type": "object"
+}

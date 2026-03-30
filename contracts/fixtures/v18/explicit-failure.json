@@ -1,0 +1,19 @@
+{
+  "campaign_decision_trace": {
+    "schema_version": "campaign_decision_trace_v1",
+    "campaign_decision_trace_id": "trace-v18-failure",
+    "portfolio_plan_id": "plan-v18-2",
+    "discovery_program_id": "discovery-v18-1",
+    "verification_load_budget_id": "budget-v18-2",
+    "decisions": [
+      {
+        "campaign_id": "campaign-v18-1",
+        "decision": "pause_budget_exhausted",
+        "rationale": "verification budget is exhausted, so the program pauses explicitly"
+      }
+    ],
+    "advisory_only": true,
+    "degraded": true,
+    "generated_at": "2026-03-14T00:00:00Z"
+  }
+}

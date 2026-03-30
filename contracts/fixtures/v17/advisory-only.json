@@ -1,0 +1,10 @@
+{
+  "theory_version": {
+    "schema_version": "theory_version_v1",
+    "theory_version_id": "theory-v17-3",
+    "mechanism_bundle_id": "mechanism-v17-1",
+    "theory_name": "horizon-theory",
+    "semantic_version": "0.2.0-horizon",
+    "advisory_only": true
+  }
+}

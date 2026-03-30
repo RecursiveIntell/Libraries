@@ -1,0 +1,12 @@
+{
+  "amendment_decision": {
+    "schema_version": "amendment_decision_v1",
+    "amendment_decision_id": "decision-v19-2",
+    "amendment_proposal_id": "amendment-v19-2",
+    "disposition": "blocked_missing_rollback",
+    "unresolved_obligations": ["publish rollback handle", "emit archive manifest"],
+    "advisory_only": true,
+    "rollback_ready": false,
+    "decided_at": "2026-03-14T00:00:00Z"
+  }
+}

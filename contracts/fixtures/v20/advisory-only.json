@@ -1,0 +1,8 @@
+{
+  "human_veto_bundle": {
+    "schema_version": "human_veto_bundle_v1",
+    "human_veto_bundle_id": "veto-v20-1",
+    "generated_schema_bundle_id": "generated-v20-1",
+    "reason": "generated outputs remain advisory until human admission"
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "PromotionClass": {
+      "enum": [
+        "p0",
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "type": "string"
+    },
+    "ReversibilityClass": {
+      "enum": [
+        "reversible_local",
+        "reversible_scoped",
+        "requires_supersession",
+        "requires_authority_workflow"
+      ],
+      "type": "string"
+    },
+    "RollbackScopeV1": {
+      "enum": [
+        "none",
+        "local_derived_only",
+        "projection_scope",
+        "authority_escalation_required"
+      ],
+      "type": "string"
+    },
+    "VerificationDisposition": {
+      "enum": [
+        "eligible_for_promotion",
+        "advisory_only",
+        "blocked_by_policy",
+        "pending_approval",
+        "refuted",
+        "degraded_no_promotion",
+        "budget_exhausted",
+        "failed"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "approval_basis": {
+      "type": "string"
+    },
+    "case_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "control_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "disposition": {
+      "$ref": "#/definitions/VerificationDisposition"
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_sufficiency_summary": {
+      "type": "string"
+    },
+    "policy_decision_id": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "promotable": {
+      "type": "boolean"
+    },
+    "promotion_class": {
+      "$ref": "#/definitions/PromotionClass"
+    },
+    "reasons": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "reversibility_class": {
+      "$ref": "#/definitions/ReversibilityClass"
+    },
+    "rollback_scope": {
+      "$ref": "#/definitions/RollbackScopeV1"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approval_basis",
+    "case_id",
+    "decision_id",
+    "disposition",
+    "evidence_sufficiency_summary",
+    "policy_decision_id",
+    "promotable",
+    "promotion_class",
+    "reversibility_class",
+    "rollback_scope",
+    "schema_version"
+  ],
+  "title": "PromotionDecision",
+  "type": "object"
+}

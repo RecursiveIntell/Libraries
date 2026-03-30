@@ -1,0 +1,20 @@
+[package]
+name = "forge-policy-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+forge-policy = { path = ".." }
+libfuzzer-sys = "0.4"
+tempfile = "3"
+
+[[bin]]
+name = "policy_surfaces"
+path = "fuzz_targets/policy_surfaces.rs"
+test = false
+doc = false
+bench = false

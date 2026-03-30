@@ -1,0 +1,33 @@
+{
+  "schema_version": "decision_trace_v1",
+  "decision_trace_id": "decision-trace-2026-03-14-01",
+  "triggering_artifact_refs": [
+    "exp-case-2026-03-14-001",
+    "refuter-result-2026-03-14-01"
+  ],
+  "intervention_id": "intervention-2026-03-14-alpha",
+  "counterfactual_slice_id": "cf-slice-2026-03-14-01",
+  "refuters_satisfied": [
+    "negative_control",
+    "subset_stability"
+  ],
+  "refuters_failed": [],
+  "refuters_skipped": [
+    "human_review_pending"
+  ],
+  "exactness_spend": "medium",
+  "policy_basis": [
+    "policy-snapshot-7",
+    "approval-record-9"
+  ],
+  "selected_decision": "canary_only",
+  "rollback_prerequisites": [
+    "emit rollback trigger receipt",
+    "retain replay ticket"
+  ],
+  "cheap_next_checks": [
+    "placebo rerun",
+    "one human review",
+    "bounded exact on top-3 contradictions"
+  ]
+}

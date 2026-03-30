@@ -1,0 +1,9 @@
+{
+  "shared_view_downgrade": {
+    "schema_version": "shared_view_downgrade_v1",
+    "shared_view_downgrade_id": "downgrade-v16-1",
+    "reason": "missing_required_replay",
+    "detail": "one participant cannot supply the replay handle for bounded settlement",
+    "preserves_local_dissent": true
+  }
+}

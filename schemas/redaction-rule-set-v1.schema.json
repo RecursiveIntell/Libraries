@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DisclosureBudgetClassV1": {
+      "enum": [
+        "limited_support_export",
+        "regulator_export"
+      ],
+      "type": "string"
+    },
+    "RedactionApprovalRequirementV1": {
+      "enum": [
+        "privacy-review"
+      ],
+      "type": "string"
+    },
+    "RedactionFieldActionV1": {
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "field"
+      ],
+      "type": "object"
+    },
+    "RedactionReversibilityClassV1": {
+      "enum": [
+        "operator_reversible_only"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "approval_requirement": {
+      "$ref": "#/definitions/RedactionApprovalRequirementV1"
+    },
+    "default_disclosure_budget_class": {
+      "$ref": "#/definitions/DisclosureBudgetClassV1"
+    },
+    "field_actions": {
+      "items": {
+        "$ref": "#/definitions/RedactionFieldActionV1"
+      },
+      "type": "array"
+    },
+    "redaction_rule_set_id": {
+      "type": "string"
+    },
+    "reversibility_class": {
+      "$ref": "#/definitions/RedactionReversibilityClassV1"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "target_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "approval_requirement",
+    "default_disclosure_budget_class",
+    "redaction_rule_set_id",
+    "reversibility_class",
+    "schema_version"
+  ],
+  "title": "RedactionRuleSetV1",
+  "type": "object"
+}

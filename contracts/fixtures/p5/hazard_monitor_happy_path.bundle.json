@@ -1,0 +1,57 @@
+{
+  "fixture_name": "hazard_monitor_happy_path",
+  "wave": "p5",
+  "artifacts": {
+    "HazardLibraryV1": {
+      "schema_version": "HazardLibraryV1",
+      "hazard_library_id": "hl_001",
+      "sector": "payments",
+      "hazard_families": [
+        "availability_regression",
+        "cross_tenant_data_leak",
+        "delayed_compensation"
+      ],
+      "scoring_model_ref": "hazard-model:payments-v2",
+      "linked_operating_envelopes": [
+        "oe_001",
+        "oe_002"
+      ]
+    },
+    "HazardScenarioV1": {
+      "schema_version": "HazardScenarioV1",
+      "hazard_scenario_id": "hs_001",
+      "hazard_library_id": "hl_001",
+      "trigger_conditions": [
+        "unexpected retry amplification",
+        "error_budget_drop>20%",
+        "failed compensation path"
+      ],
+      "affected_surfaces": [
+        "payments-api",
+        "settlement-worker"
+      ],
+      "severity_baseline": "sev1",
+      "required_monitor_refs": [
+        "mc_001:retry-burn",
+        "mc_001:error-budget"
+      ]
+    },
+    "MonitorCatalogV1": {
+      "schema_version": "MonitorCatalogV1",
+      "monitor_catalog_id": "mc_001",
+      "monitor_definitions": [
+        {
+          "monitor": "retry-burn",
+          "threshold": "attempt_family_retry_burn>3x_baseline"
+        },
+        {
+          "monitor": "error-budget",
+          "threshold": "remaining_budget<30%"
+        }
+      ],
+      "evaluation_cadence": "5m",
+      "false_positive_budget": "moderate",
+      "owner_ref": "team:reliability"
+    }
+  }
+}

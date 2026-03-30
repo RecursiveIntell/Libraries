@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "approval_basis": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string"
+    },
+    "approver_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dual_control_approval_id": {
+      "type": "string"
+    },
+    "independence_verified": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approval_basis",
+    "approved_at",
+    "approver_refs",
+    "dual_control_approval_id",
+    "independence_verified",
+    "schema_version"
+  ],
+  "title": "DualControlApprovalV1",
+  "type": "object"
+}

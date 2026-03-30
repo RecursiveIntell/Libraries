@@ -1,0 +1,66 @@
+[package]
+name = "forge-pilot"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Closed-loop orchestrator over runtime advisories, kernel oracles, and canonical Forge export/import lanes"
+license = "MIT"
+
+[lib]
+doctest = false
+
+[features]
+# GOV-007: Default build includes core orchestration WITHOUT governance crates.
+# Enable `governance` feature for constitutional/assurance/attestation stack.
+# The default execution surface is: constraint-compiler, forge-engine, kernel-*,
+# knowledge-runtime, semantic-memory, verification-*, and stack-ids.
+default = ["governance"]
+governance = [
+    "dep:assurance-runtime",
+    "dep:attestation-exchange",
+    "dep:authority-delegation",
+    "dep:constitutional-memory",
+    "dep:continuity-runtime",
+    "dep:effect-runtime",
+    "dep:mechanism-runtime",
+]
+
+[dependencies]
+assurance-runtime = { path = "../assurance-runtime", optional = true }
+attestation-exchange = { path = "../attestation-exchange", optional = true }
+authority-delegation = { path = "../authority-delegation", optional = true }
+constitutional-memory = { path = "../constitutional-memory", optional = true }
+continuity-runtime = { path = "../continuity-runtime", optional = true }
+effect-runtime = { path = "../effect-runtime", optional = true }
+mechanism-runtime = { path = "../mechanism-runtime", optional = true }
+constraint-compiler = { path = "../constraint-compiler" }
+forge-engine = { path = "../living-memory/living-memory" }
+forge-memory-bridge = { path = "../forge-memory-bridge" }
+kernel-execution = { path = "../kernel-execution" }
+kernel-oracles = { path = "../kernel-oracles" }
+knowledge-runtime = { path = "../knowledge-runtime" }
+recursive-kernel-core = { path = "../recursive-kernel-core" }
+semantic-memory = { path = "../semantic-memory" }
+semantic-memory-forge = { path = "../semantic-memory-forge" }
+verification-adjudication = { path = "../verification-adjudication" }
+verification-calibration = { path = "../verification-calibration" }
+verification-control = { path = "../verification-control" }
+verification-policy = { path = "../verification-policy" }
+schemars = { workspace = true }
+stack-ids = { path = "../stack-ids" }
+chrono = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt", "time"] }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4", "serde"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rusqlite = { workspace = true }
+
+[dev-dependencies]
+llm-tool-runtime = { path = "../llm-tool-runtime" }
+semantic-memory = { path = "../semantic-memory", features = ["testing"] }
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "time"] }
+uuid = { workspace = true, features = ["v4"] }

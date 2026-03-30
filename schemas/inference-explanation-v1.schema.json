@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "batch_id": {
+      "type": "string"
+    },
+    "calibration_caveats": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "causal_refutation_outcome": {
+      "type": "string"
+    },
+    "certificate_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "certificate_node_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "degradation_markers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "degraded_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "execution_mode": {
+      "type": "string"
+    },
+    "graph_hash": {
+      "type": "string"
+    },
+    "minimal_perturbation_outcome": {
+      "type": "string"
+    },
+    "oracle_mode": {
+      "type": "string"
+    },
+    "oracle_supported": {
+      "type": "boolean"
+    },
+    "refutation_outcome": {
+      "type": "string"
+    },
+    "residual_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "residual_micros": {
+      "items": {
+        "format": "uint64",
+        "minimum": 0.0,
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "source_envelope_id": {
+      "type": "string"
+    },
+    "stage_kinds": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "stop_reason": {
+      "type": "string"
+    },
+    "syndrome_signatures": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "witness_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "witness_node_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "batch_id",
+    "calibration_caveats",
+    "causal_refutation_outcome",
+    "certificate_count",
+    "certificate_node_ids",
+    "degradation_markers",
+    "execution_mode",
+    "graph_hash",
+    "minimal_perturbation_outcome",
+    "oracle_mode",
+    "oracle_supported",
+    "refutation_outcome",
+    "residual_count",
+    "residual_micros",
+    "source_envelope_id",
+    "stage_kinds",
+    "stop_reason",
+    "syndrome_signatures",
+    "witness_count",
+    "witness_node_ids"
+  ],
+  "title": "InferenceExplanationV1",
+  "type": "object"
+}

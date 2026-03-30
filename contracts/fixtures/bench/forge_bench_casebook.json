@@ -1,0 +1,110 @@
+{
+  "suite_name": "forge-bench-v21-v22-v23",
+  "generated_for": "DEMO-001 effect -> delegation -> assurance chain",
+  "assessment_mode": "fixture-asserted",
+  "limitation": "Verdicts in this casebook are authored fixture assertions against typed artifact signals, not computed from live model execution.",
+  "inputs": {
+    "demo_bundle": "contracts/fixtures/demo/effect_authority_assurance_release.bundle.json",
+    "v21_fixture": "contracts/fixtures/v21/effect_happy_path.bundle.json",
+    "v22_fixture": "contracts/fixtures/v22/delegated_effect_happy_path.bundle.json",
+    "v23_fixture": "contracts/fixtures/v23/release_happy_path.bundle.json"
+  },
+  "evaluation_mode": "replayable",
+  "baseline_name": "naive_rag_v1",
+  "casebook": [
+    {
+      "case_id": "temporal_correctness",
+      "dimension": "Temporal correctness",
+      "question": "Can the release decision be replayed with a deterministic timeline across v21->v22->v23 without changing its state?",
+      "stack": {
+        "name": "v21-v22-v23 stitched control-plane",
+        "verdict": "pass",
+        "signals": [
+          "release decision timestamp exists",
+          "blocking_gaps is []",
+          "advisory_only is false"
+        ]
+      },
+      "baseline": {
+        "name": "naive_rag_v1",
+        "verdict": "fail",
+        "reason": "no typed continuity across versions"
+      }
+    },
+    {
+      "case_id": "replayability",
+      "dimension": "Replayability",
+      "question": "Can the chain be replayed against explicit artifact IDs and still prove the delegation requirement?",
+      "stack": {
+        "name": "v21-v22-v23 stitched control-plane",
+        "verdict": "pass",
+        "signals": [
+          "v21 execution receipt id flows into v22 acting-on-behalf receipt",
+          "v22 links reference replay requirements",
+          "v23 decision exists with no blocking gaps"
+        ]
+      },
+      "baseline": {
+        "name": "naive_rag_v1",
+        "verdict": "fail",
+        "reason": "cannot enforce cross-wave artifact binding"
+      }
+    },
+    {
+      "case_id": "widening_disclosure",
+      "dimension": "Disclosure honesty",
+      "question": "Are required monitors and obligations explicitly represented for release readiness?",
+      "stack": {
+        "name": "v21-v22-v23 stitched control-plane",
+        "verdict": "pass",
+        "signals": [
+          "required monitors are explicit",
+          "advisory_only is explicit false",
+          "open obligations are inspectable"
+        ]
+      },
+      "baseline": {
+        "name": "naive_rag_v1",
+        "verdict": "pass",
+        "reason": "RAG can paraphrase obligations but not bind to IDs"
+      }
+    },
+    {
+      "case_id": "contradiction_handling",
+      "dimension": "Contradiction handling",
+      "question": "Can the chain detect an intentionally contradictory release payload and fail cleanly?",
+      "stack": {
+        "name": "v21-v22-v23 stitched control-plane",
+        "verdict": "pass",
+        "signals": [
+          "blocking_gaps is empty in canonical happy path",
+          "delegated action is constrained by reduced ceilings"
+        ]
+      },
+      "baseline": {
+        "name": "naive_rag_v1",
+        "verdict": "fail",
+        "reason": "no machine-evaluable contradiction check"
+      }
+    },
+    {
+      "case_id": "verification_yield",
+      "dimension": "Verification yield",
+      "question": "Does the chain produce structured evidence for proof-oriented review?",
+      "stack": {
+        "name": "v21-v22-v23 stitched control-plane",
+        "verdict": "pass",
+        "signals": [
+          "typed artifact bundle",
+          "explicit chain links",
+          "typed decision and witness artifacts"
+        ]
+      },
+      "baseline": {
+        "name": "naive_rag_v1",
+        "verdict": "fail",
+        "reason": "textual answer is not replayable evidence"
+      }
+    }
+  ]
+}

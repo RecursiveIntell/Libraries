@@ -1,0 +1,14 @@
+[package]
+name = "effect-signature"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+readme = "README.md"
+publish = false
+description = "Stable check effect signature types and hashing helpers"
+
+[dependencies]
+blake3 = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

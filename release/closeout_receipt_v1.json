@@ -1,0 +1,17 @@
+{
+  "schema_version": "closeout_receipt_v1",
+  "pack_version": "V28",
+  "effective_date": "2026-03-30",
+  "scope": "V28 Unified Hostile Audit Remediation Pack",
+  "status": "in_progress",
+  "cargo_check_workspace": true,
+  "cargo_test_workspace": true,
+  "governance_feature_default": true,
+  "governance_observation_live": true,
+  "governance_receipt_populated": true,
+  "episode_identity_law_enforced": true,
+  "temporal_provenance_coordinates": true,
+  "panic_audit_clean": true,
+  "validation_result_deduplication": true,
+  "lane_manifest_authoritative": true
+}

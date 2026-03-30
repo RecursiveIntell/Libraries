@@ -1,0 +1,16 @@
+[package]
+name = "assurance-runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Typed deployability and certification surface crate with bounded readiness profiles; not an orchestration runtime"
+license = "MIT"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+schemars = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = { workspace = true }

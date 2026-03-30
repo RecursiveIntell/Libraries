@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "EvidenceAdmissibilityV1": {
+      "enum": [
+        "admissible",
+        "restricted",
+        "inadmissible",
+        "unknown"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "admissibility_judgment": {
+      "$ref": "#/definitions/EvidenceAdmissibilityV1"
+    },
+    "comparability_matrix_id": {
+      "type": "string"
+    },
+    "config_comparability": {
+      "type": "string"
+    },
+    "environment_comparability": {
+      "type": "string"
+    },
+    "missingness_markers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "retry_replay_comparability": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "time_window_comparability": {
+      "type": "string"
+    },
+    "workload_comparability": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "admissibility_judgment",
+    "comparability_matrix_id",
+    "config_comparability",
+    "environment_comparability",
+    "retry_replay_comparability",
+    "schema_version",
+    "time_window_comparability",
+    "workload_comparability"
+  ],
+  "title": "ComparabilityMatrixV1",
+  "type": "object"
+}

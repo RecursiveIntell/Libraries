@@ -1,0 +1,20 @@
+[package]
+name = "forge-policy"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+readme = "README.md"
+publish = false
+description = "Workspace and database safety policy primitives for forge-engine"
+
+[dependencies]
+glob = "0.3"
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+tracing = "0.1"
+
+[dev-dependencies]
+proptest = "1"
+tempfile = "3"

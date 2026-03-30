@@ -1,0 +1,10 @@
+{
+  "schema_version": "DeploymentProfileV1",
+  "deployment_profile_id": "dpf_001",
+  "system_name": "alpha-service",
+  "deployment_environment": "prod-us-central",
+  "criticality_class": "high",
+  "operating_envelope_id": "oen_001",
+  "assurance_case_id": "asc_001",
+  "publication_status": "required"
+}

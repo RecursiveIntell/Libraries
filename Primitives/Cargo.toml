@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+members = [
+    "cea-core",
+    "cea-sqlite",
+    "cea-store",
+    "check-runner",
+    "effect-signature",
+    "forge-policy",
+    "mindstate-core",
+    "sandbox-workspace",
+    "stabilizer-core",
+    "typed-patch",
+]
+
+[workspace.dependencies]
+async-trait = "0.1"
+chrono = "0.4"
+glob = "0.3"
+libc = "0.2"
+rusqlite = "0.32"
+serde = "1"
+serde_json = "1"
+tempfile = "3"
+thiserror = "2"
+tokio = "1"
+tracing = "0.1"

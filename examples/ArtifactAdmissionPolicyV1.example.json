@@ -1,0 +1,25 @@
+{
+  "schema_version": "artifact_admission_policy_v1",
+  "artifact_admission_policy_id": "admission-core-remote",
+  "allowed_artifact_families": [
+    "remote_slice_result_v1",
+    "attestation_envelope_v1"
+  ],
+  "required_trust_root_sets": [
+    "trust-root-core"
+  ],
+  "required_transparency_obligations": [
+    "must_log_material_results"
+  ],
+  "required_replayability_class": "replayable_with_ticket",
+  "disclosure_constraints": [
+    "no_raw_customer_payloads",
+    "redact secrets"
+  ],
+  "downgrade_behavior": "advisory_only_if_replay_missing",
+  "disqualifying_failures": [
+    "revoked_signer",
+    "schema_mismatch",
+    "undisclosed_redaction"
+  ]
+}

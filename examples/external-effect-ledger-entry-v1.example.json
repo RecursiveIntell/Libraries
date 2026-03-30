@@ -1,0 +1,10 @@
+{
+  "schema_version": "ExternalEffectLedgerEntryV1",
+  "external_effect_ledger_entry_id": "fxl_001",
+  "effect_execution_receipt_id": "fxr_001",
+  "target_system": "ticketing",
+  "external_handle": "ext_8821",
+  "externally_observed_state": "committed",
+  "entered_at": "2026-03-15T12:08:30Z",
+  "immutable": true
+}

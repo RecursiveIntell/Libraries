@@ -1,0 +1,154 @@
+{
+  "fixture_name": "release_readiness_blocked",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-202",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-16T17:00:00Z",
+      "recorded_as_of": "2026-03-16T17:00:02Z",
+      "target_surface_kind": "release_gate",
+      "actor_class": "release_manager",
+      "role_refs": [
+        "role:release-manager"
+      ],
+      "effect_class": "release",
+      "incident_mode": "normal",
+      "execution_context_ref": "execution-context-202",
+      "admitted_exception_refs": []
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-202",
+      "applicability_context_ref": "applicability-context-202",
+      "profile_refs": {
+        "release_policy_profile_id": "release-policy-profile-001",
+        "regulatory_regime_profile_id": "rgp_001",
+        "recertification_schedule_id": "rs_001",
+        "hazard_library_id": "hl_001"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25",
+        "policy-catalog:payments-prod"
+      ],
+      "omissions": [],
+      "active_exception_refs": [],
+      "normalized_profile_order": [
+        "hl_001",
+        "release-policy-profile-001",
+        "rgp_001",
+        "rs_001"
+      ]
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-202",
+      "applicability_context_ref": "applicability-context-202",
+      "profile_set_ref": "profile-set-202",
+      "composition_rule_set_ref": "composition-rule-set-202",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "hl_001",
+        "release-policy-profile-001",
+        "rgp_001",
+        "rs_001"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "blocked",
+      "hard_block_summary": [
+        "assurance.recertification_status:overdue",
+        "hazard.unmitigated:payments-sev1-runbook-gap"
+      ],
+      "active_warning_summary": [],
+      "approval_requirements": [
+        "release-governance-board"
+      ],
+      "disclosure_obligations": [],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [
+        "recertification_current",
+        "hazard_playbook_bound"
+      ],
+      "monitoring_obligations": [
+        "release_error_budget"
+      ],
+      "continuity_obligations": [],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [
+        "release_evidence_bundle"
+      ],
+      "valid_as_of": "2026-03-16T17:00:00Z",
+      "recorded_as_of": "2026-03-16T17:00:02Z",
+      "explanation_summary": "release gate remains blocked because recertification is overdue and one hazard mitigation binding is missing"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-202",
+      "effective_constitution_ref": "effective-constitution-202",
+      "obligation_entries": [],
+      "block_entries": [
+        {
+          "block_key": "assurance.recertification_status:overdue",
+          "reason": "recertification schedule is not current",
+          "source_profile_refs": [
+            "rs_001"
+          ],
+          "admissible_exception_classes": []
+        },
+        {
+          "block_key": "hazard.unmitigated:payments-sev1-runbook-gap",
+          "reason": "hazard playbook binding is incomplete",
+          "source_profile_refs": [
+            "hl_001"
+          ],
+          "admissible_exception_classes": []
+        }
+      ],
+      "required_approvals": [
+        "release-governance-board"
+      ],
+      "required_checks": [
+        "recertification-status",
+        "hazard-playbook-binding"
+      ],
+      "required_monitors": [
+        "release_error_budget"
+      ],
+      "required_evidence_obligations": [
+        "release_evidence_bundle"
+      ],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [
+        "rollback_ready_before_live"
+      ],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [],
+      "promotion_eligibility_summary": "blocked",
+      "release_eligibility_summary": "blocked",
+      "effect_eligibility_summary": "blocked",
+      "unresolved_dependency_refs": []
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-202",
+      "applicability_context_ref": "applicability-context-202",
+      "profile_set_ref": "profile-set-202",
+      "composition_rule_set_ref": "composition-rule-set-202",
+      "effective_constitution_ref": "effective-constitution-202",
+      "compiled_obligation_set_ref": "compiled-obligation-set-202",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-202",
+      "replay_handle": "profile-runtime:applicability-context-202:profile-set-202:composition-rule-set-202",
+      "normalized_input_digest": "2022022022022022022022022022022022022022022022022022022022022022",
+      "generated_at": "2026-03-16T17:00:04Z"
+    }
+  }
+}

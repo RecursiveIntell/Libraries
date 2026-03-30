@@ -1,0 +1,15 @@
+{
+  "schema_version": "disclosure_policy_v1",
+  "disclosure_policy_id": "disclosure-policy-core-remote",
+  "allowed_consumers": [
+    "oracle.example/region-a"
+  ],
+  "redaction_rules": [
+    "hash customer identifiers",
+    "strip raw payload text",
+    "preserve digests"
+  ],
+  "replay_visibility": "ticket_required",
+  "retention_window": "30d",
+  "downgrade_behavior": "advisory_only_if_exact_material_cannot_be_shared"
+}

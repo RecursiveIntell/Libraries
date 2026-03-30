@@ -1,0 +1,59 @@
+{
+  "fixture_name": "regulated_release_happy_path",
+  "wave": "p4",
+  "artifacts": {
+    "RegulatoryRegimeProfileV1": {
+      "schema_version": "RegulatoryRegimeProfileV1",
+      "regulatory_regime_profile_id": "rrp_001",
+      "regime_name": "internal-safety-tier-1",
+      "regime_version": "2026.1",
+      "covered_products": [
+        "alpha-service",
+        "beta-api"
+      ],
+      "mandatory_control_families": [
+        "change-management",
+        "incident-response",
+        "evidence-retention"
+      ],
+      "audit_cycle_days": 180
+    },
+    "RequirementControlMapV1": {
+      "schema_version": "RequirementControlMapV1",
+      "requirement_control_map_id": "rcm_001",
+      "regulatory_regime_profile_id": "rrp_001",
+      "mappings": [
+        {
+          "requirement": "CM-01",
+          "control": "dual_control_release",
+          "evidence_family": "ApprovalMatrixV1"
+        },
+        {
+          "requirement": "IR-02",
+          "control": "incident_postmortem",
+          "evidence_family": "PostmortemBundleV1"
+        }
+      ],
+      "gap_classification_default": "needs_manual_review",
+      "owner_ref": "team:compliance"
+    },
+    "EvidenceCollectionPlanV1": {
+      "schema_version": "EvidenceCollectionPlanV1",
+      "evidence_collection_plan_id": "ecp_001",
+      "regulatory_regime_profile_id": "rrp_001",
+      "required_evidence_classes": [
+        {
+          "evidence_class": "release_decision",
+          "minimum_family": "ReleaseReadinessDecisionV1"
+        },
+        {
+          "evidence_class": "monitoring",
+          "minimum_family": "FieldMonitoringPlanV1"
+        }
+      ],
+      "collection_cadence": "per_release_and_quarterly_rollup",
+      "retention_class": "regulated_730d",
+      "owner_ref": "team:compliance"
+    }
+  }
+}

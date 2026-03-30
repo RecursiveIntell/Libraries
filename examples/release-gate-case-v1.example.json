@@ -1,0 +1,26 @@
+{
+  "schema_version": "release_gate_case_v1",
+  "release_gate_case_id": "release-gate-case-v25",
+  "deployment_profile_id": "deployment-profile-v25",
+  "assurance_case_id": "assurance-case-v25",
+  "release_readiness_decision_id": "release-readiness-decision-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "required_obligation_refs": [
+    "obligation:release:required"
+  ],
+  "blocking_obligation_refs": [
+    "obligation:release:blocking"
+  ],
+  "monitoring_obligation_refs": [
+    "obligation:release:monitoring"
+  ],
+  "citation_status": "complete",
+  "obligation_refs_status": "complete",
+  "score_only_gate": false,
+  "final_state": "approved"
+}

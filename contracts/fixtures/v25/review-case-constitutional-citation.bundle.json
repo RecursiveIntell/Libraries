@@ -1,0 +1,273 @@
+{
+  "fixture_name": "review_case_constitutional_citation",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-301",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-18T01:00:00Z",
+      "recorded_as_of": "2026-03-18T01:00:05Z",
+      "target_surface_kind": "governance_review",
+      "actor_class": "reviewer",
+      "role_refs": [
+        "role:governance"
+      ],
+      "incident_mode": "normal",
+      "execution_context_ref": "execution-context-301",
+      "admitted_exception_refs": []
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-301",
+      "applicability_context_ref": "applicability-context-301",
+      "profile_refs": {
+        "delegation_policy_profile_id": "delegation-policy-profile-301",
+        "release_policy_profile_id": "release-policy-profile-301",
+        "continuity_policy_profile_id": "continuity-policy-profile-301"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25"
+      ],
+      "omissions": [],
+      "active_exception_refs": [],
+      "normalized_profile_order": [
+        "delegation-policy-profile-301",
+        "release-policy-profile-301",
+        "continuity-policy-profile-301"
+      ]
+    },
+    "CompositionRuleSetV1": {
+      "schema_version": "CompositionRuleSetV1",
+      "composition_rule_set_id": "composition-rule-set-301",
+      "version": "reference-v1",
+      "family_rules": [
+        {
+          "obligation_family": "governance.review",
+          "fold_class": "all_or_nothing",
+          "output_kind": "monitoring",
+          "monotone_additions_expected": true,
+          "block_on_unresolved_conflict": false,
+          "admissible_exception_classes": [
+            "review_exception"
+          ],
+          "downgrade_behavior": "emit_receipt_and_continue",
+          "explanation": "review outputs are advisory when review evidence is incomplete"
+        }
+      ],
+      "conflict_classes": [],
+      "exception_rules": [
+        {
+          "exception_class": "review_exception",
+          "allowed_obligation_families": [
+            "governance.review"
+          ],
+          "requires_approval_refs": false,
+          "requires_expiry": false,
+          "residual_obligations_mandatory": false
+        }
+      ],
+      "downgrade_behavior": "emit_receipt_and_continue",
+      "reference_evaluator_version": "profile-runtime/reference-evaluator/v1"
+    },
+    "EffectReviewCaseV1": {
+      "schema_version": "effect_review_case_v1",
+      "effect_review_case_id": "effect-review-case-v25",
+      "effect_intent_id": "effect-intent-v25",
+      "effect_preflight_report_id": "effect-preflight-report-v25",
+      "effect_commit_decision_id": "effect-commit-decision-v25",
+      "applicability_context_id": "applicability-context-301",
+      "profile_set_id": "profile-set-301",
+      "composition_receipt_id": "composition-receipt-301",
+      "effective_constitution_id": "effective-constitution-301",
+      "compiled_obligation_set_id": "compiled-obligation-set-301",
+      "profile_exception_bundle_ids": [],
+      "required_obligation_refs": [
+        "obligation:review:required"
+      ],
+      "blocking_obligation_refs": [
+        "obligation:review:blocking"
+      ],
+      "monitoring_obligation_refs": [
+        "obligation:review:monitoring"
+      ],
+      "required_policy_refs": [
+        "policy:effect"
+      ],
+      "decision_basis": "v25 governance review passed",
+      "final_state": "approved",
+      "advisory_only": false,
+      "generated_at": "2026-03-18T01:00:01Z"
+    },
+    "DelegationReviewCaseV1": {
+      "schema_version": "delegation_review_case_v1",
+      "delegation_review_case_id": "delegation-review-case-v25",
+      "authority_chain_id": "authority-chain-v25",
+      "separation_of_duties_policy_id": "sod-policy-v25",
+      "applicability_context_id": "applicability-context-301",
+      "profile_set_id": "profile-set-301",
+      "composition_receipt_id": "composition-receipt-301",
+      "effective_constitution_id": "effective-constitution-301",
+      "compiled_obligation_set_id": "compiled-obligation-set-301",
+      "profile_exception_bundle_ids": [],
+      "required_obligation_refs": [
+        "obligation:delegation:required"
+      ],
+      "blocking_obligation_refs": [
+        "obligation:delegation:blocking"
+      ],
+      "monitoring_obligation_refs": [
+        "obligation:delegation:monitoring"
+      ],
+      "decision_state": "approved",
+      "generated_at": "2026-03-18T01:00:02Z"
+    },
+    "ReleaseGateCaseV1": {
+      "schema_version": "release_gate_case_v1",
+      "release_gate_case_id": "release-gate-case-v25",
+      "deployment_profile_id": "deployment-profile-v25",
+      "assurance_case_id": "assurance-case-v25",
+      "release_readiness_decision_id": "release-readiness-decision-v25",
+      "applicability_context_id": "applicability-context-301",
+      "profile_set_id": "profile-set-301",
+      "composition_receipt_id": "composition-receipt-301",
+      "effective_constitution_id": "effective-constitution-301",
+      "compiled_obligation_set_id": "compiled-obligation-set-301",
+      "profile_exception_bundle_ids": [],
+      "required_obligation_refs": [
+        "obligation:release:required"
+      ],
+      "blocking_obligation_refs": [
+        "obligation:release:blocking"
+      ],
+      "monitoring_obligation_refs": [
+        "obligation:release:monitoring"
+      ],
+      "score_only_gate": false,
+      "final_state": "approved"
+    },
+    "ContinuityReviewCaseV1": {
+      "schema_version": "continuity_review_case_v1",
+      "continuity_review_case_id": "continuity-review-case-v25",
+      "incident_case_id": "incident-case-v25",
+      "applicability_context_id": "applicability-context-301",
+      "profile_set_id": "profile-set-301",
+      "composition_receipt_id": "composition-receipt-301",
+      "effective_constitution_id": "effective-constitution-301",
+      "compiled_obligation_set_id": "compiled-obligation-set-301",
+      "profile_exception_bundle_ids": [],
+      "required_obligation_refs": [
+        "obligation:continuity:required"
+      ],
+      "blocking_obligation_refs": [
+        "obligation:continuity:blocking"
+      ],
+      "monitoring_obligation_refs": [
+        "obligation:continuity:monitoring"
+      ],
+      "continuity_exception_id": "continuity-exception-v25",
+      "recovery_replay_slice_id": "recovery-replay-slice-v25",
+      "post_hoc_review_due": false,
+      "final_state": "closed"
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-301",
+      "applicability_context_ref": "applicability-context-301",
+      "profile_set_ref": "profile-set-301",
+      "composition_rule_set_ref": "composition-rule-set-301",
+      "effective_constitution_ref": "effective-constitution-301",
+      "compiled_obligation_set_ref": "compiled-obligation-set-301",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-301",
+      "replay_handle": "profile-runtime:applicability-context-301:profile-set-301:composition-rule-set-301",
+      "normalized_input_digest": "3013013013013013013013013013013013013013013013013013013013013013",
+      "generated_at": "2026-03-18T01:00:04Z"
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-301",
+      "applicability_context_ref": "applicability-context-301",
+      "profile_set_ref": "profile-set-301",
+      "composition_rule_set_ref": "composition-rule-set-301",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "delegation-policy-profile-301",
+        "release-policy-profile-301",
+        "continuity-policy-profile-301"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "normal",
+      "hard_block_summary": [],
+      "active_warning_summary": [],
+      "approval_requirements": [],
+      "disclosure_obligations": [],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "governance_review"
+      ],
+      "continuity_obligations": [
+        "post_hoc_review"
+      ],
+      "effect_obligations": [],
+      "delegation_obligations": [
+        "sod-required"
+      ],
+      "replay_obligations": [
+        "governance-review-replay"
+      ],
+      "valid_as_of": "2026-03-18T01:00:00Z",
+      "recorded_as_of": "2026-03-18T01:00:05Z",
+      "explanation_summary": "review governance lane is active with no unresolved conflicts"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-301",
+      "effective_constitution_ref": "effective-constitution-301",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-301a",
+          "obligation_family": "governance.review_monitoring",
+          "obligation_key": "governance_monitoring",
+          "output_kind": "monitoring",
+          "fold_class": "union",
+          "string_values": [
+            "review-evidence"
+          ],
+          "blocking": false,
+          "source_profile_refs": [
+            "delegation-policy-profile-301"
+          ],
+          "source_exception_refs": [],
+          "explanation": "monitoring obligations track review outcomes"
+        }
+      ],
+      "block_entries": [],
+      "required_approvals": [],
+      "required_checks": [
+        "review-evidence-check"
+      ],
+      "required_monitors": [
+        "governance_review"
+      ],
+      "required_evidence_obligations": [
+        "governance_evidence"
+      ],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [],
+      "promotion_eligibility_summary": "eligible",
+      "release_eligibility_summary": "eligible",
+      "effect_eligibility_summary": "eligible",
+      "unresolved_dependency_refs": []
+    }
+  }
+}

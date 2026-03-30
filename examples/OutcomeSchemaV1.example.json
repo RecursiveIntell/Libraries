@@ -1,0 +1,10 @@
+{
+  "schema_version": "outcome_schema_v1",
+  "outcome_schema_id": "outcome-latency-regression",
+  "name": "contradiction repair success rate",
+  "measurement_definition": "fraction of contradiction cores resolved without widening beyond declared blast radius",
+  "time_window": "per replay family within 24h",
+  "aggregation_rule": "weighted_mean",
+  "degradation_behavior": "advisory_only_if_missing_replay",
+  "exactness_requirement": "bounded_exact_or_explain_why_not"
+}

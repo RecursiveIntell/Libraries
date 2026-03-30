@@ -1,0 +1,44 @@
+{
+  "fixture_name": "conflict_disclosed_and_mitigated",
+  "wave": "v22",
+  "artifacts": {
+    "SeparationOfDutiesPolicyV1": {
+      "schema_version": "SeparationOfDutiesPolicyV1",
+      "separation_of_duties_policy_id": "sod_001",
+      "prohibited_role_combinations": [
+        "requester+approver",
+        "approver+executor"
+      ],
+      "required_reviewer_independence": "different_human_principal",
+      "required_dual_control_classes": [
+        "deploy_gate"
+      ],
+      "emergency_exceptions": [
+        "break_glass_only"
+      ],
+      "violation_consequences": [
+        "block",
+        "emit_incident"
+      ]
+    },
+    "ConflictDisclosureV1": {
+      "schema_version": "ConflictDisclosureV1",
+      "conflict_disclosure_id": "cfd_001",
+      "principal_ref": "person:alice",
+      "declared_conflict": "requester for same change",
+      "mitigation": "alternate approver assigned",
+      "declared_at": "2026-03-15T11:58:00Z"
+    },
+    "DualControlApprovalV1": {
+      "schema_version": "DualControlApprovalV1",
+      "dual_control_approval_id": "dca_001",
+      "approver_refs": [
+        "person:alice",
+        "person:bob"
+      ],
+      "approval_basis": "matched change plan and preflight",
+      "independence_verified": true,
+      "approved_at": "2026-03-15T12:01:00Z"
+    }
+  }
+}

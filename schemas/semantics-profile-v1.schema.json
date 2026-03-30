@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DegradationKindV1": {
+      "enum": [
+        "thin_export",
+        "missing_proof",
+        "missing_replay",
+        "scope_withheld",
+        "evidence_unavailable",
+        "oracle_unavailable",
+        "budget_exceeded",
+        "exactness_downgraded",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "EvidenceAdmissibilityV1": {
+      "enum": [
+        "admissible",
+        "restricted",
+        "inadmissible",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "SemanticViewV1": {
+      "enum": [
+        "canonical",
+        "projection",
+        "runtime",
+        "causal_advisory",
+        "operator"
+      ],
+      "type": "string"
+    },
+    "TruthStateV1": {
+      "enum": [
+        "asserted",
+        "supported",
+        "refuted",
+        "abstained",
+        "unknown"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "admissibility_vocabulary": {
+      "items": {
+        "$ref": "#/definitions/EvidenceAdmissibilityV1"
+      },
+      "type": "array"
+    },
+    "allowed_views": {
+      "items": {
+        "$ref": "#/definitions/SemanticViewV1"
+      },
+      "type": "array"
+    },
+    "default_view": {
+      "$ref": "#/definitions/SemanticViewV1"
+    },
+    "degradation_vocabulary": {
+      "items": {
+        "$ref": "#/definitions/DegradationKindV1"
+      },
+      "type": "array"
+    },
+    "exactness_vocabulary": {
+      "items": {
+        "$ref": "#/definitions/ExactnessLevelV1"
+      },
+      "type": "array"
+    },
+    "governing_spec_version": {
+      "type": "string"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_name": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "truth_state_vocabulary": {
+      "items": {
+        "$ref": "#/definitions/TruthStateV1"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "admissibility_vocabulary",
+    "allowed_views",
+    "default_view",
+    "degradation_vocabulary",
+    "exactness_vocabulary",
+    "governing_spec_version",
+    "profile_name",
+    "schema_version",
+    "semantics_profile_id",
+    "truth_state_vocabulary"
+  ],
+  "title": "SemanticsProfileV1",
+  "type": "object"
+}

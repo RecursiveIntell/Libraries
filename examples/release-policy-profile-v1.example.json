@@ -1,0 +1,16 @@
+{
+  "schema_version": "release_policy_profile_v1",
+  "release_policy_profile_id": "release-policy-profile-001",
+  "required_assurance_sections": [
+    "hazard_summary",
+    "control_evidence",
+    "rollback_plan"
+  ],
+  "required_monitor_classes": [
+    "error_budget",
+    "latency_p95",
+    "saturation"
+  ],
+  "block_on_open_obligations": true,
+  "forbid_score_only_gate": true
+}

@@ -1,0 +1,109 @@
+{
+  "fixture_name": "effect_partial_with_compensation",
+  "wave": "v21",
+  "artifacts": {
+    "EffectIntentV1": {
+      "schema_version": "EffectIntentV1",
+      "effect_intent_id": "fxi_001",
+      "effect_class": "external_write",
+      "target_surface": "ticketing/api",
+      "intended_outcome": "apply approved configuration change",
+      "initiating_artifact_refs": [
+        "episode:ep_100",
+        "plan:pl_200"
+      ],
+      "required_capability_class": "cap_change_window",
+      "allowed_scope": "project:alpha",
+      "blast_radius_ceiling": "single_tenant",
+      "reversibility_class": "compensatable",
+      "idempotency_key": "idem_001",
+      "execution_window_id": "fxw_001",
+      "observability_obligation_refs": [
+        "obs:latency",
+        "obs:error_budget"
+      ],
+      "approval_refs": [
+        "approval:chg_881"
+      ],
+      "run_mode": "live",
+      "publication_status": "required"
+    },
+    "EffectExecutionReceiptV1": {
+      "schema_version": "EffectExecutionReceiptV1",
+      "effect_execution_receipt_id": "fxr_001",
+      "effect_commit_decision_id": "fxc_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "provider_route": [
+        "forge-pilot",
+        "llm-tool-runtime",
+        "ticketing/api"
+      ],
+      "execution_state": "partial",
+      "partial_execution": true,
+      "cancellation_reason": "",
+      "timeout_exhausted": true,
+      "generated_effect_refs": [
+        "ticket:chg-881"
+      ],
+      "observed_external_handle": "ext_8821",
+      "generated_at": "2026-03-15T12:08:00Z"
+    },
+    "CompensationPlanV1": {
+      "schema_version": "CompensationPlanV1",
+      "compensation_plan_id": "fxcp_001",
+      "effect_intent_id": "fxi_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "compensation_required": true,
+      "compensation_class": "state_restore",
+      "compensation_steps": [
+        "reapply prior config",
+        "notify operator"
+      ],
+      "success_criteria": [
+        "prior state restored",
+        "post-check green"
+      ],
+      "owner_ref": "team:ops",
+      "latest_start": "2026-03-15T12:40:00Z",
+      "advisory_only": false
+    },
+    "CompensationExecutionReceiptV1": {
+      "schema_version": "CompensationExecutionReceiptV1",
+      "compensation_execution_receipt_id": "fxcr_001",
+      "compensation_plan_id": "fxcp_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "execution_state": "completed",
+      "completed_steps": [
+        "reapply prior config",
+        "notify operator"
+      ],
+      "failed_steps": [],
+      "residual_risk_summary": "none",
+      "generated_at": "2026-03-15T12:28:00Z"
+    }
+  }
+}

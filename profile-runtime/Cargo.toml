@@ -1,0 +1,24 @@
+[package]
+name = "profile-runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+license = "MIT"
+description = "Canonical effective constitution and profile composition runtime for the local-first AI systems stack"
+readme = "README.md"
+
+[dependencies]
+assurance-runtime = { path = "../assurance-runtime" }
+attestation-exchange = { path = "../attestation-exchange" }
+authority-delegation = { path = "../authority-delegation" }
+continuity-runtime = { path = "../continuity-runtime" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+schemars = { workspace = true }
+stack-ids = { path = "../stack-ids" }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+verification-policy = { path = "../verification-policy" }
+
+[dev-dependencies]
+serde_json = { workspace = true }

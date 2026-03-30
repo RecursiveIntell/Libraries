@@ -1,0 +1,19 @@
+{
+  "wave": "v16",
+  "owner_crate": "federated-settlement",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "treaty-bundle-v1.schema.json",
+    "runtime-identity-set-v1.schema.json",
+    "cross-runtime-equivalence-bundle-v1.schema.json",
+    "settlement-case-v1.schema.json",
+    "shared-disposition-v1.schema.json",
+    "local-dissent-record-v1.schema.json",
+    "shared-view-downgrade-v1.schema.json",
+    "settlement-receipt-v1.schema.json",
+    "shared-replay-slice-v1.schema.json",
+    "shared-divergence-report-v1.schema.json",
+    "treaty-suspension-v1.schema.json"
+  ],
+  "truth_note": "Only bounded settlement, replay, divergence, and suspension slices are behaviorally proven; all outputs remain advisory and non-authoritative."
+}

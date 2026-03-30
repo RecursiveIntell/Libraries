@@ -1,0 +1,24 @@
+{
+  "schema_version": "effect_block_receipt_v1",
+  "effect_block_receipt_id": "effect-block-receipt-v25",
+  "effect_review_case_id": "effect-review-case-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "required_obligation_refs": [
+    "obligation:required:policy"
+  ],
+  "blocking_obligation_refs": [
+    "obligation:blocking:policy"
+  ],
+  "monitoring_obligation_refs": [
+    "obligation:monitoring:continuous"
+  ],
+  "citation_status": "complete",
+  "obligation_refs_status": "complete",
+  "block_reason": "policy_required_obligations_outstanding",
+  "generated_at": "2026-03-17T00:00:06Z"
+}

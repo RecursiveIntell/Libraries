@@ -1,0 +1,58 @@
+{
+  "schema_version": "lane_manifest_v1",
+  "generated_by": "V28 remediation pack",
+  "supported_lane": [
+    "contract-schema-gen",
+    "forge-memory-bridge",
+    "forge-pilot",
+    "kernel-conformance",
+    "kernel-execution",
+    "kernel-oracles",
+    "knowledge-runtime",
+    "living-memory/living-memory",
+    "llm-tool-runtime",
+    "recursive-kernel-core",
+    "semantic-memory",
+    "semantic-memory-forge",
+    "stack-ids",
+    "verification-adjudication",
+    "verification-calibration",
+    "verification-control",
+    "verification-policy"
+  ],
+  "governance_lane": [
+    "assurance-runtime",
+    "attestation-exchange",
+    "authority-delegation",
+    "constitutional-memory",
+    "continuity-runtime",
+    "effect-runtime",
+    "mechanism-runtime"
+  ],
+  "doc_certified_lane": [
+    "forge-pilot",
+    "profile-runtime",
+    "effect-runtime",
+    "verification-policy",
+    "semantic-memory-forge"
+  ],
+  "panic_audit_lane": [
+    "contract-schema-gen",
+    "forge-memory-bridge",
+    "forge-pilot",
+    "kernel-conformance",
+    "kernel-execution",
+    "kernel-oracles",
+    "knowledge-runtime",
+    "living-memory/living-memory",
+    "llm-tool-runtime",
+    "recursive-kernel-core",
+    "semantic-memory",
+    "semantic-memory-forge",
+    "stack-ids",
+    "verification-adjudication",
+    "verification-calibration",
+    "verification-control",
+    "verification-policy"
+  ]
+}

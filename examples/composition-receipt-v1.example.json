@@ -1,0 +1,14 @@
+{
+  "schema_version": "CompositionReceiptV1",
+  "composition_receipt_id": "composition-receipt-001",
+  "applicability_context_ref": "applicability-context-001",
+  "profile_set_ref": "profile-set-001",
+  "composition_rule_set_ref": "composition-rule-set-001",
+  "effective_constitution_ref": "effective-constitution-001",
+  "compiled_obligation_set_ref": "compiled-obligation-set-001",
+  "degradation_markers": [],
+  "execution_context_ref": "execution-context-001",
+  "replay_handle": "profile-runtime:applicability-context-001:profile-set-001:composition-rule-set-001",
+  "normalized_input_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "generated_at": "2026-03-16T14:00:06Z"
+}

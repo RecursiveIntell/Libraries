@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RemoteDisclosureClassV1": {
+      "enum": [
+        "non-sensitive",
+        "redacted_structured_only"
+      ],
+      "type": "string"
+    },
+    "ReplayFailureBehaviorV1": {
+      "enum": [
+        "retry",
+        "downgrade_to_advisory_and_emit_dispute_if_mandatory"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "properties": {
+    "allowed_disclosure": {
+      "$ref": "#/definitions/RemoteDisclosureClassV1"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "cross_runtime_replay_ticket_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "failure_behavior": {
+      "$ref": "#/definitions/ReplayFailureBehaviorV1"
+    },
+    "lease_window": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "replay_expectations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_trust_roots": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "time_coordinates": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed_disclosure",
+    "applicability_context_id",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "cross_runtime_replay_ticket_id",
+    "effective_constitution_id",
+    "failure_behavior",
+    "lease_window",
+    "profile_set_id",
+    "schema_version",
+    "time_coordinates"
+  ],
+  "title": "CrossRuntimeReplayTicketV1",
+  "type": "object"
+}

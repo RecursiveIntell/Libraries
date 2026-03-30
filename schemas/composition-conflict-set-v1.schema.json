@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CompositionConflictV1": {
+      "properties": {
+        "admissible_exception_classes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "conflict_class": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "implicated_values": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "obligation_family": {
+          "type": "string"
+        },
+        "obligation_key": {
+          "type": "string"
+        },
+        "review_path": {
+          "type": "string"
+        },
+        "source_profile_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "blocking",
+        "conflict_class",
+        "explanation",
+        "obligation_family",
+        "obligation_key",
+        "review_path"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "blocking": {
+      "type": "boolean"
+    },
+    "composition_conflict_set_id": {
+      "type": "string"
+    },
+    "composition_receipt_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "conflicts": {
+      "items": {
+        "$ref": "#/definitions/CompositionConflictV1"
+      },
+      "type": "array"
+    },
+    "effective_constitution_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "blocking",
+    "composition_conflict_set_id",
+    "schema_version"
+  ],
+  "title": "CompositionConflictSetV1",
+  "type": "object"
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CrossBoundaryAttestationRequirementV1": {
+      "enum": [
+        "signed_export_envelope"
+      ],
+      "type": "string"
+    },
+    "CrossBoundaryDowngradeBehaviorV1": {
+      "enum": [
+        "summary_only_or_block"
+      ],
+      "type": "string"
+    },
+    "DisclosurePolicyClassV1": {
+      "enum": [
+        "redacted_vendor_export"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "allowed_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "cross_boundary_transfer_class_id": {
+      "type": "string"
+    },
+    "destination_class": {
+      "type": "string"
+    },
+    "downgrade_behavior": {
+      "$ref": "#/definitions/CrossBoundaryDowngradeBehaviorV1"
+    },
+    "required_attestation": {
+      "$ref": "#/definitions/CrossBoundaryAttestationRequirementV1"
+    },
+    "required_disclosure_policy_class": {
+      "$ref": "#/definitions/DisclosurePolicyClassV1"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_class": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cross_boundary_transfer_class_id",
+    "destination_class",
+    "downgrade_behavior",
+    "required_attestation",
+    "required_disclosure_policy_class",
+    "schema_version",
+    "source_class"
+  ],
+  "title": "CrossBoundaryTransferClassV1",
+  "type": "object"
+}

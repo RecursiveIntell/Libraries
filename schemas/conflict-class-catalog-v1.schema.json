@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RoleConflictClassRuleV1": {
+      "properties": {
+        "conflict_class": {
+          "type": "string"
+        },
+        "disallowed_roles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "conflict_class"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "conflict_class_catalog_id": {
+      "type": "string"
+    },
+    "conflict_classes": {
+      "items": {
+        "$ref": "#/definitions/RoleConflictClassRuleV1"
+      },
+      "type": "array"
+    },
+    "default_recusal_behavior": {
+      "type": "string"
+    },
+    "disclosure_required": {
+      "type": "boolean"
+    },
+    "override_path": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "conflict_class_catalog_id",
+    "default_recusal_behavior",
+    "disclosure_required",
+    "override_path",
+    "schema_version"
+  ],
+  "title": "ConflictClassCatalogV1",
+  "type": "object"
+}

@@ -1,0 +1,45 @@
+{
+  "fixture_name": "blocked_release_due_to_gap",
+  "wave": "v23",
+  "artifacts": {
+    "DeploymentProfileV1": {
+      "schema_version": "DeploymentProfileV1",
+      "deployment_profile_id": "dpf_001",
+      "system_name": "alpha-service",
+      "deployment_environment": "prod-us-central",
+      "criticality_class": "high",
+      "operating_envelope_id": "oen_001",
+      "assurance_case_id": "asc_001",
+      "publication_status": "required"
+    },
+    "AssuranceCaseV1": {
+      "schema_version": "AssuranceCaseV1",
+      "assurance_case_id": "asc_001",
+      "claim_summary": "deployment meets safety and reliability bar",
+      "evidence_refs": [
+        "test:integration_771",
+        "proof:budget_882"
+      ],
+      "argument_structure": "hazard -> control -> evidence",
+      "open_obligations": [
+        "missing migration rehearsal"
+      ],
+      "ready_for_release": false
+    },
+    "ReleaseReadinessDecisionV1": {
+      "schema_version": "ReleaseReadinessDecisionV1",
+      "release_readiness_decision_id": "rrd_001",
+      "deployment_profile_id": "dpf_001",
+      "decision_state": "blocked",
+      "blocking_gaps": [
+        "missing migration rehearsal"
+      ],
+      "required_monitors": [
+        "error_budget",
+        "latency_p95"
+      ],
+      "advisory_only": true,
+      "generated_at": "2026-03-15T12:03:00Z"
+    }
+  }
+}

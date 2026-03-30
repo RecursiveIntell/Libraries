@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CompensationClassV1": {
+      "enum": [
+        "state_restore",
+        "local_rollback",
+        "forward_fix",
+        "operator_runbook"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "compensation_class": {
+      "$ref": "#/definitions/CompensationClassV1"
+    },
+    "compensation_plan_id": {
+      "type": "string"
+    },
+    "compensation_required": {
+      "type": "boolean"
+    },
+    "compensation_steps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "effect_intent_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "latest_start": {
+      "type": "string"
+    },
+    "owner_ref": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "success_criteria": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "applicability_context_id",
+    "compensation_class",
+    "compensation_plan_id",
+    "compensation_required",
+    "compensation_steps",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "effect_intent_id",
+    "effective_constitution_id",
+    "latest_start",
+    "owner_ref",
+    "profile_set_id",
+    "schema_version",
+    "success_criteria"
+  ],
+  "title": "CompensationPlanV1",
+  "type": "object"
+}

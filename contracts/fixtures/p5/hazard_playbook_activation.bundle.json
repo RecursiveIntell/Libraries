@@ -1,0 +1,68 @@
+{
+  "fixture_name": "hazard_playbook_activation",
+  "wave": "p5",
+  "artifacts": {
+    "HazardScenarioV1": {
+      "schema_version": "HazardScenarioV1",
+      "hazard_scenario_id": "hs_001",
+      "hazard_library_id": "hl_001",
+      "trigger_conditions": [
+        "unexpected retry amplification",
+        "error_budget_drop>20%",
+        "failed compensation path"
+      ],
+      "affected_surfaces": [
+        "payments-api",
+        "settlement-worker"
+      ],
+      "severity_baseline": "sev1",
+      "required_monitor_refs": [
+        "mc_001:retry-burn",
+        "mc_001:error-budget"
+      ]
+    },
+    "MonitorCatalogV1": {
+      "schema_version": "MonitorCatalogV1",
+      "monitor_catalog_id": "mc_001",
+      "monitor_definitions": [
+        {
+          "monitor": "retry-burn",
+          "threshold": "attempt_family_retry_burn>3x_baseline"
+        },
+        {
+          "monitor": "error-budget",
+          "threshold": "remaining_budget<30%"
+        }
+      ],
+      "evaluation_cadence": "5m",
+      "false_positive_budget": "moderate",
+      "owner_ref": "team:reliability"
+    },
+    "MitigationPlaybookV1": {
+      "schema_version": "MitigationPlaybookV1",
+      "mitigation_playbook_id": "mp_001",
+      "hazard_refs": [
+        "hs_001"
+      ],
+      "containment_steps": [
+        "freeze_release",
+        "revoke_vendor_export",
+        "enable_safe_mode"
+      ],
+      "recovery_steps": [
+        "verify monitors",
+        "restore traffic in canary",
+        "close incident"
+      ],
+      "approval_refs": [
+        "approval:incident-commander",
+        "approval:ops-manager"
+      ],
+      "success_criteria": [
+        "error_budget_stable",
+        "no_cross_tenant_events",
+        "compensation_backlog_cleared"
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+[package]
+name = "constraint-compiler"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Deterministic projection-to-inference graph compiler for the recursive inference kernel"
+license = "MIT"
+
+[dependencies]
+blake3 = { workspace = true }
+forge-memory-bridge = { path = "../forge-memory-bridge" }
+recursive-kernel-core = { path = "../recursive-kernel-core" }
+semantic-memory-forge = { path = "../semantic-memory-forge" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+stack-ids = { path = "../stack-ids" }
+schemars = { workspace = true }
+
+[dev-dependencies]

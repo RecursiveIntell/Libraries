@@ -1,0 +1,9 @@
+{
+  "schema_version": "ActingOnBehalfReceiptV1",
+  "acting_on_behalf_receipt_id": "aob_001",
+  "authority_chain_id": "auc_001",
+  "effect_execution_receipt_id": "fxr_001",
+  "delegated_action": "execute change window",
+  "within_lease": true,
+  "generated_at": "2026-03-15T12:08:10Z"
+}

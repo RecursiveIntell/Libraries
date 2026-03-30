@@ -1,0 +1,18 @@
+{
+  "wave": "v23",
+  "owner_crate": "assurance-runtime",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "deployment-profile-v1.schema.json",
+    "operating-envelope-v1.schema.json",
+    "assurance-case-v1.schema.json",
+    "hazard-register-v1.schema.json",
+    "control-mapping-v1.schema.json",
+    "residual-risk-acceptance-v1.schema.json",
+    "release-readiness-decision-v1.schema.json",
+    "field-monitoring-plan-v1.schema.json",
+    "certification-bundle-v1.schema.json",
+    "recertification-trigger-v1.schema.json"
+  ],
+  "truth_note": "Deployment and certification outputs remain advisory until admitted through existing governance lanes."
+}

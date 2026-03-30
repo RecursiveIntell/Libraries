@@ -1,0 +1,29 @@
+[package]
+name = "check-runner"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+readme = "README.md"
+publish = false
+description = "Execution backend and check normalization primitives for forge-engine"
+
+[features]
+default = []
+container = []
+
+[dependencies]
+async-trait = "0.1"
+effect-signature = { version = "0.1.0", path = "../effect-signature" }
+forge-policy = { version = "0.1.0", path = "../forge-policy" }
+sandbox-workspace = { version = "0.1.0", path = "../sandbox-workspace" }
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+tokio = { version = "1", features = ["process", "rt", "time"] }
+tracing = "0.1"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[dev-dependencies]
+tempfile = "3"

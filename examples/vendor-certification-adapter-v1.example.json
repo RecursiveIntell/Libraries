@@ -1,0 +1,13 @@
+{
+  "schema_version": "VendorCertificationAdapterV1",
+  "vendor_certification_adapter_id": "vca_001",
+  "vendor_name": "Acme Cloud Audit",
+  "product_surface": "managed-kms",
+  "covered_artifact_families": [
+    "CertificationBundleV1",
+    "AttestationEnvelopeV1",
+    "VendorEvidenceTranslationV1"
+  ],
+  "translation_mode": "attested_and_lossiness_declared",
+  "support_window": "2026-03/2027-03"
+}

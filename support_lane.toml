@@ -1,0 +1,44 @@
+# GOV-001: Machine-readable support lane manifest.
+# This is the single authority for which crates are in the supported lane.
+# All gates (panic audit, doc check, release receipt) read from this file.
+# SUPPORT_PROFILE.md is rendered from this, not the other way around.
+
+[supported_lane]
+crates = [
+    "contract-schema-gen",
+    "forge-memory-bridge",
+    "forge-pilot",
+    "kernel-conformance",
+    "kernel-execution",
+    "kernel-oracles",
+    "knowledge-runtime",
+    "living-memory/living-memory",
+    "llm-tool-runtime",
+    "recursive-kernel-core",
+    "semantic-memory",
+    "semantic-memory-forge",
+    "stack-ids",
+    "verification-adjudication",
+    "verification-calibration",
+    "verification-control",
+    "verification-policy",
+]
+
+# GOV-002: forge-engine (living-memory/living-memory) depends on ~10 Primitives/
+# crates outside the supported lane. These are transitive runtime dependencies:
+# cea-core, forge-kernel-api, constraint-compiler, etc.
+# The supported lane claim covers forge-engine's direct API surface but
+# its Primitives/ dependencies are NOT individually build-certified.
+# A future release should either promote these or split forge-engine.
+
+[governance]
+# Build-checked but not yet build-certified (V27).
+crates = [
+    "assurance-runtime",
+    "attestation-exchange",
+    "authority-delegation",
+    "constitutional-memory",
+    "continuity-runtime",
+    "effect-runtime",
+    "mechanism-runtime",
+]

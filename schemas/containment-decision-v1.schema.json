@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "approved_by": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "containment_decision_id": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "justification": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approved_by",
+    "containment_decision_id",
+    "decision",
+    "generated_at",
+    "incident_case_id",
+    "justification",
+    "schema_version"
+  ],
+  "title": "ContainmentDecisionV1",
+  "type": "object"
+}

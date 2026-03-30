@@ -1,0 +1,33 @@
+[package]
+name = "knowledge-runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Bounded orchestration scaffold for semantic-memory: classification, routing, scoped entity resolution, provenance-preserving merge, and projection status tracking"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/knowledge-runtime"
+
+[lib]
+doctest = false
+
+[dependencies]
+constraint-compiler = { path = "../constraint-compiler" }
+forge-memory-bridge = { path = "../forge-memory-bridge" }
+kernel-execution = { path = "../kernel-execution" }
+kernel-oracles = { path = "../kernel-oracles" }
+recursive-kernel-core = { path = "../recursive-kernel-core" }
+semantic-memory = { path = "../semantic-memory" }
+stack-ids = { path = "../stack-ids" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+uuid = { workspace = true, features = ["v4"] }
+schemars = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+tempfile = { workspace = true }
+semantic-memory-forge = { path = "../semantic-memory-forge" }

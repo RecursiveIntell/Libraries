@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Public view of a durable failed projection import receipt.",
+  "properties": {
+    "comparability_snapshot_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "content_digest": {
+      "type": "string"
+    },
+    "direct_write": {
+      "type": "boolean"
+    },
+    "episode_bundle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "episode_bundle_json": true,
+    "error_kind": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "evidence_bundle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_bundle_json": true,
+    "execution_context_json": true,
+    "export_schema_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "failed_at": {
+      "type": "string"
+    },
+    "failure_id": {
+      "type": "string"
+    },
+    "kernel_payload_json": true,
+    "record_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope_domain": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scope_namespace": {
+      "type": "string"
+    },
+    "scope_repo_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scope_workspace_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_authority": {
+      "type": "string"
+    },
+    "source_envelope_id": {
+      "type": "string"
+    },
+    "source_exported_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transformed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "content_digest",
+    "direct_write",
+    "error_kind",
+    "error_message",
+    "failed_at",
+    "failure_id",
+    "record_count",
+    "schema_version",
+    "scope_namespace",
+    "source_authority",
+    "source_envelope_id"
+  ],
+  "title": "ImportFailureRecordV1",
+  "type": "object"
+}

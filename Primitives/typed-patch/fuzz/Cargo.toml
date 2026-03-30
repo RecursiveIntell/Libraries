@@ -1,0 +1,19 @@
+[package]
+name = "typed-patch-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+typed-patch = { path = ".." }
+uuid = { version = "1", features = ["v4"] }
+
+[[bin]]
+name = "validate_patch"
+path = "fuzz_targets/validate_patch.rs"
+test = false
+doc = false

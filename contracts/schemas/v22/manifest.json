@@ -1,0 +1,18 @@
+{
+  "wave": "v22",
+  "owner_crate": "authority-delegation",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "capability-class-v1.schema.json",
+    "authority-lease-v1.schema.json",
+    "delegation-bundle-v1.schema.json",
+    "authority-chain-v1.schema.json",
+    "separation-of-duties-policy-v1.schema.json",
+    "dual-control-approval-v1.schema.json",
+    "break-glass-grant-v1.schema.json",
+    "delegation-revocation-v1.schema.json",
+    "acting-on-behalf-receipt-v1.schema.json",
+    "conflict-disclosure-v1.schema.json"
+  ],
+  "truth_note": "Delegated authority remains expiring, challengeable, and non-ambient; break-glass use is evidentiary and reviewable."
+}

@@ -1,0 +1,192 @@
+{
+  "fixture_name": "policy_impact_diff",
+  "wave": "v25",
+  "artifacts": {
+    "EffectiveConstitutionFromV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-104-from",
+      "applicability_context_ref": "applicability-context-104",
+      "profile_set_ref": "profile-set-104-from",
+      "composition_rule_set_ref": "composition-rule-set-104",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "rpp_001"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "blocked",
+      "hard_block_summary": [
+        "residency.forbidden_transfer_classes:customer_pii_to_non_us"
+      ],
+      "active_warning_summary": [],
+      "approval_requirements": [],
+      "disclosure_obligations": [],
+      "residency_obligations": [
+        "us-central"
+      ],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [],
+      "continuity_obligations": [],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [],
+      "valid_as_of": "2026-03-16T10:00:00Z",
+      "recorded_as_of": "2026-03-16T10:00:05Z",
+      "explanation_summary": "baseline blocked before exception admission"
+    },
+    "CompiledObligationSetFromV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-104-from",
+      "effective_constitution_ref": "effective-constitution-104-from",
+      "obligation_entries": [],
+      "block_entries": [
+        {
+          "block_key": "residency.forbidden_transfer_classes:customer_pii_to_non_us",
+          "reason": "forbidden transfer class",
+          "source_profile_refs": [
+            "rpp_001"
+          ],
+          "admissible_exception_classes": [
+            "locality_exception"
+          ]
+        }
+      ],
+      "required_approvals": [],
+      "required_checks": [],
+      "required_monitors": [],
+      "required_evidence_obligations": [],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [],
+      "promotion_eligibility_summary": "blocked",
+      "release_eligibility_summary": "blocked",
+      "effect_eligibility_summary": "blocked",
+      "unresolved_dependency_refs": []
+    },
+    "EffectiveConstitutionToV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-104-to",
+      "applicability_context_ref": "applicability-context-104",
+      "profile_set_ref": "profile-set-104-to",
+      "composition_rule_set_ref": "composition-rule-set-104",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "rpp_001"
+      ],
+      "admitted_exception_refs": [
+        "profile-exception-bundle-104"
+      ],
+      "current_mode_classification": "normal",
+      "hard_block_summary": [],
+      "active_warning_summary": [],
+      "approval_requirements": [
+        "locality-review-board"
+      ],
+      "disclosure_obligations": [],
+      "residency_obligations": [
+        "eu-west"
+      ],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "cross_region_replay_monitor"
+      ],
+      "continuity_obligations": [],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [
+        "full_replay_provenance"
+      ],
+      "valid_as_of": "2026-03-16T14:00:00Z",
+      "recorded_as_of": "2026-03-16T14:00:05Z",
+      "explanation_summary": "exception admitted one replay path"
+    },
+    "CompiledObligationSetToV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-104-to",
+      "effective_constitution_ref": "effective-constitution-104-to",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-104a",
+          "obligation_family": "monitor.required",
+          "obligation_key": "incident_exception_monitors",
+          "output_kind": "monitor",
+          "fold_class": "union",
+          "string_values": [
+            "cross_region_replay_monitor"
+          ],
+          "blocking": false,
+          "source_profile_refs": [
+            "profile-exception-bundle-104"
+          ],
+          "source_exception_refs": [
+            "profile-exception-bundle-104"
+          ],
+          "explanation": "exception-added monitoring obligation"
+        }
+      ],
+      "block_entries": [],
+      "required_approvals": [
+        "locality-review-board"
+      ],
+      "required_checks": [],
+      "required_monitors": [
+        "cross_region_replay_monitor"
+      ],
+      "required_evidence_obligations": [],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [
+        "locality_exception_post_review"
+      ],
+      "promotion_eligibility_summary": "eligible_with_approvals",
+      "release_eligibility_summary": "eligible_with_approvals",
+      "effect_eligibility_summary": "eligible_with_approvals",
+      "unresolved_dependency_refs": []
+    },
+    "PolicyImpactDiffV1": {
+      "schema_version": "PolicyImpactDiffV1",
+      "policy_impact_diff_id": "policy-impact-diff-104",
+      "from_effective_constitution_ref": "effective-constitution-104-from",
+      "to_effective_constitution_ref": "effective-constitution-104-to",
+      "changed_obligation_families": [
+        "monitor.required",
+        "residency.forbidden_transfer_classes"
+      ],
+      "unchanged_obligation_families": [],
+      "newly_blocked_paths": [],
+      "newly_admitted_paths": [
+        "residency.forbidden_transfer_classes:customer_pii_to_non_us"
+      ],
+      "changed_approval_behavior": [
+        "locality-review-board"
+      ],
+      "changed_monitoring_behavior": [
+        "cross_region_replay_monitor"
+      ],
+      "changed_disclosure_behavior": [],
+      "changed_residency_behavior": [
+        "eu-west"
+      ],
+      "changed_incident_behavior": [],
+      "migration_consequences": [
+        "monitoring plan update required",
+        "previously blocked paths are now conditionally admissible"
+      ],
+      "simulation_only": false,
+      "explanation_summary": "exception admission changed admissibility and monitoring requirements"
+    }
+  }
+}

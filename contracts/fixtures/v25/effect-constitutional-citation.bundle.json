@@ -1,0 +1,182 @@
+{
+  "fixture_name": "effect_constitutional_citation",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-300",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-18T00:00:00Z",
+      "recorded_as_of": "2026-03-18T00:00:05Z",
+      "target_surface_kind": "effect_runtime",
+      "actor_class": "orchestrator",
+      "role_refs": [
+        "role:operator"
+      ],
+      "incident_mode": "normal",
+      "execution_context_ref": "execution-context-300",
+      "admitted_exception_refs": []
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-300",
+      "applicability_context_ref": "applicability-context-300",
+      "profile_refs": {
+        "effect_policy_profile_id": "effect-policy-profile-300"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25"
+      ],
+      "omissions": [],
+      "active_exception_refs": [],
+      "normalized_profile_order": [
+        "effect-policy-profile-300"
+      ]
+    },
+    "CompositionRuleSetV1": {
+      "schema_version": "CompositionRuleSetV1",
+      "composition_rule_set_id": "composition-rule-set-300",
+      "version": "reference-v1",
+      "family_rules": [
+        {
+          "obligation_family": "effect.approval_required",
+          "fold_class": "all_or_nothing",
+          "output_kind": "blocking",
+          "monotone_additions_expected": true,
+          "block_on_unresolved_conflict": true,
+          "admissible_exception_classes": [
+            "effect_exception"
+          ],
+          "downgrade_behavior": "emit_receipt_and_never_fall_back_to_permissive",
+          "explanation": "block effect execution without explicit approval evidence"
+        }
+      ],
+      "conflict_classes": [],
+      "exception_rules": [
+        {
+          "exception_class": "effect_exception",
+          "allowed_obligation_families": [
+            "effect.approval_required"
+          ],
+          "requires_approval_refs": true,
+          "requires_expiry": true,
+          "residual_obligations_mandatory": true
+        }
+      ],
+      "downgrade_behavior": "emit_receipt_and_never_fall_back_to_permissive",
+      "reference_evaluator_version": "profile-runtime/reference-evaluator/v1"
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-300",
+      "applicability_context_ref": "applicability-context-300",
+      "profile_set_ref": "profile-set-300",
+      "composition_rule_set_ref": "composition-rule-set-300",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "effect-policy-profile-300"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "normal",
+      "hard_block_summary": [],
+      "active_warning_summary": [],
+      "approval_requirements": [
+        "effect-operator"
+      ],
+      "disclosure_obligations": [],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "replay_integrity"
+      ],
+      "continuity_obligations": [],
+      "effect_obligations": [
+        "effect-approval-required"
+      ],
+      "delegation_obligations": [],
+      "replay_obligations": [
+        "effect-observation-reported"
+      ],
+      "valid_as_of": "2026-03-18T00:00:00Z",
+      "recorded_as_of": "2026-03-18T00:00:05Z",
+      "explanation_summary": "effect execution path requires explicit approval on all outbound writes"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-300",
+      "effective_constitution_ref": "effective-constitution-300",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-300a",
+          "obligation_family": "effect.approval_required",
+          "obligation_key": "approval_required",
+          "output_kind": "effect",
+          "fold_class": "all_or_nothing",
+          "string_values": [
+            "policy-operator"
+          ],
+          "blocking": true,
+          "source_profile_refs": [
+            "effect-policy-profile-300"
+          ],
+          "source_exception_refs": [],
+          "explanation": "effect execution is blocked without operator approval"
+        }
+      ],
+      "block_entries": [
+        {
+          "block_key": "effect.approval_required:policy-operator",
+          "reason": "operator approval required",
+          "source_profile_refs": [
+            "effect-policy-profile-300"
+          ],
+          "admissible_exception_classes": [
+            "effect_exception"
+          ]
+        }
+      ],
+      "required_approvals": [
+        "effect-operator"
+      ],
+      "required_checks": [
+        "effect-write-review"
+      ],
+      "required_monitors": [
+        "replay_integrity"
+      ],
+      "required_evidence_obligations": [
+        "operator-signed-hand-off"
+      ],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [
+        "post-execution-drift-review"
+      ],
+      "promotion_eligibility_summary": "blocked_by_obligation",
+      "release_eligibility_summary": "blocked_by_obligation",
+      "effect_eligibility_summary": "blocked_by_obligation",
+      "unresolved_dependency_refs": []
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-300",
+      "applicability_context_ref": "applicability-context-300",
+      "profile_set_ref": "profile-set-300",
+      "composition_rule_set_ref": "composition-rule-set-300",
+      "effective_constitution_ref": "effective-constitution-300",
+      "compiled_obligation_set_ref": "compiled-obligation-set-300",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-300",
+      "replay_handle": "profile-runtime:applicability-context-300:profile-set-300:composition-rule-set-300",
+      "normalized_input_digest": "3003003003003003003003003003003003003003003003003003003003003003",
+      "generated_at": "2026-03-18T00:00:06Z"
+    }
+  }
+}

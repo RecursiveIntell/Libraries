@@ -1,0 +1,17 @@
+{
+  "wave": "v21",
+  "owner_crate": "effect-runtime",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "effect-intent-v1.schema.json",
+    "effect-preflight-report-v1.schema.json",
+    "effect-window-v1.schema.json",
+    "effect-commit-decision-v1.schema.json",
+    "effect-execution-receipt-v1.schema.json",
+    "effect-observation-bundle-v1.schema.json",
+    "compensation-plan-v1.schema.json",
+    "compensation-execution-receipt-v1.schema.json",
+    "external-effect-ledger-entry-v1.schema.json"
+  ],
+  "truth_note": "Live effects remain blocked without typed preflight, commit, observation, and compensation artifacts."
+}

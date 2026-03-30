@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ProfileOmissionV1": {
+      "properties": {
+        "family": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "family",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "ProfileRefGroupV1": {
+      "properties": {
+        "access_purpose_matrix_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approval_matrix_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "audit_extraction_policy_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conflict_class_catalog_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "continuity_policy_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cross_boundary_transfer_class_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "delegation_matrix_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delegation_policy_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effect_policy_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "escalation_clock_policy_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence_collection_plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hazard_library_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hazard_scenario_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "incident_taxonomy_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "locality_exception_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "mitigation_playbook_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "monitor_catalog_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pager_route_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "privacy_retention_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recertification_schedule_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "redaction_rule_set_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "regulatory_regime_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "release_policy_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requirement_control_map_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "residency_policy_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role_catalog_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "severity_matrix_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tenant_boundary_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vendor_certification_adapter_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vendor_evidence_translation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vendor_revocation_handling_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vendor_trust_root_binding_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    }
+  },
+  "properties": {
+    "active_exception_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "applicability_context_ref": {
+      "type": "string"
+    },
+    "normalized_profile_order": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "omissions": {
+      "items": {
+        "$ref": "#/definitions/ProfileOmissionV1"
+      },
+      "type": "array"
+    },
+    "profile_refs": {
+      "$ref": "#/definitions/ProfileRefGroupV1"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_admission_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "applicability_context_ref",
+    "profile_refs",
+    "profile_set_id",
+    "schema_version"
+  ],
+  "title": "ProfileSetV1",
+  "type": "object"
+}

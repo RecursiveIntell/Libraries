@@ -1,0 +1,411 @@
+{
+  "fixture_name": "federated_settlement_local_constitution",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-303",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-18T03:00:00Z",
+      "recorded_as_of": "2026-03-18T03:00:05Z",
+      "target_surface_kind": "federated_settlement",
+      "actor_class": "governance-orchestrator",
+      "role_refs": [
+        "role:orchestrator"
+      ],
+      "incident_mode": "normal",
+      "execution_context_ref": "execution-context-303",
+      "admitted_exception_refs": []
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-303",
+      "applicability_context_ref": "applicability-context-303",
+      "profile_refs": {
+        "effect_policy_profile_id": "effect-policy-profile-303",
+        "delegation_policy_profile_id": "delegation-policy-profile-303"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25"
+      ],
+      "omissions": [],
+      "active_exception_refs": [],
+      "normalized_profile_order": [
+        "effect-policy-profile-303",
+        "delegation-policy-profile-303"
+      ]
+    },
+    "CompositionRuleSetV1": {
+      "schema_version": "CompositionRuleSetV1",
+      "composition_rule_set_id": "composition-rule-set-303",
+      "version": "reference-v1",
+      "family_rules": [
+        {
+          "obligation_family": "settlement.shared_view",
+          "fold_class": "all_or_nothing",
+          "output_kind": "delegation",
+          "monotone_additions_expected": true,
+          "block_on_unresolved_conflict": true,
+          "admissible_exception_classes": [
+            "settlement_exception"
+          ],
+          "downgrade_behavior": "emit_receipt_and_continue",
+          "explanation": "shared settlement can downgrade only with explicit local dissent visibility"
+        }
+      ],
+      "conflict_classes": [],
+      "exception_rules": [
+        {
+          "exception_class": "settlement_exception",
+          "allowed_obligation_families": [
+            "settlement.shared_view"
+          ],
+          "requires_approval_refs": true,
+          "requires_expiry": false,
+          "residual_obligations_mandatory": true
+        }
+      ],
+      "downgrade_behavior": "emit_receipt_and_continue",
+      "reference_evaluator_version": "profile-runtime/reference-evaluator/v1"
+    },
+    "TreatyBundleV1": {
+      "schema_version": "treaty_bundle_v1",
+      "treaty_bundle_id": "treaty-v25",
+      "treaty_name": "payments runtime federation",
+      "parties": [
+        {
+          "runtime_name": "runtime-a",
+          "local_authority": "authority-a",
+          "admission_lane": "shared"
+        },
+        {
+          "runtime_name": "runtime-b",
+          "local_authority": "authority-b",
+          "admission_lane": "shared"
+        }
+      ],
+      "canonical_owner": "federated-settlement",
+      "publication_status": "advisory_only",
+      "advisory_only": true,
+      "non_authoritative": false
+    },
+    "RuntimeIdentitySetV1": {
+      "schema_version": "runtime_identity_set_v1",
+      "runtime_identity_set_id": "runtime-identity-set-v25",
+      "treaty_bundle_id": "treaty-v25",
+      "identities": [
+        {
+          "runtime_name": "runtime-a",
+          "local_subject_ref": "subject-a",
+          "shared_subject_ref": "shared-subject-a",
+          "evidence_ref": "evidence-a"
+        },
+        {
+          "runtime_name": "runtime-b",
+          "local_subject_ref": "subject-b",
+          "shared_subject_ref": "shared-subject-b",
+          "evidence_ref": "evidence-b"
+        }
+      ],
+      "canonical_owner": "federated-settlement",
+      "publication_status": "advisory_only"
+    },
+    "CrossRuntimeEquivalenceBundleV1": {
+      "schema_version": "cross_runtime_equivalence_bundle_v1",
+      "equivalence_bundle_id": "equivalence-bundle-v25",
+      "treaty_bundle_id": "treaty-v25",
+      "runtime_identity_set_id": "runtime-identity-set-v25",
+      "equivalence_scope": "claim_settlement",
+      "evidence": [
+        {
+          "local_claim_ref": "local-claim-a",
+          "shared_claim_ref": "shared-claim-a",
+          "evidence_refs": [
+            "claim-hash-a"
+          ]
+        },
+        {
+          "local_claim_ref": "local-claim-b",
+          "shared_claim_ref": "shared-claim-b",
+          "evidence_refs": [
+            "claim-hash-b"
+          ]
+        }
+      ],
+      "canonical_owner": "federated-settlement",
+      "publication_status": "advisory_only"
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-303",
+      "applicability_context_ref": "applicability-context-303",
+      "profile_set_ref": "profile-set-303",
+      "composition_rule_set_ref": "composition-rule-set-303",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "effect-policy-profile-303",
+        "delegation-policy-profile-303"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "normal",
+      "hard_block_summary": [],
+      "active_warning_summary": [],
+      "approval_requirements": [
+        "federated-settlement-governance"
+      ],
+      "disclosure_obligations": [
+        "shared-settlement-receipt"
+      ],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "shared-settlement-observe"
+      ],
+      "continuity_obligations": [
+        "cross-runtime-continuity"
+      ],
+      "effect_obligations": [
+        "effect-acknowledgment"
+      ],
+      "delegation_obligations": [
+        "delegation-notarization"
+      ],
+      "replay_obligations": [
+        "replay-shared"
+      ],
+      "valid_as_of": "2026-03-18T03:00:00Z",
+      "recorded_as_of": "2026-03-18T03:00:05Z",
+      "explanation_summary": "federated settlement requires explicit constitutionally-cited cross-runtime parity"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-303",
+      "effective_constitution_ref": "effective-constitution-303",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-303a",
+          "obligation_family": "settlement.shared_view",
+          "obligation_key": "shared_settlement_required",
+          "output_kind": "delegation",
+          "fold_class": "all_or_nothing",
+          "string_values": [
+            "cross-runtime-shared-view"
+          ],
+          "blocking": false,
+          "source_profile_refs": [
+            "effect-policy-profile-303"
+          ],
+          "source_exception_refs": [],
+          "explanation": "shared settlement tracks cross-runtime replay and local dissent"
+        }
+      ],
+      "block_entries": [
+        {
+          "block_key": "settlement.shared_view:cross-runtime-shared-view",
+          "reason": "requires local dissent preservation",
+          "source_profile_refs": [
+            "delegation-policy-profile-303"
+          ],
+          "admissible_exception_classes": [
+            "settlement_exception"
+          ]
+        }
+      ],
+      "required_approvals": [
+        "federated-settlement-governance"
+      ],
+      "required_checks": [
+        "shared-settlement-audit"
+      ],
+      "required_monitors": [
+        "shared-settlement-observe"
+      ],
+      "required_evidence_obligations": [
+        "shared-settlement-evidence"
+      ],
+      "required_disclosure_obligations": [
+        "shared-settlement-disclosure"
+      ],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [
+        "post_hoc-local-dissent-review"
+      ],
+      "promotion_eligibility_summary": "eligible_with_dissent_guardrails",
+           "release_eligibility_summary": "eligible_with_dissent_guardrails",
+      "effect_eligibility_summary": "eligible_with_dissent_guardrails",
+      "unresolved_dependency_refs": []
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-303",
+      "applicability_context_ref": "applicability-context-303",
+      "profile_set_ref": "profile-set-303",
+      "composition_rule_set_ref": "composition-rule-set-303",
+      "effective_constitution_ref": "effective-constitution-303",
+      "compiled_obligation_set_ref": "compiled-obligation-set-303",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-303",
+      "replay_handle": "profile-runtime:applicability-context-303:profile-set-303:composition-rule-set-303",
+      "normalized_input_digest": "3033033033033033033033033033033033033033033033033033033033033033",
+      "generated_at": "2026-03-18T03:00:06Z"
+    },
+    "SharedDivergenceReportV1": {
+      "schema_version": "shared_divergence_report_v1",
+      "shared_divergence_report_id": "shared-divergence-report-v25",
+      "settlement_case_id": "settlement-case-v25",
+      "treaty_bundle_id": "treaty-v25",
+      "shared_replay_slice_id": "shared-replay-slice-v25",
+      "applicability_context_id": "applicability-context-303",
+      "profile_set_id": "profile-set-303",
+      "composition_receipt_id": "composition-receipt-303",
+      "effective_constitution_id": "effective-constitution-303",
+      "compiled_obligation_set_id": "compiled-obligation-set-303",
+      "profile_exception_bundle_ids": [],
+      "blocking_runtime_names": [],
+      "divergence_summary": "settlement replay aligned between runtime-a and runtime-b",
+      "requires_local_dissent_preservation": false,
+      "recommends_suspension": false,
+      "advisory_only": false
+    },
+    "LocalDissentRecordV1": {
+      "schema_version": "local_dissent_record_v1",
+      "local_dissent_id": "local-dissent-v25",
+      "runtime_name": "runtime-a",
+      "reason": "runtime-a flagged advisory-only path",
+      "blocks_shared_settlement": false
+    },
+    "SharedViewDowngradeV1": {
+      "schema_version": "shared_view_downgrade_v1",
+      "shared_view_downgrade_id": "shared-view-downgrade-v25",
+      "reason": "missing_required_replay",
+      "detail": "shared view downgraded until all replays are complete",
+      "preserves_local_dissent": true
+    },
+    "SharedReplaySliceV1": {
+      "schema_version": "shared_replay_slice_v1",
+      "shared_replay_slice_id": "shared-replay-slice-v25",
+      "settlement_case_id": "settlement-case-v25",
+      "treaty_bundle_id": "treaty-v25",
+      "applicability_context_id": "applicability-context-303",
+      "profile_set_id": "profile-set-303",
+      "composition_receipt_id": "composition-receipt-303",
+      "effective_constitution_id": "effective-constitution-303",
+      "compiled_obligation_set_id": "compiled-obligation-set-303",
+      "profile_exception_bundle_ids": [],
+      "replay_requirements": [
+        {
+          "runtime_name": "runtime-a",
+          "required": true,
+          "replay_available": true
+        },
+        {
+          "runtime_name": "runtime-b",
+          "required": true,
+          "replay_available": true
+        }
+      ],
+      "missing_required_runtime_names": [],
+      "all_required_replays_available": true,
+      "degraded": false,
+      "advisory_only": false,
+      "generated_at": "2026-03-18T03:00:10Z"
+    },
+    "SettlementCaseV1": {
+      "schema_version": "settlement_case_v1",
+      "settlement_case_id": "settlement-case-v25",
+      "treaty_bundle_id": "treaty-v25",
+      "equivalence_bundle_id": "equivalence-bundle-v25",
+      "applicability_context_id": "applicability-context-303",
+      "profile_set_id": "profile-set-303",
+      "composition_receipt_id": "composition-receipt-303",
+      "effective_constitution_id": "effective-constitution-303",
+      "compiled_obligation_set_id": "compiled-obligation-set-303",
+      "profile_exception_bundle_ids": [],
+      "shared_disposition": {
+        "schema_version": "shared_disposition_v1",
+        "shared_disposition_id": "shared-disposition-v25",
+        "disposition_label": "bounded_share",
+        "treatment": "bounded claim parity",
+        "advisory_only": false
+      },
+      "replay_requirements": [
+        {
+          "runtime_name": "runtime-a",
+          "required": true,
+          "replay_available": true
+        },
+        {
+          "runtime_name": "runtime-b",
+          "required": true,
+          "replay_available": true
+        }
+      ],
+      "local_dissent": [
+        {
+          "schema_version": "local_dissent_record_v1",
+          "local_dissent_id": "local-dissent-v25",
+          "runtime_name": "runtime-a",
+          "reason": "runtime-a flagged advisory-only path",
+          "blocks_shared_settlement": false
+        }
+      ],
+      "advisory_only": false,
+      "non_admitted": false
+    },
+    "SettlementReceiptV1": {
+      "schema_version": "settlement_receipt_v1",
+      "settlement_receipt_id": "settlement-receipt-v25",
+      "settlement_case_id": "settlement-case-v25",
+      "applicability_context_id": "applicability-context-303",
+      "profile_set_id": "profile-set-303",
+      "composition_receipt_id": "composition-receipt-303",
+      "effective_constitution_id": "effective-constitution-303",
+      "compiled_obligation_set_id": "compiled-obligation-set-303",
+      "profile_exception_bundle_ids": [],
+      "disposition": "shared_disposition_issued",
+      "settlement_allowed": true,
+      "advisory_only": false,
+      "non_admitted": false,
+      "degraded": false,
+      "shared_disposition_id": "shared-disposition-v25",
+      "downgrade": {
+        "schema_version": "shared_view_downgrade_v1",
+        "shared_view_downgrade_id": "shared-view-downgrade-v25",
+        "reason": "missing_required_replay",
+        "detail": "degradation not required in this case",
+        "preserves_local_dissent": true
+      },
+      "local_dissent": [
+        {
+          "schema_version": "local_dissent_record_v1",
+          "local_dissent_id": "local-dissent-v25",
+          "runtime_name": "runtime-a",
+          "reason": "runtime-a flagged advisory-only path",
+          "blocks_shared_settlement": false
+        }
+      ],
+      "generated_at": "2026-03-18T03:00:11Z"
+    },
+    "TreatySuspensionV1": {
+      "schema_version": "treaty_suspension_v1",
+      "treaty_suspension_id": "treaty-suspension-v25",
+      "treaty_bundle_id": "treaty-v25",
+      "shared_divergence_report_id": "shared-divergence-report-v25",
+      "suspension_scope": "shared_settlement",
+      "suspension_reason": "no active divergences in this path",
+      "blocked_runtime_names": [],
+      "resumption_requirements": [
+        "none"
+      ],
+      "advisory_only": true,
+      "generated_at": "2026-03-18T03:00:12Z"
+    }
+  }
+}

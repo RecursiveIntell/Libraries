@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "actor_class": {
+      "type": "string"
+    },
+    "admitted_exception_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "continuity_policy_profile_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "delegation_policy_profile_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deployment_profile_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effect_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effect_policy_profile_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "execution_context_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "incident_mode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "recorded_as_of": {
+      "type": "string"
+    },
+    "release_policy_profile_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "role_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope_key": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ScopeKey"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "target_surface_kind": {
+      "type": "string"
+    },
+    "tenancy_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tenant_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "treaty_or_disclosure_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "valid_as_of": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "actor_class",
+    "applicability_context_id",
+    "namespace",
+    "recorded_as_of",
+    "schema_version",
+    "target_surface_kind",
+    "valid_as_of"
+  ],
+  "title": "ApplicabilityContextV1",
+  "type": "object"
+}

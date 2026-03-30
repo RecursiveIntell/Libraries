@@ -1,0 +1,31 @@
+{
+  "schema_version": "claim_state_v13",
+  "claim_state_id": "claim-state-123",
+  "claim_id": "claim-123",
+  "claim_version_id": "claim-version-6",
+  "semantics_profile_id": "semantics-profile-v13",
+  "view": "canonical",
+  "bilattice_truth": "both",
+  "support_set_id": "support-set-7",
+  "support_set_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "quality_vector": {
+    "exactness": "conservative",
+    "degradation": [
+      "exactness_downgraded"
+    ],
+    "freshness": "current",
+    "replay_limited": false,
+    "execution_contaminated": true
+  },
+  "evidence_admissibility": "admissible",
+  "contradiction_witness_id": "contradiction-witness-9",
+  "valid_from": "2026-03-01T00:00:00Z",
+  "valid_to": null,
+  "tx_from": "2026-03-14T12:05:00Z",
+  "tx_to": null,
+  "proof_obligations_remaining": [
+    "run exact bounded oracle on the local slice",
+    "attach full replay receipt"
+  ],
+  "policy_action_allowed": false
+}

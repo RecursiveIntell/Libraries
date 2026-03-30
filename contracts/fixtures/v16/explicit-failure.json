@@ -1,0 +1,9 @@
+{
+  "shared_view_downgrade": {
+    "schema_version": "shared_view_downgrade_v1",
+    "shared_view_downgrade_id": "downgrade-v16-2",
+    "reason": "non_admitted_surface",
+    "detail": "the settlement surface remains non-admitted and cannot create shared authority",
+    "preserves_local_dissent": true
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "VendorRevocationChannelV1": {
+      "enum": [
+        "signed_revocation_feed"
+      ],
+      "type": "string"
+    },
+    "VendorRotationChannelV1": {
+      "enum": [
+        "published_keyset"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "revocation_channel": {
+      "$ref": "#/definitions/VendorRevocationChannelV1"
+    },
+    "rotation_channel": {
+      "$ref": "#/definitions/VendorRotationChannelV1"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "signer_classes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trust_root_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "vendor_certification_adapter_id": {
+      "type": "string"
+    },
+    "vendor_trust_root_binding_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "revocation_channel",
+    "rotation_channel",
+    "schema_version",
+    "vendor_certification_adapter_id",
+    "vendor_trust_root_binding_id"
+  ],
+  "title": "VendorTrustRootBindingV1",
+  "type": "object"
+}

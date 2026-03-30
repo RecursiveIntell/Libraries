@@ -1,0 +1,26 @@
+{
+  "schema_version": "continuity_review_case_v1",
+  "continuity_review_case_id": "continuity-review-case-v25",
+  "incident_case_id": "incident-case-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "required_obligation_refs": [
+    "obligation:continuity:required"
+  ],
+  "blocking_obligation_refs": [
+    "obligation:continuity:blocking"
+  ],
+  "monitoring_obligation_refs": [
+    "obligation:continuity:monitoring"
+  ],
+  "citation_status": "complete",
+  "obligation_refs_status": "complete",
+  "continuity_exception_id": "continuity-exception-v25",
+  "recovery_replay_slice_id": "recovery-replay-slice-v25",
+  "post_hoc_review_due": false,
+  "final_state": "closed"
+}

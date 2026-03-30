@@ -1,0 +1,15 @@
+[package]
+name = "continuity-runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Typed continuity and incident surface crate with bounded recovery profiles; not an incident-command runtime"
+license = "MIT"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+schemars = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

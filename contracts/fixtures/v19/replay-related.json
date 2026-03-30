@@ -1,0 +1,16 @@
+{
+  "archive_manifest": {
+    "schema_version": "archive_manifest_v1",
+    "archive_manifest_id": "archive-v19-1",
+    "charter_bundle_id": "charter-v19-1",
+    "preserved_refs": ["amendment-v19-1", "decision-v19-1"],
+    "replay_guarantee": "historical replay remains available through archive handles"
+  },
+  "historical_query_guarantee": {
+    "schema_version": "historical_query_guarantee_v1",
+    "historical_query_guarantee_id": "history-v19-1",
+    "archive_manifest_id": "archive-v19-1",
+    "guarantee_text": "archive reads stay queryable even after compaction",
+    "horizon_only": true
+  }
+}

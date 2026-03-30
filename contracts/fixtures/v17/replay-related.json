@@ -1,0 +1,10 @@
+{
+  "simulation_contract": {
+    "schema_version": "simulation_contract_v1",
+    "simulation_contract_id": "simulation-v17-2",
+    "mechanism_bundle_id": "mechanism-v17-1",
+    "target_outcome": "replay one simulator trace deterministically",
+    "required_inputs": ["fixture:bounded-dataset", "replay:seed-2", "trace:sim-run-2"],
+    "advisory_only": true
+  }
+}

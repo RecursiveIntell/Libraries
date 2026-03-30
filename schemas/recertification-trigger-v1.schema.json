@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RecertificationTriggerKindV1": {
+      "enum": [
+        "slo_breach",
+        "incident",
+        "control_gap"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "deployment_profile_id": {
+      "type": "string"
+    },
+    "recertification_trigger_id": {
+      "type": "string"
+    },
+    "required_action": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "trigger_kind": {
+      "$ref": "#/definitions/RecertificationTriggerKindV1"
+    },
+    "triggered_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "deployment_profile_id",
+    "recertification_trigger_id",
+    "required_action",
+    "schema_version",
+    "trigger_kind",
+    "triggered_at"
+  ],
+  "title": "RecertificationTriggerV1",
+  "type": "object"
+}

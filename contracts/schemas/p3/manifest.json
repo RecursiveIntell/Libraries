@@ -1,0 +1,17 @@
+{
+  "profile": "p3",
+  "title": "Role Catalog, Duty Segregation, and Approval Matrix",
+  "primary_owner": "authority-delegation",
+  "schemas": [
+    "role-catalog-v1.schema.json",
+    "delegation-matrix-v1.schema.json",
+    "approval-matrix-v1.schema.json",
+    "conflict-class-catalog-v1.schema.json"
+  ],
+  "examples": [
+    "role-catalog-v1.example.json",
+    "delegation-matrix-v1.example.json",
+    "approval-matrix-v1.example.json",
+    "conflict-class-catalog-v1.example.json"
+  ]
+}

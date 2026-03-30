@@ -1,0 +1,19 @@
+{
+  "schema_version": "ResidencyPolicyProfileV1",
+  "residency_policy_profile_id": "rpp_001",
+  "allowed_storage_regions": [
+    "us-central",
+    "us-east"
+  ],
+  "allowed_execution_regions": [
+    "us-central"
+  ],
+  "allowed_replay_regions": [
+    "us-central"
+  ],
+  "forbidden_transfer_classes": [
+    "customer_pii_to_non_us",
+    "production_logs_to_public_vendor"
+  ],
+  "default_exception_path": "locality-review-board"
+}

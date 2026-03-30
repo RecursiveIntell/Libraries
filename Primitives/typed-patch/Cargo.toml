@@ -1,0 +1,23 @@
+[package]
+name = "typed-patch"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+readme = "README.md"
+publish = false
+description = "Structured patch schema plus validation and apply helpers"
+
+[dependencies]
+forge-policy = { version = "0.1.0", path = "../forge-policy" }
+sandbox-workspace = { version = "0.1.0", path = "../sandbox-workspace" }
+serde = { version = "1", features = ["derive"] }
+similar = "2"
+thiserror = "2"
+tokio = { version = "1", features = ["rt"] }
+uuid = { version = "1", features = ["serde", "v4"] }
+walkdir = "2"
+
+[dev-dependencies]
+proptest = "1"
+tempfile = "3"

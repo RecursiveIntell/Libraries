@@ -1,0 +1,49 @@
+{
+  "spec_bundle": {
+    "schema_version": "spec_bundle_v1",
+    "spec_bundle_id": "spec-v20-5",
+    "spec_name": "generated-governance-demo",
+    "canonical_owner": "spec-execution",
+    "publication_status": "advisory_only"
+  },
+  "normative_ast": {
+    "schema_version": "normative_ast_v1",
+    "normative_ast_id": "ast-v20-5",
+    "spec_bundle_id": "spec-v20-5",
+    "nodes": [
+      {
+        "node_id": "node-v20-5",
+        "kind": "rule",
+        "normative_text": "human veto and meta challenge must remain first-class"
+      }
+    ],
+    "publication_status": "advisory_only"
+  },
+  "proof_obligation_set": {
+    "schema_version": "proof_obligation_set_v1",
+    "proof_obligation_set_id": "proof-v20-5",
+    "spec_bundle_id": "spec-v20-5",
+    "normative_ast_id": "ast-v20-5",
+    "obligations": [
+      {
+        "obligation_id": "obl-v20-5",
+        "description": "generated companions preserve proof links before governance review",
+        "satisfied": true,
+        "blocking": true
+      }
+    ]
+  },
+  "human_veto_bundle": {
+    "schema_version": "human_veto_bundle_v1",
+    "human_veto_bundle_id": "veto-v20-5",
+    "generated_schema_bundle_id": "placeholder-set-by-test",
+    "reason": "human review rejected silent self-hosting promotion"
+  },
+  "meta_challenge_bundle": {
+    "schema_version": "meta_challenge_bundle_v1",
+    "meta_challenge_bundle_id": "challenge-v20-5",
+    "generated_schema_bundle_id": "placeholder-set-by-test",
+    "challenge_summary": "challenge requests rollback visibility before any admission lane proceeds",
+    "horizon_only": true
+  }
+}

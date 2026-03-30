@@ -1,0 +1,75 @@
+{
+  "fixture_name": "effect_replay_ready",
+  "wave": "v21",
+  "artifacts": {
+    "EffectIntentV1": {
+      "schema_version": "EffectIntentV1",
+      "effect_intent_id": "fxi_001",
+      "effect_class": "external_write",
+      "target_surface": "ticketing/api",
+      "intended_outcome": "apply approved configuration change",
+      "initiating_artifact_refs": [
+        "episode:ep_100",
+        "plan:pl_200"
+      ],
+      "required_capability_class": "cap_change_window",
+      "allowed_scope": "project:alpha",
+      "blast_radius_ceiling": "single_tenant",
+      "reversibility_class": "compensatable",
+      "idempotency_key": "idem_001",
+      "execution_window_id": "fxw_001",
+      "observability_obligation_refs": [
+        "obs:latency",
+        "obs:error_budget"
+      ],
+      "approval_refs": [
+        "approval:chg_881"
+      ],
+      "run_mode": "live",
+      "publication_status": "required"
+    },
+    "ExternalEffectLedgerEntryV1": {
+      "schema_version": "ExternalEffectLedgerEntryV1",
+      "external_effect_ledger_entry_id": "fxl_001",
+      "effect_execution_receipt_id": "fxr_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "target_system": "ticketing",
+      "external_handle": "ext_8821",
+      "externally_observed_state": "committed",
+      "entered_at": "2026-03-15T12:08:30Z",
+      "immutable": true
+    },
+    "EffectObservationBundleV1": {
+      "schema_version": "EffectObservationBundleV1",
+      "effect_observation_bundle_id": "fxo_001",
+      "effect_execution_receipt_id": "fxr_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "observation_window": "2026-03-15T12:08:00Z/2026-03-15T13:08:00Z",
+      "observation_state": "complete",
+      "observed_outcome": "change applied without rollback",
+      "drift_summary": "no material drift observed",
+      "external_evidence_refs": [
+        "metric:latency_1h",
+        "log:event_991"
+      ],
+      "closure_recommendation": "replay_ready",
+      "generated_at": "2026-03-15T13:09:00Z"
+    }
+  }
+}

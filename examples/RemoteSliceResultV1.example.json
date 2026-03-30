@@ -1,0 +1,18 @@
+{
+  "schema_version": "remote_slice_result_v1",
+  "remote_slice_result_id": "remote-result-2026-03-14-01",
+  "remote_slice_request_id": "remote-request-2026-03-14-01",
+  "returned_artifact_refs": [
+    "witness-7",
+    "certificate-7"
+  ],
+  "exactness_class": "bounded_exact",
+  "remote_execution_evidence": "remote-exec://oracle.example/run/123",
+  "disclosure_markers": [
+    "redacted_inputs",
+    "full_metadata_present"
+  ],
+  "replay_handle": "replay-ticket-remote://oracle.example/123",
+  "local_admission_recommendation": "admit_if_transparency_receipt_present",
+  "attestation_envelope_id": "att-envelope-2026-03-14-01"
+}

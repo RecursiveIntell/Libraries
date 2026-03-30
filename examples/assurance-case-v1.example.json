@@ -1,0 +1,14 @@
+{
+  "schema_version": "AssuranceCaseV1",
+  "assurance_case_id": "asc_001",
+  "claim_summary": "deployment meets safety and reliability bar",
+  "evidence_refs": [
+    "test:integration_771",
+    "proof:budget_882"
+  ],
+  "argument_structure": "hazard -> control -> evidence",
+  "open_obligations": [
+    "monitor post-deploy error rate"
+  ],
+  "ready_for_release": true
+}

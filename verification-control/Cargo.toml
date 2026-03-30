@@ -1,0 +1,16 @@
+[package]
+name = "verification-control"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Canonical verification control-plane case, plan, receipt, and ledger artifacts"
+license = "MIT"
+
+[dependencies]
+chrono = { workspace = true, features = ["serde"] }
+llm-tool-runtime = { path = "../llm-tool-runtime" }
+schemars = { workspace = true }
+semantic-memory-forge = { path = "../semantic-memory-forge" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+stack-ids = { path = "../stack-ids" }

@@ -1,0 +1,49 @@
+{
+  "fixture_name": "break_glass_path",
+  "wave": "v22",
+  "artifacts": {
+    "AuthorityLeaseV1": {
+      "schema_version": "AuthorityLeaseV1",
+      "authority_lease_id": "aul_001",
+      "capability_class_id": "cap_001",
+      "grantor": "person:alice",
+      "grantee": "agent:ops-runner",
+      "scope": "project:alpha",
+      "time_window": "2026-03-15T12:00:00Z/2026-03-15T18:00:00Z",
+      "allowed_effect_families": [
+        "external_write"
+      ],
+      "hard_ceilings": [
+        "single-service",
+        "no-secret-export"
+      ],
+      "revocation_conditions": [
+        "incident_open",
+        "window_expired"
+      ],
+      "required_receipts": [
+        "ActingOnBehalfReceiptV1"
+      ]
+    },
+    "BreakGlassGrantV1": {
+      "schema_version": "BreakGlassGrantV1",
+      "break_glass_grant_id": "bgg_001",
+      "authority_lease_id": "aul_001",
+      "emergency_reason": "production incident",
+      "approved_by": [
+        "person:carol"
+      ],
+      "expires_at": "2026-03-15T12:45:00Z",
+      "post_hoc_review_required": true
+    },
+    "ActingOnBehalfReceiptV1": {
+      "schema_version": "ActingOnBehalfReceiptV1",
+      "acting_on_behalf_receipt_id": "aob_001",
+      "authority_chain_id": "auc_001",
+      "effect_execution_receipt_id": "fxr_001",
+      "delegated_action": "execute change window",
+      "within_lease": true,
+      "generated_at": "2026-03-15T12:08:10Z"
+    }
+  }
+}

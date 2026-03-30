@@ -1,0 +1,54 @@
+{
+  "fixture_name": "vendor_adapter_happy_path",
+  "wave": "p6",
+  "artifacts": {
+    "VendorCertificationAdapterV1": {
+      "schema_version": "VendorCertificationAdapterV1",
+      "vendor_certification_adapter_id": "vca_001",
+      "vendor_name": "Acme Cloud Audit",
+      "product_surface": "managed-kms",
+      "covered_artifact_families": [
+        "CertificationBundleV1",
+        "AttestationEnvelopeV1",
+        "VendorEvidenceTranslationV1"
+      ],
+      "translation_mode": "attested_and_lossiness_declared",
+      "support_window": "2026-03/2027-03"
+    },
+    "VendorEvidenceTranslationV1": {
+      "schema_version": "VendorEvidenceTranslationV1",
+      "vendor_evidence_translation_id": "vet_001",
+      "vendor_certification_adapter_id": "vca_001",
+      "source_shapes": [
+        "pdf_audit_letter",
+        "api_status_export"
+      ],
+      "canonical_targets": [
+        "CertificationBundleV1",
+        "VendorTrustRootBindingV1"
+      ],
+      "lossy_fields": [
+        "vendor_internal_case_ids",
+        "non_exportable_raw_logs"
+      ],
+      "required_caveats": [
+        "advisory_until_admitted",
+        "replay_partial"
+      ]
+    },
+    "VendorTrustRootBindingV1": {
+      "schema_version": "VendorTrustRootBindingV1",
+      "vendor_trust_root_binding_id": "vtb_001",
+      "vendor_certification_adapter_id": "vca_001",
+      "trust_root_refs": [
+        "trust-root:acme-2026"
+      ],
+      "signer_classes": [
+        "vendor_auditor",
+        "service_attestor"
+      ],
+      "rotation_channel": "published_keyset",
+      "revocation_channel": "signed_revocation_feed"
+    }
+  }
+}

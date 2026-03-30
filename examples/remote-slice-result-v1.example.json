@@ -1,0 +1,22 @@
+{
+  "schema_version": "remote_slice_result_v1",
+  "remote_slice_result_id": "remote-slice-result-v25",
+  "remote_slice_request_id": "remote-slice-request-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "returned_artifact_refs": [
+    "artifact:replay:v25"
+  ],
+  "exactness_class": "exact",
+  "remote_execution_evidence": "replay-ready",
+  "disclosure_markers": [
+    "marker:policy"
+  ],
+  "replay_handle": "replay-handle-v25",
+  "local_admission_recommendation": "eligible",
+  "attestation_envelope_id": "attestation-envelope-v25"
+}

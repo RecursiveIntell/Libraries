@@ -1,0 +1,20 @@
+{
+  "schema_version": "shared_divergence_report_v1",
+  "shared_divergence_report_id": "shared-divergence-report-v25",
+  "settlement_case_id": "settlement-case-v25",
+  "treaty_bundle_id": "treaty-v25",
+  "shared_replay_slice_id": "shared-replay-slice-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "blocking_runtime_names": [
+    "runtime-a"
+  ],
+  "divergence_summary": "runtime-a replay indicates policy mismatch in admission posture",
+  "requires_local_dissent_preservation": true,
+  "recommends_suspension": false,
+  "advisory_only": true
+}

@@ -1,0 +1,16 @@
+{
+  "amendment_proposal": {
+    "schema_version": "amendment_proposal_v1",
+    "amendment_proposal_id": "amendment-v19-1",
+    "charter_bundle_id": "charter-v19-1",
+    "doctrine_snapshot_id": "doctrine-v19-1",
+    "proposal_title": "type rollback handles for generated schema changes",
+    "migration_obligations": ["publish rollback handle", "emit archive manifest"],
+    "semantic_diff_id": "semantic-diff-v19-1",
+    "expected_archive_action": "archive superseded doctrine snapshots before promotion",
+    "required_historical_query_modes": ["by-amendment", "by-doctrine-version"],
+    "rollback_handle": "rollback://v19/1",
+    "advisory_only": false
+  },
+  "migration_obligations_satisfied": true
+}

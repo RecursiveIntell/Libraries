@@ -1,0 +1,13 @@
+{
+  "schema_version": "CompensationExecutionReceiptV1",
+  "compensation_execution_receipt_id": "fxcr_001",
+  "compensation_plan_id": "fxcp_001",
+  "execution_state": "completed",
+  "completed_steps": [
+    "reapply prior config",
+    "notify operator"
+  ],
+  "failed_steps": [],
+  "residual_risk_summary": "none",
+  "generated_at": "2026-03-15T12:28:00Z"
+}

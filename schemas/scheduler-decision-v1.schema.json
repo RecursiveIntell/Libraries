@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BudgetLineage": {
+      "properties": {
+        "budget_family": {
+          "type": "string"
+        },
+        "exhausted": {
+          "type": "boolean"
+        },
+        "max_cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_time_budget_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "queue_hop_count": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "remaining_cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "remaining_time_budget_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "retry_family": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "budget_family",
+        "exhausted",
+        "queue_hop_count",
+        "retry_family"
+      ],
+      "type": "object"
+    },
+    "DegradationKindV1": {
+      "enum": [
+        "thin_export",
+        "missing_proof",
+        "missing_replay",
+        "scope_withheld",
+        "evidence_unavailable",
+        "oracle_unavailable",
+        "budget_exceeded",
+        "exactness_downgraded",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "DegradationMarker": {
+      "properties": {
+        "blocks_promotion": {
+          "type": "boolean"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "blocks_promotion",
+        "kind",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "ExactnessBudgetV1": {
+      "properties": {
+        "achieved_exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        },
+        "budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "degradation": {
+          "items": {
+            "$ref": "#/definitions/DegradationKindV1"
+          },
+          "type": "array"
+        },
+        "escalation_rules": {
+          "items": {
+            "$ref": "#/definitions/ExactnessEscalationRuleV1"
+          },
+          "type": "array"
+        },
+        "exactness_budget_id": {
+          "type": "string"
+        },
+        "failure_artifact_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "requested_exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "semantics_profile_id": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "units_consumed": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "achieved_exactness",
+        "budget_units",
+        "exactness_budget_id",
+        "requested_exactness",
+        "schema_version",
+        "semantics_profile_id",
+        "subject",
+        "units_consumed"
+      ],
+      "type": "object"
+    },
+    "ExactnessEscalationRuleV1": {
+      "properties": {
+        "block_action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "escalate_to": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        },
+        "when_degraded": {
+          "$ref": "#/definitions/DegradationKindV1"
+        }
+      },
+      "required": [
+        "escalate_to",
+        "when_degraded"
+      ],
+      "type": "object"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "QueueHop": {
+      "properties": {
+        "dequeued_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enqueued_at": {
+          "type": "string"
+        },
+        "from_queue": {
+          "type": "string"
+        },
+        "hop_index": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "to_queue": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enqueued_at",
+        "from_queue",
+        "hop_index",
+        "to_queue"
+      ],
+      "type": "object"
+    },
+    "VerificationWorkloadClass": {
+      "enum": [
+        "orchestration",
+        "oracle",
+        "patch",
+        "advisory"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "budget_lineage": {
+      "$ref": "#/definitions/BudgetLineage"
+    },
+    "case_id": {
+      "type": "string"
+    },
+    "cheapest_adequate": {
+      "type": "boolean"
+    },
+    "degradation_markers": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/DegradationMarker"
+      },
+      "type": "array"
+    },
+    "exactness_budget": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ExactnessBudgetV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "promotion_blocked": {
+      "type": "boolean"
+    },
+    "queue_hops": {
+      "items": {
+        "$ref": "#/definitions/QueueHop"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "workload_class": {
+      "$ref": "#/definitions/VerificationWorkloadClass"
+    }
+  },
+  "required": [
+    "budget_lineage",
+    "case_id",
+    "cheapest_adequate",
+    "plan_id",
+    "promotion_blocked",
+    "queue_hops",
+    "schema_version",
+    "workload_class"
+  ],
+  "title": "SchedulerDecision",
+  "type": "object"
+}

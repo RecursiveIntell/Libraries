@@ -1,0 +1,21 @@
+{
+  "schema_version": "VendorEvidenceTranslationV1",
+  "vendor_evidence_translation_id": "vet_001",
+  "vendor_certification_adapter_id": "vca_001",
+  "source_shapes": [
+    "pdf_audit_letter",
+    "api_status_export"
+  ],
+  "canonical_targets": [
+    "CertificationBundleV1",
+    "VendorTrustRootBindingV1"
+  ],
+  "lossy_fields": [
+    "vendor_internal_case_ids",
+    "non_exportable_raw_logs"
+  ],
+  "required_caveats": [
+    "advisory_until_admitted",
+    "replay_partial"
+  ]
+}

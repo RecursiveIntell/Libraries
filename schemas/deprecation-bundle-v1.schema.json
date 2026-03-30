@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "charter_bundle_id": {
+      "type": "string"
+    },
+    "deprecation_bundle_id": {
+      "type": "string"
+    },
+    "replacement_surface": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "target_surface": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "charter_bundle_id",
+    "deprecation_bundle_id",
+    "replacement_surface",
+    "schema_version",
+    "target_surface"
+  ],
+  "title": "DeprecationBundleV1",
+  "type": "object"
+}

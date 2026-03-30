@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc ff23757a29f55d10fdcfb562e5cf4154a628310a86fafe4a0d007f386a8dd8bc # shrinks to val = CampaignDecisionTraceV1 { schema_version: "campaign_decision_trace_v1", campaign_decision_trace_id: CampaignDecisionTraceId("aaa-a00a00a0"), portfolio_plan_id: PortfolioPlanId("aaa-aaaaaa0a"), discovery_program_id: DiscoveryProgramId("aaa-0aaaa000"), verification_load_budget_id: VerificationLoadBudgetId("aaa-a000a000"), decisions: [CampaignDecisionLineV1 { campaign_id: ExperimentCampaignId("aaa-aa0a0aa0"), decision: Launch, expected_information_gain: 0, estimated_review_cost: 0, budget_pressure: 0.9577406097323797, hypothesis_refs: [], rationale: "a" }], remaining_review_slots: 0, advisory_only: false, degraded: false, generated_at: "a" }

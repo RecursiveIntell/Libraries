@@ -1,0 +1,21 @@
+{
+  "schema_version": "remote_slice_request_v1",
+  "remote_slice_request_id": "remote-slice-request-v25",
+  "requested_slice_definition": "bounded replay slice",
+  "required_artifact_refs": [
+    "artifact:claim:v25"
+  ],
+  "allowed_disclosure_policy": "no_pii",
+  "exactness_target": "exact",
+  "trust_root_set_id": "trust-root-set-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "challenge_expectations": [
+    "evidence-boundary-proof"
+  ],
+  "remote_oracle_lease_id": "remote-oracle-lease-v25"
+}

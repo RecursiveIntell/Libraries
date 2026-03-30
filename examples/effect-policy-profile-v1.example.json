@@ -1,0 +1,24 @@
+{
+  "schema_version": "effect_policy_profile_v1",
+  "effect_policy_profile_id": "effect-policy-profile-001",
+  "allowed_run_modes": [
+    "shadow",
+    "dry_run",
+    "live"
+  ],
+  "required_preflight_checks": [
+    "integrity",
+    "admission",
+    "reachability"
+  ],
+  "required_observation_classes": [
+    "latency",
+    "error_budget",
+    "compensation"
+  ],
+  "requires_compensation_plan_for": [
+    "mutation",
+    "external_side_effect"
+  ],
+  "block_live_without_commit": true
+}

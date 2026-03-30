@@ -1,0 +1,17 @@
+{
+  "profile": "p7",
+  "title": "Incident Taxonomy, Escalation, and Pager Routing Profile",
+  "primary_owner": "continuity-runtime",
+  "schemas": [
+    "incident-taxonomy-v1.schema.json",
+    "severity-matrix-v1.schema.json",
+    "pager-route-profile-v1.schema.json",
+    "escalation-clock-policy-v1.schema.json"
+  ],
+  "examples": [
+    "incident-taxonomy-v1.example.json",
+    "severity-matrix-v1.example.json",
+    "pager-route-profile-v1.example.json",
+    "escalation-clock-policy-v1.example.json"
+  ]
+}

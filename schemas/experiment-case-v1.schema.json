@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ExperimentFinalDispositionV1": {
+      "enum": [
+        "pending",
+        "promoted",
+        "blocked",
+        "rolled_back",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "ExperimentLifecycleStateV1": {
+      "enum": [
+        "scheduled",
+        "running",
+        "completed",
+        "cancelled"
+      ],
+      "type": "string"
+    },
+    "ExperimentRiskClassV1": {
+      "enum": [
+        "promotion_adjacent",
+        "observation_only",
+        "research_only"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "cohort_contract_id": {
+      "type": "string"
+    },
+    "comparability_matrix_id": {
+      "type": "string"
+    },
+    "experiment_budget_id": {
+      "type": "string"
+    },
+    "experiment_case_id": {
+      "type": "string"
+    },
+    "final_disposition": {
+      "$ref": "#/definitions/ExperimentFinalDispositionV1"
+    },
+    "intervention_id": {
+      "type": "string"
+    },
+    "lifecycle_state": {
+      "$ref": "#/definitions/ExperimentLifecycleStateV1"
+    },
+    "outcome_schema_id": {
+      "type": "string"
+    },
+    "refuter_suite_id": {
+      "type": "string"
+    },
+    "risk_class": {
+      "$ref": "#/definitions/ExperimentRiskClassV1"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cohort_contract_id",
+    "comparability_matrix_id",
+    "experiment_budget_id",
+    "experiment_case_id",
+    "final_disposition",
+    "intervention_id",
+    "lifecycle_state",
+    "outcome_schema_id",
+    "refuter_suite_id",
+    "risk_class",
+    "schema_version"
+  ],
+  "title": "ExperimentCaseV1",
+  "type": "object"
+}

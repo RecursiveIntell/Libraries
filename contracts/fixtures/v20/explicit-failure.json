@@ -1,0 +1,13 @@
+{
+  "proof_evaluation_receipt": {
+    "schema_version": "proof_evaluation_receipt_v1",
+    "proof_evaluation_receipt_id": "receipt-v20-failure",
+    "proof_obligation_set_id": "proof-v20-2",
+    "generated_schema_bundle_id": "generated-v20-2",
+    "satisfied_count": 0,
+    "unsatisfied_blocking_obligations": ["obl-v20-2"],
+    "admission_allowed": false,
+    "advisory_only": true,
+    "evaluated_at": "2026-03-14T00:00:00Z"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "wave": "v24",
+  "owner_crate": "continuity-runtime",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "service-level-profile-v1.schema.json",
+    "error-budget-ledger-v1.schema.json",
+    "incident-case-v1.schema.json",
+    "containment-decision-v1.schema.json",
+    "forensic-freeze-v1.schema.json",
+    "recovery-plan-v1.schema.json",
+    "recovery-replay-slice-v1.schema.json",
+    "continuity-exception-v1.schema.json",
+    "postmortem-bundle-v1.schema.json",
+    "resilience-exercise-v1.schema.json"
+  ],
+  "truth_note": "Continuity and incident surfaces remain typed, replayable, and exception-bounded; emergency action is not folklore."
+}

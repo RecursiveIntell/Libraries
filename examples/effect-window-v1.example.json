@@ -1,0 +1,10 @@
+{
+  "schema_version": "EffectWindowV1",
+  "effect_window_id": "fxw_001",
+  "earliest_start": "2026-03-15T12:05:00Z",
+  "latest_admissible_start": "2026-03-15T12:20:00Z",
+  "timeout_at": "2026-03-15T12:35:00Z",
+  "commit_atomicity": "bounded_multi_step",
+  "retry_owner": "effect-runtime",
+  "close_midflight_behavior": "abort_and_emit_receipt"
+}

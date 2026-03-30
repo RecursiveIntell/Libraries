@@ -1,0 +1,16 @@
+[package]
+name = "discovery-portfolio"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Typed discovery portfolio surface crate with bounded budget and selection evaluators; not a scheduler runtime"
+license = "MIT"
+
+[dependencies]
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+stack-ids = { path = "../stack-ids" }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = { workspace = true }

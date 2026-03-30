@@ -1,0 +1,10 @@
+{
+  "schema_version": "refuter_result_v1",
+  "refuter_result_id": "refuter-result-2026-03-14-01",
+  "refuter_kind": "negative_control",
+  "counterfactual_slice_id": "cf-slice-2026-03-14-01",
+  "result_summary": "No effect observed on declared negative control outcome.",
+  "state": "pass",
+  "replay_linkage": "replay-family-2026-03-14-7",
+  "promotion_impact": "keeps_canary_eligible"
+}

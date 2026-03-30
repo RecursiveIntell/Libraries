@@ -1,0 +1,17 @@
+{
+  "wave": "v19",
+  "owner_crate": "constitutional-memory",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "charter-bundle-v1.schema.json",
+    "doctrine-snapshot-v1.schema.json",
+    "amendment-proposal-v1.schema.json",
+    "amendment-decision-v1.schema.json",
+    "archive-manifest-v1.schema.json",
+    "compaction-receipt-v1.schema.json",
+    "historical-query-guarantee-v1.schema.json",
+    "deprecation-bundle-v1.schema.json",
+    "retirement-bundle-v1.schema.json"
+  ],
+  "truth_note": "Constitutional memory is scaffolded but typed; amendment approval now requires rollback readiness plus explicit semantic-diff and archive/query guarantees."
+}

@@ -1,0 +1,68 @@
+{
+  "discovery_program": {
+    "schema_version": "discovery_program_v1",
+    "discovery_program_id": "discovery-v18-1",
+    "program_name": "bounded-portfolio",
+    "canonical_owner": "discovery-portfolio",
+    "publication_status": "advisory_only"
+  },
+  "portfolio_plan": {
+    "schema_version": "portfolio_plan_v1",
+    "portfolio_plan_id": "plan-v18-2",
+    "discovery_program_id": "discovery-v18-1",
+    "campaign_ids": ["campaign-v18-1", "campaign-v18-2"],
+    "utility_rationale": "still compare typed utility objects",
+    "review_load_rationale": "must stop when review capacity is exhausted",
+    "advisory_only": true
+  },
+  "program_hypothesis_set": {
+    "schema_version": "program_hypothesis_set_v1",
+    "discovery_program_id": "discovery-v18-1",
+    "hypothesis_refs": ["hypothesis:alpha", "hypothesis:budget-stop"],
+    "horizon_only": false
+  },
+  "campaigns": [
+    {
+      "schema_version": "experiment_campaign_v1",
+      "experiment_campaign_id": "campaign-v18-1",
+      "campaign_name": "campaign-alpha",
+      "utility_case": "close the highest-value uncertainty",
+      "information_value_estimate_id": "ive-v18-1",
+      "required_review_slots": 2,
+      "advisory_only": true
+    },
+    {
+      "schema_version": "experiment_campaign_v1",
+      "experiment_campaign_id": "campaign-v18-2",
+      "campaign_name": "campaign-beta",
+      "utility_case": "compare one lower-risk alternative",
+      "information_value_estimate_id": "ive-v18-2",
+      "required_review_slots": 1,
+      "advisory_only": true
+    }
+  ],
+  "information_value_estimates": [
+    {
+      "schema_version": "information_value_estimate_v1",
+      "information_value_estimate_id": "ive-v18-1",
+      "campaign_id": "campaign-v18-1",
+      "expected_information_gain": 12,
+      "estimated_review_cost": 2
+    },
+    {
+      "schema_version": "information_value_estimate_v1",
+      "information_value_estimate_id": "ive-v18-2",
+      "campaign_id": "campaign-v18-2",
+      "expected_information_gain": 7,
+      "estimated_review_cost": 1
+    }
+  ],
+  "verification_load_budget": {
+    "schema_version": "verification_load_budget_v1",
+    "verification_load_budget_id": "budget-v18-2",
+    "total_review_slots": 2,
+    "remaining_review_slots": 0,
+    "exhausted": true,
+    "horizon_only": false
+  }
+}

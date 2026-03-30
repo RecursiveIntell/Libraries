@@ -1,0 +1,20 @@
+{
+  "schema_version": "cohort_contract_v1",
+  "cohort_contract_id": "cohort-core-contradictions",
+  "unit_definition": "contradiction-core instances from supported workspace crates",
+  "inclusion_logic": [
+    "core size <= 8",
+    "same projection_family=v13-plus"
+  ],
+  "exclusion_logic": [
+    "manual quarantine",
+    "cross-repo blended cases"
+  ],
+  "scope_namespace": "core",
+  "workload_class": "verification_replay",
+  "environment_constraints": [
+    "same toolchain family",
+    "same policy snapshot"
+  ],
+  "replay_linkage": "replay-family-2026-03-14-7"
+}

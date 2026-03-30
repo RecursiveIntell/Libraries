@@ -1,0 +1,18 @@
+{
+  "schema_version": "effective_constitution_view_v1",
+  "effective_constitution_id": "effective-constitution-001",
+  "applicability_context_id": "applicability-context-001",
+  "profile_set_id": "profile-set-001",
+  "mode_classification": "normal",
+  "blocking": false,
+  "approval_requirements": [
+    "prod_release:release-manager|service-owner",
+    "locality-review-board"
+  ],
+  "hard_block_summary": [],
+  "active_warning_summary": [
+    "vendor_translation_lossy:field/customer_email"
+  ],
+  "valid_as_of": "2026-03-16T14:00:00Z",
+  "recorded_as_of": "2026-03-16T14:00:05Z"
+}

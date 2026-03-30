@@ -1,0 +1,10 @@
+{
+  "deprecation_bundle": {
+    "schema_version": "deprecation_bundle_v1",
+    "deprecation_bundle_id": "deprecation-v19-1",
+    "charter_bundle_id": "charter-v19-1",
+    "target_surface": "generated-schema-bundle-v0",
+    "replacement_surface": "generated-schema-bundle-v1",
+    "advisory_only": true
+  }
+}

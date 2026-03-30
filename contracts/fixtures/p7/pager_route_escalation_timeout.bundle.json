@@ -1,0 +1,78 @@
+{
+  "fixture_name": "pager_route_escalation_timeout",
+  "wave": "p7",
+  "artifacts": {
+    "IncidentTaxonomyV1": {
+      "schema_version": "IncidentTaxonomyV1",
+      "incident_taxonomy_id": "itx_001",
+      "incident_classes": [
+        {
+          "incident_class": "availability_degradation",
+          "default_severity": "sev2"
+        },
+        {
+          "incident_class": "cross_tenant_exposure",
+          "default_severity": "sev1"
+        }
+      ],
+      "default_routes": [
+        {
+          "incident_class": "availability_degradation",
+          "route": "reliability_primary"
+        },
+        {
+          "incident_class": "cross_tenant_exposure",
+          "route": "security_primary"
+        }
+      ],
+      "required_artifact_families": [
+        "IncidentCaseV1",
+        "ContainmentDecisionV1",
+        "PostmortemBundleV1"
+      ]
+    },
+    "PagerRouteProfileV1": {
+      "schema_version": "PagerRouteProfileV1",
+      "pager_route_profile_id": "prp_001",
+      "rotation_refs": [
+        "rotation:reliability-primary",
+        "rotation:security-secondary"
+      ],
+      "handoff_rules": [
+        "handoff_requires_ack",
+        "sev1_requires_live_briefing"
+      ],
+      "ack_timeout_minutes": 10,
+      "max_levels": 4
+    },
+    "EscalationClockPolicyV1": {
+      "schema_version": "EscalationClockPolicyV1",
+      "escalation_clock_policy_id": "ecp_001",
+      "severity_matrix_id": "sm_001",
+      "response_clock_minutes": [
+        {
+          "severity": "sev1",
+          "minutes": 5
+        },
+        {
+          "severity": "sev2",
+          "minutes": 15
+        }
+      ],
+      "postmortem_clock_hours": [
+        {
+          "severity": "sev1",
+          "hours": 72
+        },
+        {
+          "severity": "sev2",
+          "hours": 120
+        }
+      ],
+      "pause_rules": [
+        "pause_only_during_declared_external_outage"
+      ],
+      "exception_path": "incident-governance-review"
+    }
+  }
+}

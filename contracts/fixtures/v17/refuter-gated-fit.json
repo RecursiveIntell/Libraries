@@ -1,0 +1,44 @@
+{
+  "mechanism_bundle": {
+    "schema_version": "mechanism_bundle_v1",
+    "mechanism_bundle_id": "mechanism-v17-3",
+    "mechanism_name": "bounded-simulator",
+    "canonical_owner": "mechanism-runtime",
+    "publication_status": "advisory_only"
+  },
+  "theory_version": {
+    "schema_version": "theory_version_v1",
+    "theory_version_id": "theory-v17-3",
+    "mechanism_bundle_id": "mechanism-v17-3",
+    "theory_name": "candidate-theory-refuter-gated",
+    "semantic_version": "0.1.2",
+    "advisory_only": false
+  },
+  "simulation_contract": {
+    "schema_version": "simulation_contract_v1",
+    "simulation_contract_id": "simulation-v17-3",
+    "mechanism_bundle_id": "mechanism-v17-3",
+    "target_outcome": "fit one bounded dataset",
+    "required_inputs": ["fixture:bounded-dataset", "replay:seed-1"],
+    "advisory_only": false
+  },
+  "theory_refuter_suite": {
+    "schema_version": "theory_refuter_suite_v1",
+    "theory_refuter_suite_id": "refuter-suite-v17-3",
+    "theory_version_id": "theory-v17-3",
+    "required_refuters": ["falsification:counterexample", "stability:replay"],
+    "available_refuters": ["stability:replay"],
+    "failing_refuters": [],
+    "horizon_only": false
+  },
+  "rollout_stability_report": {
+    "schema_version": "rollout_stability_report_v1",
+    "rollout_stability_report_id": "stability-v17-3",
+    "theory_version_id": "theory-v17-3",
+    "invariance_summary": "stability is provisionally acceptable",
+    "advisory_only": false,
+    "locally_reviewable": true,
+    "blocking_findings": []
+  },
+  "fit_score": 0.93
+}

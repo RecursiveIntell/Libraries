@@ -1,0 +1,34 @@
+{
+  "schema_version": "support_set_v1",
+  "support_set_id": "support-set-7",
+  "claim_id": "claim-123",
+  "semantics_profile_id": "semantics-profile-v13",
+  "support_tokens": [
+    {
+      "token_id": "tok-a",
+      "kind": "evidence_ref",
+      "reference": "evidence-ref:abc",
+      "polarity": "supports"
+    },
+    {
+      "token_id": "tok-b",
+      "kind": "claim_version",
+      "reference": "claim-version:legacy-9",
+      "polarity": "refutes"
+    }
+  ],
+  "support_expr": {
+    "op": "any_of",
+    "children": [
+      {
+        "op": "token",
+        "token_id": "tok-a"
+      },
+      {
+        "op": "token",
+        "token_id": "tok-b"
+      }
+    ]
+  },
+  "content_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+}

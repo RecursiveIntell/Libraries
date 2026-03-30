@@ -1,0 +1,18 @@
+{
+  "schema_version": "CompensationPlanV1",
+  "compensation_plan_id": "fxcp_001",
+  "effect_intent_id": "fxi_001",
+  "compensation_required": true,
+  "compensation_class": "state_restore",
+  "compensation_steps": [
+    "reapply prior config",
+    "notify operator"
+  ],
+  "success_criteria": [
+    "prior state restored",
+    "post-check green"
+  ],
+  "owner_ref": "team:ops",
+  "latest_start": "2026-03-15T12:40:00Z",
+  "advisory_only": false
+}

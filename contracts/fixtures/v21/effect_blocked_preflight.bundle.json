@@ -1,0 +1,104 @@
+{
+  "fixture_name": "effect_blocked_preflight",
+  "wave": "v21",
+  "artifacts": {
+    "EffectIntentV1": {
+      "schema_version": "EffectIntentV1",
+      "effect_intent_id": "fxi_001",
+      "effect_class": "external_write",
+      "target_surface": "ticketing/api",
+      "intended_outcome": "apply approved configuration change",
+      "initiating_artifact_refs": [
+        "episode:ep_100",
+        "plan:pl_200"
+      ],
+      "required_capability_class": "cap_change_window",
+      "allowed_scope": "project:alpha",
+      "blast_radius_ceiling": "single_tenant",
+      "reversibility_class": "compensatable",
+      "idempotency_key": "idem_001",
+      "execution_window_id": "fxw_001",
+      "observability_obligation_refs": [
+        "obs:latency",
+        "obs:error_budget"
+      ],
+      "approval_refs": [
+        "approval:chg_881"
+      ],
+      "run_mode": "live",
+      "publication_status": "required"
+    },
+    "EffectPreflightReportV1": {
+      "schema_version": "EffectPreflightReportV1",
+      "effect_preflight_report_id": "fxp_001",
+      "effect_intent_id": "fxi_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "required_obligation_refs": [
+        "obs:admission-check-ok"
+      ],
+      "blocking_obligation_refs": [
+        "obs:budget-exhausted"
+      ],
+      "monitoring_obligation_refs": [
+        "obs:latency"
+      ],
+      "decision_basis_obligation_refs": [
+        "obs:policy-compliance"
+      ],
+      "input_integrity_result": "pass",
+      "admission_check_result": "pass",
+      "dependency_reachability_result": "pass",
+      "budget_sufficiency_result": "insufficient",
+      "generated_at": "2026-03-15T12:00:00Z",
+      "notes": [
+        "review budget exhausted"
+      ],
+      "disposition": "blocked"
+    },
+    "EffectCommitDecisionV1": {
+      "schema_version": "EffectCommitDecisionV1",
+      "effect_commit_decision_id": "fxc_001",
+      "effect_intent_id": "fxi_001",
+      "effect_preflight_report_id": "fxp_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "required_obligation_refs": [
+        "obs:admission-check-ok"
+      ],
+      "blocking_obligation_refs": [
+        "obs:budget-exhausted"
+      ],
+      "monitoring_obligation_refs": [
+        "obs:latency"
+      ],
+      "decision_basis_obligation_refs": [
+        "obs:policy-compliance"
+      ],
+      "approval_obligation_refs": [
+        "approval:chaperone"
+      ],
+      "decision_state": "denied",
+      "approver_refs": [
+        "person:alice",
+        "person:bob"
+      ],
+      "refusal_reason": "preflight blocked",
+      "generated_at": "2026-03-15T12:02:00Z"
+    }
+  }
+}

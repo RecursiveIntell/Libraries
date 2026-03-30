@@ -1,0 +1,9 @@
+{
+  "schema_version": "ContinuityExceptionV1",
+  "continuity_exception_id": "cex_001",
+  "incident_case_id": "inc_001",
+  "exception_kind": "temporary_sod_relaxation",
+  "reason": "single available approver during outage",
+  "expires_at": "2026-03-15T14:00:00Z",
+  "post_hoc_review_required": true
+}

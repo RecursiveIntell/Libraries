@@ -1,0 +1,33 @@
+{
+  "schema_version": "ApplicabilityContextV1",
+  "applicability_context_id": "applicability-context-001",
+  "namespace": "prod/payments",
+  "scope_key": {
+    "namespace": "prod",
+    "domain": "payments",
+    "workspace_id": "ws-payments",
+    "repo_id": "payments-service"
+  },
+  "tenant_ref": "tenant-enterprise-a",
+  "tenancy_class": "dedicated",
+  "valid_as_of": "2026-03-16T14:00:00Z",
+  "recorded_as_of": "2026-03-16T14:00:05Z",
+  "target_surface_kind": "effect_commit",
+  "actor_class": "release_manager",
+  "role_refs": [
+    "role:release-manager",
+    "role:service-owner"
+  ],
+  "deployment_profile_ref": "deployment-profile-001",
+  "effect_policy_profile_ref": "effect-policy-profile-001",
+  "delegation_policy_profile_ref": "delegation-policy-profile-001",
+  "release_policy_profile_ref": "release-policy-profile-001",
+  "continuity_policy_profile_ref": "continuity-policy-profile-001",
+  "effect_class": "production_mutation",
+  "incident_mode": "normal",
+  "treaty_or_disclosure_class": "customer_confidential",
+  "execution_context_ref": "execution-context-001",
+  "admitted_exception_refs": [
+    "profile-exception-bundle-001"
+  ]
+}

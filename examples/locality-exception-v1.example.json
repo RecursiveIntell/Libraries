@@ -1,0 +1,13 @@
+{
+  "schema_version": "LocalityExceptionV1",
+  "locality_exception_id": "lex_001",
+  "residency_policy_profile_id": "rpp_001",
+  "reason": "legal hold review requires eu counsel access",
+  "scope": "case:lh_7781",
+  "expires_at": "2026-03-22T00:00:00Z",
+  "approved_by": [
+    "person:privacy-lead",
+    "person:legal-lead"
+  ],
+  "post_hoc_review_required": true
+}

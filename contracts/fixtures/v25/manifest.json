@@ -1,0 +1,173 @@
+{
+  "wave": "v25",
+  "manifest_version": 1,
+  "fixtures": [
+    {
+      "name": "blocked_locality_without_exception",
+      "file": "blocked_locality_without_exception.bundle.json",
+      "category": "blocked",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "CompositionRuleSetV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1",
+        "CompositionReceiptV1"
+      ]
+    },
+    {
+      "name": "locality_exception_admitted",
+      "file": "locality_exception_admitted.bundle.json",
+      "category": "exception",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "ProfileExceptionBundleV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1",
+        "CompositionReceiptV1"
+      ]
+    },
+    {
+      "name": "disclosure_conflict",
+      "file": "disclosure_conflict.bundle.json",
+      "category": "conflict",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "CompositionConflictSetV1",
+        "EffectiveConstitutionV1",
+        "CompositionReceiptV1"
+      ]
+    },
+    {
+      "name": "policy_impact_diff",
+      "file": "policy_impact_diff.bundle.json",
+      "category": "diff",
+      "required_artifacts": [
+        "EffectiveConstitutionFromV1",
+        "CompiledObligationSetFromV1",
+        "EffectiveConstitutionToV1",
+        "CompiledObligationSetToV1",
+        "PolicyImpactDiffV1"
+      ]
+    },
+    {
+      "name": "delegation_break_glass_depth",
+      "file": "delegation_break_glass_depth.bundle.json",
+      "category": "delegation",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "ProfileExceptionBundleV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1",
+        "CompositionReceiptV1"
+      ]
+    },
+    {
+      "name": "release_readiness_blocked",
+      "file": "release_readiness_blocked.bundle.json",
+      "category": "release",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1",
+        "CompositionReceiptV1"
+      ]
+    },
+    {
+      "name": "continuity_incident_mode_diff",
+      "file": "continuity_incident_mode_diff.bundle.json",
+      "category": "continuity",
+      "required_artifacts": [
+        "EffectiveConstitutionFromV1",
+        "CompiledObligationSetFromV1",
+        "EffectiveConstitutionToV1",
+        "CompiledObligationSetToV1",
+        "PolicyImpactDiffV1"
+      ]
+    },
+    {
+      "name": "vendor_translation_caveat",
+      "file": "vendor_translation_caveat.bundle.json",
+      "category": "vendor",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1",
+        "CompositionReceiptV1"
+      ]
+    },
+    {
+      "name": "effect_constitutional_citation",
+      "file": "effect-constitutional-citation.bundle.json",
+      "category": "effect",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "CompositionRuleSetV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1",
+        "CompositionReceiptV1"
+      ]
+    },
+    {
+      "name": "review_case_constitutional_citation",
+      "file": "review-case-constitutional-citation.bundle.json",
+      "category": "review",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "CompositionRuleSetV1",
+        "EffectReviewCaseV1",
+        "DelegationReviewCaseV1",
+        "ReleaseGateCaseV1",
+        "ContinuityReviewCaseV1",
+        "CompositionReceiptV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1"
+      ]
+    },
+    {
+      "name": "remote_oracle_local_constitution",
+      "file": "remote-oracle-local-constitution.bundle.json",
+      "category": "remote-oracle",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "CompositionRuleSetV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1",
+        "CompositionReceiptV1",
+        "RemoteSliceRequestV1",
+        "RemoteSliceResultV1",
+        "CrossRuntimeReplayTicketV1"
+      ]
+    },
+    {
+      "name": "federated_settlement_local_constitution",
+      "file": "federated-settlement-local-constitution.bundle.json",
+      "category": "settlement",
+      "required_artifacts": [
+        "ApplicabilityContextV1",
+        "ProfileSetV1",
+        "CompositionRuleSetV1",
+        "EffectiveConstitutionV1",
+        "CompiledObligationSetV1",
+        "CompositionReceiptV1",
+        "TreatyBundleV1",
+        "RuntimeIdentitySetV1",
+        "CrossRuntimeEquivalenceBundleV1",
+        "SettlementCaseV1",
+        "SettlementReceiptV1",
+        "SharedReplaySliceV1",
+        "SharedDivergenceReportV1",
+        "SharedViewDowngradeV1",
+        "LocalDissentRecordV1"
+      ]
+    }
+  ]
+}

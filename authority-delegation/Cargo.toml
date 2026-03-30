@@ -1,0 +1,15 @@
+[package]
+name = "authority-delegation"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Typed delegated-authority surface crate with bounded lease and policy artifacts; not an access-control runtime"
+license = "MIT"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+schemars = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

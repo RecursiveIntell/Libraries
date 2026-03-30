@@ -1,0 +1,12 @@
+{
+  "charter_bundle": {
+    "schema_version": "charter_bundle_v1",
+    "charter_bundle_id": "charter-v19-2",
+    "charter_name": "bounded-charter",
+    "canonical_owner": "constitutional-memory",
+    "publication_status": "advisory_only"
+  },
+  "preserved_refs": ["doctrine:v19/current", "amendment:v19/2"],
+  "dropped_detail_refs": ["note:v19/old-1", "note:v19/old-2"],
+  "guaranteed_query_modes": ["by-amendment", "by-rollback-handle"]
+}

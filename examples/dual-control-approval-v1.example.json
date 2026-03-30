@@ -1,0 +1,11 @@
+{
+  "schema_version": "DualControlApprovalV1",
+  "dual_control_approval_id": "dca_001",
+  "approver_refs": [
+    "person:alice",
+    "person:bob"
+  ],
+  "approval_basis": "matched change plan and preflight",
+  "independence_verified": true,
+  "approved_at": "2026-03-15T12:01:00Z"
+}

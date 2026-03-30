@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ExecutionStateV1": {
+      "enum": [
+        "completed",
+        "partial",
+        "cancelled",
+        "timed_out",
+        "failed",
+        "in_progress"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "properties": {
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "compensation_execution_receipt_id": {
+      "type": "string"
+    },
+    "compensation_plan_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "completed_steps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "execution_state": {
+      "$ref": "#/definitions/ExecutionStateV1"
+    },
+    "failed_steps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "residual_risk_summary": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicability_context_id",
+    "compensation_execution_receipt_id",
+    "compensation_plan_id",
+    "compiled_obligation_set_id",
+    "completed_steps",
+    "composition_receipt_id",
+    "effective_constitution_id",
+    "execution_state",
+    "failed_steps",
+    "generated_at",
+    "profile_set_id",
+    "residual_risk_summary",
+    "schema_version"
+  ],
+  "title": "CompensationExecutionReceiptV1",
+  "type": "object"
+}

@@ -1,0 +1,68 @@
+{
+  "discovery_program": {
+    "schema_version": "discovery_program_v1",
+    "discovery_program_id": "discovery-v18-2",
+    "program_name": "value-aware-portfolio",
+    "canonical_owner": "discovery-portfolio",
+    "publication_status": "advisory_only"
+  },
+  "program_hypothesis_set": {
+    "schema_version": "program_hypothesis_set_v1",
+    "discovery_program_id": "discovery-v18-2",
+    "hypothesis_refs": ["hypothesis:highest-gain", "hypothesis:cheap-check"],
+    "horizon_only": false
+  },
+  "portfolio_plan": {
+    "schema_version": "portfolio_plan_v1",
+    "portfolio_plan_id": "plan-v18-3",
+    "discovery_program_id": "discovery-v18-2",
+    "campaign_ids": ["campaign-v18-3", "campaign-v18-4"],
+    "utility_rationale": "prefer campaigns that close more uncertainty per review slot",
+    "review_load_rationale": "review load should follow information value",
+    "advisory_only": true
+  },
+  "campaigns": [
+    {
+      "schema_version": "experiment_campaign_v1",
+      "experiment_campaign_id": "campaign-v18-3",
+      "campaign_name": "high-gain-high-cost",
+      "utility_case": "close the deepest uncertainty",
+      "information_value_estimate_id": "ive-v18-3",
+      "required_review_slots": 3,
+      "advisory_only": true
+    },
+    {
+      "schema_version": "experiment_campaign_v1",
+      "experiment_campaign_id": "campaign-v18-4",
+      "campaign_name": "high-ratio-cheap-check",
+      "utility_case": "cheaply test the highest-value fork",
+      "information_value_estimate_id": "ive-v18-4",
+      "required_review_slots": 1,
+      "advisory_only": true
+    }
+  ],
+  "information_value_estimates": [
+    {
+      "schema_version": "information_value_estimate_v1",
+      "information_value_estimate_id": "ive-v18-3",
+      "campaign_id": "campaign-v18-3",
+      "expected_information_gain": 20,
+      "estimated_review_cost": 5
+    },
+    {
+      "schema_version": "information_value_estimate_v1",
+      "information_value_estimate_id": "ive-v18-4",
+      "campaign_id": "campaign-v18-4",
+      "expected_information_gain": 11,
+      "estimated_review_cost": 1
+    }
+  ],
+  "verification_load_budget": {
+    "schema_version": "verification_load_budget_v1",
+    "verification_load_budget_id": "budget-v18-3",
+    "total_review_slots": 3,
+    "remaining_review_slots": 3,
+    "exhausted": false,
+    "horizon_only": false
+  }
+}

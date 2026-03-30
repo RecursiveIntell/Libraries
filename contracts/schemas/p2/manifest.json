@@ -1,0 +1,17 @@
+{
+  "profile": "p2",
+  "title": "Locality, Tenancy, Residency, and Boundary Overlay",
+  "primary_owner": "verification-policy",
+  "schemas": [
+    "residency-policy-profile-v1.schema.json",
+    "tenant-boundary-profile-v1.schema.json",
+    "cross-boundary-transfer-class-v1.schema.json",
+    "locality-exception-v1.schema.json"
+  ],
+  "examples": [
+    "residency-policy-profile-v1.example.json",
+    "tenant-boundary-profile-v1.example.json",
+    "cross-boundary-transfer-class-v1.example.json",
+    "locality-exception-v1.example.json"
+  ]
+}

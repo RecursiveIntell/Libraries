@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ConstitutionModeV1": {
+      "enum": [
+        "normal",
+        "incident",
+        "advisory_only",
+        "blocked"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "active_warning_summary": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "admitted_exception_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "admitted_profile_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "applicability_context_ref": {
+      "type": "string"
+    },
+    "approval_requirements": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "assurance_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "base_law_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "composition_rule_set_ref": {
+      "type": "string"
+    },
+    "continuity_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "current_mode_classification": {
+      "$ref": "#/definitions/ConstitutionModeV1"
+    },
+    "delegation_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "disclosure_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "doctrine_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "effect_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "explanation_summary": {
+      "type": "string"
+    },
+    "hard_block_summary": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "monitoring_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_ref": {
+      "type": "string"
+    },
+    "recorded_as_of": {
+      "type": "string"
+    },
+    "replay_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "residency_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "tenancy_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "valid_as_of": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicability_context_ref",
+    "composition_rule_set_ref",
+    "current_mode_classification",
+    "effective_constitution_id",
+    "explanation_summary",
+    "profile_set_ref",
+    "recorded_as_of",
+    "schema_version",
+    "valid_as_of"
+  ],
+  "title": "EffectiveConstitutionV1",
+  "type": "object"
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "effect_adjudication_receipt_v1",
+  "effect_adjudication_receipt_id": "effect-adjudication-receipt-v25",
+  "effect_execution_receipt_id": "fxe-v25",
+  "observation_bundle_id": "fxo-v25",
+  "policy_decision_id": "policy-decision-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "required_obligation_refs": [
+    "obligation:adjudication:required"
+  ],
+  "blocking_obligation_refs": [
+    "obligation:adjudication:blocking"
+  ],
+  "monitoring_obligation_refs": [],
+  "adjudicated_state": "approved",
+  "generated_at": "2026-03-17T00:00:10Z"
+}

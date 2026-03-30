@@ -1,0 +1,42 @@
+{
+  "schema_version": "settlement_case_v1",
+  "settlement_case_id": "settlement-case-v25",
+  "treaty_bundle_id": "treaty-v25",
+  "equivalence_bundle_id": "equivalence-bundle-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "shared_disposition": {
+    "schema_version": "shared_disposition_v1",
+    "shared_disposition_id": "shared-disposition-v25",
+    "disposition_label": "bounded_share",
+    "treatment": "bounded claim parity",
+    "advisory_only": false
+  },
+  "replay_requirements": [
+    {
+      "runtime_name": "runtime-a",
+      "required": true,
+      "replay_available": true
+    },
+    {
+      "runtime_name": "runtime-b",
+      "required": true,
+      "replay_available": true
+    }
+  ],
+  "local_dissent": [
+    {
+      "schema_version": "local_dissent_record_v1",
+      "local_dissent_id": "local-dissent-v25",
+      "runtime_name": "runtime-a",
+      "reason": "none",
+      "blocks_shared_settlement": false
+    }
+  ],
+  "advisory_only": false,
+  "non_admitted": false
+}

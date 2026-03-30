@@ -1,0 +1,14 @@
+{
+  "schema_version": "dispute_bundle_v1",
+  "dispute_bundle_id": "dispute-2026-03-14-01",
+  "challenged_artifact_refs": [
+    "remote-result-2026-03-14-01"
+  ],
+  "basis_of_challenge": "replay handle failed; exactness claim cannot be rechecked",
+  "counterevidence_refs": [
+    "decision-trace-2026-03-14-01"
+  ],
+  "replay_or_recheck_request": "request fresh remote bounded-exact replay under same lease terms",
+  "escalation_target": "verification-adjudication",
+  "current_disposition": "open"
+}

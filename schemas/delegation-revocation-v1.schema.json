@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "authority_lease_id": {
+      "type": "string"
+    },
+    "delegation_revocation_id": {
+      "type": "string"
+    },
+    "effective_at": {
+      "type": "string"
+    },
+    "revocation_reason": {
+      "type": "string"
+    },
+    "revoked_by": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "supersedes_authority_chain_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "authority_lease_id",
+    "delegation_revocation_id",
+    "effective_at",
+    "revocation_reason",
+    "revoked_by",
+    "schema_version",
+    "supersedes_authority_chain_id"
+  ],
+  "title": "DelegationRevocationV1",
+  "type": "object"
+}

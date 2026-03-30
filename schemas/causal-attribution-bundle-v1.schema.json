@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CausalContributorV1": {
+      "properties": {
+        "direction": {
+          "$ref": "#/definitions/CausalDirectionV1"
+        },
+        "evidence_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "factor_id": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/CausalRoleV1"
+        }
+      },
+      "required": [
+        "direction",
+        "factor_id",
+        "role"
+      ],
+      "type": "object"
+    },
+    "CausalDirectionV1": {
+      "enum": [
+        "supports",
+        "attenuates",
+        "refutes"
+      ],
+      "type": "string"
+    },
+    "CausalRoleV1": {
+      "enum": [
+        "treatment",
+        "outcome",
+        "confounder",
+        "mediator",
+        "instrument",
+        "effect_modifier"
+      ],
+      "type": "string"
+    },
+    "SemanticViewV1": {
+      "enum": [
+        "canonical",
+        "projection",
+        "runtime",
+        "causal_advisory",
+        "operator"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "causal_attribution_bundle_id": {
+      "type": "string"
+    },
+    "claim_id": {
+      "type": "string"
+    },
+    "contributors": {
+      "items": {
+        "$ref": "#/definitions/CausalContributorV1"
+      },
+      "type": "array"
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "refutation_result_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_slice_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "treatment": {
+      "type": "string"
+    },
+    "view": {
+      "$ref": "#/definitions/SemanticViewV1"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "causal_attribution_bundle_id",
+    "claim_id",
+    "contributors",
+    "outcome",
+    "schema_version",
+    "semantics_profile_id",
+    "treatment",
+    "view"
+  ],
+  "title": "CausalAttributionBundleV1",
+  "type": "object"
+}

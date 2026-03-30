@@ -1,0 +1,41 @@
+{
+  "fixture_name": "forensic_freeze_path",
+  "wave": "v24",
+  "artifacts": {
+    "IncidentCaseV1": {
+      "schema_version": "IncidentCaseV1",
+      "incident_case_id": "inc_001",
+      "service_level_profile_id": "slp_001",
+      "severity": "sev2",
+      "opened_at": "2026-03-15T12:30:00Z",
+      "summary": "elevated latency after change window",
+      "commander_ref": "person:oncall-1",
+      "status": "active"
+    },
+    "ForensicFreezeV1": {
+      "schema_version": "ForensicFreezeV1",
+      "forensic_freeze_id": "frz_001",
+      "incident_case_id": "inc_001",
+      "frozen_surfaces": [
+        "logs",
+        "metrics",
+        "config snapshots"
+      ],
+      "retention_hold_until": "2026-04-15T00:00:00Z",
+      "initiated_at": "2026-03-15T12:35:00Z"
+    },
+    "RecoveryReplaySliceV1": {
+      "schema_version": "RecoveryReplaySliceV1",
+      "recovery_replay_slice_id": "rrs_001",
+      "incident_case_id": "inc_001",
+      "artifact_refs": [
+        "fxr_001",
+        "rrd_001",
+        "frz_001"
+      ],
+      "time_window": "2026-03-15T12:30:00Z/2026-03-15T13:00:00Z",
+      "replay_state": "complete",
+      "gaps": []
+    }
+  }
+}

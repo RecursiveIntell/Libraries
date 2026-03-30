@@ -1,0 +1,30 @@
+{
+  "schema_version": "refutation_decision_v1",
+  "decision_id": "refutation-decision-v25",
+  "case_id": "verification-case-v25",
+  "disposition": "advisory_only",
+  "refuted": false,
+  "refutation_class": "none",
+  "policy_decision_id": "policy-decision-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "required_obligation_refs": [
+    "obligation:refutation:required"
+  ],
+  "blocking_obligation_refs": [
+    "obligation:refutation:blocking"
+  ],
+  "monitoring_obligation_refs": [
+    "obligation:refutation:monitoring"
+  ],
+  "violated_constraints": [
+    "none"
+  ],
+  "witness_refs": [],
+  "follow_up_required": false,
+  "reason": "no refuting evidence"
+}

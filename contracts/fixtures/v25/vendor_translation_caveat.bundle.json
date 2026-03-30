@@ -1,0 +1,149 @@
+{
+  "fixture_name": "vendor_translation_caveat",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-204",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-16T19:00:00Z",
+      "recorded_as_of": "2026-03-16T19:00:02Z",
+      "target_surface_kind": "remote_admission",
+      "actor_class": "vendor_integrator",
+      "role_refs": [
+        "role:vendor-integrator"
+      ],
+      "incident_mode": "normal",
+      "execution_context_ref": "execution-context-204",
+      "admitted_exception_refs": []
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-204",
+      "applicability_context_ref": "applicability-context-204",
+      "profile_refs": {
+        "vendor_certification_adapter_id": "vca_001",
+        "vendor_evidence_translation_id": "vet_001",
+        "vendor_revocation_handling_id": "vrh_001"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25",
+        "policy-catalog:payments-prod"
+      ],
+      "omissions": [],
+      "active_exception_refs": [],
+      "normalized_profile_order": [
+        "vca_001",
+        "vet_001",
+        "vrh_001"
+      ]
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-204",
+      "applicability_context_ref": "applicability-context-204",
+      "profile_set_ref": "profile-set-204",
+      "composition_rule_set_ref": "composition-rule-set-204",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "vca_001",
+        "vet_001",
+        "vrh_001"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "normal",
+      "hard_block_summary": [],
+      "active_warning_summary": [
+        "vendor_translation_lossy:field/customer_email"
+      ],
+      "approval_requirements": [
+        "vendor-review-board"
+      ],
+      "disclosure_obligations": [
+        "translation_caveat_disclosure"
+      ],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [
+        "external_evidence_translation_note"
+      ],
+      "monitoring_obligations": [
+        "vendor_revocation_watch"
+      ],
+      "continuity_obligations": [],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [
+        "transparency_receipt_required"
+      ],
+      "valid_as_of": "2026-03-16T19:00:00Z",
+      "recorded_as_of": "2026-03-16T19:00:02Z",
+      "explanation_summary": "vendor evidence is admissible only with translation-loss caveat and revocation monitoring"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-204",
+      "effective_constitution_ref": "effective-constitution-204",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-204a",
+          "obligation_family": "warning.vendor_translation_loss",
+          "obligation_key": "translation_lossy_fields",
+          "output_kind": "warning",
+          "fold_class": "union",
+          "string_values": [
+            "vendor_translation_lossy:field/customer_email"
+          ],
+          "blocking": false,
+          "source_profile_refs": [
+            "vet_001"
+          ],
+          "source_exception_refs": [],
+          "explanation": "vendor translation drops one field fidelity guarantee"
+        }
+      ],
+      "block_entries": [],
+      "required_approvals": [
+        "vendor-review-board"
+      ],
+      "required_checks": [
+        "translation-caveat-review"
+      ],
+      "required_monitors": [
+        "vendor_revocation_watch"
+      ],
+      "required_evidence_obligations": [
+        "transparency_receipt_required"
+      ],
+      "required_disclosure_obligations": [
+        "translation_caveat_disclosure"
+      ],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [],
+      "promotion_eligibility_summary": "eligible_with_caveats",
+      "release_eligibility_summary": "eligible_with_caveats",
+      "effect_eligibility_summary": "eligible_with_caveats",
+      "unresolved_dependency_refs": []
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-204",
+      "applicability_context_ref": "applicability-context-204",
+      "profile_set_ref": "profile-set-204",
+      "composition_rule_set_ref": "composition-rule-set-204",
+      "effective_constitution_ref": "effective-constitution-204",
+      "compiled_obligation_set_ref": "compiled-obligation-set-204",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-204",
+      "replay_handle": "profile-runtime:applicability-context-204:profile-set-204:composition-rule-set-204",
+      "normalized_input_digest": "2042042042042042042042042042042042042042042042042042042042042042",
+      "generated_at": "2026-03-16T19:00:04Z"
+    }
+  }
+}

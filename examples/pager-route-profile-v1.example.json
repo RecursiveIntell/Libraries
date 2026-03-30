@@ -1,0 +1,14 @@
+{
+  "schema_version": "PagerRouteProfileV1",
+  "pager_route_profile_id": "prp_001",
+  "rotation_refs": [
+    "rotation:reliability-primary",
+    "rotation:security-secondary"
+  ],
+  "handoff_rules": [
+    "handoff_requires_ack",
+    "sev1_requires_live_briefing"
+  ],
+  "ack_timeout_minutes": 10,
+  "max_levels": 4
+}

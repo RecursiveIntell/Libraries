@@ -1,0 +1,36 @@
+{
+  "spec_bundle": {
+    "schema_version": "spec_bundle_v1",
+    "spec_bundle_id": "spec-v20-4",
+    "spec_name": "generated-companions-demo",
+    "canonical_owner": "spec-execution",
+    "publication_status": "advisory_only"
+  },
+  "normative_ast": {
+    "schema_version": "normative_ast_v1",
+    "normative_ast_id": "ast-v20-4",
+    "spec_bundle_id": "spec-v20-4",
+    "nodes": [
+      {
+        "node_id": "node-v20-4",
+        "kind": "rule",
+        "normative_text": "schema, interpreter, conformance, and migration outputs must stay linked"
+      }
+    ],
+    "publication_status": "advisory_only"
+  },
+  "proof_obligation_set": {
+    "schema_version": "proof_obligation_set_v1",
+    "proof_obligation_set_id": "proof-v20-4",
+    "spec_bundle_id": "spec-v20-4",
+    "normative_ast_id": "ast-v20-4",
+    "obligations": [
+      {
+        "obligation_id": "obl-v20-4",
+        "description": "generated companions keep a common proof root",
+        "satisfied": true,
+        "blocking": true
+      }
+    ]
+  }
+}

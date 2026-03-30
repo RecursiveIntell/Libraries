@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ApprovalScope": {
+      "properties": {
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CheckMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "promotion_class": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PromotionClass"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reusable": {
+          "type": "boolean"
+        },
+        "target_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace",
+        "reusable"
+      ],
+      "type": "object"
+    },
+    "CheckMethod": {
+      "enum": [
+        "exact_bounded_oracle",
+        "conservative_oracle",
+        "delta_parity_oracle",
+        "temporal_replay_oracle",
+        "causal_refuter",
+        "minimal_perturbation_oracle",
+        "paired_patch",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "PromotionClass": {
+      "enum": [
+        "p0",
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "approval_record_id": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string"
+    },
+    "approver": {
+      "type": "string"
+    },
+    "case_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "plan_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "reviewed_artifact_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope": {
+      "$ref": "#/definitions/ApprovalScope"
+    }
+  },
+  "required": [
+    "approval_record_id",
+    "approved_at",
+    "approver",
+    "policy_version",
+    "rationale",
+    "schema_version",
+    "scope"
+  ],
+  "title": "ApprovalRecord",
+  "type": "object"
+}

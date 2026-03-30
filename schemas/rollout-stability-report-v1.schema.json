@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "blocking_findings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "invariance_summary": {
+      "type": "string"
+    },
+    "locally_reviewable": {
+      "type": "boolean"
+    },
+    "rollout_stability_report_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "theory_version_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "invariance_summary",
+    "locally_reviewable",
+    "rollout_stability_report_id",
+    "schema_version",
+    "theory_version_id"
+  ],
+  "title": "RolloutStabilityReportV1",
+  "type": "object"
+}

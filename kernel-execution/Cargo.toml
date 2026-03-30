@@ -1,0 +1,15 @@
+[package]
+name = "kernel-execution"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Deterministic K2 execution baseline for recursive inference graphs"
+license = "MIT"
+
+[dependencies]
+constraint-compiler = { path = "../constraint-compiler" }
+recursive-kernel-core = { path = "../recursive-kernel-core" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+stack-ids = { path = "../stack-ids" }
+schemars = { workspace = true }

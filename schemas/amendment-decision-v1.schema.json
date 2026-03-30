@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AmendmentDisposition": {
+      "enum": [
+        "approved_with_rollback",
+        "blocked_missing_rollback",
+        "blocked_missing_semantic_diff",
+        "blocked_missing_archive_guarantee",
+        "advisory_only"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "amendment_decision_id": {
+      "type": "string"
+    },
+    "amendment_proposal_id": {
+      "type": "string"
+    },
+    "archive_consequence_summary": {
+      "type": "string"
+    },
+    "archive_manifest_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "decided_at": {
+      "type": "string"
+    },
+    "disposition": {
+      "$ref": "#/definitions/AmendmentDisposition"
+    },
+    "historical_query_guarantee_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rollback_ready": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantic_diff_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unresolved_obligations": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "amendment_decision_id",
+    "amendment_proposal_id",
+    "archive_consequence_summary",
+    "decided_at",
+    "disposition",
+    "rollback_ready",
+    "schema_version"
+  ],
+  "title": "AmendmentDecisionV1",
+  "type": "object"
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": "ProfileExceptionBundleV1",
+  "profile_exception_bundle_id": "profile-exception-bundle-001",
+  "affected_context_refs": [
+    "applicability-context-001"
+  ],
+  "affected_profile_refs": [
+    "rpp_001",
+    "cbt_001"
+  ],
+  "exception_class": "locality_exception",
+  "reason": "temporary customer-mandated replay in eu-west for regulated incident reconstruction",
+  "scope": "replay_only/eu-west/tenant-enterprise-a",
+  "starts_at": "2026-03-16T13:30:00Z",
+  "expires_at": "2026-03-17T13:30:00Z",
+  "approval_refs": [
+    "approval:privacy-board-17",
+    "approval:risk-ops-44"
+  ],
+  "residual_obligations": [
+    "encrypt_export",
+    "post_transfer_deletion"
+  ],
+  "added_monitoring_obligations": [
+    "cross_region_replay_monitor"
+  ],
+  "added_post_hoc_review_obligations": [
+    "locality_exception_post_review"
+  ],
+  "replay_expectations": [
+    "full_replay_provenance",
+    "receipt_linkage_required"
+  ],
+  "cleanup_obligations": [
+    "delete_temp_copy_after_review"
+  ],
+  "compensation_obligations": [
+    "customer_notification_if_retention_extended"
+  ],
+  "recorded_at": "2026-03-16T13:31:00Z"
+}

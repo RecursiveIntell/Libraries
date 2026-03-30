@@ -1,0 +1,13 @@
+{
+  "schema_version": "comparability_matrix_v1",
+  "comparability_matrix_id": "comparability-2026-03-14-a",
+  "workload_comparability": "matched",
+  "environment_comparability": "matched_except_provider_patchlevel",
+  "config_comparability": "matched",
+  "time_window_comparability": "same_recorded_day",
+  "retry_replay_comparability": "same_attempt_family",
+  "missingness_markers": [
+    "no_negative_control_for_external_cache"
+  ],
+  "admissibility_judgment": "restricted"
+}

@@ -1,0 +1,252 @@
+{
+  "fixture_name": "remote_oracle_local_constitution",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-302",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-18T02:00:00Z",
+      "recorded_as_of": "2026-03-18T02:00:04Z",
+      "target_surface_kind": "remote_oracle",
+      "actor_class": "auditor",
+      "role_refs": [
+        "role:auditor"
+      ],
+      "incident_mode": "normal",
+      "execution_context_ref": "execution-context-302",
+      "admitted_exception_refs": []
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-302",
+      "applicability_context_ref": "applicability-context-302",
+      "profile_refs": {
+        "continuity_policy_profile_id": "continuity-policy-profile-302"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25"
+      ],
+      "omissions": [],
+      "active_exception_refs": [],
+      "normalized_profile_order": [
+        "continuity-policy-profile-302"
+      ]
+    },
+    "CompositionRuleSetV1": {
+      "schema_version": "CompositionRuleSetV1",
+      "composition_rule_set_id": "composition-rule-set-302",
+      "version": "reference-v1",
+      "family_rules": [
+        {
+          "obligation_family": "remote_admission.exactness",
+          "fold_class": "all_or_nothing",
+          "output_kind": "delegation",
+          "monotone_additions_expected": true,
+          "block_on_unresolved_conflict": true,
+          "admissible_exception_classes": [
+            "remote_exception"
+          ],
+          "downgrade_behavior": "emit_receipt_and_never_fall_back_to_permissive",
+          "explanation": "remote admission requires exactness posture and trust-root controls"
+        }
+      ],
+      "conflict_classes": [],
+      "exception_rules": [
+        {
+          "exception_class": "remote_exception",
+          "allowed_obligation_families": [
+            "remote_admission.exactness"
+          ],
+          "requires_approval_refs": true,
+          "requires_expiry": true,
+          "residual_obligations_mandatory": true
+        }
+      ],
+      "downgrade_behavior": "emit_receipt_and_never_fall_back_to_permissive",
+      "reference_evaluator_version": "profile-runtime/reference-evaluator/v1"
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-302",
+      "applicability_context_ref": "applicability-context-302",
+      "profile_set_ref": "profile-set-302",
+      "composition_rule_set_ref": "composition-rule-set-302",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "continuity-policy-profile-302"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "normal",
+      "hard_block_summary": [],
+      "active_warning_summary": [],
+      "approval_requirements": [
+        "remote-admission-review"
+      ],
+      "disclosure_obligations": [
+        "remote_admission_disclosure"
+      ],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [
+        "trust_root_coverage"
+      ],
+      "continuity_obligations": [
+        "replay_audit"
+      ],
+      "effect_obligations": [],
+      "delegation_obligations": [
+        "remote-access-authorization"
+      ],
+      "replay_obligations": [
+        "remote-replay"
+      ],
+      "valid_as_of": "2026-03-18T02:00:00Z",
+      "recorded_as_of": "2026-03-18T02:00:04Z",
+      "explanation_summary": "remote admission path requires exactness class and continuity obligations"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-302",
+      "effective_constitution_ref": "effective-constitution-302",
+      "obligation_entries": [
+        {
+          "obligation_entry_id": "obligation-entry-302a",
+          "obligation_family": "remote_admission.exactness",
+          "obligation_key": "exactness_required",
+          "output_kind": "replay",
+          "fold_class": "all_or_nothing",
+          "string_values": [
+            "remote-slice"
+          ],
+          "blocking": true,
+          "source_profile_refs": [
+            "continuity-policy-profile-302"
+          ],
+          "source_exception_refs": [],
+          "explanation": "remote slices require exactness-compatible request posture"
+        }
+      ],
+      "block_entries": [
+        {
+          "block_key": "remote_admission.exactness:remote-slice",
+          "reason": "exactness posture required for remote admission",
+          "source_profile_refs": [
+            "continuity-policy-profile-302"
+          ],
+          "admissible_exception_classes": [
+            "remote_exception"
+          ]
+        }
+      ],
+      "required_approvals": [
+        "remote-admission-review"
+      ],
+      "required_checks": [
+        "trust-root-audit"
+      ],
+      "required_monitors": [
+        "trust_root_coverage"
+      ],
+      "required_evidence_obligations": [
+        "remote-execution-evidence"
+      ],
+      "required_disclosure_obligations": [
+        "remote-admission-disclosure"
+      ],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [],
+      "promotion_eligibility_summary": "blocked_by_obligation",
+      "release_eligibility_summary": "blocked_by_obligation",
+      "effect_eligibility_summary": "blocked_by_obligation",
+      "unresolved_dependency_refs": []
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-302",
+      "applicability_context_ref": "applicability-context-302",
+      "profile_set_ref": "profile-set-302",
+      "composition_rule_set_ref": "composition-rule-set-302",
+      "effective_constitution_ref": "effective-constitution-302",
+      "compiled_obligation_set_ref": "compiled-obligation-set-302",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-302",
+      "replay_handle": "profile-runtime:applicability-context-302:profile-set-302:composition-rule-set-302",
+      "normalized_input_digest": "3023023023023023023023023023023023023023023023023023023023023023",
+      "generated_at": "2026-03-18T02:00:06Z"
+    },
+    "RemoteSliceRequestV1": {
+      "schema_version": "remote_slice_request_v1",
+      "remote_slice_request_id": "remote-slice-request-v25",
+      "requested_slice_definition": "bounded replay slice",
+      "required_artifact_refs": [
+        "artifact:claim:v25"
+      ],
+      "allowed_disclosure_policy": "no_pii",
+      "exactness_target": "exact",
+      "trust_root_set_id": "trust-root-set-v25",
+      "applicability_context_id": "applicability-context-302",
+      "profile_set_id": "profile-set-302",
+      "composition_receipt_id": "composition-receipt-302",
+      "effective_constitution_id": "effective-constitution-302",
+      "compiled_obligation_set_id": "compiled-obligation-set-302",
+      "profile_exception_bundle_ids": [],
+      "challenge_expectations": [
+        "remote_admission_evidence"
+      ],
+      "remote_oracle_lease_id": "remote-oracle-lease-v25"
+    },
+    "RemoteSliceResultV1": {
+      "schema_version": "remote_slice_result_v1",
+      "remote_slice_result_id": "remote-slice-result-v25",
+      "remote_slice_request_id": "remote-slice-request-v25",
+      "applicability_context_id": "applicability-context-302",
+      "profile_set_id": "profile-set-302",
+      "composition_receipt_id": "composition-receipt-302",
+      "effective_constitution_id": "effective-constitution-302",
+      "compiled_obligation_set_id": "compiled-obligation-set-302",
+      "profile_exception_bundle_ids": [],
+      "returned_artifact_refs": [
+        "artifact:replay:v25"
+      ],
+      "exactness_class": "exact",
+      "remote_execution_evidence": "replay-ready",
+      "disclosure_markers": [
+        "marker:governance"
+      ],
+      "replay_handle": "replay-handle-v25",
+      "local_admission_recommendation": "eligible",
+      "attestation_envelope_id": "attestation-envelope-v25"
+    },
+    "CrossRuntimeReplayTicketV1": {
+      "schema_version": "cross_runtime_replay_ticket_v1",
+      "cross_runtime_replay_ticket_id": "cross-runtime-ticket-v25",
+      "applicability_context_id": "applicability-context-302",
+      "profile_set_id": "profile-set-302",
+      "composition_receipt_id": "composition-receipt-302",
+      "effective_constitution_id": "effective-constitution-302",
+      "compiled_obligation_set_id": "compiled-obligation-set-302",
+      "profile_exception_bundle_ids": [],
+      "artifact_refs": [
+        "artifact:replay:v25"
+      ],
+      "time_coordinates": "2026-03-18T02:00:00Z",
+      "required_trust_roots": [
+        "trust-root-set-v25"
+      ],
+      "allowed_disclosure": "non-sensitive",
+      "lease_window": "2026-03-18T02:00:00Z/2026-03-19T02:00:00Z",
+      "replay_expectations": [
+        "expectation:complete"
+      ],
+      "failure_behavior": "retry"
+    }
+  }
+}

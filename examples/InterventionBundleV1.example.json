@@ -1,0 +1,24 @@
+{
+  "schema_version": "intervention_bundle_v1",
+  "intervention_id": "intervention-2026-03-14-alpha",
+  "episode_id": "episode-42",
+  "unit_of_analysis": "benchmark_case",
+  "treatment_definition": "enable bounded-exact oracle slice on contradiction-local regions",
+  "baseline_treatment": "message-passing only",
+  "start_condition": "when contradiction core cardinality <= 8",
+  "stop_condition": "after one replay-exact check or budget exhaustion",
+  "allowed_scope": "repo:core/support-lane",
+  "valid_from": "2026-03-14T00:00:00Z",
+  "valid_to": null,
+  "recorded_at": "2026-03-14T12:00:00Z",
+  "related_claim_ids": [
+    "claim-42",
+    "claim-43"
+  ],
+  "policy_refs": [
+    "policy-snapshot-7"
+  ],
+  "approval_refs": [
+    "approval-record-9"
+  ]
+}

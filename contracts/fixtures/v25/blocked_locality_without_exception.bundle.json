@@ -1,0 +1,166 @@
+{
+  "fixture_name": "blocked_locality_without_exception",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-101",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-16T12:00:00Z",
+      "recorded_as_of": "2026-03-16T12:00:05Z",
+      "target_surface_kind": "replay_export",
+      "actor_class": "auditor",
+      "role_refs": [
+        "role:auditor"
+      ],
+      "incident_mode": "normal",
+      "execution_context_ref": "execution-context-101",
+      "admitted_exception_refs": []
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-101",
+      "applicability_context_ref": "applicability-context-101",
+      "profile_refs": {
+        "residency_policy_profile_id": "rpp_001",
+        "cross_boundary_transfer_class_ids": [
+          "cbt_001"
+        ],
+        "effect_policy_profile_id": "effect-policy-profile-001"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25",
+        "policy-catalog:payments-prod"
+      ],
+      "omissions": [],
+      "active_exception_refs": [],
+      "normalized_profile_order": [
+        "cbt_001",
+        "effect-policy-profile-001",
+        "rpp_001"
+      ]
+    },
+    "CompositionRuleSetV1": {
+      "schema_version": "CompositionRuleSetV1",
+      "composition_rule_set_id": "composition-rule-set-101",
+      "version": "reference-v1",
+      "family_rules": [
+        {
+          "obligation_family": "residency.forbidden_transfer_classes",
+          "fold_class": "block_dominant",
+          "output_kind": "block",
+          "monotone_additions_expected": true,
+          "block_on_unresolved_conflict": true,
+          "admissible_exception_classes": [
+            "locality_exception"
+          ],
+          "downgrade_behavior": "blocked",
+          "explanation": "forbidden transfer classes survive until explicitly excepted"
+        }
+      ],
+      "conflict_classes": [],
+      "exception_rules": [
+        {
+          "exception_class": "locality_exception",
+          "allowed_obligation_families": [
+            "residency.forbidden_transfer_classes"
+          ],
+          "requires_approval_refs": true,
+          "requires_expiry": true,
+          "residual_obligations_mandatory": true
+        }
+      ],
+      "downgrade_behavior": "emit_receipt_and_never_fall_back_to_permissive",
+      "reference_evaluator_version": "profile-runtime/reference-evaluator/v1"
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-101",
+      "applicability_context_ref": "applicability-context-101",
+      "profile_set_ref": "profile-set-101",
+      "composition_rule_set_ref": "composition-rule-set-101",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "cbt_001",
+        "effect-policy-profile-001",
+        "rpp_001"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "blocked",
+      "hard_block_summary": [
+        "residency.forbidden_transfer_classes:customer_pii_to_non_us"
+      ],
+      "active_warning_summary": [],
+      "approval_requirements": [
+        "locality-review-board"
+      ],
+      "disclosure_obligations": [],
+      "residency_obligations": [
+        "us-central"
+      ],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [],
+      "continuity_obligations": [],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [
+        "receipt_linkage_required"
+      ],
+      "valid_as_of": "2026-03-16T12:00:00Z",
+      "recorded_as_of": "2026-03-16T12:00:05Z",
+      "explanation_summary": "cross-border replay export is blocked without explicit locality exception"
+    },
+    "CompiledObligationSetV1": {
+      "schema_version": "CompiledObligationSetV1",
+      "compiled_obligation_set_id": "compiled-obligation-set-101",
+      "effective_constitution_ref": "effective-constitution-101",
+      "obligation_entries": [],
+      "block_entries": [
+        {
+          "block_key": "residency.forbidden_transfer_classes:customer_pii_to_non_us",
+          "reason": "forbidden transfer class",
+          "source_profile_refs": [
+            "rpp_001"
+          ],
+          "admissible_exception_classes": [
+            "locality_exception"
+          ]
+        }
+      ],
+      "required_approvals": [
+        "locality-review-board"
+      ],
+      "required_checks": [],
+      "required_monitors": [],
+      "required_evidence_obligations": [],
+      "required_disclosure_obligations": [],
+      "required_rollback_obligations": [],
+      "required_compensation_obligations": [],
+      "required_post_hoc_review_obligations": [],
+      "promotion_eligibility_summary": "blocked",
+      "release_eligibility_summary": "blocked",
+      "effect_eligibility_summary": "blocked",
+      "unresolved_dependency_refs": []
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-101",
+      "applicability_context_ref": "applicability-context-101",
+      "profile_set_ref": "profile-set-101",
+      "composition_rule_set_ref": "composition-rule-set-101",
+      "effective_constitution_ref": "effective-constitution-101",
+      "compiled_obligation_set_ref": "compiled-obligation-set-101",
+      "degradation_markers": [],
+      "execution_context_ref": "execution-context-101",
+      "replay_handle": "profile-runtime:applicability-context-101:profile-set-101:composition-rule-set-101",
+      "normalized_input_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+      "generated_at": "2026-03-16T12:00:06Z"
+    }
+  }
+}

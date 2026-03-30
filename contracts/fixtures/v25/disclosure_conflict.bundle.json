@@ -1,0 +1,123 @@
+{
+  "fixture_name": "disclosure_conflict",
+  "wave": "v25",
+  "artifacts": {
+    "ApplicabilityContextV1": {
+      "schema_version": "ApplicabilityContextV1",
+      "applicability_context_id": "applicability-context-103",
+      "namespace": "prod/payments",
+      "valid_as_of": "2026-03-16T15:00:00Z",
+      "recorded_as_of": "2026-03-16T15:00:02Z",
+      "target_surface_kind": "audit_export",
+      "actor_class": "compliance_auditor",
+      "role_refs": [
+        "role:compliance-auditor"
+      ],
+      "incident_mode": "normal",
+      "execution_context_ref": "execution-context-103",
+      "admitted_exception_refs": []
+    },
+    "ProfileSetV1": {
+      "schema_version": "ProfileSetV1",
+      "profile_set_id": "profile-set-103",
+      "applicability_context_ref": "applicability-context-103",
+      "profile_refs": {
+        "audit_extraction_policy_id": "aep_001",
+        "vendor_evidence_translation_id": "vet_001"
+      },
+      "source_admission_refs": [
+        "constitutional-memory:v25",
+        "policy-catalog:payments-prod"
+      ],
+      "omissions": [],
+      "active_exception_refs": [],
+      "normalized_profile_order": [
+        "aep_001",
+        "vet_001"
+      ]
+    },
+    "CompositionConflictSetV1": {
+      "schema_version": "CompositionConflictSetV1",
+      "composition_conflict_set_id": "composition-conflict-set-103",
+      "effective_constitution_ref": "effective-constitution-103",
+      "composition_receipt_ref": "composition-receipt-103",
+      "conflicts": [
+        {
+          "obligation_family": "disclosure.export_format",
+          "obligation_key": "export_package_format",
+          "conflict_class": "incomparable_values",
+          "blocking": true,
+          "source_profile_refs": [
+            "aep_001",
+            "vet_001"
+          ],
+          "implicated_values": [
+            "bundle_v2",
+            "vendor_portal_zip"
+          ],
+          "admissible_exception_classes": [
+            "disclosure_exception"
+          ],
+          "review_path": "human_constitution_review",
+          "explanation": "audit export format diverged without admitted exception"
+        }
+      ],
+      "blocking": true
+    },
+    "EffectiveConstitutionV1": {
+      "schema_version": "EffectiveConstitutionV1",
+      "effective_constitution_id": "effective-constitution-103",
+      "applicability_context_ref": "applicability-context-103",
+      "profile_set_ref": "profile-set-103",
+      "composition_rule_set_ref": "composition-rule-set-103",
+      "base_law_refs": [
+        "v25_effective_constitution"
+      ],
+      "doctrine_refs": [
+        "profile-runtime/reference-evaluator/v1"
+      ],
+      "admitted_profile_refs": [
+        "aep_001",
+        "vet_001"
+      ],
+      "admitted_exception_refs": [],
+      "current_mode_classification": "blocked",
+      "hard_block_summary": [],
+      "active_warning_summary": [],
+      "approval_requirements": [
+        "human_constitution_review"
+      ],
+      "disclosure_obligations": [
+        "audit_export"
+      ],
+      "residency_obligations": [],
+      "tenancy_obligations": [],
+      "assurance_obligations": [],
+      "monitoring_obligations": [],
+      "continuity_obligations": [],
+      "effect_obligations": [],
+      "delegation_obligations": [],
+      "replay_obligations": [],
+      "valid_as_of": "2026-03-16T15:00:00Z",
+      "recorded_as_of": "2026-03-16T15:00:02Z",
+      "explanation_summary": "audit export blocked by unresolved disclosure conflict"
+    },
+    "CompositionReceiptV1": {
+      "schema_version": "CompositionReceiptV1",
+      "composition_receipt_id": "composition-receipt-103",
+      "applicability_context_ref": "applicability-context-103",
+      "profile_set_ref": "profile-set-103",
+      "composition_rule_set_ref": "composition-rule-set-103",
+      "effective_constitution_ref": "effective-constitution-103",
+      "compiled_obligation_set_ref": "compiled-obligation-set-103",
+      "composition_conflict_set_ref": "composition-conflict-set-103",
+      "degradation_markers": [
+        "conflict_set_emitted"
+      ],
+      "execution_context_ref": "execution-context-103",
+      "replay_handle": "profile-runtime:applicability-context-103:profile-set-103:composition-rule-set-103",
+      "normalized_input_digest": "3333333333333333333333333333333333333333333333333333333333333333",
+      "generated_at": "2026-03-16T15:00:03Z"
+    }
+  }
+}

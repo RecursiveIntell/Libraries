@@ -1,0 +1,20 @@
+{
+  "generated_schema_bundle": {
+    "schema_version": "generated_schema_bundle_v1",
+    "generated_schema_bundle_id": "generated-v20-1",
+    "spec_bundle_id": "spec-v20-1",
+    "normative_ast_id": "ast-v20-1",
+    "proof_obligation_set_id": "proof-v20-1",
+    "schema_family": "demo-family",
+    "generated_files": [
+      {
+        "path": "generated/demo-family/schema.json",
+        "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_node_ids": ["node-1"]
+      }
+    ],
+    "admission_state": "advisory_only",
+    "advisory_only": true,
+    "generated_at": "2026-03-14T00:00:00Z"
+  }
+}

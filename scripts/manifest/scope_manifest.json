@@ -1,0 +1,16 @@
+{
+  "schema_version": "scope_manifest_v1",
+  "description": "Paths checked by gate scripts. Optional paths are skipped with a policy message if absent.",
+  "required_paths": [
+    "llm-tool-runtime/src/runtime.rs",
+    "llm-tool-runtime/src/starter_tools.rs",
+    "llm-tool-runtime/src/contracts.rs",
+    "forge-pilot/src/act.rs"
+  ],
+  "optional_paths": [
+    "LLM-Pipeline/src/tool_loop.rs"
+  ],
+  "excluded_from_workspace": [
+    "LLM-Pipeline"
+  ]
+}

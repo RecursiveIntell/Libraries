@@ -1,0 +1,10 @@
+{
+  "schema_version": "contradiction_witness_v1",
+  "contradiction_witness_id": "contradiction-witness-9",
+  "claim_id": "claim-123",
+  "conflicting_token_ids": [
+    "tok-a",
+    "tok-b"
+  ],
+  "summary": "one source supports the claim while another refutes it in the same semantics profile"
+}

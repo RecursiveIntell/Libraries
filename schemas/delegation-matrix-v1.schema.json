@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DelegationEdgeV1": {
+      "properties": {
+        "capability": {
+          "type": "string"
+        },
+        "from_role": {
+          "type": "string"
+        },
+        "to_role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "capability",
+        "from_role",
+        "to_role"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "allowed_edges": {
+      "items": {
+        "$ref": "#/definitions/DelegationEdgeV1"
+      },
+      "type": "array"
+    },
+    "delegation_matrix_id": {
+      "type": "string"
+    },
+    "forbidden_chain_patterns": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "max_delegation_depth": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "required_lease_classes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "delegation_matrix_id",
+    "max_delegation_depth",
+    "schema_version"
+  ],
+  "title": "DelegationMatrixV1",
+  "type": "object"
+}

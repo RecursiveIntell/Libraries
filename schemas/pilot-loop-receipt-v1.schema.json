@@ -1,0 +1,363 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "BootstrapRichness": {
+      "enum": [
+        "thin",
+        "chunked",
+        "symbolized"
+      ],
+      "type": "string"
+    },
+    "HaltReason": {
+      "enum": [
+        "MaxIterationsReached",
+        "TimeBudgetExhausted",
+        "NothingWorthInvestigating",
+        "ImportRequired",
+        "NamespaceMismatch",
+        "StorageUnavailable",
+        "StorageCorrupt",
+        "AllTargetsExhausted",
+        "MissingKernelPayload",
+        "ThinExportBlockedExecution",
+        "ExternalHalt",
+        "RetryCapExceeded",
+        "AdvisoryOnlyFallback",
+        "GovernanceIncidentHalt",
+        "GovernanceAuthorityInsufficient"
+      ],
+      "type": "string"
+    },
+    "ImportRecordDisposition": {
+      "enum": [
+        "found",
+        "never_imported",
+        "namespace_mismatch",
+        "storage_unavailable",
+        "storage_corrupt"
+      ],
+      "type": "string"
+    },
+    "LoopBudgetReceipt": {
+      "properties": {
+        "cooldown_secs": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_iterations": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_retries_per_target": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "time_budget_secs": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "workload_class": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cooldown_secs",
+        "max_iterations",
+        "max_retries_per_target",
+        "time_budget_secs",
+        "workload_class"
+      ],
+      "type": "object"
+    },
+    "ObservationDisposition": {
+      "enum": [
+        "ready",
+        "empty_workspace",
+        "import_required",
+        "namespace_mismatch",
+        "storage_unavailable",
+        "storage_corrupt"
+      ],
+      "type": "string"
+    },
+    "ObservationPaths": {
+      "properties": {
+        "forge_db_path": {
+          "type": "string"
+        },
+        "forge_db_state": {
+          "$ref": "#/definitions/PathAvailability"
+        },
+        "memory_dir": {
+          "type": "string"
+        },
+        "memory_dir_state": {
+          "$ref": "#/definitions/PathAvailability"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "workspace_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "forge_db_path",
+        "forge_db_state",
+        "memory_dir",
+        "memory_dir_state",
+        "namespace",
+        "workspace_path"
+      ],
+      "type": "object"
+    },
+    "ObservationStatus": {
+      "properties": {
+        "available_forge_bundle_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "bootstrap_richness": {
+          "$ref": "#/definitions/BootstrapRichness"
+        },
+        "disposition": {
+          "$ref": "#/definitions/ObservationDisposition"
+        },
+        "exact_next_step": {
+          "type": "string"
+        },
+        "import_record_disposition": {
+          "$ref": "#/definitions/ImportRecordDisposition"
+        },
+        "import_records_found": {
+          "type": "boolean"
+        },
+        "imported_chunk_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "imported_file_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "imported_symbol_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "namespace_queried": {
+          "type": "string"
+        },
+        "other_import_namespaces": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "resolved_workspace_path": {
+          "type": "string"
+        },
+        "supported_file_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "available_forge_bundle_count",
+        "bootstrap_richness",
+        "disposition",
+        "exact_next_step",
+        "import_record_disposition",
+        "import_records_found",
+        "imported_chunk_count",
+        "imported_file_count",
+        "imported_symbol_count",
+        "namespace_queried",
+        "resolved_workspace_path",
+        "supported_file_count"
+      ],
+      "type": "object"
+    },
+    "PathAvailability": {
+      "enum": [
+        "present",
+        "missing",
+        "invalid"
+      ],
+      "type": "string"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "actions_executed": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "attempt_id": {
+      "type": "string"
+    },
+    "budget": {
+      "$ref": "#/definitions/LoopBudgetReceipt"
+    },
+    "consumer_only_truth_access": {
+      "default": false,
+      "type": "boolean"
+    },
+    "degraded_iterations": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "elapsed_seconds": {
+      "format": "double",
+      "type": "number"
+    },
+    "exports_completed": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "finished_at": {
+      "type": "string"
+    },
+    "halt_reason": {
+      "$ref": "#/definitions/HaltReason"
+    },
+    "imports_completed": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "iterations_completed": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "non_authoritative": {
+      "type": "boolean"
+    },
+    "observation_paths": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ObservationPaths"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observation_status": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ObservationStatus"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "targets_investigated": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trace_ctx": {
+      "$ref": "#/definitions/TraceCtx"
+    },
+    "workspace_path": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "actions_executed",
+    "advisory_only",
+    "attempt_id",
+    "budget",
+    "degraded_iterations",
+    "elapsed_seconds",
+    "exports_completed",
+    "finished_at",
+    "halt_reason",
+    "imports_completed",
+    "iterations_completed",
+    "namespace",
+    "non_authoritative",
+    "receipt_id",
+    "schema_version",
+    "started_at",
+    "targets_investigated",
+    "trace_ctx",
+    "workspace_path"
+  ],
+  "title": "LoopReceipt",
+  "type": "object"
+}

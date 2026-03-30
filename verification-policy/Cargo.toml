@@ -1,0 +1,17 @@
+[package]
+name = "verification-policy"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Canonical verification policy and approval artifacts"
+license = "MIT"
+
+[dependencies]
+llm-tool-runtime = { path = "../llm-tool-runtime" }
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+stack-ids = { path = "../stack-ids" }
+verification-control = { path = "../verification-control" }
+
+[dev-dependencies]
+serde_json = { workspace = true }

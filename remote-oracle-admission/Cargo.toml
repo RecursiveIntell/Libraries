@@ -1,0 +1,13 @@
+[package]
+name = "remote-oracle-admission"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Typed remote oracle admission contracts for lease, result, replay, and re-admission artifacts"
+license = "MIT"
+
+[dependencies]
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+stack-ids = { path = "../stack-ids" }
+attestation-exchange = { path = "../attestation-exchange" }

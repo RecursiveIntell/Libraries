@@ -1,0 +1,55 @@
+[package]
+# GOV-010: Package name is "forge-engine" but path is "living-memory/living-memory".
+# This is a historical artifact. The path cannot be renamed without breaking all consumers.
+# All workspace references use: forge-engine = { path = "../Libraries/living-memory/living-memory" }
+name = "forge-engine"
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Causal edit attribution and structured patch evaluation engine"
+license = "MIT"
+readme = "README.md"
+
+[features]
+default = []
+danger-sm-write = []
+
+[dependencies]
+llm-tool-runtime = { path = "../../llm-tool-runtime" }
+semantic-memory = { path = "../../semantic-memory" }
+semantic-memory-forge = { path = "../../semantic-memory-forge" }
+forge-memory-bridge = { path = "../../forge-memory-bridge" }
+stack-ids = { path = "../../stack-ids" }
+forge-policy = { version = "0.1.0", path = "../../Primitives/forge-policy" }
+sandbox-workspace = { version = "0.1.0", path = "../../Primitives/sandbox-workspace" }
+typed-patch = { version = "0.1.0", path = "../../Primitives/typed-patch" }
+effect-signature = { version = "0.1.0", path = "../../Primitives/effect-signature" }
+check-runner = { version = "0.1.0", path = "../../Primitives/check-runner", features = ["container"] }
+mindstate-core = { version = "0.1.0", path = "../../Primitives/mindstate-core" }
+stabilizer-core = { version = "0.1.0", path = "../../Primitives/stabilizer-core" }
+cea-core = { version = "0.1.0", path = "../../Primitives/cea-core" }
+cea-store = { version = "0.1.0", path = "../../Primitives/cea-store" }
+cea-sqlite = { version = "0.1.0", path = "../../Primitives/cea-sqlite" }
+tokio = { workspace = true, features = ["rt", "macros", "time", "process", "fs"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = "1"
+uuid = { workspace = true, features = ["v4", "serde"] }
+blake3 = { workspace = true }
+rusqlite = { workspace = true, features = ["bundled"] }
+tempfile = { workspace = true }
+walkdir = "2"
+once_cell = "1"
+petgraph = "0.6"
+regex = "1"
+async-trait = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+glob = "0.3"
+similar = "2"  # replaces hand-rolled LCS diff in render_diff fallback
+rand = "0.9"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+tempfile = { workspace = true }

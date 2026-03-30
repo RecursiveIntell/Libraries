@@ -1,0 +1,23 @@
+{
+  "schema_version": "rollout_decision_v1",
+  "rollout_decision_id": "rollout-2026-03-14-01",
+  "intervention_id": "intervention-2026-03-14-alpha",
+  "decision_class": "canary",
+  "allowed_blast_radius": "one bounded region family",
+  "observability_obligations": [
+    "emit decision trace",
+    "track degradation markers",
+    "retain replay ticket"
+  ],
+  "rollback_trigger_conditions": [
+    "contradiction rate > baseline + 5%",
+    "refuter failure"
+  ],
+  "quarantine_trigger_conditions": [
+    "missing execution evidence",
+    "admission policy violation"
+  ],
+  "policy_basis": [
+    "policy-snapshot-7"
+  ]
+}

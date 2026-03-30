@@ -1,0 +1,19 @@
+{
+  "schema_version": "RequirementControlMapV1",
+  "requirement_control_map_id": "rcm_001",
+  "regulatory_regime_profile_id": "rrp_001",
+  "mappings": [
+    {
+      "requirement": "CM-01",
+      "control": "dual_control_release",
+      "evidence_family": "ApprovalMatrixV1"
+    },
+    {
+      "requirement": "IR-02",
+      "control": "incident_postmortem",
+      "evidence_family": "PostmortemBundleV1"
+    }
+  ],
+  "gap_classification_default": "needs_manual_review",
+  "owner_ref": "team:compliance"
+}

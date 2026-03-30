@@ -1,0 +1,17 @@
+{
+  "schema_version": "remote_slice_request_v1",
+  "remote_slice_request_id": "remote-request-2026-03-14-01",
+  "requested_slice_definition": "bounded exact re-evaluation of contradiction core 7",
+  "required_artifact_refs": [
+    "decision-trace-2026-03-14-01",
+    "cf-slice-2026-03-14-01"
+  ],
+  "allowed_disclosure_policy": "disclosure-policy-core-remote",
+  "exactness_target": "bounded_exact",
+  "trust_root_set_id": "trust-root-core",
+  "challenge_expectations": [
+    "must provide replay handle",
+    "must disclose redactions"
+  ],
+  "remote_oracle_lease_id": "lease-2026-03-14-01"
+}

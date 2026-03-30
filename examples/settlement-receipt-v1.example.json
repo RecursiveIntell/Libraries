@@ -1,0 +1,34 @@
+{
+  "schema_version": "settlement_receipt_v1",
+  "settlement_receipt_id": "settlement-receipt-v25",
+  "settlement_case_id": "settlement-case-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "disposition": "shared_disposition_issued",
+  "settlement_allowed": true,
+  "advisory_only": false,
+  "non_admitted": false,
+  "degraded": false,
+  "shared_disposition_id": "shared-disposition-v25",
+  "downgrade": {
+    "schema_version": "shared_view_downgrade_v1",
+    "shared_view_downgrade_id": "shared-view-downgrade-v25",
+    "reason": "missing_required_replay",
+    "detail": "no missing replay sources",
+    "preserves_local_dissent": false
+  },
+  "local_dissent": [
+    {
+      "schema_version": "local_dissent_record_v1",
+      "local_dissent_id": "local-dissent-v25",
+      "runtime_name": "runtime-a",
+      "reason": "none",
+      "blocks_shared_settlement": false
+    }
+  ],
+  "generated_at": "2026-03-17T00:00:10Z"
+}

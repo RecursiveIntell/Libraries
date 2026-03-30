@@ -1,0 +1,233 @@
+{
+  "fixture_name": "effect_authority_assurance_release",
+  "wave": "v21-v22-v23",
+  "chain": {
+    "effect_to_release": [
+      {
+        "phase": "v21_effect_preflight",
+        "artifacts": [
+          "EffectPreflightReportV1:fxp_001",
+          "EffectCommitDecisionV1:fxc_001"
+        ]
+      },
+      {
+        "phase": "v21_effect_execution",
+        "artifacts": [
+          "EffectExecutionReceiptV1:fxr_001",
+          "EffectObservationBundleV1:fxo_001"
+        ]
+      },
+      {
+        "phase": "v22_delegation",
+        "artifacts": [
+          "AuthorityLeaseV1:aul_001",
+          "DelegationBundleV1:adb_001",
+          "AuthorityChainV1:auc_001",
+          "DualControlApprovalV1:dca_001",
+          "ActingOnBehalfReceiptV1:aob_001"
+        ]
+      },
+      {
+        "phase": "v23_release_readiness",
+        "artifacts": [
+          "DeploymentProfileV1:dpf_001",
+          "OperatingEnvelopeV1:oen_001",
+          "AssuranceCaseV1:asc_001",
+          "HazardRegisterV1:hzr_001",
+          "ReleaseReadinessDecisionV1:rrd_001"
+        ]
+      }
+    ],
+    "cross_wave_links": {
+      "effect_to_delegation": {
+        "effect_execution_receipt": "EffectExecutionReceiptV1:fxr_001",
+        "delegation_receipt": "ActingOnBehalfReceiptV1:aob_001",
+        "requirement": "delegation_receipt must reference effect execution receipt"
+      },
+      "delegation_to_release": {
+        "release_readiness_decision": "ReleaseReadinessDecisionV1:rrd_001",
+        "requires_replay_obligation": true,
+        "requirement": "release decision must be approved and non-blocked"
+      }
+    }
+  },
+  "expected_outputs": {
+    "preflight": "commit_eligible",
+    "delegation": "effective_and_replayable",
+    "release": "approved_with_monitoring"
+  },
+  "artifacts": {
+    "EffectPreflightReportV1": {
+      "schema_version": "EffectPreflightReportV1",
+      "effect_preflight_report_id": "fxp_001",
+      "effect_intent_id": "fxi_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "required_obligation_refs": [
+        "obs:admission-check-ok"
+      ],
+      "blocking_obligation_refs": [],
+      "monitoring_obligation_refs": [
+        "obs:latency"
+      ],
+      "decision_basis_obligation_refs": [
+        "obs:policy-compliance"
+      ],
+      "input_integrity_result": "pass",
+      "admission_check_result": "pass",
+      "dependency_reachability_result": "pass",
+      "budget_sufficiency_result": "sufficient",
+      "generated_at": "2026-03-15T12:00:00Z",
+      "notes": [
+        "all preconditions satisfied"
+      ],
+      "disposition": "commit_eligible"
+    },
+    "EffectCommitDecisionV1": {
+      "schema_version": "EffectCommitDecisionV1",
+      "effect_commit_decision_id": "fxc_001",
+      "effect_intent_id": "fxi_001",
+      "effect_preflight_report_id": "fxp_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "required_obligation_refs": [
+        "obs:admission-check-ok"
+      ],
+      "blocking_obligation_refs": [],
+      "monitoring_obligation_refs": [
+        "obs:latency"
+      ],
+      "decision_basis_obligation_refs": [
+        "obs:policy-compliance"
+      ],
+      "approval_obligation_refs": [
+        "approval:chaperone"
+      ],
+      "decision_state": "authorized",
+      "approver_refs": [
+        "person:alice",
+        "person:bob"
+      ],
+      "refusal_reason": "",
+      "generated_at": "2026-03-15T12:02:00Z",
+      "execution_permit_id": "permit:fxc_001"
+    },
+    "EffectExecutionReceiptV1": {
+      "schema_version": "EffectExecutionReceiptV1",
+      "effect_execution_receipt_id": "fxr_001",
+      "effect_commit_decision_id": "fxc_001",
+      "applicability_context_id": "ac_001",
+      "profile_set_id": "ps_001",
+      "composition_receipt_id": "cr_001",
+      "effective_constitution_id": "ec_001",
+      "compiled_obligation_set_id": "cos_001",
+      "composition_conflict_set_id": "ccs_001",
+      "profile_exception_bundle_ids": [
+        "peb_001"
+      ],
+      "provider_route": [
+        "forge-pilot",
+        "llm-tool-runtime",
+        "ticketing/api"
+      ],
+      "execution_state": "completed",
+      "partial_execution": false,
+      "cancellation_reason": "",
+      "timeout_exhausted": false,
+      "generated_effect_refs": [
+        "ticket:chg-881"
+      ],
+      "observed_external_handle": "ext_8821",
+      "generated_at": "2026-03-15T12:08:00Z"
+    },
+    "ActingOnBehalfReceiptV1": {
+      "schema_version": "ActingOnBehalfReceiptV1",
+      "acting_on_behalf_receipt_id": "aob_001",
+      "authority_chain_id": "auc_001",
+      "effect_execution_receipt_id": "fxr_001",
+      "delegated_action": "execute change window",
+      "within_lease": true,
+      "generated_at": "2026-03-15T12:08:10Z"
+    },
+    "DelegationBundleV1": {
+      "schema_version": "DelegationBundleV1",
+      "delegation_bundle_id": "adb_001",
+      "authority_lease_id": "aul_001",
+      "delegated_rights": [
+        "execute_effect:external_write"
+      ],
+      "reduced_ceilings": [
+        "single-tenant"
+      ],
+      "replay_requirements": [
+        "authority_chain",
+        "effect_receipt"
+      ],
+      "further_delegation_permitted": false
+    },
+    "AuthorityChainV1": {
+      "schema_version": "AuthorityChainV1",
+      "authority_chain_id": "auc_001",
+      "local_principal": "agent:ops-runner",
+      "delegated_principals": [
+        "person:alice"
+      ],
+      "external_principals": [],
+      "approval_refs": [
+        "approval:dc_001"
+      ],
+      "current_validity_state": "valid"
+    },
+    "DeploymentProfileV1": {
+      "schema_version": "DeploymentProfileV1",
+      "deployment_profile_id": "dpf_001",
+      "system_name": "alpha-service",
+      "deployment_environment": "prod-us-central",
+      "criticality_class": "high",
+      "operating_envelope_id": "oen_001",
+      "assurance_case_id": "asc_001",
+      "publication_status": "required"
+    },
+    "AssuranceCaseV1": {
+      "schema_version": "AssuranceCaseV1",
+      "assurance_case_id": "asc_001",
+      "claim_summary": "deployment meets safety and reliability bar",
+      "evidence_refs": [
+        "test:integration_771",
+        "proof:budget_882"
+      ],
+      "argument_structure": "hazard -> control -> evidence",
+      "open_obligations": [
+        "monitor post-deploy error rate"
+      ],
+      "ready_for_release": true
+    },
+    "ReleaseReadinessDecisionV1": {
+      "schema_version": "ReleaseReadinessDecisionV1",
+      "release_readiness_decision_id": "rrd_001",
+      "deployment_profile_id": "dpf_001",
+      "decision_state": "approved_with_monitoring",
+      "blocking_gaps": [],
+      "required_monitors": [
+        "error_budget",
+        "latency_p95"
+      ],
+      "advisory_only": false,
+      "generated_at": "2026-03-15T12:03:00Z"
+    }
+  }
+}

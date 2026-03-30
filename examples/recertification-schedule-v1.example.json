@@ -1,0 +1,14 @@
+{
+  "schema_version": "RecertificationScheduleV1",
+  "recertification_schedule_id": "rcs_001",
+  "regulatory_regime_profile_id": "rrp_001",
+  "review_interval_days": 180,
+  "trigger_classes": [
+    "major_release",
+    "hazard_library_change",
+    "trust_root_rotation",
+    "incident_sev1"
+  ],
+  "grace_window_days": 7,
+  "blocked_state_on_expiry": "promotion_blocked"
+}

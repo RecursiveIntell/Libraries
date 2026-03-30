@@ -1,0 +1,250 @@
+{
+  "name": "v16_v20_next_pass",
+  "description": "Bounded Codex task graph for lawful scaffolding and vertical slices.",
+  "tasks": [
+    {
+      "id": "NP-001",
+      "title": "Freeze artifact registry",
+      "depends_on": [],
+      "owners": [
+        "root-docs",
+        "contract-schema-gen"
+      ],
+      "phase": "0",
+      "acceptance": "Stable artifact vocabulary across pack, schemas, and crate map."
+    },
+    {
+      "id": "NP-002",
+      "title": "Assign schema ownership",
+      "depends_on": [
+        "NP-001"
+      ],
+      "owners": [
+        "contract-schema-gen"
+      ],
+      "phase": "0",
+      "acceptance": "Every new artifact family has one schema owner and publication path."
+    },
+    {
+      "id": "NP-003",
+      "title": "Extend conformance obligations",
+      "depends_on": [
+        "NP-001",
+        "NP-002"
+      ],
+      "owners": [
+        "kernel-conformance",
+        "knowledge-runtime"
+      ],
+      "phase": "0",
+      "acceptance": "New reference checks named for settlement, theory, portfolio, constitutional, and spec-execution seams."
+    },
+    {
+      "id": "FED-001",
+      "title": "Create v16 core artifact families",
+      "depends_on": [
+        "NP-001",
+        "NP-002"
+      ],
+      "owners": [
+        "federated-settlement"
+      ],
+      "phase": "1",
+      "acceptance": "Treaty, runtime identity, equivalence, settlement case types and schemas exist."
+    },
+    {
+      "id": "FED-002",
+      "title": "Episode and claim equivalence slice",
+      "depends_on": [
+        "FED-001"
+      ],
+      "owners": [
+        "federated-settlement",
+        "semantic-memory"
+      ],
+      "phase": "1",
+      "acceptance": "One episode-level and one claim-level equivalence path with replay/dispute handles."
+    },
+    {
+      "id": "FED-003",
+      "title": "Settlement with local dissent",
+      "depends_on": [
+        "FED-002"
+      ],
+      "owners": [
+        "federated-settlement",
+        "verification"
+      ],
+      "phase": "1",
+      "acceptance": "Shared disposition plus local dissent and downgrade path proven by fixture."
+    },
+    {
+      "id": "THY-001",
+      "title": "Create v17 core artifact families",
+      "depends_on": [
+        "NP-001",
+        "NP-002"
+      ],
+      "owners": [
+        "mechanism-runtime"
+      ],
+      "phase": "2",
+      "acceptance": "Mechanism, theory, library, simulation contract, fit run types and schemas exist."
+    },
+    {
+      "id": "THY-002",
+      "title": "Simulator-backed mechanism slice",
+      "depends_on": [
+        "THY-001"
+      ],
+      "owners": [
+        "mechanism-runtime",
+        "knowledge-runtime"
+      ],
+      "phase": "2",
+      "acceptance": "One replayable mechanism->simulation->fit run path exists."
+    },
+    {
+      "id": "THY-003",
+      "title": "Theory refuter and stability scaffolding",
+      "depends_on": [
+        "THY-002"
+      ],
+      "owners": [
+        "mechanism-runtime",
+        "verification"
+      ],
+      "phase": "2",
+      "acceptance": "Refuter suite stub and stability report fixture block silent promotion."
+    },
+    {
+      "id": "POR-001",
+      "title": "Create v18 core artifact families",
+      "depends_on": [
+        "NP-001",
+        "NP-002"
+      ],
+      "owners": [
+        "discovery-portfolio"
+      ],
+      "phase": "3",
+      "acceptance": "Discovery program, portfolio plan, campaign, decision trace, information value, review budget types and schemas exist."
+    },
+    {
+      "id": "POR-002",
+      "title": "Portfolio decision slice",
+      "depends_on": [
+        "POR-001"
+      ],
+      "owners": [
+        "discovery-portfolio",
+        "verification"
+      ],
+      "phase": "3",
+      "acceptance": "One selection among competing campaigns with explicit deferred reasoning."
+    },
+    {
+      "id": "POR-003",
+      "title": "Review-budget exhaustion behavior",
+      "depends_on": [
+        "POR-001"
+      ],
+      "owners": [
+        "discovery-portfolio",
+        "verification"
+      ],
+      "phase": "3",
+      "acceptance": "Explicit pause/degrade/kill behavior under exhausted verification budget."
+    },
+    {
+      "id": "GOV-001",
+      "title": "Create v19 core artifact families",
+      "depends_on": [
+        "NP-001",
+        "NP-002"
+      ],
+      "owners": [
+        "constitutional-memory"
+      ],
+      "phase": "4",
+      "acceptance": "Charter, doctrine snapshot, amendment, archive, deprecation types and schemas exist."
+    },
+    {
+      "id": "GOV-002",
+      "title": "Amendment flow slice",
+      "depends_on": [
+        "GOV-001"
+      ],
+      "owners": [
+        "constitutional-memory",
+        "verification"
+      ],
+      "phase": "4",
+      "acceptance": "One amendment proposal->decision->rollback-handle path exists."
+    },
+    {
+      "id": "GOV-003",
+      "title": "Archive/compaction conformance",
+      "depends_on": [
+        "GOV-001"
+      ],
+      "owners": [
+        "constitutional-memory"
+      ],
+      "phase": "4",
+      "acceptance": "Archive manifest and compaction receipt make replay loss explicit."
+    },
+    {
+      "id": "SFX-001",
+      "title": "Create v20 core artifact families",
+      "depends_on": [
+        "NP-001",
+        "NP-002"
+      ],
+      "owners": [
+        "spec-execution"
+      ],
+      "phase": "5",
+      "acceptance": "Spec bundle, AST, generated schema bundle, proof obligations, proof receipt types and schemas exist."
+    },
+    {
+      "id": "SFX-002",
+      "title": "Spec-to-schema slice",
+      "depends_on": [
+        "SFX-001"
+      ],
+      "owners": [
+        "spec-execution",
+        "contract-schema-gen"
+      ],
+      "phase": "5",
+      "acceptance": "One generated schema bundle with spec/AST/proof backpointers exists."
+    },
+    {
+      "id": "SFX-003",
+      "title": "Proof evaluation slice",
+      "depends_on": [
+        "SFX-002"
+      ],
+      "owners": [
+        "spec-execution",
+        "kernel-conformance"
+      ],
+      "phase": "5",
+      "acceptance": "One obligation set compiled and one proof receipt emitted with failed obligations visible."
+    },
+    {
+      "id": "SFX-004",
+      "title": "Human veto and rollback slice",
+      "depends_on": [
+        "SFX-003"
+      ],
+      "owners": [
+        "spec-execution",
+        "verification"
+      ],
+      "phase": "5",
+      "acceptance": "Generated artifacts remain advisory until admitted; challenge/veto/rollback path exists."
+    }
+  ]
+}

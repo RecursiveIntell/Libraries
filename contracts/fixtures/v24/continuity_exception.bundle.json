@@ -1,0 +1,37 @@
+{
+  "fixture_name": "continuity_exception",
+  "wave": "v24",
+  "artifacts": {
+    "IncidentCaseV1": {
+      "schema_version": "IncidentCaseV1",
+      "incident_case_id": "inc_001",
+      "service_level_profile_id": "slp_001",
+      "severity": "sev2",
+      "opened_at": "2026-03-15T12:30:00Z",
+      "summary": "elevated latency after change window",
+      "commander_ref": "person:oncall-1",
+      "status": "active"
+    },
+    "ContinuityExceptionV1": {
+      "schema_version": "ContinuityExceptionV1",
+      "continuity_exception_id": "cex_001",
+      "incident_case_id": "inc_001",
+      "exception_kind": "temporary_sod_relaxation",
+      "reason": "single available approver during outage",
+      "expires_at": "2026-03-15T14:00:00Z",
+      "post_hoc_review_required": true
+    },
+    "ContainmentDecisionV1": {
+      "schema_version": "ContainmentDecisionV1",
+      "containment_decision_id": "ctd_001",
+      "incident_case_id": "inc_001",
+      "decision": "rollback_and_freeze",
+      "justification": "protect error budget",
+      "approved_by": [
+        "person:oncall-1",
+        "person:manager-1"
+      ],
+      "generated_at": "2026-03-15T12:34:00Z"
+    }
+  }
+}

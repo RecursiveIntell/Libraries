@@ -1,0 +1,15 @@
+{
+  "schema_version": "HazardLibraryV1",
+  "hazard_library_id": "hl_001",
+  "sector": "payments",
+  "hazard_families": [
+    "availability_regression",
+    "cross_tenant_data_leak",
+    "delayed_compensation"
+  ],
+  "scoring_model_ref": "hazard-model:payments-v2",
+  "linked_operating_envelopes": [
+    "oe_001",
+    "oe_002"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": "CertificationBundleV1",
+  "certification_bundle_id": "cbn_001",
+  "deployment_profile_id": "dpf_001",
+  "assurance_case_id": "asc_001",
+  "release_readiness_decision_id": "rrd_001",
+  "issued_by": [
+    "team:reliability",
+    "team:platform"
+  ],
+  "issued_at": "2026-03-15T12:04:00Z",
+  "status": "advisory_until_admitted"
+}

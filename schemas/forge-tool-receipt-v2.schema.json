@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "ForgeToolBudgetContext": {
+      "properties": {
+        "budget_kind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_steps": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "time_budget_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "approval_state": {
+      "type": "string"
+    },
+    "attempt_id": {
+      "type": "string"
+    },
+    "backend_kind": {
+      "type": "string"
+    },
+    "budget_context": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ForgeToolBudgetContext"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "deadline": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "error_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "family_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "finished_at": {
+      "type": "string"
+    },
+    "host_identity": {
+      "type": "string"
+    },
+    "input_digest": {
+      "type": "string"
+    },
+    "output_digest_or_refs": true,
+    "parent_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "planner_stage": {
+      "type": "string"
+    },
+    "policy_hash": {
+      "type": "string"
+    },
+    "provider_call_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "raw_payload": true,
+    "receipt_id": {
+      "type": "string"
+    },
+    "replay_link": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "replay_parent_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "retry_owner": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "tool_name": {
+      "type": "string"
+    },
+    "tool_run_id": {
+      "type": "string"
+    },
+    "tool_version": {
+      "type": "string"
+    },
+    "trace_ctx": {
+      "$ref": "#/definitions/TraceCtx"
+    },
+    "trial_id": {
+      "type": "string"
+    },
+    "workload_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "approval_state",
+    "attempt_id",
+    "backend_kind",
+    "finished_at",
+    "host_identity",
+    "input_digest",
+    "output_digest_or_refs",
+    "planner_stage",
+    "policy_hash",
+    "raw_payload",
+    "receipt_id",
+    "retry_owner",
+    "schema_version",
+    "started_at",
+    "tool_name",
+    "tool_run_id",
+    "tool_version",
+    "trace_ctx",
+    "trial_id"
+  ],
+  "title": "ForgeToolReceiptV2",
+  "type": "object"
+}

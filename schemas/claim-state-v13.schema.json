@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BilatticeTruthV1": {
+      "enum": [
+        "unknown",
+        "true_only",
+        "false_only",
+        "both"
+      ],
+      "type": "string"
+    },
+    "DegradationKindV1": {
+      "enum": [
+        "thin_export",
+        "missing_proof",
+        "missing_replay",
+        "scope_withheld",
+        "evidence_unavailable",
+        "oracle_unavailable",
+        "budget_exceeded",
+        "exactness_downgraded",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "EvidenceAdmissibilityV1": {
+      "enum": [
+        "admissible",
+        "restricted",
+        "inadmissible",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "QualityVectorV1": {
+      "properties": {
+        "degradation": {
+          "items": {
+            "$ref": "#/definitions/DegradationKindV1"
+          },
+          "type": "array"
+        },
+        "exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        },
+        "execution_contaminated": {
+          "type": "boolean"
+        },
+        "freshness": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "replay_limited": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "exactness",
+        "execution_contaminated",
+        "replay_limited"
+      ],
+      "type": "object"
+    },
+    "SemanticViewV1": {
+      "enum": [
+        "canonical",
+        "projection",
+        "runtime",
+        "causal_advisory",
+        "operator"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "bilattice_truth": {
+      "$ref": "#/definitions/BilatticeTruthV1"
+    },
+    "claim_id": {
+      "type": "string"
+    },
+    "claim_state_id": {
+      "type": "string"
+    },
+    "claim_version_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contradiction_witness_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_admissibility": {
+      "$ref": "#/definitions/EvidenceAdmissibilityV1"
+    },
+    "policy_action_allowed": {
+      "type": "boolean"
+    },
+    "proof_obligations_remaining": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "quality_vector": {
+      "$ref": "#/definitions/QualityVectorV1"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "support_set_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "support_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tx_from": {
+      "type": "string"
+    },
+    "tx_to": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "valid_from": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "view": {
+      "$ref": "#/definitions/SemanticViewV1"
+    }
+  },
+  "required": [
+    "bilattice_truth",
+    "claim_id",
+    "claim_state_id",
+    "evidence_admissibility",
+    "policy_action_allowed",
+    "quality_vector",
+    "schema_version",
+    "semantics_profile_id",
+    "tx_from",
+    "view"
+  ],
+  "title": "ClaimStateV13",
+  "type": "object"
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DisclosureRevealClassV1": {
+      "enum": [
+        "structured-redacted"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "allowed_reveal_class": {
+      "$ref": "#/definitions/DisclosureRevealClassV1"
+    },
+    "current_spend": {
+      "type": "string"
+    },
+    "disclosure_budget_id": {
+      "type": "string"
+    },
+    "escalation_path": {
+      "type": "string"
+    },
+    "redaction_ceiling": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed_reveal_class",
+    "current_spend",
+    "disclosure_budget_id",
+    "escalation_path",
+    "redaction_ceiling",
+    "schema_version"
+  ],
+  "title": "DisclosureBudgetV1",
+  "type": "object"
+}

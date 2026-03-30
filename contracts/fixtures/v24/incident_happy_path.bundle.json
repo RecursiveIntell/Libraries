@@ -1,0 +1,65 @@
+{
+  "fixture_name": "incident_happy_path",
+  "wave": "v24",
+  "artifacts": {
+    "ServiceLevelProfileV1": {
+      "schema_version": "ServiceLevelProfileV1",
+      "service_level_profile_id": "slp_001",
+      "service_name": "alpha-service",
+      "availability_target": "99.9%",
+      "latency_target": "p95<250ms",
+      "owner_ref": "team:reliability",
+      "error_budget_ledger_id": "ebl_001"
+    },
+    "IncidentCaseV1": {
+      "schema_version": "IncidentCaseV1",
+      "incident_case_id": "inc_001",
+      "service_level_profile_id": "slp_001",
+      "severity": "sev2",
+      "opened_at": "2026-03-15T12:30:00Z",
+      "summary": "elevated latency after change window",
+      "commander_ref": "person:oncall-1",
+      "status": "active"
+    },
+    "ContainmentDecisionV1": {
+      "schema_version": "ContainmentDecisionV1",
+      "containment_decision_id": "ctd_001",
+      "incident_case_id": "inc_001",
+      "decision": "rollback_and_freeze",
+      "justification": "protect error budget",
+      "approved_by": [
+        "person:oncall-1",
+        "person:manager-1"
+      ],
+      "generated_at": "2026-03-15T12:34:00Z"
+    },
+    "RecoveryPlanV1": {
+      "schema_version": "RecoveryPlanV1",
+      "recovery_plan_id": "rcp_001",
+      "incident_case_id": "inc_001",
+      "recovery_steps": [
+        "rollback",
+        "verify health",
+        "restore traffic"
+      ],
+      "success_criteria": [
+        "latency target restored",
+        "error budget stable"
+      ],
+      "owner_ref": "team:ops",
+      "approved_at": "2026-03-15T12:36:00Z"
+    },
+    "PostmortemBundleV1": {
+      "schema_version": "PostmortemBundleV1",
+      "postmortem_bundle_id": "pmb_001",
+      "incident_case_id": "inc_001",
+      "root_cause_summary": "unsafe config applied without monitor gate",
+      "corrective_actions": [
+        "tighten release bar",
+        "add observation gate"
+      ],
+      "owner_ref": "team:reliability",
+      "published_at": "2026-03-16T10:00:00Z"
+    }
+  }
+}

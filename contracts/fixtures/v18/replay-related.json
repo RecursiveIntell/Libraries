@@ -1,0 +1,19 @@
+{
+  "campaign_decision_trace": {
+    "schema_version": "campaign_decision_trace_v1",
+    "campaign_decision_trace_id": "trace-v18-replay",
+    "portfolio_plan_id": "plan-v18-1",
+    "discovery_program_id": "discovery-v18-1",
+    "verification_load_budget_id": "budget-v18-1",
+    "decisions": [
+      {
+        "campaign_id": "campaign-v18-1",
+        "decision": "launch",
+        "rationale": "replay of the prior portfolio step remains within budget"
+      }
+    ],
+    "advisory_only": true,
+    "degraded": false,
+    "generated_at": "2026-03-14T00:00:00Z"
+  }
+}

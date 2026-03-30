@@ -1,0 +1,115 @@
+{
+  "schema_version": "CompiledObligationSetV1",
+  "compiled_obligation_set_id": "compiled-obligation-set-001",
+  "effective_constitution_ref": "effective-constitution-001",
+  "obligation_entries": [
+    {
+      "obligation_entry_id": "obligation-entry-001",
+      "obligation_family": "effect.allowed_run_modes",
+      "obligation_key": "run_modes",
+      "output_kind": "effect",
+      "fold_class": "intersection",
+      "string_values": [
+        "shadow",
+        "dry_run",
+        "live"
+      ],
+      "blocking": false,
+      "source_profile_refs": [
+        "effect-policy-profile-001"
+      ],
+      "source_exception_refs": [],
+      "explanation": "effect policy allowed run modes"
+    },
+    {
+      "obligation_entry_id": "obligation-entry-002",
+      "obligation_family": "approval.required",
+      "obligation_key": "approval_rules",
+      "output_kind": "approval",
+      "fold_class": "union",
+      "string_values": [
+        "prod_release:release-manager|service-owner",
+        "locality-review-board"
+      ],
+      "blocking": false,
+      "source_profile_refs": [
+        "am_001",
+        "rpp_001"
+      ],
+      "source_exception_refs": [
+        "profile-exception-bundle-001"
+      ],
+      "explanation": "approval obligations accumulate"
+    },
+    {
+      "obligation_entry_id": "obligation-entry-003",
+      "obligation_family": "continuity.exception_ttl_minutes",
+      "obligation_key": "exception_ttl",
+      "output_kind": "continuity",
+      "fold_class": "min_of_maxima",
+      "numeric_value": 60,
+      "blocking": false,
+      "source_profile_refs": [
+        "continuity-policy-profile-001"
+      ],
+      "source_exception_refs": [],
+      "explanation": "continuity exception ttl cap"
+    },
+    {
+      "obligation_entry_id": "obligation-entry-004",
+      "obligation_family": "monitor.required",
+      "obligation_key": "release_monitor_classes",
+      "output_kind": "monitor",
+      "fold_class": "union",
+      "string_values": [
+        "error_budget",
+        "latency_p95",
+        "cross_region_replay_monitor"
+      ],
+      "blocking": false,
+      "source_profile_refs": [
+        "release-policy-profile-001",
+        "profile-exception-bundle-001"
+      ],
+      "source_exception_refs": [
+        "profile-exception-bundle-001"
+      ],
+      "explanation": "monitor obligations accumulate"
+    }
+  ],
+  "block_entries": [],
+  "required_approvals": [
+    "prod_release:release-manager|service-owner",
+    "locality-review-board"
+  ],
+  "required_checks": [
+    "integrity",
+    "admission",
+    "reachability"
+  ],
+  "required_monitors": [
+    "error_budget",
+    "latency_p95",
+    "cross_region_replay_monitor"
+  ],
+  "required_evidence_obligations": [
+    "cross_boundary_attestation"
+  ],
+  "required_disclosure_obligations": [
+    "audit_redaction_rule_set:rrs_001",
+    "cross_boundary_disclosure_class:regulated_audit"
+  ],
+  "required_rollback_obligations": [
+    "rollback_ready_before_live"
+  ],
+  "required_compensation_obligations": [
+    "compensation_plan_for_external_side_effect"
+  ],
+  "required_post_hoc_review_obligations": [
+    "locality_exception_post_review"
+  ],
+  "promotion_eligibility_summary": "eligible_with_approvals",
+  "release_eligibility_summary": "eligible_with_approvals",
+  "effect_eligibility_summary": "eligible_with_approvals",
+  "unresolved_dependency_refs": []
+}

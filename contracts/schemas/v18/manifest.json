@@ -1,0 +1,15 @@
+{
+  "wave": "v18",
+  "owner_crate": "discovery-portfolio",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "discovery-program-v1.schema.json",
+    "program-hypothesis-set-v1.schema.json",
+    "portfolio-plan-v1.schema.json",
+    "experiment-campaign-v1.schema.json",
+    "campaign-decision-trace-v1.schema.json",
+    "information-value-estimate-v1.schema.json",
+    "verification-load-budget-v1.schema.json"
+  ],
+  "truth_note": "Portfolio outputs are advisory planning artifacts; selection is information-value aware and must degrade or pause explicitly under review-budget pressure."
+}

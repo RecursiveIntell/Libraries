@@ -1,0 +1,44 @@
+{
+  "fixture_name": "residual_risk_accepted",
+  "wave": "v23",
+  "artifacts": {
+    "DeploymentProfileV1": {
+      "schema_version": "DeploymentProfileV1",
+      "deployment_profile_id": "dpf_001",
+      "system_name": "alpha-service",
+      "deployment_environment": "prod-us-central",
+      "criticality_class": "high",
+      "operating_envelope_id": "oen_001",
+      "assurance_case_id": "asc_001",
+      "publication_status": "required"
+    },
+    "ResidualRiskAcceptanceV1": {
+      "schema_version": "ResidualRiskAcceptanceV1",
+      "residual_risk_acceptance_id": "rra_001",
+      "deployment_profile_id": "dpf_001",
+      "accepted_by": [
+        "person:vp-eng"
+      ],
+      "accepted_risks": [
+        "minor latency spike under failover"
+      ],
+      "expires_at": "2026-04-15T00:00:00Z",
+      "notes": [
+        "recertify if traffic doubles"
+      ]
+    },
+    "ReleaseReadinessDecisionV1": {
+      "schema_version": "ReleaseReadinessDecisionV1",
+      "release_readiness_decision_id": "rrd_001",
+      "deployment_profile_id": "dpf_001",
+      "decision_state": "approved_with_monitoring",
+      "blocking_gaps": [],
+      "required_monitors": [
+        "error_budget",
+        "latency_p95"
+      ],
+      "advisory_only": false,
+      "generated_at": "2026-03-15T12:03:00Z"
+    }
+  }
+}

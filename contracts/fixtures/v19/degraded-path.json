@@ -1,0 +1,16 @@
+{
+  "amendment_proposal": {
+    "schema_version": "amendment_proposal_v1",
+    "amendment_proposal_id": "amendment-v19-2",
+    "charter_bundle_id": "charter-v19-1",
+    "doctrine_snapshot_id": "doctrine-v19-1",
+    "proposal_title": "retire an old schema family without rollback memory",
+    "migration_obligations": ["publish rollback handle", "emit archive manifest"],
+    "semantic_diff_id": null,
+    "expected_archive_action": "archive the retired surface with explicit replay loss notes",
+    "required_historical_query_modes": ["by-amendment"],
+    "rollback_handle": null,
+    "advisory_only": false
+  },
+  "migration_obligations_satisfied": false
+}

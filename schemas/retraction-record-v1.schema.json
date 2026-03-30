@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "cascade_required": {
+      "type": "boolean"
+    },
+    "claim_id": {
+      "type": "string"
+    },
+    "delta_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_recorded_at": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "retracted_claim_version_id": {
+      "type": "string"
+    },
+    "retraction_record_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "superseded_by_claim_version_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "cascade_required",
+    "claim_id",
+    "effective_recorded_at",
+    "reason",
+    "retracted_claim_version_id",
+    "retraction_record_id",
+    "schema_version"
+  ],
+  "title": "RetractionRecordV1",
+  "type": "object"
+}

@@ -1,0 +1,16 @@
+{
+  "amendment_proposal": {
+    "schema_version": "amendment_proposal_v1",
+    "amendment_proposal_id": "amendment-v19-3",
+    "charter_bundle_id": "charter-v19-2",
+    "doctrine_snapshot_id": "doctrine-v19-2",
+    "proposal_title": "link amendment approval to semantic diff and archive guarantees",
+    "migration_obligations": ["emit archive manifest", "emit historical query guarantee"],
+    "semantic_diff_id": "semantic-diff-v19-2",
+    "expected_archive_action": "archive the superseded doctrine branch before rollout",
+    "required_historical_query_modes": ["by-amendment", "by-rollback-handle"],
+    "rollback_handle": "rollback://v19/2",
+    "advisory_only": false
+  },
+  "migration_obligations_satisfied": true
+}

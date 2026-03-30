@@ -1,0 +1,18 @@
+[package]
+name = "sandbox-workspace"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+readme = "README.md"
+publish = false
+description = "Workspace sandboxing and patch filesystem primitives"
+
+[dependencies]
+forge-policy = { version = "0.1.0", path = "../forge-policy" }
+tempfile = "3"
+thiserror = "2"
+walkdir = "2"
+
+[dev-dependencies]
+proptest = "1"

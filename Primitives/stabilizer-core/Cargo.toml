@@ -1,0 +1,16 @@
+[package]
+name = "stabilizer-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+readme = "README.md"
+publish = false
+description = "Bounded attempt-phase and delta policy primitives for forge-engine"
+
+[dependencies]
+thiserror = "2"
+typed-patch = { version = "0.1.0", path = "../typed-patch" }
+
+[dev-dependencies]
+uuid = { version = "1", features = ["v4"] }

@@ -1,0 +1,17 @@
+{
+  "wave": "v25",
+  "owner_crate": "profile-runtime",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "applicability-context-v1.schema.json",
+    "profile-set-v1.schema.json",
+    "composition-rule-set-v1.schema.json",
+    "composition-receipt-v1.schema.json",
+    "effective-constitution-v1.schema.json",
+    "compiled-obligation-set-v1.schema.json",
+    "composition-conflict-set-v1.schema.json",
+    "profile-exception-bundle-v1.schema.json",
+    "policy-impact-diff-v1.schema.json"
+  ],
+  "truth_note": "Composite constitutional state is replayable, exception-bounded, and may not be silently rebuilt by downstream consumers."
+}

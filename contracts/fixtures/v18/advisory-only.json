@@ -1,0 +1,11 @@
+{
+  "portfolio_plan": {
+    "schema_version": "portfolio_plan_v1",
+    "portfolio_plan_id": "plan-v18-3",
+    "discovery_program_id": "discovery-v18-1",
+    "campaign_ids": [],
+    "utility_rationale": "horizon-only placeholder",
+    "review_load_rationale": "no campaign is admitted yet",
+    "advisory_only": true
+  }
+}

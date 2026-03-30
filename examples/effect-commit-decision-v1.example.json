@@ -1,0 +1,14 @@
+{
+  "schema_version": "EffectCommitDecisionV1",
+  "effect_commit_decision_id": "fxc_001",
+  "effect_intent_id": "fxi_001",
+  "effect_preflight_report_id": "fxp_001",
+  "decision_state": "authorized",
+  "approver_refs": [
+    "person:alice",
+    "person:bob"
+  ],
+  "refusal_reason": "",
+  "generated_at": "2026-03-15T12:02:00Z",
+  "execution_permit_id": "permit:fxc_001"
+}

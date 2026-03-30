@@ -1,0 +1,16 @@
+{
+  "schema_version": "RecoveryPlanV1",
+  "recovery_plan_id": "rcp_001",
+  "incident_case_id": "inc_001",
+  "recovery_steps": [
+    "rollback",
+    "verify health",
+    "restore traffic"
+  ],
+  "success_criteria": [
+    "latency target restored",
+    "error budget stable"
+  ],
+  "owner_ref": "team:ops",
+  "approved_at": "2026-03-15T12:36:00Z"
+}

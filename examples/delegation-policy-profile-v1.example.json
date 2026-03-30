@@ -1,0 +1,11 @@
+{
+  "schema_version": "delegation_policy_profile_v1",
+  "delegation_policy_profile_id": "delegation-policy-profile-001",
+  "max_delegation_depth": 2,
+  "break_glass_requires_post_hoc_review": true,
+  "forbidden_role_combinations": [
+    "requester+approver",
+    "commander+auditor"
+  ],
+  "require_typed_authority_chain": true
+}

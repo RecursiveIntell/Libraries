@@ -1,0 +1,17 @@
+[package]
+name = "constitutional-memory"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Typed charter and archive surface crate with bounded amendment checks; not a hidden governance runtime"
+license = "MIT"
+
+[dependencies]
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+stack-ids = { path = "../stack-ids" }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = { workspace = true }

@@ -1,0 +1,91 @@
+{
+  "fixture_name": "delegated_effect_happy_path",
+  "wave": "v22",
+  "artifacts": {
+    "CapabilityClassV1": {
+      "schema_version": "CapabilityClassV1",
+      "capability_class_id": "cap_001",
+      "governed_effect_families": [
+        "external_write",
+        "deploy_gate"
+      ],
+      "blast_radius_ceiling": "single_service",
+      "disclosure_ceiling": "internal",
+      "required_review_class": "dual_control",
+      "dual_control_required": true,
+      "max_delegation_depth": 1
+    },
+    "AuthorityLeaseV1": {
+      "schema_version": "AuthorityLeaseV1",
+      "authority_lease_id": "aul_001",
+      "capability_class_id": "cap_001",
+      "grantor": "person:alice",
+      "grantee": "agent:ops-runner",
+      "scope": "project:alpha",
+      "time_window": "2026-03-15T12:00:00Z/2026-03-15T18:00:00Z",
+      "allowed_effect_families": [
+        "external_write"
+      ],
+      "hard_ceilings": [
+        "single-service",
+        "no-secret-export"
+      ],
+      "revocation_conditions": [
+        "incident_open",
+        "window_expired"
+      ],
+      "required_receipts": [
+        "ActingOnBehalfReceiptV1"
+      ]
+    },
+    "DelegationBundleV1": {
+      "schema_version": "DelegationBundleV1",
+      "delegation_bundle_id": "adb_001",
+      "authority_lease_id": "aul_001",
+      "delegated_rights": [
+        "execute_effect:external_write"
+      ],
+      "reduced_ceilings": [
+        "single-tenant"
+      ],
+      "replay_requirements": [
+        "authority_chain",
+        "effect_receipt"
+      ],
+      "further_delegation_permitted": false
+    },
+    "AuthorityChainV1": {
+      "schema_version": "AuthorityChainV1",
+      "authority_chain_id": "auc_001",
+      "local_principal": "agent:ops-runner",
+      "delegated_principals": [
+        "person:alice"
+      ],
+      "external_principals": [],
+      "approval_refs": [
+        "approval:dc_001"
+      ],
+      "current_validity_state": "valid"
+    },
+    "DualControlApprovalV1": {
+      "schema_version": "DualControlApprovalV1",
+      "dual_control_approval_id": "dca_001",
+      "approver_refs": [
+        "person:alice",
+        "person:bob"
+      ],
+      "approval_basis": "matched change plan and preflight",
+      "independence_verified": true,
+      "approved_at": "2026-03-15T12:01:00Z"
+    },
+    "ActingOnBehalfReceiptV1": {
+      "schema_version": "ActingOnBehalfReceiptV1",
+      "acting_on_behalf_receipt_id": "aob_001",
+      "authority_chain_id": "auc_001",
+      "effect_execution_receipt_id": "fxr_001",
+      "delegated_action": "execute change window",
+      "within_lease": true,
+      "generated_at": "2026-03-15T12:08:10Z"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "mechanism_bundle_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantic_version": {
+      "type": "string"
+    },
+    "theory_name": {
+      "type": "string"
+    },
+    "theory_version_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "mechanism_bundle_id",
+    "schema_version",
+    "semantic_version",
+    "theory_name",
+    "theory_version_id"
+  ],
+  "title": "TheoryVersionV1",
+  "type": "object"
+}

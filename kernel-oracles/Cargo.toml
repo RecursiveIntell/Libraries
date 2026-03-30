@@ -1,0 +1,22 @@
+[package]
+name = "kernel-oracles"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Bounded exact/conservative oracle paths for the recursive inference kernel"
+license = "MIT"
+
+[dependencies]
+chrono = { workspace = true, features = ["serde"] }
+constraint-compiler = { path = "../constraint-compiler" }
+forge-memory-bridge = { path = "../forge-memory-bridge" }
+kernel-execution = { path = "../kernel-execution" }
+recursive-kernel-core = { path = "../recursive-kernel-core" }
+serde = { workspace = true, features = ["derive"] }
+stack-ids = { path = "../stack-ids" }
+schemars = { workspace = true }
+
+[dev-dependencies]
+semantic-memory-forge = { path = "../semantic-memory-forge" }
+serde_json = { workspace = true }
+proptest = { workspace = true }

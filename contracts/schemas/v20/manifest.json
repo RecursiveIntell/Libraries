@@ -1,0 +1,19 @@
+{
+  "wave": "v20",
+  "owner_crate": "spec-execution",
+  "canonical_schema_dir": "schemas/",
+  "schema_files": [
+    "spec-bundle-v1.schema.json",
+    "normative-ast-v1.schema.json",
+    "generated-schema-bundle-v1.schema.json",
+    "generated-interpreter-bundle-v1.schema.json",
+    "generated-conformance-corpus-v1.schema.json",
+    "generated-migration-plan-v1.schema.json",
+    "proof-obligation-set-v1.schema.json",
+    "proof-evaluation-receipt-v1.schema.json",
+    "human-veto-bundle-v1.schema.json",
+    "meta-challenge-bundle-v1.schema.json",
+    "self-hosting-build-receipt-v1.schema.json"
+  ],
+  "truth_note": "Generated outputs remain advisory-only and non-admitted; companion bundles and self-hosting receipts still yield to proof obligations, human veto, and challenge lanes."
+}
