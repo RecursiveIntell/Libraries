@@ -631,6 +631,7 @@ impl MemoryStore {
         let embedding = self.embed_text_internal(content).await?;
         self.validate_embedding_dimensions(&embedding)?;
         let embedding_bytes = crate::db::embedding_to_bytes(&embedding);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
         let q8_bytes = Quantizer::new(self.inner.config.embedding.dimensions)
             .quantize(&embedding)
             .map(|qv| quantize::pack_quantized(&qv))

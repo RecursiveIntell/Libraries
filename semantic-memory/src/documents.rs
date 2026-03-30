@@ -268,6 +268,7 @@ impl MemoryStore {
             .iter()
             .zip(embeddings.iter())
             .map(|(tc, emb)| {
+                // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                 let q8 = quantizer
                     .quantize(emb)
                     .map(|qv| quantize::pack_quantized(&qv))

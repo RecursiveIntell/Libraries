@@ -1231,6 +1231,7 @@ impl MemoryStore {
                 .iter()
                 .zip(embeddings.iter())
                 .map(|((id, _), emb)| {
+                    // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                     let q8 = quantizer
                         .quantize(emb)
                         .map(|qv| quantize::pack_quantized(&qv))
@@ -1283,6 +1284,7 @@ impl MemoryStore {
                 .iter()
                 .zip(embeddings.iter())
                 .map(|((id, _), emb)| {
+                    // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                     let q8 = quantizer
                         .quantize(emb)
                         .map(|qv| quantize::pack_quantized(&qv))
@@ -1336,6 +1338,7 @@ impl MemoryStore {
                 .iter()
                 .zip(embeddings.iter())
                 .map(|((id, _), emb)| {
+                    // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                     let q8 = quantizer
                         .quantize(emb)
                         .map(|qv| quantize::pack_quantized(&qv))
@@ -1388,6 +1391,7 @@ impl MemoryStore {
                 .iter()
                 .zip(embeddings.iter())
                 .map(|((episode_id, _), embedding)| {
+                    // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                     let q8 = quantizer
                         .quantize(embedding)
                         .map(|vector| quantize::pack_quantized(&vector))

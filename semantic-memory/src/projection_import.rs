@@ -410,6 +410,7 @@ pub(crate) fn last_import_at(
 ) -> Result<Option<String>, MemoryError> {
     // Check both V10 (import_log) and V11 (projection_import_log) tables,
     // returning the most recent timestamp from either.
+    // INTENTIONAL: V10 import_log table may not exist on newer schemas; None is expected
     let v10: Option<String> = conn
         .query_row(
             "SELECT imported_at FROM import_log
@@ -420,6 +421,7 @@ pub(crate) fn last_import_at(
         )
         .ok();
 
+    // INTENTIONAL: V11 projection_import_log table may not exist on older schemas; None is expected
     let v11: Option<String> = conn
         .query_row(
             "SELECT imported_at FROM projection_import_log

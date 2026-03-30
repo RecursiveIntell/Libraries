@@ -157,6 +157,7 @@ pub(crate) fn upsert_episode(
     let item_key = episode_item_key(&episode_id);
 
     db::with_transaction(conn, |tx| {
+        // INTENTIONAL: episode may not exist yet on first upsert
         let old_search_text: Option<String> = tx
             .query_row(
                 "SELECT search_text FROM episodes WHERE episode_id = ?1",
@@ -633,6 +634,7 @@ impl MemoryStore {
         let embedding = self.embed_text_internal(&search_text).await?;
         self.validate_embedding_dimensions(&embedding)?;
         let embedding_bytes = db::embedding_to_bytes(&embedding);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
         let q8_bytes = Quantizer::new(self.inner.config.embedding.dimensions)
             .quantize(&embedding)
             .map(|vector| quantize::pack_quantized(&vector))
@@ -691,6 +693,7 @@ impl MemoryStore {
         let embedding = self.embed_text_internal(&search_text).await?;
         self.validate_embedding_dimensions(&embedding)?;
         let embedding_bytes = db::embedding_to_bytes(&embedding);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
         let q8_bytes = Quantizer::new(self.inner.config.embedding.dimensions)
             .quantize(&embedding)
             .map(|vector| quantize::pack_quantized(&vector))
@@ -769,6 +772,7 @@ impl MemoryStore {
         let embedding = self.embed_text_internal(&search_text).await?;
         self.validate_embedding_dimensions(&embedding)?;
         let embedding_bytes = db::embedding_to_bytes(&embedding);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
         let q8_bytes = Quantizer::new(self.inner.config.embedding.dimensions)
             .quantize(&embedding)
             .map(|vector| quantize::pack_quantized(&vector))
@@ -832,6 +836,7 @@ impl MemoryStore {
         let embedding = self.embed_text_internal(&search_text).await?;
         self.validate_embedding_dimensions(&embedding)?;
         let embedding_bytes = db::embedding_to_bytes(&embedding);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
         let q8_bytes = Quantizer::new(self.inner.config.embedding.dimensions)
             .quantize(&embedding)
             .map(|vector| quantize::pack_quantized(&vector))

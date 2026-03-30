@@ -756,6 +756,7 @@ pub fn check_embedding_metadata(
     conn: &Connection,
     config: &EmbeddingConfig,
 ) -> Result<(), MemoryError> {
+    // INTENTIONAL: row absent on first run before metadata is inserted
     let existing: Option<(String, usize)> = conn
         .query_row(
             "SELECT model_name, dimensions FROM embedding_metadata WHERE id = 1",
@@ -1043,6 +1044,7 @@ fn mark_sidecar_dirty(tx: &rusqlite::Transaction<'_>) -> Result<(), MemoryError>
 
 #[cfg(feature = "hnsw")]
 pub(crate) fn is_sidecar_dirty(conn: &Connection) -> Result<bool, MemoryError> {
+    // INTENTIONAL: row absent when HNSW metadata has not been written yet
     let dirty: Option<String> = conn
         .query_row(
             "SELECT value FROM hnsw_metadata WHERE key = 'sidecar_dirty'",

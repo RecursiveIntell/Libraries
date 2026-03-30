@@ -685,6 +685,7 @@ impl MemoryStore {
         let max_facts_per_namespace = self.inner.config.limits.max_facts_per_namespace;
 
         let quantizer = Quantizer::new(self.inner.config.embedding.dimensions);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
         let q8_bytes = quantizer
             .quantize(&embedding)
             .map(|qv| quantize::pack_quantized(&qv))
@@ -759,6 +760,7 @@ impl MemoryStore {
         let max_facts_per_namespace = self.inner.config.limits.max_facts_per_namespace;
 
         let quantizer = Quantizer::new(self.inner.config.embedding.dimensions);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
         let q8_bytes = quantizer
             .quantize(embedding)
             .map(|qv| quantize::pack_quantized(&qv))
@@ -808,6 +810,7 @@ impl MemoryStore {
         let embedding = self.embed_text_internal(content).await?;
         self.validate_embedding_dimensions(&embedding)?;
         let embedding_bytes = db::embedding_to_bytes(&embedding);
+        // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
         let q8_bytes = Quantizer::new(self.inner.config.embedding.dimensions)
             .quantize(&embedding)
             .map(|qv| quantize::pack_quantized(&qv))
