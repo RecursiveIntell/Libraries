@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EVIDENCE_MANIFEST = ROOT / "STATUS_EVIDENCE_MANIFEST.json"
 SUPPORT_PROFILE = ROOT / "SUPPORT_PROFILE.md"
-RISK_REGISTER = ROOT / "09_RISK_REGISTER.md"
+RISK_REGISTER = ROOT / "06_RISK_REGISTER.md"
 ARCHIVE_MANIFEST = ROOT / "docs" / "archive" / "root_closeout_history" / "manifest.json"
 PUBLIC_TYPE_DRIFT_ALLOWLIST = ROOT / "scripts" / "public_type_drift_allowlist.json"
 RELEASE_DIR = ROOT / "release"

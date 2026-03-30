@@ -1,17 +1,276 @@
 {
-  "schema_version": "closeout_receipt_v1",
-  "pack_version": "V28",
-  "effective_date": "2026-03-30",
-  "scope": "V28 Unified Hostile Audit Remediation Pack",
-  "status": "in_progress",
-  "cargo_check_workspace": true,
-  "cargo_test_workspace": true,
-  "governance_feature_default": true,
-  "governance_observation_live": true,
-  "governance_receipt_populated": true,
-  "episode_identity_law_enforced": true,
-  "temporal_provenance_coordinates": true,
-  "panic_audit_clean": true,
-  "validation_result_deduplication": true,
-  "lane_manifest_authoritative": true
+  "receipt_version": 1,
+  "snapshot": "2026-03-30-hardening-closeout",
+  "captured_at": "2026-03-30",
+  "supported_closeout_lane": {
+    "crates": [
+      "contract-schema-gen",
+      "forge-memory-bridge",
+      "forge-pilot",
+      "kernel-conformance",
+      "kernel-execution",
+      "kernel-oracles",
+      "knowledge-runtime",
+      "living-memory/living-memory",
+      "llm-tool-runtime",
+      "recursive-kernel-core",
+      "semantic-memory",
+      "semantic-memory-forge",
+      "stack-ids",
+      "verification-adjudication",
+      "verification-calibration",
+      "verification-control",
+      "verification-policy"
+    ],
+    "crate_count": 17,
+    "sha256": "6594654827eae02f1552860fc97222d7ef8fa270ea551ea7b2a457bc5f21ae0e",
+    "source": "SUPPORT_PROFILE.md"
+  },
+  "gate_results": {
+    "cargo check --workspace": "pass",
+    "bash scripts/check_pack_truth.sh": "pass",
+    "bash scripts/check_repo_surface.sh": "pass",
+    "bash scripts/check_doc_truth.sh": "pass",
+    "bash scripts/check_manifest_truth.sh": "pass",
+    "python3 scripts/check_commit_permit_paths.py": "pass",
+    "python3 scripts/check_constitutional_vocab.py": "pass",
+    "python3 scripts/check_mandatory_artifact_refs.py": "pass",
+    "bash scripts/check_schema_registry_uniqueness.sh": "pass",
+    "bash scripts/check_no_prod_panics.sh": "pass",
+    "bash scripts/check_mirror_discipline.sh": "pass",
+    "bash scripts/check_hotspot_budgets.sh": "pass",
+    "python3 scripts/check_public_type_drift.py": "pass",
+    "python3 scripts/check_root_archive_manifest.py": "pass",
+    "python3 scripts/check_public_api_docs.py": "pass",
+    "bash scripts/check_schema_compat.sh": "pass",
+    "make release-lane": "pass"
+  },
+  "schema_publication": {
+    "canonical_dir": "schemas/",
+    "manifest_count": 17,
+    "manifests": [
+      {
+        "path": "contracts/schemas/p1/manifest.json",
+        "owner": "verification-policy",
+        "kind": "profile",
+        "schema_count": 4,
+        "sha256": "55454230c824bc29527a38bab4ea1e17ef6087462ffe26a6ab249c7c496c1bd5"
+      },
+      {
+        "path": "contracts/schemas/p2/manifest.json",
+        "owner": "verification-policy",
+        "kind": "profile",
+        "schema_count": 4,
+        "sha256": "9d508129bc115aa5c7690a313633bd207e65c28eed8d1794fd5cc425eaa264c5"
+      },
+      {
+        "path": "contracts/schemas/p3/manifest.json",
+        "owner": "authority-delegation",
+        "kind": "profile",
+        "schema_count": 4,
+        "sha256": "5639da9ab07e90fde8583ce40089baa0b2d3df36930a39d99ac8c9eb24e33fd1"
+      },
+      {
+        "path": "contracts/schemas/p4/manifest.json",
+        "owner": "assurance-runtime",
+        "kind": "profile",
+        "schema_count": 4,
+        "sha256": "e50647126fa317bd3b926cecdf2d4ef3813de3a26a3dfcd3d6f8523ea5b0f7a3"
+      },
+      {
+        "path": "contracts/schemas/p5/manifest.json",
+        "owner": "assurance-runtime",
+        "kind": "profile",
+        "schema_count": 4,
+        "sha256": "a5b0902cbe1488cdacb971eb2d4cf6a7bcfe1b5fb84b6cf72164bd23e2a02b09"
+      },
+      {
+        "path": "contracts/schemas/p6/manifest.json",
+        "owner": "attestation-exchange",
+        "kind": "profile",
+        "schema_count": 4,
+        "sha256": "735788468f8a29745e41d3bbdd6ea9e68a07cc94758e844b04425a62a1d5cf96"
+      },
+      {
+        "path": "contracts/schemas/p7/manifest.json",
+        "owner": "continuity-runtime",
+        "kind": "profile",
+        "schema_count": 4,
+        "sha256": "60f6e235ccc28f9dd184ed29c18952b15719781991e29bc55a9cef271ead91b8"
+      },
+      {
+        "path": "contracts/schemas/v16/manifest.json",
+        "owner": "federated-settlement",
+        "kind": "wave",
+        "schema_count": 11,
+        "sha256": "dd89e26656849183bd72f0e2232a036978c5eab810c943a727348d4099f6df3d"
+      },
+      {
+        "path": "contracts/schemas/v17/manifest.json",
+        "owner": "mechanism-runtime",
+        "kind": "wave",
+        "schema_count": 8,
+        "sha256": "12024229b2026b42744b30f8d5d99e3a71ae7a6ccf9bb32362aa050bb709f990"
+      },
+      {
+        "path": "contracts/schemas/v18/manifest.json",
+        "owner": "discovery-portfolio",
+        "kind": "wave",
+        "schema_count": 7,
+        "sha256": "ea44879957cb2a4527738f86a068fc41d93a5b5c81e77b810de57592ebc2d710"
+      },
+      {
+        "path": "contracts/schemas/v19/manifest.json",
+        "owner": "constitutional-memory",
+        "kind": "wave",
+        "schema_count": 9,
+        "sha256": "ffb92a04f648f3a01c17e4a65772f72c1f1d97385782aba1a4999bde279b7483"
+      },
+      {
+        "path": "contracts/schemas/v20/manifest.json",
+        "owner": "spec-execution",
+        "kind": "wave",
+        "schema_count": 11,
+        "sha256": "2c70ed239b98cffc02ef8ad27a3e962c993b8cb2e3a9f36c71b5e57b0b904df1"
+      },
+      {
+        "path": "contracts/schemas/v21/manifest.json",
+        "owner": "effect-runtime",
+        "kind": "wave",
+        "schema_count": 9,
+        "sha256": "008c43cf934f9dd5179779ce993cc20ab9c0526bc55e9475be6de64b9185b1b4"
+      },
+      {
+        "path": "contracts/schemas/v22/manifest.json",
+        "owner": "authority-delegation",
+        "kind": "wave",
+        "schema_count": 10,
+        "sha256": "d87b13367a050966cb67567fde99761cc56e70a4d17fb971e105f75c8068ccf2"
+      },
+      {
+        "path": "contracts/schemas/v23/manifest.json",
+        "owner": "assurance-runtime",
+        "kind": "wave",
+        "schema_count": 10,
+        "sha256": "c68e4c4db7360ece9e4aed5f9ff80e6772b9dd9c5c6a0f2e00e692c31a6afc8b"
+      },
+      {
+        "path": "contracts/schemas/v24/manifest.json",
+        "owner": "continuity-runtime",
+        "kind": "wave",
+        "schema_count": 10,
+        "sha256": "166e58a5a1567d2f2da69f14b5ca60f0c455a24b9991ce2fd32934eb29f85387"
+      },
+      {
+        "path": "contracts/schemas/v25/manifest.json",
+        "owner": "profile-runtime",
+        "kind": "wave",
+        "schema_count": 9,
+        "sha256": "03a47d6e6c55d00692ce4753a3fd94b5de9eee1aaf02e69f5b79760b81cebd00"
+      }
+    ],
+    "canonical_schema_dir_sha256": "18c18fe472fce37400f8a55b69998637d7040f2c181648060d1ee70bee3addba"
+  },
+  "evidence_manifest": {
+    "path": "STATUS_EVIDENCE_MANIFEST.json",
+    "sha256": "d8c8d0ca4442873281245c4772e3d87d5b7e233ddc33ead76a1f2ec1d108d2ab"
+  },
+  "risk_register": {
+    "path": "06_RISK_REGISTER.md",
+    "sha256": "20b5bf3e5db076536786ed8dbdd61996cd338e769e814ab3659f6da969384eb9"
+  },
+  "archive_manifest": {
+    "path": "docs/archive/root_closeout_history/manifest.json",
+    "sha256": "328f341f6c7744e99a855c2359df878d7ee48cbfa56a75b738916eab93302a20",
+    "archive_mode": "logical_supersession_map",
+    "active_root_file_count": 22,
+    "physically_archived_groups": [
+      {
+        "group": "prior_pack_numbered_documents",
+        "archived_dir": "docs/archive/superseded_packs",
+        "archived_count": 63
+      },
+      {
+        "group": "superseded_canonical_specs",
+        "archived_dir": "docs/archive/superseded_packs",
+        "archived_count": 63
+      },
+      {
+        "group": "superseded_standalone_control_docs",
+        "archived_dir": "docs/archive/superseded_packs",
+        "archived_count": 63
+      }
+    ]
+  },
+  "public_type_drift": {
+    "allowlist_path": "scripts/public_type_drift_allowlist.json",
+    "allowlist_sha256": "453f6ea590196bc0eb90446f8d7a1811cc8507523abafff34dac26f4c13c39d7",
+    "allowlisted_duplicate_count": 0,
+    "allowlist": []
+  },
+  "public_api_docs": {
+    "tracked_crates": [
+      "profile-runtime",
+      "recursive-kernel-core",
+      "constraint-compiler",
+      "effect-runtime",
+      "verification-control",
+      "verification-policy",
+      "semantic-memory-forge"
+    ],
+    "tracked_crate_count": 7,
+    "coverage": [
+      {
+        "crate": "profile-runtime",
+        "documented": 44,
+        "total": 44
+      },
+      {
+        "crate": "recursive-kernel-core",
+        "documented": 4,
+        "total": 4
+      },
+      {
+        "crate": "constraint-compiler",
+        "documented": 1,
+        "total": 1
+      },
+      {
+        "crate": "effect-runtime",
+        "documented": 43,
+        "total": 43
+      },
+      {
+        "crate": "verification-control",
+        "documented": 36,
+        "total": 36
+      },
+      {
+        "crate": "verification-policy",
+        "documented": 50,
+        "total": 50
+      },
+      {
+        "crate": "semantic-memory-forge",
+        "documented": 35,
+        "total": 35
+      }
+    ],
+    "fully_documented_crates": [
+      "profile-runtime",
+      "recursive-kernel-core",
+      "constraint-compiler",
+      "effect-runtime",
+      "verification-control",
+      "verification-policy",
+      "semantic-memory-forge"
+    ]
+  },
+  "residual_debt": [],
+  "notes": [
+    "This receipt reflects the live closeout state for the 2026-03-22 hardening lane.",
+    "The canonical support scope is taken from SUPPORT_PROFILE.md.",
+    "The tracked core closeout crates are at full public-function rustdoc coverage.",
+    "The archive manifest is logical, and physical legacy-root reductions are explicitly modeled for this lane."
+  ]
 }
