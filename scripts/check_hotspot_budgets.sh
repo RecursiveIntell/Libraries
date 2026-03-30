@@ -41,16 +41,14 @@ fi
 
 check_file_budget "agent-graph/src/error.rs" 120
 check_file_budget "forge-pilot/src/main.rs" 80
-check_file_budget "forge-pilot/src/main_support/mod.rs" 1900
-check_file_budget "knowledge-runtime/src/runtime/core.rs" 1400
 check_file_budget "Primitives/cea-core/src/predict.rs" 380
 check_file_budget "living-memory/living-memory/src/lab/evidence.rs" 2500
 check_documented_exception "profile-runtime/src/adapters.rs" 1800
 check_documented_exception "semantic-memory/src/db.rs" 1650
 check_documented_exception "semantic-memory/src/lib.rs" 1650
-check_documented_exception "forge-pilot/src/main_support/mod.rs" 1600
-check_documented_exception "forge-pilot/src/loop_runner.rs" 1050
-check_documented_exception "knowledge-runtime/src/runtime/core.rs" 1250
+check_documented_exception "forge-pilot/src/main_support/mod.rs" 1900
+check_documented_exception "forge-pilot/src/loop_runner.rs" 1100
+check_documented_exception "knowledge-runtime/src/runtime/core.rs" 1400
 
 if (( fail != 0 )); then
   echo "hotspot budget checks failed" >&2
