@@ -52,6 +52,10 @@ pub struct EffectWindowV1 {
     pub close_midflight_behavior: CloseMidflightBehaviorV1,
 }
 
+/// Declaration of an intended effect including its class, target surface, blast radius, and approval requirements.
+///
+/// This is the entry point of the effect lifecycle. Live-mode intents require
+/// non-empty approval refs before they can proceed to preflight.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectIntentV1 {
     pub schema_version: String,
@@ -72,6 +76,10 @@ pub struct EffectIntentV1 {
     pub publication_status: PublicationStatusV1,
 }
 
+/// Result of preflight checks against an effect intent, gating commit eligibility.
+///
+/// A `CommitEligible` disposition requires all check results to be passing
+/// and budget to be sufficient.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectPreflightReportV1 {
     pub schema_version: String,
@@ -92,6 +100,10 @@ pub struct EffectPreflightReportV1 {
     pub notes: Vec<String>,
 }
 
+/// Authorization decision for committing an effect, linking intent and preflight report to an execution permit.
+///
+/// Authorized decisions must carry an execution permit and approver refs.
+/// Denied decisions must carry a refusal reason and must not mint permits.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectCommitDecisionV1 {
     pub schema_version: String,

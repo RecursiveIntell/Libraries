@@ -1,3 +1,8 @@
+//! Orient phase of the OODA loop.
+//!
+//! Extracts verification targets from an observation snapshot, scores
+//! them by urgency, and selects an execution plan for each candidate.
+
 use crate::act::{AdvisoryPlan, PlanKind};
 use crate::config::LoopConfig;
 use crate::history::PilotHistory;
@@ -9,6 +14,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeSet;
 use std::hash::{Hash, Hasher};
 
+/// A scored verification target with its selected execution plan.
 #[derive(Debug, Clone)]
 pub struct TargetCandidate {
     pub target: TargetKind,

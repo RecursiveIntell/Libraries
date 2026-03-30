@@ -1,3 +1,8 @@
+//! Compensation lifecycle artifacts: plans and execution receipts for reversing or mitigating effects.
+//!
+//! When an effect fails or needs rollback, a compensation plan defines the
+//! recovery steps, and a compensation execution receipt records their outcome.
+
 use crate::error::{
     require_id, require_non_empty, require_non_empty_slice, require_schema_version,
     EffectRuntimeValidationError, EffectValidationResult,
@@ -8,6 +13,9 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use stack_ids::{CompensationExecutionReceiptId, CompensationPlanId, EffectIntentId};
 
+/// Plan describing the compensation steps required to reverse or mitigate a failed effect.
+///
+/// When `compensation_required` is true, `compensation_steps` must be non-empty.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct CompensationPlanV1 {
     pub schema_version: String,
@@ -25,6 +33,9 @@ pub struct CompensationPlanV1 {
     pub advisory_only: bool,
 }
 
+/// Receipt recording the outcome of executing a compensation plan, including completed and failed steps.
+///
+/// Completed receipts must not list any failed steps.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct CompensationExecutionReceiptV1 {
     pub schema_version: String,

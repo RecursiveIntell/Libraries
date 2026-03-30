@@ -1,7 +1,13 @@
+//! Configuration types for the forge-pilot OODA loop.
+//!
+//! `LoopConfig` carries all tuning knobs, scope identity, workspace paths,
+//! runtime settings, and operator-provided patch plan seeds.
+
 use forge_engine::{ExperimentConfig, ForgeConfig, StructuredPatch};
 use knowledge_runtime::{RuntimeConfig, Scope};
 use verification_policy::{ApprovalRecord, PolicySnapshot};
 
+/// An operator-provided patch plan seed that overrides automatic plan selection.
 #[derive(Debug, Clone)]
 pub struct PatchPlanSeed {
     pub target_key: String,
@@ -11,6 +17,10 @@ pub struct PatchPlanSeed {
     pub description: String,
 }
 
+/// Full configuration for an OODA loop run.
+///
+/// Includes budget limits, scope identity, workspace paths, runtime and
+/// Forge engine settings, policy snapshots, and optional patch seeds.
 #[derive(Debug, Clone)]
 pub struct LoopConfig {
     pub max_iterations: u32,

@@ -1,8 +1,14 @@
+//! Shared types for loop reports, decision audits, and verification artifacts.
+//!
+//! These types are serialized into loop iteration reports and consumed
+//! by downstream verification and adjudication surfaces.
+
 use schemars::JsonSchema;
 use semantic_memory_forge::{ExactnessLevelV1, ExecutionContextV1};
 use serde::{Deserialize, Serialize};
 use verification_control::{CheapCheckStatusV1, ProofProfileV1};
 
+/// The canonical verification case class for a target.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CanonicalCaseClass {
@@ -15,6 +21,7 @@ pub enum CanonicalCaseClass {
     ScopeFreshness,
 }
 
+/// Execution budget tier assigned to a verification target.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum BudgetClass {
@@ -23,6 +30,7 @@ pub enum BudgetClass {
     Expensive,
 }
 
+/// An individual verification step in the lawful step ladder for a target.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
@@ -42,6 +50,7 @@ pub enum LawfulStepKind {
     CanonicalImportRequest,
 }
 
+/// Normalized representation of a target for cross-iteration comparability.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct TargetNormalization {
     pub stable_target_key: String,
@@ -55,6 +64,7 @@ pub struct TargetNormalization {
     pub missing_falsifier: bool,
 }
 
+/// A single step in a verification plan with its cost and artifact requirements.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct PlannedStep {
     pub step_kind: LawfulStepKind,
@@ -63,12 +73,14 @@ pub struct PlannedStep {
     pub required_artifact_families: Vec<String>,
 }
 
+/// Record of a verification step that was blocked and the reason why.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct BlockedStepRecord {
     pub step_kind: LawfulStepKind,
     pub reason: String,
 }
 
+/// Audit record capturing the decision rationale for a selected target.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct DecisionAudit {
     pub stable_target_key: String,
@@ -85,6 +97,7 @@ pub struct DecisionAudit {
     pub advisory_only: bool,
 }
 
+/// Lineage receipt linking a verification case to its consumed and produced artifacts.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ExecutionLineageReceipt {
     pub case_id: String,
@@ -101,6 +114,7 @@ pub struct ExecutionLineageReceipt {
     pub outcome_summary: String,
 }
 
+/// Trace record for the export-import roundtrip of an action's evidence bundle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ExportActionTraceV1 {
     pub case_id: String,
@@ -113,6 +127,7 @@ pub struct ExportActionTraceV1 {
     pub produced_artifact_refs: Vec<String>,
 }
 
+/// Evaluation of the loop stop rule at the end of an iteration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct StopRuleEvaluation {
     pub halt_reason: String,
@@ -123,6 +138,7 @@ pub struct StopRuleEvaluation {
     pub advisory_only: bool,
 }
 
+/// Classification of a repair action taken during or after a loop iteration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RepairClassV1 {
@@ -135,6 +151,10 @@ pub enum RepairClassV1 {
     VerificationStateRepair,
 }
 
+/// Serializable verification plan artifact emitted per iteration.
+///
+/// Captures proof obligations, admissible evidence, cheapest check ladders,
+/// and policy blockers for downstream adjudication.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[schemars(title = "VerificationPlanArtifactV1")]
 pub struct VerificationPlanArtifact {
@@ -168,6 +188,10 @@ pub struct VerificationPlanArtifact {
     pub expires_at: Option<String>,
 }
 
+/// Structured record of a repair action applied to verification state.
+///
+/// Includes blast radius, reversibility, and a link back to the
+/// execution context that triggered the repair.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[schemars(title = "RepairRecordV1")]
 pub struct RepairRecordV1 {

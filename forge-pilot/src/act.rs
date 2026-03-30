@@ -1,3 +1,9 @@
+//! Act phase of the OODA loop.
+//!
+//! Executes the selected verification plan (oracle evaluation or
+//! paired-patch experiment) and produces an evidence bundle for the
+//! canonical Forge export path.
+
 use crate::bundle_builder::{
     build_bundle_from_oracle, build_bundle_from_patch, OracleBundleInput, PatchBundleInput,
 };
@@ -22,11 +28,16 @@ use stack_ids::{ClaimVersionId, OracleSliceId};
 use std::path::Path;
 use verification_policy::ExecutionPermit;
 
+/// An advisory-only plan that produces no promotable evidence.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AdvisoryPlan {
     pub description: String,
 }
 
+/// The concrete execution plan selected for a verification target.
+///
+/// Each variant determines which kernel oracle or paired-patch path
+/// will be used during the act phase.
 #[derive(Debug, Clone)]
 pub enum PlanKind {
     OracleExactBounded {
@@ -72,6 +83,7 @@ impl PlanKind {
     }
 }
 
+/// Broad classification of the action executed during the act phase.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ActionFamily {
@@ -80,6 +92,7 @@ pub enum ActionFamily {
     AdvisoryOnly,
 }
 
+/// Results from running kernel oracle evaluation against compiled constraints.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OracleExecution {
     pub assessment: Option<OracleAssessment>,
@@ -156,6 +169,7 @@ impl OracleExecution {
     }
 }
 
+/// Results from running a paired-patch experiment through the Forge engine.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchExecution {
     pub run_id: String,
@@ -163,6 +177,7 @@ pub struct PatchExecution {
     pub regressions: u32,
 }
 
+/// Full outcome of executing a plan, including the evidence bundle and execution details.
 #[derive(Debug, Clone)]
 pub struct ActionOutcome {
     pub family: ActionFamily,
@@ -174,6 +189,11 @@ pub struct ActionOutcome {
     pub outcome_signature: String,
 }
 
+/// Executes a verification plan under an issued execution permit.
+///
+/// Dispatches to the appropriate oracle or paired-patch path based on
+/// the plan variant. Returns an error if the permit scope does not
+/// match `target_key`.
 pub async fn execute_plan(
     observation: &Observation,
     target_key: &str,

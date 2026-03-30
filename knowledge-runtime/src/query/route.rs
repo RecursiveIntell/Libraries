@@ -1,3 +1,5 @@
+//! Route planning: translates classified query modes into retrieval legs.
+
 use crate::ids::Scope;
 use crate::query::classify::QueryMode;
 use serde::{Deserialize, Serialize};
@@ -47,6 +49,7 @@ pub enum RetrievalStrategy {
 }
 
 impl RetrievalStrategy {
+    /// Stable discriminant string for logging and provenance records.
     pub fn kind(&self) -> &'static str {
         match self {
             Self::HybridSearch => "hybrid",

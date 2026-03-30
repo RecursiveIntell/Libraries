@@ -1,8 +1,14 @@
+//! Verification target types for the orient phase.
+//!
+//! Each `TargetKind` variant represents a distinct class of verification
+//! work the pilot can select, from active syndromes to stale scopes.
+
 use crate::types::{BudgetClass, CanonicalCaseClass, LawfulStepKind};
 use serde::{Deserialize, Serialize};
 use stack_ids::ClaimVersionId;
 use verification_control::VerificationCaseClass;
 
+/// Scheduling priority of a verification target, lowest numeric value wins.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TargetPriority {
@@ -17,6 +23,10 @@ pub enum TargetPriority {
     ScopeStale = 8,
 }
 
+/// A specific class of verification work identified during orientation.
+///
+/// Each variant carries the data the act phase needs to execute the
+/// corresponding oracle or advisory plan.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TargetKind {

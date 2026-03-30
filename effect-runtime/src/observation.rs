@@ -1,3 +1,8 @@
+//! Post-execution observation artifacts: execution receipts, observation bundles, and external ledger entries.
+//!
+//! These types capture the outcome of executed effects, post-execution observation
+//! state, and external-system side-effect records for governance audit trails.
+
 use crate::error::{
     require_id, require_non_empty, require_non_empty_slice, require_schema_version,
     EffectRuntimeValidationError, EffectValidationResult,
@@ -13,6 +18,10 @@ use stack_ids::{
     ExternalEffectLedgerEntryId,
 };
 
+/// Record of an effect's execution outcome including state, partial-completion flags, and generated side-effects.
+///
+/// The `partial_execution` flag must be consistent with `execution_state`,
+/// and completed receipts must not carry a cancellation reason.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectExecutionReceiptV1 {
     pub schema_version: String,
@@ -31,6 +40,9 @@ pub struct EffectExecutionReceiptV1 {
     pub generated_at: String,
 }
 
+/// Post-execution observation bundle that captures observed outcome, drift, and closure recommendation.
+///
+/// Complete observations require non-empty external evidence refs.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectObservationBundleV1 {
     pub schema_version: String,
@@ -48,6 +60,7 @@ pub struct EffectObservationBundleV1 {
     pub generated_at: String,
 }
 
+/// Ledger entry recording an effect's side-effect in an external system for audit and reconciliation.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ExternalEffectLedgerEntryV1 {
     pub schema_version: String,

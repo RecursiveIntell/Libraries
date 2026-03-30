@@ -1,3 +1,11 @@
+//! Verification control-plane artifact types and scheduling logic.
+//!
+//! This crate defines the canonical schema types for verification cases,
+//! check plans, attempts, control receipts, ledger entries, and governance
+//! review artifacts (effect, delegation, release-gate, continuity). It also
+//! provides scheduling, promotion-eligibility, and ledger-replay functions
+//! consumed by `forge-pilot` and the verification pipeline crates.
+
 use llm_tool_runtime::{ToolReceipt, ToolRetryOwner};
 use schemars::JsonSchema;
 use semantic_memory_forge::{
@@ -40,6 +48,10 @@ pub const DELEGATION_REVIEW_CASE_V1_SCHEMA: &str = "delegation_review_case_v1";
 pub const RELEASE_GATE_CASE_V1_SCHEMA: &str = "release_gate_case_v1";
 pub const CONTINUITY_REVIEW_CASE_V1_SCHEMA: &str = "continuity_review_case_v1";
 
+/// Constitutional citation context attached to governance review artifacts.
+///
+/// Tracks which applicability, profile, composition, and obligation artifacts
+/// were consulted when producing a review decision.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct V25CitationContext {
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -58,6 +70,7 @@ pub struct V25CitationContext {
     pub profile_exception_bundle_ids: Vec<ProfileExceptionBundleId>,
 }
 
+/// Completeness status of the constitutional context payload on a review artifact.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ConstitutionalContextStatus {
@@ -110,6 +123,10 @@ impl V25CitationContext {
     }
 }
 
+/// Obligation references attached to a governance review artifact.
+///
+/// Captures required, blocking, and monitoring obligation refs from the
+/// compiled obligation set that applied at review time.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct V25ControlObligationRefs {
     #[serde(default)]
@@ -143,6 +160,9 @@ impl V25ControlObligationRefs {
     }
 }
 
+/// A review case for an effect-system action (intent, preflight, commit decision).
+///
+/// Gates side-effecting actions through constitutional citation and obligation checks.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectReviewCaseV1 {
     pub schema_version: String,
@@ -165,6 +185,7 @@ pub struct EffectReviewCaseV1 {
     pub generated_at: String,
 }
 
+/// Terminal state of an effect review case.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectReviewFinalStateV1 {
@@ -175,6 +196,7 @@ pub enum EffectReviewFinalStateV1 {
     Blocked,
 }
 
+/// Receipt emitted when an effect action is blocked by policy or budget constraints.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectBlockReceiptV1 {
     pub schema_version: String,
@@ -190,6 +212,7 @@ pub struct EffectBlockReceiptV1 {
     pub generated_at: String,
 }
 
+/// Reason an effect action was blocked.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectBlockReasonV1 {
@@ -198,6 +221,10 @@ pub enum EffectBlockReasonV1 {
     BudgetExhausted,
 }
 
+/// A review case for authority delegation decisions.
+///
+/// Validates that delegation chains and separation-of-duties policies
+/// are satisfied before approving delegated authority.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct DelegationReviewCaseV1 {
     pub schema_version: String,
@@ -214,6 +241,7 @@ pub struct DelegationReviewCaseV1 {
     pub generated_at: String,
 }
 
+/// Terminal decision state of a delegation review case.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum DelegationReviewDecisionStateV1 {
@@ -223,6 +251,10 @@ pub enum DelegationReviewDecisionStateV1 {
     Blocked,
 }
 
+/// A review case for release-gate decisions.
+///
+/// Evaluates deployment profile, assurance case, and readiness decision
+/// against constitutional context before approving a release.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ReleaseGateCaseV1 {
     pub schema_version: String,
@@ -240,6 +272,7 @@ pub struct ReleaseGateCaseV1 {
     pub final_state: ReleaseGateFinalStateV1,
 }
 
+/// Terminal state of a release-gate review case.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ReleaseGateFinalStateV1 {
@@ -249,6 +282,7 @@ pub enum ReleaseGateFinalStateV1 {
     Blocked,
 }
 
+/// A review case for continuity incidents (outage, recovery, exception handling).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ContinuityReviewCaseV1 {
     pub schema_version: String,
@@ -268,6 +302,7 @@ pub struct ContinuityReviewCaseV1 {
     pub final_state: ContinuityReviewFinalStateV1,
 }
 
+/// Terminal state of a continuity review case.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ContinuityReviewFinalStateV1 {
@@ -275,6 +310,7 @@ pub enum ContinuityReviewFinalStateV1 {
     Closed,
 }
 
+/// Classification of the issue that opened a verification case.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum VerificationCaseClass {
@@ -289,6 +325,7 @@ pub enum VerificationCaseClass {
     ScopeStale,
 }
 
+/// Scope and location metadata for a verification case target.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct CaseRegion {
     pub namespace: String,
@@ -305,6 +342,7 @@ pub struct CaseRegion {
     pub as_of_recorded_at: Option<String>,
 }
 
+/// Lifecycle state of a verification case from open to closed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum VerificationCaseLifecycleState {
@@ -314,6 +352,7 @@ pub enum VerificationCaseLifecycleState {
     Closed,
 }
 
+/// Terminal outcome of a closed verification case.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum TerminalDisposition {
@@ -327,6 +366,7 @@ pub enum TerminalDisposition {
     Blocked,
 }
 
+/// Priority tier for promotion eligibility (P0 = highest).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum PromotionClass {
@@ -336,6 +376,7 @@ pub enum PromotionClass {
     P3,
 }
 
+/// How difficult it is to reverse a promoted verification result.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ReversibilityClass {
@@ -345,6 +386,10 @@ pub enum ReversibilityClass {
     RequiresAuthorityWorkflow,
 }
 
+/// A single verification case tracking a governance issue from open to closed.
+///
+/// Cases are opened by the observation phase, assigned check plans, executed
+/// through verification attempts, and closed with a terminal disposition.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct VerificationCase {
     pub schema_version: String,
@@ -397,6 +442,7 @@ impl VerificationCase {
     }
 }
 
+/// Verification method used by a check plan to evaluate a case.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CheckMethod {
@@ -410,6 +456,7 @@ pub enum CheckMethod {
     AdvisoryOnly,
 }
 
+/// Scheduler workload class used for budgeting and queue routing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum VerificationWorkloadClass {
@@ -419,6 +466,7 @@ pub enum VerificationWorkloadClass {
     Advisory,
 }
 
+/// A single queue-to-queue hop in the scheduler routing chain.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct QueueHop {
     pub hop_index: u32,
@@ -429,6 +477,7 @@ pub struct QueueHop {
     pub dequeued_at: Option<String>,
 }
 
+/// Budget and retry lineage for a scheduled verification plan.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct BudgetLineage {
     pub budget_family: String,
@@ -445,6 +494,7 @@ pub struct BudgetLineage {
     pub exhausted: bool,
 }
 
+/// Kind of lightweight preflight check in the cheap-check ladder.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CheapCheckKindV1 {
@@ -455,6 +505,7 @@ pub enum CheapCheckKindV1 {
     RefutationPreflight,
 }
 
+/// Status of a single cheap-check preflight evaluation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct CheapCheckStatusV1 {
     pub check: CheapCheckKindV1,
@@ -463,6 +514,7 @@ pub struct CheapCheckStatusV1 {
     pub detail: Option<String>,
 }
 
+/// Proof profile describing evidence admissibility, cheap-check status, and remaining obligations.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ProofProfileV1 {
     pub profile_name: String,
@@ -475,6 +527,7 @@ pub struct ProofProfileV1 {
     pub admissible_evidence: Vec<String>,
 }
 
+/// A marker indicating degraded verification quality and whether it blocks promotion.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct DegradationMarker {
     pub kind: String,
@@ -482,6 +535,7 @@ pub struct DegradationMarker {
     pub blocks_promotion: bool,
 }
 
+/// Scheduler decision record preserving budget, degradation, and routing lineage for a plan.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct SchedulerDecision {
     pub schema_version: String,
@@ -498,6 +552,7 @@ pub struct SchedulerDecision {
     pub promotion_blocked: bool,
 }
 
+/// A check plan specifying the verification method, promotion class, and proof profile for a case.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct CheckPlan {
     pub schema_version: String,
@@ -572,6 +627,7 @@ impl CheckPlan {
     }
 }
 
+/// Execution state of a verification attempt.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum VerificationAttemptState {
@@ -583,6 +639,7 @@ pub enum VerificationAttemptState {
     Blocked,
 }
 
+/// A single execution attempt within a verification case and plan.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct VerificationAttempt {
     pub schema_version: String,
@@ -631,6 +688,7 @@ impl VerificationAttempt {
     }
 }
 
+/// Kind of action recorded in a control receipt.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ControlActionKind {
@@ -639,6 +697,7 @@ pub enum ControlActionKind {
     VerificationExecution,
 }
 
+/// Budget context attached to a control receipt for cost and time tracking.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ReceiptBudgetContext {
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -651,6 +710,11 @@ pub struct ReceiptBudgetContext {
     pub cost_budget_units: Option<u64>,
 }
 
+/// An immutable receipt recording a control-plane action with full provenance.
+///
+/// Control receipts carry constitutional citation context, budget context,
+/// retry ownership, and promotion eligibility. They are the atomic audit
+/// unit for the verification ledger.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ControlReceipt {
     pub schema_version: String,
@@ -699,6 +763,7 @@ pub struct ControlReceipt {
     pub details: Value,
 }
 
+/// Which subsystem owns retry responsibility for a control action.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ControlRetryOwnerV1 {
@@ -723,6 +788,7 @@ impl From<&ToolRetryOwner> for ControlRetryOwnerV1 {
     }
 }
 
+/// Kind of artifact subject to boundary repair.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum BoundaryArtifactKind {
@@ -731,6 +797,7 @@ pub enum BoundaryArtifactKind {
     ControlReceipt,
 }
 
+/// Record of a single field-level repair applied to a boundary artifact.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct BoundaryRepairRecord {
     pub schema_version: String,
@@ -745,6 +812,7 @@ pub struct BoundaryRepairRecord {
     pub rationale: String,
 }
 
+/// Kind of artifact transported between compiled regions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RegionArtifactKind {
@@ -757,6 +825,7 @@ pub enum RegionArtifactKind {
     OracleParity,
 }
 
+/// Transport record for an artifact crossing between compiled verification regions.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct RegionArtifactTransport {
     pub schema_version: String,

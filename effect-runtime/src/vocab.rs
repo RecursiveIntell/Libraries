@@ -1,6 +1,12 @@
+//! Controlled vocabulary enums for effect-runtime artifact fields.
+//!
+//! Each enum represents a closed set of domain values used across effect
+//! lifecycle artifacts. All variants serialize as `snake_case`.
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+/// Atomicity guarantee level for an effect commit operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CommitAtomicityV1 {
@@ -10,6 +16,7 @@ pub enum CommitAtomicityV1 {
     BestEffort,
 }
 
+/// Entity responsible for retrying a failed or timed-out effect.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RetryOwnerV1 {
@@ -20,6 +27,7 @@ pub enum RetryOwnerV1 {
     Operator,
 }
 
+/// Behavior to apply when an effect window closes while execution is still in flight.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CloseMidflightBehaviorV1 {
@@ -29,6 +37,7 @@ pub enum CloseMidflightBehaviorV1 {
     BestEffortCompensation,
 }
 
+/// Classification of the type of side-effect an intent describes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectClassV1 {
@@ -39,6 +48,7 @@ pub enum EffectClassV1 {
     Compensation,
 }
 
+/// Upper bound on the scope of impact an effect may have.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum BlastRadiusCeilingV1 {
@@ -48,6 +58,7 @@ pub enum BlastRadiusCeilingV1 {
     Global,
 }
 
+/// Classification of how reversible an effect is after execution.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ReversibilityClassV1 {
@@ -56,6 +67,7 @@ pub enum ReversibilityClassV1 {
     Irreversible,
 }
 
+/// Execution mode governing whether an effect produces real side-effects.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RunModeV1 {
@@ -65,6 +77,7 @@ pub enum RunModeV1 {
     Replay,
 }
 
+/// Whether an effect intent must be published to governance observers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum PublicationStatusV1 {
@@ -74,6 +87,7 @@ pub enum PublicationStatusV1 {
     Suppressed,
 }
 
+/// Binary pass/fail result for a preflight check gate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CheckResultV1 {
@@ -81,6 +95,7 @@ pub enum CheckResultV1 {
     Fail,
 }
 
+/// Whether the budget allocation is sufficient for the intended effect.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum BudgetSufficiencyResultV1 {
@@ -88,6 +103,7 @@ pub enum BudgetSufficiencyResultV1 {
     Insufficient,
 }
 
+/// Terminal or in-progress state of an effect or compensation execution.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecutionStateV1 {
@@ -99,6 +115,7 @@ pub enum ExecutionStateV1 {
     InProgress,
 }
 
+/// State of post-execution observation for an effect.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ObservationStateV1 {
@@ -107,6 +124,7 @@ pub enum ObservationStateV1 {
     DriftDetected,
 }
 
+/// Recommended next action after observing an executed effect's outcome.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ClosureRecommendationV1 {
@@ -116,6 +134,7 @@ pub enum ClosureRecommendationV1 {
     ReplayReady,
 }
 
+/// Classification of the compensation strategy to be applied.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CompensationClassV1 {
@@ -125,6 +144,7 @@ pub enum CompensationClassV1 {
     OperatorRunbook,
 }
 
+/// Observed state of a side-effect in an external system.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExternalObservationStateV1 {

@@ -80,6 +80,7 @@ pub struct TrialRecord {
     pub timing_admissible: bool,
 }
 
+/// Which side of a paired experiment a trial belongs to.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TrialSide {
@@ -87,6 +88,7 @@ pub enum TrialSide {
     Patched,
 }
 
+/// Whether build caches were warm or cold during a trial execution.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CacheMode {
@@ -421,6 +423,7 @@ pub struct PairedExperimentRunner<'a> {
 }
 
 impl<'a> PairedExperimentRunner<'a> {
+    /// Create a new runner bound to the given backend, project adapter, and config.
     pub fn new(
         backend: &'a dyn crate::exec::backend::ExecutionBackend,
         adapter: &'a dyn crate::adapters::ProjectAdapter,

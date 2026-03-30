@@ -1,3 +1,9 @@
+//! Query and projection observability traces.
+//!
+//! Every query execution produces a `QueryTrace` that records classification,
+//! route plan, per-leg timing, merge statistics, and any degradation warnings.
+//! Projection lifecycle actions produce a `ProjectionTrace`.
+
 use crate::ids::ScopeKey;
 use crate::projection::lifecycle::{ProjectionHealth, StaleCause};
 use crate::query::classify::ClassifyResult;
@@ -53,6 +59,7 @@ pub enum RuntimeView {
     Control,
 }
 
+/// Disclosure record emitted when a query leg is widened or degraded from its requested view.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct WideningDisclosure {
     pub leg_index: usize,
@@ -219,6 +226,7 @@ impl QueryTrace {
         !self.warnings.is_empty()
     }
 
+    /// Build a versioned provenance snapshot from this trace for cross-crate audit.
     pub fn runtime_query_provenance(&self) -> RuntimeQueryProvenanceV1 {
         RuntimeQueryProvenanceV1 {
             schema_version: "runtime_query_provenance_v1".into(),
@@ -250,6 +258,7 @@ impl QueryTrace {
     }
 }
 
+/// Versioned provenance record summarizing a full query execution for downstream audit.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[schemars(title = "RuntimeQueryProvenanceV1")]
 pub struct RuntimeQueryProvenanceV1 {

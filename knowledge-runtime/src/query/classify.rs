@@ -1,3 +1,7 @@
+//! Rule-based intent classification for incoming queries.
+//!
+//! Maps raw query text to a `QueryMode` that drives route planning.
+
 use serde::{Deserialize, Serialize};
 
 /// Intent classification for an incoming query.

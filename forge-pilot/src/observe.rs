@@ -40,6 +40,7 @@ pub struct ObservationDegradation {
     pub detail: String,
 }
 
+/// Whether a filesystem path required for observation is present and valid.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum PathAvailability {
@@ -48,6 +49,7 @@ pub enum PathAvailability {
     Invalid,
 }
 
+/// Disposition of the most recent canonical import record for the queried namespace.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ImportRecordDisposition {
@@ -58,6 +60,7 @@ pub enum ImportRecordDisposition {
     StorageCorrupt,
 }
 
+/// Overall readiness disposition of the observation for a namespace.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ObservationDisposition {
@@ -69,6 +72,7 @@ pub enum ObservationDisposition {
     StorageCorrupt,
 }
 
+/// Resolved filesystem paths and their availability for a configured namespace.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ObservationPaths {
     pub namespace: String,
@@ -79,17 +83,23 @@ pub struct ObservationPaths {
     pub forge_db_state: PathAvailability,
 }
 
+/// Count of supported source files and imported state for the workspace.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct SourceInventory {
     pub supported_file_count: usize,
     pub imported_current_state: BootstrapCurrentState,
 }
 
+/// Count of Forge evidence bundles available for export.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ForgeEvidenceInventory {
     pub available_bundle_count: usize,
 }
 
+/// Machine-readable status summary for a namespace observation.
+///
+/// Includes import disposition, file counts, and a human-readable
+/// `exact_next_step` describing what the operator should do next.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ObservationStatus {
     pub disposition: ObservationDisposition,
@@ -108,6 +118,7 @@ pub struct ObservationStatus {
     pub other_import_namespaces: Vec<String>,
 }
 
+/// Aggregate health metrics for a projected scope within semantic-memory.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ScopeHealthSummary {
     pub total_claim_versions: usize,
@@ -121,6 +132,11 @@ pub struct ScopeHealthSummary {
     pub last_import_at: Option<String>,
 }
 
+/// Full observation snapshot produced by the observe phase.
+///
+/// Contains every input the orient, decide, and act phases need:
+/// paths, source inventory, kernel compilation output, oracle assessment,
+/// claim/relation/episode projections, and scope health.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Observation {
     pub scope_key: stack_ids::ScopeKey,
@@ -166,6 +182,10 @@ impl Observation {
     }
 }
 
+/// Builds a complete observation for the configured scope.
+///
+/// Queries the semantic-memory store, compiles constraints, runs kernel
+/// oracle evaluation, and assembles the full `Observation` snapshot.
 pub async fn observe_scope(
     runtime: &KnowledgeRuntime,
     store: &MemoryStore,

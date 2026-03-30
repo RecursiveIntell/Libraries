@@ -1,3 +1,5 @@
+//! Temporal claims: time-bounded assertions about entities with overlap and contradiction checks.
+
 use crate::ids::EntityId;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};

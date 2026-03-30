@@ -1,3 +1,5 @@
+//! Validation error types and helper functions for effect-runtime artifact invariant checks.
+
 use thiserror::Error;
 
 /// Validation failures for effect-runtime owned constitutional artifacts.
@@ -29,6 +31,7 @@ impl EffectRuntimeValidationError {
     }
 }
 
+/// Shorthand result type for artifact validation methods.
 pub type EffectValidationResult = Result<(), EffectRuntimeValidationError>;
 
 pub(crate) fn require_non_empty(value: &str, field: &'static str) -> EffectValidationResult {

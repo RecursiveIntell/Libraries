@@ -1,3 +1,9 @@
+//! Hypothesis derivation, verification plan generation, and evidence assessment.
+//!
+//! Functions in this module operate on `ExperimentEvidenceBundle` to derive
+//! hypothesis status, build edges from diffs, generate verification plans,
+//! and compute deterministic evidence assessments.
+
 use super::{ExperimentEvidenceBundle, HypothesisEdge, HypothesisEdgeKind, VerificationState};
 use crate::config::ForgeLimits;
 use crate::error::ForgeResult;
