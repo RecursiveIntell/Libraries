@@ -43,6 +43,10 @@
 - Phase 5: Integration Points and Artifact Families documentation added to all 7 governance crate `lib.rs` files.
 - Phase 6: `cargo check --workspace`, `cargo clippy --workspace`, `cargo fmt --all -- --check` all pass. Only pre-existing failures: 4 assurance-runtime fixture roundtrip tests (missing example JSON files).
 
+## Performance baseline
+
+- `evidence/perf_baseline_20260330.json` — canonical regression baseline captured from `kernel-conformance` canonical_perf_snapshot example.
+
 ## Release-story limits
 
 - `STATUS_EVIDENCE_MANIFEST.json` is generated from a live local gate run. It is the authoritative ledger for this snapshot.

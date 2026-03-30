@@ -1,0 +1,31 @@
+{
+  "captured_at": "2026-03-30",
+  "source_basis": "libraries-source-clean-20260330.zip",
+  "tool": "kernel-conformance canonical_perf_snapshot",
+  "profile": "dev (unoptimized + debuginfo)",
+  "note": "These numbers are regression alarms, not throughput claims. Regenerate after meaningful changes to export, bridge, import, compile, or advisory behavior.",
+  "fixtures": [
+    {
+      "name": "small",
+      "effect_records": 2,
+      "regions": 2,
+      "delta_regions": 1,
+      "export_ms": 1,
+      "transform_ms": 1,
+      "import_ms": 3,
+      "compile_ms": 0,
+      "advisory_ms": 2
+    },
+    {
+      "name": "large",
+      "effect_records": 11,
+      "regions": 2,
+      "delta_regions": 1,
+      "export_ms": 2,
+      "transform_ms": 2,
+      "import_ms": 6,
+      "compile_ms": 1,
+      "advisory_ms": 4
+    }
+  ]
+}
