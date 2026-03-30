@@ -682,6 +682,7 @@ fn rrf_fuse_detailed(
     config: &SearchConfig,
     top_k: usize,
 ) -> Vec<ExplainedResult> {
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     let mut candidates: HashMap<(u8, String), RrfCandidate> = HashMap::new();
 
     for (rank_0, hit) in bm25_hits.iter().enumerate() {
@@ -888,9 +889,13 @@ fn resolve_hnsw_hits_batched(
         .map(|st| st.contains(&SearchSourceType::Episodes))
         .unwrap_or(true);
 
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     let mut fact_entries: HashMap<String, HnswCandidateSeed> = HashMap::new();
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     let mut chunk_entries: HashMap<String, HnswCandidateSeed> = HashMap::new();
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     let mut message_entries: HashMap<i64, HnswCandidateSeed> = HashMap::new();
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     let mut episode_entries: HashMap<String, HnswCandidateSeed> = HashMap::new();
 
     for (rank_0, hit) in hnsw_hits.iter().enumerate() {
@@ -1031,6 +1036,7 @@ fn batch_load_fact_hits(
     query_embedding: &[f32],
     config: &SearchConfig,
     namespaces: Option<&[&str]>,
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     entries: &HashMap<String, HnswCandidateSeed>,
     output: &mut Vec<VectorHit>,
 ) -> Result<(), MemoryError> {
@@ -1094,6 +1100,7 @@ fn batch_load_chunk_hits(
     query_embedding: &[f32],
     config: &SearchConfig,
     namespaces: Option<&[&str]>,
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     entries: &HashMap<String, HnswCandidateSeed>,
     output: &mut Vec<VectorHit>,
 ) -> Result<(), MemoryError> {
@@ -1175,6 +1182,7 @@ fn batch_load_message_hits(
     query_embedding: &[f32],
     config: &SearchConfig,
     session_ids: Option<&[&str]>,
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     entries: &HashMap<i64, HnswCandidateSeed>,
     output: &mut Vec<VectorHit>,
 ) -> Result<(), MemoryError> {
@@ -1240,6 +1248,7 @@ fn batch_load_episode_hits(
     query_embedding: &[f32],
     config: &SearchConfig,
     namespaces: Option<&[&str]>,
+    // CONVENTION EXCEPTION: O(1) lookup required for performance-critical search path
     entries: &HashMap<String, HnswCandidateSeed>,
     output: &mut Vec<VectorHit>,
 ) -> Result<(), MemoryError> {

@@ -64,7 +64,9 @@ impl HnswHit {
 
 struct HnswIndexInner {
     graph: Hnsw<'static, f32, DistCosine>,
+    // CONVENTION EXCEPTION: O(1) lookup required for HNSW index
     key_to_id: RwLock<HashMap<String, usize>>,
+    // CONVENTION EXCEPTION: O(1) lookup required for HNSW index
     id_to_key: RwLock<HashMap<usize, String>>,
     next_id: AtomicUsize,
     deleted_ids: RwLock<HashSet<usize>>,
@@ -98,7 +100,9 @@ impl HnswIndex {
         Ok(Self {
             inner: Arc::new(HnswIndexInner {
                 graph,
+                // CONVENTION EXCEPTION: O(1) lookup required for HNSW index
                 key_to_id: RwLock::new(HashMap::new()),
+                // CONVENTION EXCEPTION: O(1) lookup required for HNSW index
                 id_to_key: RwLock::new(HashMap::new()),
                 next_id: AtomicUsize::new(0),
                 deleted_ids: RwLock::new(HashSet::new()),
@@ -341,7 +345,9 @@ impl HnswIndex {
             return Ok(());
         }
 
+        // CONVENTION EXCEPTION: O(1) lookup required for HNSW index
         let mut key_to_id = HashMap::new();
+        // CONVENTION EXCEPTION: O(1) lookup required for HNSW index
         let mut id_to_key = HashMap::new();
         let mut deleted_ids = HashSet::new();
 

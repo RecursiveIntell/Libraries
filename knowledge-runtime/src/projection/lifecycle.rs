@@ -1,7 +1,7 @@
 use crate::ids::{ProjectionId, ProjectionKind, ScopeKey};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Health status of a projection.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -141,7 +141,7 @@ pub struct ProjectionActionResult {
 #[derive(Debug)]
 pub struct ProjectionTracker {
     /// Projection metadata by ID.
-    projections: HashMap<ProjectionId, ProjectionMeta>,
+    projections: BTreeMap<ProjectionId, ProjectionMeta>,
     /// Staleness threshold in seconds.
     staleness_threshold_secs: u64,
 }
@@ -149,7 +149,7 @@ pub struct ProjectionTracker {
 impl ProjectionTracker {
     pub fn new(staleness_threshold_secs: u64) -> Self {
         Self {
-            projections: HashMap::new(),
+            projections: BTreeMap::new(),
             staleness_threshold_secs,
         }
     }

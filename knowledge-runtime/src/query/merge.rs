@@ -1,3 +1,5 @@
+//! Deterministic result merge pipeline: fuse duplicates, normalize, boost, rank, and truncate.
+
 use semantic_memory::SearchResult;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -34,7 +36,7 @@ impl Default for MergePolicy {
     }
 }
 
-/// Score normalization strategy.
+/// Strategy for normalizing scores across route legs before ranking.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ScoreNormalization {
@@ -45,7 +47,7 @@ pub enum ScoreNormalization {
     None,
 }
 
-/// A result from a single route leg, tagged with its leg index.
+/// A search result from a single route leg, tagged with its source leg index.
 #[derive(Debug, Clone)]
 pub struct LegResult {
     /// Which leg produced this result.
@@ -54,7 +56,7 @@ pub struct LegResult {
     pub result: SearchResult,
 }
 
-/// Merged output from the merge pipeline.
+/// Output of the merge pipeline: ranked, deduplicated results with provenance metadata.
 #[derive(Debug, Clone)]
 pub struct MergedResults {
     /// Final ordered results.
@@ -65,7 +67,7 @@ pub struct MergedResults {
     pub total_raw: usize,
 }
 
-/// A single item in the merged result set.
+/// A single ranked item in the merged result set, with fused provenance from all contributing legs.
 #[derive(Debug, Clone)]
 pub struct MergedItem {
     /// The search result (uses the highest-scoring occurrence).

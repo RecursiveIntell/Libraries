@@ -1,7 +1,9 @@
+//! Scope-aware in-memory entity registry with alias resolution and fallback.
+
 use crate::error::RuntimeError;
 use crate::ids::{EntityId, ScopeKey};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Entity kind discriminant.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -68,7 +70,7 @@ pub struct ResolveResult {
 }
 
 /// Composite key for scope-partitioned entity indexes.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct ScopedName {
     scope: ScopeKey,
     lower_name: String,
@@ -85,11 +87,11 @@ struct ScopedName {
 #[derive(Debug)]
 pub struct EntityRegistry {
     /// Entities by ID.
-    entities: HashMap<EntityId, Entity>,
+    entities: BTreeMap<EntityId, Entity>,
     /// Index: (scope, lowercase canonical name) -> entity ID.
-    name_index: HashMap<ScopedName, EntityId>,
+    name_index: BTreeMap<ScopedName, EntityId>,
     /// Index: (scope, lowercase alias) -> entity ID.
-    alias_index: HashMap<ScopedName, EntityId>,
+    alias_index: BTreeMap<ScopedName, EntityId>,
     /// Maximum aliases per entity.
     max_aliases: usize,
     /// Maximum total entities across all scopes.
@@ -97,11 +99,12 @@ pub struct EntityRegistry {
 }
 
 impl EntityRegistry {
+    /// Create a new registry with bounded alias and entity limits.
     pub fn new(max_aliases: usize, max_entities: usize) -> Self {
         Self {
-            entities: HashMap::new(),
-            name_index: HashMap::new(),
-            alias_index: HashMap::new(),
+            entities: BTreeMap::new(),
+            name_index: BTreeMap::new(),
+            alias_index: BTreeMap::new(),
             max_aliases,
             max_entities,
         }

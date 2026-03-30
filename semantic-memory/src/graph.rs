@@ -6,7 +6,7 @@ use crate::search;
 use crate::types::{GraphDirection, GraphEdge, GraphEdgeType, GraphView};
 use crate::{MemoryError, MemoryStoreInner};
 use rusqlite::{params, Connection};
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashSet, VecDeque};
 use std::sync::Arc;
 
 const SEMANTIC_EDGE_LIMIT: usize = 5;
@@ -110,7 +110,7 @@ fn shortest_path(
     min_similarity: f32,
 ) -> Result<Option<Vec<String>>, MemoryError> {
     let mut visited = HashSet::from([from.to_string()]);
-    let mut parents = HashMap::<String, String>::new();
+    let mut parents = BTreeMap::<String, String>::new();
     let mut queue = VecDeque::from([(from.to_string(), 0usize)]);
 
     while let Some((node_id, depth)) = queue.pop_front() {
@@ -675,6 +675,7 @@ fn canonicalize_cause_id(conn: &Connection, raw: &str) -> Result<String, MemoryE
         return Ok(format!("document:{raw}"));
     }
 
+    // INTENTIONAL: episode may not exist; None triggers fallback to other node types
     let episode_id: Option<String> = conn
         .query_row(
             "SELECT episode_id FROM episodes WHERE episode_id = ?1",

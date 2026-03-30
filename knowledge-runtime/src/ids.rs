@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 /// A projection is identified by its kind, a key within the kind, and
 /// the scope it belongs to. Two projections with the same kind and key
 /// but different scopes are distinct.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct ProjectionId {
     /// Projection kind.
     pub kind: ProjectionKind,
@@ -46,7 +46,7 @@ impl std::fmt::Display for ProjectionId {
 }
 
 /// Discriminant for projection types.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ProjectionKind {
     /// Entity registry projection.
