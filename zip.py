@@ -27,7 +27,7 @@ EXCLUDED_DIR_NAMES = {
     "__pycache__",
 }
 
-EXCLUDED_DIR_PREFIXES = ("tmp", "tmp-")
+EXCLUDED_DIR_PREFIXES = ("tmp", "tmp-", "target-")
 
 EXCLUDED_FILE_EXTENSIONS = {
     ".zip",
