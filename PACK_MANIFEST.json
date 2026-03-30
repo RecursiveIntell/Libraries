@@ -1,44 +1,37 @@
 {
-  "generated_at": "2026-03-24",
-  "repo_snapshot": "libraries-source-clean-20260324.zip",
-  "pack_name": "constitutional_combat_strength_pack_20260324",
+  "generated_at": "2026-03-30",
+  "repo_snapshot": "libraries-source-clean-20260330.zip",
+  "pack_name": "v29_unified_hostile_audit_remediation_pack_20260330",
   "files": [
-    "00_README.md",
-    "01_SOURCE_BASIS_AND_RECONCILIATION.md",
+    "00_START_HERE.md",
+    "01_MASTER_ISSUE_TENSOR.json",
     "02_MASTER_ISSUE_MATRIX.md",
-    "MASTER_ISSUE_MATRIX.json",
-    "MASTER_ISSUE_MATRIX.csv",
-    "MASTER_ISSUE_MATRIX.xlsx",
     "03_IMPLEMENTATION_PLAYBOOK.md",
-    "04_TEST_AND_CONFORMANCE_PLAN.md",
-    "05_CRATE_BOUNDARY_AND_OWNER_MAP.md",
-    "06_EXACT_FILE_TOUCH_MAP.md",
-    "07_RELEASE_GATES_AND_ACCEPTANCE.md",
-    "08_RISK_REGISTER_AND_FORBIDDEN_SHORTCUTS.md",
-    "09_STATUS_DASHBOARD.md",
-    "10_CLAUDE_APPENDIX_TEMPLATE.md",
-    "AGENTS.md",
+    "04_EXACT_FILE_TOUCH_MAP.md",
+    "05_TEST_AND_CONFORMANCE_PLAN.md",
+    "06_RISK_REGISTER.md",
+    "10_HOSTILE_AUDIT_CLAUDE.md",
+    "11_HOSTILE_AUDIT_GPT.md",
+    "CLAUDE.md",
     "PROMPT.md",
     "PACK_MANIFEST.json"
   ],
   "lane_counts": {
-    "current-live-blocker": 6,
-    "current-live-hardening": 8,
-    "full-spec-gap": 6,
-    "reconciled-stale": 5
+    "current-live-blocker": 3,
+    "current-live-hardening": 5,
+    "convention-hygiene": 7,
+    "post-submission": 1
   },
   "priority_counts": {
-    "P0": 6,
-    "P1": 7,
-    "P2": 7
+    "P0": 3,
+    "P1": 5,
+    "P2": 7,
+    "P3": 1
   },
-  "wave_counts": {
-    "W1": 2,
-    "W2": 2,
-    "W3": 4,
-    "W4": 6,
-    "W5": 4,
-    "W6": 2,
-    "reconciled": 5
+  "phase_counts": {
+    "phase_1": 3,
+    "phase_2": 5,
+    "phase_3": 7,
+    "phase_4": 1
   }
 }

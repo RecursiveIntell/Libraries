@@ -2,7 +2,7 @@
 
 ## Snapshot
 
-- Active lane: `2026-03-23-hardening-closeout`
+- Active lane: `2026-03-30-hardening-closeout`
 - Gate authority: `scripts/release_gate_set.py`
 - Proof ledger: `STATUS_EVIDENCE_MANIFEST.json`
 - Receipt authority: `release/closeout_receipt_v1.json`
@@ -11,9 +11,9 @@
 
 ## Current local proof state
 
-- `make gate` passes locally after the 2026-03-23 closeout fixes.
-- `bash scripts/run_v25_local_checks.sh` passes locally after the 2026-03-23 v25 closure fixes.
-- `bash scripts/run_v25_production_pack_checks.sh --final` passes locally after the 2026-03-23 v25 closure fixes.
+- `make gate` passes locally after the 2026-03-30 closeout fixes.
+- `bash scripts/run_v25_local_checks.sh` passes locally after the 2026-03-30 v25 closure fixes.
+- `bash scripts/run_v25_production_pack_checks.sh --final` passes locally after the 2026-03-30 v25 closure fixes.
 
 ## Closed in this pass
 

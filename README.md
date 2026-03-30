@@ -1,20 +1,59 @@
+# RecursiveIntell
 
-# finish_pack_2026-03-24
+A 30-crate Rust workspace implementing an OODA governance orchestrator for recursive intelligence systems.
 
-This pack is a fresh hostile-audit synthesis over `libraries-source-clean-20260323.zip`.
+## What it does
 
-Supersession note (2026-03-17): see `24_V25_SUPERSESSION_AND_CONSTITUTIONAL_CHANGE_NOTE_20260317.md` for the repo-local v25 constitutional-change note that superseded the older no-v25 position.
+RecursiveIntell provides a full **Observe → Orient → Decide → Act** loop with integrated verification, calibration, and adjudication. The system enforces governance constraints at every stage: observations are checked against constitutional memory, decisions are gated by execution permits, and actions produce auditable effect receipts.
 
-The front door for the current hardening lane is `make gate`.
+The stack generates 211 JSON schemas from the Rust type system via `contract-schema-gen`, ensuring wire-format contracts stay synchronized with code.
 
-The support claim remains deliberately narrow: the 17 crates listed in `SUPPORT_PROFILE.md` are the only build-certified and public-doc-certified lane.
-Thin adjacent governance and artifact-owner crates keep their compatibility names, but their honest positioning is tracked in `SCOPE_NOTES.md` and `docs/closeout_v21_v24/governance_surface_decision_table.md`.
+## Crate architecture
 
-It is designed to do four things:
+```
+┌─────────────────────────────────────────────────────────┐
+│  Tier 1 — Core Intelligence                             │
+│  constraint-compiler · kernel-oracles                   │
+├─────────────────────────────────────────────────────────┤
+│  Tier 2 — Orchestration                                 │
+│  semantic-memory · forge-engine (living-memory)          │
+│  knowledge-runtime · forge-pilot                        │
+├─────────────────────────────────────────────────────────┤
+│  Tier 3 — Support & Bridge                              │
+│  stack-ids · llm-tool-runtime · profile-runtime          │
+│  forge-memory-bridge · semantic-memory-forge             │
+├─────────────────────────────────────────────────────────┤
+│  Governance                                             │
+│  assurance-runtime · attestation-exchange                │
+│  authority-delegation · constitutional-memory            │
+│  continuity-runtime · effect-runtime · mechanism-runtime │
+├─────────────────────────────────────────────────────────┤
+│  Verification Pipeline                                  │
+│  verification-control · verification-policy              │
+│  verification-calibration · verification-adjudication    │
+└─────────────────────────────────────────────────────────┘
+```
 
-1. reconcile the supplied Claude analysis with the current snapshot,
-2. produce one actionable master issue matrix,
-3. provide the supporting execution docs (`AGENTS.md`, `PROMPT.md`, implementation plan, conformance plan, file touch map),
-4. and provide a small `overlay/` with high-confidence drop-in files.
+## Build
 
-Start with `00_START_HERE.md`.
+```bash
+cargo build --workspace
+cargo test --workspace
+cargo clippy --workspace -- -D warnings
+```
+
+## Gate verification
+
+```bash
+make gate
+```
+
+This runs the full release gate set including permit path checks, hotspot budgets, panic safety, doc coverage, and schema compatibility.
+
+## Canonical specification
+
+See [`CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md`](CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md) for the current constitutional specification.
+
+## Snapshot
+
+Source basis: `libraries-source-clean-20260330.zip`
