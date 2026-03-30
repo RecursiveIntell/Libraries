@@ -4,6 +4,33 @@
 //! and gates execution during the act phase. It does not own authority —
 //! it reads governance artifacts and reports their status to the loop.
 //!
+//! ## Observation scope
+//!
+//! The following six predicates are checked by `observe_governance()`:
+//!
+//! 1. **Effect preflight status** — reads the latest effect-runtime preflight disposition.
+//! 2. **Assurance readiness** — checks whether an assurance-runtime case is release-ready.
+//! 3. **Authority delegation validity** — verifies the authority-delegation chain is intact.
+//! 4. **Continuity incident state** — detects active continuity-runtime incidents.
+//! 5. **Constitutional amendment state** — detects pending constitutional-memory amendments.
+//! 6. **Mechanism fit disposition** — reads the latest mechanism-runtime fit evaluation.
+//!
+//! ## Not yet observed
+//!
+//! - **Attestation exchange state** — `attestation-exchange` is wired but not yet consumed
+//!   by the observation pipeline. See GOV-002 / SCOPE_NOTES.md.
+//! - **Detailed mechanism state** — only the fit disposition is observed, not internal
+//!   mechanism-runtime evaluation details.
+//! - **Detailed assurance state** — only the ready/not-ready flag is observed, not the
+//!   full assurance case tree.
+//!
+//! ## Why the current scope is sufficient for CLARA V1
+//!
+//! The six observed predicates cover all governance surfaces that can block or degrade
+//! execution in the OODA loop. The unobserved surfaces (attestation, detailed mechanism
+//! and assurance state) are informational and do not gate any execution decision in
+//! the current pipeline. They are planned for V2.
+//!
 //! ## Design constraints
 //!
 //! - **Read-only observation.** `observe_governance()` reads governance artifact state.
