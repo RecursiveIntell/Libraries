@@ -27,7 +27,10 @@ pub(crate) fn require_non_empty(value: &str, field: &'static str) -> AssuranceVa
     Ok(())
 }
 
-pub(crate) fn require_non_empty_slice<T>(values: &[T], field: &'static str) -> AssuranceValidationResult {
+pub(crate) fn require_non_empty_slice<T>(
+    values: &[T],
+    field: &'static str,
+) -> AssuranceValidationResult {
     if values.is_empty() {
         return Err(AssuranceValidationError::MissingField(field));
     }

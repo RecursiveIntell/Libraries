@@ -8,7 +8,7 @@ use semantic_memory_forge::{
     ExportClaim, ExportEnvelopeV1, ExportEpisode, ExportRecord, EXPORT_ENVELOPE_V1_SCHEMA,
 };
 use stack_ids::{
-    ClaimId, ClaimVersionId, ContentDigest, EnvelopeId, EpisodeId, EntityId, ScopeKey, TraceCtx,
+    ClaimId, ClaimVersionId, ContentDigest, EntityId, EnvelopeId, EpisodeId, ScopeKey, TraceCtx,
 };
 
 fn golden_v1_envelope() -> ExportEnvelopeV1 {
@@ -67,10 +67,14 @@ fn golden_fixture_transform_deterministic() {
 fn golden_fixture_episode_identity_preserved() {
     let envelope = golden_v1_envelope();
     let batch = transform_envelope(&envelope).expect("transform");
-    let ep = batch.records.iter().find_map(|r| match r {
-        ImportProjectionRecord::Episode(ep) => Some(ep),
-        _ => None,
-    }).expect("episode present");
+    let ep = batch
+        .records
+        .iter()
+        .find_map(|r| match r {
+            ImportProjectionRecord::Episode(ep) => Some(ep),
+            _ => None,
+        })
+        .expect("episode present");
     assert_eq!(ep.episode_id.as_str(), "ep-oracle-1");
     assert_eq!(ep.document_id, "doc-oracle-1");
 }
@@ -79,10 +83,14 @@ fn golden_fixture_episode_identity_preserved() {
 fn golden_fixture_claim_content_preserved() {
     let envelope = golden_v1_envelope();
     let batch = transform_envelope(&envelope).expect("transform");
-    let cv = batch.records.iter().find_map(|r| match r {
-        ImportProjectionRecord::ClaimVersion(cv) => Some(cv),
-        _ => None,
-    }).expect("claim present");
+    let cv = batch
+        .records
+        .iter()
+        .find_map(|r| match r {
+            ImportProjectionRecord::ClaimVersion(cv) => Some(cv),
+            _ => None,
+        })
+        .expect("claim present");
     assert_eq!(cv.content, "The oracle must produce deterministic output");
     assert_eq!(cv.predicate, "test_predicate");
 }

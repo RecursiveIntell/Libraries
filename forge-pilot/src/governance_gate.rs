@@ -230,7 +230,10 @@ async fn observe_governance_inner(
                 observation.mechanism_fit_disposition = Some(claim.content.clone());
             }
             other => {
-                tracing::trace!(predicate = other, "unrecognized governance predicate, skipping");
+                tracing::trace!(
+                    predicate = other,
+                    "unrecognized governance predicate, skipping"
+                );
             }
         }
 
@@ -466,36 +469,11 @@ mod tests {
         let store = MemoryStore::open(config).expect("open store");
 
         // Insert governance claims directly into the claim_versions table.
-        insert_governance_claim(
-            &store,
-            predicates::EFFECT_PREFLIGHT,
-            "commit_eligible",
-        )
-        .await;
-        insert_governance_claim(
-            &store,
-            predicates::ASSURANCE_READY,
-            "true",
-        )
-        .await;
-        insert_governance_claim(
-            &store,
-            predicates::AUTHORITY_DELEGATION_VALID,
-            "true",
-        )
-        .await;
-        insert_governance_claim(
-            &store,
-            predicates::CONTINUITY_INCIDENT_ACTIVE,
-            "false",
-        )
-        .await;
-        insert_governance_claim(
-            &store,
-            predicates::CONSTITUTIONAL_AMENDMENT_PENDING,
-            "true",
-        )
-        .await;
+        insert_governance_claim(&store, predicates::EFFECT_PREFLIGHT, "commit_eligible").await;
+        insert_governance_claim(&store, predicates::ASSURANCE_READY, "true").await;
+        insert_governance_claim(&store, predicates::AUTHORITY_DELEGATION_VALID, "true").await;
+        insert_governance_claim(&store, predicates::CONTINUITY_INCIDENT_ACTIVE, "false").await;
+        insert_governance_claim(&store, predicates::CONSTITUTIONAL_AMENDMENT_PENDING, "true").await;
         insert_governance_claim(
             &store,
             predicates::MECHANISM_FIT,
@@ -548,12 +526,7 @@ mod tests {
         };
         let store = MemoryStore::open(config).expect("open store");
 
-        insert_governance_claim(
-            &store,
-            predicates::CONTINUITY_INCIDENT_ACTIVE,
-            "true",
-        )
-        .await;
+        insert_governance_claim(&store, predicates::CONTINUITY_INCIDENT_ACTIVE, "true").await;
 
         let obs = observe_governance(&store).await;
         assert!(obs.continuity_incident_active);
@@ -567,11 +540,7 @@ mod tests {
     }
 
     /// Helper: insert a governance claim into the store using raw SQL.
-    async fn insert_governance_claim(
-        store: &MemoryStore,
-        predicate: &str,
-        content: &str,
-    ) {
+    async fn insert_governance_claim(store: &MemoryStore, predicate: &str, content: &str) {
         let id = uuid::Uuid::new_v4().to_string();
         let claim_id = format!("gov-claim-{}", predicate);
         let sql = format!(

@@ -1,3 +1,8 @@
+//! Report and receipt types emitted by the OODA loop runner.
+//!
+//! These types are serialized as boundary artifacts and consumed by
+//! downstream verification surfaces and the CLI renderer.
+
 use crate::act::ActionFamily;
 use crate::observe::{ObservationPaths, ObservationStatus};
 use crate::types::{
@@ -16,10 +21,14 @@ use verification_control::{
 };
 use verification_policy::{ApprovalRecord, PolicyDecision};
 
+/// Schema version string for the pilot loop receipt artifact.
 pub const PILOT_LOOP_RECEIPT_V1_SCHEMA: &str = "forge_pilot_loop_receipt_v1";
+/// Schema version string for a single loop iteration report artifact.
 pub const LOOP_ITERATION_REPORT_V1_SCHEMA: &str = "forge_pilot_loop_iteration_report_v1";
+/// Schema version string for the full loop report artifact.
 pub const LOOP_REPORT_V1_SCHEMA: &str = "forge_pilot_loop_report_v1";
 
+/// Reason the OODA loop terminated.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HaltReason {
@@ -42,6 +51,7 @@ pub enum HaltReason {
     GovernanceAuthorityInsufficient,
 }
 
+/// Budget parameters that governed the loop run.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct LoopBudgetReceipt {
     pub workload_class: String,
@@ -51,6 +61,7 @@ pub struct LoopBudgetReceipt {
     pub max_retries_per_target: u32,
 }
 
+/// Typed receipt summarizing a complete loop run for auditing and replay.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct LoopReceipt {
     pub schema_version: String,
@@ -80,6 +91,10 @@ pub struct LoopReceipt {
     pub elapsed_seconds: f64,
 }
 
+/// Detailed report for a single OODA loop iteration.
+///
+/// Includes the verification case, check plan, attempt, policy decision,
+/// calibration, adjudication, and all produced receipts and artifacts.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct LoopIterationReport {
     pub schema_version: String,
@@ -123,6 +138,10 @@ pub struct LoopIterationReport {
     pub governance_receipt: Option<crate::governance_gate::GovernanceReceiptV1>,
 }
 
+/// Top-level report for a complete OODA loop run.
+///
+/// Contains the loop receipt, all iteration reports, and aggregate
+/// counters for actions, exports, imports, and degradations.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct LoopReport {
     pub schema_version: String,

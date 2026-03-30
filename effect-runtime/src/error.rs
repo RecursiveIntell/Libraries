@@ -45,7 +45,10 @@ pub(crate) fn require_id(value: &impl AsRef<str>, field: &'static str) -> Effect
     require_non_empty(value.as_ref(), field)
 }
 
-pub(crate) fn require_non_empty_slice<T>(values: &[T], field: &'static str) -> EffectValidationResult {
+pub(crate) fn require_non_empty_slice<T>(
+    values: &[T],
+    field: &'static str,
+) -> EffectValidationResult {
     if values.is_empty() {
         return Err(EffectRuntimeValidationError::MissingField(field));
     }

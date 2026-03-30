@@ -28,7 +28,9 @@ pub fn v16_v20_gates() -> &'static [&'static str] {
 
 #[cfg(test)]
 mod tests {
-    use constraint_compiler::{compile_batch, CompilerPolicy, ConstraintDegradation, GraphSurfaceKind};
+    use constraint_compiler::{
+        compile_batch, CompilerPolicy, ConstraintDegradation, GraphSurfaceKind,
+    };
     use forge_memory_bridge::{
         transform_envelope_v2, transform_envelope_v3, ImportProjectionRecord,
     };

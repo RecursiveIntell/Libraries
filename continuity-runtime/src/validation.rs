@@ -7,14 +7,20 @@ pub(crate) fn require_non_empty(value: &str, field: &'static str) -> ContinuityV
     Ok(())
 }
 
-pub(crate) fn require_non_empty_slice<T>(values: &[T], field: &'static str) -> ContinuityValidationResult {
+pub(crate) fn require_non_empty_slice<T>(
+    values: &[T],
+    field: &'static str,
+) -> ContinuityValidationResult {
     if values.is_empty() {
         return Err(ContinuityValidationError::MissingField(field));
     }
     Ok(())
 }
 
-pub(crate) fn require_schema_version(found: &str, expected: &'static str) -> ContinuityValidationResult {
+pub(crate) fn require_schema_version(
+    found: &str,
+    expected: &'static str,
+) -> ContinuityValidationResult {
     if found != expected {
         return Err(ContinuityValidationError::SchemaVersionMismatch {
             expected,

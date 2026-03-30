@@ -262,7 +262,10 @@ fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {
             [],
             |row| row.get(0),
         )
-        .map_err(|e| MemoryError::MigrationFailed { version: 9, reason: format!("existence check failed: {e}") })?;
+        .map_err(|e| MemoryError::MigrationFailed {
+            version: 9,
+            reason: format!("existence check failed: {e}"),
+        })?;
 
     if !episodes_exist {
         // No episodes table to migrate; create the target schema directly

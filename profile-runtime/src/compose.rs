@@ -502,8 +502,10 @@ pub fn compose_profile_runtime(
     } else {
         Some(CompositionConflictSetV1 {
             schema_version: COMPOSITION_CONFLICT_SET_V1_SCHEMA.into(),
-            composition_conflict_set_id: conflict_set_id.ok_or_else(|| CompositionError::DigestFailed {
-                reason: "conflict_set_id is None despite non-empty conflicts".into(),
+            composition_conflict_set_id: conflict_set_id.ok_or_else(|| {
+                CompositionError::DigestFailed {
+                    reason: "conflict_set_id is None despite non-empty conflicts".into(),
+                }
             })?,
             effective_constitution_ref: Some(
                 effective_constitution.effective_constitution_id.clone(),

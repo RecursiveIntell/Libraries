@@ -77,11 +77,17 @@ fn arb_publication_status() -> impl Strategy<Value = PublicationStatusV1> {
 }
 
 fn arb_rfc3339_timestamp() -> impl Strategy<Value = String> {
-    (2020u32..2030, 1u32..13, 1u32..29, 0u32..24, 0u32..60, 0u32..60).prop_map(
-        |(y, m, d, h, min, s)| {
-            format!("{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z", y, m, d, h, min, s)
-        },
+    (
+        2020u32..2030,
+        1u32..13,
+        1u32..29,
+        0u32..24,
+        0u32..60,
+        0u32..60,
     )
+        .prop_map(|(y, m, d, h, min, s)| {
+            format!("{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z", y, m, d, h, min, s)
+        })
 }
 
 proptest! {

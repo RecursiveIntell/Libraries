@@ -108,7 +108,10 @@ fn sanitize_question_mark_in_chat() {
 #[test]
 fn sanitize_question_mark_mid_sentence() {
     let result = sanitize_fts_query("what did i say about rust?");
-    assert_eq!(result, Some("what OR did OR i OR say OR about OR rust".to_string()));
+    assert_eq!(
+        result,
+        Some("what OR did OR i OR say OR about OR rust".to_string())
+    );
 }
 
 #[test]
@@ -197,7 +200,12 @@ async fn fts_search_with_assorted_punctuation() {
     ];
     for q in queries {
         let result = store.search_fts_only(q, None, None, None).await;
-        assert!(result.is_ok(), "Query {:?} should not error: {:?}", q, result.err());
+        assert!(
+            result.is_ok(),
+            "Query {:?} should not error: {:?}",
+            q,
+            result.err()
+        );
     }
 }
 

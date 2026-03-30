@@ -71,8 +71,8 @@ fn arb_generated_admission_state() -> impl Strategy<Value = GeneratedAdmissionSt
     ]
 }
 
-fn arb_generated_surface_governance_state(
-) -> impl Strategy<Value = GeneratedSurfaceGovernanceState> {
+fn arb_generated_surface_governance_state() -> impl Strategy<Value = GeneratedSurfaceGovernanceState>
+{
     prop_oneof![
         Just(GeneratedSurfaceGovernanceState::AdvisoryBaseline),
         Just(GeneratedSurfaceGovernanceState::ChallengePending),

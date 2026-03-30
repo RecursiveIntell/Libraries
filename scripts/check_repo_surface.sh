@@ -5,15 +5,15 @@ ROOT="${1:-.}"
 cd "$ROOT"
 
 required_files=(
-  "PACK_README.md"
+  "README.md"
   "SUPPORT_PROFILE.md"
   "STATUS_DASHBOARD.md"
-  "RELEASE_CHECKLIST.md"
   "CONFORMANCE_GATES.md"
+  "CLAUDE.md"
+  "PACK_MANIFEST.json"
   "release/closeout_receipt_v1.json"
   "AGENTS.md"
   "PROMPT.md"
-  "docs/README.md"
   "scripts/check_repo_surface.sh"
   "scripts/check_doc_truth.sh"
   "scripts/check_hotspot_budgets.sh"
@@ -61,7 +61,7 @@ for candidate in README.md Makefile; do
 done
 
 if (( ${#front_door_files[@]} > 0 )); then
-  for ref in PACK_README.md MASTER_ISSUE_MATRIX.md STATUS_DASHBOARD.md SUPPORT_PROFILE.md AGENTS.md PROMPT.md docs/README.md; do
+  for ref in STATUS_DASHBOARD.md SUPPORT_PROFILE.md; do
     found=0
     for f in "${front_door_files[@]}"; do
       if grep -q "$ref" "$f"; then

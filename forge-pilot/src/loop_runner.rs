@@ -1,3 +1,9 @@
+//! OODA loop runner that drives repeated observe-orient-decide-act cycles.
+//!
+//! `LoopRunner` owns the runtime resources and pilot history, runs up to
+//! `max_iterations` cycles, and produces a `LoopReport` summarizing all
+//! iterations, halt reason, and receipts.
+
 use crate::act::execute_plan;
 use crate::config::LoopConfig;
 use crate::decide::select_candidate;
@@ -48,6 +54,7 @@ pub use loop_runner_report::{
     PILOT_LOOP_RECEIPT_V1_SCHEMA,
 };
 
+/// Runtime resources required by the loop runner: knowledge runtime, memory store, and Forge store.
 pub struct LoopRunnerResources {
     pub runtime: KnowledgeRuntime,
     pub memory_store: MemoryStore,
@@ -73,6 +80,7 @@ impl LoopRunnerResources {
     }
 }
 
+/// Thread-safe flag for requesting an early halt of the running loop.
 #[derive(Debug, Clone, Default)]
 pub struct ExternalHaltFlag {
     flag: Arc<AtomicBool>,
@@ -89,6 +97,7 @@ impl ExternalHaltFlag {
     }
 }
 
+/// Stateful OODA loop runner that executes repeated verification cycles.
 pub struct LoopRunner {
     config: LoopConfig,
     resources: LoopRunnerResources,
@@ -126,6 +135,7 @@ impl LoopRunner {
         &self.history
     }
 
+    /// Runs a single observation against the configured scope and stores.
     pub async fn observe(&self) -> Result<Observation, PilotError> {
         observe_scope(
             &self.resources.runtime,
@@ -135,6 +145,7 @@ impl LoopRunner {
         .await
     }
 
+    /// Runs the full OODA loop until a halt condition is reached.
     pub async fn run(&mut self) -> Result<LoopReport, PilotError> {
         let started = Instant::now();
         let started_at = chrono::Utc::now();

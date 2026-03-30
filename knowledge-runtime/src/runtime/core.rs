@@ -432,11 +432,7 @@ impl KnowledgeRuntime {
         let has_downgrade = warnings
             .iter()
             .any(|w| matches!(w, QueryWarning::TemporalDowngradedToHybrid { .. }));
-        let temporal_mode = if has_downgrade {
-            "downgraded"
-        } else {
-            "exact"
-        };
+        let temporal_mode = if has_downgrade { "downgraded" } else { "exact" };
         let mut trace = QueryTrace::from_pipeline(
             trace_ctx,
             scope_key,

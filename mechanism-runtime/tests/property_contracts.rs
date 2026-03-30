@@ -144,8 +144,24 @@ fn arb_fit_run_v1() -> impl Strategy<Value = FitRunV1> {
     )
         .prop_map(
             |(
-                (fit_run_id, mechanism_bundle_id, theory_version_id, simulation_contract_id, fit_score, disposition, advisory_only),
-                (degraded, refuter_ready, stability_clear, theory_refuter_suite_id, rollout_stability_report_id, notes, generated_at),
+                (
+                    fit_run_id,
+                    mechanism_bundle_id,
+                    theory_version_id,
+                    simulation_contract_id,
+                    fit_score,
+                    disposition,
+                    advisory_only,
+                ),
+                (
+                    degraded,
+                    refuter_ready,
+                    stability_clear,
+                    theory_refuter_suite_id,
+                    rollout_stability_report_id,
+                    notes,
+                    generated_at,
+                ),
             )| {
                 FitRunV1 {
                     schema_version: FIT_RUN_V1_SCHEMA.into(),

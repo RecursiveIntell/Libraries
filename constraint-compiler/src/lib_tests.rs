@@ -268,7 +268,9 @@ fn thin_export_yields_explicit_degradation() {
         },
     );
 
-    assert!(output.degradations.contains(&ConstraintDegradation::ThinExport));
+    assert!(output
+        .degradations
+        .contains(&ConstraintDegradation::ThinExport));
     assert!(output.oracle_candidates.is_empty());
 }
 
@@ -284,7 +286,9 @@ fn thin_export_does_not_invent_assertion_hyperedges_without_group() {
         },
     );
 
-    assert!(output.degradations.contains(&ConstraintDegradation::ThinExport));
+    assert!(output
+        .degradations
+        .contains(&ConstraintDegradation::ThinExport));
     let group_hyperedge = output
         .hyperedges
         .iter()
@@ -379,7 +383,9 @@ fn alias_and_evidence_refs_preserve_thin_export_for_unreviewed_batches() {
     );
 
     assert!(
-        output.degradations.contains(&ConstraintDegradation::ThinExport),
+        output
+            .degradations
+            .contains(&ConstraintDegradation::ThinExport),
         "auxiliary alias/evidence records must keep explicitly thin exports degraded"
     );
 }
@@ -675,7 +681,9 @@ fn bug_005_missing_group_is_inferential_only() {
 
     assert_eq!(missing_assertion_group, 1);
     assert_eq!(missing_relation_group, 1);
-    assert!(!output.degradations.contains(&ConstraintDegradation::ThinExport));
+    assert!(!output
+        .degradations
+        .contains(&ConstraintDegradation::ThinExport));
 }
 
 #[test]

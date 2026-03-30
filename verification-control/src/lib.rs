@@ -840,6 +840,7 @@ pub struct RegionArtifactTransport {
     pub replay_ref: String,
 }
 
+/// Routing record linking a syndrome to a repair candidate and its blast radius.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct SyndromeRouteRecord {
     pub schema_version: String,
@@ -1408,6 +1409,7 @@ impl From<&ForgeToolReceiptV2> for ControlReceipt {
     }
 }
 
+/// An event in the verification case ledger.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "event_type", rename_all = "snake_case")]
 #[allow(clippy::large_enum_variant)]
@@ -1430,6 +1432,7 @@ pub enum LedgerEvent {
     },
 }
 
+/// A sequenced, timestamped entry in the verification case ledger.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct LedgerEntry {
     pub schema_version: String,
@@ -1454,6 +1457,7 @@ impl LedgerEntry {
     }
 }
 
+/// Aggregate state reconstructed by replaying a verification case ledger.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReplayedCaseState {
     pub case: Option<VerificationCase>,

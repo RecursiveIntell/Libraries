@@ -9,6 +9,9 @@
 | `authority-delegation` | Delegation chains, approval, capability leases | Build-checked | - | `governance` |
 | `attestation-exchange` | Vendor trust, certification adapters | Build-checked | - | `governance` |
 | `constitutional-memory` | Amendments, effective constitutions | Build-checked | - | `governance` |
+| `discovery-portfolio` | Portfolio discovery and ranking | Build-checked | - | Always |
+| `federated-settlement` | Federated settlement coordination | Build-checked | - | Always |
+| `spec-execution` | Specification execution engine | Build-checked | - | Always |
 | `profile-runtime` | Constitutional composition engine (adapters.rs) | Build-checked | Doc-certified | Always |
 | `forge-pilot` | OODA loop, governance gate, observation, receipts | Build-certified | Doc-certified | Always |
 

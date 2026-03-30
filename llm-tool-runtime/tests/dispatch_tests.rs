@@ -244,7 +244,11 @@ fn retry_owner_as_str_matches_serde() {
     for owner in owners {
         let json = serde_json::to_string(&owner).unwrap();
         let expected = format!("\"{}\"", owner.as_str());
-        assert_eq!(json, expected, "as_str() and serde must agree for {:?}", owner);
+        assert_eq!(
+            json, expected,
+            "as_str() and serde must agree for {:?}",
+            owner
+        );
     }
 }
 

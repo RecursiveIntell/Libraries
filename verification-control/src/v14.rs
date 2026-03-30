@@ -1,3 +1,9 @@
+//! V14 experimental verification artifact types.
+//!
+//! Defines experiment cases, comparability matrices, refuter results,
+//! decision traces, and dispute bundles used by the causal experiment
+//! and refutation surfaces of the verification pipeline.
+
 use schemars::JsonSchema;
 use semantic_memory_forge::EvidenceAdmissibilityV1;
 use serde::{Deserialize, Serialize};
@@ -13,6 +19,7 @@ pub const REFUTER_RESULT_V1_SCHEMA: &str = "refuter_result_v1";
 pub const DECISION_TRACE_V1_SCHEMA: &str = "decision_trace_v1";
 pub const DISPUTE_BUNDLE_V1_SCHEMA: &str = "dispute_bundle_v1";
 
+/// Risk classification for an experiment case.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExperimentRiskClassV1 {
@@ -21,6 +28,7 @@ pub enum ExperimentRiskClassV1 {
     ResearchOnly,
 }
 
+/// Lifecycle state of an experiment case from scheduled through completion.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExperimentLifecycleStateV1 {
@@ -30,6 +38,7 @@ pub enum ExperimentLifecycleStateV1 {
     Cancelled,
 }
 
+/// Terminal disposition of an experiment after completion.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExperimentFinalDispositionV1 {
@@ -40,6 +49,8 @@ pub enum ExperimentFinalDispositionV1 {
     AdvisoryOnly,
 }
 
+/// A causal experiment case linking an intervention, outcome schema, cohort,
+/// comparability matrix, refuter suite, and budget into a single verifiable unit.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ExperimentCaseV1 {
     pub schema_version: String,
@@ -55,6 +66,7 @@ pub struct ExperimentCaseV1 {
     pub final_disposition: ExperimentFinalDispositionV1,
 }
 
+/// A matrix evaluating whether experimental conditions are comparable enough for valid inference.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ComparabilityMatrixV1 {
     pub schema_version: String,
@@ -69,6 +81,7 @@ pub struct ComparabilityMatrixV1 {
     pub admissibility_judgment: EvidenceAdmissibilityV1,
 }
 
+/// Kind of refutation check applied to an experiment.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RefuterKindV1 {
@@ -78,6 +91,7 @@ pub enum RefuterKindV1 {
     HumanReview,
 }
 
+/// Pass/fail/skip state of a refuter check.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RefuterStateV1 {
@@ -86,6 +100,7 @@ pub enum RefuterStateV1 {
     Skipped,
 }
 
+/// Impact of a refuter result on promotion eligibility.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RefuterPromotionImpactV1 {
@@ -94,6 +109,7 @@ pub enum RefuterPromotionImpactV1 {
     RequiresHumanReview,
 }
 
+/// Result of a single refuter check against a counterfactual slice.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct RefuterResultV1 {
     pub schema_version: String,
@@ -106,6 +122,7 @@ pub struct RefuterResultV1 {
     pub promotion_impact: RefuterPromotionImpactV1,
 }
 
+/// Budget tier of exactness spend for a decision trace.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExactnessSpendV1 {
@@ -114,6 +131,7 @@ pub enum ExactnessSpendV1 {
     High,
 }
 
+/// Decision selected by the decision trace for an experiment outcome.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SelectedDecisionV1 {
@@ -123,6 +141,8 @@ pub enum SelectedDecisionV1 {
     Rollback,
 }
 
+/// Trace record capturing the full decision path from triggering artifacts
+/// through refuter outcomes to the selected promotion or rollback decision.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct DecisionTraceV1 {
     pub schema_version: String,
@@ -147,6 +167,7 @@ pub struct DecisionTraceV1 {
     pub cheap_next_checks: Vec<String>,
 }
 
+/// Current disposition of a dispute bundle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum DisputeDispositionV1 {
@@ -156,6 +177,7 @@ pub enum DisputeDispositionV1 {
     Rejected,
 }
 
+/// A dispute challenging one or more artifacts with counterevidence and escalation target.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct DisputeBundleV1 {
     pub schema_version: String,

@@ -52,10 +52,10 @@ pub use export::{
 };
 #[cfg(feature = "governance")]
 pub use governance_gate::{
-    build_governance_receipt, gate_execution, observe_governance, predicates as governance_predicates,
-    GovernanceDegradation, GovernanceGateResult, GovernanceObservation,
-    GovernanceObservationSummary, GovernanceReceiptV1, GOVERNANCE_PROJECTION_FAMILY,
-    GOVERNANCE_RECEIPT_V1_SCHEMA, GOVERNANCE_SCOPE_NAMESPACE,
+    build_governance_receipt, gate_execution, observe_governance,
+    predicates as governance_predicates, GovernanceDegradation, GovernanceGateResult,
+    GovernanceObservation, GovernanceObservationSummary, GovernanceReceiptV1,
+    GOVERNANCE_PROJECTION_FAMILY, GOVERNANCE_RECEIPT_V1_SCHEMA, GOVERNANCE_SCOPE_NAMESPACE,
 };
 pub use history::{PilotHistory, TargetAttemptRecord, TargetHistoryEntry};
 pub use loop_runner::{

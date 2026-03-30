@@ -52,7 +52,10 @@ pub fn extract_targets(observation: &Observation, config: &LoopConfig) -> Vec<Ta
 
     if let Some(compiled) = &observation.compiled {
         for marker in &compiled.degradations {
-            if matches!(marker, constraint_compiler::ConstraintDegradation::ThinExport) {
+            if matches!(
+                marker,
+                constraint_compiler::ConstraintDegradation::ThinExport
+            ) {
                 targets.push(TargetKind::ThinExport {
                     marker: "thin_export".into(),
                 });

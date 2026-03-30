@@ -140,11 +140,11 @@ pub fn evaluate_portfolio_plan(
         .iter()
         .enumerate()
         .map(|(index, id)| (id.as_str().to_string(), index))
-        .collect::<std::collections::HashMap<_, _>>();
+        .collect::<std::collections::BTreeMap<_, _>>();
     let estimate_by_campaign = value_estimates
         .iter()
         .map(|estimate| (estimate.campaign_id.as_str().to_string(), estimate))
-        .collect::<std::collections::HashMap<_, _>>();
+        .collect::<std::collections::BTreeMap<_, _>>();
 
     candidate_campaigns.sort_by(|left, right| {
         let left_estimate = estimate_by_campaign.get(left.experiment_campaign_id.as_str());

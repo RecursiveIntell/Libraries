@@ -3,7 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 use crate::error::{
-    require_non_empty, require_non_empty_slice, AttestationValidationError, AttestationValidationResult,
+    require_non_empty, require_non_empty_slice, AttestationValidationError,
+    AttestationValidationResult,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

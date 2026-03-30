@@ -223,16 +223,14 @@ impl HnswIndex {
             .collect();
 
         hits.sort_by(|a, b| {
-            a.distance
-                .partial_cmp(&b.distance)
-                .unwrap_or_else(|| {
-                    // LIB-020: NaN distances sort to the end rather than comparing as equal
-                    if a.distance.is_nan() {
-                        std::cmp::Ordering::Greater
-                    } else {
-                        std::cmp::Ordering::Less
-                    }
-                })
+            a.distance.partial_cmp(&b.distance).unwrap_or_else(|| {
+                // LIB-020: NaN distances sort to the end rather than comparing as equal
+                if a.distance.is_nan() {
+                    std::cmp::Ordering::Greater
+                } else {
+                    std::cmp::Ordering::Less
+                }
+            })
         });
         Ok(hits)
     }

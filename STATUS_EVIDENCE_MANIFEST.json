@@ -1,13 +1,14 @@
 {
-  "snapshot": "2026-03-24-hardening-closeout",
-  "captured_at": "2026-03-24",
-  "captured_at_local": "2026-03-24T21:18:49-05:00",
+  "snapshot": "2026-03-30-hardening-closeout",
+  "captured_at": "2026-03-30",
+  "captured_at_local": "2026-03-30T16:46:58-05:00",
   "gate_definition": {
     "path": "scripts/release_gate_set.py",
-    "sha256": "2a8e5f7d8d0e821448fb97f4cd5bbdcea440b016059b5eddc29133c499ae1c7e",
-    "command_count": 16
+    "sha256": "6640386b859b75bd122be3f8970fc8b5cfb7b75d48e02a8d433c0346656e36bf",
+    "command_count": 17
   },
   "proof_commands": [
+    "cargo check --workspace",
     "bash scripts/check_pack_truth.sh",
     "bash scripts/check_repo_surface.sh",
     "bash scripts/check_doc_truth.sh",
@@ -26,6 +27,10 @@
     "make release-lane"
   ],
   "proof_results": [
+    {
+      "command": "cargo check --workspace",
+      "result": "pass"
+    },
     {
       "command": "bash scripts/check_pack_truth.sh",
       "result": "pass"
@@ -88,7 +93,7 @@
     },
     {
       "command": "make release-lane",
-      "result": "pass"
+      "result": "fail"
     }
   ],
   "artifact_files": [

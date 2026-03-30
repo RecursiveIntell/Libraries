@@ -424,8 +424,9 @@ fn compile_regions(
         let node_ids = node_ids.into_iter().collect::<Vec<_>>();
         let hyperedge_ids = hyperedge_ids.into_iter().collect::<Vec<_>>();
         let constraint_ids = constraint_ids.into_iter().collect::<Vec<_>>();
-        let region_digest = ContentDigest::compute_json(&(&node_ids, &hyperedge_ids, &constraint_ids))
-            .expect("region digest serialization is infallible for known types");
+        let region_digest =
+            ContentDigest::compute_json(&(&node_ids, &hyperedge_ids, &constraint_ids))
+                .expect("region digest serialization is infallible for known types");
         regions.push(CompiledRegion {
             region_id: RegionId::new(format!("region:{}", region_digest.hex())),
             region_digest_id: RegionDigestId::new(format!("region-digest:{}", region_digest.hex())),

@@ -4,37 +4,35 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 required=(
   README.md
   00_START_HERE.md
-  01_EXECUTIVE_SUMMARY.md
-  02_SOURCE_BASIS.md
-  03_SNAPSHOT_MATRIX.md
-  04_MASTER_ISSUE_MATRIX.md
-  04_MASTER_ISSUE_MATRIX.json
-  04_MASTER_ISSUE_MATRIX.csv
-  05_IMPLEMENTATION_PLAN.md
-  06_TEST_AND_CONFORMANCE_PLAN.md
-  07_RELEASE_AND_GOVERNANCE.md
-  08_RISK_REGISTER.md
-  09_CRATE_BOUNDARY_MAP.md
-  10_STATUS_DASHBOARD.md
-  11_BENCHMARK_PLAN.md
-  12_V10_HORIZON_BACKLOG.md
-  13_IMPLEMENTATION_PLAYBOOK.md
-  14_CODEX_IMPLEMENTATION_PROMPT.md
-  15_CLAUDE_IMPLEMENTATION_PROMPT.md
-  16_HOSTILE_REVIEW_PROMPT.md
-  17_APPLY_PLAN.md
+  01_MASTER_ISSUE_TENSOR.json
+  02_MASTER_ISSUE_MATRIX.md
+  03_IMPLEMENTATION_PLAYBOOK.md
+  04_EXACT_FILE_TOUCH_MAP.md
+  05_TEST_AND_CONFORMANCE_PLAN.md
+  06_RISK_REGISTER.md
+  10_HOSTILE_AUDIT_CLAUDE.md
+  11_HOSTILE_AUDIT_GPT.md
+  CLAUDE.md
+  PROMPT.md
+  PACK_MANIFEST.json
 )
 missing=0
 for f in "${required[@]}"; do
   if [[ ! -f "$ROOT/$f" ]]; then
-    echo "pack truth: optional doc $f not present (skipping)" >&2
+    echo "pack truth: required doc $f not present" >&2
+    missing=1
   fi
 done
-PACK_ROOT="$ROOT" python - <<'PY'
+if (( missing )); then
+  echo "pack truth check failed: missing required files" >&2
+  exit 1
+fi
+PACK_ROOT="$ROOT" python3 - <<'PY'
 from pathlib import Path
 import json, os
 root = Path(os.environ['PACK_ROOT'])
-json.loads((root/'04_MASTER_ISSUE_MATRIX.json').read_text())
+json.loads((root/'01_MASTER_ISSUE_TENSOR.json').read_text())
+json.loads((root/'PACK_MANIFEST.json').read_text())
 print('pack json ok')
 PY
 printf 'pack truth check passed\n'
