@@ -2,6 +2,7 @@
 //!
 //! These tests ensure that the highest-risk semantic seams produce
 //! deterministic results for known inputs.
+#![allow(deprecated)]
 
 use forge_memory_bridge::{transform_envelope, ImportProjectionRecord};
 use semantic_memory_forge::{
