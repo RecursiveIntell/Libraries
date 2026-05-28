@@ -61,7 +61,8 @@ async fn test_episode_ingest_and_search() {
         .await
         .unwrap();
     assert_eq!(results.len(), 1);
-    assert_eq!(results[0].0, *doc_id);
+    // SM-AUD-0058 fix: search_episodes now returns episode_id, not document_id
+    assert!(results[0].0.ends_with("-ep0"));
     assert_eq!(results[0].1.effect_type, "test_failure");
     assert_eq!(results[0].1.outcome, EpisodeOutcome::Pending);
 }
