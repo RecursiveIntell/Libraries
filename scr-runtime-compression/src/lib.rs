@@ -14,10 +14,12 @@
 mod error;
 mod compressed_search_path;
 mod exact_fallback_adapter;
+mod codec_dispatch;
 
 pub use error::{CompressionError, DecompressError};
 pub use compressed_search_path::CompressedSearchPath;
 pub use exact_fallback_adapter::ExactFallbackAdapter;
+pub use codec_dispatch::{build_adapter, select_codec, CodecDispatch};
 
 /// Codec identity for runtime dispatch.
 ///

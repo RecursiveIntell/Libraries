@@ -14,10 +14,16 @@ categories = ["compression", "runtime", "memory"]
 serde = { version = "1", features = ["derive"] }
 thiserror = "1"
 chrono = { version = "0.4", features = ["serde"] }
+quant-governor = { path = "../quant-governor" }
 
-# Optional codec dependencies — brought in by feature flags from turbo-quant / fib-quant
-# We do NOT pin specific versions here; the runtime adapter is codec-agnostic.
-# Codec versions are governed at the workspace level.
+# Optional codec dependencies — brought in by feature flags
+turbo-quant = { path = "../turbo-quant", optional = true }
+fib-quant = { path = "../fib-quant", optional = true }
+
+[features]
+default = ["turbo", "fib"]
+turbo = ["dep:turbo-quant"]
+fib = ["dep:fib-quant"]
 
 [dev-dependencies]
 serde_json = "1"

@@ -4563,10 +4563,13 @@ name = "scr-runtime-compression"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "fib-quant",
+ "quant-governor",
  "serde",
  "serde_json",
  "tempfile",
  "thiserror 1.0.69",
+ "turbo-quant",
 ]
 
 [[package]]
