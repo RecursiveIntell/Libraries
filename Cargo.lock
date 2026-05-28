@@ -3785,6 +3785,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "poly-kv"
+version = "0.1.0-alpha.1"
+dependencies = [
+ "blake3",
+ "criterion 0.5.1",
+ "proptest",
+ "quant-codec-core",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "portable-atomic"
 version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3936,6 +3949,17 @@ dependencies = [
  "rusty-fork",
  "tempfile",
  "unarray",
+]
+
+[[package]]
+name = "quant-codec-core"
+version = "0.1.0-alpha.1"
+dependencies = [
+ "blake3",
+ "proptest",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
