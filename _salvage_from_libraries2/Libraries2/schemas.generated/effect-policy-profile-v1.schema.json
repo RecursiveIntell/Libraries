@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allowed_run_modes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "block_live_without_commit": {
+      "type": "boolean"
+    },
+    "effect_policy_profile_id": {
+      "type": "string"
+    },
+    "required_observation_classes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_preflight_checks": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "requires_compensation_plan_for": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "block_live_without_commit",
+    "effect_policy_profile_id",
+    "schema_version"
+  ],
+  "title": "EffectPolicyProfileV1",
+  "type": "object"
+}

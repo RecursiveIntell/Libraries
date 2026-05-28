@@ -1,0 +1,37 @@
+2026-04-29T03:52:44-0500 pwd
+2026-04-29T03:52:44-0500 sed -n '1,220p' CODEX_PROMPTS/PHASE_03_CANONICAL_DEPENDENCY_WIRING.md
+2026-04-29T03:52:44-0500 sed -n '1,260p' scripts/phase_verify_contract_ownership.sh
+2026-04-29T03:52:44-0500 sed -n '1,220p' scripts/assert_no_local_substitute_dependencies.sh
+2026-04-29T03:52:44-0500 rg -n remote-oracle/schema/calibration/pilot surfaces
+2026-04-29T03:52:44-0500 apply_patch Cargo.toml aidens-contracts Cargo.toml aidens-governance-kit Cargo.toml DEPENDENCY_SOURCE_OF_TRUTH.md
+2026-04-29T03:53:06-0500 python3 scripts/assert_no_canonical_type_duplicates.py
+2026-04-29T03:53:06-0500 bash scripts/assert_no_local_substitute_dependencies.sh
+2026-04-29T03:53:06-0500 bash scripts/phase_verify_contract_ownership.sh 03
+2026-04-29T03:53:06-0500 cargo metadata --format-version 1 > .codex_evidence/contract_ownership/03/cargo_metadata.json
+2026-04-29T03:53:06-0500 cargo check --workspace
+2026-04-29T03:53:06-0500 bash scripts/assert_no_crate_split.sh
+2026-04-29T03:53:06-0500 bash scripts/assert_no_compatibility_ledgers.sh
+2026-04-29T03:53:06-0500 bash scripts/assert_docs_source_basis_current.sh
+2026-04-29T03:53:06-0500 cargo test --workspace
+2026-04-29T03:54:11-0500 cp post-edit file snapshots into .codex_evidence/contract_ownership/03/post_edit_files
+2026-04-29T03:54:11-0500 generate touched_file_diff.patch from pre/post snapshots
+2026-04-29T03:54:48-0500 python3 parse cargo metadata canonical package paths
+2026-04-29T03:54:48-0500 cargo check --manifest-path ../contract-schema-gen/Cargo.toml
+2026-04-29T03:55:29-0500 snapshot crates/aidens-cli/Cargo.toml before adding contract-schema-gen dependency
+2026-04-29T03:55:46-0500 apply_patch crates/aidens-cli/Cargo.toml docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md
+2026-04-29T03:55:46-0500 cargo metadata --format-version 1 > .codex_evidence/contract_ownership/03/cargo_metadata.json
+2026-04-29T03:55:46-0500 python3 scripts/assert_no_canonical_type_duplicates.py
+2026-04-29T03:55:46-0500 bash scripts/assert_no_local_substitute_dependencies.sh
+2026-04-29T03:55:46-0500 bash scripts/phase_verify_contract_ownership.sh 03
+2026-04-29T03:55:46-0500 cargo check --workspace
+2026-04-29T03:55:46-0500 cargo test --workspace
+2026-04-29T03:57:09-0500 bash scripts/assert_no_crate_split.sh
+2026-04-29T03:57:09-0500 bash scripts/assert_no_compatibility_ledgers.sh
+2026-04-29T03:57:09-0500 bash scripts/assert_docs_source_basis_current.sh
+2026-04-29T03:57:22-0500 refresh post-edit file snapshots after final Phase 03 edit
+2026-04-29T03:57:22-0500 regenerate touched_file_diff.patch after final Phase 03 edit
+2026-04-29T03:57:34-0500 generate dependency_audit.txt from cargo metadata and Cargo.toml searches
+2026-04-29T03:57:34-0500 generate skipped_checks.md and quarantine_delta.md
+2026-04-29T03:57:54-0500 save final git status/diff evidence
+2026-04-29T03:58:34-0500 apply_patch .codex_evidence/contract_ownership/03/phase_report.md
+2026-04-29T03:58:34-0500 refresh final git status/diff evidence after phase_report.md

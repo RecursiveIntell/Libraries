@@ -1,0 +1,19 @@
+{
+  "name": "aidens-next-run-real-platform",
+  "workspace": "~/Coding/Libraries/AiDENs",
+  "prompt": "CODEX_NEXT_RUN_PROMPT.md",
+  "required_acceptance": [
+    "bash scripts/assert_no_fake_completion.sh",
+    "bash scripts/next_smoke.sh",
+    "cargo fmt --all",
+    "cargo check --workspace",
+    "cargo test --workspace"
+  ],
+  "forbidden": [
+    "AiDENs placeholder response",
+    "placeholder runner output",
+    "wire provider implementation next",
+    "fake success",
+    "TODO runtime"
+  ]
+}

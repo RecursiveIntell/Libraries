@@ -1,0 +1,24 @@
+{
+  "receipt_id": "repo-list:fixture",
+  "kind": "repo-list",
+  "tool_id": "aidens:repo-list:1",
+  "sandbox_root": "/repo",
+  "requested_path": ".",
+  "entries": [
+    {
+      "path": "README.md",
+      "entry_kind": "file",
+      "bytes": 5
+    }
+  ],
+  "listing_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:fixture"
+  },
+  "allowed": true,
+  "reason_codes": [
+    "sandbox-list-allowed"
+  ],
+  "listed_at": "2026-04-26T00:00:00Z"
+}

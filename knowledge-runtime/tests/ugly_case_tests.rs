@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 //! Release-blocking ugly-case tests for knowledge-runtime.
 //!
 //! These tests verify the runtime's honest degradation, scope enforcement,
@@ -493,6 +495,23 @@ fn runtime_config_non_strict() -> RuntimeConfig {
     }
 }
 
+async fn ingest_scoped_document(store: &MemoryStore, scope: &Scope, title: &str, content: &str) {
+    store
+        .ingest_document(
+            title,
+            content,
+            &scope.namespace,
+            None,
+            Some(serde_json::json!({
+                "scope_domain": scope.domain.clone(),
+                "scope_workspace_id": scope.workspace_id.clone(),
+                "scope_repo_id": scope.repo_id.clone(),
+            })),
+        )
+        .await
+        .unwrap();
+}
+
 // ── I015: Strict temporal mode rejects temporal queries ──────────
 
 #[tokio::test]
@@ -729,52 +748,45 @@ async fn mixed_entity_and_temporal_degradation_discloses_all_active_views() {
         .warnings
         .iter()
         .any(|warning| matches!(warning, QueryWarning::TemporalDowngradedToHybrid { .. })));
-    assert!(provenance
-        .warnings
-        .iter()
-        .any(|warning| matches!(warning, QueryWarning::ScopePartiallyEnforced { .. })));
     assert!(provenance.widenings.len() >= 2);
 }
 
 // ── I016: Strict scope mode rejects extra-dimension queries ──────
 
 #[tokio::test]
-async fn strict_scope_rejects_extra_dimensions_with_error() {
+async fn strict_scope_allows_fully_enforced_extra_dimensions() {
     let dir = TempDir::new().unwrap();
     let store = open_test_store(&dir);
-
-    store
-        .add_fact("test-ns", "test fact for strict scope", None, None)
-        .await
-        .unwrap();
+    let scope = Scope::new("test-ns")
+        .with_domain("code")
+        .with_workspace("ws-1");
+    ingest_scoped_document(
+        &store,
+        &scope,
+        "Strict scope doc",
+        "test fact for strict scope lives in ws-1 code scope",
+    )
+    .await;
 
     let adapter =
         knowledge_runtime::adapters::semantic_memory::SemanticMemoryAdapter::new(store.clone());
     let config = runtime_config_strict_scope();
     let runtime = KnowledgeRuntime::new(config, adapter).unwrap();
 
-    // Query with scope that has dimensions beyond namespace
-    let scope = Scope::new("test-ns")
-        .with_domain("code")
-        .with_workspace("ws-1");
-    let result = runtime.query("test fact", Some(&scope)).await;
-
-    // Strict scope mode must return ScopeNotFullyEnforced error
-    match result {
-        Err(ref e) if e.kind() == "scope_not_fully_enforced" => {
-            let msg = format!("{e}");
-            assert!(
-                msg.contains("domain"),
-                "error must mention unpushed domain dimension: {msg}"
-            );
-            assert!(
-                msg.contains("workspace_id"),
-                "error must mention unpushed workspace_id dimension: {msg}"
-            );
-        }
-        Ok(_) => panic!("strict scope mode must reject extra dimensions, but query succeeded"),
-        Err(e) => panic!("unexpected error kind: {}", e),
-    }
+    let (results, trace) = runtime
+        .query("strict scope ws-1 code", Some(&scope))
+        .await
+        .expect("strict scope must allow fully enforceable extra dimensions");
+    assert!(
+        !trace.has_scope_enforcement_warning(),
+        "fully enforced scoped query must not emit ScopePartiallyEnforced"
+    );
+    assert!(
+        results
+            .iter()
+            .any(|result| result.content.contains("ws-1 code scope")),
+        "strict scope query must return the matching scoped document"
+    );
 }
 
 #[tokio::test]
@@ -808,31 +820,38 @@ async fn strict_scope_allows_namespace_only_queries() {
 }
 
 #[tokio::test]
-async fn non_strict_scope_emits_warning_instead_of_error() {
+async fn non_strict_scope_allows_fully_enforced_extra_dimensions_without_warning() {
     let dir = TempDir::new().unwrap();
     let store = open_test_store(&dir);
-
-    store
-        .add_fact("test-ns", "test fact for scope warning", None, None)
-        .await
-        .unwrap();
+    let scope = Scope::new("test-ns")
+        .with_domain("code")
+        .with_workspace("ws-1");
+    ingest_scoped_document(
+        &store,
+        &scope,
+        "Non-strict scope doc",
+        "test fact for scope warning is fully scoped in ws-1 code",
+    )
+    .await;
 
     let adapter =
         knowledge_runtime::adapters::semantic_memory::SemanticMemoryAdapter::new(store.clone());
     let config = runtime_config_non_strict();
     let runtime = KnowledgeRuntime::new(config, adapter).unwrap();
 
-    // Query with extra scope dimensions — non-strict must warn, not error
-    let scope = Scope::new("test-ns")
-        .with_domain("code")
-        .with_workspace("ws-1");
-    let result = runtime.query("test fact", Some(&scope)).await;
-
-    let (_results, trace) =
-        result.expect("non-strict scope must not return error for extra dimensions");
+    let (results, trace) = runtime
+        .query("scope warning ws-1 code", Some(&scope))
+        .await
+        .expect("non-strict scope must allow fully enforceable extra dimensions");
     assert!(
-        trace.has_scope_enforcement_warning(),
-        "non-strict scope with extra dimensions must emit ScopePartiallyEnforced warning"
+        !trace.has_scope_enforcement_warning(),
+        "fully enforceable scope must not emit ScopePartiallyEnforced in non-strict mode"
+    );
+    assert!(
+        results
+            .iter()
+            .any(|result| result.content.contains("fully scoped in ws-1 code")),
+        "non-strict scoped query must return the matching document"
     );
 }
 
@@ -875,4 +894,46 @@ fn strict_temporal_and_strict_scope_pass_config_validation() {
         result.is_ok(),
         "strict_temporal=true and strict_scope=true must pass validation"
     );
+}
+
+#[tokio::test]
+async fn explained_search_adapter_preserves_scope_and_runtime_provenance() {
+    let dir = TempDir::new().unwrap();
+    let store = open_test_store(&dir);
+
+    let personal = Scope::new("test-ns").with_domain("personal");
+    let work = Scope::new("test-ns").with_domain("work");
+    ingest_scoped_document(
+        &store,
+        &personal,
+        "Personal Rust",
+        "Rust memory safety notes for my personal study.",
+    )
+    .await;
+    ingest_scoped_document(
+        &store,
+        &work,
+        "Work Rust",
+        "Rust memory safety guidance for the work codebase.",
+    )
+    .await;
+
+    let adapter =
+        knowledge_runtime::adapters::semantic_memory::SemanticMemoryAdapter::new(store.clone());
+    let explained = adapter
+        .search_explained("rust memory safety", &personal, 5, 0.0)
+        .await
+        .unwrap();
+
+    assert!(!explained.explained_results.is_empty());
+    assert!(explained.explained_results.iter().all(|item| item
+        .result
+        .content
+        .contains("personal")
+        || item.result.content.contains("my personal")));
+    assert_eq!(explained.provenance.scope, personal.key());
+    assert_eq!(explained.provenance.classification_mode, "search");
+    assert_eq!(explained.provenance.query, "rust memory safety");
+    assert_eq!(explained.provenance.requested_views.len(), 1);
+    assert_eq!(explained.provenance.executed_views.len(), 1);
 }

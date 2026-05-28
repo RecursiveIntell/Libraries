@@ -1,0 +1,21 @@
+crates/aidens-receipts/src/lib.rs:10:pub use llm_tool_runtime::{
+crates/aidens-contracts/src/lib.rs:23:    pub use llm_tool_runtime::ToolSideEffectClass as CanonicalToolSideEffectClass;
+crates/aidens-contracts/src/lib.rs:1247:                "canonical-tool-call-owner",
+crates/aidens-contracts/src/lib.rs:1289:                "canonical-tool-result-owner",
+crates/aidens-contracts/src/lib.rs:1591:                "canonical-tool-receipt-owner",
+crates/aidens-contracts/src/lib.rs:6220:            "canonical-tool-descriptor-owner",
+crates/aidens-contracts/src/lib.rs:8667:                "canonical-tool-exposure-owner",
+crates/aidens-tool-kit/src/lib.rs:22:    pub use llm_tool_runtime::{
+crates/aidens-tool-kit/src/lib.rs:24:        ToolBackendKind, ToolCall as CanonicalToolCall, ToolCtx as CanonicalToolCtx,
+crates/aidens-tool-kit/src/lib.rs:25:        ToolDescriptor as CanonicalToolDescriptor, ToolError as CanonicalToolError,
+crates/aidens-tool-kit/src/lib.rs:28:        ToolReceipt as CanonicalToolReceipt, ToolReceiptPersistence,
+crates/aidens-tool-kit/src/lib.rs:33:    pub fn validate_canonical_arguments(
+crates/aidens-tool-kit/src/lib.rs:34:        descriptor: &CanonicalToolDescriptor,
+crates/aidens-tool-kit/src/lib.rs:179:fn canonical_descriptor_from_aidens(
+crates/aidens-tool-kit/src/lib.rs:181:) -> canonical_stack::CanonicalToolDescriptor {
+crates/aidens-tool-kit/src/lib.rs:182:    canonical_stack::CanonicalToolDescriptor {
+crates/aidens-tool-kit/src/lib.rs:221:fn validate_tool_input_with_canonical_runtime(
+crates/aidens-tool-kit/src/lib.rs:225:    let canonical_descriptor = canonical_descriptor_from_aidens(descriptor);
+crates/aidens-tool-kit/src/lib.rs:226:    let errors = canonical_stack::validate_canonical_arguments(&canonical_descriptor, input)
+crates/aidens-tool-kit/src/lib.rs:440:                "canonical-tool-exposure-owner",
+crates/aidens-tool-kit/src/lib.rs:695:        let schema_validation = validate_tool_input_with_canonical_runtime(descriptor, &input);

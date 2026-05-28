@@ -1,0 +1,62 @@
+{
+  "packet_id": "codex-packet:fixture",
+  "kind": "codex-packet",
+  "current_pass": "P10",
+  "next_pass": "P11",
+  "source_basis": "SOURCE_BASIS.md",
+  "issue": "coding-agent tool suite",
+  "source_map": [
+    "AGENTS.md",
+    "SOURCE_BASIS.md",
+    "BUILD_ORDER_DAG.md",
+    "passes/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.md"
+  ],
+  "changed_files": [
+    "crates/aidens-tool-kit/src/lib.rs"
+  ],
+  "commands_run": [
+    {
+      "receipt_id": "command-run:fixture",
+      "kind": "command-run",
+      "tool_id": "aidens:run-checks:1",
+      "sandbox_root": "/repo",
+      "command": [
+        "cargo",
+        "check",
+        "--workspace"
+      ],
+      "permit_grant_id": "permit:fixture",
+      "permit_use_receipt_id": "permit-use:fixture",
+      "allowed_by_policy": true,
+      "exit_code": 0,
+      "stdout_digest": {
+        "algorithm": "blake3",
+        "canonicalization": "stack-ids-utf8-text-v1-display-only",
+        "digest": "blake3:fixture-stdout"
+      },
+      "stderr_digest": {
+        "algorithm": "blake3",
+        "canonicalization": "stack-ids-utf8-text-v1-display-only",
+        "digest": "blake3:fixture-stderr"
+      },
+      "stdout_bytes": 2,
+      "stderr_bytes": 0,
+      "timed_out": false,
+      "succeeded": true,
+      "reason_codes": [
+        "allowed-check-command-succeeded"
+      ],
+      "started_at": "2026-04-26T00:00:00Z",
+      "completed_at": "2026-04-26T00:00:01Z"
+    }
+  ],
+  "receipt_ids": [
+    "repo-read:fixture",
+    "command-run:fixture"
+  ],
+  "blockers": [],
+  "notes": [
+    "contains pass, source map, commands, receipts, blockers, and next pass"
+  ],
+  "generated_at": "2026-04-26T00:00:02Z"
+}

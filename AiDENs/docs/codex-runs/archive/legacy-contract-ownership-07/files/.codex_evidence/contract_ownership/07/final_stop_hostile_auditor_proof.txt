@@ -1,0 +1,298 @@
+# Final Stop Hostile-Auditor Proof
+
+## cwd
+/home/sikmindz/Coding/Libraries/AiDENs
+
+## final duplicate inventory path
+docs/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv
+.codex_evidence/contract_ownership/final/canonical_type_inventory.csv
+.codex_evidence/contract_ownership/final/aidens_contracts_type_inventory.csv
+
+## final gate outputs path
+docs/contract-ownership/FINAL_GATE_OUTPUTS.md
+.codex_evidence/contract_ownership/07/gate_outputs.txt
+.codex_evidence/contract_ownership/07/phase_verify_final_after_docs.txt
+
+## final quarantine ledger path
+docs/contract-ownership/FINAL_QUARANTINE_LEDGER.md
+
+## final unresolved risks
+# Final Unresolved Risks
+
+SOURCE BASIS: 2026-04-28
+
+## Status
+
+No unresolved P0 ownership duplicate remains.
+
+All remaining ambiguity is quarantined and must not be treated as canonical truth by AiDENs.
+
+## Quarantined Risks
+
+| Risk | Quarantine record | Status | Required next decision |
+|---|---|---|---|
+| Delegation/admission helper surfaces need owner-approved canonical wiring. | `docs/contract-ownership/quarantine/delegation-kit-attestation-settlement.md` | Quarantined since Phase 02 | Decide whether to rebuild against `attestation-exchange`, `federated-settlement`, and `remote-oracle-admission`, or keep disabled. |
+| Historical schema sketches contain legacy canonical-looking examples. | `docs/contract-ownership/quarantine/phase05-schema-sketches.md` | Quarantined since Phase 05 | Decide whether to archive, rewrite as non-authoritative docs, or replace with owner-generated schemas. |
+| Display wrappers can carry canonical repair/control/region/subtraction IDs but do not always mint concrete owner records. | `docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md` | Quarantined since Phase 06 | Decide owner-approved production/persistence for concrete repair, validation, region, and subtraction canonical records. |
+
+## Operational Caveat
+
+The parent git root `/home/sikmindz/Coding/Libraries` contains substantial pre-existing changes outside the AiDENs target directory. This run did not revert or modify unrelated parent-root changes.
+
+## Forbidden Until Resolved
+
+- Do not treat empty canonical ID vectors in AiDENs display DTOs as proof of canonical record creation.
+- Do not reintroduce local duplicate canonical type definitions.
+- Do not generate canonical stack-family schemas from AiDENs.
+- Do not use AiDENs display digests as artifact identity.
+- Do not use quarantined wrappers as compatibility shims.
+
+## git diff --stat
+ 00_START_HERE.md                                   |   54 -
+ 01_MASTER_ISSUE_TENSOR.json                        |  313 ----
+ 02_MASTER_ISSUE_MATRIX.md                          |   47 -
+ 03_IMPLEMENTATION_PLAYBOOK.md                      |  146 --
+ 04_EXACT_FILE_TOUCH_MAP.md                         |  140 --
+ 05_TEST_AND_CONFORMANCE_PLAN.md                    |  114 --
+ 10_HOSTILE_AUDIT_CLAUDE.md                         |  163 --
+ 11_HOSTILE_AUDIT_GPT.md                            |  311 ----
+ 11_HOSTILE_AUDIT_GPT_TENSOR.json                   |  225 ---
+ ...E_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md |   16 -
+ ..._SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md |   12 -
+ CLAUDE.md                                          |  168 +--
+ Cargo.lock                                         |    3 +
+ Cargo.toml                                         |   10 +
+ Makefile                                           |    4 +
+ PROMPT.md                                          |   91 +-
+ Primitives/README.md                               |    4 +
+ README.md                                          |  100 +-
+ SOURCE_BASIS.md                                    |   34 +-
+ STATUS_EVIDENCE_MANIFEST.json                      |    4 +-
+ assurance-runtime/Cargo.toml                       |    4 +
+ attestation-exchange/Cargo.toml                    |    4 +
+ authority-delegation/Cargo.toml                    |    4 +
+ constitutional-memory/Cargo.toml                   |    4 +
+ constraint-compiler/Cargo.toml                     |    4 +
+ continuity-runtime/Cargo.toml                      |    4 +
+ contract-schema-gen/Cargo.toml                     |    4 +
+ contract-schema-gen/src/lib.rs                     |  115 ++
+ discovery-portfolio/Cargo.toml                     |    4 +
+ effect-runtime/Cargo.toml                          |    4 +
+ federated-settlement/Cargo.toml                    |    4 +
+ forge-memory-bridge                                |    0
+ forge-pilot/Cargo.toml                             |    5 +
+ forge-pilot/src/act.rs                             |    8 +-
+ forge-pilot/src/governance_gate.rs                 |  224 +++
+ forge-pilot/src/history.rs                         |   13 +
+ forge-pilot/src/lib.rs                             |    9 +-
+ forge-pilot/src/main_support/mod.rs                | 1559 +-------------------
+ forge-pilot/src/main_support/tests.rs              |    5 +-
+ forge-pilot/src/orient.rs                          |   31 +-
+ kernel-conformance/Cargo.toml                      |    4 +
+ kernel-conformance/src/lib.rs                      |  632 +++++++-
+ kernel-execution/Cargo.toml                        |    4 +
+ kernel-oracles/Cargo.toml                          |    4 +
+ knowledge-runtime/Cargo.toml                       |    4 +
+ knowledge-runtime/src/adapters/semantic_memory.rs  |  192 ++-
+ knowledge-runtime/src/obs/trace.rs                 |    3 +-
+ knowledge-runtime/src/runtime/core.rs              |   94 +-
+ knowledge-runtime/tests/cross_crate_proof.rs       |  176 ++-
+ knowledge-runtime/tests/ugly_case_tests.rs         |  155 +-
+ living-memory/living-memory/Cargo.toml             |    4 +
+ llm-tool-runtime/Cargo.toml                        |    5 +
+ llm-tool-runtime/src/contracts.rs                  |   19 +-
+ llm-tool-runtime/src/provider.rs                   |   32 +-
+ llm-tool-runtime/tests/dispatch_tests.rs           |   13 +
+ mechanism-runtime/Cargo.toml                       |    4 +
+ profile-runtime/Cargo.toml                         |    5 +
+ recursive-kernel-core/Cargo.toml                   |    4 +
+ release/closeout_receipt_v1.json                   |    2 +-
+ remote-oracle-admission/Cargo.toml                 |    4 +
+ schemas/export-envelope-v3.schema.json             |    1 +
+ scripts/check_hotspot_budgets.sh                   |   50 +
+ semantic-memory-forge/Cargo.toml                   |    4 +
+ semantic-memory-forge/src/envelope.rs              |   21 +
+ semantic-memory/Cargo.toml                         |    4 +
+ semantic-memory/src/documents.rs                   |   98 +-
+ semantic-memory/src/hnsw.rs                        |    6 +
+ semantic-memory/src/lib.rs                         |   21 +
+ semantic-memory/tests/hnsw_integration.rs          |   49 +
+ spec-execution/Cargo.toml                          |    4 +
+ stack-ids                                          |    0
+ verification-adjudication/Cargo.toml               |    4 +
+ verification-calibration/Cargo.toml                |    4 +
+ verification-control/Cargo.toml                    |    4 +
+ verification-control/src/lib.rs                    |  264 +++-
+ verification-policy/Cargo.toml                     |    4 +
+ 76 files changed, 2309 insertions(+), 3557 deletions(-)
+
+## git status --short
+ D ../00_START_HERE.md
+ D ../01_MASTER_ISSUE_TENSOR.json
+ D ../02_MASTER_ISSUE_MATRIX.md
+ D ../03_IMPLEMENTATION_PLAYBOOK.md
+ D ../04_EXACT_FILE_TOUCH_MAP.md
+ D ../05_TEST_AND_CONFORMANCE_PLAN.md
+ D ../10_HOSTILE_AUDIT_CLAUDE.md
+ D ../11_HOSTILE_AUDIT_GPT.md
+ D ../11_HOSTILE_AUDIT_GPT_TENSOR.json
+ D ../CANONICAL_STACK_SPEC_V25_EFFECTIVE_CONSTITUTION_PROFILE_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md
+ D ../CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md
+ M ../CLAUDE.md
+ M ../Cargo.lock
+ M ../Cargo.toml
+ M ../Makefile
+ M ../PROMPT.md
+ M ../Primitives/README.md
+ M ../README.md
+ M ../SOURCE_BASIS.md
+ M ../STATUS_EVIDENCE_MANIFEST.json
+ M ../assurance-runtime/Cargo.toml
+ M ../attestation-exchange/Cargo.toml
+ M ../authority-delegation/Cargo.toml
+ M ../constitutional-memory/Cargo.toml
+ M ../constraint-compiler/Cargo.toml
+ M ../continuity-runtime/Cargo.toml
+ M ../contract-schema-gen/Cargo.toml
+ M ../contract-schema-gen/src/lib.rs
+ M ../discovery-portfolio/Cargo.toml
+ M ../effect-runtime/Cargo.toml
+ M ../federated-settlement/Cargo.toml
+ m ../forge-memory-bridge
+ M ../forge-pilot/Cargo.toml
+ M ../forge-pilot/src/act.rs
+ M ../forge-pilot/src/governance_gate.rs
+ M ../forge-pilot/src/history.rs
+ M ../forge-pilot/src/lib.rs
+ M ../forge-pilot/src/main_support/mod.rs
+ M ../forge-pilot/src/main_support/tests.rs
+ M ../forge-pilot/src/orient.rs
+ M ../kernel-conformance/Cargo.toml
+ M ../kernel-conformance/src/lib.rs
+ M ../kernel-execution/Cargo.toml
+ M ../kernel-oracles/Cargo.toml
+ M ../knowledge-runtime/Cargo.toml
+ M ../knowledge-runtime/src/adapters/semantic_memory.rs
+ M ../knowledge-runtime/src/obs/trace.rs
+ M ../knowledge-runtime/src/runtime/core.rs
+ M ../knowledge-runtime/tests/cross_crate_proof.rs
+ M ../knowledge-runtime/tests/ugly_case_tests.rs
+ M ../living-memory/living-memory/Cargo.toml
+ M ../llm-tool-runtime/Cargo.toml
+ M ../llm-tool-runtime/src/contracts.rs
+ M ../llm-tool-runtime/src/provider.rs
+ M ../llm-tool-runtime/tests/dispatch_tests.rs
+ M ../mechanism-runtime/Cargo.toml
+ M ../profile-runtime/Cargo.toml
+ M ../recursive-kernel-core/Cargo.toml
+ M ../release/closeout_receipt_v1.json
+ M ../remote-oracle-admission/Cargo.toml
+ M ../schemas/export-envelope-v3.schema.json
+ M ../scripts/check_hotspot_budgets.sh
+ M ../semantic-memory-forge/Cargo.toml
+ M ../semantic-memory-forge/src/envelope.rs
+ M ../semantic-memory/Cargo.toml
+ M ../semantic-memory/src/documents.rs
+ M ../semantic-memory/src/hnsw.rs
+ M ../semantic-memory/src/lib.rs
+ M ../semantic-memory/tests/hnsw_integration.rs
+ M ../spec-execution/Cargo.toml
+ m ../stack-ids
+ M ../verification-adjudication/Cargo.toml
+ M ../verification-calibration/Cargo.toml
+ M ../verification-control/Cargo.toml
+ M ../verification-control/src/lib.rs
+ M ../verification-policy/Cargo.toml
+?? ../4/
+?? ../AUDIT_2026-04-01.md
+?? ./
+?? ../COMBINED_AUDIT_2026-04-01.md
+?? ../CONTRACT_AND_TEMPORAL_TRUTH_HARDENING.md
+?? ../CRATE_HARDENING_MATRIX.md
+?? ../EXECUTION_EVIDENCE_AND_REFERENCE_INTERPRETER_PLAN.md
+?? ../HOSTILE_AUDIT_SYNTHESIS_V5.md
+?? ../KERNEL_AND_REGION_RUNTIME_PLAN.md
+?? ../LIBRARIES_MASTER_MATRIX_V8.md
+?? ../LIBRARIES_MASTER_TENSOR_V8.json
+?? ../LIBRARIES_PROMPT.md
+?? ../LIB_MASTER_ISSUE_MATRIX.md
+?? ../LIB_MASTER_ISSUE_TENSOR.json
+?? ../LIB_PROMPT.md
+?? ../MASTER_AUDIT_MATRIX.xlsx
+?? ../MASTER_ISSUE_MATRIX.md
+?? ../MASTER_ISSUE_MATRIX.xlsx
+?? ../MASTER_ISSUE_TENSOR.json
+?? ../MASTER_TENSOR.md
+?? ../RISK_REGISTER.md
+?? ../SNAPSHOT_2026-04-11.md
+?? ../TEST_AND_CONFORMANCE_PLAN.md
+?? ../V9_IMPLEMENTATION_PLAYBOOK.md
+?? ../claude_hard_audit_2026-03-30.md
+?? ../docs/CANONICAL_STACK_SPEC_V25_EFFECTIVE_CONSTITUTION_PROFILE_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md
+?? ../docs/CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md
+?? ../docs/archive/superseded_packs/00_START_HERE.md
+?? ../docs/archive/superseded_packs/01_MASTER_ISSUE_TENSOR.json
+?? ../docs/archive/superseded_packs/02_MASTER_ISSUE_MATRIX.md
+?? ../docs/archive/superseded_packs/03_IMPLEMENTATION_PLAYBOOK.md
+?? ../docs/archive/superseded_packs/04_EXACT_FILE_TOUCH_MAP.md
+?? ../docs/archive/superseded_packs/05_TEST_AND_CONFORMANCE_PLAN.md
+?? ../docs/archive/superseded_packs/10_HOSTILE_AUDIT_CLAUDE.md
+?? ../docs/archive/superseded_packs/11_HOSTILE_AUDIT_GPT.md
+?? ../docs/archive/superseded_packs/11_HOSTILE_AUDIT_GPT_TENSOR.json
+?? ../evidence/external_audit_report.json
+?? ../evidence/perf_release_20260401.json
+?? ../forge-pilot/src/main_support/cli.rs
+?? ../forge-pilot/src/main_support/explain.rs
+?? ../forge-pilot/src/main_support/provider.rs
+?? ../forge-pilot/src/main_support/storage.rs
+?? ../forge-pilot/src/main_support/tui.rs
+?? ../gpt54_hard_audit_2026-03-30.md
+?? ../gpt54_tensor_2026-03-30.json
+?? ../knowledge-runtime/tests/rrf_fusion_tests.rs
+?? ../profile-runtime/tests/composition_proptest.rs
+?? ../prompts/
+?? ../schemas/bridge-import-failure-artifact-v1.schema.json
+?? ../scripts/capture_release_profile_benchmarks.sh
+?? ../scripts/external_audit_harness.sh
+
+## cargo outputs
+.codex_evidence/contract_ownership/07/cargo_check_workspace.txt
+.codex_evidence/contract_ownership/07/cargo_test_workspace.txt
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+---
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_testkit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_tool_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_wake_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+## no crate split
+aidens-contracts
+
+## compatibility ledger non-header rows
+
+## phase evidence dirs
+00 DIR 
+01 DIR 
+02 DIR 
+03 DIR 
+04 DIR 
+05 DIR 
+06 DIR 
+07 DIR 
+final DIR 13

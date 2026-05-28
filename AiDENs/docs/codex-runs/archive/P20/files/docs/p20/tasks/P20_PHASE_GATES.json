@@ -1,0 +1,89 @@
+{
+  "global_invariants": [
+    "provenance_first",
+    "no_shadow_truth",
+    "no_silent_widening",
+    "contract_first_boundaries",
+    "execution_as_evidence",
+    "agency_governance",
+    "documentation_honesty"
+  ],
+  "gates": [
+    {
+      "phase": 0,
+      "required": [
+        "PHASE_00_REPORT.md",
+        "source_basis",
+        "arbitration_artifact"
+      ]
+    },
+    {
+      "phase": 1,
+      "required": [
+        "fmt/check/test/clippy logs",
+        "failures fixed or quarantined"
+      ]
+    },
+    {
+      "phase": 2,
+      "required": [
+        "DOCS_CODE_TRUTH_REPORT.md",
+        "README/STATUS corrected"
+      ]
+    },
+    {
+      "phase": 3,
+      "required": [
+        "CONTRACT_OWNERSHIP_INVENTORY.md/json",
+        "zero unaddressed shadow concepts"
+      ]
+    },
+    {
+      "phase": 4,
+      "required": [
+        "p20 scanner integrated",
+        "verify script runs scanner"
+      ]
+    },
+    {
+      "phase": 5,
+      "required": [
+        "PROVIDER_CAPABILITY_MATRIX.md/json"
+      ]
+    },
+    {
+      "phase": 6,
+      "required": [
+        "runner vertical slice fixture/test"
+      ]
+    },
+    {
+      "phase": 7,
+      "required": [
+        "canonical adapter proof tests"
+      ]
+    },
+    {
+      "phase": 8,
+      "required": [
+        "agency gate wired",
+        "agency evals pass",
+        "receipts emitted"
+      ]
+    },
+    {
+      "phase": 9,
+      "required": [
+        "REFERENCE_INTERPRETER_CLOSEOUT.md",
+        "hostile tests"
+      ]
+    },
+    {
+      "phase": 10,
+      "required": [
+        "final audit bundle",
+        "P20 PASS or P20 FAILED"
+      ]
+    }
+  ]
+}

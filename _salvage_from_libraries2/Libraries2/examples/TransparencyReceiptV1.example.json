@@ -1,0 +1,9 @@
+{
+  "schema_version": "transparency_receipt_v1",
+  "transparency_receipt_id": "transparency-2026-03-14-01",
+  "attestation_envelope_id": "att-envelope-2026-03-14-01",
+  "registry_identity": "transparency-log://core",
+  "inclusion_material": "merkle-leaf:abc123",
+  "recorded_time": "2026-03-14T12:31:00Z",
+  "admissibility_judgment": "logged_and_admissible"
+}

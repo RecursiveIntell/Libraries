@@ -1,0 +1,17 @@
+{
+  "manifest_id": "generated-schema-manifest:v1",
+  "manifest_version": 1,
+  "registry_digest": "blake3:fixture-registry",
+  "schemas": [
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "rust_type": "SchemaCompatibilityReportV1",
+      "schema_path": "schema-compatibility-report/v1.schema.json",
+      "schema_digest": "blake3:fixture-schema"
+    }
+  ],
+  "reason_codes": [
+    "aidens-local-display-report-schemas-only"
+  ]
+}

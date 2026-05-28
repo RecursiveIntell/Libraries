@@ -1,0 +1,25 @@
+{
+  "scenario": "mock_tool_call_then_final",
+  "expected_path": [
+    "config",
+    "runner",
+    "provider_mock",
+    "tool_exposure",
+    "permit_check",
+    "tool_call_parse",
+    "tool_execution",
+    "final_response",
+    "receipt_emit"
+  ],
+  "tool": {
+    "name": "echo",
+    "input": {
+      "text": "p20"
+    }
+  },
+  "expected_receipts": [
+    "TurnArbitrationArtifactV1_or_equivalent",
+    "ToolCallReceiptV1_or_equivalent",
+    "ProviderRouteReceiptV1_or_equivalent"
+  ]
+}

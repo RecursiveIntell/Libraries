@@ -1,0 +1,2931 @@
+## initial python3 scripts/assert_schema_generation_scope.py
+FAIL: aidens-contracts appears to emit/register canonical schema family: attestation-envelope
+FAIL: aidens-contracts appears to emit/register canonical schema family: settlement-case
+FAIL: aidens-contracts appears to emit/register canonical schema family: shared-disposition
+FAIL: aidens-contracts appears to emit/register canonical schema family: theory-version
+FAIL: aidens-contracts appears to emit/register canonical schema family: theory-refuter-suite
+FAIL: aidens-contracts appears to emit/register canonical schema family: hypothesis-library
+FAIL: aidens-contracts appears to emit/register canonical schema family: syndrome
+FAIL: aidens-contracts appears to emit/register canonical schema family: residual
+Schema generation for canonical artifact families must route through canonical owners / contract-schema-gen.
+EXIT_STATUS: 1
+
+## after source edits before schema regeneration: python3 scripts/assert_schema_generation_scope.py
+FAIL: AiDENs checked-in schema is canonical-owned: admission-decision/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: attestation-envelope/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: canonical-digest/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: compiled-region-graph/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: convergence-report/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: degradation-event/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: differential-conformance-finding/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: execution-context/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: execution-lineage-graph/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: history-preservation-report/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: hypothesis-library/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: invariance-report/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: invariant-budget/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: json-repair-receipt/v2.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: mechanism-bundle/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: oracle-slice-request/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: poison-receipt-record/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: projection-digest/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: query-widening-receipt/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: reference-case/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: reference-interpreter-report/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: region-contract/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: removal-frontier/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: residual/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: retrieval-policy/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: runtime-view-request/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: schema-validation-receipt/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: settlement-case/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: shared-disposition/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: simulator-contract/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: stop-rule-receipt/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: subtraction-plan/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: support-core/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: syndrome/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: theory-refuter-suite/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: theory-version/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: treaty/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: trust-root/v1.schema.json
+FAIL: AiDENs checked-in schema is canonical-owned: view-disclosure-receipt/v1.schema.json
+Schema generation for canonical artifact families must route through canonical owners / contract-schema-gen.
+EXIT_STATUS: 1
+
+## final python3 scripts/assert_schema_generation_scope.py
+PASS: schema generation scope appears AiDENs-local/non-authoritative (registered_families=58, checked_schema_files=58).
+
+## cargo run -p aidens-cli -- schemas check --root schemas
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running `target/debug/aidens-cli schemas check --root schemas`
+{
+  "report_id": "schema-compatibility-report:v1",
+  "registry_digest": "blake3:c018dde8d15467514c2dc7bf243226ceec0d08d267089af079bb860857c6be3f",
+  "compatible": true,
+  "checked_schema_count": 58,
+  "checks": [
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    }
+  ],
+  "reason_codes": [
+    "schema-compatibility-passed"
+  ]
+}
+
+## bash scripts/phase_verify_contract_ownership.sh 05
+COMMAND: python3 scripts/assert_schema_generation_scope.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T14:09:57-05:00
+PASS: schema generation scope appears AiDENs-local/non-authoritative (registered_families=58, checked_schema_files=58).
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T14:09:57-05:00
+PASS: contract ownership verification passed. Evidence in /home/sikmindz/Coding/Libraries/AiDENs/.codex_evidence/contract_ownership/05
+
+## cargo check --workspace
+    Checking aidens-contracts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts)
+    Checking aidens-permit-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit)
+    Checking aidens-boundary-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit)
+    Checking aidens-provider-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit)
+    Checking aidens-config v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config)
+    Checking aidens-queue-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-queue-kit)
+    Checking aidens-wake-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-wake-kit)
+    Checking aidens-schedule-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-schedule-kit)
+    Checking aidens-capability-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-capability-kit)
+    Checking aidens-profile-coding v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-coding)
+    Checking aidens-delegation-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit)
+    Checking aidens-tool-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit)
+    Checking aidens-daemon-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-daemon-kit)
+    Checking aidens-runner v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner)
+    Checking aidens-app-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit)
+    Checking aidens-cli v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-cli)
+    Checking aidens v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens)
+    Checking aidens-testkit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-testkit)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.85s
+
+## cargo test --workspace
+   Compiling aidens-profile-coding v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-coding)
+   Compiling aidens-delegation-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit)
+   Compiling aidens-runner v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner)
+   Compiling aidens-app-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit)
+   Compiling aidens-daemon-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-daemon-kit)
+   Compiling aidens-queue-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-queue-kit)
+   Compiling aidens-capability-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-capability-kit)
+   Compiling aidens-wake-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-wake-kit)
+   Compiling aidens-schedule-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-schedule-kit)
+   Compiling aidens-contracts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts)
+   Compiling aidens-testkit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-testkit)
+   Compiling aidens v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens)
+   Compiling aidens-cli v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-cli)
+   Compiling aidens-tool-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit)
+   Compiling aidens-config v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config)
+   Compiling aidens-provider-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit)
+   Compiling aidens-permit-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit)
+   Compiling aidens-boundary-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit)
+   Compiling aidens-receipts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-receipts)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.95s
+     Running unittests src/lib.rs (target/debug/deps/aidens-1506729e996a1105)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_app_kit-e9b427b18054671c)
+
+running 7 tests
+test tests::coding_profile_expands_to_visible_plan_without_dangerous_auto_grants ... ok
+test tests::product_profile_catalog_marks_partial_surfaces ... ok
+test tests::from_plan_requires_explicit_provider_for_provider_required_plan ... ok
+test tests::from_plan_rejects_disabled_provider_for_provider_required_plan ... ok
+test tests::explicit_builder_tool_registry_is_preserved_over_config_bundles ... ok
+test tests::builder_loads_provider_from_config_file ... ok
+test tests::from_plan_honors_bound_provider_and_plan_tools ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/next_app_plan_facade.rs (target/debug/deps/next_app_plan_facade-b450ca92ac03eae5)
+
+running 1 test
+test app_from_explicit_mock_config_runs_through_facade ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_arbiter_kit-e5ba2a7038da8fec)
+
+running 1 test
+test tests::validates_canonical_contradiction_witness ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_boundary_kit-fead46be8c4044d2)
+
+running 11 tests
+test tests::display_digest_is_stable_across_key_order_and_whitespace ... ok
+test tests::json_substring_extract_is_receipt_bearing ... ok
+test tests::repair_warns_when_treatment_critical_fields_are_unverifiable ... ok
+test tests::markdown_fence_repair_is_receipt_bearing ... ok
+test tests::strict_json_accepts_valid_input ... ok
+test tests::strict_json_rejects_duplicate_object_keys ... ok
+test tests::strict_json_rejects_invalid_input ... ok
+test tests::schema_invalid_input_is_blocked_by_compile_outcome ... ok
+test tests::memory_claim_input_validation_blocks_missing_bitemporal_fields ... ok
+test tests::treatment_integrity_warning_can_hard_fail_repair ... ok
+test tests::boundary_repair_matches_reference_interpreter ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_budget_kit-6565930870b07946)
+
+running 2 tests
+test tests::deadline_check_is_explicit ... ok
+test tests::tool_call_budget_is_cumulative ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_capability_kit-02c83f464229c766)
+
+running 3 tests
+test tests::can_represent_registered_exposed_executable_degraded_and_blocked ... ok
+test tests::disabled_is_not_healthy ... ok
+test tests::gate_decision_requires_exposed_lifecycle_to_expose ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_cli-c5626c7c774614d0)
+
+running 27 tests
+test tests::boundary_compile_cli_rejects_duplicate_keys ... ok
+test tests::boundary_compile_cli_reports_schema_failure ... ok
+test tests::doctor_fails_memory_required_without_memory_store ... ok
+test tests::permit_commands_emit_typed_approval_and_permit_artifacts ... ok
+test tests::provider_check_reports_missing_api_key_without_claiming_executable ... ok
+test tests::provider_check_reports_ollama_chat_without_native_tool_loop ... ok
+test tests::new_app_scaffold_contains_safe_config_and_tests ... ok
+test tests::doctor_without_config_reports_disabled_provider ... ok
+test tests::list_tools_exposes_safe_tools_only ... ok
+test tests::doctor_reports_scaffold_crates_as_deferred_not_healthy ... ok
+test tests::doctor_reports_optional_memory_without_store_as_degraded ... ok
+test tests::provider_route_does_not_claim_native_when_backend_is_unavailable ... ok
+test tests::sanitize_rejects_empty_names ... ok
+test tests::inspect_tools_reports_registered_vs_executable ... ok
+test tests::status_reports_blocked_modes_without_hiding_degradation ... ok
+test tests::p11_daemon_commands_suppress_duplicates_persist_cancel_and_safe_mode ... ok
+test tests::package_examples_manifest_covers_public_profiles_honestly ... ok
+test tests::run_fails_memory_required_without_memory_store ... ok
+test tests::receipts_commands_inspect_restart_visible_run ... ok
+test tests::p10_coding_commands_read_propose_apply_and_packetize ... ok
+test tests::new_user_mock_flow_reaches_receipt_inspection ... ok
+test tests::package_readiness_blocks_scaffold_completion_claims ... ok
+test tests::package_completion_audit_reports_deferred_horizon_without_healthy_claims ... ok
+test tests::view_query_cli_uses_canonical_runtime ... ok
+test tests::schemas_check_fails_on_unregistered_artifact_family ... ok
+test tests::schemas_check_fails_on_same_major_schema_drift ... ok
+test tests::schemas_generate_is_deterministic_and_check_passes ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running unittests src/main.rs (target/debug/deps/aidens_cli-825935176d412cd3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/next_cli_plan_doctor.rs (target/debug/deps/next_cli_plan_doctor-ee102eb1032e12c0)
+
+running 5 tests
+test plan_validate_rejects_disabled_provider_when_provider_is_required ... ok
+test profile_explain_coding_agent_is_visible_and_non_magical ... ok
+test plan_validate_rejects_memory_required_without_memory_store ... ok
+test plan_validate_doctor_and_compile_accept_memory_required_with_store ... ok
+test plan_validate_compile_and_doctor_accept_explicit_mock_config ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_config-a2c8aff93de243a5)
+
+running 5 tests
+test tests::redacts_api_key ... ok
+test tests::safe_default_is_valid_and_provider_disabled ... ok
+test tests::redacted_json_hides_secret_values_and_url_auth ... ok
+test tests::safe_default_plan_config_matches_reference_interpreter ... ok
+test tests::config_round_trips_through_toml_file ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_contracts-4261a161161aaf57)
+
+running 54 tests
+test tests::dangerous_auto_approval_is_rejected_by_default ... ok
+test tests::artifact_id_roundtrips_through_canonical_stack_id ... ok
+test tests::memory_required_is_valid_as_a_plan_but_config_gates_store_presence ... ok
+test tests::execution_context_exposes_stack_trace_and_attempt ... ok
+test tests::p00_source_basis_lock_names_current_snapshot ... ok
+test tests::p00_scaffold_report_allows_markers_only_for_scaffold_status ... ok
+test tests::p00_super_pass_status_blocks_on_fake_ready_findings ... ok
+test tests::p01_api_honesty_receipt_distinguishes_honored_and_blocked_inputs ... ok
+test tests::p00_source_basis_golden_fixture_deserializes ... ok
+test tests::p01_parity_report_exposes_mismatches ... ok
+test tests::p02_backend_matrix_blocks_native_claims_without_executable_status ... ok
+test tests::p02_provider_certification_fixture_records_expected_truth ... ok
+test tests::p02_provider_readiness_receipt_is_receipt_bearing ... ok
+test tests::p02_provider_route_v2_distinguishes_ollama_chat_from_native_loop ... ok
+test tests::p01_golden_fixtures_deserialize ... ok
+test tests::p03_tool_invocation_receipt_links_run_attempt_and_digests ... ok
+test tests::p02_golden_fixtures_deserialize ... ok
+test tests::p04_gate_decision_carries_approval_or_permit_evidence ... ok
+test tests::p03_turn_receipt_records_stop_budget_and_tool_evidence ... ok
+test tests::p04_permit_scope_requires_risk_tool_sandbox_and_execution_family ... ok
+test tests::p03_golden_fixtures_deserialize ... ok
+test tests::p05_golden_fixtures_deserialize ... ok
+test tests::p05_display_json_digest_is_stack_owned_and_stable_across_json_layout ... ok
+test tests::p05_remaining_artifact_constructors_produce_linkable_shapes ... ok
+test tests::p04_golden_fixtures_deserialize ... ok
+test tests::p06_boundary_contracts_are_receipt_bearing_and_cryptographic ... ok
+test tests::p07_golden_fixtures_deserialize ... ok
+test tests::p08_reference_artifact_constructors_are_typed ... ok
+test tests::p06_golden_fixtures_deserialize ... ok
+test tests::p10_coding_artifact_constructors_are_receipt_bearing_and_sandboxed ... ok
+test tests::p08_golden_fixtures_deserialize ... ok
+test tests::p11_queue_daemon_artifact_constructors_preserve_idempotency_and_safe_mode ... ok
+test tests::p14_operator_status_exposes_degraded_modes ... ok
+test tests::p13_view_artifact_constructors_disclose_policy_events ... ok
+test tests::p11_golden_fixtures_deserialize ... ok
+test tests::p13_golden_fixtures_deserialize ... ok
+test tests::p14_release_artifact_constructors_block_on_false_public_docs ... ok
+test tests::p10_golden_fixtures_deserialize ... ok
+test tests::p14_golden_fixtures_deserialize ... ok
+test tests::p18_mechanism_names_are_canonical_reexports ... ok
+test tests::p16_subtraction_artifacts_block_support_loss_and_record_compaction ... ok
+test tests::p18_canonical_reexport_shapes_roundtrip ... ok
+test tests::p19_completion_audit_discloses_deferred_horizon_without_blocking_release_bar ... ok
+test tests::p16_golden_fixtures_deserialize ... ok
+test tests::p17_canonical_reexport_shapes_roundtrip ... ok
+test tests::p17_attestation_and_settlement_names_are_canonical_reexports ... ok
+test tests::p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules ... ok
+test tests::plan_has_visible_risk_summary ... ok
+test tests::provider_route_labels_are_exact ... ok
+test tests::stack_digest_is_exposed_as_non_authoritative_display_digest ... ok
+test tests::p15_golden_fixtures_deserialize ... ok
+test tests::p19_golden_fixtures_deserialize ... ok
+test tests::p07_migration_path_keeps_old_fixtures_readable ... ok
+test tests::p07_registry_manifest_and_migration_constructors_are_typed ... ok
+
+test result: ok. 54 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_daemon_kit-f98deed7331f746a)
+
+running 3 tests
+test tests::repeated_schedule_occurrence_suppresses_duplicate_job ... ok
+test tests::daemon_restart_preserves_jobs_and_cancelled_state ... ok
+test tests::safe_mode_blocks_risky_wake_and_allows_drain ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_delegation_kit-d0a7ceb8d3504307)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_governance_kit-e1abeac93b21f7de)
+
+running 1 test
+test tests::creates_canonical_control_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_kernel_kit-597ffb57a7589d34)
+
+running 1 test
+test tests::exposes_canonical_kernel_operators ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_memory_kit-8eb3045b9266ef0d)
+
+running 1 test
+test tests::opens_canonical_memory_stack_with_mock_embedder ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_permit_kit-0edea26904f278aa)
+
+running 5 tests
+test tests::explicit_permit_allows_matching_risk ... ok
+test tests::side_effect_risks_request_approval ... ok
+test tests::scoped_permit_requires_matching_tool_and_sandbox ... ok
+test tests::write_requires_approval_by_default ... ok
+test tests::default_permit_policy_matches_reference_interpreter ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_plan_kit-e1b8bbe23b99be0c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_coding-361c2192b7b0727c)
+
+running 1 test
+test tests::coding_profile_does_not_auto_grant_dangerous_capabilities ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_daemon-292b354efd7358e9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_desktop-9c85465a96b65604)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_memory-514b8d6b4cd5c913)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_research-67b0b8ae11546983)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_provider_kit-ea241cd5e0ffc3e4)
+
+running 15 tests
+test tests::disabled_provider_is_absent_not_fallback ... ok
+test tests::api_provider_without_key_is_configured_but_not_executable ... ok
+test tests::api_provider_with_key_is_boundary_unavailable_without_native_loop ... ok
+test tests::known_native_provider_capabilities_are_explicit ... ok
+test tests::no_executable_chat_boundary_is_unavailable ... ok
+test tests::mock_provider_has_explicit_route ... ok
+test tests::ollama_chat_route_is_not_native_tool_loop ... ok
+test tests::openrouter_is_not_labeled_ollama ... ok
+test tests::parser_fallback_is_degraded_and_receipt_bearing_when_chat_is_executable ... ok
+test tests::provider_backend_matrix_lists_p02_backends ... ok
+test tests::disabled_provider_does_not_answer ... ok
+test tests::mock_provider_returns_only_configured_text ... ok
+test tests::unknown_native_provider_is_degraded_not_native_compatible ... ok
+test tests::provider_certification_fixtures_cover_p02_matrix_and_scenarios ... ok
+test tests::provider_readiness_matches_reference_interpreter ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_queue_kit-0ab510cef431b07d)
+
+running 4 tests
+test tests::restart_preserves_queued_and_cancelled_jobs_without_resurrection ... ok
+test tests::duplicate_schedule_occurrence_is_suppressed_by_idempotency_key ... ok
+test tests::expired_lease_can_be_stolen_once_without_duplicate_job ... ok
+test tests::safe_mode_blocks_risky_jobs_and_allows_inspection_and_drain ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_receipts-9bb58b0d34183881)
+
+running 1 test
+test tests::canonical_log_persists_owner_labeled_records ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_repair_kit-f67c3ece338860f2)
+
+running 1 test
+test tests::creates_canonical_boundary_repair_record ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_runner-7d54bb2de2484199)
+
+running 14 tests
+test tests::runtime_view_disclosure_is_receipt_only_not_a_truth_store ... ok
+test tests::unavailable_api_provider_never_claims_native_tool_loop ... ok
+test tests::default_runner_failure_is_explicitly_minimal_without_durable_store ... ok
+test tests::disabled_provider_records_receipt_and_fails ... ok
+test tests::run_always_appends_completed_receipt_on_success ... ok
+test tests::run_exposes_only_safe_registered_tools_by_default ... ok
+test tests::unexposed_tool_call_is_blocked_before_dispatch ... ok
+test tests::budget_exhaustion_blocks_without_dispatch_loop ... ok
+test tests::schema_invalid_tool_call_stops_before_tool_invocation ... ok
+test tests::mock_provider_can_request_repo_read_and_receive_result ... ok
+test tests::canonical_log_reopens_runner_report_after_process_boundary ... ok
+test tests::p10_runner_can_apply_patch_with_scoped_permit ... ok
+test tests::canonical_log_records_provider_unavailable_report ... ok
+test tests::canonical_log_records_tool_and_boundary_failure_report ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/next_runner_provider_contract.rs (target/debug/deps/next_runner_provider_contract-390e3db111770d21)
+
+running 2 tests
+test explicit_mock_provider_returns_configured_text_not_placeholder ... ok
+test disabled_provider_does_not_produce_answer ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/next_turn_executor.rs (target/debug/deps/next_turn_executor-add969a52ca093aa)
+
+running 2 tests
+test public_runner_records_budget_exhaustion_as_blocked_turn ... ok
+test public_runner_executes_mock_repo_read_turn_loop ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_schedule_kit-e80707303226062e)
+
+running 2 tests
+test tests::empty_occurrence_key_is_rejected_before_recurring_logic_exists ... ok
+test tests::occurrence_identity_includes_schedule_key_and_payload_digest ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_security_kit-c9441ca9fd5a0738)
+
+running 2 tests
+test tests::path_safety_rejects_traversal_and_sensitive_prefixes ... ok
+test tests::side_effects_require_canonical_permit_classification ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_testkit-e51b7bd9a63bd860)
+
+running 3 tests
+test tests::mismatch_report_has_human_readable_diff ... ok
+test tests::safe_coding_exposure_case_interprets_expected ... ok
+test tests::reference_cases_cover_required_catalogs ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/next_no_fake_completion.rs (target/debug/deps/next_no_fake_completion-f27fe9338369333b)
+
+running 1 test
+test no_runtime_placeholder_completion_strings_remain ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/phase_00_source_truth.rs (target/debug/deps/phase_00_source_truth-77e0bd2091a1992b)
+
+running 2 tests
+test source_paths_verified ... ok
+test docs_updated_for_current_dependencies ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+
+     Running tests/phase_01_contract_collapse.rs (target/debug/deps/phase_01_contract_collapse-d562b9af2ad024b8)
+
+running 2 tests
+test canonical_id_roundtrip ... ok
+test contract_owner_proof ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/phase_02_adapter_delegation.rs (target/debug/deps/phase_02_adapter_delegation-44189009906acc50)
+
+running 1 test
+test adapter_delegation_proof ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_03_golden_vertical_slice.rs (target/debug/deps/phase_03_golden_vertical_slice-65f7ed6eeefc7da6)
+
+running 1 test
+test golden_vertical_slice ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/phase_04_failure_honesty.rs (target/debug/deps/phase_04_failure_honesty-f50336a882399ef2)
+
+running 4 tests
+test denied_tool_requires_approval ... ok
+test provider_route_unavailable ... ok
+test malformed_tool_call_degrades ... ok
+test budget_exhaustion_receipt ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_05_memory_runtime_hardening.rs (target/debug/deps/phase_05_memory_runtime_hardening-66b8aa8d2b079e9c)
+
+running 3 tests
+test query_widening_disclosure ... ok
+test import_atomicity ... ok
+test bitemporal_asof_query ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/phase_06_governance_promotion.rs (target/debug/deps/phase_06_governance_promotion-9d724ca41abbc53f)
+
+running 3 tests
+test promotion_denies_without_verification ... ok
+test repair_record_backpointer ... ok
+test approval_required_for_side_effect ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_07_daemon_queue_schedule_wake.rs (target/debug/deps/phase_07_daemon_queue_schedule_wake-7fa8d337848f6b1a)
+
+running 3 tests
+test daemon_namespace_isolated ... ok
+test restart_does_not_reenqueue_completed_jobs ... ok
+test schedule_no_duplicate_storm ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/phase_08_kernel_oracle_integration.rs (target/debug/deps/phase_08_kernel_oracle_integration-fa84ee19415d0b7c)
+
+running 2 tests
+test kernel_exact_small_slice ... ok
+test loopy_nonconvergence_degrades ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/phase_09_release_audit.rs (target/debug/deps/phase_09_release_audit-326be5a56052c39c)
+
+running 1 test
+test release_truth_audit ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/stack_import_smoke.rs (target/debug/deps/stack_import_smoke-b0eb7485b4649904)
+
+running 1 test
+test stack_import_smoke ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_tool_kit-e169cd0c603259c0)
+
+running 16 tests
+test tests::disabled_tool_is_absent ... ok
+test tests::exposure_policy_can_bound_tool_count ... ok
+test tests::disabled_means_absent_at_registration_exposure_and_invocation ... ok
+test tests::safe_coding_registry_does_not_register_dangerous_tools ... ok
+test tests::side_effect_tool_requires_permit ... ok
+test tests::side_effect_invocation_without_permit_is_receipt_bearing_denial ... ok
+test tests::exposure_receipt_matches_provider_tool_schema ... ok
+test tests::patch_propose_is_executable_and_non_mutating ... ok
+test tests::declared_registered_executable_hidden_and_blocked_are_distinct ... ok
+test tests::schema_invalid_tool_input_is_blocked_before_executor ... ok
+test tests::read_only_default_exposes_only_read_only_executable_tools ... ok
+test tests::repo_read_rejects_traversal ... ok
+test tests::p10_run_checks_requires_shell_permit_and_blocks_unallowed_commands ... ok
+test tests::p10_patch_apply_requires_permit_and_then_writes_receipt ... ok
+test tests::safe_coding_exposure_matches_reference_interpreter ... ok
+test tests::p10_read_inspect_search_and_patch_propose_are_read_only ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/next_repo_read_dispatch.rs (target/debug/deps/next_repo_read_dispatch-37dc4ba33ddd9d8e)
+
+running 1 test
+test repo_read_tool_executes_and_emits_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/aidens_wake_kit-f87b87cc56ac309f)
+
+running 2 tests
+test tests::empty_signal_key_is_rejected ... ok
+test tests::wake_signal_identity_uses_source_key_and_payload ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_app_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_arbiter_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_boundary_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_budget_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_capability_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_cli
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_config
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_contracts
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_daemon_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_delegation_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_governance_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_kernel_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_memory_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_permit_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_plan_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_profile_coding
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_profile_daemon
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_profile_desktop
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_profile_memory
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_profile_research
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_provider_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_queue_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_receipts
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_repair_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_runner
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_schedule_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_security_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_testkit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_tool_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_wake_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+## standing checks after Phase 05 edits
+### bash scripts/assert_no_crate_split.sh
+PASS: no aidens-contracts split crates detected.
+
+### bash scripts/assert_no_compatibility_ledgers.sh
+PASS: no compatibility ledger entries or obvious compat/shim files detected.
+
+### bash scripts/assert_docs_source_basis_current.sh
+PASS: no blocking stale source-basis docs detected.
+
+### python3 scripts/assert_no_canonical_type_duplicates.py
+canonical_types=633
+aidens_contracts_types=193
+duplicate_findings=0
+PASS: no local aidens-contracts public type definitions duplicate canonical public type names.
+
+### bash scripts/assert_no_local_canonical_digest_law.sh
+PASS: no exported local canonical digest law detected.
+
+### bash scripts/assert_no_local_substitute_dependencies.sh
+PASS: no local substitute dependency red flags detected.

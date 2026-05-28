@@ -1,0 +1,584 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AiDENsRunBudgetDeadlineV1": {
+      "properties": {
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degradation_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "elapsed_ms": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "max_retries": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_steps": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_tool_calls": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_turn_millis": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "elapsed_ms",
+        "max_retries",
+        "max_steps",
+        "max_tool_calls",
+        "max_turn_millis"
+      ],
+      "type": "object"
+    },
+    "AiDENsRunEventLogDigestV1": {
+      "properties": {
+        "canonical_record_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "event_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "event_log_path": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_normalized_digest": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "canonical_record_count",
+        "digest",
+        "event_count",
+        "event_log_path",
+        "replay_normalized_digest"
+      ],
+      "type": "object"
+    },
+    "AiDENsRunFailureClassV1": {
+      "enum": [
+        "none",
+        "provider-unavailable",
+        "tool-blocked",
+        "tool-failed",
+        "budget-exhausted",
+        "verification-unavailable",
+        "replay-mismatch",
+        "operator-abstained"
+      ],
+      "type": "string"
+    },
+    "AiDENsRunFailureTaxonomyV1": {
+      "properties": {
+        "blocked": {
+          "type": "boolean"
+        },
+        "class": {
+          "$ref": "#/definitions/AiDENsRunFailureClassV1"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "blocked",
+        "class",
+        "degraded"
+      ],
+      "type": "object"
+    },
+    "AiDENsRunReplayNormalizationV1": {
+      "properties": {
+        "deterministic_compare": {
+          "type": "boolean"
+        },
+        "fixture_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "normalized_digest": {
+          "type": "string"
+        },
+        "normalized_fields": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_command": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deterministic_compare",
+        "normalized_digest",
+        "normalized_fields",
+        "replay_command"
+      ],
+      "type": "object"
+    },
+    "AiDENsRunSupportTierEvidenceV1": {
+      "properties": {
+        "deferred": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "partial": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "support_tier": {
+          "type": "string"
+        },
+        "supported": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "support_tier"
+      ],
+      "type": "object"
+    },
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "CanonicalBackpointerV1": {
+      "description": "AiDENs-local wrapper pointer to a canonical owner artifact or owner type.\n\nThis does not make AiDENs authoritative for the pointed-to concept; it records where a display/report DTO must be reconciled for canonical truth.",
+      "properties": {
+        "artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "external_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_crate": {
+          "type": "string"
+        },
+        "owner_type": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_crate",
+        "owner_type",
+        "role"
+      ],
+      "type": "object"
+    },
+    "DispatchOutcomeV1": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "degraded",
+        "cancelled",
+        "exhausted"
+      ],
+      "type": "string"
+    },
+    "DisplayDigestV1": {
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "canonicalization": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "non_authoritative": {
+          "default": true,
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "canonicalization",
+        "digest"
+      ],
+      "type": "object"
+    },
+    "ExecutionContextV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancellation_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degradation_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dispatch_outcome": {
+          "$ref": "#/definitions/DispatchOutcomeV1"
+        },
+        "environment_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_call_ref": {
+          "description": "Backpointer to the provider call that fulfilled this execution.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_route": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "queue_hops": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "replay_parent_ref": {
+          "description": "Backpointer to the replay parent execution context, if this is a retry.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "tool_receipt_ref": {
+          "description": "Backpointer to the tool receipt that produced this execution context.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workload_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "dispatch_outcome",
+        "schema_version",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "abstention_receipts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "agent_spec_digest": {
+      "$ref": "#/definitions/DisplayDigestV1"
+    },
+    "attempt_family_id": {
+      "type": "string"
+    },
+    "attempt_id": {
+      "type": "string"
+    },
+    "blocked_checks": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "budget": {
+      "$ref": "#/definitions/AiDENsRunBudgetDeadlineV1"
+    },
+    "bundle_id": {
+      "type": "string"
+    },
+    "canonical_backpointers": {
+      "items": {
+        "$ref": "#/definitions/CanonicalBackpointerV1"
+      },
+      "type": "array"
+    },
+    "canonical_execution_context": {
+      "$ref": "#/definitions/ExecutionContextV1"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "event_log": {
+      "$ref": "#/definitions/AiDENsRunEventLogDigestV1"
+    },
+    "failure": {
+      "$ref": "#/definitions/AiDENsRunFailureTaxonomyV1"
+    },
+    "memory_grounding_receipts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "outputs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "ownership": {
+      "type": "string"
+    },
+    "permit_receipts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile": {
+      "type": "string"
+    },
+    "provider_receipts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "repair_plan_receipts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay": {
+      "$ref": "#/definitions/AiDENsRunReplayNormalizationV1"
+    },
+    "replay_instructions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "schema": {
+      "type": "string"
+    },
+    "support": {
+      "$ref": "#/definitions/AiDENsRunSupportTierEvidenceV1"
+    },
+    "support_labels": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tool_receipts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trace_ctx": {
+      "$ref": "#/definitions/TraceCtx"
+    },
+    "trial_id": {
+      "type": "string"
+    },
+    "verification_receipts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "agent_spec_digest",
+    "attempt_family_id",
+    "attempt_id",
+    "budget",
+    "bundle_id",
+    "canonical_execution_context",
+    "created_at",
+    "event_log",
+    "failure",
+    "ownership",
+    "profile",
+    "replay",
+    "run_id",
+    "schema",
+    "support",
+    "trace_ctx",
+    "trial_id"
+  ],
+  "title": "AiDENsRunBundleV3",
+  "type": "object"
+}

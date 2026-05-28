@@ -1,0 +1,43 @@
+{
+  "schema": "AgentSpecV1",
+  "agent_id": "",
+  "display_name": "",
+  "support_label": "supported-local",
+  "profile": "cloud",
+  "provider_policy": {
+    "provider": "local",
+    "cloud_allowed": true,
+    "fallback_allowed": true
+  },
+  "memory_policy": {
+    "enabled": true,
+    "mode": "fixture",
+    "requires_view_disclosure": false
+  },
+  "tool_policy": {
+    "allowed_tools": [
+      "repo.write"
+    ],
+    "write_tools_require_permit": false
+  },
+  "permit_policy": {
+    "writes": "forbidden",
+    "commands": "forbidden",
+    "network": "operator-approved"
+  },
+  "verification_policy": {
+    "required_checks": [],
+    "fail_closed": false
+  },
+  "evidence_policy": {
+    "emit_run_bundle": false,
+    "emit_tool_receipts": false,
+    "emit_permit_receipts": false,
+    "emit_abstention_receipts": false
+  },
+  "budget_policy": {
+    "max_turns": 0,
+    "max_tool_calls": 0,
+    "deadline_seconds": 0
+  }
+}

@@ -1,0 +1,545 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-06T21:17:14Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/docs/P27_SUPPORT_TRACEABILITY.md",
+      "bytes": 3330,
+      "mtime_utc": "2026-05-05T14:31:27Z",
+      "original_path": "docs/P27_SUPPORT_TRACEABILITY.md",
+      "reason": "stale-run-doc",
+      "run_id": "P27",
+      "sha256": "d2f533461e8ae7f87b0f0966e2f2b25c7ef080344b50321aa226f5986d7eeccd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/docs/p27/P27_FINAL_AUDIT_REPORT.md",
+      "bytes": 3560,
+      "mtime_utc": "2026-05-05T15:08:32Z",
+      "original_path": "docs/p27/P27_FINAL_AUDIT_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P27",
+      "sha256": "031bf3eb378dfb0ac0f33e100461a743b849b89a3f24c8df36f63141cdab5461"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/FINAL_AUDITOR_HANDOFF.md",
+      "bytes": 2457,
+      "mtime_utc": "2026-05-05T15:08:32Z",
+      "original_path": "handoffs/p27/FINAL_AUDITOR_HANDOFF.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "129551e2f824cb192f94bd87abd39cd5385363725ae483523a51771eb4e461b7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_00_REPORT.md",
+      "bytes": 6493,
+      "mtime_utc": "2026-05-04T22:47:26Z",
+      "original_path": "handoffs/p27/PHASE_00_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "3219d661051071e4515dd03e418b5ef315a9d4e0a70b26622b26b35ab6a17667"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_01_REPORT.md",
+      "bytes": 5354,
+      "mtime_utc": "2026-05-04T22:50:50Z",
+      "original_path": "handoffs/p27/PHASE_01_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "30d9bc14b06eb8610f12762c5c97a5bfb76263c1da8286f4a1093f5cd47d316d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_02_REPORT.md",
+      "bytes": 4846,
+      "mtime_utc": "2026-05-04T22:55:20Z",
+      "original_path": "handoffs/p27/PHASE_02_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "982be0eac0fbba678a920571c422c8f32cdae39658b8b309aee8369ec4ca64d3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_03_REPORT.md",
+      "bytes": 6328,
+      "mtime_utc": "2026-05-04T23:01:26Z",
+      "original_path": "handoffs/p27/PHASE_03_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "9d890aad973aaf5805f2134742b084a9f1e5a68d43c8f2464eec53f9fdcfc19e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_04_REPORT.md",
+      "bytes": 6930,
+      "mtime_utc": "2026-05-04T23:06:49Z",
+      "original_path": "handoffs/p27/PHASE_04_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "67e86eb3cd6bff72eb6e0dfde4a3b7acbc34149d8f728afa9b52f711a4c6ec7f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_05_REPORT.md",
+      "bytes": 6131,
+      "mtime_utc": "2026-05-04T23:15:11Z",
+      "original_path": "handoffs/p27/PHASE_05_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "486c75cc3c5d5b7b7e5f51401adb2f22d36231681415cee45b5b9080d26e237f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_06_REPORT.md",
+      "bytes": 5590,
+      "mtime_utc": "2026-05-04T23:19:15Z",
+      "original_path": "handoffs/p27/PHASE_06_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "62f9d691d397573884d0e6ac6ea16436a174d58591bdca6a9bf6bf2459ff89a7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_07_REPORT.md",
+      "bytes": 7343,
+      "mtime_utc": "2026-05-04T23:41:41Z",
+      "original_path": "handoffs/p27/PHASE_07_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "2f0621c427c83cf1a9074bbe5a29138375ecb75c81bfc6f5cb05545c08d19f34"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_08_REPORT.md",
+      "bytes": 6722,
+      "mtime_utc": "2026-05-05T00:32:50Z",
+      "original_path": "handoffs/p27/PHASE_08_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "c820b445448c6b46b9af9dd50b89b029a2f0d71c9a97309e3331d00a7cd0ced7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_09_REPORT.md",
+      "bytes": 7881,
+      "mtime_utc": "2026-05-05T02:21:30Z",
+      "original_path": "handoffs/p27/PHASE_09_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "84dca7131d7e8cab488678a12259bf12deba28c398ca9e28e6fdc8156cf8dd21"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_10_REPORT.md",
+      "bytes": 6703,
+      "mtime_utc": "2026-05-05T02:34:20Z",
+      "original_path": "handoffs/p27/PHASE_10_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "f1d8dbd5f5b674f29c23ee47e7af48a24b45914064895ec2af2e8e06eb16c2e9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_11_REPORT.md",
+      "bytes": 6362,
+      "mtime_utc": "2026-05-05T02:40:42Z",
+      "original_path": "handoffs/p27/PHASE_11_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "936b759c5b6c3ae5dc7167973ec74b6014f9743117f3afd30ad2e5c29ea33ae1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_12_REPORT.md",
+      "bytes": 6613,
+      "mtime_utc": "2026-05-05T02:45:19Z",
+      "original_path": "handoffs/p27/PHASE_12_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "a065cbc54262b06a4a5f898dd7e96cf880d13a40cefa0ad871ff7366d13b28f4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_13_REPORT.md",
+      "bytes": 8076,
+      "mtime_utc": "2026-05-05T03:48:33Z",
+      "original_path": "handoffs/p27/PHASE_13_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "a0df1731f99a0d39309f270958d2aa5fcdf90e8a76788dcca4346f4708a75797"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_14_REPORT.md",
+      "bytes": 6524,
+      "mtime_utc": "2026-05-05T08:38:36Z",
+      "original_path": "handoffs/p27/PHASE_14_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "c89ec6c80c68d93c44dfab356b9b77d65bfa2714e546bdc03eb5b82f13b64df8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_15_REPORT.md",
+      "bytes": 7986,
+      "mtime_utc": "2026-05-05T11:14:12Z",
+      "original_path": "handoffs/p27/PHASE_15_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "44a3e1e71ee0e619764b77162b8714fabc3605a81ef25fef42f30d35fe7e52ee"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_16_REPORT.md",
+      "bytes": 7441,
+      "mtime_utc": "2026-05-05T11:30:17Z",
+      "original_path": "handoffs/p27/PHASE_16_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "354788cb292a742acda09053f60dde11e468e0b83ac8e0e62525723fe3e8b0d2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_17_REPORT.md",
+      "bytes": 4144,
+      "mtime_utc": "2026-05-05T12:46:37Z",
+      "original_path": "handoffs/p27/PHASE_17_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "69b8ef86fcbda7c5e9bac0df3c03fc29f17c9835a388e721402c9f07e5d8713c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_18_REPORT.md",
+      "bytes": 5050,
+      "mtime_utc": "2026-05-05T14:33:20Z",
+      "original_path": "handoffs/p27/PHASE_18_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "9ad2488643082a2f6b557912cbb29051cc4796cebf8111a26d33ffb0998b6729"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_19_REPORT.md",
+      "bytes": 5689,
+      "mtime_utc": "2026-05-05T15:02:27Z",
+      "original_path": "handoffs/p27/PHASE_19_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "03e2743905ee97e9a77a7a2ce0e99c18c34d125ddefab420f146f3d2a7fb7e48"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_20_REPORT.md",
+      "bytes": 3474,
+      "mtime_utc": "2026-05-05T15:08:32Z",
+      "original_path": "handoffs/p27/PHASE_20_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P27",
+      "sha256": "115a19e8c9633166af7e4d8249d1455a4343169d28287c2c4b568747b539cef7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_00_PROMPT.md",
+      "bytes": 897,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_00_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "d04ae16ea50af92bc2204750b08988fe0468c80abbeeebd5970db90c8f8090c5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_01_PROMPT.md",
+      "bytes": 869,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_01_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "a3a427e4be8979f0a89351063fad4383d536d30d7865ffa906e236c65c152850"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_02_PROMPT.md",
+      "bytes": 891,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_02_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "438c59b513b79cdb54bd0b4e5f3bf3f6e4c2c8dee2f074e3c27e46dede032102"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_03_PROMPT.md",
+      "bytes": 921,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_03_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "51bcffc1de52d85e6ae0daaa74c4b02e594c871158734f0e989946c991b4400a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_04_PROMPT.md",
+      "bytes": 891,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_04_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "be55786a823f9fb693a5ab865230c20de47d7208fe933aced243f2bc25429d1b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_05_PROMPT.md",
+      "bytes": 893,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_05_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "291e8af48f0707fea17a94b4a6e47ff39e23e4a76093817c88058e92cf933c77"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_06_PROMPT.md",
+      "bytes": 887,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_06_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "c60ce6eec977f666b1af7d65a2bf0a0df75225a2759b6f4cc7cb82d396450b18"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_07_PROMPT.md",
+      "bytes": 925,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_07_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "da6c5ce9e4918eb4032a72b76592c7129d93dcde2e10c5160ece4b2b7adc56b0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_08_PROMPT.md",
+      "bytes": 871,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_08_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "0ad1e432e0d05e4befb2896a306638720a14917f2e8579bee125a5efdbf14c48"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_09_PROMPT.md",
+      "bytes": 869,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_09_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "092f670cc7990eb6935e478ccd79e95cc419dbcb9826b4141f790b23cf5230a3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_10_PROMPT.md",
+      "bytes": 865,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_10_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "af51551dcb8ade5719eb71ecbc23b203d415ea146bd1adde2bacfa4843dd9e23"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_11_PROMPT.md",
+      "bytes": 863,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_11_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "1f8e05d82da3f878b4003bf41ed6bb0fa086a600c4141e02c505e0f013d3c228"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_12_PROMPT.md",
+      "bytes": 873,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_12_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "0ef024675c6c9be739c54cfc0a55b17dece53f2386555d15070ca75184ffe48a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_13_PROMPT.md",
+      "bytes": 925,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_13_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "9ce9fae2ff387c0a2c775c142927cb9051c4946bbf881328ecad71c56abfff2c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_14_PROMPT.md",
+      "bytes": 889,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_14_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "a0b2e833a36c97eb5d701f3c16e1b608d75b408adef1eb737eda1dac2c33740d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_15_PROMPT.md",
+      "bytes": 875,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_15_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "02c4b80625e881566d514512664cf5fe81caa64976d94d1ccbda831c1fca9eab"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_16_PROMPT.md",
+      "bytes": 895,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_16_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "5b80326264a2731cee9ae5e819f5b4b5809948ff9ca56bd407a5ebde050cd280"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_17_PROMPT.md",
+      "bytes": 873,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_17_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "48ebfeb1b6128ffda5a566a6f94803ca2006847c80971d7517c01c99cfc710b5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_18_PROMPT.md",
+      "bytes": 893,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_18_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "f10b4620577430bc40f595dc0927cd9ed2e46e53f9bb56b521a0005555c1ae9a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_19_PROMPT.md",
+      "bytes": 881,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_19_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "4180bddb2bc246d28e1294a05e9c669ed23694d953d78fee8f295b07d48e8f87"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/prompts/phases/P27_PHASE_20_PROMPT.md",
+      "bytes": 867,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "prompts/phases/P27_PHASE_20_PROMPT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P27",
+      "sha256": "bf6e6cb507ac760d07b00b0a1c0f2a65ee687fe1f82eb9ab38ca65e3baa0fd5c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_agency_eval_harness.py",
+      "bytes": 3004,
+      "mtime_utc": "2026-05-05T11:29:13Z",
+      "original_path": "scripts/assert_p27_agency_eval_harness.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "fbc1a0ac741c90e46812baf6b9215679711ba4c762835f66969092ac0df98b0a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_agents_md_current.py",
+      "bytes": 761,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "scripts/assert_p27_agents_md_current.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "891e82932c3586b7017c409e6af5ccd8cf9290d7a4eff88373623b74954396d7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_cli_megafile_containment.py",
+      "bytes": 1744,
+      "mtime_utc": "2026-05-05T11:12:19Z",
+      "original_path": "scripts/assert_p27_cli_megafile_containment.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "544d91940f79092774f32ebcffd08cf67b2a37d79d5df13140c9c1737700e8ab"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_contracts_megafile_containment.py",
+      "bytes": 1882,
+      "mtime_utc": "2026-05-05T08:37:26Z",
+      "original_path": "scripts/assert_p27_contracts_megafile_containment.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "9a622593e7e57509e5cf645d703d5f865653967a7a7bb6bb6d5687ad7e88870a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_current_run_truth.py",
+      "bytes": 1084,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "scripts/assert_p27_current_run_truth.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "e858811d42522cf14e7c24f685d0876e5c3854a98a3bfa174a694ca60c6ad2c3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_memory_no_local_truth.py",
+      "bytes": 2134,
+      "mtime_utc": "2026-05-05T02:43:46Z",
+      "original_path": "scripts/assert_p27_memory_no_local_truth.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "bede41ea4b901dcf2e13e3213d9973ec641cc794c389b5e864b273e107934962"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_no_scaffold_profile_inflation.py",
+      "bytes": 1003,
+      "mtime_utc": "2026-05-04T23:17:25Z",
+      "original_path": "scripts/assert_p27_no_scaffold_profile_inflation.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "451843b645ca3ddc17562f713de85f4edaf2859ec0afa9fe2094922b26f5f39b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_ownership_scanner_fail_closed.py",
+      "bytes": 2234,
+      "mtime_utc": "2026-05-04T23:03:35Z",
+      "original_path": "scripts/assert_p27_ownership_scanner_fail_closed.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "a65b537469a04ff2a11ea8a13335140ba97cbf30d9ee209971b5c472a384fdbc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_semantic_disclosure.py",
+      "bytes": 3004,
+      "mtime_utc": "2026-05-05T12:45:13Z",
+      "original_path": "scripts/assert_p27_semantic_disclosure.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "6ef42ae3213ed7876afdb6b7ff08eb6f1272390be262a3263bacca19f5ed6986"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_strict_structured_inputs.py",
+      "bytes": 1469,
+      "mtime_utc": "2026-05-05T11:13:19Z",
+      "original_path": "scripts/assert_p27_strict_structured_inputs.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "da6c60fc4e5ca9eb84152b3f133f17cef0cbce1f26da2a0aff7e1508113a5e9e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_support_docs_traceable.py",
+      "bytes": 3311,
+      "mtime_utc": "2026-05-05T14:31:50Z",
+      "original_path": "scripts/assert_p27_support_docs_traceable.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "17c7fbfc3deccaa93f67951237188c078930e86e5b554dae2144e1ef2df12b4b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/assert_p27_verifier_surface.py",
+      "bytes": 1327,
+      "mtime_utc": "2026-05-04T22:49:45Z",
+      "original_path": "scripts/assert_p27_verifier_surface.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "9ad12d715813ee885974ed189eb4beb64c3a6518210162d73f60baaf356150c6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/p27_provider_path_smoke.py",
+      "bytes": 11185,
+      "mtime_utc": "2026-05-05T02:19:28Z",
+      "original_path": "scripts/p27_provider_path_smoke.py",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "5c982eb144490ec3145b62c4e80ac636eae43a4d68b0dc5a9c885743b0fb433d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/scripts/p27_verify.sh",
+      "bytes": 4441,
+      "mtime_utc": "2026-05-05T14:32:06Z",
+      "original_path": "scripts/p27_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "38c3c8196d96446d94fe69bb8eead7dc473e06434ab7cd0a663836ee02148217"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P27",
+  "skipped_existing": [],
+  "superseded_by": "P28",
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25",
+  "unclassified": []
+}

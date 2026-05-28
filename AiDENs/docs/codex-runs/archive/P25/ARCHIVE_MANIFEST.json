@@ -1,0 +1,95 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-04T19:59:59Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/docs/p25/P25_FINAL_AUDIT_REPORT.md",
+      "bytes": 4864,
+      "mtime_utc": "2026-05-04T01:04:53Z",
+      "original_path": "docs/p25/P25_FINAL_AUDIT_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P25",
+      "sha256": "814b4c82ec9ebccca4ce09b013167f29a46c02930ce961dc4d36abd48aa7710d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/docs/p25/P25_KNOWN_LIMITATIONS.md",
+      "bytes": 1016,
+      "mtime_utc": "2026-05-04T00:53:26Z",
+      "original_path": "docs/p25/P25_KNOWN_LIMITATIONS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P25",
+      "sha256": "b1dca6bf089d89e24bb2a288f9cc6a6689a93d9351993b7303ea5897be65e9b9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/fixtures/p25/coding-agent-repo/Cargo.toml",
+      "bytes": 96,
+      "mtime_utc": "2026-05-04T00:47:55Z",
+      "original_path": "fixtures/p25/coding-agent-repo/Cargo.toml",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P25",
+      "sha256": "8d693aea9d873739f1590ea1f9aef7043213fd7115e5d1a296cf3396141d842b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/fixtures/p25/coding-agent-repo/README.md",
+      "bytes": 244,
+      "mtime_utc": "2026-05-04T00:47:53Z",
+      "original_path": "fixtures/p25/coding-agent-repo/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P25",
+      "sha256": "89fc7e57cb5dc14cc481a066a08657af424b6444758269be94c4578f52edbef5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/fixtures/p25/coding-agent-repo/src/lib.rs",
+      "bytes": 96,
+      "mtime_utc": "2026-05-04T00:47:54Z",
+      "original_path": "fixtures/p25/coding-agent-repo/src/lib.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P25",
+      "sha256": "f09c5b6fa04bbc26ea13a0153b43239dbea7edd84ace5fb9c8f5ad68d9dea5aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/prompts/P25_OPERATOR_PASTE_FIRST.md",
+      "bytes": 1189,
+      "mtime_utc": "2026-05-04T00:22:08Z",
+      "original_path": "prompts/P25_OPERATOR_PASTE_FIRST.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P25",
+      "sha256": "59fc7d71cb61f0d6bbf282052d3cd091d879c500a592919cc70c05608df84858"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/scripts/p25_verify.py",
+      "bytes": 12219,
+      "mtime_utc": "2026-05-03T23:11:54Z",
+      "original_path": "scripts/p25_verify.py",
+      "reason": "stale-run-script",
+      "run_id": "P25",
+      "sha256": "0277ef14059d9b9d81cfa33a818a93a6e54534418b781ac28bf4540adf9f444d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/scripts/p25_verify.sh",
+      "bytes": 73,
+      "mtime_utc": "2026-05-03T23:10:19Z",
+      "original_path": "scripts/p25_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P25",
+      "sha256": "8f59e7458468997c9d8f72973716a63b4ccbf31b8343d22742f23f4ecff0284c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25/files/templates/P25_STATUS_EVIDENCE_MANIFEST.template.json",
+      "bytes": 354,
+      "mtime_utc": "2026-05-04T00:22:08Z",
+      "original_path": "templates/P25_STATUS_EVIDENCE_MANIFEST.template.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P25",
+      "sha256": "18b935382a3deb8c3f9f68c6b00c29d1b27a27ceeaf903a8842b67507a04fdc8"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P25",
+  "skipped_existing": [],
+  "superseded_by": "P26",
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25",
+  "unclassified": []
+}

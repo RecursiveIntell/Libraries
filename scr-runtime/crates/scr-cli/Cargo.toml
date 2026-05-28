@@ -1,0 +1,21 @@
+[package]
+name = "scr-cli"
+version = "0.1.0"
+edition = "2021"
+description = "CLI for SCR-P0A fixture and schema workflows."
+license = "MIT"
+
+[[bin]]
+name = "scr-cli"
+path = "src/main.rs"
+
+[dependencies]
+schemars = { workspace = true }
+scr-audit-adapter = { path = "../scr-audit-adapter" }
+scr-kernel = { path = "../scr-kernel" }
+scr-reference = { path = "../scr-reference" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

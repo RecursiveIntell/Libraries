@@ -1,0 +1,20 @@
+app_id = "aidens-example-memory"
+profile_id = "memory-agent"
+memory_mode = "required"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+model = "mock-memory"
+mock_response = "mock memory response from AiDENs"
+
+[receipts]
+store_root = "target/aidens-receipts/aidens-example-memory"
+
+[memory]
+store_root = "target/aidens-memory/aidens-example-memory"
+
+[security]
+approval_mode = "require-side-effects"
+network_policy = "disabled"
+write_policy = "approval-required"

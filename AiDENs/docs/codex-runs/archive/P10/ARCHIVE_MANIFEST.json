@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P10/files/handoffs/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.md",
+      "bytes": 4619,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "handoffs/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P10",
+      "sha256": "7a0ba9bef175f2f5b24805b714ac1dc8b4b20cf95837f95e4b24dbefe7a5f44e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P10/files/prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md",
+      "bytes": 1306,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P10",
+      "sha256": "e5d92ba6bd6e238c12f7e5b22b493880043f1718308d5bf535f9e98fc8e6f424"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P10/files/tasks/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.json",
+      "bytes": 1125,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "tasks/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.json",
+      "reason": "stale-run-task",
+      "run_id": "P10",
+      "sha256": "afd72e40be330db3fb5af7642eb820c3714a10f60c7a65f778a3f4061d658166"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P10",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

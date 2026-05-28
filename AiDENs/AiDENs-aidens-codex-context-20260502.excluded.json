@@ -1,0 +1,172 @@
+{
+  "created_utc": "2026-05-02T06:04:37Z",
+  "excluded": [
+    {
+      "path": "AiDENs/AiDENs 4\u204426.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.codex-archive.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "AiDENs/AiDENs.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260425.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260429.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260430.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_05_SECRET_REDACTION_AND_API_KEY_WARNING_CLOSURE.md",
+      "reason": "secret-like-filename"
+    },
+    {
+      "path": "AiDENs/scripts/p22_secret_scan_fixture_test.py",
+      "reason": "secret-like-filename"
+    },
+    {
+      "path": "Libraries(3-25-26).zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20442-2.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20443.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "MASTER_AUDIT_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "MASTER_ISSUE_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "discovery-portfolio/tests/property_contracts.proptest-regressions",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "forge-pilot/CODEX_IMPLEMENTATION_PROMPT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "libraries 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-3.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-4.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260323.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260324.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260326.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260328.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260330.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "schemas.7z",
+      "reason": "archive-file"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": "AiDENs/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-app-kit/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-cli/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "forge-memory-bridge/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "forge-memory-bridge/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "stack-ids/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "stack-ids/.git",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "summary": {
+    "archive-file": 22,
+    "doc-binary-disabled": 2,
+    "generated-output": 1,
+    "secret-like-filename": 2,
+    "stale-codex-artifact-disabled": 1,
+    "unsupported-extension-or-basename": 1
+  }
+}

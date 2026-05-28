@@ -1,0 +1,14 @@
+{
+  "schema_version": "AuditExtractionPolicyV1",
+  "audit_extraction_policy_id": "aep_001",
+  "allowed_artifact_families": [
+    "EpisodeBundleV1",
+    "DecisionTraceV1",
+    "PostmortemBundleV1"
+  ],
+  "required_redaction_rule_set_id": "rrs_001",
+  "disclosure_budget_class": "regulator_export",
+  "export_package_format": "attested_bundle",
+  "expiry_hours": 72,
+  "evidence_preservation_required": true
+}

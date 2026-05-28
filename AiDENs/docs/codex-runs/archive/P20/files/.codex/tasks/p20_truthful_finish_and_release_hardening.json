@@ -1,0 +1,5 @@
+{
+  "run_title": "P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING",
+  "prompt": ".codex/prompts/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.md",
+  "manual_injections": "docs/p20/prompts/phase_injections"
+}

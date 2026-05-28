@@ -1,0 +1,17 @@
+{
+  "plan_id": "migration-plan:v1",
+  "artifact_family": "schema-compatibility-report",
+  "from_version": 1,
+  "to_version": 1,
+  "phases": [
+    "expand",
+    "backfill",
+    "flip-read",
+    "contract"
+  ],
+  "requires_major_bump": false,
+  "compatible_without_backfill": true,
+  "reason_codes": [
+    "expand-backfill-flip-read-contract"
+  ]
+}

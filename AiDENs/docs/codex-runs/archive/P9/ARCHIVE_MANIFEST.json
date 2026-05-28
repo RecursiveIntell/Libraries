@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P9/files/handoffs/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.md",
+      "bytes": 4442,
+      "mtime_utc": "2026-04-28T23:19:12Z",
+      "original_path": "handoffs/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P9",
+      "sha256": "93ba9388ddf82bbef9250ee722df1b6a3513d33e12b000e0b222369fa4e1224a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P9/files/prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md",
+      "bytes": 1311,
+      "mtime_utc": "2026-04-28T21:20:37Z",
+      "original_path": "prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P9",
+      "sha256": "653c73bad112eeda92417dfd2b84057bc2648ad9b8b79a881f0f703d925af6e8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P9/files/tasks/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.json",
+      "bytes": 1191,
+      "mtime_utc": "2026-04-28T21:20:37Z",
+      "original_path": "tasks/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.json",
+      "reason": "stale-run-task",
+      "run_id": "P9",
+      "sha256": "624aafb26875e161e19e70039441d19f9d69da8743bfc5b6143a9186d0ad9dcb"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P9",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

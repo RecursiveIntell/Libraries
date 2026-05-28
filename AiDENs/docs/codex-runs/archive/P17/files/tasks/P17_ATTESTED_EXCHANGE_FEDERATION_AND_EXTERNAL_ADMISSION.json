@@ -1,0 +1,32 @@
+{
+  "pass_id": "P17",
+  "title": "Attested exchange, trust roots, federation, and external artifact admission",
+  "phase": "Federated horizon",
+  "prompt_file": "prompts/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION_PROMPT.md",
+  "pass_doc": "passes/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.md",
+  "crates": [
+    "aidens-delegation-kit",
+    "aidens-governance-kit",
+    "aidens-memory-kit",
+    "aidens-contracts",
+    "aidens-receipts"
+  ],
+  "artifacts": [
+    "AttestationEnvelopeV1",
+    "TrustRootV1",
+    "AdmissionDecisionV1",
+    "RemoteOracleReceiptV1",
+    "TreatyV1",
+    "SettlementCaseV1",
+    "SharedDispositionV1"
+  ],
+  "acceptance": [
+    "External artifact can be imported only through AdmissionDecisionV1.",
+    "Remote contradiction creates settlement/dispute artifact, not direct overwrite.",
+    "Trust-root revocation downgrades affected artifacts and emits receipts."
+  ],
+  "forbidden": [
+    "Do not let remote votes overwrite local truth.",
+    "Do not accept unsigned external truth-bearing artifacts without quarantine/disclosure."
+  ]
+}

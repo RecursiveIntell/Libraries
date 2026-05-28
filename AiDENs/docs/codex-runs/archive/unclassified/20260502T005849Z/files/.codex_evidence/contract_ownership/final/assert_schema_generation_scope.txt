@@ -1,0 +1,6 @@
+COMMAND: python3 scripts/assert_schema_generation_scope.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: schema generation scope appears AiDENs-local/non-authoritative (registered_families=58, checked_schema_files=58).
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00

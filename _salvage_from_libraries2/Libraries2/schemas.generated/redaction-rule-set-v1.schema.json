@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RedactionFieldActionV1": {
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "field"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "approval_requirement": {
+      "type": "string"
+    },
+    "default_disclosure_budget_class": {
+      "type": "string"
+    },
+    "field_actions": {
+      "items": {
+        "$ref": "#/definitions/RedactionFieldActionV1"
+      },
+      "type": "array"
+    },
+    "redaction_rule_set_id": {
+      "type": "string"
+    },
+    "reversibility_class": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "target_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "approval_requirement",
+    "default_disclosure_budget_class",
+    "redaction_rule_set_id",
+    "reversibility_class",
+    "schema_version"
+  ],
+  "title": "RedactionRuleSetV1",
+  "type": "object"
+}

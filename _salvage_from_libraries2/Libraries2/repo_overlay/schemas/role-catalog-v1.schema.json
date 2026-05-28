@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RoleCatalogV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "role_catalog_id": {
+      "type": "string"
+    },
+    "role_definitions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "default_autonomy_ceiling": {
+      "type": "string"
+    },
+    "scope_rule": {
+      "type": "string"
+    },
+    "review_cycle_days": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "schema_version",
+    "role_catalog_id",
+    "role_definitions",
+    "default_autonomy_ceiling",
+    "scope_rule",
+    "review_cycle_days"
+  ]
+}

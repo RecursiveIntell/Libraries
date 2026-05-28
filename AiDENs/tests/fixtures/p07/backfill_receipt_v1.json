@@ -1,0 +1,17 @@
+{
+  "receipt_id": "backfill:fixture",
+  "kind": "backfill",
+  "migration_plan_id": "migration-plan:v1",
+  "artifact_family": "schema-compatibility-report",
+  "from_version": 1,
+  "to_version": 1,
+  "migrated_fixture_count": 1,
+  "succeeded": true,
+  "source_fixture_paths": [
+    "tests/fixtures/p07/schema_compatibility_report_v1.json"
+  ],
+  "reason_codes": [
+    "historical-fixtures-readable"
+  ],
+  "backfilled_at": "2026-04-26T00:00:00Z"
+}

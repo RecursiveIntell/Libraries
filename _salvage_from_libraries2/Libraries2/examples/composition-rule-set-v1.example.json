@@ -1,0 +1,103 @@
+{
+  "schema_version": "CompositionRuleSetV1",
+  "composition_rule_set_id": "composition-rule-set-001",
+  "version": "reference-v1",
+  "family_rules": [
+    {
+      "obligation_family": "effect.allowed_run_modes",
+      "fold_class": "intersection",
+      "output_kind": "effect",
+      "monotone_additions_expected": true,
+      "block_on_unresolved_conflict": true,
+      "admissible_exception_classes": [
+        "break_glass"
+      ],
+      "downgrade_behavior": "advisory_only",
+      "explanation": "allowed run modes narrow by intersection"
+    },
+    {
+      "obligation_family": "approval.required",
+      "fold_class": "union",
+      "output_kind": "approval",
+      "monotone_additions_expected": true,
+      "block_on_unresolved_conflict": false,
+      "admissible_exception_classes": [],
+      "downgrade_behavior": "accumulate",
+      "explanation": "approval obligations accumulate"
+    },
+    {
+      "obligation_family": "residency.allowed_execution_regions",
+      "fold_class": "intersection",
+      "output_kind": "residency",
+      "monotone_additions_expected": true,
+      "block_on_unresolved_conflict": true,
+      "admissible_exception_classes": [
+        "locality_exception"
+      ],
+      "downgrade_behavior": "blocked_without_exception",
+      "explanation": "execution region allowances narrow by overlap"
+    },
+    {
+      "obligation_family": "continuity.exception_ttl_minutes",
+      "fold_class": "min_of_maxima",
+      "output_kind": "continuity",
+      "monotone_additions_expected": true,
+      "block_on_unresolved_conflict": false,
+      "admissible_exception_classes": [
+        "incident_override"
+      ],
+      "downgrade_behavior": "tighten",
+      "explanation": "continuity exception TTL uses the smallest cap"
+    },
+    {
+      "obligation_family": "residency.forbidden_transfer_classes",
+      "fold_class": "block_dominant",
+      "output_kind": "block",
+      "monotone_additions_expected": true,
+      "block_on_unresolved_conflict": true,
+      "admissible_exception_classes": [
+        "locality_exception"
+      ],
+      "downgrade_behavior": "blocked",
+      "explanation": "forbidden transfer classes survive until explicitly excepted"
+    }
+  ],
+  "conflict_classes": [
+    {
+      "conflict_class": "empty_intersection",
+      "blocking": true,
+      "review_path": "human_constitution_review",
+      "explanation": "intersection fold yielded no lawful overlap"
+    },
+    {
+      "conflict_class": "incomparable_values",
+      "blocking": true,
+      "review_path": "human_constitution_review",
+      "explanation": "incompatible profile requirements diverged without exception"
+    }
+  ],
+  "exception_rules": [
+    {
+      "exception_class": "locality_exception",
+      "allowed_obligation_families": [
+        "residency.allowed_execution_regions",
+        "residency.forbidden_transfer_classes"
+      ],
+      "requires_approval_refs": true,
+      "requires_expiry": true,
+      "residual_obligations_mandatory": true
+    },
+    {
+      "exception_class": "break_glass",
+      "allowed_obligation_families": [
+        "effect.allowed_run_modes",
+        "delegation.max_depth"
+      ],
+      "requires_approval_refs": true,
+      "requires_expiry": true,
+      "residual_obligations_mandatory": true
+    }
+  ],
+  "downgrade_behavior": "emit_receipt_and_never_fall_back_to_permissive",
+  "reference_evaluator_version": "profile-runtime/reference-evaluator/v1"
+}

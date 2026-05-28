@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "budget_class": {
+      "type": "string"
+    },
+    "exhaustion_behavior": {
+      "type": "string"
+    },
+    "experiment_budget_id": {
+      "type": "string"
+    },
+    "human_review_allowance": {
+      "type": "string"
+    },
+    "max_exactness": {
+      "type": "string"
+    },
+    "oracle_allowance": {
+      "type": "string"
+    },
+    "refuter_allowance": {
+      "type": "string"
+    },
+    "replay_allowance": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "budget_class",
+    "exhaustion_behavior",
+    "experiment_budget_id",
+    "human_review_allowance",
+    "max_exactness",
+    "oracle_allowance",
+    "refuter_allowance",
+    "replay_allowance",
+    "schema_version"
+  ],
+  "title": "ExperimentBudgetV1",
+  "type": "object"
+}

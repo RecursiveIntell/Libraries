@@ -1,0 +1,4 @@
+[completion]
+run="p0"
+gate_mode="automated"
+packaged_artifacts="enabled"

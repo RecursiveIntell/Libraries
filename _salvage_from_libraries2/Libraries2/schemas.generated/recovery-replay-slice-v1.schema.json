@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "gaps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "recovery_replay_slice_id": {
+      "type": "string"
+    },
+    "replay_state": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "time_window": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_refs",
+    "gaps",
+    "incident_case_id",
+    "recovery_replay_slice_id",
+    "replay_state",
+    "schema_version",
+    "time_window"
+  ],
+  "title": "RecoveryReplaySliceV1",
+  "type": "object"
+}

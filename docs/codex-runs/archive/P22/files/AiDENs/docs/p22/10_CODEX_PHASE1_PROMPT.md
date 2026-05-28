@@ -1,0 +1,3 @@
+# 10 — Phase 1 Prompt
+
+> You are in `~/Coding/Libraries/AiDENs`. Implement Phase 1 only. Build provider/tool/security/permit/arbiter/budget/runner behavior using the already-created Phase 0 crates. Inspect `~/Coding/Recall/recall-session/src/provider.rs`, `provider_bridge.rs`, `session/tool_dispatch.rs`, `tool_catalog.rs`, `approval.rs`, and arbiter tests. Preserve concepts, not the `RecallSession` god object. Add tests for provider route truth, parser fallback receipts, disabled tools absent, write tools requiring permits, no full registry exposure by default, and run receipts. Keep Recall read-only. Do not add Tauri/daemon dependencies.

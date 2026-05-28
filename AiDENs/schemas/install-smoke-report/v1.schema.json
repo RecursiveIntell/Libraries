@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "InstallSmokeStepV1": {
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "output_digest": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "step": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "output_digest",
+        "passed",
+        "step"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/definitions/InstallSmokeStepV1"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "kind",
+    "passed",
+    "receipt_id",
+    "recorded_at",
+    "steps"
+  ],
+  "title": "InstallSmokeReportV1",
+  "type": "object"
+}

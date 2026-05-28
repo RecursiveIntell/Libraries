@@ -130,12 +130,21 @@ fn shortest_path(
             if next == to {
                 let mut path = vec![to.to_string()];
                 let mut cursor = to.to_string();
+                let mut guard = 0usize;
                 while let Some(parent) = parents.get(&cursor) {
                     path.push(parent.clone());
                     if parent == from {
                         break;
                     }
                     cursor = parent.clone();
+                    guard += 1;
+                    if guard > max_depth {
+                        return Err(MemoryError::CorruptData {
+                            table: "graph_path",
+                            row_id: to.to_string(),
+                            detail: "parent reconstruction exceeded max_depth".to_string(),
+                        });
+                    }
                 }
                 path.reverse();
                 return Ok(Some(path));
@@ -186,13 +195,33 @@ fn dedupe_edges(edges: Vec<GraphEdge>) -> Result<Vec<GraphEdge>, MemoryError> {
 fn edge_dedup_key(edge: &GraphEdge) -> Result<String, MemoryError> {
     let edge_type = serde_json::to_string(&edge.edge_type)
         .map_err(|err| MemoryError::Other(format!("failed to serialize graph edge type: {err}")))?;
-    let metadata = serde_json::to_string(&edge.metadata).map_err(|err| {
+    let metadata = canonical_json_string(&edge.metadata).map_err(|err| {
         MemoryError::Other(format!("failed to serialize graph edge metadata: {err}"))
     })?;
     Ok(format!(
         "{}|{}|{}|{:.6}|{}",
         edge.source, edge.target, edge_type, edge.weight, metadata
     ))
+}
+
+fn canonical_json_string(value: &Option<serde_json::Value>) -> Result<String, serde_json::Error> {
+    fn canonicalize(value: serde_json::Value) -> serde_json::Value {
+        match value {
+            serde_json::Value::Object(map) => {
+                let ordered = map
+                    .into_iter()
+                    .map(|(key, value)| (key, canonicalize(value)))
+                    .collect();
+                serde_json::Value::Object(ordered)
+            }
+            serde_json::Value::Array(values) => {
+                serde_json::Value::Array(values.into_iter().map(canonicalize).collect())
+            }
+            other => other,
+        }
+    }
+
+    serde_json::to_string(&value.clone().map(canonicalize))
 }
 
 fn reverse_edge(edge: GraphEdge) -> GraphEdge {
@@ -780,7 +809,13 @@ fn semantic_edges(
             if candidate_embedding.len() != embedding.len() {
                 return None;
             }
-            let similarity = search::cosine_similarity(embedding, &candidate_embedding);
+            let similarity = match search::cosine_similarity(embedding, &candidate_embedding) {
+                Ok(similarity) => similarity,
+                Err(error) => {
+                    tracing::warn!(error = %error, node_id, "skipping invalid semantic graph vector");
+                    return None;
+                }
+            };
             (similarity >= min_similarity).then_some((node_id, similarity))
         })
         .collect::<Vec<_>>();

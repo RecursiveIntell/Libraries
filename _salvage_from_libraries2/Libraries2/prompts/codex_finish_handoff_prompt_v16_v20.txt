@@ -1,0 +1,23 @@
+Use the attached closeout pack and finish the current bounded v16-v20 pass in the Rust workspace.
+
+Priorities:
+1. add crate-local README/AGENTS files for the new owner crates
+2. add the missing v16 artifacts: SharedReplaySliceV1, SharedDivergenceReportV1, TreatySuspensionV1
+3. deepen v17 fit gating so refuter suite and stability report matter
+4. deepen v18 portfolio selection so information value and budget pressure matter
+5. deepen v19 amendment/archive behavior so rollback, semantic diff, and query guarantees are explicit
+6. add v20 SelfHostingBuildReceiptV1 and emit generated companion bundles plus veto/challenge baseline
+7. keep contract-schema-gen, schema manifests, fixtures, and kernel-conformance in sync
+8. update repo docs so they match reality
+
+Rules:
+- no authority flattening
+- no silent promotion of advisory artifacts
+- no giant speculative refactor
+- no fake completion claims
+
+Before you finish:
+- run targeted crate tests
+- run kernel-conformance tests
+- run `cargo run -p contract-schema-gen -- --check schemas`
+- update docs to reflect exactly what landed

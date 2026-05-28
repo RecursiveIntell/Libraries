@@ -1,0 +1,15 @@
+{
+  "receipt_id": "permit-use:fixture",
+  "kind": "permit-use",
+  "permit_id": "permit:fixture",
+  "tool_id": "aidens:file-write:1",
+  "risk_class": "write",
+  "sandbox_root": "/repo",
+  "run_id": "run:fixture",
+  "attempt_id": "attempt:fixture",
+  "allowed": true,
+  "reason_codes": [
+    "permit-scope-matched"
+  ],
+  "used_at": "2026-04-26T00:00:00Z"
+}

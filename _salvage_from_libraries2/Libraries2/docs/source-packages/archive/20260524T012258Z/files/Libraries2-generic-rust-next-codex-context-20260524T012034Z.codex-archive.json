@@ -1,0 +1,1093 @@
+{
+  "active_stale_after": [],
+  "archive_only": false,
+  "archive_root": "/home/sikmindz/Coding/Libraries2/docs/codex-runs/archive",
+  "collisions": [],
+  "current_run": "P30",
+  "dry_run": false,
+  "enabled": true,
+  "errors": [],
+  "manifest_paths": [
+    "docs/codex-runs/archive/P1/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P2/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P3/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P4/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P5/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P6/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P7/ARCHIVE_MANIFEST.json"
+  ],
+  "moved": [
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P1_PRIVACY_RETENTION_DISCLOSURE_AND_REDACTION.md",
+      "bytes": 6710,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P1_PRIVACY_RETENTION_DISCLOSURE_AND_REDACTION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "c199d5a099ec209be7f2694ef2471d07bf4b1d895d6e6aa0a8c20fdf039a6b7e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/conformance/p1/README.md",
+      "bytes": 512,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p1/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "595726c76ecdcfd17d68a5f7b71a3da16e8fa665b165ceb54895be8589819264"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/contracts/fixtures/p1/audit_extraction_escalation.bundle.json",
+      "bytes": 2104,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p1/audit_extraction_escalation.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "898c68ad3cb5933f995e8ed9091975e81cc9c582f47c55188772cdf6f83ea56f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/contracts/fixtures/p1/privacy_redaction_happy_path.bundle.json",
+      "bytes": 2125,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p1/privacy_redaction_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "af6fe6c093ce9b3333c6d48070cdb1aa188c5a54fbe306cc826edb7dd6170c7a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/contracts/schemas/p1/manifest.json",
+      "bytes": 525,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p1/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "55454230c824bc29527a38bab4ea1e17ef6087462ffe26a6ab249c7c496c1bd5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/verification-policy/src/profile_p1_privacy.rs",
+      "bytes": 2546,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/src/profile_p1_privacy.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "87a6ec20dbb6b07baeb70cbe7a5355b76160c04084b1c8f1bc4fdc91f63605ed"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/verification-policy/tests/profile_p1_example_roundtrip.rs",
+      "bytes": 1814,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/tests/profile_p1_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "5819bb980d8514d724a6abb0827c95acd1f881d06f1d5ca7773af7976f81597c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/verification-policy/tests/profile_p1_fixture_conformance.rs",
+      "bytes": 1485,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/tests/profile_p1_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "b28a643a1d50eff27969ab1bccc62622b16ef6cb4aa63ac115763dc502e16dd6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P2_LOCALITY_TENANCY_RESIDENCY_AND_BOUNDARY_OVERLAY.md",
+      "bytes": 6624,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P2_LOCALITY_TENANCY_RESIDENCY_AND_BOUNDARY_OVERLAY.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "fc5941616a0a317e2ace3c7eaa376f915ebb7ccf8cf1a193f10e2ba1231f911c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/conformance/p2/README.md",
+      "bytes": 517,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p2/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "eb4ee8239b0dea299fbb5d2298196539c74b58dd5af445c6ffc67381f4f0f4fb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/contracts/fixtures/p2/locality_exception_happy_path.bundle.json",
+      "bytes": 1604,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p2/locality_exception_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "f40b9943006b0fb886503942113cfa3cd8569bb60520cd311503d8039ab8494c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/contracts/fixtures/p2/residency_transfer_blocked.bundle.json",
+      "bytes": 1617,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p2/residency_transfer_blocked.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "fd11fbb13b2328fa016fd1bc8b7f938c86edfa465585521c04634f30c8522caf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/contracts/schemas/p2/manifest.json",
+      "bytes": 544,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p2/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "9d508129bc115aa5c7690a313633bd207e65c28eed8d1794fd5cc425eaa264c5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/verification-policy/src/profile_p2_locality.rs",
+      "bytes": 2119,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/src/profile_p2_locality.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "2b9496b2f8c8575a86f02df6290fb901903da07ebfcb628b0716f1183ca4c193"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/verification-policy/tests/profile_p2_example_roundtrip.rs",
+      "bytes": 1849,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/tests/profile_p2_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "424317a452ccde9a78ad90435c8007f1dec66267f95bf8334311ed205260faa0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/verification-policy/tests/profile_p2_fixture_conformance.rs",
+      "bytes": 1513,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/tests/profile_p2_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "4d813c8a2784dfed7a99111f3f2aa0ed702178084daa6dad9398068191ea7004"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+      "bytes": 6290,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "da02bab8c17ebfe81b78ac3c2a2038cc34bab160f303fb14492ce3d843ceb0eb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/src/profile_p3_roles.rs",
+      "bytes": 2759,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/src/profile_p3_roles.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "947bc37be87fcbe35c9e6cb12469674b4ae57d81837d66e941c1a4d797cc6680"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/tests/profile_p3_example_roundtrip.rs",
+      "bytes": 1719,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/tests/profile_p3_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "3e0d86c2eb54086e7ddd959c8072f3338cc1c9c355fe78b719b956249f1dfc56"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/tests/profile_p3_fixture_conformance.rs",
+      "bytes": 1411,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/tests/profile_p3_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "ad061be3f5df25b5d0a955535fc0183b87a5ff32208ed4d5cd67267eaed893e1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/conformance/p3/README.md",
+      "bytes": 519,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p3/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "8a2b54292a2655a68838f6308401863267ffdeac6d18a76cd4f45817740019d6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/fixtures/p3/conflict_recusal_blocked.bundle.json",
+      "bytes": 2067,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p3/conflict_recusal_blocked.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "f66eb2f8cebd12d20bd501b664e010a9c63902e79af110314505880b5873a73d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/fixtures/p3/delegation_matrix_happy_path.bundle.json",
+      "bytes": 2140,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p3/delegation_matrix_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "998454da0de3f810d48a27eaaa42ec3bc56dab8dd4fc72c1eeaad8c0dc84f8cb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/schemas/p3/manifest.json",
+      "bytes": 490,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p3/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "5639da9ab07e90fde8583ce40089baa0b2d3df36930a39d99ac8c9eb24e33fd1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P4_REGULATED_DEPLOYMENT_CONTROL_MAPPING_AND_RECERTIFICATION.md",
+      "bytes": 6528,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P4_REGULATED_DEPLOYMENT_CONTROL_MAPPING_AND_RECERTIFICATION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "c5ecd384ff50f3b08e76dbd10e886115989ec7a7822cf449a900196fc14cf8c6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/assurance-runtime/src/profile_p4_regulated.rs",
+      "bytes": 2290,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/src/profile_p4_regulated.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "acbd583284a13ab3a87fab06b74e6186a6bee802a0a09d78b868da171c8a4587"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/assurance-runtime/tests/profile_p4_example_roundtrip.rs",
+      "bytes": 1860,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/tests/profile_p4_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "9416ca8d031b2ca368a897deb6dfb7259e3068a171f3470fc523eeb3ac1172ed"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/assurance-runtime/tests/profile_p4_fixture_conformance.rs",
+      "bytes": 1527,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/tests/profile_p4_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "a25dcab64e6ffe130e27f704dad7e1bd21a4857c6c9f63c294c5e346002c035e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/conformance/p4/README.md",
+      "bytes": 523,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p4/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "65f44b3d4664ca694750f79e73642eecebe36b63ebeec7b1146c8a0d2b57a6f9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/contracts/fixtures/p4/recertification_overdue_blocked.bundle.json",
+      "bytes": 1630,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p4/recertification_overdue_blocked.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "e68e70f6bdb6f9e3f245634aa60f94048f24e137c4b5cdfea62b1adf454ff61d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/contracts/fixtures/p4/regulated_release_happy_path.bundle.json",
+      "bytes": 1788,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p4/regulated_release_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "60e2dd987132b02e730ecdc02bcd5b3f3934d887b4edb9b69b200f4654a5083a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/contracts/schemas/p4/manifest.json",
+      "bytes": 554,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p4/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "e50647126fa317bd3b926cecdf2d4ef3813de3a26a3dfcd3d6f8523ea5b0f7a3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P5_SECTOR_HAZARD_LIBRARY_MONITOR_CATALOG_AND_MITIGATION_PLAYBOOK.md",
+      "bytes": 6302,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P5_SECTOR_HAZARD_LIBRARY_MONITOR_CATALOG_AND_MITIGATION_PLAYBOOK.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "b001b562af5b5f258fa526b5168c3e24a3c7107942de6327a567a6185a6ff22a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/assurance-runtime/src/profile_p5_hazard.rs",
+      "bytes": 2291,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/src/profile_p5_hazard.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "80e0b8b20803ccdf793b06b901156db6dfa6c23141c7fc7e15ecc731a3f11da0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/assurance-runtime/tests/profile_p5_example_roundtrip.rs",
+      "bytes": 1704,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/tests/profile_p5_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "d7cc0f60c193687d54b1ed8a54fe9408e2569c91ebc88098a4df7328f84c2ced"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/assurance-runtime/tests/profile_p5_fixture_conformance.rs",
+      "bytes": 1399,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/tests/profile_p5_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "2dfe6296afa58a1900c8583c97a7c0bc99dfa62f679d2f690b342b6ba4c754a6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/conformance/p5/README.md",
+      "bytes": 528,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p5/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "00a9e8fd3138f95197a30c5f4a9d002d6ccb184b033f013b781d70338a772568"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/contracts/fixtures/p5/hazard_monitor_happy_path.bundle.json",
+      "bytes": 1517,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p5/hazard_monitor_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "0d9ce9eeda192d92b4cdf9053e04d75e50d1a393b5783ce4fae268570e36fc22"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/contracts/fixtures/p5/hazard_playbook_activation.bundle.json",
+      "bytes": 1773,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p5/hazard_playbook_activation.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "d18b34403cd504253fd093df1f5161d47da13ff3fd65967dc55b5497d6f51679"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/contracts/schemas/p5/manifest.json",
+      "bytes": 493,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p5/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "a5b0902cbe1488cdacb971eb2d4cf6a7bcfe1b5fb84b6cf72164bd23e2a02b09"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P6_VENDOR_CERTIFICATION_ADAPTER_AND_EXTERNAL_EVIDENCE_TRANSLATION.md",
+      "bytes": 6535,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P6_VENDOR_CERTIFICATION_ADAPTER_AND_EXTERNAL_EVIDENCE_TRANSLATION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "35d638d8050ba6f2f853172f681d86b687ffdaa3ad24d577d9b4dd6ab95b3585"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/attestation-exchange/src/profile_p6_vendor.rs",
+      "bytes": 2175,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/attestation-exchange/src/profile_p6_vendor.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "dc7d5503a984c2f937955d204a555cce87f63e58f2c8face13b6ee95596e1af5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/attestation-exchange/tests/profile_p6_example_roundtrip.rs",
+      "bytes": 1907,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/attestation-exchange/tests/profile_p6_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "1d714da2d8d2054ac13de5cf2377a87f00f34021890f97542c6c45518d3c9a77"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/attestation-exchange/tests/profile_p6_fixture_conformance.rs",
+      "bytes": 1555,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/attestation-exchange/tests/profile_p6_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "cb4f0cfdd75ceb16c2fef6154a433c24ee12c40ea4584d4577ae8575b7b75424"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/conformance/p6/README.md",
+      "bytes": 530,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p6/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "f0802a57d3d29789a7914c1c8f6fa77080cdb520400e978479c017df6aa57155"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/contracts/fixtures/p6/vendor_adapter_happy_path.bundle.json",
+      "bytes": 1619,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p6/vendor_adapter_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "6efbe971d4dcdb042d59109dbb30e7c82611e76c15bcd5df7ce9acb17cadf3e1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/contracts/fixtures/p6/vendor_revocation_downgrade.bundle.json",
+      "bytes": 1627,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p6/vendor_revocation_downgrade.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "d428127c480d60fe2d2c0850d83cc03c4d81fdb04ef41469015661675709f797"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/contracts/schemas/p6/manifest.json",
+      "bytes": 581,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p6/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "735788468f8a29745e41d3bbdd6ea9e68a07cc94758e844b04425a62a1d5cf96"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+      "bytes": 6300,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "50c2e0e57c73c34189570e7d4515676c52f239de4d48253bbd5f0e1dbb278d4b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/conformance/p7/README.md",
+      "bytes": 522,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p7/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "0c3de3ccb024d3a224a44d3c2242fbb2f4ae53644e3cf0f0b876ab973dd8ebbe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/src/profile_p7_incident_routing.rs",
+      "bytes": 2836,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/src/profile_p7_incident_routing.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "bd324ef487b495ab3155870ce770b22bc17aaa179357ce5ab3f8fea8957015e0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/tests/profile_p7_example_roundtrip.rs",
+      "bytes": 1754,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/tests/profile_p7_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "3bcc3bec76020aa33b0db7ba2ab4e9e253550bed1f4b1dc564e968c193b3a471"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/tests/profile_p7_fixture_conformance.rs",
+      "bytes": 1443,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/tests/profile_p7_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "15ea1da94777c996a09d4141e8cf897b5d35fb316cc4f47a5b508a4a35f4981b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/fixtures/p7/incident_taxonomy_happy_path.bundle.json",
+      "bytes": 1809,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p7/incident_taxonomy_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "c32d5e3ce73530df6166ddd55023192ac8006da7204f75afd9f1f2b4ebff8119"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/fixtures/p7/pager_route_escalation_timeout.bundle.json",
+      "bytes": 1964,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p7/pager_route_escalation_timeout.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "c8adcb5eb549a13a43a33840625a1f6deb9d2d6733d571505d2f485d87c60afd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/schemas/p7/manifest.json",
+      "bytes": 509,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p7/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "60f6e235ccc28f9dd184ed29c18952b15719781991e29bc55a9cef271ead91b8"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P1_PRIVACY_RETENTION_DISCLOSURE_AND_REDACTION.md",
+      "bytes": 6710,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P1_PRIVACY_RETENTION_DISCLOSURE_AND_REDACTION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "c199d5a099ec209be7f2694ef2471d07bf4b1d895d6e6aa0a8c20fdf039a6b7e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/conformance/p1/README.md",
+      "bytes": 512,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p1/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "595726c76ecdcfd17d68a5f7b71a3da16e8fa665b165ceb54895be8589819264"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/contracts/fixtures/p1/audit_extraction_escalation.bundle.json",
+      "bytes": 2104,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p1/audit_extraction_escalation.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "898c68ad3cb5933f995e8ed9091975e81cc9c582f47c55188772cdf6f83ea56f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/contracts/fixtures/p1/privacy_redaction_happy_path.bundle.json",
+      "bytes": 2125,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p1/privacy_redaction_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "af6fe6c093ce9b3333c6d48070cdb1aa188c5a54fbe306cc826edb7dd6170c7a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/contracts/schemas/p1/manifest.json",
+      "bytes": 525,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p1/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "55454230c824bc29527a38bab4ea1e17ef6087462ffe26a6ab249c7c496c1bd5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/verification-policy/src/profile_p1_privacy.rs",
+      "bytes": 2546,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/src/profile_p1_privacy.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "87a6ec20dbb6b07baeb70cbe7a5355b76160c04084b1c8f1bc4fdc91f63605ed"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/verification-policy/tests/profile_p1_example_roundtrip.rs",
+      "bytes": 1814,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/tests/profile_p1_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "5819bb980d8514d724a6abb0827c95acd1f881d06f1d5ca7773af7976f81597c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/repo_overlay/verification-policy/tests/profile_p1_fixture_conformance.rs",
+      "bytes": 1485,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/tests/profile_p1_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P1",
+      "sha256": "b28a643a1d50eff27969ab1bccc62622b16ef6cb4aa63ac115763dc502e16dd6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P2_LOCALITY_TENANCY_RESIDENCY_AND_BOUNDARY_OVERLAY.md",
+      "bytes": 6624,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P2_LOCALITY_TENANCY_RESIDENCY_AND_BOUNDARY_OVERLAY.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "fc5941616a0a317e2ace3c7eaa376f915ebb7ccf8cf1a193f10e2ba1231f911c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/conformance/p2/README.md",
+      "bytes": 517,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p2/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "eb4ee8239b0dea299fbb5d2298196539c74b58dd5af445c6ffc67381f4f0f4fb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/contracts/fixtures/p2/locality_exception_happy_path.bundle.json",
+      "bytes": 1604,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p2/locality_exception_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "f40b9943006b0fb886503942113cfa3cd8569bb60520cd311503d8039ab8494c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/contracts/fixtures/p2/residency_transfer_blocked.bundle.json",
+      "bytes": 1617,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p2/residency_transfer_blocked.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "fd11fbb13b2328fa016fd1bc8b7f938c86edfa465585521c04634f30c8522caf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/contracts/schemas/p2/manifest.json",
+      "bytes": 544,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p2/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "9d508129bc115aa5c7690a313633bd207e65c28eed8d1794fd5cc425eaa264c5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/verification-policy/src/profile_p2_locality.rs",
+      "bytes": 2119,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/src/profile_p2_locality.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "2b9496b2f8c8575a86f02df6290fb901903da07ebfcb628b0716f1183ca4c193"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/verification-policy/tests/profile_p2_example_roundtrip.rs",
+      "bytes": 1849,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/tests/profile_p2_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "424317a452ccde9a78ad90435c8007f1dec66267f95bf8334311ed205260faa0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/repo_overlay/verification-policy/tests/profile_p2_fixture_conformance.rs",
+      "bytes": 1513,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/verification-policy/tests/profile_p2_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "4d813c8a2784dfed7a99111f3f2aa0ed702178084daa6dad9398068191ea7004"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+      "bytes": 6290,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "da02bab8c17ebfe81b78ac3c2a2038cc34bab160f303fb14492ce3d843ceb0eb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/src/profile_p3_roles.rs",
+      "bytes": 2759,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/src/profile_p3_roles.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "947bc37be87fcbe35c9e6cb12469674b4ae57d81837d66e941c1a4d797cc6680"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/tests/profile_p3_example_roundtrip.rs",
+      "bytes": 1719,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/tests/profile_p3_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "3e0d86c2eb54086e7ddd959c8072f3338cc1c9c355fe78b719b956249f1dfc56"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/tests/profile_p3_fixture_conformance.rs",
+      "bytes": 1411,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/tests/profile_p3_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "ad061be3f5df25b5d0a955535fc0183b87a5ff32208ed4d5cd67267eaed893e1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/conformance/p3/README.md",
+      "bytes": 519,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p3/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "8a2b54292a2655a68838f6308401863267ffdeac6d18a76cd4f45817740019d6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/fixtures/p3/conflict_recusal_blocked.bundle.json",
+      "bytes": 2067,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p3/conflict_recusal_blocked.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "f66eb2f8cebd12d20bd501b664e010a9c63902e79af110314505880b5873a73d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/fixtures/p3/delegation_matrix_happy_path.bundle.json",
+      "bytes": 2140,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p3/delegation_matrix_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "998454da0de3f810d48a27eaaa42ec3bc56dab8dd4fc72c1eeaad8c0dc84f8cb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/schemas/p3/manifest.json",
+      "bytes": 490,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p3/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "5639da9ab07e90fde8583ce40089baa0b2d3df36930a39d99ac8c9eb24e33fd1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P4_REGULATED_DEPLOYMENT_CONTROL_MAPPING_AND_RECERTIFICATION.md",
+      "bytes": 6528,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P4_REGULATED_DEPLOYMENT_CONTROL_MAPPING_AND_RECERTIFICATION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "c5ecd384ff50f3b08e76dbd10e886115989ec7a7822cf449a900196fc14cf8c6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/assurance-runtime/src/profile_p4_regulated.rs",
+      "bytes": 2290,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/src/profile_p4_regulated.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "acbd583284a13ab3a87fab06b74e6186a6bee802a0a09d78b868da171c8a4587"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/assurance-runtime/tests/profile_p4_example_roundtrip.rs",
+      "bytes": 1860,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/tests/profile_p4_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "9416ca8d031b2ca368a897deb6dfb7259e3068a171f3470fc523eeb3ac1172ed"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/assurance-runtime/tests/profile_p4_fixture_conformance.rs",
+      "bytes": 1527,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/tests/profile_p4_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "a25dcab64e6ffe130e27f704dad7e1bd21a4857c6c9f63c294c5e346002c035e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/conformance/p4/README.md",
+      "bytes": 523,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p4/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "65f44b3d4664ca694750f79e73642eecebe36b63ebeec7b1146c8a0d2b57a6f9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/contracts/fixtures/p4/recertification_overdue_blocked.bundle.json",
+      "bytes": 1630,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p4/recertification_overdue_blocked.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "e68e70f6bdb6f9e3f245634aa60f94048f24e137c4b5cdfea62b1adf454ff61d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/contracts/fixtures/p4/regulated_release_happy_path.bundle.json",
+      "bytes": 1788,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p4/regulated_release_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "60e2dd987132b02e730ecdc02bcd5b3f3934d887b4edb9b69b200f4654a5083a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P4/files/repo_overlay/contracts/schemas/p4/manifest.json",
+      "bytes": 554,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p4/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P4",
+      "sha256": "e50647126fa317bd3b926cecdf2d4ef3813de3a26a3dfcd3d6f8523ea5b0f7a3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P5_SECTOR_HAZARD_LIBRARY_MONITOR_CATALOG_AND_MITIGATION_PLAYBOOK.md",
+      "bytes": 6302,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P5_SECTOR_HAZARD_LIBRARY_MONITOR_CATALOG_AND_MITIGATION_PLAYBOOK.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "b001b562af5b5f258fa526b5168c3e24a3c7107942de6327a567a6185a6ff22a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/assurance-runtime/src/profile_p5_hazard.rs",
+      "bytes": 2291,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/src/profile_p5_hazard.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "80e0b8b20803ccdf793b06b901156db6dfa6c23141c7fc7e15ecc731a3f11da0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/assurance-runtime/tests/profile_p5_example_roundtrip.rs",
+      "bytes": 1704,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/tests/profile_p5_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "d7cc0f60c193687d54b1ed8a54fe9408e2569c91ebc88098a4df7328f84c2ced"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/assurance-runtime/tests/profile_p5_fixture_conformance.rs",
+      "bytes": 1399,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/assurance-runtime/tests/profile_p5_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "2dfe6296afa58a1900c8583c97a7c0bc99dfa62f679d2f690b342b6ba4c754a6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/conformance/p5/README.md",
+      "bytes": 528,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p5/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "00a9e8fd3138f95197a30c5f4a9d002d6ccb184b033f013b781d70338a772568"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/contracts/fixtures/p5/hazard_monitor_happy_path.bundle.json",
+      "bytes": 1517,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p5/hazard_monitor_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "0d9ce9eeda192d92b4cdf9053e04d75e50d1a393b5783ce4fae268570e36fc22"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/contracts/fixtures/p5/hazard_playbook_activation.bundle.json",
+      "bytes": 1773,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p5/hazard_playbook_activation.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "d18b34403cd504253fd093df1f5161d47da13ff3fd65967dc55b5497d6f51679"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/repo_overlay/contracts/schemas/p5/manifest.json",
+      "bytes": 493,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p5/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "a5b0902cbe1488cdacb971eb2d4cf6a7bcfe1b5fb84b6cf72164bd23e2a02b09"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P6_VENDOR_CERTIFICATION_ADAPTER_AND_EXTERNAL_EVIDENCE_TRANSLATION.md",
+      "bytes": 6535,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P6_VENDOR_CERTIFICATION_ADAPTER_AND_EXTERNAL_EVIDENCE_TRANSLATION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "35d638d8050ba6f2f853172f681d86b687ffdaa3ad24d577d9b4dd6ab95b3585"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/attestation-exchange/src/profile_p6_vendor.rs",
+      "bytes": 2175,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/attestation-exchange/src/profile_p6_vendor.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "dc7d5503a984c2f937955d204a555cce87f63e58f2c8face13b6ee95596e1af5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/attestation-exchange/tests/profile_p6_example_roundtrip.rs",
+      "bytes": 1907,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/attestation-exchange/tests/profile_p6_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "1d714da2d8d2054ac13de5cf2377a87f00f34021890f97542c6c45518d3c9a77"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/attestation-exchange/tests/profile_p6_fixture_conformance.rs",
+      "bytes": 1555,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/attestation-exchange/tests/profile_p6_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "cb4f0cfdd75ceb16c2fef6154a433c24ee12c40ea4584d4577ae8575b7b75424"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/conformance/p6/README.md",
+      "bytes": 530,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p6/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "f0802a57d3d29789a7914c1c8f6fa77080cdb520400e978479c017df6aa57155"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/contracts/fixtures/p6/vendor_adapter_happy_path.bundle.json",
+      "bytes": 1619,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p6/vendor_adapter_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "6efbe971d4dcdb042d59109dbb30e7c82611e76c15bcd5df7ce9acb17cadf3e1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/contracts/fixtures/p6/vendor_revocation_downgrade.bundle.json",
+      "bytes": 1627,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p6/vendor_revocation_downgrade.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "d428127c480d60fe2d2c0850d83cc03c4d81fdb04ef41469015661675709f797"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/repo_overlay/contracts/schemas/p6/manifest.json",
+      "bytes": 581,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p6/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P6",
+      "sha256": "735788468f8a29745e41d3bbdd6ea9e68a07cc94758e844b04425a62a1d5cf96"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+      "bytes": 6300,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "50c2e0e57c73c34189570e7d4515676c52f239de4d48253bbd5f0e1dbb278d4b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/conformance/p7/README.md",
+      "bytes": 522,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p7/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "0c3de3ccb024d3a224a44d3c2242fbb2f4ae53644e3cf0f0b876ab973dd8ebbe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/src/profile_p7_incident_routing.rs",
+      "bytes": 2836,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/src/profile_p7_incident_routing.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "bd324ef487b495ab3155870ce770b22bc17aaa179357ce5ab3f8fea8957015e0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/tests/profile_p7_example_roundtrip.rs",
+      "bytes": 1754,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/tests/profile_p7_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "3bcc3bec76020aa33b0db7ba2ab4e9e253550bed1f4b1dc564e968c193b3a471"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/tests/profile_p7_fixture_conformance.rs",
+      "bytes": 1443,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/tests/profile_p7_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "15ea1da94777c996a09d4141e8cf897b5d35fb316cc4f47a5b508a4a35f4981b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/fixtures/p7/incident_taxonomy_happy_path.bundle.json",
+      "bytes": 1809,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p7/incident_taxonomy_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "c32d5e3ce73530df6166ddd55023192ac8006da7204f75afd9f1f2b4ebff8119"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/fixtures/p7/pager_route_escalation_timeout.bundle.json",
+      "bytes": 1964,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p7/pager_route_escalation_timeout.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "c8adcb5eb549a13a43a33840625a1f6deb9d2d6733d571505d2f485d87c60afd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/schemas/p7/manifest.json",
+      "bytes": 509,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p7/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "60f6e235ccc28f9dd184ed29c18952b15719781991e29bc55a9cef271ead91b8"
+    }
+  ],
+  "report_path": "/home/sikmindz/Coding/Libraries2/Libraries2-generic-rust-next-codex-context-20260524T012034Z.codex-archive.json",
+  "skipped_existing": [],
+  "stale_active_before": [
+    "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P1_PRIVACY_RETENTION_DISCLOSURE_AND_REDACTION.md",
+    "repo_overlay/conformance/p1/README.md",
+    "repo_overlay/contracts/fixtures/p1/audit_extraction_escalation.bundle.json",
+    "repo_overlay/contracts/fixtures/p1/privacy_redaction_happy_path.bundle.json",
+    "repo_overlay/contracts/schemas/p1/manifest.json",
+    "repo_overlay/verification-policy/src/profile_p1_privacy.rs",
+    "repo_overlay/verification-policy/tests/profile_p1_example_roundtrip.rs",
+    "repo_overlay/verification-policy/tests/profile_p1_fixture_conformance.rs",
+    "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P2_LOCALITY_TENANCY_RESIDENCY_AND_BOUNDARY_OVERLAY.md",
+    "repo_overlay/conformance/p2/README.md",
+    "repo_overlay/contracts/fixtures/p2/locality_exception_happy_path.bundle.json",
+    "repo_overlay/contracts/fixtures/p2/residency_transfer_blocked.bundle.json",
+    "repo_overlay/contracts/schemas/p2/manifest.json",
+    "repo_overlay/verification-policy/src/profile_p2_locality.rs",
+    "repo_overlay/verification-policy/tests/profile_p2_example_roundtrip.rs",
+    "repo_overlay/verification-policy/tests/profile_p2_fixture_conformance.rs",
+    "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+    "repo_overlay/authority-delegation/src/profile_p3_roles.rs",
+    "repo_overlay/authority-delegation/tests/profile_p3_example_roundtrip.rs",
+    "repo_overlay/authority-delegation/tests/profile_p3_fixture_conformance.rs",
+    "repo_overlay/conformance/p3/README.md",
+    "repo_overlay/contracts/fixtures/p3/conflict_recusal_blocked.bundle.json",
+    "repo_overlay/contracts/fixtures/p3/delegation_matrix_happy_path.bundle.json",
+    "repo_overlay/contracts/schemas/p3/manifest.json",
+    "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P4_REGULATED_DEPLOYMENT_CONTROL_MAPPING_AND_RECERTIFICATION.md",
+    "repo_overlay/assurance-runtime/src/profile_p4_regulated.rs",
+    "repo_overlay/assurance-runtime/tests/profile_p4_example_roundtrip.rs",
+    "repo_overlay/assurance-runtime/tests/profile_p4_fixture_conformance.rs",
+    "repo_overlay/conformance/p4/README.md",
+    "repo_overlay/contracts/fixtures/p4/recertification_overdue_blocked.bundle.json",
+    "repo_overlay/contracts/fixtures/p4/regulated_release_happy_path.bundle.json",
+    "repo_overlay/contracts/schemas/p4/manifest.json",
+    "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P5_SECTOR_HAZARD_LIBRARY_MONITOR_CATALOG_AND_MITIGATION_PLAYBOOK.md",
+    "repo_overlay/assurance-runtime/src/profile_p5_hazard.rs",
+    "repo_overlay/assurance-runtime/tests/profile_p5_example_roundtrip.rs",
+    "repo_overlay/assurance-runtime/tests/profile_p5_fixture_conformance.rs",
+    "repo_overlay/conformance/p5/README.md",
+    "repo_overlay/contracts/fixtures/p5/hazard_monitor_happy_path.bundle.json",
+    "repo_overlay/contracts/fixtures/p5/hazard_playbook_activation.bundle.json",
+    "repo_overlay/contracts/schemas/p5/manifest.json",
+    "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P6_VENDOR_CERTIFICATION_ADAPTER_AND_EXTERNAL_EVIDENCE_TRANSLATION.md",
+    "repo_overlay/attestation-exchange/src/profile_p6_vendor.rs",
+    "repo_overlay/attestation-exchange/tests/profile_p6_example_roundtrip.rs",
+    "repo_overlay/attestation-exchange/tests/profile_p6_fixture_conformance.rs",
+    "repo_overlay/conformance/p6/README.md",
+    "repo_overlay/contracts/fixtures/p6/vendor_adapter_happy_path.bundle.json",
+    "repo_overlay/contracts/fixtures/p6/vendor_revocation_downgrade.bundle.json",
+    "repo_overlay/contracts/schemas/p6/manifest.json",
+    "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+    "repo_overlay/conformance/p7/README.md",
+    "repo_overlay/continuity-runtime/src/profile_p7_incident_routing.rs",
+    "repo_overlay/continuity-runtime/tests/profile_p7_example_roundtrip.rs",
+    "repo_overlay/continuity-runtime/tests/profile_p7_fixture_conformance.rs",
+    "repo_overlay/contracts/fixtures/p7/incident_taxonomy_happy_path.bundle.json",
+    "repo_overlay/contracts/fixtures/p7/pager_route_escalation_timeout.bundle.json",
+    "repo_overlay/contracts/schemas/p7/manifest.json"
+  ],
+  "unclassified": [],
+  "verify_only": false
+}

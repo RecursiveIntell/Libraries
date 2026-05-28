@@ -7,6 +7,7 @@ use crate::types::{EpisodeMeta, EpisodeOutcome, VerificationStatus};
 use crate::{build_episode_search_text, verification_status_for_outcome, MemoryStore};
 use rusqlite::{params, Connection};
 use stack_ids::TraceCtx;
+use std::collections::BTreeSet;
 
 // ─── Centralized episode identity helpers ──────────────────────────────
 
@@ -69,7 +70,6 @@ pub(crate) fn create_episode(
         serde_json::to_string(&meta.cause_ids).map_err(|e| MemoryError::Other(e.to_string()))?;
     let verification_json = serde_json::to_string(&meta.verification_status)
         .map_err(|e| MemoryError::Other(e.to_string()))?;
-    #[cfg(feature = "hnsw")]
     let item_key = episode_item_key(episode_id);
 
     db::with_transaction(conn, |tx| {
@@ -124,6 +124,7 @@ pub(crate) fn create_episode(
 
         #[cfg(feature = "hnsw")]
         db::queue_pending_index_op(tx, &item_key, "episode", IndexOpKind::Upsert)?;
+        db::invalidate_derived_vector_artifact(tx, &item_key)?;
         Ok(episode_id.to_string())
     })
 }
@@ -153,7 +154,6 @@ pub(crate) fn upsert_episode(
 
     let episode_id = existing_episode_id.unwrap_or_else(|| format!("{}-ep0", document_id));
 
-    #[cfg(feature = "hnsw")]
     let item_key = episode_item_key(&episode_id);
 
     db::with_transaction(conn, |tx| {
@@ -266,6 +266,7 @@ pub(crate) fn upsert_episode(
 
         #[cfg(feature = "hnsw")]
         db::queue_pending_index_op(tx, &item_key, "episode", IndexOpKind::Upsert)?;
+        db::invalidate_derived_vector_artifact(tx, &item_key)?;
         Ok(episode_id.to_string())
     })
 }
@@ -276,13 +277,22 @@ fn sync_causal_edges(
     episode_id: &str,
     cause_ids: &[String],
 ) -> Result<(), MemoryError> {
+    let mut seen = BTreeSet::new();
+    for cause_id in cause_ids {
+        if !seen.insert(cause_id) {
+            return Err(MemoryError::InvalidConfig {
+                field: "episodes.cause_ids",
+                reason: format!("duplicate cause id: {cause_id}"),
+            });
+        }
+    }
     tx.execute(
         "DELETE FROM episode_causes WHERE episode_id = ?1",
         params![episode_id],
     )?;
     for (ordinal, cause_id) in cause_ids.iter().enumerate() {
         tx.execute(
-            "INSERT OR IGNORE INTO episode_causes (episode_id, cause_node_id, ordinal)
+            "INSERT INTO episode_causes (episode_id, cause_node_id, ordinal)
              VALUES (?1, ?2, ?3)",
             params![episode_id, cause_id, ordinal as i64],
         )?;
@@ -336,7 +346,6 @@ pub(crate) fn update_episode_outcome_by_id(
 ) -> Result<(), MemoryError> {
     let verification_json = serde_json::to_string(verification_status)
         .map_err(|e| MemoryError::Other(e.to_string()))?;
-    #[cfg(feature = "hnsw")]
     let item_key = episode_item_key(episode_id);
 
     db::with_transaction(conn, |tx| {
@@ -386,6 +395,7 @@ pub(crate) fn update_episode_outcome_by_id(
 
         #[cfg(feature = "hnsw")]
         db::queue_pending_index_op(tx, &item_key, "episode", IndexOpKind::Upsert)?;
+        db::invalidate_derived_vector_artifact(tx, &item_key)?;
         Ok(())
     })
 }
@@ -396,6 +406,8 @@ pub(crate) fn search_episodes(
     outcome: Option<&EpisodeOutcome>,
     limit: usize,
 ) -> Result<Vec<(String, EpisodeMeta)>, MemoryError> {
+    const MAX_EPISODE_SEARCH_LIMIT: usize = 1_000;
+    let limit = limit.clamp(1, MAX_EPISODE_SEARCH_LIMIT);
     let effect_type = effect_type.map(ToOwned::to_owned);
     let outcome = outcome.map(|value| value.as_str().to_string());
 
@@ -414,7 +426,9 @@ pub(crate) fn search_episodes(
         sql.push_str(&format!(" AND outcome = ?{}", params.len() + 1));
         params.push(Box::new(outcome.clone()));
     }
-    sql.push_str(&format!(" ORDER BY updated_at DESC LIMIT {}", limit));
+    let limit_param = params.len() + 1;
+    sql.push_str(&format!(" ORDER BY updated_at DESC LIMIT ?{}", limit_param));
+    params.push(Box::new(limit as i64));
 
     let param_refs: Vec<&dyn rusqlite::types::ToSql> =
         params.iter().map(|value| value.as_ref()).collect();
@@ -437,7 +451,7 @@ pub(crate) fn search_episodes(
     rows.into_iter()
         .map(
             |(
-                _episode_id,
+                episode_id,
                 document_id,
                 cause_ids_raw,
                 effect_type,
@@ -451,15 +465,15 @@ pub(crate) fn search_episodes(
                     EpisodeMeta {
                         cause_ids: db::parse_string_list_json(
                             "episodes",
-                            &document_id,
+                            &episode_id,
                             "cause_ids",
                             &cause_ids_raw,
                         )?,
                         effect_type,
-                        outcome: db::parse_episode_outcome(&document_id, &outcome_raw)?,
+                        outcome: db::parse_episode_outcome(&episode_id, &outcome_raw)?,
                         confidence,
                         verification_status: db::parse_verification_status(
-                            &document_id,
+                            &episode_id,
                             &verification_status_raw,
                         )?,
                         experiment_id,

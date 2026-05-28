@@ -1,0 +1,64 @@
+
+running 54 tests
+test tests::artifact_id_roundtrips_through_canonical_stack_id ... ok
+test tests::dangerous_auto_approval_is_rejected_by_default ... ok
+test tests::canonical_stack_digest_is_exposed_without_sha_shadowing ... ok
+test tests::p00_scaffold_report_allows_markers_only_for_scaffold_status ... ok
+test tests::memory_required_is_valid_as_a_plan_but_config_gates_store_presence ... ok
+test tests::execution_context_exposes_stack_trace_and_attempt ... ok
+test tests::p00_source_basis_lock_names_current_snapshot ... ok
+test tests::p00_super_pass_status_blocks_on_fake_ready_findings ... ok
+test tests::p00_source_basis_golden_fixture_deserializes ... ok
+test tests::p01_api_honesty_receipt_distinguishes_honored_and_blocked_inputs ... ok
+test tests::p01_parity_report_exposes_mismatches ... ok
+test tests::p02_backend_matrix_blocks_native_claims_without_executable_status ... ok
+test tests::p02_provider_certification_fixture_records_expected_truth ... ok
+test tests::p02_provider_readiness_receipt_is_receipt_bearing ... ok
+test tests::p02_provider_route_v2_distinguishes_ollama_chat_from_native_loop ... ok
+test tests::p01_golden_fixtures_deserialize ... ok
+test tests::p02_golden_fixtures_deserialize ... ok
+test tests::p03_tool_invocation_receipt_links_run_attempt_and_digests ... ok
+test tests::p03_turn_receipt_records_stop_budget_and_tool_evidence ... ok
+test tests::p04_gate_decision_carries_approval_or_permit_evidence ... ok
+test tests::p04_permit_scope_requires_risk_tool_sandbox_and_execution_family ... ok
+test tests::p03_golden_fixtures_deserialize ... ok
+test tests::p05_golden_fixtures_deserialize ... ok
+test tests::p05_canonical_json_digest_is_stable_across_json_layout ... ok
+test tests::p04_golden_fixtures_deserialize ... ok
+test tests::p05_remaining_artifact_constructors_produce_linkable_shapes ... ok
+test tests::p06_boundary_contracts_are_receipt_bearing_and_cryptographic ... ok
+test tests::p07_golden_fixtures_deserialize ... ok
+test tests::p06_golden_fixtures_deserialize ... ok
+test tests::p08_golden_fixtures_deserialize ... ok
+test tests::p08_reference_artifact_constructors_are_typed ... ok
+test tests::p10_coding_artifact_constructors_are_receipt_bearing_and_sandboxed ... ok
+test tests::p13_view_artifact_constructors_disclose_policy_events ... ok
+test tests::p11_queue_daemon_artifact_constructors_preserve_idempotency_and_safe_mode ... ok
+test tests::p11_golden_fixtures_deserialize ... ok
+test tests::p14_operator_status_exposes_degraded_modes ... ok
+test tests::p14_release_artifact_constructors_block_on_false_public_docs ... ok
+test tests::p10_golden_fixtures_deserialize ... ok
+test tests::p13_golden_fixtures_deserialize ... ok
+test tests::p14_golden_fixtures_deserialize ... ok
+test tests::p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules ... ok
+test tests::p17_attestation_and_settlement_names_are_canonical_reexports ... ok
+test tests::p16_subtraction_artifacts_block_support_loss_and_record_compaction ... ok
+test tests::p17_canonical_reexport_shapes_roundtrip ... ok
+test tests::p16_golden_fixtures_deserialize ... ok
+test tests::p18_canonical_reexport_shapes_roundtrip ... ok
+test tests::p15_golden_fixtures_deserialize ... ok
+test tests::p18_mechanism_names_are_canonical_reexports ... ok
+test tests::p07_migration_path_keeps_old_fixtures_readable ... ok
+test tests::plan_has_visible_risk_summary ... ok
+test tests::p19_completion_audit_discloses_deferred_horizon_without_blocking_release_bar ... ok
+test tests::provider_route_labels_are_exact ... ok
+test tests::p19_golden_fixtures_deserialize ... ok
+test tests::p07_registry_manifest_and_migration_constructors_are_typed ... ok
+
+test result: ok. 54 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

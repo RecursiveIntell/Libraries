@@ -1,0 +1,276 @@
+{
+  "created_utc": "2026-05-19T15:46:03.756033Z",
+  "run_id": "P32-SCR-RUNTIME-SUPERPASS",
+  "files": [
+    {
+      "path": "01_MASTER_PROMPT.md",
+      "bytes": 3901,
+      "sha256": "905edfdf0a572b15d7084664c3345e4569bef6bbe708f78c8a936d574320ada4",
+      "executable": false
+    },
+    {
+      "path": "02_SUPERPASS_SCOPE.md",
+      "bytes": 1380,
+      "sha256": "fc5d4cdb0c8fe7cb3de6db40cb97cde6c52cb16171e0e409b857e91140c6dc40",
+      "executable": false
+    },
+    {
+      "path": "03_SOURCE_OF_TRUTH_MAP.md",
+      "bytes": 2246,
+      "sha256": "ea63ae043f076ffc56e380f63bf5374adf2dce2bc241c0710e2d5b858db6f050",
+      "executable": false
+    },
+    {
+      "path": "04_IMPLEMENTATION_TARGETS.md",
+      "bytes": 2857,
+      "sha256": "4dc6300e16efea0c98977197a3524cd35cb5d0da711e9cb0c1cbeaff03401bec",
+      "executable": false
+    },
+    {
+      "path": "05_ACCEPTANCE_SUMMARY.md",
+      "bytes": 1043,
+      "sha256": "b05bdd4a553226f2ef6bf4a932e403dd4aae6f9167d59a19a6933f4b54db45af",
+      "executable": false
+    },
+    {
+      "path": "ONE_SHOT_CODEX_COMMAND.txt",
+      "bytes": 443,
+      "sha256": "8025dde6f3e4460a511d8363eb4cfbc8a996d67238b47376f2c126f5dedc035a",
+      "executable": false
+    },
+    {
+      "path": "README_USE_THIS_BUNDLE.md",
+      "bytes": 2384,
+      "sha256": "3cfcf5a618527722a9adc32512443b66cfc9c7476497dc19a6e468910556ca4d",
+      "executable": false
+    },
+    {
+      "path": "acceptance/ACCEPTANCE_GATES.md",
+      "bytes": 1945,
+      "sha256": "6a6eec2fcb07628cb820a007b3a5d3c0292f53c56abd23e77897c224e90f4d27",
+      "executable": false
+    },
+    {
+      "path": "acceptance/ISSUE_MATRIX_SUPERPASS.md",
+      "bytes": 2452,
+      "sha256": "4a5c91bf6a828af9c9c96f41c3edac9720d4c8b3fc37b1185e25f6fc59a5624e",
+      "executable": false
+    },
+    {
+      "path": "codex_overlay/.agents/skills/scr-runtime-superpass/SKILL.md",
+      "bytes": 646,
+      "sha256": "da4db5fdf74b2566d495119fde9ed630ff417b2107b9ffd15c1d3ad4e74bd92f",
+      "executable": false
+    },
+    {
+      "path": "codex_overlay/.codex/hooks/post_tool_use_receipt.py",
+      "bytes": 729,
+      "sha256": "62cb54e0e8d70a21d032ed401e454afa39b336b0437ab5aa75112cc2066ce46c",
+      "executable": true
+    },
+    {
+      "path": "codex_overlay/.codex/hooks/pre_tool_use_policy.py",
+      "bytes": 1241,
+      "sha256": "f651646caf61369443262f521823e4039de5f36791d407ca44b0afc78af1becc",
+      "executable": true
+    },
+    {
+      "path": "codex_overlay/.codex/hooks/stop_final_gate.py",
+      "bytes": 929,
+      "sha256": "8cb84d23942edbd62cb375e781c930d2755cfdd8698e127b34735f6946cc785d",
+      "executable": true
+    },
+    {
+      "path": "codex_overlay/.codex/hooks/user_prompt_submit_blockers.py",
+      "bytes": 1032,
+      "sha256": "a3d0f874507e98355ae73bb5b9031b5d9524753d14f817a1f1627505e8bddaf2",
+      "executable": true
+    },
+    {
+      "path": "codex_overlay/.codex/hooks.json",
+      "bytes": 1520,
+      "sha256": "4b5d19ce3588806a699f0711a157cbd48e71dd55d0d04738cc070168df78f771",
+      "executable": false
+    },
+    {
+      "path": "codex_overlay/AGENTS_SUPERPASS_APPEND.md",
+      "bytes": 893,
+      "sha256": "69f28b7731876a57ad51e90e895f583590528443d76f5fb9dff3806129eaa7a5",
+      "executable": false
+    },
+    {
+      "path": "codex_overlay/install_superpass_overlay.sh",
+      "bytes": 1071,
+      "sha256": "008c48913e8980335a50e114b198462e66f1a350b53232e02c8e2900c879e0fd",
+      "executable": true
+    },
+    {
+      "path": "manual_injections/00_AFTER_PREFLIGHT.md",
+      "bytes": 373,
+      "sha256": "0e5aa13dd97ca9404ccfc0259a0237ff1fab56287df5ac1d869deea9f0a342e2",
+      "executable": false
+    },
+    {
+      "path": "manual_injections/01_AFTER_CONTROL_PACK.md",
+      "bytes": 364,
+      "sha256": "95ab88a0710ed97394cc7841088e658122bbde22abf890fe83de8efd98c0a387",
+      "executable": false
+    },
+    {
+      "path": "manual_injections/02_AFTER_SCHEMA_CONTRACT.md",
+      "bytes": 349,
+      "sha256": "f0866153177087258c3f3914c855ced3a140d98f67cbe118d2bb0efe56475f8a",
+      "executable": false
+    },
+    {
+      "path": "manual_injections/03_AFTER_ACTION_SEMANTICS.md",
+      "bytes": 454,
+      "sha256": "9251d64f16ec775ac47bc48ed59bb86c863b064415d349f461be268883932a97",
+      "executable": false
+    },
+    {
+      "path": "manual_injections/04_AFTER_AUTHORITY_EVIDENCE.md",
+      "bytes": 451,
+      "sha256": "3d532ebed4fe3bcc66808725166d9a853da948326839170647c6abe2a055c2f4",
+      "executable": false
+    },
+    {
+      "path": "manual_injections/05_AFTER_RECEIPTS_DIGESTS.md",
+      "bytes": 444,
+      "sha256": "8109a3fb030e3efe82f05c188ba529112cff0f6f7194d12acf8856e16e2bafd9",
+      "executable": false
+    },
+    {
+      "path": "manual_injections/06_AFTER_CLI_FIXTURES.md",
+      "bytes": 338,
+      "sha256": "3e06242475716daf1f418d34d370f6af518934f2bb4088f5d40312047aeb124e",
+      "executable": false
+    },
+    {
+      "path": "manual_injections/07_AFTER_BOUNDARY_DOCS.md",
+      "bytes": 377,
+      "sha256": "5e9e63b50f8d6d8e1f2c8b9d09d10fa4ba932b300dce9488f4344e11f2601e21",
+      "executable": false
+    },
+    {
+      "path": "manual_injections/08_BEFORE_FINAL_RESPONSE.md",
+      "bytes": 419,
+      "sha256": "f89bd394909782ca006ac9e6dc8aa1b81fad6800d48baa454d9e3b81e73a9849",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_00_PREFLIGHT_SOURCE_TRUTH.md",
+      "bytes": 1021,
+      "sha256": "78c60c1996198f096bb5a8618a20f889f71c15a3489f1ad23ae4f480dad1b611",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_01_CONTROL_PACK_AND_REAL_GATES.md",
+      "bytes": 1117,
+      "sha256": "c0f6a9d62fa5eb642bc3af92237a15ed0f07e619505f93bb0c846658b084b82a",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_02_KERNEL_CONTRACT_AND_SCHEMA_PARITY.md",
+      "bytes": 1278,
+      "sha256": "402f9c620e37d1824e1fd0ddf134069a2d0e56931e2673b2d13dc6753d60b5c0",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_03_ACTION_SEMANTICS_TYPED_SIGNALS.md",
+      "bytes": 1341,
+      "sha256": "ca0be5ee61cd9c07c79a79f0ab8a070e4d53094ecc0691e2e6328878cc3613ae",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_04_AUTHORITY_EVIDENCE_OWNER_ROLLBACK.md",
+      "bytes": 1298,
+      "sha256": "f6c8480e8d2561d94c1f90e1e960c0b94a15c20d589b62373be6544f45780092",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_05_RECEIPTS_CANDIDATES_DIGESTS_CANONICAL_JSON.md",
+      "bytes": 1258,
+      "sha256": "4a7b3b9339de9794bb41a02edb52e6119b692bf1a463ae2045a31e9e167938bf",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_06_CLI_FIXTURES_NEGATIVE_TESTS.md",
+      "bytes": 1037,
+      "sha256": "ec575505e2bad81ea77dc204a67c2407e266dcff1ffb1ddd5c5ccefbf38dcfac",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_07_EXTERNAL_BOUNDARY_DOCS_RELEASE_TRUTH.md",
+      "bytes": 830,
+      "sha256": "6a201aa9bfe093d1c927f079519be148dca773f0e1eac3f8804d29fd9d26f25b",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_08_VALIDATION_FRESH_UNZIP_HOSTILE_HANDOFF.md",
+      "bytes": 692,
+      "sha256": "bd72ee4d5ddc22ecbbe9699b978e10a07197f87ebb66048850c0cd43f83812f3",
+      "executable": false
+    },
+    {
+      "path": "phase_prompts/PHASE_09_FINAL_SELF_AUDIT_MINIMIZATION.md",
+      "bytes": 836,
+      "sha256": "4671c3c79ff85a41b121c339c2e42a733a9174a47ddc9ba98f0c82669278273a",
+      "executable": false
+    },
+    {
+      "path": "scripts/scr_superpass_preflight.py",
+      "bytes": 2585,
+      "sha256": "adfb6997bbe3acf388765bdfa9644adba58f00a1fff96203be55072523be17cd",
+      "executable": true
+    },
+    {
+      "path": "scripts/scr_superpass_run_all.sh",
+      "bytes": 1247,
+      "sha256": "9b21c7252ad6dc31707f0beece1356510df4617e537e29d9a73cce758df7ccbb",
+      "executable": true
+    },
+    {
+      "path": "scripts/scr_superpass_static_gates.py",
+      "bytes": 3514,
+      "sha256": "e50a5fcffc17716b787431503a9c529a717d01e19850eb0505d049cf7585ab04",
+      "executable": true
+    },
+    {
+      "path": "scripts/validate_schema_rust_parity.py",
+      "bytes": 1679,
+      "sha256": "6f7e83e5cf8b164cef15f1d35da47376309e304769fcaf584e1b2076107113ed",
+      "executable": true
+    },
+    {
+      "path": "subagents/SUBAGENT_PROMPTS.md",
+      "bytes": 1513,
+      "sha256": "53727b1b593dbdd8bd7c5df766560e9526574577b0b43c750b8bf26b30a3de6e",
+      "executable": false
+    },
+    {
+      "path": "templates/P32_COMPLETION_REPORT.md",
+      "bytes": 756,
+      "sha256": "82249a6ac447faf45317563a6f8f8ffa6bfc963e50405cb4c4cfc7a4ea16f566",
+      "executable": false
+    },
+    {
+      "path": "templates/P32_HOSTILE_AUDITOR_HANDOFF.md",
+      "bytes": 504,
+      "sha256": "0bef19c46d0b69dfd5d3dbc10f560e2ec8e24412f4ff8056cf3836d40c865d62",
+      "executable": false
+    },
+    {
+      "path": "templates/P32_POLICY_CHANGE_RECEIPT.md",
+      "bytes": 270,
+      "sha256": "ff20f054deb410f3d1958ebb991d7eb5a3a37dab9fe159959d392ea8e054f222",
+      "executable": false
+    },
+    {
+      "path": "templates/P32_ROLLBACK_PLAN.md",
+      "bytes": 545,
+      "sha256": "63f7e924c4c7f5fdd5cb35b70609da7bfa46ea89fe9bd8a90b2ff47542551ef2",
+      "executable": false
+    }
+  ]
+}

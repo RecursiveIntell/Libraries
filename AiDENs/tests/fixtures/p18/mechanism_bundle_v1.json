@@ -1,0 +1,36 @@
+{
+  "mechanism_id": "mechanism-report:linear-response-v1",
+  "kind": "mechanism-report",
+  "mechanism_kind": "symbolic",
+  "name": "linear-response",
+  "version_label": "v1",
+  "variables": ["x", "y"],
+  "assumptions": ["no-hidden-confounder"],
+  "causal_claims": ["x-causes-y"],
+  "mechanism_program": ["y = alpha * x + beta"],
+  "parameters": {
+    "alpha": 1.0,
+    "beta": 0.0
+  },
+  "structural_signature_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "observational_signature_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "simulator_contract_id": "simulator-contract:linear-response-v1",
+  "source_artifact_ids": ["evidence:linear-spec"],
+  "evidence_ids": ["evidence:linear-fit"],
+  "raw_weight_digest": "blake3:4444444444444444444444444444444444444444444444444444444444444444",
+  "replay_recipe": "cargo run -p aidens-kernel-kit --example linear-response -- --seed 7",
+  "reason_codes": [
+    "mechanism-is-versioned-artifact",
+    "raw-model-weights-alone-are-insufficient",
+    "simulator-contract-linked-for-replay"
+  ],
+  "created_at": "2026-04-27T00:00:00Z"
+}

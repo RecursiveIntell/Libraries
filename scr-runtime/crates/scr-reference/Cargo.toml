@@ -1,0 +1,16 @@
+[package]
+name = "scr-reference"
+version = "0.1.0"
+edition = "2021"
+description = "Reference SCR-P0A evaluator entry point."
+license = "MIT"
+
+[dependencies]
+blake3 = { workspace = true }
+scr-kernel = { path = "../scr-kernel" }
+serde_json = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
+
+[lints]
+workspace = true

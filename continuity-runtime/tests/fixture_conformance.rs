@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use continuity_runtime::{
     ContainmentDecisionV1, ContinuityExceptionV1, ErrorBudgetLedgerV1, ForensicFreezeV1,
     IncidentCaseV1, PostmortemBundleV1, RecoveryPlanV1, RecoveryReplaySliceV1,

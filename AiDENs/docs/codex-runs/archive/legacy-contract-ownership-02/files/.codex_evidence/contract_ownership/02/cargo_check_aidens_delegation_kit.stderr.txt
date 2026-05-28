@@ -1,0 +1,187 @@
+    Checking aidens-delegation-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit)
+error[E0609]: no field `schema_family` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:116:33
+    |
+116 |             .contains(&envelope.schema_family)
+    |                                 ^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0599]: no function or associated item named `from_envelope` found for struct `AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:118:41
+    |
+118 |             return AdmissionDecisionV1::from_envelope(
+    |                                         ^^^^^^^^^^^^^ function or associated item not found in `AdmissionDecisionV1`
+
+error[E0599]: no method named `is_signed_and_verified` found for reference `&AttestationEnvelopeV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:129:22
+    |
+129 |         if !envelope.is_signed_and_verified() {
+    |                      ^^^^^^^^^^^^^^^^^^^^^^ method not found in `&AttestationEnvelopeV1`
+
+error[E0609]: no field `verification_status` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:130:46
+    |
+130 |             let disposition = match envelope.verification_status {
+    |                                              ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0609]: no field `truth_bearing` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:135:31
+    |
+135 |                 _ if envelope.truth_bearing => AdmissionDispositionV1::Quarantine,
+    |                               ^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0599]: no function or associated item named `from_envelope` found for struct `AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:138:41
+    |
+138 |             return AdmissionDecisionV1::from_envelope(
+    |                                         ^^^^^^^^^^^^^ function or associated item not found in `AdmissionDecisionV1`
+
+error[E0609]: no field `verification_status` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:144:66
+    |
+144 |                     format!("verification-status={:?}", envelope.verification_status),
+    |                                                                  ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0609]: no field `trust_root_id` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:149:45
+    |
+149 |         let Some(trust_root_id) = &envelope.trust_root_id else {
+    |                                             ^^^^^^^^^^^^^ unknown field
+    |
+help: a field with a similar name exists
+    |
+149 |         let Some(trust_root_id) = &envelope.trust_root_set_id else {
+    |                                                        ++++
+
+error[E0599]: no function or associated item named `requiring_witness` found for struct `AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:150:41
+    |
+150 |             return AdmissionDecisionV1::requiring_witness(
+    |                                         ^^^^^^^^^^^^^^^^^ function or associated item not found in `AdmissionDecisionV1`
+
+error[E0599]: no function or associated item named `requiring_witness` found for struct `AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:158:41
+    |
+158 |             return AdmissionDecisionV1::requiring_witness(
+    |                                         ^^^^^^^^^^^^^^^^^ function or associated item not found in `AdmissionDecisionV1`
+
+error[E0599]: no function or associated item named `from_envelope` found for struct `AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:166:41
+    |
+166 |             return AdmissionDecisionV1::from_envelope(
+    |                                         ^^^^^^^^^^^^^ function or associated item not found in `AdmissionDecisionV1`
+
+error[E0609]: no field `producer_id` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:173:41
+    |
+173 |         if root.producer_id != envelope.producer_id {
+    |                                         ^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0599]: no function or associated item named `from_envelope` found for struct `AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:174:41
+    |
+174 |             return AdmissionDecisionV1::from_envelope(
+    |                                         ^^^^^^^^^^^^^ function or associated item not found in `AdmissionDecisionV1`
+
+error[E0599]: no function or associated item named `from_envelope` found for struct `AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:182:30
+    |
+182 |         AdmissionDecisionV1::from_envelope(
+    |                              ^^^^^^^^^^^^^ function or associated item not found in `AdmissionDecisionV1`
+
+error[E0609]: no field `envelope_id` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:198:33
+    |
+198 |             .contains(&envelope.envelope_id)
+    |                                 ^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0599]: no function or associated item named `from_envelope` found for struct `AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:202:30
+    |
+202 |         AdmissionDecisionV1::from_envelope(
+    |                              ^^^^^^^^^^^^^ function or associated item not found in `AdmissionDecisionV1`
+
+error[E0609]: no field `envelope_id` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:216:41
+    |
+216 |     if decision.envelope_id != envelope.envelope_id
+    |                                         ^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0609]: no field `subject_digest` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:217:48
+    |
+217 |         || decision.subject_digest != envelope.subject_digest
+    |                                                ^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0599]: no function or associated item named `imported` found for struct `RemoteOracleReportV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:224:30
+    |
+224 |     Ok(RemoteOracleReportV1::imported(envelope, decision))
+    |                              ^^^^^^^^ function or associated item not found in `RemoteOracleReportV1`
+
+error[E0609]: no field `envelope_id` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:231:41
+    |
+231 |     if decision.envelope_id != envelope.envelope_id
+    |                                         ^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0609]: no field `subject_digest` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:232:48
+    |
+232 |         || decision.subject_digest != envelope.subject_digest
+    |                                                ^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0599]: no function or associated item named `not_imported` found for struct `RemoteOracleReportV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:236:30
+    |
+236 |     Ok(RemoteOracleReportV1::not_imported(envelope, decision))
+    |                              ^^^^^^^^^^^^ function or associated item not found in `RemoteOracleReportV1`
+
+error[E0599]: no method named `permits_import` found for reference `&AdmissionDecisionV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:245:18
+    |
+245 |     if !decision.permits_import(envelope) {
+    |                  ^^^^^^^^^^^^^^ method not found in `&AdmissionDecisionV1`
+
+error[E0599]: no function or associated item named `disputed` found for struct `SettlementCaseV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:248:26
+    |
+248 |     Ok(SettlementCaseV1::disputed(
+    |                          ^^^^^^^^ function or associated item not found in `SettlementCaseV1`
+
+error[E0609]: no field `envelope_id` on type `&AttestationEnvelopeV1`
+   --> crates/aidens-delegation-kit/src/lib.rs:273:34
+    |
+273 |         .map(|envelope| envelope.envelope_id.clone())
+    |                                  ^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `schema_version`, `attestation_envelope_id`, `artifact_family`, `artifact_version`, `content_digest` ... and 10 others
+
+error[E0599]: no function or associated item named `imported` found for struct `RemoteOracleReportV1` in the current scope
+   --> crates/aidens-delegation-kit/src/lib.rs:283:59
+    |
+283 |         .map(|(envelope, decision)| RemoteOracleReportV1::imported(envelope, decision))
+    |                                                           ^^^^^^^^ function or associated item not found in `RemoteOracleReportV1`
+
+Some errors have detailed explanations: E0599, E0609.
+For more information about an error, try `rustc --explain E0599`.
+error: could not compile `aidens-delegation-kit` (lib) due to 26 previous errors

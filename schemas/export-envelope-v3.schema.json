@@ -2037,6 +2037,7 @@
       "type": "string"
     }
   },
+  "description": "CLIB-013: Canonical Forge export envelope (v3).\n\n## Field categories\n\n**Core fields** (always populated): `envelope_id`, `schema_version`, `content_digest`, `source_authority`, `scope_key`, `exported_at`, `records`.\n\n**Active v13 fields** (populated by Forge when support-algebra artifacts exist): `support_sets`, `contradiction_witnesses`, `retraction_records`, `claim_states_v13`.\n\n**v14 extension points** (schema-reserved for mechanism-runtime / experiment lanes; populated only when the owning lane has produced matching artifacts): `intervention_bundles_v14` through `rollback_decisions_v14`.\n\n**v15 extension points** (schema-reserved for attestation-exchange / admission lanes; populated only when the owning lane has produced matching artifacts): `attestation_envelopes_v15` through `disclosure_budgets_v15`.\n\nExtension fields use `Vec<Value>` + `skip_serializing_if = \"Vec::is_empty\"` so they carry zero overhead in serialized envelopes when unused.",
   "properties": {
     "artifact_admission_policies_v15": {
       "items": true,

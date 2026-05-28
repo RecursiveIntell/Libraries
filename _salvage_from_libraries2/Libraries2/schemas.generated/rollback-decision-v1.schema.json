@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "affected_surfaces": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "counterfactual_slice_id": {
+      "type": "string"
+    },
+    "experiment_case_id": {
+      "type": "string"
+    },
+    "motivation": {
+      "type": "string"
+    },
+    "remaining_uncertainty": {
+      "type": "string"
+    },
+    "rollback_class": {
+      "type": "string"
+    },
+    "rollback_decision_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "triggering_evidence": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "counterfactual_slice_id",
+    "experiment_case_id",
+    "motivation",
+    "remaining_uncertainty",
+    "rollback_class",
+    "rollback_decision_id",
+    "schema_version"
+  ],
+  "title": "RollbackDecisionV1",
+  "type": "object"
+}

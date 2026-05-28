@@ -1,0 +1,59 @@
+{
+  "created_utc": "2026-05-13T23:55:52Z",
+  "excluded": [
+    {
+      "path": "scr-runtime-generic-rust-next-codex-context-20260513.codex-archive.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "scr-runtime-generic-rust-next-codex-context-20260513.excluded.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "scr-runtime-generic-rust-next-codex-context-20260513.findings.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "scr-runtime-generic-rust-next-codex-context-20260513.manifest.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "scr-runtime-generic-rust-next-codex-context-20260513.report.md",
+      "reason": "generated-output"
+    },
+    {
+      "path": "scr-runtime-generic-rust-next-codex-context-20260513.zip",
+      "reason": "generated-output"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": ".codex/tools/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": ".pytest_cache",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "scripts/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "tests/__pycache__",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+  "summary": {
+    "generated-output": 6
+  }
+}

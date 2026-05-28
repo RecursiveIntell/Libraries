@@ -1,0 +1,28 @@
+BROKEN_PATH_DEPS=26 active=0 salvage=26 parse_errors=0
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/AI-Batch-Queue/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/ComfyUI-RS/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml: path=../living-memory/living-memory -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/living-memory/living-memory
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/Tauri-Queue/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/agent-graph/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/attestation-exchange/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml: path=../forge-memory-bridge -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/forge-memory-bridge
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml: path=../recursive-kernel-core -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/recursive-kernel-core
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml: path=../semantic-memory-forge -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/semantic-memory-forge
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/discovery-portfolio/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/federated-settlement/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/job-queue/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml: path=../assurance-runtime -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/assurance-runtime
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml: path=../authority-delegation -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/authority-delegation
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml: path=../continuity-runtime -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/continuity-runtime
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml: path=../verification-policy -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/verification-policy
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/remote-oracle-admission/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/spec-execution/Cargo.toml: path=../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml: path=../../semantic-memory -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/semantic-memory
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml: path=../../semantic-memory-forge -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/semantic-memory-forge
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml: path=../../forge-memory-bridge -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/forge-memory-bridge
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml: path=../../knowledge-runtime -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/knowledge-runtime
+/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml: path=../../stack-ids -> MISSING /home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids
+BROKEN_PATH_DEPS=0 active=0 salvage=26

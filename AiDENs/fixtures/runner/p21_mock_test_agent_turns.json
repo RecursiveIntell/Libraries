@@ -1,0 +1,7 @@
+{
+  "turns": [
+    {"role": "user", "content": "Read README.md and summarize it."},
+    {"role": "assistant_tool_call", "tool": "repo.read", "arguments": {"path": "README.md"}},
+    {"role": "assistant_final", "content": "README summary:"}
+  ]
+}

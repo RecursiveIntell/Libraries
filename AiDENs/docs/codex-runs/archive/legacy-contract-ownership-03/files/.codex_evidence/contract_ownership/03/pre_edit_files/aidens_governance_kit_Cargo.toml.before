@@ -1,0 +1,19 @@
+[package]
+name = "aidens-governance-kit"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+assurance-runtime.workspace = true
+authority-delegation.workspace = true
+serde_json.workspace = true
+stack-ids.workspace = true
+verification-adjudication.workspace = true
+verification-calibration = { path = "../../../verification-calibration" }
+verification-control.workspace = true
+verification-policy.workspace = true

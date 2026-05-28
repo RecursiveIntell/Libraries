@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "CommandRunReportV1": {
+      "properties": {
+        "allowed_by_policy": {
+          "type": "boolean"
+        },
+        "command": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "exit_code": {
+          "format": "int32",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "permit_grant_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "permit_use_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "sandbox_root": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "stderr_bytes": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "stderr_digest": {
+          "$ref": "#/definitions/DisplayDigestV1"
+        },
+        "stdout_bytes": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "stdout_digest": {
+          "$ref": "#/definitions/DisplayDigestV1"
+        },
+        "succeeded": {
+          "type": "boolean"
+        },
+        "timed_out": {
+          "type": "boolean"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "allowed_by_policy",
+        "command",
+        "completed_at",
+        "kind",
+        "receipt_id",
+        "sandbox_root",
+        "started_at",
+        "stderr_bytes",
+        "stderr_digest",
+        "stdout_bytes",
+        "stdout_digest",
+        "succeeded",
+        "timed_out",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "DisplayDigestV1": {
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "canonicalization": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "non_authoritative": {
+          "default": true,
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "canonicalization",
+        "digest"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "blockers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "changed_files": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "commands_run": {
+      "items": {
+        "$ref": "#/definitions/CommandRunReportV1"
+      },
+      "type": "array"
+    },
+    "current_pass": {
+      "type": "string"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "issue": {
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "next_pass": {
+      "type": "string"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "packet_id": {
+      "type": "string"
+    },
+    "receipt_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "source_basis": {
+      "type": "string"
+    },
+    "source_map": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "blockers",
+    "changed_files",
+    "commands_run",
+    "current_pass",
+    "generated_at",
+    "issue",
+    "kind",
+    "next_pass",
+    "notes",
+    "packet_id",
+    "receipt_ids",
+    "source_basis",
+    "source_map"
+  ],
+  "title": "CodexPacketV1",
+  "type": "object"
+}

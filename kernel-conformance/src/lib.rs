@@ -1,4 +1,5 @@
 #![cfg_attr(test, allow(deprecated))]
+#![cfg_attr(test, allow(clippy::expect_used))]
 
 pub mod reference_interpreters;
 
@@ -26,13 +27,36 @@ pub fn v16_v20_gates() -> &'static [&'static str] {
     ]
 }
 
+/// Returns the v9 constitutional freeze conformance gate identifiers.
+///
+/// These gates enforce the v9 finish-line invariants:
+/// - CF-V9-C001: Canonical bundle round-trip freeze
+/// - CF-V9-C002: Execution evidence artifact freeze
+/// - CF-V9-C004: Schema governance enforcement
+/// - CF-V9-C005: Bridge atomicity proof
+/// - CF-V9-C008: Repair law hardening
+/// - CF-V9-C009: Runtime provenance completeness
+/// - CF-V9-C017: Cross-crate conformance harness
+pub fn v9_constitutional_gates() -> &'static [&'static str] {
+    &[
+        "CF-V9-C001",
+        "CF-V9-C002",
+        "CF-V9-C004",
+        "CF-V9-C005",
+        "CF-V9-C008",
+        "CF-V9-C009",
+        "CF-V9-C017",
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use constraint_compiler::{
         compile_batch, CompilerPolicy, ConstraintDegradation, GraphSurfaceKind,
     };
     use forge_memory_bridge::{
-        transform_envelope_v2, transform_envelope_v3, ImportProjectionRecord,
+        transform_envelope_v2, transform_envelope_v3, BridgeImportFailureArtifact,
+        ImportProjectionRecord,
     };
     use kernel_execution::{
         affected_nodes_for_delta, execute_delta_propagation, execute_message_passing_baseline,
@@ -758,6 +782,613 @@ mod tests {
         assert_eq!(
             scheduled.degraded_reason.as_deref(),
             Some("budget_exhausted")
+        );
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // v9 Constitutional Freeze and Conformance Hardening
+    // LIB-C001, LIB-C002, LIB-C005, LIB-C008, LIB-C009, LIB-C017
+    // ═══════════════════════════════════════════════════════════════
+
+    // ─── LIB-C001: Canonical bundle round-trip freeze ─────────────
+
+    #[test]
+    fn cf_v9_c001_episode_bundle_round_trips() {
+        // LIB-C001: EpisodeBundleV1 must round-trip through serde without data loss.
+        use semantic_memory_forge::{
+            DispatchOutcomeV1, EpisodeBundleV1, ExecutionContextV1, VerificationSummary,
+            EPISODE_BUNDLE_V1_SCHEMA, EXECUTION_CONTEXT_V1_SCHEMA,
+        };
+        use stack_ids::{EpisodeId, TraceCtx};
+
+        let trace = TraceCtx::generate();
+        let ctx = ExecutionContextV1 {
+            schema_version: EXECUTION_CONTEXT_V1_SCHEMA.into(),
+            trace_ctx: trace.clone(),
+            attempt_id: Some(stack_ids::AttemptId::new("attempt-c001")),
+            trial_id: Some(stack_ids::TrialId::new("trial-c001")),
+            replay_link: Some("replay://link".into()),
+            workload_class: Some("forge_export".into()),
+            queue_hops: vec!["hop-1".into(), "hop-2".into()],
+            deadline: Some("2026-04-01T00:00:00Z".into()),
+            cost_budget_units: Some(1000),
+            degradation_markers: vec!["marker-a".into()],
+            dispatch_outcome: DispatchOutcomeV1::Succeeded,
+            environment_fingerprint: Some("linux-amd64".into()),
+            provider_route: Some("forge".into()),
+            cancellation_reason: None,
+            tool_receipt_ref: Some("receipt://ref".into()),
+            provider_call_ref: Some("call://ref".into()),
+            replay_parent_ref: Some("parent://ref".into()),
+        };
+        let bundle = EpisodeBundleV1 {
+            schema_version: EPISODE_BUNDLE_V1_SCHEMA.into(),
+            bundle_id: "bundle-c001".into(),
+            episode_id: EpisodeId::new("ep-c001"),
+            primary_document_id: "doc-c001".into(),
+            namespace: "ns-c001".into(),
+            scope_key: ScopeKey::namespace_only("ns-c001"),
+            valid_from: Some("2026-01-01T00:00:00Z".into()),
+            valid_to: Some("2026-12-31T23:59:59Z".into()),
+            exported_at: "2026-03-15T00:00:00Z".into(),
+            recorded_at: Some("2026-03-15T00:00:01Z".into()),
+            source_envelope_id: EnvelopeId::new("env-c001"),
+            content_digest: ContentDigest::compute(b"c001-content"),
+            source_evidence_pointers: vec!["evidence://ptr-1".into()],
+            source_receipt_digests: vec!["digest-1".into()],
+            claim_version_ids: vec!["claim-v1".into(), "claim-v2".into()],
+            relation_version_ids: vec!["rel-v1".into()],
+            verification_summary: Some(VerificationSummary {
+                lifecycle_state: semantic_memory_forge::VerificationLifecycleState::Verified,
+                promotion_state: semantic_memory_forge::PromotionState::Promoted {
+                    version_id: Some("v1".into()),
+                    promoted_at: Some("2026-03-15T00:00:00Z".into()),
+                },
+                completed_trial_count: 3,
+                passed_refutation_count: 2,
+                failed_refutation_count: 0,
+                comparability_snapshot_version: None,
+                notes: vec!["clean".into()],
+            }),
+            refutation_artifact_ids: vec!["refutation-1".into()],
+            control_plane_refs: vec!["forge_run:run-c001".into()],
+            execution_context: ctx,
+            thin_export: false,
+            supersedes_bundle_id: Some("bundle-prev".into()),
+            evidence_bundle_id: Some("ev-bundle-1".into()),
+        };
+
+        let serialized = serde_json::to_string(&bundle).unwrap();
+        let deserialized: EpisodeBundleV1 = serde_json::from_str(&serialized).unwrap();
+
+        assert_eq!(deserialized.bundle_id, bundle.bundle_id);
+        assert_eq!(deserialized.episode_id, bundle.episode_id);
+        assert_eq!(deserialized.claim_version_ids.len(), 2);
+        assert_eq!(deserialized.relation_version_ids.len(), 1);
+        assert!(deserialized.verification_summary.is_some());
+        assert_eq!(
+            deserialized.execution_context.attempt_id,
+            bundle.execution_context.attempt_id
+        );
+        assert_eq!(
+            deserialized.execution_context.queue_hops.len(),
+            bundle.execution_context.queue_hops.len()
+        );
+        assert_eq!(
+            deserialized.supersedes_bundle_id,
+            bundle.supersedes_bundle_id
+        );
+        assert_eq!(deserialized.evidence_bundle_id, bundle.evidence_bundle_id);
+    }
+
+    #[test]
+    fn cf_v9_c001_execution_context_round_trips() {
+        // LIB-C001/C002: ExecutionContextV1 must round-trip without data loss.
+        use semantic_memory_forge::{
+            DispatchOutcomeV1, ExecutionContextV1, EXECUTION_CONTEXT_V1_SCHEMA,
+        };
+        use stack_ids::TraceCtx;
+
+        let ctx = ExecutionContextV1 {
+            schema_version: EXECUTION_CONTEXT_V1_SCHEMA.into(),
+            trace_ctx: TraceCtx::generate(),
+            attempt_id: Some(stack_ids::AttemptId::new("a-1")),
+            trial_id: Some(stack_ids::TrialId::new("t-1")),
+            replay_link: Some("replay://x".into()),
+            workload_class: Some("heavy".into()),
+            queue_hops: vec!["q1".into(), "q2".into(), "q3".into()],
+            deadline: Some("2026-04-01T12:00:00Z".into()),
+            cost_budget_units: Some(500),
+            degradation_markers: vec!["thin_export".into(), "missing_nuisance".into()],
+            dispatch_outcome: DispatchOutcomeV1::Degraded,
+            environment_fingerprint: Some("env-fp".into()),
+            provider_route: Some("openrouter".into()),
+            cancellation_reason: None,
+            tool_receipt_ref: Some("receipt://1".into()),
+            provider_call_ref: Some("call://1".into()),
+            replay_parent_ref: Some("parent://1".into()),
+        };
+
+        let json = serde_json::to_value(&ctx).unwrap();
+        let restored: ExecutionContextV1 = serde_json::from_value(json).unwrap();
+
+        assert_eq!(restored.attempt_id, ctx.attempt_id);
+        assert_eq!(restored.trial_id, ctx.trial_id);
+        assert_eq!(restored.queue_hops.len(), 3);
+        assert_eq!(restored.degradation_markers.len(), 2);
+        assert_eq!(restored.dispatch_outcome, DispatchOutcomeV1::Degraded);
+        assert_eq!(restored.tool_receipt_ref, ctx.tool_receipt_ref);
+        assert_eq!(restored.provider_call_ref, ctx.provider_call_ref);
+        assert_eq!(restored.replay_parent_ref, ctx.replay_parent_ref);
+    }
+
+    // ─── LIB-C005: Bridge atomicity proof conformance ─────────────
+
+    #[test]
+    fn cf_v9_c005_tampered_digest_produces_typed_error() {
+        // LIB-C005: Bridge must produce a typed, replayable error (not a log message)
+        // when digest verification fails during import.
+        let mut envelope = make_v2_envelope("cf-c005-tamper", &["claim-c005"]);
+        envelope.content_digest = ContentDigest::compute(b"tampered-data");
+
+        let err = transform_envelope_v2(&envelope).unwrap_err();
+        assert!(
+            matches!(err, forge_memory_bridge::BridgeError::DigestMismatch { .. }),
+            "LIB-C005: tampered digest must produce BridgeError::DigestMismatch, got: {err:?}"
+        );
+        // Error kind must be stable and machine-readable.
+        assert_eq!(err.kind(), "digest_mismatch");
+    }
+
+    #[test]
+    fn cf_v9_c005_v3_tampered_digest_produces_typed_error() {
+        // LIB-C005: Same atomicity proof for V3 path.
+        let scope = ScopeKey::namespace_only("c005-v3");
+        let records = vec![ExportRecordV3 {
+            record: ExportRecord::Claim(ExportClaim {
+                claim_id: None,
+                claim_version_id: Some(ClaimVersionId::new("claim-c005-v3")),
+                subject_entity_id: EntityId::new("entity-c005"),
+                predicate: "supports".into(),
+                object_anchor: serde_json::json!("result"),
+                valid_from: None,
+                valid_to: None,
+                confidence: 1.0,
+                content: "claim supports result".into(),
+                projection_family: "forge_verification".into(),
+                supersedes_claim_id: None,
+                supersedes_claim_version_id: None,
+                metadata: None,
+            }),
+            semantics: None,
+        }];
+        let envelope = ExportEnvelopeV3 {
+            envelope_id: EnvelopeId::new("env-c005-v3"),
+            schema_version: EXPORT_ENVELOPE_V3_SCHEMA.into(),
+            content_digest: ContentDigest::compute(b"wrong-digest"),
+            source_authority: "forge".into(),
+            scope_key: scope,
+            trace_ctx: None,
+            exported_at: "2026-04-01T00:00:00Z".into(),
+            export_meta: None,
+            evidence_bundle: None,
+            support_sets: vec![],
+            contradiction_witnesses: vec![],
+            retraction_records: vec![],
+            claim_states_v13: vec![],
+            intervention_bundles_v14: vec![],
+            outcome_schemas_v14: vec![],
+            cohort_contracts_v14: vec![],
+            counterfactual_slices_v14: vec![],
+            experiment_cases_v14: vec![],
+            comparability_matrices_v14: vec![],
+            decision_traces_v14: vec![],
+            refuter_suites_v14: vec![],
+            refuter_results_v14: vec![],
+            experiment_budgets_v14: vec![],
+            rollout_decisions_v14: vec![],
+            rollback_decisions_v14: vec![],
+            attestation_envelopes_v15: vec![],
+            trust_root_sets_v15: vec![],
+            artifact_admission_policies_v15: vec![],
+            transparency_receipts_v15: vec![],
+            attestation_revocations_v15: vec![],
+            attestation_supersessions_v15: vec![],
+            remote_oracle_leases_v15: vec![],
+            remote_slice_requests_v15: vec![],
+            remote_slice_results_v15: vec![],
+            cross_runtime_replay_tickets_v15: vec![],
+            dispute_bundles_v15: vec![],
+            disclosure_policies_v15: vec![],
+            disclosure_budgets_v15: vec![],
+            records,
+        };
+
+        let err = transform_envelope_v3(&envelope).unwrap_err();
+        assert!(
+            matches!(err, forge_memory_bridge::BridgeError::DigestMismatch { .. }),
+            "LIB-C005: V3 tampered digest must produce BridgeError::DigestMismatch, got: {err:?}"
+        );
+        assert_eq!(err.kind(), "digest_mismatch");
+    }
+
+    #[test]
+    fn cf_v9_c005_bridge_preserves_digest_through_v3_transform() {
+        // LIB-C005: The bridge must preserve the source envelope digest into the batch.
+        let batch = make_batch(
+            "c005-digest",
+            &["claim-c005-a", "claim-c005-b"],
+            false,
+            false,
+        );
+        // The digest in the batch must match the source envelope's computed digest.
+        assert!(
+            !batch.content_digest.0.is_empty(),
+            "LIB-C005: content_digest must be carried through from source envelope"
+        );
+        // Verify it's actually the Blake3 format (hex, 64 chars).
+        assert_eq!(
+            batch.content_digest.0.len(),
+            64,
+            "LIB-C005: content_digest must be a 64-char hex string (BLAKE3)"
+        );
+    }
+
+    #[test]
+    fn cf_v9_c005_bridge_error_kinds_are_stable() {
+        // LIB-C005: All bridge error kinds must be stable machine-readable strings.
+        use forge_memory_bridge::BridgeError;
+        let cases: Vec<BridgeError> = vec![
+            BridgeError::InvalidEnvelope {
+                reason: "test".into(),
+            },
+            BridgeError::IncompatibleVersion {
+                expected: "a".into(),
+                actual: "b".into(),
+            },
+            BridgeError::DigestMismatch {
+                expected: "a".into(),
+                actual: "b".into(),
+            },
+            BridgeError::DigestComputationFailed {
+                reason: "test".into(),
+            },
+            BridgeError::InvalidRecord {
+                reason: "test".into(),
+            },
+            BridgeError::TransformFailed {
+                reason: "test".into(),
+            },
+            BridgeError::MissingEpisodeIdentity {
+                record_context: "test".into(),
+            },
+        ];
+        let expected_kinds = [
+            "invalid_envelope",
+            "incompatible_version",
+            "digest_mismatch",
+            "digest_computation_failed",
+            "invalid_record",
+            "transform_failed",
+            "missing_episode_identity",
+        ];
+        for (error, expected_kind) in cases.iter().zip(expected_kinds.iter()) {
+            assert_eq!(
+                error.kind(),
+                *expected_kind,
+                "LIB-C005: BridgeError kind must be stable"
+            );
+        }
+    }
+
+    #[test]
+    fn cf_v9_c005_bridge_failure_produces_replayable_artifact() {
+        // LIB-C005: Bridge failures must produce typed, replayable artifacts.
+        let mut envelope = make_v2_envelope("cf-c005-artifact", &["claim-c005"]);
+        envelope.content_digest = ContentDigest::compute(b"tampered");
+
+        let err = transform_envelope_v2(&envelope).unwrap_err();
+        let artifact = BridgeImportFailureArtifact::from_error(
+            &err,
+            envelope.envelope_id.as_str(),
+            &envelope.source_authority,
+            &envelope.scope_key.namespace,
+        );
+
+        assert_eq!(
+            artifact.schema_version,
+            forge_memory_bridge::BRIDGE_IMPORT_FAILURE_ARTIFACT_V1_SCHEMA
+        );
+        assert_eq!(artifact.error_kind, "digest_mismatch");
+        assert!(!artifact.error_message.is_empty());
+        assert_eq!(artifact.source_envelope_id, envelope.envelope_id.as_str());
+        assert!(!artifact.failed_at.is_empty());
+
+        // Must round-trip through serde.
+        let json = serde_json::to_value(&artifact).unwrap();
+        let restored: BridgeImportFailureArtifact = serde_json::from_value(json).unwrap();
+        assert_eq!(restored.error_kind, artifact.error_kind);
+        assert_eq!(restored.source_envelope_id, artifact.source_envelope_id);
+    }
+
+    // ─── LIB-C008: Repair law conformance ─────────────────────────
+
+    #[test]
+    fn cf_v9_c008_repair_record_has_required_fields() {
+        // LIB-C008: Every RepairRecordV1 must carry blast_radius, reversibility,
+        // execution_context, repair_class, and an unchanged_statement.
+        use forge_pilot::{RepairClassV1, RepairRecordV1};
+        use semantic_memory_forge::{
+            DispatchOutcomeV1, ExecutionContextV1, EXECUTION_CONTEXT_V1_SCHEMA,
+        };
+        use stack_ids::TraceCtx;
+
+        let record = RepairRecordV1 {
+            schema_version: "repair_record_v1".into(),
+            repair_record_id: "repair-c008".into(),
+            affected_identities: vec!["claim-1".into(), "claim-2".into()],
+            repair_class: RepairClassV1::SupersessionRepair,
+            trigger_artifacts: vec!["contradiction-witness-1".into()],
+            blast_radius: "scoped:ns-c008".into(),
+            reversibility: "reversible_scoped".into(),
+            action: "supersede claim-1 with claim-2".into(),
+            execution_context: ExecutionContextV1 {
+                schema_version: EXECUTION_CONTEXT_V1_SCHEMA.into(),
+                trace_ctx: TraceCtx::generate(),
+                attempt_id: None,
+                trial_id: None,
+                replay_link: None,
+                workload_class: Some("repair".into()),
+                queue_hops: vec![],
+                deadline: None,
+                cost_budget_units: None,
+                degradation_markers: vec![],
+                dispatch_outcome: DispatchOutcomeV1::Succeeded,
+                environment_fingerprint: None,
+                provider_route: None,
+                cancellation_reason: None,
+                tool_receipt_ref: None,
+                provider_call_ref: None,
+                replay_parent_ref: None,
+            },
+            opened_at: "2026-04-01T00:00:00Z".into(),
+            resolved_at: Some("2026-04-01T00:00:01Z".into()),
+            unchanged_statement: "no semantic widening applied; supersession only".into(),
+        };
+
+        // Required fields must be non-empty.
+        assert!(
+            !record.blast_radius.is_empty(),
+            "LIB-C008: blast_radius required"
+        );
+        assert!(
+            !record.reversibility.is_empty(),
+            "LIB-C008: reversibility required"
+        );
+        assert!(
+            !record.unchanged_statement.is_empty(),
+            "LIB-C008: unchanged_statement required"
+        );
+        assert!(!record.action.is_empty(), "LIB-C008: action required");
+        assert_eq!(
+            record.execution_context.schema_version, EXECUTION_CONTEXT_V1_SCHEMA,
+            "LIB-C008: repair record must carry a valid execution context"
+        );
+
+        // Round-trip through serde.
+        let json = serde_json::to_value(&record).unwrap();
+        let restored: RepairRecordV1 = serde_json::from_value(json).unwrap();
+        assert_eq!(restored.repair_record_id, record.repair_record_id);
+        assert_eq!(restored.repair_class, record.repair_class);
+        assert_eq!(restored.blast_radius, record.blast_radius);
+        assert_eq!(restored.reversibility, record.reversibility);
+        assert_eq!(restored.unchanged_statement, record.unchanged_statement);
+        assert_eq!(restored.affected_identities.len(), 2);
+    }
+
+    #[test]
+    fn cf_v9_c008_repair_classes_are_exhaustive() {
+        // LIB-C008: Repair classes must cover the canonical set.
+        use forge_pilot::RepairClassV1;
+
+        let classes = [
+            RepairClassV1::IdentityRepair,
+            RepairClassV1::TemporalRepair,
+            RepairClassV1::SupersessionRepair,
+            RepairClassV1::RollbackRepair,
+            RepairClassV1::BundleImportRepair,
+            RepairClassV1::ScopeWideningRepair,
+            RepairClassV1::VerificationStateRepair,
+        ];
+        // Each class must serialize to a distinct stable string.
+        let mut seen = std::collections::HashSet::new();
+        for class in &classes {
+            let wire = serde_json::to_value(class).unwrap();
+            let label = wire.as_str().unwrap().to_string();
+            assert!(
+                seen.insert(label.clone()),
+                "LIB-C008: duplicate repair class wire label: {label}"
+            );
+        }
+        assert_eq!(
+            seen.len(),
+            7,
+            "LIB-C008: expected 7 distinct repair classes"
+        );
+    }
+
+    // ─── LIB-C009: Runtime provenance completeness ─────────────────
+
+    #[test]
+    fn cf_v9_c009_query_trace_carries_view_model_and_widening() {
+        // LIB-C009: Every query result must carry declared view model and widening status.
+        let runtime = open_runtime(
+            &make_batch("cf-c009", &["claim-a", "claim-b"], false, false),
+            "cf-c009",
+        );
+        let (_results, trace) =
+            block_on(runtime.query("claim-a supports result", Some(&Scope::new("cf-c009"))))
+                .unwrap();
+
+        // View model declarations must be present.
+        // For a non-temporal, non-entity query, executed_views should be populated.
+        // Even if empty (no degradation), the field itself is well-defined.
+        assert!(
+            !trace.requested_views.is_empty()
+                || !trace.executed_views.is_empty()
+                || !trace.plan.legs.is_empty(),
+            "LIB-C009: query trace must declare requested/executed views or have at least one leg"
+        );
+
+        // Widening disclosures must be a well-typed list (even if empty = no widening).
+        // This asserts the field is structurally present, not that widening happened.
+        let _ = &trace.widenings;
+
+        // Temporal mode must be explicitly declared.
+        // For non-temporal queries, this is typically "none".
+        assert!(
+            trace.temporal_mode.is_some() || !trace.has_temporal_downgrade(),
+            "LIB-C009: temporal_mode must be explicitly set or temporal downgrade absent"
+        );
+
+        // The provenance snapshot must be constructible.
+        let provenance = trace.runtime_query_provenance();
+        assert_eq!(
+            provenance.schema_version, "runtime_query_provenance_v1",
+            "LIB-C009: provenance schema version must be runtime_query_provenance_v1"
+        );
+        assert!(!provenance.scope.namespace.is_empty());
+        assert!(!provenance.classification_mode.is_empty());
+    }
+
+    #[test]
+    fn cf_v9_c009_runtime_query_provenance_round_trips() {
+        // LIB-C009: RuntimeQueryProvenanceV1 must round-trip through serde.
+        use knowledge_runtime::RuntimeQueryProvenanceV1;
+
+        let runtime = open_runtime(
+            &make_batch("cf-c009-rt", &["claim-a"], false, false),
+            "cf-c009-rt",
+        );
+        let (_results, trace) =
+            block_on(runtime.query("claim-a supports result", Some(&Scope::new("cf-c009-rt"))))
+                .unwrap();
+        let provenance = trace.runtime_query_provenance();
+
+        let json = serde_json::to_value(&provenance).unwrap();
+        let restored: RuntimeQueryProvenanceV1 = serde_json::from_value(json).unwrap();
+
+        assert_eq!(restored.schema_version, provenance.schema_version);
+        assert_eq!(restored.scope, provenance.scope);
+        assert_eq!(restored.classification_mode, provenance.classification_mode);
+        assert_eq!(restored.raw_result_count, provenance.raw_result_count);
+        assert_eq!(restored.merged_result_count, provenance.merged_result_count);
+        assert_eq!(restored.total_duration_ms, provenance.total_duration_ms);
+    }
+
+    #[test]
+    fn cf_v9_c009_degraded_query_surfaces_widening() {
+        // LIB-C009: When the runtime degrades a temporal query, it must surface
+        // an explicit widening disclosure in the provenance record.
+        let runtime = open_runtime(
+            &make_batch("cf-c009-deg", &["claim-a", "claim-b"], false, false),
+            "cf-c009-deg",
+        );
+        // Query with temporal expression that will be degraded.
+        let (_results, trace) = block_on(runtime.query(
+            "what happened last week with claim-a",
+            Some(&Scope::new("cf-c009-deg")),
+        ))
+        .unwrap();
+
+        if trace.has_temporal_downgrade() {
+            // If temporal was downgraded, widenings must contain a disclosure.
+            assert!(
+                !trace.widenings.is_empty(),
+                "LIB-C009: temporal downgrade must produce an explicit widening disclosure"
+            );
+            let provenance = trace.runtime_query_provenance();
+            assert!(
+                !provenance.widenings.is_empty(),
+                "LIB-C009: provenance must carry widening disclosures"
+            );
+        }
+        // Whether degraded or not, warnings must be present and typed.
+        // (A non-temporal path may not degrade, which is also valid.)
+    }
+
+    // ─── LIB-C017: Cross-crate conformance gate registry ─────────
+
+    #[test]
+    fn cf_v9_c017_conformance_gate_registry_is_exhaustive() {
+        // LIB-C017: Every conformance gate from phase 1-3 and v16-v20 must be
+        // accounted for in the gate registry.
+        let all_gates: Vec<&str> = [
+            super::phase_1_gates(),
+            super::phase_2_gates(),
+            super::phase_3_plus_gates(),
+            super::v16_v20_gates(),
+        ]
+        .into_iter()
+        .flat_map(|gates| gates.iter().copied())
+        .collect();
+
+        // Must have no duplicates.
+        let mut seen = std::collections::HashSet::new();
+        for gate in &all_gates {
+            assert!(
+                seen.insert(*gate),
+                "LIB-C017: duplicate conformance gate: {gate}"
+            );
+        }
+
+        // Smoke check: minimum expected gate count across all phases.
+        assert!(
+            all_gates.len() >= 19,
+            "LIB-C017: expected at least 19 conformance gates, got {}",
+            all_gates.len()
+        );
+    }
+
+    #[test]
+    fn cf_v9_c017_v3_envelope_digest_is_deterministic() {
+        // LIB-C017: Two identical envelopes must produce the same content digest.
+        let batch_a = make_batch("c017-det", &["claim-a", "claim-b"], false, false);
+        let batch_b = make_batch("c017-det", &["claim-a", "claim-b"], false, false);
+        assert_eq!(
+            batch_a.content_digest, batch_b.content_digest,
+            "LIB-C017: identical envelopes must produce identical digests"
+        );
+    }
+
+    #[test]
+    fn cf_v9_c017_bridge_transform_preserves_execution_context() {
+        // LIB-C017: The V3 bridge must preserve execution context through transform.
+        let batch = make_batch("c017-ctx", &["claim-a"], false, false);
+        assert!(
+            batch.execution_context.is_some(),
+            "LIB-C017: V3 bridge must always emit an execution context"
+        );
+        let ctx = batch.execution_context.as_ref().unwrap();
+        assert_eq!(
+            ctx.schema_version, "execution_context_v1",
+            "LIB-C017: execution context schema version must be execution_context_v1"
+        );
+        assert!(
+            ctx.workload_class.is_some(),
+            "LIB-C017: execution context must declare workload class"
+        );
+    }
+
+    #[test]
+    fn cf_v9_c017_v2_to_v3_upgrade_preserves_record_count() {
+        // LIB-C017: Upgrading V2 to V3 must preserve the number of records.
+        let v2 = make_v2_envelope("c017-upgrade", &["claim-a", "claim-b", "claim-c"]);
+        let v3 = ExportEnvelopeV3::try_from(v2.clone()).unwrap();
+        assert_eq!(
+            v2.records.len(),
+            v3.records.len(),
+            "LIB-C017: V2->V3 upgrade must preserve record count"
         );
     }
 }

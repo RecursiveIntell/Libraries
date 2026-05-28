@@ -1,0 +1,7 @@
+   Compiling attestation-exchange v0.1.0 (/home/sikmindz/Coding/Libraries/attestation-exchange)
+   Compiling federated-settlement v0.1.0 (/home/sikmindz/Coding/Libraries/federated-settlement)
+   Compiling mechanism-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/mechanism-runtime)
+   Compiling aidens-contracts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.08s
+     Running unittests src/lib.rs (target/debug/deps/aidens_contracts-603628d2b351429d)
+   Doc-tests aidens_contracts

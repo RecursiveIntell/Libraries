@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use profile_runtime::{
     compose_profile_runtime, diff_policy_impact, from_residency_policy_profile,
     ApplicabilityContextV1, CompiledObligationKindV1, CompositionRuleSetV1, FoldClassV1,

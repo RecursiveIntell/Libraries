@@ -1,0 +1,29 @@
+{
+  "events": [
+    {
+      "id": "claim1",
+      "valid_time": "2026-01-01",
+      "recorded_time": "2026-01-02",
+      "value": "A"
+    },
+    {
+      "id": "claim1-correction",
+      "valid_time": "2026-01-01",
+      "recorded_time": "2026-01-10",
+      "value": "B",
+      "supersedes": "claim1"
+    }
+  ],
+  "queries": [
+    {
+      "as_of_valid": "2026-01-05",
+      "as_of_recorded": "2026-01-05",
+      "expected": "A"
+    },
+    {
+      "as_of_valid": "2026-01-05",
+      "as_of_recorded": "2026-01-11",
+      "expected": "B"
+    }
+  ]
+}

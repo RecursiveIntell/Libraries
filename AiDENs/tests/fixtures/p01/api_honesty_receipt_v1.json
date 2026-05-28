@@ -1,0 +1,17 @@
+{
+  "receipt_id": "api-honesty:fixture",
+  "kind": "api-honesty",
+  "surface": "AiDENsApp::from_plan",
+  "accepted_inputs": [
+    "plan.provider_required"
+  ],
+  "honored_inputs": [],
+  "rejected_inputs": [
+    "provider"
+  ],
+  "outcome": "blocked",
+  "reason_codes": [
+    "provider-unbound"
+  ],
+  "checked_at": "2026-04-26T00:00:00Z"
+}

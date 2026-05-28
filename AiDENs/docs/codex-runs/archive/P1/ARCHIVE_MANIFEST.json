@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/handoffs/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.md",
+      "bytes": 4378,
+      "mtime_utc": "2026-04-26T20:15:59Z",
+      "original_path": "handoffs/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P1",
+      "sha256": "8ff4643f90a8e2c9bb6b6c8f60c1ab978763964832183fabe51e5e185cd80291"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md",
+      "bytes": 1236,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P1",
+      "sha256": "00b2257ce4bcef54654574450436fc132b4ff7db6d0e1b7421d8132738cc6e61"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P1/files/tasks/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.json",
+      "bytes": 1037,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "tasks/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.json",
+      "reason": "stale-run-task",
+      "run_id": "P1",
+      "sha256": "d28276571d93ca7ba03e3fbf3b75f79958f1277d88ab941090f9cca3ee4b4fa6"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P1",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

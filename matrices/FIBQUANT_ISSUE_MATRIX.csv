@@ -1,0 +1,9 @@
+ID,Severity,Phase,Issue,Fix direction,Acceptance gate
+FQ-001,Critical,0,No source-basis doc before coding,Create FIBQUANT_SOURCE_BASIS.md first,Doc exists before crate files
+FQ-002,Critical,1,FibQuant added to default-members,Workspace member only,Root Cargo default-members excludes fib-quant
+FQ-003,Critical,2,Spherical-Beta law approximated incorrectly,Implement R^2 Beta sampler and reference sampler,Moment tests pass
+FQ-004,Critical,5,Lloyd-Max skipped,Implement multi-restart Lloyd-Max,lloyd_refinement test passes
+FQ-005,High,6,Variable length payload introduced,Use fixed-rate indices,bitpack tests pass
+FQ-006,High,6,Paper rate confused with wire rate,Expose both fields,profile tests pass
+FQ-007,Critical,9,Forbidden surfaces changed,Revert forbidden files,final assert passes
+FQ-008,Medium,8,Paper benchmark numbers treated as local proof,Separate source-reported vs local measurements,docs state no local reproduction claim

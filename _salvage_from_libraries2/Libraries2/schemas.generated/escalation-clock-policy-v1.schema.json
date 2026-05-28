@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SeverityPostmortemClockV1": {
+      "properties": {
+        "hours": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "severity": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hours",
+        "severity"
+      ],
+      "type": "object"
+    },
+    "SeverityResponseClockV1": {
+      "properties": {
+        "minutes": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "severity": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "minutes",
+        "severity"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "escalation_clock_policy_id": {
+      "type": "string"
+    },
+    "exception_path": {
+      "type": "string"
+    },
+    "pause_rules": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "postmortem_clock_hours": {
+      "items": {
+        "$ref": "#/definitions/SeverityPostmortemClockV1"
+      },
+      "type": "array"
+    },
+    "response_clock_minutes": {
+      "items": {
+        "$ref": "#/definitions/SeverityResponseClockV1"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "severity_matrix_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "escalation_clock_policy_id",
+    "exception_path",
+    "schema_version",
+    "severity_matrix_id"
+  ],
+  "title": "EscalationClockPolicyV1",
+  "type": "object"
+}

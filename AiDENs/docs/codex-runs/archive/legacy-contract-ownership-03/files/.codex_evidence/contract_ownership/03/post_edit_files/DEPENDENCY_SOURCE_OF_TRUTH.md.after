@@ -1,0 +1,18 @@
+# Dependency Source Of Truth
+
+SOURCE BASIS: 2026-04-28
+
+AiDENs uses `~/Coding/Libraries` as the canonical dependency source for stack owner crates. `~/Coding/Libraries2`, `~/Coding/Recall`, and `~/Coding/Recall-Coding` are reference-only and must not be wired as dependencies when a canonical owner exists in `~/Coding/Libraries`.
+
+| Canonical concept | Owner crate | AiDENs dependency wiring | Phase 03 decision |
+| --- | --- | --- | --- |
+| Identity and content-addressed stack IDs | `stack-ids` | Workspace dependency `path = "../stack-ids"`; consumed through workspace dependencies in AiDENs crates. | Canonical ID/digest owner remains outside AiDENs. |
+| Attestation envelope | `attestation-exchange` | Workspace dependency `path = "../attestation-exchange"`; `aidens-contracts` depends through `attestation-exchange.workspace = true`. | `AttestationEnvelopeV1` is an explicit canonical re-export, not a local type. |
+| Settlement and shared disposition | `federated-settlement` | Workspace dependency `path = "../federated-settlement"`; `aidens-contracts` depends through `federated-settlement.workspace = true`. | `SettlementCaseV1` and `SharedDispositionV1` are explicit canonical re-exports. |
+| Mechanism theory artifacts | `mechanism-runtime` | Workspace dependency `path = "../mechanism-runtime"`; `aidens-contracts` depends through `mechanism-runtime.workspace = true`. | `TheoryVersionV1`, `TheoryRefuterSuiteV1`, and `HypothesisLibraryV1` are explicit canonical re-exports. |
+| Remote oracle admission | `remote-oracle-admission` | Workspace dependency `path = "../remote-oracle-admission"`; `aidens-contracts` depends through `remote-oracle-admission.workspace = true` while remaining local admission/report surfaces are collapsed or quarantined in later phases. | Canonical owner is wired; no AiDENs-local replacement is introduced. |
+| Canonical schema generation | `contract-schema-gen` | Workspace dependency `path = "../contract-schema-gen"`; `aidens-cli` depends through `contract-schema-gen.workspace = true` because the CLI exposes schema generate/check commands. | Existing AiDENs schema registry/generation surfaces are not treated as authoritative and remain a Phase 05 collapse target. |
+| Verification calibration | `verification-calibration` | Workspace dependency `path = "../verification-calibration"`; `aidens-governance-kit` depends through `verification-calibration.workspace = true`. | `CalibrationSnapshot` is imported from the canonical owner. |
+| Pilot/control-loop receipts | `forge-pilot` | No Phase 03 AiDENs dependency is wired because current AiDENs code only contains report-string mentions, not typed pilot/control-loop receipt surfaces. | Add a dependency only if a typed pilot/control-loop surface is introduced or discovered. |
+
+No Phase 03 dependency points to `Libraries2`, `Recall`, or `Recall-Coding`. No local substitute crate or module was added for any missing canonical owner API.

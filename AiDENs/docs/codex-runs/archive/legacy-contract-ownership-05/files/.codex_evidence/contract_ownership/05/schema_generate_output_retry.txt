@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running `target/debug/aidens-cli schemas generate --out schemas`
+generated 58 schema files into schemas

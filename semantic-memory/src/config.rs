@@ -81,7 +81,8 @@ impl MemoryConfig {
         self.limits = self.limits.normalize_and_validate()?;
         let timeout_cap_secs = self.limits.embedding_timeout.as_secs().max(1);
         self.embedding.timeout_secs = self.embedding.timeout_secs.min(timeout_cap_secs);
-        self.search.normalize_and_validate()?;
+        self.search
+            .normalize_and_validate(self.embedding.dimensions)?;
         self.chunking.normalize_and_validate()?;
         self.pool.normalize_and_validate()?;
         #[cfg(feature = "hnsw")]
@@ -137,6 +138,20 @@ impl EmbeddingConfig {
         if self.timeout_secs == 0 {
             self.timeout_secs = 1;
         }
+        let parsed =
+            reqwest::Url::parse(&self.ollama_url).map_err(|_| MemoryError::InvalidConfig {
+                field: "embedding.ollama_url",
+                reason: "must be an absolute http:// or https:// URL".to_string(),
+            })?;
+        match parsed.scheme() {
+            "http" | "https" if parsed.host_str().is_some() => {}
+            _ => {
+                return Err(MemoryError::InvalidConfig {
+                    field: "embedding.ollama_url",
+                    reason: "must be an absolute http:// or https:// URL".to_string(),
+                })
+            }
+        }
         Ok(())
     }
 }
@@ -178,6 +193,50 @@ pub struct SearchConfig {
     /// Only applies when HNSW feature is enabled.
     /// Default: true
     pub rerank_from_f32: bool,
+
+    /// Optional derived-vector candidate backend. Disabled by default because
+    /// raw f32 embeddings remain authoritative.
+    #[serde(default)]
+    pub derived_vector_backend: DerivedVectorBackendPolicy,
+
+    /// TurboQuant polar angle bits when the TurboQuant candidate backend is enabled.
+    #[serde(default = "default_turbo_quant_bits")]
+    pub turbo_quant_bits: u8,
+
+    /// TurboQuant QJL projection count when the TurboQuant candidate backend is enabled.
+    #[serde(default = "default_turbo_quant_projections")]
+    pub turbo_quant_projections: usize,
+
+    /// TurboQuant profile seed when the TurboQuant candidate backend is enabled.
+    #[serde(default)]
+    pub turbo_quant_seed: u64,
+
+    /// Require exact f32 rerank for TurboQuant candidates. Defaults to true.
+    #[serde(default = "default_true")]
+    pub turbo_quant_require_exact_rerank: bool,
+}
+
+/// Candidate backend policy for rebuildable derived vector artifacts.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum DerivedVectorBackendPolicy {
+    /// Use authoritative raw f32 embeddings for vector candidate generation.
+    #[default]
+    Disabled,
+    /// Use TurboQuant only to generate candidates, then exact rerank by default.
+    TurboQuantCandidateOnly,
+}
+
+const fn default_turbo_quant_bits() -> u8 {
+    8
+}
+
+const fn default_turbo_quant_projections() -> usize {
+    64
+}
+
+const fn default_true() -> bool {
+    true
 }
 
 impl Default for SearchConfig {
@@ -192,12 +251,23 @@ impl Default for SearchConfig {
             recency_half_life_days: None,
             recency_weight: 0.5,
             rerank_from_f32: true,
+            derived_vector_backend: DerivedVectorBackendPolicy::Disabled,
+            turbo_quant_bits: default_turbo_quant_bits(),
+            turbo_quant_projections: default_turbo_quant_projections(),
+            turbo_quant_seed: 0,
+            turbo_quant_require_exact_rerank: true,
         }
     }
 }
 
 impl SearchConfig {
-    fn normalize_and_validate(&mut self) -> Result<(), MemoryError> {
+    pub(crate) fn uses_turbo_quant_backend(&self) -> bool {
+        self.derived_vector_backend == DerivedVectorBackendPolicy::TurboQuantCandidateOnly
+    }
+
+    fn normalize_and_validate(&mut self, embedding_dimensions: usize) -> Result<(), MemoryError> {
+        #[cfg(not(feature = "turbo-quant-codec"))]
+        let _ = embedding_dimensions;
         if self.candidate_pool_size == 0 {
             self.candidate_pool_size = 1;
         }
@@ -246,6 +316,44 @@ impl SearchConfig {
                 field: "search.recency_half_life_days",
                 reason: "recency_half_life_days must be > 0 when enabled".to_string(),
             });
+        }
+        if self.uses_turbo_quant_backend() {
+            #[cfg(not(feature = "turbo-quant-codec"))]
+            {
+                return Err(MemoryError::InvalidConfig {
+                    field: "search.derived_vector_backend",
+                    reason: "turbo_quant_candidate_only requires the turbo-quant-codec feature"
+                        .to_string(),
+                });
+            }
+            #[cfg(feature = "turbo-quant-codec")]
+            {
+                if embedding_dimensions % 2 != 0 {
+                    return Err(MemoryError::InvalidConfig {
+                        field: "embedding.dimensions",
+                        reason: "TurboQuant requires even embedding dimensions".to_string(),
+                    });
+                }
+                if self.turbo_quant_projections == 0 {
+                    return Err(MemoryError::InvalidConfig {
+                        field: "search.turbo_quant_projections",
+                        reason: "TurboQuant projections must be at least 1".to_string(),
+                    });
+                }
+                if !(2..=16).contains(&self.turbo_quant_bits) {
+                    return Err(MemoryError::InvalidConfig {
+                        field: "search.turbo_quant_bits",
+                        reason: "TurboQuant bits must be within 2..=16".to_string(),
+                    });
+                }
+                if !self.turbo_quant_require_exact_rerank {
+                    return Err(MemoryError::InvalidConfig {
+                        field: "search.turbo_quant_require_exact_rerank",
+                        reason: "TurboQuant candidate backend requires exact f32 rerank"
+                            .to_string(),
+                    });
+                }
+            }
         }
         Ok(())
     }
@@ -301,8 +409,8 @@ impl ChunkingConfig {
         if self.target_size > self.max_size {
             self.target_size = self.max_size;
         }
-        if self.overlap >= self.max_size {
-            self.overlap = self.max_size.saturating_sub(1);
+        if self.overlap >= self.min_size {
+            self.overlap = self.min_size.saturating_sub(1);
         }
         Ok(())
     }
@@ -360,12 +468,13 @@ impl PoolConfig {
         if self.max_read_connections == 0 {
             return Err(MemoryError::InvalidConfig {
                 field: "pool.max_read_connections",
-                reason: "at least one reader connection is required".to_string(),
+                reason: "set pool.max_read_connections to at least 1".to_string(),
             });
         }
         if self.reader_timeout_secs == 0 {
             self.reader_timeout_secs = 1;
         }
+        self.reader_timeout_secs = self.reader_timeout_secs.min(300);
         Ok(())
     }
 }
@@ -455,7 +564,11 @@ impl MemoryLimits {
     /// Falls back to defaults if the caller-provided limits are invalid.
     /// Default limits are infallible so the fallback path cannot fail.
     pub fn validated(self) -> Self {
-        self.normalize_and_validate().unwrap_or_else(|_| {
+        self.normalize_and_validate().unwrap_or_else(|err| {
+            tracing::warn!(
+                error = %err,
+                "invalid MemoryLimits supplied to validated(); using defaults"
+            );
             // Default limits are always valid — this path is infallible.
             let defaults = Self::default();
             Self {

@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ClosureRecommendationV1": {
+      "enum": [
+        "close_successfully",
+        "open_compensation",
+        "escalate_review",
+        "replay_ready"
+      ],
+      "type": "string"
+    },
+    "ObservationStateV1": {
+      "enum": [
+        "complete",
+        "in_progress",
+        "drift_detected"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "properties": {
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "closure_recommendation": {
+      "$ref": "#/definitions/ClosureRecommendationV1"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "drift_summary": {
+      "type": "string"
+    },
+    "effect_execution_receipt_id": {
+      "type": "string"
+    },
+    "effect_observation_bundle_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "external_evidence_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "observation_state": {
+      "$ref": "#/definitions/ObservationStateV1"
+    },
+    "observation_window": {
+      "type": "string"
+    },
+    "observed_outcome": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicability_context_id",
+    "closure_recommendation",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "drift_summary",
+    "effect_execution_receipt_id",
+    "effect_observation_bundle_id",
+    "effective_constitution_id",
+    "external_evidence_refs",
+    "generated_at",
+    "observation_state",
+    "observation_window",
+    "observed_outcome",
+    "profile_set_id",
+    "schema_version"
+  ],
+  "title": "EffectObservationBundleV1",
+  "type": "object"
+}

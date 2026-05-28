@@ -1,0 +1,45 @@
+{
+  "active_manifest_version": "AiDENsP22ActiveManifestV1",
+  "record_date": "2026-05-02",
+  "run_id": "P22",
+  "workspace_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "parent_git_root": "/home/sikmindz/Coding/Libraries",
+  "active_truth_docs": [
+    "README.md",
+    "STATUS.md",
+    "SOURCE_BASIS.md",
+    "SUPPORT_PROFILE.md",
+    "docs/codex-runs/CURRENT_RUN.md",
+    "docs/codex-runs/ARCHIVAL_POLICY.md",
+    "docs/codex-runs/CODEX_RUN_INDEX.md"
+  ],
+  "p22_verification_scripts": [
+    "scripts/assert_p22_codex_archival_hygiene.py",
+    "scripts/assert_p22_release_package_clean.py",
+    "scripts/assert_p22_zpy_archive_contract.py",
+    "scripts/p22_zpy_archival_selftest.py",
+    "scripts/p22_verify.sh",
+    "scripts/p22_verify_release_archive.sh"
+  ],
+  "normal_package_command": "python3 z.py --root . --profile aidens --mode codex-context --strict",
+  "audit_full_command": "python3 z.py --root . --profile aidens --mode audit-full --include-codex-archive --strict --dry-run",
+  "cargo_final_gate_command": "P22_REQUIRE_CARGO=1 bash scripts/p22_verify.sh",
+  "final_release_package": {
+    "path": "target/p22/aidens-p22-release-context.zip",
+    "sha256": "8128a71932d7668f9622d5357ca74f781e86df31ae58a48fa1f45094c4dad2a7",
+    "normal_manifest_entries": 1267,
+    "normal_manifest_archive_entries": 0,
+    "replay_report": "target/p22/archive_verifier_report.final.json"
+  },
+  "archive_policy": {
+    "normal_package_excludes": [
+      "docs/codex-runs/archive/**"
+    ],
+    "include_archive_only_when_explicit": true,
+    "historical_codex_material": "non-normative evidence only"
+  },
+  "known_pending_items": [
+    "Protective secret-like filename exclusions for active Phase 05 prompt/test files",
+    "Parent git repository boundary cleanup"
+  ]
+}

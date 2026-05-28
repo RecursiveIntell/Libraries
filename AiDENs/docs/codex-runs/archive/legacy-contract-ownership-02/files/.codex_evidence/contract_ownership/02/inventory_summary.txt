@@ -1,0 +1,5 @@
+PHASE 02 INVENTORY SUMMARY
+docs/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv: rows=897 local_def=826 pub_use=71
+docs/contract-ownership/CANONICAL_TYPE_INVENTORY.csv: rows=696 local_def=633 pub_use=63
+docs/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv: rows=201 local_def=193 pub_use=8
+docs/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv: rows=0

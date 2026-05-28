@@ -1,0 +1,25 @@
+{
+  "pack_name": "v25_v26_code_closeout_pack_2026-03-18",
+  "source_basis": "libraries-source-clean-20260318.zip + user-provided Claude delta + static structural review",
+  "files": [
+    "CEA_CONFIDENCE_HARDENING_SPEC.md",
+    "CODEX_IMPLEMENTATION_PROMPT.md",
+    "CODEX_SHORT_PROMPT.md",
+    "DEFERRED_WORK_AND_NON_GOALS.md",
+    "EXACT_FILE_TOUCH_MAP.json",
+    "EXACT_FILE_TOUCH_MAP.md",
+    "EXECUTIVE_SUMMARY.md",
+    "FORGE_PILOT_CLOSEOUT_SPEC.md",
+    "IMPLEMENTATION_SEQUENCE.md",
+    "KNOWLEDGE_RUNTIME_CLOSEOUT_SPEC.md",
+    "MASTER_ISSUE_MATRIX.json",
+    "MASTER_ISSUE_MATRIX.md",
+    "PER_CRATE_APPLY_PLAN.md",
+    "PUBLIC_ERROR_SURFACE_HARDENING.md",
+    "README.md",
+    "RECONCILED_AUDIT.md",
+    "RELEASE_BAR_AND_ACCEPTANCE.md",
+    "REPO_SURFACE_AND_MIRROR_CLOSEOUT.md",
+    "TEST_AND_CONFORMANCE_PLAN.md"
+  ]
+}

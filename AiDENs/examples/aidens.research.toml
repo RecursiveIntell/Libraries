@@ -1,0 +1,20 @@
+app_id = "aidens-example-research"
+profile_id = "research-workbench"
+memory_mode = "optional"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+model = "mock-research"
+mock_response = "mock research response from AiDENs"
+
+[receipts]
+store_root = "target/aidens-receipts/aidens-example-research"
+
+[memory]
+store_root = "target/aidens-memory/aidens-example-research"
+
+[security]
+approval_mode = "require-side-effects"
+network_policy = "disabled"
+write_policy = "approval-required"

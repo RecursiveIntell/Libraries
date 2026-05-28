@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use forge_engine::config::ForgeConfig;
 use forge_engine::lab::emitters::AlgebraSpec;
 use forge_engine::lab::evidence::{

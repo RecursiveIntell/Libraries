@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-11T00:41:41Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P30_1/files/prompts/phases/P30-01_EXECUTABLE_TOOL_CALL_PARSER_BOUNDARY_AND_STRICT_STRUCTURED_OUTPUT_LAW.md",
+      "bytes": 1129,
+      "mtime_utc": "2026-05-10T23:55:56Z",
+      "original_path": "prompts/phases/P30-01_EXECUTABLE_TOOL_CALL_PARSER_BOUNDARY_AND_STRICT_STRUCTURED_OUTPUT_LAW.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P30_1",
+      "sha256": "2aa1cbc2b5847229a9461008f33b22cd2b8fcdc3991317b843fe4d3b3cafdf54"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P30_1",
+  "skipped_existing": [],
+  "superseded_by": "P29",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

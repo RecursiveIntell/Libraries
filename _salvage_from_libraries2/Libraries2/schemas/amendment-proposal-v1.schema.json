@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "amendment_proposal_id": {
+      "type": "string"
+    },
+    "charter_bundle_id": {
+      "type": "string"
+    },
+    "doctrine_snapshot_id": {
+      "type": "string"
+    },
+    "expected_archive_action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "migration_obligations": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "proposal_title": {
+      "type": "string"
+    },
+    "required_historical_query_modes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "rollback_handle": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantic_diff_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "advisory_only",
+    "amendment_proposal_id",
+    "charter_bundle_id",
+    "doctrine_snapshot_id",
+    "proposal_title",
+    "schema_version"
+  ],
+  "title": "AmendmentProposalV1",
+  "type": "object"
+}

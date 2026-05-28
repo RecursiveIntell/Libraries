@@ -1,0 +1,404 @@
+{
+  "created_utc": "2026-05-03T23:11:12Z",
+  "error_count": 66,
+  "findings": [
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "ACCEPTANCE_GATES.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "ACCEPTANCE_GATES_AND_CI.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "AIDENS_STACK_INTEGRATION_GAP.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "ANTI_DUPLICATION_REPORT.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "ARTIFACT_SCHEMA_REGISTRY.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "AiDENs-aidens-codex-context-20260502.report.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "AiDENs-aidens-codex-context-20260503.report.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "AiDENs-aidens-next-codex-context-20260502.report.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "AiDENs-aidens-next-codex-context-20260503.report.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "BUILD_ORDER_DAG.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "CANONICAL_OWNER_MAP.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "CANONICAL_SOURCE_OF_TRUTH.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "COMPATIBILITY_LEDGER.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "COMPLETION_PASS_MAP.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "CRATE_OWNERSHIP_AND_BOUNDARIES.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "CRATE_REWRITE_MAP.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "CURRENT_AIDENS_HARD_AUDIT_20260426.md:ambiguous-stop: *AUDIT*.MD,*HARD_AUDIT*.MD",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "CURRENT_AIDENS_SURFACE_MAP.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "GOLDEN_VERTICAL_SLICE_SPEC.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "HANDOFF_TEMPLATE.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "IMPLEMENTATION_SEQUENCE.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "MASTER_ISSUE_MATRIX.md:ambiguous-stop: *ISSUE_MATRIX*.MD,*MASTER*.MD,*MATRIX*.MD",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_ACCEPTANCE_GATES.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_CANONICAL_SEAM_MAP.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_COMMANDS.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_EVIDENCE_AND_REPORTING.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_HARD_AUDIT.md:ambiguous-stop: *AUDIT*.MD,*HARD_AUDIT*.MD",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_ISSUE_MATRIX.md:ambiguous-stop: *ISSUE_MATRIX*.MD,*MATRIX*.MD",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_RUN_ORDER.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_SOURCE_BASIS.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_SUPPORT_PROFILE_TARGET.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P24_VERIFIER_SPEC.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_ACCEPTANCE_GATES.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_AGENTS_MD_APPENDIX.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_CLAUDE_AUDIT_ABSORPTION.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_CODEX_RUN_PROMPT.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_COMMANDS.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_CURRENT_RUN_CLASSIFICATION_SPEC.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_EVIDENCE_AND_REPORTING.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_FLAGSHIP_AGENT_DEMO_SPEC.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_FLAGSHIP_DEMO_ACCEPTANCE_FIXTURES.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_HARD_AUDIT.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_LARGE_FILE_CONTAINMENT_PLAN.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_MASTER_PACKET.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_OPERATOR_QUICKSTART.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_PHASE_GATE_PROTOCOL.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_PHASE_PLAN.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_ROLLBACK_AND_QUARANTINE_PLAN.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_ROOT_MARKDOWN_ARCHIVE_TEST_PLAN.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_RUN_ORDER.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_SOURCE_BASIS.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_SUPPORT_PROFILE_TARGET.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_VERIFIER_SPEC.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "P25_ZPY_ROOT_MARKDOWN_ARCHIVER_SPEC.md:ambiguous-stop: active-current-run",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "README.z.py.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "RESEARCH_SOURCE_INDEX.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "RESEARCH_TO_PASS_TRACEABILITY.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "RUN_ORDER.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "SOURCE_TOUCH_MAP.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "STATUS_TEMPLATE.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "SUPER_PASS_EXECUTIVE_SUMMARY.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "TESTKIT_TARGETS.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "TEST_CONFORMANCE_FUZZING_PLAN.md:ambiguous-stop: *CONFORMANCE*.MD,*PLAN*.MD",
+      "severity": "error"
+    },
+    {
+      "code": "root-markdown-archive-ambiguous",
+      "detail": "Root Markdown candidate classification is ambiguous.",
+      "path": "V10_PLUS_DESIGN_TRACK_BRIEF.md:ambiguous-stop: unknown-root-markdown",
+      "severity": "error"
+    },
+    {
+      "code": "script-ref-missing",
+      "detail": "Possible script reference not found: scripts/p24_verify.sh",
+      "path": "AiDENs/scripts/verify.sh",
+      "severity": "error"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "warning_count": 0
+}

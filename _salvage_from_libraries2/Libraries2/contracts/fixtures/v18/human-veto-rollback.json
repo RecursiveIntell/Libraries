@@ -1,0 +1,54 @@
+{
+  "spec_bundle": {
+    "schema_version": "spec_bundle_v1",
+    "spec_bundle_id": "spec-bundle-veto-001",
+    "spec_name": "Human Veto Rollback Test Spec",
+    "canonical_owner": "test-owner",
+    "publication_status": "advisory_only"
+  },
+  "normative_ast": {
+    "schema_version": "normative_ast_v1",
+    "normative_ast_id": "normative-ast-veto-001",
+    "spec_bundle_id": "spec-bundle-veto-001",
+    "nodes": [
+      {
+        "node_id": "node-alpha",
+        "kind": "requirement",
+        "normative_text": "All generated schemas must preserve backpointers to their source spec."
+      },
+      {
+        "node_id": "node-beta",
+        "kind": "constraint",
+        "normative_text": "Migration plans must reference the schema bundle they migrate from."
+      }
+    ],
+    "publication_status": "advisory_only"
+  },
+  "proof_obligation_set": {
+    "schema_version": "proof_obligation_set_v1",
+    "proof_obligation_set_id": "proof-obligation-set-veto-001",
+    "spec_bundle_id": "spec-bundle-veto-001",
+    "normative_ast_id": "normative-ast-veto-001",
+    "obligations": [
+      {
+        "obligation_id": "obligation-alpha",
+        "description": "Schema backpointer integrity",
+        "satisfied": true,
+        "blocking": true
+      }
+    ]
+  },
+  "human_veto_bundle": {
+    "schema_version": "human_veto_bundle_v1",
+    "human_veto_bundle_id": "veto-001",
+    "generated_schema_bundle_id": "placeholder-will-be-overwritten",
+    "reason": "Human reviewer identified unacceptable risk in generated schemas"
+  },
+  "meta_challenge_bundle": {
+    "schema_version": "meta_challenge_bundle_v1",
+    "meta_challenge_bundle_id": "challenge-001",
+    "generated_schema_bundle_id": "placeholder-will-be-overwritten",
+    "challenge_summary": "Meta-challenge: generated conformance corpus does not cover edge cases",
+    "horizon_only": false
+  }
+}

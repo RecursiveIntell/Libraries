@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T01:22:43Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P20_2-20260502T012243Z/files/install_p20_2_overlay.sh",
+      "bytes": 956,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "install_p20_2_overlay.sh",
+      "reason": "stale-run-install-script",
+      "run_id": "P20_2",
+      "sha256": "d82761044576d02d83150285b55cb7582b68c23f9d425342ac1d74ee60220210"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P20_2",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

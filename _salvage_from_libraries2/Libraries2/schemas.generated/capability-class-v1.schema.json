@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "blast_radius_ceiling": {
+      "type": "string"
+    },
+    "capability_class_id": {
+      "type": "string"
+    },
+    "disclosure_ceiling": {
+      "type": "string"
+    },
+    "dual_control_required": {
+      "type": "boolean"
+    },
+    "governed_effect_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "max_delegation_depth": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "required_review_class": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "blast_radius_ceiling",
+    "capability_class_id",
+    "disclosure_ceiling",
+    "dual_control_required",
+    "governed_effect_families",
+    "max_delegation_depth",
+    "required_review_class",
+    "schema_version"
+  ],
+  "title": "CapabilityClassV1",
+  "type": "object"
+}

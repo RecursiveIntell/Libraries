@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "changed_approval_behavior": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "changed_disclosure_behavior": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "changed_incident_behavior": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "changed_monitoring_behavior": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "changed_obligation_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "changed_residency_behavior": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "explanation_summary": {
+      "type": "string"
+    },
+    "from_effective_constitution_ref": {
+      "type": "string"
+    },
+    "migration_consequences": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "newly_admitted_paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "newly_blocked_paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "policy_impact_diff_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "simulation_only": {
+      "type": "boolean"
+    },
+    "to_effective_constitution_ref": {
+      "type": "string"
+    },
+    "unchanged_obligation_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "explanation_summary",
+    "from_effective_constitution_ref",
+    "policy_impact_diff_id",
+    "schema_version",
+    "simulation_only",
+    "to_effective_constitution_ref"
+  ],
+  "title": "PolicyImpactDiffV1",
+  "type": "object"
+}

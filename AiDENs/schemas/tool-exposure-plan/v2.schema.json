@@ -1,0 +1,402 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ApprovalRequestV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "risk_class": {
+          "$ref": "#/definitions/ToolSideEffectClass"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox_root": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "request_id",
+        "requested_at",
+        "risk_class",
+        "sandbox_root",
+        "scope",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "CanonicalBackpointerV1": {
+      "description": "AiDENs-local wrapper pointer to a canonical owner artifact or owner type.\n\nThis does not make AiDENs authoritative for the pointed-to concept; it records where a display/report DTO must be reconciled for canonical truth.",
+      "properties": {
+        "artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "external_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_crate": {
+          "type": "string"
+        },
+        "owner_type": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_crate",
+        "owner_type",
+        "role"
+      ],
+      "type": "object"
+    },
+    "CapabilityGateDecisionV1": {
+      "properties": {
+        "approval_request": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ApprovalRequestV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "executable_this_turn": {
+          "type": "boolean"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "lifecycle": {
+          "items": {
+            "$ref": "#/definitions/ToolLifecycleStateV1"
+          },
+          "type": "array"
+        },
+        "outcome": {
+          "$ref": "#/definitions/CapabilityGateOutcomeV1"
+        },
+        "permit_grant_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "permit_required": {
+          "default": false,
+          "type": "boolean"
+        },
+        "permit_use_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "risk_class": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ToolSideEffectClass"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sandbox_root": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "capability_id",
+        "decision_id",
+        "executable_this_turn",
+        "kind",
+        "lifecycle",
+        "outcome"
+      ],
+      "type": "object"
+    },
+    "CapabilityGateOutcomeV1": {
+      "enum": [
+        "exposed",
+        "hidden",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "PermitUseReportV1": {
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        },
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "permit_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "risk_class": {
+          "$ref": "#/definitions/ToolSideEffectClass"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox_root": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        },
+        "used_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "allowed",
+        "kind",
+        "permit_id",
+        "receipt_id",
+        "risk_class",
+        "sandbox_root",
+        "tool_id",
+        "used_at"
+      ],
+      "type": "object"
+    },
+    "ToolLifecycleStateV1": {
+      "enum": [
+        "declared",
+        "registered",
+        "executable",
+        "exposed",
+        "exposed-this-turn",
+        "invoked",
+        "succeeded",
+        "failed",
+        "hidden",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "ToolProviderSchemaV1": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "input_schema": true,
+        "name": {
+          "type": "string"
+        },
+        "output_schema": true,
+        "parser_fallback_hint": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "input_schema",
+        "name",
+        "output_schema",
+        "parser_fallback_hint",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "ToolSideEffectClass": {
+      "enum": [
+        "read_only",
+        "analysis",
+        "preview_write",
+        "write",
+        "admin"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "approval_requests": {
+      "items": {
+        "$ref": "#/definitions/ApprovalRequestV1"
+      },
+      "type": "array"
+    },
+    "blocked_tool_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "canonical_backpointers": {
+      "items": {
+        "$ref": "#/definitions/CanonicalBackpointerV1"
+      },
+      "type": "array"
+    },
+    "decisions": {
+      "items": {
+        "$ref": "#/definitions/CapabilityGateDecisionV1"
+      },
+      "type": "array"
+    },
+    "declared_tool_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "degraded": {
+      "default": false,
+      "type": "boolean"
+    },
+    "executable_tool_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "exposed_tool_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "exposure_id": {
+      "type": "string"
+    },
+    "hidden_tool_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "permit_use_receipts": {
+      "items": {
+        "$ref": "#/definitions/PermitUseReportV1"
+      },
+      "type": "array"
+    },
+    "provider_tool_schemas": {
+      "items": {
+        "$ref": "#/definitions/ToolProviderSchemaV1"
+      },
+      "type": "array"
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "registered_tool_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "sandbox_root": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "blocked_tool_ids",
+    "exposed_tool_ids",
+    "exposure_id",
+    "hidden_tool_ids"
+  ],
+  "title": "ToolExposurePlanV1",
+  "type": "object"
+}

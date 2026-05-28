@@ -1,0 +1,55 @@
+{
+  "manifest_id": "golden-fixture-manifest:fixture",
+  "fixture_paths": [
+    "tests/fixtures/reference/differential_conformance_finding_v1.json",
+    "tests/fixtures/reference/golden_fixture_manifest_v1.json",
+    "tests/fixtures/reference/reference_case_v1.json",
+    "tests/fixtures/reference/reference_interpreter_report_v1.json"
+  ],
+  "reference_case_ids": [
+    "reference-case:provider-mock"
+  ],
+  "provider_kinds": [
+    "anthropic",
+    "compatible",
+    "disabled",
+    "mock",
+    "ollama",
+    "openai",
+    "openai-compatible",
+    "openrouter"
+  ],
+  "risk_classes": [
+    "read_only",
+    "analysis",
+    "preview_write",
+    "write",
+    "admin"
+  ],
+  "memory_modes": [
+    "disabled",
+    "optional",
+    "required"
+  ],
+  "receipt_levels": [
+    "minimal",
+    "standard",
+    "full"
+  ],
+  "tool_lifecycle_states": [
+    "declared",
+    "registered",
+    "executable",
+    "exposed",
+    "exposed-this-turn",
+    "invoked",
+    "succeeded",
+    "failed",
+    "hidden",
+    "blocked"
+  ],
+  "reason_codes": [
+    "golden-fixture-coverage-manifest"
+  ],
+  "generated_at": "2026-04-26T00:00:00Z"
+}

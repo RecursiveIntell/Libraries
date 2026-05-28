@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IncidentTaxonomyV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "incident_taxonomy_id": {
+      "type": "string"
+    },
+    "incident_classes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "default_routes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "required_artifact_families": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "incident_taxonomy_id",
+    "incident_classes",
+    "default_routes",
+    "required_artifact_families"
+  ]
+}

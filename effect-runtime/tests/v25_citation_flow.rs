@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use effect_runtime::{
     BlastRadiusCeilingV1, BudgetSufficiencyResultV1, CheckResultV1, ClosureRecommendationV1,
     CommitAtomicityV1, CompensationClassV1, CompensationExecutionReceiptV1, CompensationPlanV1,

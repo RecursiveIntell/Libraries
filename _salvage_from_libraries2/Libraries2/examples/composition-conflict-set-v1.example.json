@@ -1,0 +1,28 @@
+{
+  "schema_version": "CompositionConflictSetV1",
+  "composition_conflict_set_id": "composition-conflict-set-001",
+  "effective_constitution_ref": "effective-constitution-002",
+  "composition_receipt_ref": "composition-receipt-002",
+  "conflicts": [
+    {
+      "obligation_family": "disclosure.export_format",
+      "obligation_key": "export_package_format",
+      "conflict_class": "incomparable_values",
+      "blocking": true,
+      "source_profile_refs": [
+        "aep_001",
+        "vendor-override-17"
+      ],
+      "implicated_values": [
+        "bundle_v2",
+        "customer_portal_zip"
+      ],
+      "admissible_exception_classes": [
+        "disclosure_exception"
+      ],
+      "review_path": "human_constitution_review",
+      "explanation": "audit export package format diverged without admitted exception"
+    }
+  ],
+  "blocking": true
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "OperatingEnvelopeV1",
+  "operating_envelope_id": "oen_001",
+  "allowed_regions": [
+    "us-central1",
+    "us-east1"
+  ],
+  "traffic_ceiling": "500rps",
+  "data_class_ceiling": "internal",
+  "dependency_constraints": [
+    "db version >= 14",
+    "feature flag safe-mode off"
+  ],
+  "degradation_behavior": "rollback_and_pause"
+}

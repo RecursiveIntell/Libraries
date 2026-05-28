@@ -1,0 +1,11 @@
+PHASE 01 INVENTORY SUMMARY
+docs/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv: rows=900 local_def=832 pub_use=68
+docs/contract-ownership/CANONICAL_TYPE_INVENTORY.csv: rows=696 local_def=633 pub_use=63
+docs/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv: rows=204 local_def=199 pub_use=5
+docs/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv:
+P0: AttestationEnvelopeV1 local crates/aidens-contracts/src/lib.rs:2481 canonical attestation-exchange attestation-exchange/src/lib.rs:117
+P0: SharedDispositionV1 local crates/aidens-contracts/src/lib.rs:2843 canonical federated-settlement federated-settlement/src/lib.rs:95
+P0: SettlementCaseV1 local crates/aidens-contracts/src/lib.rs:2891 canonical federated-settlement federated-settlement/src/lib.rs:144
+P0: TheoryRefuterSuiteV1 local crates/aidens-contracts/src/lib.rs:3508 canonical mechanism-runtime mechanism-runtime/src/lib.rs:131
+P0: TheoryVersionV1 local crates/aidens-contracts/src/lib.rs:3603 canonical mechanism-runtime mechanism-runtime/src/lib.rs:61
+P0: HypothesisLibraryV1 local crates/aidens-contracts/src/lib.rs:3815 canonical mechanism-runtime mechanism-runtime/src/lib.rs:81

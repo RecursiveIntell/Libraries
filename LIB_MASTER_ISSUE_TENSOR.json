@@ -1,0 +1,198 @@
+{
+  "meta": {
+    "name": "libraries_master_issue_tensor_v6",
+    "date": "2026-04-01",
+    "source": "claude_opus_4.6_code_grounded_audit",
+    "supersedes": "HOSTILE_AUDIT_SYNTHESIS_V5 (2026-03-30, score 8.1)",
+    "current_score": 8.4,
+    "scale": {
+      "severity": "1-10",
+      "likelihood": "1-10",
+      "blast_radius": "1-10",
+      "detectability": "1-10 (lower = harder to detect)",
+      "fix_effort": "1-10 (lower = easier)",
+      "priority_score": "severity * likelihood * blast_radius / max(detectability,1)"
+    }
+  },
+  "closed_since_v5": [
+    {
+      "id": "LIB-001",
+      "title": "Governance gate fail-open (P0)",
+      "status": "CLOSED",
+      "evidence": "GovernanceMode::Strict returns Err on missing claims/blocked gates. 16 tests. Feature compiled by default (default = [\"governance\"])."
+    },
+    {
+      "id": "LIB-005",
+      "title": "No workspace lints",
+      "status": "CLOSED",
+      "evidence": "unsafe_code=deny, clippy::todo=deny, clippy::dbg_macro=deny, clippy::unimplemented=deny, clippy::expect_used=warn at workspace level. All members inherit."
+    },
+    {
+      "id": "CLIB-005",
+      "title": "Governance receipt is metadata, never gates execution",
+      "status": "CLOSED",
+      "evidence": "gate_execution_with_mode() promotes Blocked to Err in Strict mode. Loop runner halts with GovernanceIncidentHalt or GovernanceAuthorityInsufficient."
+    }
+  ],
+  "issues": [
+    {
+      "id": "LIB-CRIT-001",
+      "title": "knowledge-runtime scope_requires_pushdown suppresses hybrid search fallback for domain-scoped queries",
+      "layer": "retrieval_architecture",
+      "phase": 0,
+      "severity": 10,
+      "likelihood": 10,
+      "blast_radius": 10,
+      "detectability": 2,
+      "fix_effort": 2,
+      "priority_score": 500.0,
+      "location": "knowledge-runtime/src/runtime/core.rs:695-711",
+      "root_cause": "When scope_has_extra_dimensions() returns true (scope.domain is set), the code returns projection_results directly without attempting the hybrid search fallback. Any consumer of KnowledgeRuntime with scope.domain set never gets FTS5/HNSW/RRF search.",
+      "fix": "Change pushdown branch to fall back to hybrid search when projection_results.len() < leg.limit.",
+      "acceptance": "KnowledgeRuntime.query() with scope.domain set returns hybrid search results when projection results are thin. Recall retrieval works through knowledge-runtime path."
+    },
+    {
+      "id": "LIB-HIGH-001",
+      "title": "unreachable!() in 3 production code paths",
+      "layer": "robustness",
+      "phase": 1,
+      "severity": 8,
+      "likelihood": 7,
+      "blast_radius": 8,
+      "detectability": 4,
+      "fix_effort": 1,
+      "priority_score": 112.0,
+      "location": "forge-pilot/src/act.rs:323, forge-pilot/src/main_support/mod.rs:420, knowledge-runtime/src/obs/trace.rs:388",
+      "root_cause": "unreachable!() panics unconditionally. PlanKind::LlmGenerated is on the roadmap and will hit the act.rs match arm.",
+      "fix": "Replace with proper error returns: Err(PilotError::Other(format!(\"unsupported plan kind: {:?}\", plan)))",
+      "acceptance": "No unreachable!() in non-test .rs files. grep confirms zero matches."
+    },
+    {
+      "id": "LIB-HIGH-002",
+      "title": "No HTTP timeout on TUI reqwest clients",
+      "layer": "robustness",
+      "phase": 1,
+      "severity": 8,
+      "likelihood": 6,
+      "blast_radius": 6,
+      "detectability": 6,
+      "fix_effort": 1,
+      "priority_score": 48.0,
+      "location": "forge-pilot/src/main_support/mod.rs:505, forge-pilot/src/main_support/mod.rs:546",
+      "root_cause": "reqwest::Client::new() has no timeout. Ollama hangs during model loading block TUI indefinitely.",
+      "fix": "Use reqwest::Client::builder().timeout(Duration::from_secs(300)).build()",
+      "acceptance": "grep 'Client::new()' in main_support returns zero matches."
+    },
+    {
+      "id": "LIB-MED-001",
+      "title": "main_support/mod.rs 1,591-line monolith",
+      "layer": "architecture",
+      "phase": 3,
+      "severity": 6,
+      "likelihood": 8,
+      "blast_radius": 5,
+      "detectability": 9,
+      "fix_effort": 6,
+      "priority_score": 26.7,
+      "location": "forge-pilot/src/main_support/mod.rs (32 functions, 7 responsibilities)",
+      "root_cause": "CLI parsing, TUI loop, LLM chat, streaming, formatting, storage, status management all in one file.",
+      "fix": "Split into cli.rs, tui.rs, provider.rs, explain.rs, storage.rs.",
+      "acceptance": "No file in forge-pilot exceeds 600 lines. cargo check passes."
+    },
+    {
+      "id": "LIB-MED-002",
+      "title": "Unbounded PilotHistory growth in daemon mode",
+      "layer": "resource_management",
+      "phase": 2,
+      "severity": 5,
+      "likelihood": 6,
+      "blast_radius": 4,
+      "detectability": 7,
+      "fix_effort": 2,
+      "priority_score": 17.1,
+      "location": "forge-pilot/src/history.rs",
+      "root_cause": "prior_attempt_bundle_ids and prior_outcomes grow without bound. Daemon mode makes sessions indefinite.",
+      "fix": "Cap both vectors at 20 entries. Drain oldest on overflow.",
+      "acceptance": "After 50 iterations, Vec lengths are capped at 20."
+    },
+    {
+      "id": "LIB-LOW-001",
+      "title": "DefaultHasher used for deterministic digest",
+      "layer": "reproducibility",
+      "phase": 2,
+      "severity": 4,
+      "likelihood": 4,
+      "blast_radius": 3,
+      "detectability": 8,
+      "fix_effort": 1,
+      "priority_score": 6.0,
+      "location": "forge-pilot/src/orient.rs:166-177 (bounded_region_digest)",
+      "root_cause": "DefaultHasher is not stable across Rust versions. Digest flows into VerificationCase reports.",
+      "fix": "Replace with blake3::hash (already a workspace dep).",
+      "acceptance": "grep 'DefaultHasher' in forge-pilot returns zero matches."
+    },
+    {
+      "id": "LIB-LOW-002",
+      "title": "Missing NaN/infinity validation on HNSW insert",
+      "layer": "data_integrity",
+      "phase": 1,
+      "severity": 5,
+      "likelihood": 3,
+      "blast_radius": 6,
+      "detectability": 5,
+      "fix_effort": 1,
+      "priority_score": 18.0,
+      "location": "semantic-memory/src/hnsw.rs:validate_dimensions()",
+      "root_cause": "Validates length but not element values. NaN embedding degrades all searches.",
+      "fix": "Add: if vector.iter().any(|v| !v.is_finite()) { return Err(...) }",
+      "acceptance": "Test that inserting NaN vector returns Err."
+    },
+    {
+      "id": "LIB-LOW-003",
+      "title": "Profile composition thin test coverage",
+      "layer": "tests",
+      "phase": 2,
+      "severity": 5,
+      "likelihood": 5,
+      "blast_radius": 5,
+      "detectability": 7,
+      "fix_effort": 5,
+      "priority_score": 17.9,
+      "location": "profile-runtime/src/compose.rs (982 lines, 26 functions) vs tests/ (364 lines, 13 tests)",
+      "root_cause": "7 fold classes with exception handling and conflict detection insufficiently tested. No adversarial composition scenarios.",
+      "fix": "Add proptest for random obligation contribution sets verifying fold invariants.",
+      "acceptance": "proptest with 256 cases passes for all fold classes."
+    }
+  ],
+  "phases": {
+    "0_fix_retrieval": {
+      "issues": ["LIB-CRIT-001"],
+      "gate": "cargo test -p knowledge-runtime passes. Domain-scoped queries return hybrid search results.",
+      "estimated_time": "15 min"
+    },
+    "1_crash_safety": {
+      "issues": ["LIB-HIGH-001", "LIB-HIGH-002", "LIB-LOW-002"],
+      "gate": "cargo check/test/clippy pass. No unreachable!() in production. All clients have timeouts. NaN rejection test passes.",
+      "estimated_time": "30 min"
+    },
+    "2_hardening": {
+      "issues": ["LIB-MED-002", "LIB-LOW-001", "LIB-LOW-003"],
+      "gate": "PilotHistory caps verified. DefaultHasher replaced. Composition proptests pass.",
+      "estimated_time": "1 hr"
+    },
+    "3_decomposition": {
+      "issues": ["LIB-MED-001"],
+      "gate": "No file >600 lines in forge-pilot. cargo check passes.",
+      "estimated_time": "3 hr"
+    }
+  },
+  "ship_gate": [
+    "Domain-scoped queries through KnowledgeRuntime use hybrid search (not just projection substring matching)",
+    "No unreachable!() in production code",
+    "All HTTP clients have timeouts",
+    "NaN embeddings rejected on insert",
+    "PilotHistory vectors bounded",
+    "Region digest uses stable hash (blake3)",
+    "Profile composition has property-based tests"
+  ]
+}

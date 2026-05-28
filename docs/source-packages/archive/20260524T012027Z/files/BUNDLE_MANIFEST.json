@@ -1,0 +1,170 @@
+{
+  "bundle": "fibquant_paper_core_codex_bundle_2026-05-16",
+  "files": [
+    {
+      "path": "01_CODEX_MASTER_PROMPT.md",
+      "bytes": 5394,
+      "sha256": "d96452201931e646b314eb85abd7bdee72e3f6fc1752eaeb3030fff12a4b6c4e"
+    },
+    {
+      "path": "02_PHASE_PLAN.md",
+      "bytes": 3276,
+      "sha256": "a233ba10f1a3ed79187ae183710b39a2efbb77a9750930e6deb03f8a8b76a890"
+    },
+    {
+      "path": "03_TARGET_API_SPEC.md",
+      "bytes": 3456,
+      "sha256": "234da33a32ac34ea0175a465696cb3c09778e35472f5847296458cababff8be2"
+    },
+    {
+      "path": "04_MATH_CONFORMANCE.md",
+      "bytes": 2647,
+      "sha256": "98c6892cd7de3d1ef0a7c15bcd317f10db176c565a55dc8787bac6136aa83785"
+    },
+    {
+      "path": "05_ACCEPTANCE_GATES.md",
+      "bytes": 1722,
+      "sha256": "b2605bea34436967ac82573718bc6c69fce4e340c8ce0797842efca9b57f50a5"
+    },
+    {
+      "path": "06_VALIDATION_COMMANDS.md",
+      "bytes": 968,
+      "sha256": "ae6958695036befe5f421b480a38b81fdcfb9c3175196b74fe68ae007851f0da"
+    },
+    {
+      "path": "07_ROLLBACK_AND_QUARANTINE.md",
+      "bytes": 1428,
+      "sha256": "e030c370af458c6939afa70a3fb7255e1baca9ea806bb081e7bbe2b4016e99dc"
+    },
+    {
+      "path": "08_FINAL_AUDITOR_HANDOFF.md",
+      "bytes": 1176,
+      "sha256": "1fa60553744292b1210913cf73d4540b92257c1c993c0d09cf07788a387a203f"
+    },
+    {
+      "path": "09_CODEX_FEATURES_AND_INSTALL.md",
+      "bytes": 1119,
+      "sha256": "3f34fdd2b7aa623148d51e56ee0e0a44226870d5b72dc01b5459e079257c1845"
+    },
+    {
+      "path": "OPERATOR_PASTE_FIRST.md",
+      "bytes": 2716,
+      "sha256": "5d5ee95a3d718b6e9e4bc1e7a86bbd4a9ed742c84c4e10eff2a3a49ecd0ec034"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2346,
+      "sha256": "b8eaa662faa6644890ab12602cf0deff28a7747923c1bdd1c63eb467b69b5d16"
+    },
+    {
+      "path": "fixtures/FIBQUANT_TEST_MATRIX.json",
+      "bytes": 1389,
+      "sha256": "262a3e2f728227a0fb27f0af99f89479aa89d5c92282ec3f5f1df116daa1bf4e"
+    },
+    {
+      "path": "manual_backstop_prompts/MANUAL_BACKSTOP_PROMPTS.md",
+      "bytes": 808,
+      "sha256": "645e19d85f84179652277c9ad73953a937c883d8a99289b0ba90fd0a89e6af4e"
+    },
+    {
+      "path": "matrices/FIBQUANT_ISSUE_MATRIX.csv",
+      "bytes": 946,
+      "sha256": "1fc0dcfa8449176ba76c4030984e245c9453deb7cf59856afe0b8617f3306b4e"
+    },
+    {
+      "path": "matrices/FIBQUANT_RISK_REGISTER.md",
+      "bytes": 930,
+      "sha256": "0c6e9101f9fb34d20179d531626c8901873ced18b993e4774a15fdc0cc4234fc"
+    },
+    {
+      "path": "overlays/.agents/skills/fibquant-paper-core/SKILL.md",
+      "bytes": 1350,
+      "sha256": "93cee00cafd41d6f6ebd20e19047d3590fd7046b08682b0f1806c7280214a6e7"
+    },
+    {
+      "path": "overlays/.agents/skills/fibquant-paper-core/references/FIBQUANT_MATH_REFERENCE.md",
+      "bytes": 573,
+      "sha256": "29445d7e2b4bf377ac4ea528469eeedcc882ab28efd88f4ea1b715f05216e411"
+    },
+    {
+      "path": "overlays/.codex/hooks/fibquant_guard.py",
+      "bytes": 1905,
+      "sha256": "8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137"
+    },
+    {
+      "path": "overlays/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2347,
+      "sha256": "7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d"
+    },
+    {
+      "path": "overlays/.codex/hooks.json",
+      "bytes": 743,
+      "sha256": "27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693"
+    },
+    {
+      "path": "phase_prompts/PHASE_0_SOURCE_BASIS.md",
+      "bytes": 462,
+      "sha256": "6c083979cdc5230b8315d277a3afb74aed548a616be543ae91c21398760241ef"
+    },
+    {
+      "path": "phase_prompts/PHASE_1_CRATE_PROFILE.md",
+      "bytes": 202,
+      "sha256": "842bdf956a576fd4a40498ef8a60675607b1473b39941f249c85d23c26893bce"
+    },
+    {
+      "path": "phase_prompts/PHASE_2_SPHERICAL_BETA.md",
+      "bytes": 211,
+      "sha256": "d337f74a77f0677a81caa9eae90a2f74335dee3346974b60cc884ec966894e55"
+    },
+    {
+      "path": "phase_prompts/PHASE_3_DIRECTIONS.md",
+      "bytes": 179,
+      "sha256": "2843cf6e3707aa801686a5f63bab27598e1c68649fb3aa9e16aa610edcd0ca6e"
+    },
+    {
+      "path": "phase_prompts/PHASE_4_CODEBOOK.md",
+      "bytes": 169,
+      "sha256": "fe913c4d2c6386f872c2bf69586ec55d9403f66eb12af6ab2d330ff5dbd366c0"
+    },
+    {
+      "path": "phase_prompts/PHASE_5_LLOYD_MAX.md",
+      "bytes": 211,
+      "sha256": "fb9e3b9b3ca35220eecb446a23ca75c39ef213fb9a6f509b3c0573393492a3fe"
+    },
+    {
+      "path": "phase_prompts/PHASE_6_CODEC.md",
+      "bytes": 208,
+      "sha256": "d1ea51eebed2e66e30d6e4043cea5250e615e9d4a91c81e2f32df6582b87052a"
+    },
+    {
+      "path": "phase_prompts/PHASE_7_TESTS_METRICS.md",
+      "bytes": 185,
+      "sha256": "2076afc0e720943cef53f467bb716e93159716974565bb2c06e1733e8ea13b01"
+    },
+    {
+      "path": "phase_prompts/PHASE_8_RECEIPTS_DOCS.md",
+      "bytes": 177,
+      "sha256": "ffb210863f2bf460e3e1af707160dae9b657b8aeeb5a1b09aebd46aa7a7af748"
+    },
+    {
+      "path": "phase_prompts/PHASE_9_FINAL_AUDIT.md",
+      "bytes": 181,
+      "sha256": "921d0b552976473232cc163759291654c78f2c63aa9ca1038695fc43e00ce66a"
+    },
+    {
+      "path": "scripts/fibquant_final_assert.py",
+      "bytes": 4563,
+      "sha256": "d5ed81143da1a91780d7679ffc49d6dfae37e36f427d7a138cae5dc67b6b8403"
+    },
+    {
+      "path": "scripts/fibquant_startup_preflight.py",
+      "bytes": 1905,
+      "sha256": "8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137"
+    },
+    {
+      "path": "scripts/install_fibquant_codex_bundle.sh",
+      "bytes": 1617,
+      "sha256": "f09350a9c68b3b510181f2e7f94c0211c6350a11d347dd477c81a069a8bd9486"
+    }
+  ]
+}

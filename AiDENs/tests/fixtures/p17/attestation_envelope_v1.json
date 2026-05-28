@@ -1,0 +1,30 @@
+{
+  "envelope_id": "attestation-envelope:fixture",
+  "kind": "attestation-envelope",
+  "subject_artifact_id": "claim:remote-fixture",
+  "subject_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "producer_id": "remote-fixture",
+  "schema_family": "claim-record",
+  "schema_version": 1,
+  "policy_id": "admit-verified-v1",
+  "issued_at": "2026-04-27T00:00:00Z",
+  "expires_at": null,
+  "trust_root_id": "trust-root:fixture",
+  "signature_algorithm": "ed25519-test",
+  "signature": "signature:fixture",
+  "verification_status": "verified",
+  "truth_bearing": true,
+  "body": {
+    "subject": "repo",
+    "predicate": "status",
+    "object": "ready"
+  },
+  "reason_codes": [
+    "attestation-envelope-created",
+    "signature-verified"
+  ]
+}

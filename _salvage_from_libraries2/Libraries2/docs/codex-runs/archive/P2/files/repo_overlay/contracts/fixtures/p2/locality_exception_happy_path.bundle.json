@@ -1,0 +1,51 @@
+{
+  "fixture_name": "locality_exception_happy_path",
+  "wave": "p2",
+  "artifacts": {
+    "ResidencyPolicyProfileV1": {
+      "schema_version": "ResidencyPolicyProfileV1",
+      "residency_policy_profile_id": "rpp_001",
+      "allowed_storage_regions": [
+        "us-central",
+        "us-east"
+      ],
+      "allowed_execution_regions": [
+        "us-central"
+      ],
+      "allowed_replay_regions": [
+        "us-central"
+      ],
+      "forbidden_transfer_classes": [
+        "customer_pii_to_non_us",
+        "production_logs_to_public_vendor"
+      ],
+      "default_exception_path": "locality-review-board"
+    },
+    "LocalityExceptionV1": {
+      "schema_version": "LocalityExceptionV1",
+      "locality_exception_id": "lex_001",
+      "residency_policy_profile_id": "rpp_001",
+      "reason": "legal hold review requires eu counsel access",
+      "scope": "case:lh_7781",
+      "expires_at": "2026-03-22T00:00:00Z",
+      "approved_by": [
+        "person:privacy-lead",
+        "person:legal-lead"
+      ],
+      "post_hoc_review_required": true
+    },
+    "CrossBoundaryTransferClassV1": {
+      "schema_version": "CrossBoundaryTransferClassV1",
+      "cross_boundary_transfer_class_id": "cbt_001",
+      "source_class": "prod_us_pii",
+      "destination_class": "vendor_analytics_redacted",
+      "allowed_artifact_families": [
+        "EffectObservationBundleV1",
+        "PostmortemBundleV1"
+      ],
+      "required_attestation": "signed_export_envelope",
+      "required_disclosure_policy_class": "redacted_vendor_export",
+      "downgrade_behavior": "summary_only_or_block"
+    }
+  }
+}

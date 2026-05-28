@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "acquired_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "attempt_family_id": {
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "lease_id": {
+      "type": "string"
+    },
+    "namespace_id": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "stolen_from": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "acquired_at",
+    "active",
+    "attempt_family_id",
+    "expires_at",
+    "job_id",
+    "kind",
+    "lease_id",
+    "namespace_id",
+    "owner"
+  ],
+  "title": "QueueLeaseV1",
+  "type": "object"
+}

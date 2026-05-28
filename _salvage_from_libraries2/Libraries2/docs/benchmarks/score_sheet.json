@@ -1,0 +1,95 @@
+{
+  "suite_name": "forge-bench-v21-v22-v23",
+  "runner": "docs/benchmarks/run_forge_bench.py",
+  "assessment_mode": "mixed",
+  "limitation": "This score sheet contains the fixture-asserted suite plus one execution-verified temporal_correctness case.",
+  "inputs": {
+    "demo_bundle": "contracts/fixtures/demo/effect_authority_assurance_release.bundle.json",
+    "v21_fixture": "contracts/fixtures/v21/effect_happy_path.bundle.json",
+    "v22_fixture": "contracts/fixtures/v22/delegated_effect_happy_path.bundle.json",
+    "v23_fixture": "contracts/fixtures/v23/release_happy_path.bundle.json"
+  },
+  "case_count": 6,
+  "execution_verified_case_count": 1,
+  "stack_score": 6.0,
+  "baseline_score": 1.0,
+  "advantage": 5.0,
+  "results": [
+    {
+      "case_id": "temporal_correctness",
+      "dimension": "Temporal correctness",
+      "assessment_mode": "fixture-asserted",
+      "stack": 1.0,
+      "baseline": 0.0,
+      "advantage": 1.0,
+      "stack_verdict": "pass",
+      "baseline_verdict": "fail"
+    },
+    {
+      "case_id": "replayability",
+      "dimension": "Replayability",
+      "assessment_mode": "fixture-asserted",
+      "stack": 1.0,
+      "baseline": 0.0,
+      "advantage": 1.0,
+      "stack_verdict": "pass",
+      "baseline_verdict": "fail"
+    },
+    {
+      "case_id": "widening_disclosure",
+      "dimension": "Disclosure honesty",
+      "assessment_mode": "fixture-asserted",
+      "stack": 1.0,
+      "baseline": 1.0,
+      "advantage": 0.0,
+      "stack_verdict": "pass",
+      "baseline_verdict": "pass"
+    },
+    {
+      "case_id": "contradiction_handling",
+      "dimension": "Contradiction handling",
+      "assessment_mode": "fixture-asserted",
+      "stack": 1.0,
+      "baseline": 0.0,
+      "advantage": 1.0,
+      "stack_verdict": "pass",
+      "baseline_verdict": "fail"
+    },
+    {
+      "case_id": "verification_yield",
+      "dimension": "Verification yield",
+      "assessment_mode": "fixture-asserted",
+      "stack": 1.0,
+      "baseline": 0.0,
+      "advantage": 1.0,
+      "stack_verdict": "pass",
+      "baseline_verdict": "fail"
+    },
+    {
+      "case_id": "temporal_correctness_execution",
+      "dimension": "Temporal correctness",
+      "assessment_mode": "execution-verified",
+      "stack": 1.0,
+      "baseline": 0.0,
+      "advantage": 1.0,
+      "stack_verdict": "pass",
+      "baseline_verdict": "fail",
+      "question": "Can the release decision be replayed with a deterministic timeline across v21->v22->v23 without changing its state?",
+      "provider": "openrouter",
+      "model": "openai/gpt-4o-mini",
+      "expected_signals": [
+        "release decision timestamp exists",
+        "blocking_gaps is []",
+        "advisory_only is false"
+      ],
+      "stack_supported_signals": [
+        "release decision timestamp exists",
+        "blocking_gaps is []",
+        "advisory_only is false"
+      ],
+      "baseline_supported_signals": [],
+      "stack_response": "```json\n{\n  \"verdict\": \"yes\",\n  \"supported_signals\": [\n    \"release decision timestamp exists\",\n    \"blocking_gaps is []\",\n    \"advisory_only is false\"\n  ],\n  \"missing_signals\": [],\n  \"reasoning\": \"The context provides a release readiness decision with a timestamp (generated_at: 2026-03-15T12:03:00Z), confirms that there are no blocking gaps (blocking_gaps: []), and indicates that the decision is not advisory (advisory_only: false). Therefore, all required signals are supported.\"\n}\n```",
+      "baseline_response": "{\n  \"verdict\": \"no\",\n  \"supported_signals\": [],\n  \"missing_signals\": [\n    \"release decision timestamp exists\",\n    \"blocking_gaps is []\",\n    \"advisory_only is false\"\n  ],\n  \"reasoning\": \"The provided context does not explicitly mention the existence of a release decision timestamp, the status of blocking gaps, or whether the advisory_only flag is set to false. Therefore, the necessary signals to support the replay of the release decision with a deterministic timeline are missing.\"\n}"
+    }
+  ]
+}

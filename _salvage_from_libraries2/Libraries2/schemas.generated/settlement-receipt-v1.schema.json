@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DowngradeReason": {
+      "enum": [
+        "missing_required_replay",
+        "non_admitted_surface"
+      ],
+      "type": "string"
+    },
+    "LocalDissentRecordV1": {
+      "properties": {
+        "blocks_shared_settlement": {
+          "type": "boolean"
+        },
+        "local_dissent_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "runtime_name": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "blocks_shared_settlement",
+        "local_dissent_id",
+        "reason",
+        "runtime_name",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "SettlementDisposition": {
+      "enum": [
+        "shared_disposition_issued",
+        "advisory_only",
+        "degraded_shared_view"
+      ],
+      "type": "string"
+    },
+    "SharedViewDowngradeV1": {
+      "properties": {
+        "detail": {
+          "type": "string"
+        },
+        "preserves_local_dissent": {
+          "type": "boolean"
+        },
+        "reason": {
+          "$ref": "#/definitions/DowngradeReason"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "shared_view_downgrade_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "detail",
+        "preserves_local_dissent",
+        "reason",
+        "schema_version",
+        "shared_view_downgrade_id"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "disposition": {
+      "$ref": "#/definitions/SettlementDisposition"
+    },
+    "downgrade": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/SharedViewDowngradeV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "local_dissent": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/LocalDissentRecordV1"
+      },
+      "type": "array"
+    },
+    "non_admitted": {
+      "type": "boolean"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "settlement_allowed": {
+      "type": "boolean"
+    },
+    "settlement_case_id": {
+      "type": "string"
+    },
+    "settlement_receipt_id": {
+      "type": "string"
+    },
+    "shared_disposition_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "advisory_only",
+    "applicability_context_id",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "degraded",
+    "disposition",
+    "effective_constitution_id",
+    "generated_at",
+    "non_admitted",
+    "profile_set_id",
+    "schema_version",
+    "settlement_allowed",
+    "settlement_case_id",
+    "settlement_receipt_id"
+  ],
+  "title": "SettlementReceiptV1",
+  "type": "object"
+}

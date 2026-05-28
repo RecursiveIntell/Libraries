@@ -1,0 +1,18 @@
+{
+  "schema_version": "cross_runtime_replay_ticket_v1",
+  "cross_runtime_replay_ticket_id": "replay-ticket-remote-2026-03-14-01",
+  "artifact_refs": [
+    "remote-result-2026-03-14-01"
+  ],
+  "time_coordinates": "valid_as_of=2026-03-14T00:00:00Z;recorded_as_of=2026-03-14T12:30:00Z",
+  "required_trust_roots": [
+    "trust-root-core"
+  ],
+  "allowed_disclosure": "redacted_structured_only",
+  "lease_window": "72h",
+  "replay_expectations": [
+    "replay same bounded slice",
+    "preserve attestation chain"
+  ],
+  "failure_behavior": "downgrade_to_advisory_and_emit_dispute_if_mandatory"
+}

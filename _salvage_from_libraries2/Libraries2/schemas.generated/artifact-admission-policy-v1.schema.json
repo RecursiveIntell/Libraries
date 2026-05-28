@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allowed_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "artifact_admission_policy_id": {
+      "type": "string"
+    },
+    "disclosure_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "disqualifying_failures": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "downgrade_behavior": {
+      "type": "string"
+    },
+    "required_replayability_class": {
+      "type": "string"
+    },
+    "required_transparency_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_trust_root_sets": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_admission_policy_id",
+    "downgrade_behavior",
+    "required_replayability_class",
+    "schema_version"
+  ],
+  "title": "ArtifactAdmissionPolicyV1",
+  "type": "object"
+}

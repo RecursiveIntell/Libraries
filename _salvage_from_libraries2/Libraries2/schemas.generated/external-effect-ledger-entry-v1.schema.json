@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "effect_execution_receipt_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "entered_at": {
+      "type": "string"
+    },
+    "external_effect_ledger_entry_id": {
+      "type": "string"
+    },
+    "external_handle": {
+      "type": "string"
+    },
+    "externally_observed_state": {
+      "type": "string"
+    },
+    "immutable": {
+      "type": "boolean"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "target_system": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicability_context_id",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "effect_execution_receipt_id",
+    "effective_constitution_id",
+    "entered_at",
+    "external_effect_ledger_entry_id",
+    "external_handle",
+    "externally_observed_state",
+    "immutable",
+    "profile_set_id",
+    "schema_version",
+    "target_system"
+  ],
+  "title": "ExternalEffectLedgerEntryV1",
+  "type": "object"
+}

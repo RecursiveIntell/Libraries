@@ -1,0 +1,17 @@
+{
+  "schema_version": "rollback_decision_v1",
+  "rollback_decision_id": "rollback-2026-03-14-01",
+  "triggering_evidence": [
+    "decision-trace-2026-03-14-01",
+    "refuter-result-2026-03-14-02"
+  ],
+  "affected_surfaces": [
+    "knowledge-runtime canary path",
+    "verification-control promotion gate"
+  ],
+  "experiment_case_id": "exp-case-2026-03-14-001",
+  "counterfactual_slice_id": "cf-slice-2026-03-14-01",
+  "rollback_class": "precautionary",
+  "remaining_uncertainty": "placebo failed but external cache confound remains unresolved",
+  "motivation": "refutation_driven"
+}

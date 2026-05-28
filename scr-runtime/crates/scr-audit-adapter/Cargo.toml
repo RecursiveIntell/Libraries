@@ -1,0 +1,14 @@
+[package]
+name = "scr-audit-adapter"
+version = "0.1.0"
+edition = "2021"
+description = "Fixture audit adapter for SCR-P0A."
+license = "MIT"
+
+[dependencies]
+schemars = { workspace = true }
+scr-kernel = { path = "../scr-kernel" }
+serde = { workspace = true }
+
+[lints]
+workspace = true

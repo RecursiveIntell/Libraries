@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BoundaryArtifactKind": {
+      "enum": [
+        "loop_report",
+        "loop_iteration_report",
+        "control_receipt"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifact_kind": {
+      "$ref": "#/definitions/BoundaryArtifactKind"
+    },
+    "artifact_schema_version": {
+      "type": "string"
+    },
+    "field_path": {
+      "type": "string"
+    },
+    "original_value": true,
+    "rationale": {
+      "type": "string"
+    },
+    "repair_kind": {
+      "type": "string"
+    },
+    "repair_record_id": {
+      "type": "string"
+    },
+    "repaired_value": true,
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_kind",
+    "artifact_schema_version",
+    "field_path",
+    "rationale",
+    "repair_kind",
+    "repair_record_id",
+    "repaired_value",
+    "schema_version"
+  ],
+  "title": "BoundaryRepairRecord",
+  "type": "object"
+}

@@ -1,0 +1,46 @@
+## bash scripts/phase_verify_contract_ownership.sh 03
+COMMAND: python3 scripts/assert_no_canonical_type_duplicates.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T03:59:35-05:00
+canonical_types=633
+aidens_contracts_types=193
+duplicate_findings=0
+PASS: no local aidens-contracts public type definitions duplicate canonical public type names.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T03:59:35-05:00
+COMMAND: bash scripts/assert_no_local_substitute_dependencies.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T03:59:35-05:00
+PASS: no local substitute dependency red flags detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T03:59:35-05:00
+PASS: contract ownership verification passed. Evidence in /home/sikmindz/Coding/Libraries/AiDENs/.codex_evidence/contract_ownership/03
+
+## cargo metadata --format-version 1
+cargo metadata wrote .codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json
+
+## cargo metadata canonical owner path proof
+stack-ids: /home/sikmindz/Coding/Libraries/stack-ids/Cargo.toml
+attestation-exchange: /home/sikmindz/Coding/Libraries/attestation-exchange/Cargo.toml
+federated-settlement: /home/sikmindz/Coding/Libraries/federated-settlement/Cargo.toml
+mechanism-runtime: /home/sikmindz/Coding/Libraries/mechanism-runtime/Cargo.toml
+remote-oracle-admission: /home/sikmindz/Coding/Libraries/remote-oracle-admission/Cargo.toml
+contract-schema-gen: /home/sikmindz/Coding/Libraries/contract-schema-gen/Cargo.toml
+verification-calibration: /home/sikmindz/Coding/Libraries/verification-calibration/Cargo.toml
+forge-pilot: /home/sikmindz/Coding/Libraries/forge-pilot/Cargo.toml
+
+Affected AiDENs dependency edges:
+aidens-contracts
+  attestation-exchange: path=/home/sikmindz/Coding/Libraries/attestation-exchange, source=None
+  federated-settlement: path=/home/sikmindz/Coding/Libraries/federated-settlement, source=None
+  mechanism-runtime: path=/home/sikmindz/Coding/Libraries/mechanism-runtime, source=None
+  remote-oracle-admission: path=/home/sikmindz/Coding/Libraries/remote-oracle-admission, source=None
+  stack-ids: path=/home/sikmindz/Coding/Libraries/stack-ids, source=None
+aidens-cli
+  contract-schema-gen: path=/home/sikmindz/Coding/Libraries/contract-schema-gen, source=None
+aidens-governance-kit
+  stack-ids: path=/home/sikmindz/Coding/Libraries/stack-ids, source=None
+  verification-calibration: path=/home/sikmindz/Coding/Libraries/verification-calibration, source=None
+
+## cargo check --workspace
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.16s

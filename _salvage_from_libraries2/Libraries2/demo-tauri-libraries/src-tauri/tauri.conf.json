@@ -1,0 +1,26 @@
+{
+  "productName": "demo-tauri-libraries",
+  "version": "0.1.0",
+  "identifier": "com.example.demo-tauri-libraries",
+  "build": {
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "",
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Library Stack Demo",
+        "width": 1320,
+        "height": 900,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": false
+  }
+}

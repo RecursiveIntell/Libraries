@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/handoffs/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.md",
+      "bytes": 3174,
+      "mtime_utc": "2026-04-26T23:46:45Z",
+      "original_path": "handoffs/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P7",
+      "sha256": "754dcdf55be8f0cfcb69170b2c6b43647e93583b220a3949ca462886fca66a69"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md",
+      "bytes": 1177,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P7",
+      "sha256": "1ea3a68e1b0df8b34b5ecae54826e7794c32a76901fe0e61341757265a1ae36d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/tasks/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.json",
+      "bytes": 1031,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "tasks/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.json",
+      "reason": "stale-run-task",
+      "run_id": "P7",
+      "sha256": "5f783ff5025732284e1b3beab48127f1e96fcd0a0a2f3b1b4a59585a6cf10ddf"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P7",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

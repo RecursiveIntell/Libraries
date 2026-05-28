@@ -1,0 +1,32 @@
+{
+  "pass_id": "P18",
+  "title": "Mechanism/theory search, experiment runtime, and falsifiable model library",
+  "phase": "Mechanism horizon",
+  "prompt_file": "prompts/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME_PROMPT.md",
+  "pass_doc": "passes/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.md",
+  "crates": [
+    "aidens-kernel-kit",
+    "aidens-governance-kit",
+    "aidens-memory-kit",
+    "aidens-contracts",
+    "aidens-receipts"
+  ],
+  "artifacts": [
+    "MechanismBundleV1",
+    "TheoryVersionV1",
+    "HypothesisLibraryV1",
+    "SimulatorContractV1",
+    "FitRunReportV1",
+    "InvarianceReportV1",
+    "TheoryRefuterSuiteV1"
+  ],
+  "acceptance": [
+    "A candidate mechanism can be fit, refuted, versioned, superseded, and replayed from artifacts.",
+    "High score alone cannot promote theory without refuter/gov artifacts.",
+    "Equivalent mechanisms remain distinct unless an explicit equivalence/alias decision is admitted."
+  ],
+  "forbidden": [
+    "Do not store theory updates as notebook comments or raw model weights only.",
+    "Do not confuse observational equivalence with causal identification."
+  ]
+}

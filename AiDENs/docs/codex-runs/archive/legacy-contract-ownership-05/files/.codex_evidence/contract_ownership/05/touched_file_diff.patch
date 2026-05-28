@@ -1,0 +1,1485 @@
+## crates/aidens-contracts/src/lib.rs
+--- .codex_evidence/contract_ownership/05/pre_edit_files/aidens_contracts_lib.rs.before	2026-04-29 14:03:25.702601262 -0500
++++ .codex_evidence/contract_ownership/05/post_edit_files/aidens_contracts_lib.rs.after	2026-04-29 14:11:11.110577924 -0500
+@@ -426,7 +426,7 @@
+     }
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ #[serde(rename_all = "kebab-case")]
+ pub enum ArtifactKindV1 {
+     Run,
+@@ -509,6 +509,29 @@
+     ViewDisclosure,
+ }
+ 
++impl JsonSchema for ArtifactKindV1 {
++    fn schema_name() -> String {
++        "ArtifactKindV1".into()
++    }
++
++    fn json_schema(_: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
++        let mut schema = schemars::schema::SchemaObject {
++            instance_type: Some(schemars::schema::SingleOrVec::Single(Box::new(
++                schemars::schema::InstanceType::String,
++            ))),
++            ..Default::default()
++        };
++        schema.metadata = Some(Box::new(schemars::schema::Metadata {
++            description: Some(
++                "AiDENs-local display discriminator; not a canonical artifact family schema."
++                    .into(),
++            ),
++            ..Default::default()
++        }));
++        schemars::schema::Schema::Object(schema)
++    }
++}
++
+ impl fmt::Display for ArtifactKindV1 {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+         f.write_str(match self {
+@@ -6266,6 +6289,10 @@
+     }
+ }
+ 
++/// AiDENs-local, non-authoritative schema index for product/display/report DTOs.
++///
++/// Canonical stack artifact family schemas are owned by their owner crates and
++/// `contract-schema-gen`, not by this registry.
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ pub struct ArtifactFamilyRegistryV1 {
+     pub registry_id: ArtifactId,
+@@ -6286,7 +6313,7 @@
+             registry_id: ArtifactId("artifact-family-registry:v1".into()),
+             registry_version: 1,
+             families,
+-            reason_codes: vec!["type-owned-schema-registry".into()],
++            reason_codes: vec!["aidens-local-non-authoritative-schema-index".into()],
+         }
+     }
+ 
+@@ -6297,6 +6324,9 @@
+     }
+ }
+ 
++/// AiDENs-local schema registration metadata.
++///
++/// Entries in this structure are not canonical stack artifact ownership claims.
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ pub struct ArtifactFamilyRegistrationV1 {
+     pub family: String,
+@@ -6333,6 +6363,9 @@
+     }
+ }
+ 
++/// AiDENs-local, non-authoritative manifest for generated display/report schemas.
++///
++/// Canonical family schema generation is delegated to `contract-schema-gen`.
+ #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+ pub struct GeneratedSchemaManifestV1 {
+     pub manifest_id: ArtifactId,
+@@ -6360,7 +6393,7 @@
+                 &serde_json::to_value(registry).unwrap_or(serde_json::Value::Null),
+             ),
+             schemas,
+-            reason_codes: vec!["generated-from-rust-jsonschema-types".into()],
++            reason_codes: vec!["aidens-local-display-report-schemas-only".into()],
+         }
+     }
+ }
+@@ -6374,6 +6407,7 @@
+     pub schema_digest: String,
+ }
+ 
++/// AiDENs-local, non-authoritative generated schema document.
+ #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+ pub struct GeneratedSchemaDocumentV1 {
+     pub registration: ArtifactFamilyRegistrationV1,
+@@ -6991,15 +7025,6 @@
+ fn generated_schema_documents_inner() -> Vec<GeneratedSchemaDocumentV1> {
+     vec![
+         schema_document!(
+-            "admission-decision",
+-            1,
+-            AdmissionDecisionV1,
+-            "AdmissionDecisionV1",
+-            "P17",
+-            Some("tests/fixtures/p17/admission_decision_v1.json"),
+-            "external-admission-disposition-major-immutable"
+-        ),
+-        schema_document!(
+             "api-honesty-receipt",
+             1,
+             ApiHonestyReportV1,
+@@ -7036,15 +7061,6 @@
+             "registered-family-additions-only"
+         ),
+         schema_document!(
+-            "attestation-envelope",
+-            1,
+-            AttestationEnvelopeV1,
+-            "AttestationEnvelopeV1",
+-            "P17",
+-            Some("tests/fixtures/p17/attestation_envelope_v1.json"),
+-            "subject-digest-and-verification-major-immutable"
+-        ),
+-        schema_document!(
+             "backfill-receipt",
+             1,
+             BackfillReportV1,
+@@ -7135,51 +7151,6 @@
+             "completion-state-and-release-bar-major-immutable"
+         ),
+         schema_document!(
+-            "compiled-region-graph",
+-            1,
+-            CompiledRegionGraphV1,
+-            "CompiledRegionGraphV1",
+-            "P15",
+-            Some("tests/fixtures/p15/compiled_region_graph_v1.json"),
+-            "right-graph-and-region-boundaries-major-immutable"
+-        ),
+-        schema_document!(
+-            "convergence-report",
+-            1,
+-            ConvergenceReportV1,
+-            "ConvergenceReportV1",
+-            "P15",
+-            Some("tests/fixtures/p15/convergence_report_v1.json"),
+-            "stop-rule-evidence-major-immutable"
+-        ),
+-        schema_document!(
+-            "compaction-report",
+-            1,
+-            CompactionReportV1,
+-            "CompactionReportV1",
+-            "P16",
+-            Some("tests/fixtures/p16/compaction_receipt_v1.json"),
+-            "append-only-compaction-evidence-major-immutable"
+-        ),
+-        schema_document!(
+-            "differential-conformance-finding",
+-            1,
+-            DifferentialConformanceFindingV1,
+-            "DifferentialConformanceFindingV1",
+-            "P08",
+-            Some("tests/fixtures/reference/differential_conformance_finding_v1.json"),
+-            "finding-major-immutable"
+-        ),
+-        schema_document!(
+-            "degradation-event",
+-            1,
+-            DegradationEventV1,
+-            "DegradationEventV1",
+-            "P13",
+-            Some("tests/fixtures/p13/degradation_event_v1.json"),
+-            "degradation-and-fallback-disclosure-major-immutable"
+-        ),
+-        schema_document!(
+             "example-app-manifest",
+             1,
+             ExampleAppManifestV1,
+@@ -7198,33 +7169,6 @@
+             "finding-major-immutable"
+         ),
+         schema_document!(
+-            "fit-run-report",
+-            1,
+-            FitRunReportV1,
+-            "FitRunReportV1",
+-            "P18",
+-            Some("tests/fixtures/p18/fit_run_receipt_v1.json"),
+-            "fit-run-replay-and-score-meaning-major-immutable"
+-        ),
+-        schema_document!(
+-            "execution-context",
+-            1,
+-            AidensRunContextV1,
+-            "AidensRunContextV1",
+-            "P05",
+-            Some("tests/fixtures/p05/execution_context_v1.json"),
+-            "additive-compatible-with-defaults"
+-        ),
+-        schema_document!(
+-            "execution-lineage-graph",
+-            1,
+-            ExecutionLineageGraphV1,
+-            "ExecutionLineageGraphV1",
+-            "P05",
+-            Some("tests/fixtures/p05/execution_lineage_graph_v1.json"),
+-            "edge-semantics-major-immutable"
+-        ),
+-        schema_document!(
+             "cross-pass-traceability-matrix",
+             1,
+             CrossPassTraceabilityMatrixV1,
+@@ -7261,24 +7205,6 @@
+             "fixture-coverage-major-immutable"
+         ),
+         schema_document!(
+-            "history-preservation-report",
+-            1,
+-            HistoryPreservationReportV1,
+-            "HistoryPreservationReportV1",
+-            "P16",
+-            Some("tests/fixtures/p16/history_preservation_report_v1.json"),
+-            "before-after-history-digest-major-immutable"
+-        ),
+-        schema_document!(
+-            "hypothesis-library",
+-            1,
+-            HypothesisLibraryV1,
+-            "HypothesisLibraryV1",
+-            "P18",
+-            Some("tests/fixtures/p18/hypothesis_library_v1.json"),
+-            "mechanism-distinctness-and-alias-major-immutable"
+-        ),
+-        schema_document!(
+             "install-smoke-report",
+             1,
+             InstallSmokeReportV1,
+@@ -7288,33 +7214,6 @@
+             "operator-smoke-evidence-major-immutable"
+         ),
+         schema_document!(
+-            "invariant-budget",
+-            1,
+-            InvariantBudgetV1,
+-            "InvariantBudgetV1",
+-            "P16",
+-            Some("tests/fixtures/p16/invariant_budget_v1.json"),
+-            "declared-invariant-budget-major-immutable"
+-        ),
+-        schema_document!(
+-            "invariance-report",
+-            1,
+-            InvarianceReportV1,
+-            "InvarianceReportV1",
+-            "P18",
+-            Some("tests/fixtures/p18/invariance_report_v1.json"),
+-            "invariance-and-causal-identification-major-immutable"
+-        ),
+-        schema_document!(
+-            "kernel-run-report",
+-            1,
+-            KernelRunDisplayReportV1,
+-            "KernelRunDisplayReportV1",
+-            "P15",
+-            Some("tests/fixtures/p15/kernel_run_receipt_v1.json"),
+-            "kernel-run-evidence-major-immutable"
+-        ),
+-        schema_document!(
+             "known-limitations-register",
+             1,
+             KnownLimitationsRegisterV1,
+@@ -7324,15 +7223,6 @@
+             "limitations-disclosure-major-immutable"
+         ),
+         schema_document!(
+-            "json-repair-receipt",
+-            2,
+-            JsonRepairReportV2,
+-            "JsonRepairReportV2",
+-            "P06",
+-            Some("tests/fixtures/p06/json_repair_receipt_v2.json"),
+-            "repair-semantics-major-immutable"
+-        ),
+-        schema_document!(
+             "job",
+             1,
+             JobV1,
+@@ -7378,15 +7268,6 @@
+             "phase-law-major-immutable"
+         ),
+         schema_document!(
+-            "mechanism-report",
+-            1,
+-            MechanismReportV1,
+-            "MechanismReportV1",
+-            "P18",
+-            Some("tests/fixtures/p18/mechanism_bundle_v1.json"),
+-            "mechanism-identity-and-replay-major-immutable"
+-        ),
+-        schema_document!(
+             "patch-apply-receipt",
+             1,
+             PatchApplyReportV1,
+@@ -7405,15 +7286,6 @@
+             "operator-diagnostics-additive-compatible"
+         ),
+         schema_document!(
+-            "oracle-slice-request",
+-            1,
+-            OracleSliceRequestV1,
+-            "OracleSliceRequestV1",
+-            "P15",
+-            Some("tests/fixtures/p15/oracle_slice_request_v1.json"),
+-            "oracle-disagreement-bound-major-immutable"
+-        ),
+-        schema_document!(
+             "patch-proposal",
+             1,
+             PatchProposalV1,
+@@ -7450,33 +7322,6 @@
+             "additive-compatible-with-defaults"
+         ),
+         schema_document!(
+-            "poison-receipt-record",
+-            1,
+-            PoisonReportEntryV1,
+-            "PoisonReportEntryV1",
+-            "P05",
+-            Some("tests/fixtures/p05/poison_receipt_record_v1.json"),
+-            "raw-digest-major-immutable"
+-        ),
+-        schema_document!(
+-            "projection-digest",
+-            1,
+-            ProjectionDigestV1,
+-            "ProjectionDigestV1",
+-            "P13",
+-            Some("tests/fixtures/p13/projection_digest_v1.json"),
+-            "projection-rebuild-digest-major-immutable"
+-        ),
+-        schema_document!(
+-            "remote-oracle-report",
+-            1,
+-            RemoteOracleReportV1,
+-            "RemoteOracleReportV1",
+-            "P17",
+-            Some("tests/fixtures/p17/remote_oracle_receipt_v1.json"),
+-            "remote-oracle-advisory-import-major-immutable"
+-        ),
+-        schema_document!(
+             "queue-hop-receipt",
+             1,
+             QueueHopReportV1,
+@@ -7486,24 +7331,6 @@
+             "queue-state-transition-major-immutable"
+         ),
+         schema_document!(
+-            "removal-frontier",
+-            1,
+-            RemovalFrontierV1,
+-            "RemovalFrontierV1",
+-            "P16",
+-            Some("tests/fixtures/p16/removal_frontier_v1.json"),
+-            "support-blocking-frontier-major-immutable"
+-        ),
+-        schema_document!(
+-            "query-widening-receipt",
+-            1,
+-            QueryWideningReportV1,
+-            "QueryWideningReportV1",
+-            "P13",
+-            Some("tests/fixtures/p13/query_widening_receipt_v1.json"),
+-            "widening-disclosure-major-immutable"
+-        ),
+-        schema_document!(
+             "provider-backend-matrix",
+             1,
+             ProviderBackendMatrixV1,
+@@ -7540,24 +7367,6 @@
+             "native-capability-major-immutable"
+         ),
+         schema_document!(
+-            "reference-case",
+-            1,
+-            ReferenceCaseV1,
+-            "ReferenceCaseV1",
+-            "P08",
+-            Some("tests/fixtures/reference/reference_case_v1.json"),
+-            "expected-semantics-major-immutable"
+-        ),
+-        schema_document!(
+-            "reference-interpreter-report",
+-            1,
+-            ReferenceInterpreterReportV1,
+-            "ReferenceInterpreterReportV1",
+-            "P08",
+-            Some("tests/fixtures/reference/reference_interpreter_report_v1.json"),
+-            "report-additions-compatible"
+-        ),
+-        schema_document!(
+             "release-readiness-report",
+             1,
+             ReleaseReadinessReportV1,
+@@ -7585,42 +7394,6 @@
+             "regression-debt-status-major-immutable"
+         ),
+         schema_document!(
+-            "retrieval-policy",
+-            1,
+-            RetrievalPolicyV1,
+-            "RetrievalPolicyV1",
+-            "P13",
+-            Some("tests/fixtures/p13/retrieval_policy_v1.json"),
+-            "time-and-widening-policy-major-immutable"
+-        ),
+-        schema_document!(
+-            "simulator-contract",
+-            1,
+-            SimulatorContractV1,
+-            "SimulatorContractV1",
+-            "P18",
+-            Some("tests/fixtures/p18/simulator_contract_v1.json"),
+-            "simulator-replay-boundary-major-immutable"
+-        ),
+-        schema_document!(
+-            "region-contract",
+-            1,
+-            RegionContractV1,
+-            "RegionContractV1",
+-            "P15",
+-            Some("tests/fixtures/p15/region_contract_v1.json"),
+-            "region-boundary-major-immutable"
+-        ),
+-        schema_document!(
+-            "residual",
+-            1,
+-            ResidualV1,
+-            "ResidualV1",
+-            "P15",
+-            Some("tests/fixtures/p15/residual_v1.json"),
+-            "residual-stop-rule-major-immutable"
+-        ),
+-        schema_document!(
+             "repo-list-receipt",
+             1,
+             RepoListReportV1,
+@@ -7648,15 +7421,6 @@
+             "receipt-major-immutable"
+         ),
+         schema_document!(
+-            "runtime-view-request",
+-            1,
+-            RuntimeViewRequestV1,
+-            "RuntimeViewRequestV1",
+-            "P13",
+-            Some("tests/fixtures/p13/runtime_view_request_v1.json"),
+-            "view-mode-time-scope-major-immutable"
+-        ),
+-        schema_document!(
+             "scaffold-surface-report",
+             1,
+             ScaffoldSurfaceReportV1,
+@@ -7702,69 +7466,6 @@
+             "occurrence-idempotency-major-immutable"
+         ),
+         schema_document!(
+-            "schema-validation-receipt",
+-            1,
+-            SchemaValidationReportV1,
+-            "SchemaValidationReportV1",
+-            "P06",
+-            Some("tests/fixtures/p06/schema_validation_receipt_v1.json"),
+-            "receipt-major-immutable"
+-        ),
+-        schema_document!(
+-            "settlement-case",
+-            1,
+-            SettlementCaseV1,
+-            "SettlementCaseV1",
+-            "P17",
+-            Some("tests/fixtures/p17/settlement_case_v1.json"),
+-            "remote-contradiction-settlement-major-immutable"
+-        ),
+-        schema_document!(
+-            "shared-disposition",
+-            1,
+-            SharedDispositionV1,
+-            "SharedDispositionV1",
+-            "P17",
+-            Some("tests/fixtures/p17/shared_disposition_v1.json"),
+-            "federated-disposition-major-immutable"
+-        ),
+-        schema_document!(
+-            "theory-refuter-suite",
+-            1,
+-            TheoryRefuterSuiteV1,
+-            "TheoryRefuterSuiteV1",
+-            "P18",
+-            Some("tests/fixtures/p18/theory_refuter_suite_v1.json"),
+-            "falsifiable-refuter-suite-major-immutable"
+-        ),
+-        schema_document!(
+-            "theory-version",
+-            1,
+-            TheoryVersionV1,
+-            "TheoryVersionV1",
+-            "P18",
+-            Some("tests/fixtures/p18/theory_version_v1.json"),
+-            "theory-version-state-and-supersession-major-immutable"
+-        ),
+-        schema_document!(
+-            "syndrome",
+-            1,
+-            SyndromeV1,
+-            "SyndromeV1",
+-            "P15",
+-            Some("tests/fixtures/p15/syndrome_v1.json"),
+-            "canonical-repair-backpointer-major-immutable"
+-        ),
+-        schema_document!(
+-            "view-disclosure-receipt",
+-            1,
+-            ViewDisclosureReportV1,
+-            "ViewDisclosureReportV1",
+-            "P13",
+-            Some("tests/fixtures/p13/view_disclosure_receipt_v1.json"),
+-            "view-disclosure-major-immutable"
+-        ),
+-        schema_document!(
+             "source-basis-lock",
+             1,
+             SourceBasisLockV1,
+@@ -7774,33 +7475,6 @@
+             "source-basis-major-immutable"
+         ),
+         schema_document!(
+-            "subtraction-plan",
+-            1,
+-            SubtractionPlanV1,
+-            "SubtractionPlanV1",
+-            "P16",
+-            Some("tests/fixtures/p16/subtraction_plan_v1.json"),
+-            "dry-run-before-reduction-major-immutable"
+-        ),
+-        schema_document!(
+-            "stop-rule-receipt",
+-            1,
+-            StopRuleReportV1,
+-            "StopRuleReportV1",
+-            "P03",
+-            Some("tests/fixtures/p03/stop_rule_receipt_v1.json"),
+-            "receipt-major-immutable"
+-        ),
+-        schema_document!(
+-            "support-core",
+-            1,
+-            SupportCoreV1,
+-            "SupportCoreV1",
+-            "P16",
+-            Some("tests/fixtures/p16/support_core_v1.json"),
+-            "accepted-claim-support-major-immutable"
+-        ),
+-        schema_document!(
+             "super-pass-status",
+             1,
+             SuperPassStatusV1,
+@@ -7846,15 +7520,6 @@
+             "receipt-major-immutable"
+         ),
+         schema_document!(
+-            "treaty",
+-            1,
+-            TreatyV1,
+-            "TreatyV1",
+-            "P17",
+-            Some("tests/fixtures/p17/treaty_v1.json"),
+-            "federation-boundary-major-immutable"
+-        ),
+-        schema_document!(
+             "turn-execution-plan",
+             1,
+             TurnExecutionPlanV1,
+@@ -7873,15 +7538,6 @@
+             "final-state-major-immutable"
+         ),
+         schema_document!(
+-            "trust-root",
+-            1,
+-            TrustRootV1,
+-            "TrustRootV1",
+-            "P17",
+-            Some("tests/fixtures/p17/trust_root_v1.json"),
+-            "trust-root-revocation-major-immutable"
+-        ),
+-        schema_document!(
+             "wake-signal",
+             1,
+             WakeSignalV1,
+
+## crates/aidens-cli/src/lib.rs
+
+## schemas/README.md
+--- .codex_evidence/contract_ownership/05/pre_edit_files/schemas_README.before	2026-04-29 14:03:25.707601240 -0500
++++ .codex_evidence/contract_ownership/05/post_edit_files/schemas_README.after	2026-04-29 14:11:11.113577910 -0500
+@@ -1,13 +1,17 @@
+ # Schemas
+ 
+-P07 and later schema-owning passes generate wire-visible artifact schemas from Rust `JsonSchema` derives:
++This directory contains AiDENs-local, non-authoritative display/report DTO schemas only.
++
++Canonical stack artifact family schemas are owned by canonical owner crates and `~/Coding/Libraries/contract-schema-gen`, not by AiDENs. AiDENs schema generation must not emit canonical schemas for attestation, federation, mechanism, memory/evidence, kernel/region, verification/repair, or digest/content-addressing law.
++
++AiDENs-local schema reports can be regenerated with:
+ 
+ ```bash
+ cargo run -p aidens-cli -- schemas generate
+ cargo run -p aidens-cli -- schemas check
+ ```
+ 
+-Generated schemas live under `schemas/<artifact-family>/vN.schema.json`.
+-`generated_schema_manifest_v1.json` records the generated set and schema digests.
++Generated AiDENs-local schemas live under `schemas/<artifact-family>/vN.schema.json`.
++`generated_schema_manifest_v1.json` records the generated local set and non-authoritative display schema digests.
+ 
+ The remaining `*.sketch.json` files are historical design sketches only; they are not the compatibility gate.
+
+## tests/fixtures/p07/generated_schema_manifest_v1.json
+--- .codex_evidence/contract_ownership/05/pre_edit_files/generated_schema_manifest_v1_fixture.before	2026-04-29 14:03:25.705601249 -0500
++++ .codex_evidence/contract_ownership/05/post_edit_files/generated_schema_manifest_v1_fixture.after	2026-04-29 14:11:11.120577880 -0500
+@@ -12,6 +12,6 @@
+     }
+   ],
+   "reason_codes": [
+-    "generated-from-rust-jsonschema-types"
++    "aidens-local-display-report-schemas-only"
+   ]
+ }
+
+## schemas/generated_schema_manifest_v1.json
+--- .codex_evidence/contract_ownership/05/pre_edit_files/generated_schema_manifest_v1_schema.before	2026-04-29 14:03:25.706601244 -0500
++++ .codex_evidence/contract_ownership/05/post_edit_files/generated_schema_manifest_v1_schema.after	2026-04-29 14:11:11.121577876 -0500
+@@ -1,710 +1,416 @@
+ {
+   "manifest_id": "generated-schema-manifest:v1",
+   "manifest_version": 1,
+-  "registry_digest": "sha256:7eabcae7510265c56855af1f9b6a64de2c75133d7cbd66ece7e300cce0d20b3d",
++  "registry_digest": "blake3:c018dde8d15467514c2dc7bf243226ceec0d08d267089af079bb860857c6be3f",
+   "schemas": [
+     {
+-      "family": "admission-decision",
+-      "version": 1,
+-      "rust_type": "AdmissionDecisionV1",
+-      "schema_path": "admission-decision/v1.schema.json",
+-      "schema_digest": "sha256:a87eba18efd3c3f4340265c65bc75e65031dbbdbd86279d15f911802d81e1e51"
+-    },
+-    {
+       "family": "api-honesty-receipt",
+       "version": 1,
+-      "rust_type": "ApiHonestyReceiptV1",
++      "rust_type": "ApiHonestyReportV1",
+       "schema_path": "api-honesty-receipt/v1.schema.json",
+-      "schema_digest": "sha256:8696c6cab761b5a8c776ce81c18a87ed1326ad533fbea9925492300120273d05"
++      "schema_digest": "blake3:3c7df0badb388bd9155ef0e92ebcdc20bb2c4ef1ef609e1cc2914302a9cebfcc"
+     },
+     {
+       "family": "approval-decision",
+       "version": 1,
+       "rust_type": "ApprovalDecisionV1",
+       "schema_path": "approval-decision/v1.schema.json",
+-      "schema_digest": "sha256:65bc75f5df1ff2cc749f831f12f1ba5eef988677d4302568b922fb7f1ab13b49"
++      "schema_digest": "blake3:d57e9115e27f912b3ad2abfa8c8e7331010a9d97bc8d1d3ad9d13ba834feb0c1"
+     },
+     {
+       "family": "approval-request",
+       "version": 1,
+       "rust_type": "ApprovalRequestV1",
+       "schema_path": "approval-request/v1.schema.json",
+-      "schema_digest": "sha256:47c09f7d65becb9ddf8333ec5671ec73bc955aec0fe8b41f249ec0b5e367e4b4"
++      "schema_digest": "blake3:8da5e82dee3822299fc8e1a0ceafc95c4260f3dd6e0d324b5e88602caa8a9854"
+     },
+     {
+       "family": "artifact-family-registry",
+       "version": 1,
+       "rust_type": "ArtifactFamilyRegistryV1",
+       "schema_path": "artifact-family-registry/v1.schema.json",
+-      "schema_digest": "sha256:4f0dd222bc380ab2ece64c3122c4698fb88a4c1cb6d12c5ec6117da0921a7d5f"
+-    },
+-    {
+-      "family": "attestation-envelope",
+-      "version": 1,
+-      "rust_type": "AttestationEnvelopeV1",
+-      "schema_path": "attestation-envelope/v1.schema.json",
+-      "schema_digest": "sha256:1cf5fbcdb8d81305a97164a636733e60e777aa8c98813fe03c92d6c809f9c220"
++      "schema_digest": "blake3:3af2a720b830d42cc44b142342bd9c429613fd420e2f4fa4d41cc6eea223cb74"
+     },
+     {
+       "family": "backfill-receipt",
+       "version": 1,
+-      "rust_type": "BackfillReceiptV1",
++      "rust_type": "BackfillReportV1",
+       "schema_path": "backfill-receipt/v1.schema.json",
+-      "schema_digest": "sha256:fd1b435e0b0ded63e05495614c894b813cb1fbef687fd84674cc036c81579c89"
++      "schema_digest": "blake3:b6c04f0cc0e147953bcf828d8d5aa9c2594a7da1aa06fb7830583f02d74e5509"
+     },
+     {
+       "family": "boundary-compile-outcome",
+       "version": 1,
+       "rust_type": "BoundaryCompileOutcomeV1",
+       "schema_path": "boundary-compile-outcome/v1.schema.json",
+-      "schema_digest": "sha256:35c1eb411abc1fa034e2501585664c7be5a48dd3751c7ac22d313714e346b550"
++      "schema_digest": "blake3:a8850d2c721c071c9bcef6cad9c9116643a6a89d6a5daf5c861ed98d8c5f48b7"
+     },
+     {
+       "family": "boundary-compile-request",
+       "version": 1,
+       "rust_type": "BoundaryCompileRequestV1",
+       "schema_path": "boundary-compile-request/v1.schema.json",
+-      "schema_digest": "sha256:dc6ed40a612f662836dec0fda21eeecf34d73449f3fd2bfcdc12974405b75779"
++      "schema_digest": "blake3:615b1168776ca44d588ea0004608460a1c2fc8402684843372c10588ec2aef57"
+     },
+     {
+       "family": "budget-exhaustion-receipt",
+       "version": 1,
+-      "rust_type": "BudgetExhaustionReceiptV1",
++      "rust_type": "BudgetExhaustionReportV1",
+       "schema_path": "budget-exhaustion-receipt/v1.schema.json",
+-      "schema_digest": "sha256:8cd6d2506f2dca4d8c66eee9e0d9a35d009bb9397abdcea9adc2ddfc41fc5bb3"
+-    },
+-    {
+-      "family": "canonical-digest",
+-      "version": 1,
+-      "rust_type": "CanonicalDigestV1",
+-      "schema_path": "canonical-digest/v1.schema.json",
+-      "schema_digest": "sha256:17d9a3d56aa97c3491ab52b09cb735bcf1d455f507830e05b9a3ffd67447ba88"
++      "schema_digest": "blake3:f3208a515c48f354a4424284d7e2d55b241605647b22ac9d5a78095a3199006e"
+     },
+     {
+       "family": "capability-gate-decision",
+       "version": 1,
+       "rust_type": "CapabilityGateDecisionV1",
+       "schema_path": "capability-gate-decision/v1.schema.json",
+-      "schema_digest": "sha256:7433fb56cf6b5412d100cd0d389fc74b9149891615af7cd03674fbf32e534853"
++      "schema_digest": "blake3:5b9197b367e82ac75cee8a9a8c89ae6d4b353a99a3e55bad80a7d277930ece69"
+     },
+     {
+       "family": "codex-packet",
+       "version": 1,
+       "rust_type": "CodexPacketV1",
+       "schema_path": "codex-packet/v1.schema.json",
+-      "schema_digest": "sha256:e3974bb393c1f8d6763628a7cd4af47ac72a07018c9b72355d5d34ebf09301b0"
++      "schema_digest": "blake3:df78b3eb0f6318c3e86ff3028e3b157db1f2f90dd134908da5b6df0660b48c00"
+     },
+     {
+       "family": "command-run-receipt",
+       "version": 1,
+       "rust_type": "CommandRunReportV1",
+       "schema_path": "command-run-receipt/v1.schema.json",
+-      "schema_digest": "sha256:d0974564b16f3934b4992bbaa5cecd5a09fb74a029213711977239ed7687d127"
+-    },
+-    {
+-      "family": "compaction-report",
+-      "version": 1,
+-      "rust_type": "CompactionReceiptV1",
+-      "schema_path": "compaction-report/v1.schema.json",
+-      "schema_digest": "sha256:81fdd8ed1eaa6c612a7d4de6bd8d5e937108510c5fd848d7f26b8a527212f71c"
+-    },
+-    {
+-      "family": "compiled-region-graph",
+-      "version": 1,
+-      "rust_type": "CompiledRegionGraphV1",
+-      "schema_path": "compiled-region-graph/v1.schema.json",
+-      "schema_digest": "sha256:1af163fc657103ea8fe5654b0273197aacf6457d605b206ea5404de99eb4d2c7"
++      "schema_digest": "blake3:e9b2dd232027088af9fe9300ed0e2a4509836f89f8b19d77d7ede857d5e1ce7d"
+     },
+     {
+       "family": "completion-audit-report",
+       "version": 1,
+       "rust_type": "CompletionAuditReportV1",
+       "schema_path": "completion-audit-report/v1.schema.json",
+-      "schema_digest": "sha256:1a90a91eb6b73ce9bbe6346e7039725b5bf98e30e71db3a7ebec2e95e37cb424"
++      "schema_digest": "blake3:1d0036ae405f50c3c13ec8636da953abf92e908e0ab27ff84485a9681e9d520a"
+     },
+     {
+       "family": "config-apply-receipt",
+       "version": 1,
+-      "rust_type": "ConfigApplyReceiptV1",
++      "rust_type": "ConfigApplyReportV1",
+       "schema_path": "config-apply-receipt/v1.schema.json",
+-      "schema_digest": "sha256:a8a28bf7305d2b9e4f7924f72745550d59eebbc664c5438f27501eb7b1a5c81f"
+-    },
+-    {
+-      "family": "convergence-report",
+-      "version": 1,
+-      "rust_type": "ConvergenceReportV1",
+-      "schema_path": "convergence-report/v1.schema.json",
+-      "schema_digest": "sha256:c8cf4b03bf65cb6cf0287581b379d7d94d97b590d4a9d4bc9b87cded3b30822d"
++      "schema_digest": "blake3:aad103f2522805f895026fa14cfc8a1efcaf940da10e05829ced1582cdc6c6e7"
+     },
+     {
+       "family": "cross-pass-traceability-matrix",
+       "version": 1,
+       "rust_type": "CrossPassTraceabilityMatrixV1",
+       "schema_path": "cross-pass-traceability-matrix/v1.schema.json",
+-      "schema_digest": "sha256:5da9ab6c235047c39184dd2de7d0964c56de5e9335194dcfb8422ff7eae2bf70"
++      "schema_digest": "blake3:2981399a55122398bb1c6664a81e7569a91ff0138cd09bd697a5aa4c9128ae9b"
+     },
+     {
+       "family": "daemon-namespace",
+       "version": 1,
+       "rust_type": "DaemonNamespaceV1",
+       "schema_path": "daemon-namespace/v1.schema.json",
+-      "schema_digest": "sha256:23fe35e57a61bccb27f947a7ffee123fb8e87dfa620d238014edc9b9f91a44ad"
+-    },
+-    {
+-      "family": "degradation-event",
+-      "version": 1,
+-      "rust_type": "DegradationEventV1",
+-      "schema_path": "degradation-event/v1.schema.json",
+-      "schema_digest": "sha256:6cbecd023b760e52a42328421c5e05ac13be0182546cd0b86d2d1bd7f6464aa2"
++      "schema_digest": "blake3:023903b7983828b43dcfdca5284403b11b39fc652256f48825749aae23a62190"
+     },
+     {
+-      "family": "differential-conformance-finding",
++      "family": "display-digest",
+       "version": 1,
+-      "rust_type": "DifferentialConformanceFindingV1",
+-      "schema_path": "differential-conformance-finding/v1.schema.json",
+-      "schema_digest": "sha256:f3029cee8728b9fcca9316a117515186941ccc7ca54758a07c9f42d9a1550ea1"
++      "rust_type": "DisplayDigestV1",
++      "schema_path": "display-digest/v1.schema.json",
++      "schema_digest": "blake3:5e44082f40988cba6562f6c895594d17ab3df8f9c65340a0fd09bf1dc911f0e3"
+     },
+     {
+       "family": "duplicate-key-finding",
+       "version": 1,
+       "rust_type": "DuplicateKeyFindingV1",
+       "schema_path": "duplicate-key-finding/v1.schema.json",
+-      "schema_digest": "sha256:96521c484d01ab522ca1078b1fd6b9e07096d1ee0efa8b16cda49487eae9d0b6"
++      "schema_digest": "blake3:8c7e605e35a8324da04245470258f76ff5ecac7b1d5b931b4786984e3cf2000c"
+     },
+     {
+       "family": "duplicate-suppression-receipt",
+       "version": 1,
+-      "rust_type": "DuplicateSuppressionReceiptV1",
++      "rust_type": "DuplicateSuppressionReportV1",
+       "schema_path": "duplicate-suppression-receipt/v1.schema.json",
+-      "schema_digest": "sha256:3aed509049957f8d6411eb69b8a75c31668422117e5dc9ff577eb1a3b93466c3"
++      "schema_digest": "blake3:70f34668e47e919bd656f98951021727c0e5f35aaf91ef4a8d9d0b7c9a810d75"
+     },
+     {
+       "family": "example-app-manifest",
+       "version": 1,
+       "rust_type": "ExampleAppManifestV1",
+       "schema_path": "example-app-manifest/v1.schema.json",
+-      "schema_digest": "sha256:2ebc10d617acd15bdba7d6a64b621a88b585fa77e8fe877f0e4033097bd92c4a"
+-    },
+-    {
+-      "family": "execution-context",
+-      "version": 1,
+-      "rust_type": "AidensRunContextV1",
+-      "schema_path": "execution-context/v1.schema.json",
+-      "schema_digest": "sha256:78ca0a177241565173b98348e33a6fbd42be73d016486b8a90e05c1c5c7ba6ca"
+-    },
+-    {
+-      "family": "execution-lineage-graph",
+-      "version": 1,
+-      "rust_type": "ExecutionLineageGraphV1",
+-      "schema_path": "execution-lineage-graph/v1.schema.json",
+-      "schema_digest": "sha256:3c055180cd408cf8c10f179b958aae6b81f0776308e05f104944a3838403f423"
++      "schema_digest": "blake3:12d7df5995078af1f269d2713ea2f1e7e6ac9cd6e3e8e819c0c0e948f7d7404d"
+     },
+     {
+       "family": "fake-ready-finding",
+       "version": 1,
+       "rust_type": "FakeReadyFindingV1",
+       "schema_path": "fake-ready-finding/v1.schema.json",
+-      "schema_digest": "sha256:d96e937ecb6dfe9be68b9580a44a17db801ea7a0720d965fa04346177ab8c79e"
+-    },
+-    {
+-      "family": "fit-run-report",
+-      "version": 1,
+-      "rust_type": "FitRunReportV1",
+-      "schema_path": "fit-run-report/v1.schema.json",
+-      "schema_digest": "sha256:67a20fc809e27f40d6f2e026bf63728c17169158ed76eb2201c04368ad94cc5a"
++      "schema_digest": "blake3:832e64d71c167f84f531dffb8d56b91ad4d4d0b4ec8bd598a9101fd41ded1cad"
+     },
+     {
+       "family": "generated-schema-manifest",
+       "version": 1,
+       "rust_type": "GeneratedSchemaManifestV1",
+       "schema_path": "generated-schema-manifest/v1.schema.json",
+-      "schema_digest": "sha256:e5a27668f71678b9e47d1ae52158a9c84f6fc80e731d71f921bbf3d2489ed846"
++      "schema_digest": "blake3:0eb8a5e82dc8e6492b7c53fa99ea6862a8e0034b6361b8946cde8f66aa5bc5ab"
+     },
+     {
+       "family": "golden-fixture-manifest",
+       "version": 1,
+       "rust_type": "GoldenFixtureManifestV1",
+       "schema_path": "golden-fixture-manifest/v1.schema.json",
+-      "schema_digest": "sha256:240f17cfc84ed5e4123b386c5c5305f44e4d1b50cbf170800412e8badd3ffb8d"
+-    },
+-    {
+-      "family": "history-preservation-report",
+-      "version": 1,
+-      "rust_type": "HistoryPreservationReportV1",
+-      "schema_path": "history-preservation-report/v1.schema.json",
+-      "schema_digest": "sha256:97ab254083959e15f9e4a26940dd98fbc1ee9d069be66f13a0f79b72efd82fc7"
+-    },
+-    {
+-      "family": "hypothesis-library",
+-      "version": 1,
+-      "rust_type": "HypothesisLibraryV1",
+-      "schema_path": "hypothesis-library/v1.schema.json",
+-      "schema_digest": "sha256:b965684ac0599f6410a9a3832c8b262431af1793de4cef345617a80879603de8"
++      "schema_digest": "blake3:22614ffe0fd54cf533a39d0b583a9428828b9cdeaef19f83c7ce937f3862813c"
+     },
+     {
+       "family": "install-smoke-report",
+       "version": 1,
+-      "rust_type": "InstallSmokeReceiptV1",
++      "rust_type": "InstallSmokeReportV1",
+       "schema_path": "install-smoke-report/v1.schema.json",
+-      "schema_digest": "sha256:4c46c068694ded03058ce01a97b912f3fc59d1da103b74214a1d09e3ac186040"
+-    },
+-    {
+-      "family": "invariance-report",
+-      "version": 1,
+-      "rust_type": "InvarianceReportV1",
+-      "schema_path": "invariance-report/v1.schema.json",
+-      "schema_digest": "sha256:7c3e736e2ee56c02daf1763ec2edc8a9f2f54fac13134fcae4a32640a98a6575"
+-    },
+-    {
+-      "family": "invariant-budget",
+-      "version": 1,
+-      "rust_type": "InvariantBudgetV1",
+-      "schema_path": "invariant-budget/v1.schema.json",
+-      "schema_digest": "sha256:34d2f382bb8815b2fcc333669a762ed6b3d0bcea0de2401ee4b3b8cd3f862ca9"
++      "schema_digest": "blake3:f44c92baa361888d7c096d86a620fb832ffde257e56911ca5ab3b2c3ef51d7d7"
+     },
+     {
+       "family": "job",
+       "version": 1,
+       "rust_type": "JobV1",
+       "schema_path": "job/v1.schema.json",
+-      "schema_digest": "sha256:1bdf7c90c215cd0c61fab4e8c8edfa9285ad4eff763f66dce429e2014d3060a2"
+-    },
+-    {
+-      "family": "json-repair-receipt",
+-      "version": 2,
+-      "rust_type": "JsonRepairReceiptV2",
+-      "schema_path": "json-repair-receipt/v2.schema.json",
+-      "schema_digest": "sha256:6d0a3811a2de91c336abc012cf1f4031002c85be9bd4159c4dccd8758343dfc2"
+-    },
+-    {
+-      "family": "kernel-run-report",
+-      "version": 1,
+-      "rust_type": "KernelRunDisplayReportV1",
+-      "schema_path": "kernel-run-report/v1.schema.json",
+-      "schema_digest": "sha256:cc73ebf5c710552883dfc4c056ea14cd0bf8bf9ccb102588d085fa8e4b14f699"
++      "schema_digest": "blake3:843795f82e97333c219af7de0906a0faa1da70f367b085470661aecd6ab1805c"
+     },
+     {
+       "family": "known-limitations-register",
+       "version": 1,
+       "rust_type": "KnownLimitationsRegisterV1",
+       "schema_path": "known-limitations-register/v1.schema.json",
+-      "schema_digest": "sha256:783788956b82d8cff7c8f9f9cd0909e8474955f069bc47505f1fc4d3216fea8a"
+-    },
+-    {
+-      "family": "mechanism-report",
+-      "version": 1,
+-      "rust_type": "MechanismBundleV1",
+-      "schema_path": "mechanism-report/v1.schema.json",
+-      "schema_digest": "sha256:5bd0e90250c41ad0fc6edda87739850ab0df5d6f83d06be34370b9354950c1f3"
++      "schema_digest": "blake3:a7653ebf6e2ecada1e59dbbb22170a9c80c7aa49db5930441ac2d5e518d8b046"
+     },
+     {
+       "family": "migration-plan",
+       "version": 1,
+       "rust_type": "MigrationPlanV1",
+       "schema_path": "migration-plan/v1.schema.json",
+-      "schema_digest": "sha256:e264c44eaafb7c6deb8415202a69074ad4241e3396a34aec1ef76c526bf03dc8"
++      "schema_digest": "blake3:0c2b9408735f821301d01de599601e0ae6ee803b000bf0d2d2466542b59bc38d"
+     },
+     {
+       "family": "operator-status-report",
+       "version": 1,
+       "rust_type": "OperatorStatusReportV1",
+       "schema_path": "operator-status-report/v1.schema.json",
+-      "schema_digest": "sha256:ad7b55bfd8e6f7c8a0cfcd75baa38ee287f594c209722f949864c17e78b749ed"
+-    },
+-    {
+-      "family": "oracle-slice-request",
+-      "version": 1,
+-      "rust_type": "OracleSliceRequestV1",
+-      "schema_path": "oracle-slice-request/v1.schema.json",
+-      "schema_digest": "sha256:ceef5fc4ec7fcfea227cd689b10a3c38afcda0050ea183de366fdb3911fde2d4"
++      "schema_digest": "blake3:0f9574330dfc53a145cc09b26277fac8118ece42c7a77f70f4c6211594406acc"
+     },
+     {
+       "family": "patch-apply-receipt",
+       "version": 1,
+-      "rust_type": "PatchApplyReceiptV1",
++      "rust_type": "PatchApplyReportV1",
+       "schema_path": "patch-apply-receipt/v1.schema.json",
+-      "schema_digest": "sha256:d8b5f50346be12b29b51a8bdf9b084759533c33d7ada1bc86a1e3b26910ec2c6"
++      "schema_digest": "blake3:19d5d87c7559ab212f02852e88ef425de2410fced310f7857fddcaf3f2b89d68"
+     },
+     {
+       "family": "patch-proposal",
+       "version": 1,
+       "rust_type": "PatchProposalV1",
+       "schema_path": "patch-proposal/v1.schema.json",
+-      "schema_digest": "sha256:36a73cf803ffaf2cb23b9c6b2daaad0cf25bb2bd13359133ce3ae0449f69f8d5"
++      "schema_digest": "blake3:d234aeff93c9069f6805929b787b94bb5171daa3d4013294e611cbb4c46379b2"
+     },
+     {
+       "family": "permit-grant",
+       "version": 1,
+       "rust_type": "PermitGrantV1",
+       "schema_path": "permit-grant/v1.schema.json",
+-      "schema_digest": "sha256:9c3b91c82028d86fdcf899e18bd39bbed447b416b414e9d82941e24549b02061"
++      "schema_digest": "blake3:c679a8e982248875b6629370cbbf4367f75a4bdd975d3ad2b9ea76175e4e5615"
+     },
+     {
+       "family": "permit-use-receipt",
+       "version": 1,
+-      "rust_type": "PermitUseReceiptV1",
++      "rust_type": "PermitUseReportV1",
+       "schema_path": "permit-use-receipt/v1.schema.json",
+-      "schema_digest": "sha256:ff89681ac9fe7195d70af08038515dd24650e96332c112d52122c50636d1b1ae"
++      "schema_digest": "blake3:12ba33d4acaf0fbc027470fea13238c7ba15ef9896e2fe60b6724e671d947b0c"
+     },
+     {
+       "family": "plan-runtime-parity-report",
+       "version": 1,
+       "rust_type": "PlanRuntimeParityReportV1",
+       "schema_path": "plan-runtime-parity-report/v1.schema.json",
+-      "schema_digest": "sha256:363e16818450a2a0ef08680629252b5a8e6e28a670275fe2bd292b6e348618b2"
+-    },
+-    {
+-      "family": "poison-receipt-record",
+-      "version": 1,
+-      "rust_type": "PoisonReceiptRecordV1",
+-      "schema_path": "poison-receipt-record/v1.schema.json",
+-      "schema_digest": "sha256:ca1e9474efc710203195d6f8ff41a51fe2da87b8626a7d7042615e73f174bd55"
+-    },
+-    {
+-      "family": "projection-digest",
+-      "version": 1,
+-      "rust_type": "ProjectionDigestV1",
+-      "schema_path": "projection-digest/v1.schema.json",
+-      "schema_digest": "sha256:6ce35565d13b3378d0dae6490cb9ebdb144e436b868a469cb860f05a673b009b"
++      "schema_digest": "blake3:cf981d08675e8a63851534368a2b4f2c956d34867350be654b0a7a24fa64e6c4"
+     },
+     {
+       "family": "provider-backend-matrix",
+       "version": 1,
+       "rust_type": "ProviderBackendMatrixV1",
+       "schema_path": "provider-backend-matrix/v1.schema.json",
+-      "schema_digest": "sha256:1a9cbb1d3d030e1b4aecc1614cef5f8714ed1bb4d02ef3d9339503a88fd464b7"
++      "schema_digest": "blake3:ac8cd89b3bd111c68145011e30e8c448412592528513764b9ebc282ec626df1b"
+     },
+     {
+       "family": "provider-certification-fixture",
+       "version": 1,
+       "rust_type": "ProviderCertificationFixtureV1",
+       "schema_path": "provider-certification-fixture/v1.schema.json",
+-      "schema_digest": "sha256:a662991f385931e39290c0bec3a611980b6d6ca475eae85c9f4cddfdc201b0e9"
++      "schema_digest": "blake3:154881ccc8032c76a3dfaaea0a11a0ecc005e7623d96df965525fb2a31622f01"
+     },
+     {
+       "family": "provider-readiness-receipt",
+       "version": 1,
+-      "rust_type": "ProviderReadinessReceiptV1",
++      "rust_type": "ProviderReadinessReportV1",
+       "schema_path": "provider-readiness-receipt/v1.schema.json",
+-      "schema_digest": "sha256:65f18381448ffb6c6eb4c38c9264a7be489ed4a628be46d43023792d0bcc05ac"
++      "schema_digest": "blake3:e2531394eb4621bddce952d1863551290c484ccf653a125333ebdcaa11261caf"
+     },
+     {
+       "family": "provider-route-receipt",
+       "version": 2,
+-      "rust_type": "ProviderRouteReceiptV2",
++      "rust_type": "ProviderRouteReportV2",
+       "schema_path": "provider-route-receipt/v2.schema.json",
+-      "schema_digest": "sha256:3f63b0d541a2a45ba6189638d95541f56b7fe8dbcb4c977c70de99371478be4c"
+-    },
+-    {
+-      "family": "query-widening-receipt",
+-      "version": 1,
+-      "rust_type": "QueryWideningReceiptV1",
+-      "schema_path": "query-widening-receipt/v1.schema.json",
+-      "schema_digest": "sha256:a6c54f4171d2bfe562cfa88844d156543bcaaf5665fa930d65a62e1ac2e28f2b"
++      "schema_digest": "blake3:02304cb97e3d90499f61bad8c2219eae7dad608b0f42288ddca6908da08fab0b"
+     },
+     {
+       "family": "queue-hop-receipt",
+       "version": 1,
+-      "rust_type": "QueueHopReceiptV1",
++      "rust_type": "QueueHopReportV1",
+       "schema_path": "queue-hop-receipt/v1.schema.json",
+-      "schema_digest": "sha256:e593e0d66f16458369b0b280ce52b9223e4cad3e50f6e90e16fbdd79df5f9c02"
++      "schema_digest": "blake3:b724daeb78749ed0c022f5b8cb0a7ae7a2c201e3222917bb2160d72ba8859291"
+     },
+     {
+       "family": "queue-lease",
+       "version": 1,
+       "rust_type": "QueueLeaseV1",
+       "schema_path": "queue-lease/v1.schema.json",
+-      "schema_digest": "sha256:86d481e5120f6c134e9bc836cd9511c1cbf3215e462fde52cb6f12f031e8503a"
+-    },
+-    {
+-      "family": "reference-case",
+-      "version": 1,
+-      "rust_type": "ReferenceCaseV1",
+-      "schema_path": "reference-case/v1.schema.json",
+-      "schema_digest": "sha256:42858f7bbeb85bedb8a108ee79f07a895f512f2a4de12586ab2dacf61535a636"
+-    },
+-    {
+-      "family": "reference-interpreter-report",
+-      "version": 1,
+-      "rust_type": "ReferenceInterpreterReportV1",
+-      "schema_path": "reference-interpreter-report/v1.schema.json",
+-      "schema_digest": "sha256:6758c2d8907e7421011144faf6f9bf12b69fb0a3f6412cf56851623804acff7a"
+-    },
+-    {
+-      "family": "region-contract",
+-      "version": 1,
+-      "rust_type": "RegionContractV1",
+-      "schema_path": "region-contract/v1.schema.json",
+-      "schema_digest": "sha256:20861039d4b7830c8a2b052068267babb673cf3abface7239fdd217dfe193e39"
++      "schema_digest": "blake3:7302c7111c1712e15cb05ac52c0238e19c822e7f37f1078eff8c4deff4060921"
+     },
+     {
+       "family": "regression-debt-ledger",
+       "version": 1,
+       "rust_type": "RegressionDebtLedgerV1",
+       "schema_path": "regression-debt-ledger/v1.schema.json",
+-      "schema_digest": "sha256:93aaf733cd705de22120130b4430a682bd0c620b9c894c406fe37269aa6a8376"
++      "schema_digest": "blake3:b178014081cb7604720dada278f6be5cadbab3a430d155978126f2d294dab5bc"
+     },
+     {
+       "family": "release-artifact-manifest",
+       "version": 1,
+       "rust_type": "ReleaseArtifactManifestV1",
+       "schema_path": "release-artifact-manifest/v1.schema.json",
+-      "schema_digest": "sha256:270b1ae8bae1c34358558175838c940d90d8ea2a749e6e08477d056fc930cec5"
++      "schema_digest": "blake3:820feaf1448f2a435b857d767265315b03bc65b2edac94e0330433e1996ef08d"
+     },
+     {
+       "family": "release-readiness-report",
+       "version": 1,
+       "rust_type": "ReleaseReadinessReportV1",
+       "schema_path": "release-readiness-report/v1.schema.json",
+-      "schema_digest": "sha256:696adc5980630d3becdc15637859b44dd54705f49d783040bb93884f0a6e93a4"
+-    },
+-    {
+-      "family": "remote-oracle-report",
+-      "version": 1,
+-      "rust_type": "RemoteOracleReceiptV1",
+-      "schema_path": "remote-oracle-report/v1.schema.json",
+-      "schema_digest": "sha256:075e0562879c88764ab998392659779a409e44965f410fa51ae8286906701b3e"
+-    },
+-    {
+-      "family": "removal-frontier",
+-      "version": 1,
+-      "rust_type": "RemovalFrontierV1",
+-      "schema_path": "removal-frontier/v1.schema.json",
+-      "schema_digest": "sha256:7e87cddac1a21aee826bd84e26adbfc38cd4111bf49ac8fea4617e51c0be32be"
++      "schema_digest": "blake3:bb0e21e7939223633461077af03c9cfcd037ae10d2a7c4500658cc7d14de0cd9"
+     },
+     {
+       "family": "repo-list-receipt",
+       "version": 1,
+-      "rust_type": "RepoListReceiptV1",
++      "rust_type": "RepoListReportV1",
+       "schema_path": "repo-list-receipt/v1.schema.json",
+-      "schema_digest": "sha256:3db5b5cd4139a115faadb8ceab3a7712ff84f457c51d94772d7c66fd97ba6899"
++      "schema_digest": "blake3:2c5840777e8addb44d9cb595f732e3021ee853ba146a404d7c40f148a73d4202"
+     },
+     {
+       "family": "repo-read-receipt",
+       "version": 1,
+-      "rust_type": "RepoReadReceiptV1",
++      "rust_type": "RepoReadReportV1",
+       "schema_path": "repo-read-receipt/v1.schema.json",
+-      "schema_digest": "sha256:195e6445e968aa28401ef9786b749c3ee931ac943277da43f63c7d42d250e7d1"
+-    },
+-    {
+-      "family": "residual",
+-      "version": 1,
+-      "rust_type": "ResidualV1",
+-      "schema_path": "residual/v1.schema.json",
+-      "schema_digest": "sha256:e136c76fb9b6f320ebaf670f89816e4fa5aaee264bf5918d5d3eb30c0b581ad3"
+-    },
+-    {
+-      "family": "retrieval-policy",
+-      "version": 1,
+-      "rust_type": "RetrievalPolicyV1",
+-      "schema_path": "retrieval-policy/v1.schema.json",
+-      "schema_digest": "sha256:ca9f10d94598f714b87c4e6fb532a2d6d1360f0e60fb25936010911e646eb522"
++      "schema_digest": "blake3:53284b56b1dbd650be7327f172532fac584be2ba4cd7ba8596219eaea533d85a"
+     },
+     {
+       "family": "run-receipt",
+       "version": 1,
+       "rust_type": "RunReportV1",
+       "schema_path": "run-receipt/v1.schema.json",
+-      "schema_digest": "sha256:6ef7ffbb88b786bca454329bb7ec7fc11924f1951d513b1ca21b5f6c2105a2c2"
+-    },
+-    {
+-      "family": "runtime-view-request",
+-      "version": 1,
+-      "rust_type": "RuntimeViewRequestV1",
+-      "schema_path": "runtime-view-request/v1.schema.json",
+-      "schema_digest": "sha256:b1c0ead8550157db00a1ce676fe447372ceeac74e2993e469620969773fff4cd"
++      "schema_digest": "blake3:646e15530ae4f02346a9ccf5551b0a843435acec381ae01b7605ae29cbb6625e"
+     },
+     {
+       "family": "safe-mode-receipt",
+       "version": 1,
+-      "rust_type": "SafeModeReceiptV1",
++      "rust_type": "SafeModeReportV1",
+       "schema_path": "safe-mode-receipt/v1.schema.json",
+-      "schema_digest": "sha256:89ca9d4dbd26c6dce4be818ef188b9933c22a34bcfb7f6e7da749bdfcb5c7448"
++      "schema_digest": "blake3:2b867710d5584bd360613f5deefdc5c9da81c376cf9cfb49111be31810fccaa8"
+     },
+     {
+       "family": "sandbox-capability-truth",
+       "version": 1,
+       "rust_type": "SandboxCapabilityTruthV1",
+       "schema_path": "sandbox-capability-truth/v1.schema.json",
+-      "schema_digest": "sha256:c43cb9a4b89d2f269b820406259c8c65401239d310ea71cbd04600c7dcf02ce6"
++      "schema_digest": "blake3:43d9e547792b6eb7f23003ce67fbde0b16683056f496acabbaf110ac1de35eb1"
+     },
+     {
+       "family": "scaffold-surface-report",
+       "version": 1,
+       "rust_type": "ScaffoldSurfaceReportV1",
+       "schema_path": "scaffold-surface-report/v1.schema.json",
+-      "schema_digest": "sha256:3a818a207d05d391052913b53d392da2011e4d81682e4d42d92a375d748b006c"
++      "schema_digest": "blake3:5f5b11ba024f933e404d484ad21fb4a0f392877f829c1904e0e00f5e43ed8c2a"
+     },
+     {
+       "family": "schedule-occurrence",
+       "version": 1,
+       "rust_type": "ScheduleOccurrenceV1",
+       "schema_path": "schedule-occurrence/v1.schema.json",
+-      "schema_digest": "sha256:76bd2005327cd04229f54b0fd6356e1dcb7d482d19c02791c43353166c83ad1d"
++      "schema_digest": "blake3:be22538d5e756bec14a6b5311f6aefabd95863d3c3081b67c876b23a53beab5d"
+     },
+     {
+       "family": "schema-compatibility-report",
+       "version": 1,
+       "rust_type": "SchemaCompatibilityReportV1",
+       "schema_path": "schema-compatibility-report/v1.schema.json",
+-      "schema_digest": "sha256:73dab8b7eebc0ff4aa965af5b5299bd627126b575538dff860d6b31c5270d108"
+-    },
+-    {
+-      "family": "schema-validation-receipt",
+-      "version": 1,
+-      "rust_type": "SchemaValidationReceiptV1",
+-      "schema_path": "schema-validation-receipt/v1.schema.json",
+-      "schema_digest": "sha256:abec0c7bc5dd6eb5bbed8b5e366a2d452399fa055de265298230e800f6939874"
+-    },
+-    {
+-      "family": "settlement-case",
+-      "version": 1,
+-      "rust_type": "SettlementCaseV1",
+-      "schema_path": "settlement-case/v1.schema.json",
+-      "schema_digest": "sha256:2ef243dd9bc0d1a9a7b5447959a309b90b94d45a90c2e008c870f3c0f77c40b6"
+-    },
+-    {
+-      "family": "shared-disposition",
+-      "version": 1,
+-      "rust_type": "SharedDispositionV1",
+-      "schema_path": "shared-disposition/v1.schema.json",
+-      "schema_digest": "sha256:0568263917fc492a119e126ce6dc7afbddac3acdaa7487a1c0289a75cc927d9d"
+-    },
+-    {
+-      "family": "simulator-contract",
+-      "version": 1,
+-      "rust_type": "SimulatorContractV1",
+-      "schema_path": "simulator-contract/v1.schema.json",
+-      "schema_digest": "sha256:b8963089f609b79b3c6b1ddd848a4e76b9ccbb0c1bc3e747b289358da979c41a"
++      "schema_digest": "blake3:04c507e8aa35e925a3326e608f26f51af290cb01d160f3b93098d4b4bb6837d7"
+     },
+     {
+       "family": "source-basis-lock",
+       "version": 1,
+       "rust_type": "SourceBasisLockV1",
+       "schema_path": "source-basis-lock/v1.schema.json",
+-      "schema_digest": "sha256:0433ed156852f7ce3f31a881b97c60e23ca5ae882a3ea383e3ed3b7d6bfbc62c"
+-    },
+-    {
+-      "family": "stop-rule-receipt",
+-      "version": 1,
+-      "rust_type": "StopRuleReceiptV1",
+-      "schema_path": "stop-rule-receipt/v1.schema.json",
+-      "schema_digest": "sha256:303b4a7cd4992e1d71d4c0229b15961b593d41f74fbec80a39a05f7ace7f927a"
+-    },
+-    {
+-      "family": "subtraction-plan",
+-      "version": 1,
+-      "rust_type": "SubtractionPlanV1",
+-      "schema_path": "subtraction-plan/v1.schema.json",
+-      "schema_digest": "sha256:e4dea617a55db32afb49b7a63363945193cd11dd990f1fd94827912f2bc22192"
++      "schema_digest": "blake3:21e6337285477abe22e1fa950a9f4b61791d9c6eeabb00e6cd840838225a9a29"
+     },
+     {
+       "family": "super-pass-status",
+       "version": 1,
+       "rust_type": "SuperPassStatusV1",
+       "schema_path": "super-pass-status/v1.schema.json",
+-      "schema_digest": "sha256:bd2e4f90d1a841e189d5ae91a4ad2ca6a5675f2481471f9f9634c252b8a5ed4b"
+-    },
+-    {
+-      "family": "support-core",
+-      "version": 1,
+-      "rust_type": "SupportCoreV1",
+-      "schema_path": "support-core/v1.schema.json",
+-      "schema_digest": "sha256:7c6b945d5a6b2d075a42d73bba137d57b4a51a8b0d7094d60bbf2da49f013508"
+-    },
+-    {
+-      "family": "syndrome",
+-      "version": 1,
+-      "rust_type": "SyndromeV1",
+-      "schema_path": "syndrome/v1.schema.json",
+-      "schema_digest": "sha256:ed862035218ab8e9838159fc95d7806e4883d2ce02899a03828b1d3b5c06a71d"
+-    },
+-    {
+-      "family": "theory-refuter-suite",
+-      "version": 1,
+-      "rust_type": "TheoryRefuterSuiteV1",
+-      "schema_path": "theory-refuter-suite/v1.schema.json",
+-      "schema_digest": "sha256:ed1a4c408fdb91244865cce89882e4fef7510bd1c4fb7856e52dd2a6c9d653df"
+-    },
+-    {
+-      "family": "theory-version",
+-      "version": 1,
+-      "rust_type": "TheoryVersionV1",
+-      "schema_path": "theory-version/v1.schema.json",
+-      "schema_digest": "sha256:1d23eadbb3802d9691f81beb908c7e1acd02b38124d03f59d95b7a17b75d62ac"
++      "schema_digest": "blake3:c39246ed008c34293bb5f009d8cfad28b6a72cbc3ddd636694a8330ec19e5498"
+     },
+     {
+       "family": "tool-call-request",
+       "version": 1,
+       "rust_type": "ToolCallRequestV1",
+       "schema_path": "tool-call-request/v1.schema.json",
+-      "schema_digest": "sha256:49ebadb8f53bd0c502efa05cb97ea68347e43c3197e154f0d3c67f6ca336f411"
++      "schema_digest": "blake3:64a33f942925180a028479ff2fe71037e74594a581b64932ea0db2a3025c120e"
+     },
+     {
+       "family": "tool-call-result",
+       "version": 1,
+       "rust_type": "ToolCallResultV1",
+       "schema_path": "tool-call-result/v1.schema.json",
+-      "schema_digest": "sha256:fe5ac39a5553d867b355c8dbb066f41776bdce06f329dcb1bbc12414e90f4f8d"
++      "schema_digest": "blake3:5a5873a80f47169f19f28ee2c3edd0f6c72b9f28877ce5b97109d7ffee174b13"
+     },
+     {
+       "family": "tool-exposure-plan",
+       "version": 2,
+       "rust_type": "ToolExposurePlanV2",
+       "schema_path": "tool-exposure-plan/v2.schema.json",
+-      "schema_digest": "sha256:f1fc4810f3c39a79ebb972e19bc5fd37f197d382c65e7c05c93b1c50c51fa330"
++      "schema_digest": "blake3:ac6d0f257ab37d84cd25d7f1f1d427820a13092716a8a8042e48355030f5c8ec"
+     },
+     {
+       "family": "tool-invocation-receipt",
+       "version": 1,
+       "rust_type": "ToolInvocationReportV1",
+       "schema_path": "tool-invocation-receipt/v1.schema.json",
+-      "schema_digest": "sha256:a72cd5d9dab9f9bee2c8ccf6b7d94e039933dcda9752f29bc2384ae2d986a76c"
+-    },
+-    {
+-      "family": "treaty",
+-      "version": 1,
+-      "rust_type": "TreatyV1",
+-      "schema_path": "treaty/v1.schema.json",
+-      "schema_digest": "sha256:408d362d2f2e4eb37e070d1a96ee795d471d3ceae8dafb3ecbfb5bba49c3c980"
+-    },
+-    {
+-      "family": "trust-root",
+-      "version": 1,
+-      "rust_type": "TrustRootV1",
+-      "schema_path": "trust-root/v1.schema.json",
+-      "schema_digest": "sha256:43fdbfbc07d95c4546d689acba6484f4c1bc225596f743a3b38cdbf9acbf333a"
++      "schema_digest": "blake3:9320bb92ff8107d9c82ade93c8167f3f2cacfde4e037ee400323fbd1745c8843"
+     },
+     {
+       "family": "turn-execution-plan",
+       "version": 1,
+       "rust_type": "TurnExecutionPlanV1",
+       "schema_path": "turn-execution-plan/v1.schema.json",
+-      "schema_digest": "sha256:998211cb271af7a3b2c870b323af95fcc77495c2cfb5057215b741e5662c671d"
++      "schema_digest": "blake3:8c0c72a394c63352c948b795cfd465eefa8bdf010b6e55f898715ab8bc9f6c2d"
+     },
+     {
+       "family": "turn-receipt",
+       "version": 1,
+-      "rust_type": "TurnReceiptV1",
++      "rust_type": "TurnReportV1",
+       "schema_path": "turn-receipt/v1.schema.json",
+-      "schema_digest": "sha256:2740dfc5f8756cd2a3c30ffafd51bb7ec89eb21a37fecfdc74d88b7f033eed35"
+-    },
+-    {
+-      "family": "view-disclosure-receipt",
+-      "version": 1,
+-      "rust_type": "ViewDisclosureReceiptV1",
+-      "schema_path": "view-disclosure-receipt/v1.schema.json",
+-      "schema_digest": "sha256:626adb76b02e83aecdc1faaca1cd8eefce37a9a714ff15abfce2709da8723edc"
++      "schema_digest": "blake3:ff74aed2963766fda6ab88f33fc87964aed99e13e5a06b23034457c1cb09828c"
+     },
+     {
+       "family": "wake-signal",
+       "version": 1,
+       "rust_type": "WakeSignalV1",
+       "schema_path": "wake-signal/v1.schema.json",
+-      "schema_digest": "sha256:0bf117ea0820c827e008b7c9ad659ba47cb830891241f64175014fac0573b040"
++      "schema_digest": "blake3:32f6e13d79a0a2d67e974a13d14ff9de8387baafb4565069950f4053a388b026"
+     }
+   ],
+   "reason_codes": [
+-    "generated-from-rust-jsonschema-types"
++    "aidens-local-display-report-schemas-only"
+   ]
+ }
+
+## schema files removed
+schemas/admission-decision/v1.schema.json
+schemas/attestation-envelope/v1.schema.json
+schemas/canonical-digest/v1.schema.json
+schemas/compaction-receipt/v1.schema.json
+schemas/compiled-region-graph/v1.schema.json
+schemas/convergence-report/v1.schema.json
+schemas/degradation-event/v1.schema.json
+schemas/differential-conformance-finding/v1.schema.json
+schemas/execution-context/v1.schema.json
+schemas/execution-lineage-graph/v1.schema.json
+schemas/fit-run-receipt/v1.schema.json
+schemas/history-preservation-report/v1.schema.json
+schemas/hypothesis-library/v1.schema.json
+schemas/install-smoke-receipt/v1.schema.json
+schemas/invariance-report/v1.schema.json
+schemas/invariant-budget/v1.schema.json
+schemas/json-repair-receipt/v2.schema.json
+schemas/kernel-run-receipt/v1.schema.json
+schemas/mechanism-bundle/v1.schema.json
+schemas/oracle-slice-request/v1.schema.json
+schemas/poison-receipt-record/v1.schema.json
+schemas/projection-digest/v1.schema.json
+schemas/query-widening-receipt/v1.schema.json
+schemas/reference-case/v1.schema.json
+schemas/reference-interpreter-report/v1.schema.json
+schemas/region-contract/v1.schema.json
+schemas/remote-oracle-receipt/v1.schema.json
+schemas/removal-frontier/v1.schema.json
+schemas/residual/v1.schema.json
+schemas/retrieval-policy/v1.schema.json
+schemas/runtime-view-request/v1.schema.json
+schemas/schema-validation-receipt/v1.schema.json
+schemas/settlement-case/v1.schema.json
+schemas/shared-disposition/v1.schema.json
+schemas/simulator-contract/v1.schema.json
+schemas/stop-rule-receipt/v1.schema.json
+schemas/subtraction-plan/v1.schema.json
+schemas/support-core/v1.schema.json
+schemas/syndrome/v1.schema.json
+schemas/theory-refuter-suite/v1.schema.json
+schemas/theory-version/v1.schema.json
+schemas/treaty/v1.schema.json
+schemas/trust-root/v1.schema.json
+schemas/view-disclosure-receipt/v1.schema.json
+
+## schema files added
+schemas/display-digest/v1.schema.json
+schemas/install-smoke-report/v1.schema.json

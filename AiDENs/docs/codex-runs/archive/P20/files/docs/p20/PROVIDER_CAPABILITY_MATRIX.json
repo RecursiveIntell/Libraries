@@ -1,0 +1,206 @@
+{
+  "record_date": "2026-04-30",
+  "matrix_version": "p20-phase05-v1",
+  "rule": "A provider capability is supported only when that exact capability is executable and tested. Native tool calling is false until an implemented and tested native tool-call loop exists.",
+  "entries": [
+    {
+      "provider_kind": "disabled",
+      "config_key": "disabled",
+      "status": "disabled",
+      "support_label": "blocked/tested",
+      "route_label": "disabled",
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "cloud_support": false,
+      "fixture_only": false,
+      "reason_codes": [
+        "provider-disabled"
+      ],
+      "proof": [
+        "cargo test -p aidens-provider-kit disabled_provider_does_not_answer",
+        "cargo test -p aidens-runner disabled_provider_records_receipt_and_fails"
+      ],
+      "limits": [
+        "blocked route only",
+        "does not answer"
+      ]
+    },
+    {
+      "provider_kind": "mock",
+      "config_key": "mock",
+      "status": "executable",
+      "support_label": "fixture-supported-not-cloud",
+      "route_label": "mock",
+      "chat_completion_executable": true,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": true,
+      "cloud_support": false,
+      "fixture_only": true,
+      "reason_codes": [
+        "mock-provider-executable"
+      ],
+      "proof": [
+        "cargo test -p aidens-provider-kit mock_provider_returns_only_configured_text",
+        "cargo test -p aidens-runner --test next_runner_provider_contract",
+        "cargo run -p aidens-cli -- run --config examples/aidens.mock.toml hello"
+      ],
+      "limits": [
+        "fixture provider only",
+        "not cloud support",
+        "not native tool use"
+      ]
+    },
+    {
+      "provider_kind": "ollama",
+      "config_key": "ollama",
+      "status": "executable",
+      "support_label": "partial-local-chat",
+      "route_label": "ollama-chat",
+      "chat_completion_executable": true,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "cloud_support": false,
+      "fixture_only": false,
+      "reason_codes": [
+        "ollama-chat-boundary-implemented",
+        "ollama-local-service-required",
+        "ollama-native-tool-loop-unimplemented"
+      ],
+      "proof": [
+        "cargo test -p aidens-provider-kit ollama_chat_boundary_executes_against_http_fixture_without_native_tools",
+        "cargo test -p aidens-provider-kit ollama_chat_route_is_not_native_tool_loop",
+        "cargo test -p aidens-cli provider_check_reports_ollama_chat_without_native_tool_loop"
+      ],
+      "limits": [
+        "requires local Ollama-compatible service at runtime",
+        "text chat only",
+        "not native tool use"
+      ]
+    },
+    {
+      "provider_kind": "openai-compatible",
+      "config_key": "openai-compatible",
+      "status": "boundary-unavailable",
+      "support_label": "deferred/unavailable",
+      "route_label": "unavailable",
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "cloud_support": false,
+      "fixture_only": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ],
+      "proof": [
+        "cargo test -p aidens-provider-kit api_provider_with_key_is_boundary_unavailable_without_native_loop",
+        "cargo test -p aidens-provider-kit provider_backend_matrix_lists_p02_backends"
+      ],
+      "limits": [
+        "no HTTP execution boundary",
+        "no native tool loop"
+      ]
+    },
+    {
+      "provider_kind": "compatible",
+      "config_key": "compatible",
+      "status": "boundary-unavailable",
+      "support_label": "deferred/unavailable",
+      "route_label": "unavailable",
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "cloud_support": false,
+      "fixture_only": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ],
+      "proof": [
+        "cargo test -p aidens-provider-kit provider_readiness_matches_reference_interpreter",
+        "cargo test -p aidens-provider-kit provider_backend_matrix_lists_p02_backends"
+      ],
+      "limits": [
+        "alias only",
+        "no HTTP execution boundary",
+        "no native tool loop"
+      ]
+    },
+    {
+      "provider_kind": "openai",
+      "config_key": "openai",
+      "status": "boundary-unavailable",
+      "support_label": "deferred/unavailable",
+      "route_label": "unavailable",
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "cloud_support": false,
+      "fixture_only": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ],
+      "proof": [
+        "cargo test -p aidens-provider-kit api_provider_with_key_is_boundary_unavailable_without_native_loop",
+        "cargo test -p aidens-cli provider_check_reports_missing_api_key_without_claiming_executable"
+      ],
+      "limits": [
+        "no HTTP execution boundary",
+        "no native tool loop"
+      ]
+    },
+    {
+      "provider_kind": "openrouter",
+      "config_key": "openrouter",
+      "status": "boundary-unavailable",
+      "support_label": "deferred/unavailable",
+      "route_label": "unavailable",
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "cloud_support": false,
+      "fixture_only": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ],
+      "proof": [
+        "cargo test -p aidens-provider-kit api_provider_with_key_is_boundary_unavailable_without_native_loop",
+        "cargo test -p aidens-cli provider_route_does_not_claim_native_when_backend_is_unavailable"
+      ],
+      "limits": [
+        "no HTTP execution boundary",
+        "no native tool loop"
+      ]
+    },
+    {
+      "provider_kind": "anthropic",
+      "config_key": "anthropic",
+      "status": "boundary-unavailable",
+      "support_label": "deferred/unavailable",
+      "route_label": "unavailable",
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "cloud_support": false,
+      "fixture_only": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ],
+      "proof": [
+        "cargo test -p aidens-provider-kit provider_readiness_matches_reference_interpreter",
+        "cargo test -p aidens-provider-kit provider_backend_matrix_lists_p02_backends"
+      ],
+      "limits": [
+        "no HTTP execution boundary",
+        "no native tool loop"
+      ]
+    }
+  ]
+}

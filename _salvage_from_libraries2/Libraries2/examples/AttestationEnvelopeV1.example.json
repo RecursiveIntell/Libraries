@@ -1,0 +1,16 @@
+{
+  "schema_version": "attestation_envelope_v1",
+  "attestation_envelope_id": "att-envelope-2026-03-14-01",
+  "artifact_family": "decision_trace_v1",
+  "artifact_version": "1",
+  "content_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "schema_identity": "decision-trace-v1.schema.json",
+  "signer_identity": "oracle.example/keys/signing-1",
+  "signing_time": "2026-03-14T12:30:00Z",
+  "trust_root_set_id": "trust-root-core",
+  "provenance_summary": "Generated from local canary decision trace for remote adjudication.",
+  "disclosure_policy_id": "disclosure-policy-core-remote",
+  "replayability_class": "replayable_with_ticket",
+  "revocation_refs": [],
+  "supersession_refs": []
+}

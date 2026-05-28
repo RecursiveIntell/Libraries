@@ -1,0 +1,73 @@
+{
+  "schema_version": "audit_evaluation_input_v1",
+  "case_id": "destructive_missing_rollback",
+  "input_id": {
+    "kind": "fixture",
+    "id": "destructive_missing_rollback",
+    "schema_version": "audit_evaluation_input_v1"
+  },
+  "actor_ref": {
+    "kind": "actor",
+    "id": "codex",
+    "schema_version": "external_ref_v1"
+  },
+  "permit_ref": {
+    "kind": "permit",
+    "id": "p0a-local-fixture-permit",
+    "schema_version": "external_ref_v1"
+  },
+  "domain": "Audit",
+  "proposed_action": {
+    "kind": "ApplyMigration"
+  },
+  "requested_effect": {
+    "kind": "ModifyRepository",
+    "mutation": true,
+    "destructive": true,
+    "release_blocking": true
+  },
+  "subject_ref": {
+    "kind": "audit_issue",
+    "id": "AUD-ROLLBACK-001",
+    "schema_version": "external_ref_v1"
+  },
+  "audit_issue": {
+    "issue_id": "AUD-ROLLBACK-001",
+    "severity_bps": 9500,
+    "blast_radius_bps": 9500,
+    "evidence_confidence_bps": 8000,
+    "uncertainty_bps": 4000,
+    "authority_bps": 7000,
+    "containment_bps": 1000,
+    "integrity_risk_bps": 8000,
+    "fixability_bps": 5000,
+    "recurrence_bps": 6000,
+    "owner_known": true,
+    "rollback_available": false,
+    "missing_tests": true,
+    "source_truth_drift": false,
+    "false_completion": false,
+    "flags": [
+      "DESTRUCTIVE_CHANGE",
+      "MISSING_ROLLBACK"
+    ]
+  },
+  "evidence_refs": [
+    {
+      "kind": "fixture_evidence",
+      "id": "destructive_missing_rollback_evidence",
+      "schema_version": "external_ref_v1"
+    }
+  ],
+  "environment_ref": {
+    "kind": "fixture_environment",
+    "id": "p0a_fixture_env",
+    "schema_version": "external_ref_v1"
+  },
+  "valid_time_basis": {
+    "start": "2026-05-13T00:00:00Z",
+    "end": null
+  },
+  "recorded_time": "2026-05-13T00:00:00Z",
+  "expected_minimum": "BlockRelease"
+}

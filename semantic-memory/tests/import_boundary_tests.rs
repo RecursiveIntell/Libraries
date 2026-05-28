@@ -1,4 +1,5 @@
 //! Tests for the projection import boundary.
+#![allow(clippy::expect_used)]
 //!
 //! ## Legacy path (V10 ImportEnvelope)
 //! Phase status: compatibility / migration-only.

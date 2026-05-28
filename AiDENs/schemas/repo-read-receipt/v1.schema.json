@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "DisplayDigestV1": {
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "canonicalization": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "non_authoritative": {
+          "default": true,
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "canonicalization",
+        "digest"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "allowed": {
+      "type": "boolean"
+    },
+    "bytes": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "content_digest": {
+      "$ref": "#/definitions/DisplayDigestV1"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "read_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "requested_path": {
+      "type": "string"
+    },
+    "resolved_path": {
+      "type": "string"
+    },
+    "sandbox_root": {
+      "type": "string"
+    },
+    "tool_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed",
+    "bytes",
+    "content_digest",
+    "kind",
+    "read_at",
+    "receipt_id",
+    "requested_path",
+    "resolved_path",
+    "sandbox_root",
+    "tool_id"
+  ],
+  "title": "RepoReadReportV1",
+  "type": "object"
+}

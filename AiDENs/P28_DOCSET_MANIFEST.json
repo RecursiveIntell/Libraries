@@ -1,0 +1,125 @@
+{
+  "schema": "P28DocsetManifestV1",
+  "created_utc": "2026-05-06T17:45:40Z",
+  "purpose": "Next AiDENs super pass packet for v11A constitutional material-operation kernel",
+  "source_inputs": [
+    "AiDENs-aidens-next-codex-context-20260505.zip",
+    "AiDENs-aidens-next-codex-context-20260505.report.md",
+    "AiDENs-aidens-next-codex-context-20260505.manifest.json",
+    "P27_STATUS_EVIDENCE_MANIFEST.json",
+    "Pasted text.txt / Claude hard audit",
+    "v11A/v11B/v11C specs and V11+ conformance bar"
+  ],
+  "files": [
+    {
+      "path": "P28_ACCEPTANCE_GATES.md",
+      "bytes": 5136,
+      "sha256": "4f16cef2320e27fc3c2953368e1eecd1e97c4e60d0b5d46235bc75b7f240b33b"
+    },
+    {
+      "path": "P28_BUG_ABSORPTION_MATRIX.csv",
+      "bytes": 27582,
+      "sha256": "121db8141dab4fe044aa7c1ec4518ad1b08f2ae204561116fad546e60f2e265b"
+    },
+    {
+      "path": "P28_BUG_ABSORPTION_MATRIX.json",
+      "bytes": 32394,
+      "sha256": "cdf24d20a41df53a310f0b9d799968377ba3e9931ec0a1e090e064210de204fa"
+    },
+    {
+      "path": "P28_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 17655,
+      "sha256": "5f7dda589567f8c75a2123b52132892779b0ba4508cfc4d805c8894aee2ec49c"
+    },
+    {
+      "path": "P28_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 5789,
+      "sha256": "4d90dee5250c8a0139615b96752e1134a5e2659edccf62c66808ea42c12f778f"
+    },
+    {
+      "path": "P28_CODE_CHANGE_TARGETS.md",
+      "bytes": 1693,
+      "sha256": "2452167204ffab51549cbcc8d8d1a7d7aaa0f48877aa62e9f90c24c14232cb3f"
+    },
+    {
+      "path": "P28_COMMANDS.md",
+      "bytes": 2614,
+      "sha256": "8762ace57bfe418a976b4762a571512e23dfa99f84f0403baf5c94dd8ddf4717"
+    },
+    {
+      "path": "P28_CONFORMANCE_FIXTURE_PLAN.md",
+      "bytes": 2335,
+      "sha256": "bbc69ae12f1de8f45f7e639bc495411bc539dc782d303eb6261d89d0ed72cefc"
+    },
+    {
+      "path": "P28_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 1194,
+      "sha256": "71b8a62fcc889419737d4312bea9cc21a458cec6489613f84f91bbc223ff1cba"
+    },
+    {
+      "path": "P28_KNOWN_LIMITATIONS_TEMPLATE.md",
+      "bytes": 766,
+      "sha256": "3b2396731f9a0f9aff45a15c89e3ec0e45aa02ad1036e81f0112eef36f0aa00c"
+    },
+    {
+      "path": "P28_MASTER_ISSUE_MATRIX.md",
+      "bytes": 2385,
+      "sha256": "1bb9782869a4f50ff9120949247bf48cbf45f43410adb4c12674db4e1e3c0ddb"
+    },
+    {
+      "path": "P28_MASTER_PACKET.md",
+      "bytes": 3384,
+      "sha256": "cffb013e346b42fd9979e3ce772331b9eb8784bf3f91e9742c89559b22287033"
+    },
+    {
+      "path": "P28_OPERATOR_PASTE_FIRST.md",
+      "bytes": 1557,
+      "sha256": "24e248a4559a86cb0235f09306ac90de83478ac4fab6dfec52649d405f83c1da"
+    },
+    {
+      "path": "P28_PHASE_PLAN.md",
+      "bytes": 9737,
+      "sha256": "bff35c14920d7d14344de9bfef226c3908d4a0bf11f79a24d078ca46eb6d652a"
+    },
+    {
+      "path": "P28_PHASE_REPORT_TEMPLATE.md",
+      "bytes": 615,
+      "sha256": "cb7b782df4f3384ca995a2b27192592469c6f10e3ecd521a1360bc59f594c3a3"
+    },
+    {
+      "path": "P28_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 1495,
+      "sha256": "8a8ef98431265a4571b32005d96a912e8df2c0419106418283e17a6ece838cea"
+    },
+    {
+      "path": "P28_SOURCE_BASIS.md",
+      "bytes": 2147,
+      "sha256": "fb396b7b9e1bf02d8e6f79f1c169c9227fa791dd198f27a685af74f43d3a7834"
+    },
+    {
+      "path": "P28_STATUS_EVIDENCE_MANIFEST.template.json",
+      "bytes": 5207,
+      "sha256": "207445049ce3c938a7c0b6e6a755a7e95975964ef0fa220df7f155651c757b23"
+    },
+    {
+      "path": "P28_SUPPORT_PROFILE_TARGET.md",
+      "bytes": 1537,
+      "sha256": "111e952f0dd36cf70e8dea4959d725bdc05c31c71b4454a9f1ad098d907021ab"
+    },
+    {
+      "path": "P28_V11A_CONTRACT_TARGETS.md",
+      "bytes": 1776,
+      "sha256": "ff4d512ab3c7ebca3b4a9ac1904e068f8854aa9eb2427cb2be8d4872c5b50613"
+    },
+    {
+      "path": "P28_VERIFIER_SPEC.md",
+      "bytes": 2557,
+      "sha256": "7b8598c89c616a570b01c3a106e50287a89cc2d5112bd57e3f85a97f28e94637"
+    },
+    {
+      "path": "README.md",
+      "bytes": 697,
+      "sha256": "a15050b480d21a26f62b64a0d739cab3be12f0c5410d4015ce203c9adc97b5fb"
+    }
+  ]
+}

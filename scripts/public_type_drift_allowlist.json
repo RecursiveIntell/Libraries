@@ -1,3 +1,11 @@
 {
-  "allowlist": []
+  "allowlist": [
+    {
+      "name": "ExecutionStopReason",
+      "owners": [
+        "kernel-execution",
+        "verification-control"
+      ]
+    }
+  ]
 }

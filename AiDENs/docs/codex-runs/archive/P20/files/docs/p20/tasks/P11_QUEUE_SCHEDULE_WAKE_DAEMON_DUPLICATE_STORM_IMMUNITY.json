@@ -1,0 +1,35 @@
+{
+  "pass_id": "P11",
+  "title": "Queue, schedule, wake, daemon, leases, and duplicate-storm immunity",
+  "phase": "Memory/runtime core",
+  "prompt_file": "prompts/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY_PROMPT.md",
+  "pass_doc": "passes/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.md",
+  "crates": [
+    "aidens-queue-kit",
+    "aidens-schedule-kit",
+    "aidens-wake-kit",
+    "aidens-daemon-kit",
+    "aidens-receipts",
+    "aidens-contracts",
+    "aidens-cli"
+  ],
+  "artifacts": [
+    "JobV1",
+    "QueueLeaseV1",
+    "ScheduleOccurrenceV1",
+    "WakeSignalV1",
+    "DaemonNamespaceV1",
+    "SafeModeReceiptV1",
+    "DuplicateSuppressionReceiptV1",
+    "QueueHopReceiptV1"
+  ],
+  "acceptance": [
+    "Repeated same schedule occurrence cannot create duplicate logical jobs.",
+    "Daemon restart preserves queued jobs and does not resurrect cancelled jobs.",
+    "Safe mode blocks new risky jobs and allows inspection/drain."
+  ],
+  "forbidden": [
+    "Do not implement recurring schedules before idempotency keys.",
+    "Do not use timestamps alone as job identity."
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "library_id": "hypothesis-library:linear-response",
+  "kind": "hypothesis-library",
+  "name": "linear-response-library",
+  "theory_version_ids": ["theory-version:linear-response-v1"],
+  "mechanism_ids": [
+    "mechanism-report:linear-response-v1",
+    "mechanism-report:linear-response-centered-v1"
+  ],
+  "equivalence_decisions": [
+    {
+      "decision_id": "mechanism-equivalence-decision:linear-distinct",
+      "left_mechanism_id": "mechanism-report:linear-response-v1",
+      "right_mechanism_id": "mechanism-report:linear-response-centered-v1",
+      "disposition": "distinct",
+      "observationally_equivalent": true,
+      "causally_identified_same": false,
+      "reason_codes": [
+        "equivalent-observations-do-not-collapse-mechanisms",
+        "causal-identification-not-established"
+      ]
+    }
+  ],
+  "reason_codes": [
+    "hypothesis-library-versioned-artifact-index",
+    "mechanisms-remain-distinct-without-alias-decision"
+  ],
+  "updated_at": "2026-04-27T00:05:00Z"
+}

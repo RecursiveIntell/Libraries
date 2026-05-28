@@ -1,0 +1,12 @@
+{
+  "wave": "v25",
+  "owner": "profile-runtime",
+  "fixture_manifest": "contracts/fixtures/v25/manifest.json",
+  "required_checks": [
+    "repo_truth",
+    "json_surface",
+    "cargo_schema_check",
+    "profile_runtime_tests",
+    "knowledge_runtime_tests"
+  ]
+}

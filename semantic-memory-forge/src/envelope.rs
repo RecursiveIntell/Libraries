@@ -319,6 +319,27 @@ pub struct ExportEnvelopeV2 {
     pub records: Vec<ExportRecord>,
 }
 
+/// CLIB-013: Canonical Forge export envelope (v3).
+///
+/// ## Field categories
+///
+/// **Core fields** (always populated):
+/// `envelope_id`, `schema_version`, `content_digest`, `source_authority`,
+/// `scope_key`, `exported_at`, `records`.
+///
+/// **Active v13 fields** (populated by Forge when support-algebra artifacts exist):
+/// `support_sets`, `contradiction_witnesses`, `retraction_records`, `claim_states_v13`.
+///
+/// **v14 extension points** (schema-reserved for mechanism-runtime / experiment lanes;
+/// populated only when the owning lane has produced matching artifacts):
+/// `intervention_bundles_v14` through `rollback_decisions_v14`.
+///
+/// **v15 extension points** (schema-reserved for attestation-exchange / admission lanes;
+/// populated only when the owning lane has produced matching artifacts):
+/// `attestation_envelopes_v15` through `disclosure_budgets_v15`.
+///
+/// Extension fields use `Vec<Value>` + `skip_serializing_if = "Vec::is_empty"` so they
+/// carry zero overhead in serialized envelopes when unused.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct ExportEnvelopeV3 {
     /// Unique envelope identity, assigned by Forge.

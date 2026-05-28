@@ -1,3 +1,4 @@
+#![cfg_attr(test, allow(clippy::expect_used))]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use stack_ids::{

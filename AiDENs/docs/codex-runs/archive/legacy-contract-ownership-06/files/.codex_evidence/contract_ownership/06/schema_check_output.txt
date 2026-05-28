@@ -1,0 +1,2104 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running `target/debug/aidens-cli schemas check --root schemas`
+{
+  "report_id": "schema-compatibility-report:v1",
+  "registry_digest": "blake3:c018dde8d15467514c2dc7bf243226ceec0d08d267089af079bb860857c6be3f",
+  "compatible": true,
+  "checked_schema_count": 58,
+  "checks": [
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "mode": "backward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-backward"
+      ]
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "mode": "forward",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-forward"
+      ]
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "mode": "transitive",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-transitive"
+      ]
+    }
+  ],
+  "reason_codes": [
+    "schema-compatibility-passed"
+  ]
+}

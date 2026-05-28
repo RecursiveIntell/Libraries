@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allowed_scope": {
+      "type": "string"
+    },
+    "approval_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "blast_radius_ceiling": {
+      "type": "string"
+    },
+    "effect_class": {
+      "type": "string"
+    },
+    "effect_intent_id": {
+      "type": "string"
+    },
+    "execution_window_id": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "initiating_artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "intended_outcome": {
+      "type": "string"
+    },
+    "observability_obligation_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "publication_status": {
+      "type": "string"
+    },
+    "required_capability_class": {
+      "type": "string"
+    },
+    "reversibility_class": {
+      "type": "string"
+    },
+    "run_mode": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "target_surface": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed_scope",
+    "approval_refs",
+    "blast_radius_ceiling",
+    "effect_class",
+    "effect_intent_id",
+    "execution_window_id",
+    "idempotency_key",
+    "initiating_artifact_refs",
+    "intended_outcome",
+    "observability_obligation_refs",
+    "publication_status",
+    "required_capability_class",
+    "reversibility_class",
+    "run_mode",
+    "schema_version",
+    "target_surface"
+  ],
+  "title": "EffectIntentV1",
+  "type": "object"
+}

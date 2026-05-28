@@ -1,0 +1,18 @@
+# Minimal valid Starlark placeholder for Codex rules.
+# Keep this file syntactically valid. Project-specific safety gates belong in AGENTS.md
+# and validation scripts until rule syntax is confirmed for the installed Codex version.
+
+RULES_ENABLED = True
+
+FORBIDDEN_PATTERNS = [
+    "rm -rf /",
+    "git push --force",
+    "curl | sh",
+    "wget | sh",
+]
+
+def describe():
+    return {
+        "rules_enabled": RULES_ENABLED,
+        "forbidden_patterns": FORBIDDEN_PATTERNS,
+    }

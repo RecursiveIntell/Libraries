@@ -1,0 +1,12 @@
+{
+  "schema_version": "PostmortemBundleV1",
+  "postmortem_bundle_id": "pmb_001",
+  "incident_case_id": "inc_001",
+  "root_cause_summary": "unsafe config applied without monitor gate",
+  "corrective_actions": [
+    "tighten release bar",
+    "add observation gate"
+  ],
+  "owner_ref": "team:reliability",
+  "published_at": "2026-03-16T10:00:00Z"
+}

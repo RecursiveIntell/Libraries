@@ -124,12 +124,11 @@ impl Embedder for OllamaEmbedder {
 
                 if !response.status().is_success() {
                     let status = response.status();
-                    let body = response.text().await.unwrap_or_default();
-                    return Err(MemoryError::Other(format!(
-                        "Ollama returned HTTP {}: {}",
-                        status,
-                        &body[..body.len().min(500)]
-                    )));
+                    let body = response
+                        .text()
+                        .await
+                        .map_err(|err| format!("failed to read Ollama error body: {err}"));
+                    return Err(format_ollama_http_error(status, body));
                 }
 
                 let resp_body: serde_json::Value = response.json().await?;
@@ -147,6 +146,21 @@ impl Embedder for OllamaEmbedder {
 
     fn dimensions(&self) -> usize {
         self.dimensions
+    }
+}
+
+#[doc(hidden)]
+pub fn format_ollama_http_error(
+    status: reqwest::StatusCode,
+    body: Result<String, String>,
+) -> MemoryError {
+    match body {
+        Ok(body) => MemoryError::Other(format!(
+            "Ollama returned HTTP {}: {}",
+            status,
+            &body[..body.len().min(500)]
+        )),
+        Err(err) => MemoryError::Other(format!("Ollama returned HTTP {status}; {err}")),
     }
 }
 

@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BlastRadiusCeilingV1": {
+      "enum": [
+        "single_tenant",
+        "single_service",
+        "regional",
+        "global"
+      ],
+      "type": "string"
+    },
+    "EffectClassV1": {
+      "enum": [
+        "external_write",
+        "external_read",
+        "external_delete",
+        "state_transition",
+        "compensation"
+      ],
+      "type": "string"
+    },
+    "PublicationStatusV1": {
+      "enum": [
+        "required",
+        "advisory_only",
+        "deferred",
+        "suppressed"
+      ],
+      "type": "string"
+    },
+    "ReversibilityClassV1": {
+      "enum": [
+        "compensatable",
+        "replayable",
+        "irreversible"
+      ],
+      "type": "string"
+    },
+    "RunModeV1": {
+      "enum": [
+        "live",
+        "simulated",
+        "dry_run",
+        "replay"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "allowed_scope": {
+      "type": "string"
+    },
+    "approval_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "blast_radius_ceiling": {
+      "$ref": "#/definitions/BlastRadiusCeilingV1"
+    },
+    "effect_class": {
+      "$ref": "#/definitions/EffectClassV1"
+    },
+    "effect_intent_id": {
+      "type": "string"
+    },
+    "execution_window_id": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "initiating_artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "intended_outcome": {
+      "type": "string"
+    },
+    "observability_obligation_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "publication_status": {
+      "$ref": "#/definitions/PublicationStatusV1"
+    },
+    "required_capability_class": {
+      "type": "string"
+    },
+    "reversibility_class": {
+      "$ref": "#/definitions/ReversibilityClassV1"
+    },
+    "run_mode": {
+      "$ref": "#/definitions/RunModeV1"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "target_surface": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed_scope",
+    "approval_refs",
+    "blast_radius_ceiling",
+    "effect_class",
+    "effect_intent_id",
+    "execution_window_id",
+    "idempotency_key",
+    "initiating_artifact_refs",
+    "intended_outcome",
+    "observability_obligation_refs",
+    "publication_status",
+    "required_capability_class",
+    "reversibility_class",
+    "run_mode",
+    "schema_version",
+    "target_surface"
+  ],
+  "title": "EffectIntentV1",
+  "type": "object"
+}

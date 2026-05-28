@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CrateImplementationStatusV1": {
+      "enum": [
+        "implemented",
+        "partial",
+        "scaffold-only"
+      ],
+      "type": "string"
+    },
+    "CrateSurfaceStatusV1": {
+      "properties": {
+        "approximate_rust_loc": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "crate_name": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "rust_files": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "status": {
+          "$ref": "#/definitions/CrateImplementationStatusV1"
+        }
+      },
+      "required": [
+        "approximate_rust_loc",
+        "crate_name",
+        "note",
+        "rust_files",
+        "status"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "crates": {
+      "items": {
+        "$ref": "#/definitions/CrateSurfaceStatusV1"
+      },
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "report_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "crates",
+    "generated_at",
+    "report_id"
+  ],
+  "title": "ScaffoldSurfaceReportV1",
+  "type": "object"
+}

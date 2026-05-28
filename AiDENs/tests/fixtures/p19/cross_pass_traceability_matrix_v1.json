@@ -1,0 +1,44 @@
+{
+  "matrix_id": "cross-pass-traceability-matrix:p19-fixture",
+  "kind": "cross-pass-traceability-matrix",
+  "rows": [
+    {
+      "requirement_id": "AIDENS-P19-01",
+      "pass_id": "P19",
+      "requirement": "Run all acceptance gates and produce machine-readable results.",
+      "state": "done",
+      "crates": [
+        "workspace root",
+        "all crates"
+      ],
+      "artifact_families": [
+        "completion-audit-report",
+        "release-artifact-manifest"
+      ],
+      "tests": [
+        "cargo test --workspace",
+        "cargo clippy --workspace --all-targets --all-features -- -D warnings"
+      ],
+      "docs": [
+        "STATUS.md",
+        "handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md"
+      ],
+      "acceptance_gates": [
+        "cargo fmt/check/test/clippy",
+        "bash scripts/verify.sh"
+      ],
+      "evidence_refs": [
+        "handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md"
+      ],
+      "reason_codes": [
+        "traceability-row-declared"
+      ]
+    }
+  ],
+  "uncovered_requirement_ids": [],
+  "complete": true,
+  "reason_codes": [
+    "cross-pass-traceability-complete"
+  ],
+  "generated_at": "2026-04-27T00:00:00Z"
+}

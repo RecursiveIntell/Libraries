@@ -1,0 +1,26 @@
+{
+  "request_id": "oracle-slice-request:fixture",
+  "kind": "oracle-slice-request",
+  "graph_id": "compiled-region-graph:fixture",
+  "region_id": "region:fixture",
+  "requested_node_ids": [
+    "region-node:claim-a",
+    "region-node:claim-b"
+  ],
+  "max_exact_nodes": 4,
+  "approximate_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:c1657b124c825f123d298210716f246ef0f9bad610c2c9b9baecf16b0b513e22"
+  },
+  "oracle_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:c1657b124c825f123d298210716f246ef0f9bad610c2c9b9baecf16b0b513e22"
+  },
+  "agreement": "agrees",
+  "reason_codes": [
+    "oracle-slice-agrees-with-approximate-path"
+  ],
+  "requested_at": "2026-04-27T00:00:00Z"
+}

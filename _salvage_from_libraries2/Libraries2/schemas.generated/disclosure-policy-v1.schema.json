@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allowed_consumers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "disclosure_policy_id": {
+      "type": "string"
+    },
+    "downgrade_behavior": {
+      "type": "string"
+    },
+    "redaction_rules": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_visibility": {
+      "type": "string"
+    },
+    "retention_window": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "disclosure_policy_id",
+    "downgrade_behavior",
+    "replay_visibility",
+    "retention_window",
+    "schema_version"
+  ],
+  "title": "DisclosurePolicyV1",
+  "type": "object"
+}

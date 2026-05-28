@@ -1,0 +1,12 @@
+{
+  "receipt_id": "stop-rule:fixture",
+  "kind": "stop-rule",
+  "run_id": "run:fixture",
+  "attempt_id": "attempt:fixture",
+  "rule": "final-output",
+  "triggered": true,
+  "reason_codes": [
+    "final-output-produced"
+  ],
+  "checked_at": "2026-04-26T00:00:01Z"
+}

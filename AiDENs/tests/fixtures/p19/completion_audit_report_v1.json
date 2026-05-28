@@ -1,0 +1,255 @@
+{
+  "report_id": "completion-audit-report:p19-fixture",
+  "kind": "completion-audit-report",
+  "completion_state": "deferred-horizon",
+  "release_bar_passed": true,
+  "source_basis": "libraries-source-clean-20260426.zip",
+  "gate_results": [
+    {
+      "command": "cargo fmt --all --check",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence_ref": "handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+      "reason_codes": [
+        "gate-command-passed"
+      ],
+      "completed_at": "2026-04-27T00:00:00Z"
+    },
+    {
+      "command": "cargo check --workspace",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence_ref": "handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+      "reason_codes": [
+        "gate-command-passed"
+      ],
+      "completed_at": "2026-04-27T00:00:00Z"
+    },
+    {
+      "command": "cargo test --workspace",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence_ref": "handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+      "reason_codes": [
+        "gate-command-passed"
+      ],
+      "completed_at": "2026-04-27T00:00:00Z"
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets --all-features -- -D warnings",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence_ref": "handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+      "reason_codes": [
+        "gate-command-passed"
+      ],
+      "completed_at": "2026-04-27T00:00:00Z"
+    },
+    {
+      "command": "bash scripts/verify.sh",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence_ref": "handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+      "reason_codes": [
+        "gate-command-passed"
+      ],
+      "completed_at": "2026-04-27T00:00:00Z"
+    }
+  ],
+  "release_readiness": {
+    "report_id": "release-readiness:p19-fixture",
+    "kind": "release-readiness-report",
+    "ready": true,
+    "surfaces": [
+      {
+        "surface_id": "cli:provider-check",
+        "state": "supported",
+        "reason": "provider readiness is executable-truth-based",
+        "command": "aidens provider-check --config examples/aidens.mock.toml"
+      },
+      {
+        "surface_id": "crate:aidens-profile-daemon",
+        "state": "deferred",
+        "reason": "scaffold-only; deferred until daemon profile wiring"
+      }
+    ],
+    "example_manifest": {
+      "manifest_id": "example-app-manifest:p19-fixture",
+      "kind": "example-app-manifest",
+      "examples": [
+        {
+          "example_id": "example-app:coding",
+          "path": "examples/aidens.mock.toml",
+          "profile_id": "coding-agent",
+          "provider_kind": "mock",
+          "memory_mode": "disabled",
+          "status": "supported",
+          "commands": [
+            "aidens inspect-tools --config examples/aidens.mock.toml"
+          ],
+          "reason_codes": [
+            "example-profile-declared"
+          ]
+        }
+      ],
+      "profiles_covered": [
+        "coding-agent"
+      ],
+      "unsupported_advanced_features": [
+        "aidens-profile-daemon: deferred until daemon profile wiring"
+      ],
+      "reason_codes": [
+        "examples-declare-supported-and-deferred-surfaces"
+      ],
+      "generated_at": "2026-04-27T00:00:00Z"
+    },
+    "install_smoke": {
+      "receipt_id": "install-smoke:p19-fixture",
+      "kind": "install-smoke-report",
+      "passed": true,
+      "steps": [
+        {
+          "step": "verify-script-present",
+          "command": "test -f scripts/verify.sh",
+          "passed": true,
+          "output_digest": "blake3:3cbc87c7681f34d0b0b14dbe4bfb4e31e4703901a3b2431f26304327e95b1aee",
+          "reason_codes": [
+            "install-smoke-step-passed"
+          ]
+        }
+      ],
+      "reason_codes": [
+        "install-smoke-passed"
+      ],
+      "recorded_at": "2026-04-27T00:00:00Z"
+    },
+    "reason_codes": [
+      "release-readiness-passed"
+    ],
+    "generated_at": "2026-04-27T00:00:00Z"
+  },
+  "traceability_matrix": {
+    "matrix_id": "cross-pass-traceability-matrix:p19-fixture",
+    "kind": "cross-pass-traceability-matrix",
+    "rows": [
+      {
+        "requirement_id": "AIDENS-P19-01",
+        "pass_id": "P19",
+        "requirement": "Run all acceptance gates and produce machine-readable results.",
+        "state": "done",
+        "crates": [
+          "workspace root",
+          "all crates"
+        ],
+        "artifact_families": [
+          "completion-audit-report",
+          "release-artifact-manifest"
+        ],
+        "tests": [
+          "cargo test --workspace"
+        ],
+        "docs": [
+          "STATUS.md"
+        ],
+        "acceptance_gates": [
+          "bash scripts/verify.sh"
+        ],
+        "evidence_refs": [
+          "handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md"
+        ],
+        "reason_codes": [
+          "traceability-row-declared"
+        ]
+      }
+    ],
+    "uncovered_requirement_ids": [],
+    "complete": true,
+    "reason_codes": [
+      "cross-pass-traceability-complete"
+    ],
+    "generated_at": "2026-04-27T00:00:00Z"
+  },
+  "release_artifact_manifest": {
+    "manifest_id": "release-artifact-manifest:p19-fixture",
+    "kind": "release-artifact-manifest",
+    "package_name": "aidens-p19-release",
+    "source_basis": "libraries-source-clean-20260426.zip",
+    "artifacts": [
+      {
+        "path": "AGENTS.md",
+        "artifact_kind": "document",
+        "required": true,
+        "content_digest": "blake3:1111111111111111111111111111111111111111111111111111111111111111",
+        "byte_len": 512,
+        "reason_codes": [
+          "release-artifact-present"
+        ]
+      }
+    ],
+    "missing_required_paths": [],
+    "complete": true,
+    "reason_codes": [
+      "release-artifact-manifest-complete"
+    ],
+    "generated_at": "2026-04-27T00:00:00Z"
+  },
+  "known_limitations": {
+    "register_id": "known-limitations-register:p19-fixture",
+    "kind": "known-limitations-register",
+    "current": true,
+    "limitations": [
+      {
+        "limitation_id": "known-limitation:profile-daemon",
+        "surface_id": "crate:aidens-profile-daemon",
+        "state": "deferred",
+        "description": "daemon profile wrapper remains scaffold-only",
+        "impact": "operators use the implemented queue and daemon CLI surfaces directly",
+        "workaround": "use aidens queue and aidens daemon commands",
+        "review_after_pass": "post-P19-roadmap",
+        "reason_codes": [
+          "limitation-deferred-not-hidden"
+        ]
+      }
+    ],
+    "blocking_limitation_ids": [],
+    "reason_codes": [
+      "known-limitations-current"
+    ],
+    "generated_at": "2026-04-27T00:00:00Z"
+  },
+  "regression_debt": {
+    "ledger_id": "regression-debt-ledger:p19-fixture",
+    "kind": "regression-debt-ledger",
+    "items": [
+      {
+        "debt_id": "regression-debt:docs-scaffold-promotion",
+        "surface_id": "release:docs",
+        "status": "guarded",
+        "description": "public docs can regress by claiming scaffold-only crates are complete",
+        "detection": "scripts/assert_no_scaffold_promoted.sh",
+        "guardrail_tests": [
+          "bash scripts/verify.sh"
+        ],
+        "owner": "release",
+        "reason_codes": [
+          "regression-debt-guarded"
+        ]
+      }
+    ],
+    "blocking_debt_ids": [],
+    "reason_codes": [
+      "regression-debt-ledger-non-blocking"
+    ],
+    "generated_at": "2026-04-27T00:00:00Z"
+  },
+  "partial_surfaces": [],
+  "deferred_surfaces": [
+    "crate:aidens-profile-daemon"
+  ],
+  "blocked_surfaces": [],
+  "reason_codes": [
+    "p19-release-bar-passed",
+    "deferred-horizon-surfaces-disclosed"
+  ],
+  "generated_at": "2026-04-27T00:00:00Z"
+}

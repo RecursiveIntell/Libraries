@@ -1,0 +1,32 @@
+{
+  "pass_id": "P15",
+  "title": "Regional decoder kernel, right-graph law, and local repair geometry",
+  "phase": "Advanced runtime geometry",
+  "prompt_file": "prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md",
+  "pass_doc": "passes/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.md",
+  "crates": [
+    "aidens-kernel-kit",
+    "aidens-repair-kit",
+    "aidens-memory-kit",
+    "aidens-contracts",
+    "aidens-receipts"
+  ],
+  "artifacts": [
+    "CompiledRegionGraphV1",
+    "RegionContractV1",
+    "SyndromeV1",
+    "ResidualV1",
+    "OracleSliceRequestV1",
+    "KernelRunDisplayReportV1",
+    "ConvergenceReportV1"
+  ],
+  "acceptance": [
+    "A synthetic contradiction emits SyndromeV1 and local repair candidate instead of global recompute.",
+    "Loopy propagation with non-convergence emits ConvergenceReportV1 and degraded state.",
+    "Oracle slice agrees with approximate path on small gold fixtures or records bounded disagreement."
+  ],
+  "forbidden": [
+    "Do not treat one giant graph as the runtime.",
+    "Do not report convergence without explicit stop rule evidence."
+  ]
+}

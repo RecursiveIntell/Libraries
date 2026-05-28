@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-11T00:41:41Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P30_7/files/prompts/phases/P30-07_HOSTILE_SWEEP_PANIC_DYNAMIC_JSON_SILENT_DEGRADATION_LINT_SUPPRESSION_CODE_SHAPE.md",
+      "bytes": 1077,
+      "mtime_utc": "2026-05-10T23:55:56Z",
+      "original_path": "prompts/phases/P30-07_HOSTILE_SWEEP_PANIC_DYNAMIC_JSON_SILENT_DEGRADATION_LINT_SUPPRESSION_CODE_SHAPE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P30_7",
+      "sha256": "246a63ded809fd4175e2ae1fdc9f94ec5c7760cab756eb3083ecff239bb88da4"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P30_7",
+  "skipped_existing": [],
+  "superseded_by": "P29",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

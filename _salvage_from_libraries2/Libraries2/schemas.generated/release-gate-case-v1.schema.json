@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ConstitutionalContextStatus": {
+      "enum": [
+        "missing",
+        "partial",
+        "complete"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "assurance_case_id": {
+      "type": "string"
+    },
+    "blocking_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "citation_status": {
+      "$ref": "#/definitions/ConstitutionalContextStatus"
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deployment_profile_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "final_state": {
+      "type": "string"
+    },
+    "monitoring_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "obligation_refs_status": {
+      "$ref": "#/definitions/ConstitutionalContextStatus"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "release_gate_case_id": {
+      "type": "string"
+    },
+    "release_readiness_decision_id": {
+      "type": "string"
+    },
+    "required_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "score_only_gate": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "assurance_case_id",
+    "citation_status",
+    "deployment_profile_id",
+    "final_state",
+    "obligation_refs_status",
+    "release_gate_case_id",
+    "release_readiness_decision_id",
+    "schema_version",
+    "score_only_gate"
+  ],
+  "title": "ReleaseGateCaseV1",
+  "type": "object"
+}

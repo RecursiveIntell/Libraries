@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T09:11:47Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P0/files/AiDENs/docs/matrices/P0_DUPLICATE_TYPES.csv",
+      "bytes": 779,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "AiDENs/docs/matrices/P0_DUPLICATE_TYPES.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P0",
+      "sha256": "2bead88445bf508aeec0920ef911ea180d4828d516aa2bd1efd97426cd86a697"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P0",
+  "skipped_existing": [],
+  "superseded_by": "P23",
+  "tool": "z.py",
+  "tool_version": "2026.05.02-p23",
+  "unclassified": []
+}

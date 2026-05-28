@@ -1,0 +1,528 @@
+{
+  "created_utc": "2026-05-05T15:13:23Z",
+  "excluded": [
+    {
+      "path": "AiDENs/AiDENs 4\u204426.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260503.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260503.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260503.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260505.codex-archive.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "AiDENs/AiDENs.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P25_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P25_CODEX_RUN_PROMPT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P25_LARGE_FILE_CONTAINMENT_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P25_MASTER_PACKET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P25_PHASE_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P25_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P25_ROOT_MARKDOWN_ARCHIVE_TEST_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P26_MASTER_PACKET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P26_PHASE_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/20260504T231303Z/files/P26_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/FINAL_AUDIT_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/KNOWN_LIMITATIONS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_00_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_01_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_02_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_03_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_04_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_05_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_06_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_07_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p23/PHASE_08_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_00_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_01_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_02_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_03_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_04_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_05_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_06_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_07_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_08_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p24/PHASE_09_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/FINAL_AUDITOR_HANDOFF.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_00_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_01_GATE_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_01_GATE_VIOLATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_01_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_02_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_03_GATE_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_03_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_04_GATE_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_04_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_05_GATE_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_05_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_06_GATE_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_06_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_07_GATE_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_07_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_07_TO_08_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_08_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_09_GATE_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p25/PHASE_09_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260425.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260429.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260430.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/prompts/P23_CODEX_RUN_PROMPT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_00_PREFLIGHT_SOURCE_BASIS_AND_SCOPE_LOCK.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_01_ROOT_MARKDOWN_CLASSIFICATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_02_SURGICAL_Z_PY_ROOT_MARKDOWN_ARCHIVER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_03_PHASE_GATE_INTEGRITY_IMPLEMENTATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_04_CURRENT_RUN_CLASSIFICATION_CLEANUP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_05_VERIFIER_AND_EVIDENCE_MANIFEST_HARDENING.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_06_FLAGSHIP_SUPPORTED_LOCAL_CODING_AGENT_DEMO.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_07_SUPPORT_PROFILE_AND_DOCS_CONVERGENCE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_08_LARGE_FILE_CONTAINMENT_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/P25_PHASE_09_FINAL_HOSTILE_AUDIT_AND_PACKAGE_REPLAY.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "Libraries(3-25-26).zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20442-2.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20443.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260502.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260502.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260502.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260502.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260502.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "MASTER_AUDIT_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "MASTER_ISSUE_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "discovery-portfolio/tests/property_contracts.proptest-regressions",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "libraries 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-3.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-4.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260323.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260324.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260326.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260328.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260330.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "schemas.7z",
+      "reason": "archive-file"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": "AiDENs/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-app-kit/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-cli/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-runner/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "forge-memory-bridge/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "forge-memory-bridge/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "stack-ids/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "stack-ids/.git",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "summary": {
+    "archive-file": 27,
+    "doc-binary-disabled": 2,
+    "generated-output": 1,
+    "generated-sidecar": 24,
+    "stale-codex-artifact-disabled": 62,
+    "unsupported-extension-or-basename": 1
+  }
+}

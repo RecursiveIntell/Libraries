@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use verification_control::{
     ComparabilityMatrixV1, DecisionTraceV1, DisputeBundleV1, ExperimentCaseV1, RefuterResultV1,
 };

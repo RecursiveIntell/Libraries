@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "batch_id": {
+      "type": "string"
+    },
+    "degraded_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reasons": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "source_envelope_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "batch_id",
+    "reasons",
+    "source_envelope_id",
+    "status"
+  ],
+  "title": "RiskGateDecisionV1",
+  "type": "object"
+}

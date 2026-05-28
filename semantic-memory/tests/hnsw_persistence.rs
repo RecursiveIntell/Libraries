@@ -5,7 +5,10 @@
 
 #![cfg(feature = "hnsw")]
 
-use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder, SearchSource, SearchSourceType};
+use semantic_memory::{
+    MemoryConfig, MemoryStore, MockEmbedder, SearchSource, SearchSourceType, StoragePaths,
+    VerifyMode,
+};
 use tempfile::TempDir;
 
 fn test_store() -> (MemoryStore, TempDir) {
@@ -341,5 +344,461 @@ async fn reopen_with_no_keymap_table_graceful() {
         results.len(),
         3,
         "All 3 facts should survive a close/reopen cycle"
+    );
+}
+
+fn fixed_embedding(seed: f32) -> Vec<f32> {
+    let mut embedding = vec![0.0; 768];
+    embedding[0] = seed;
+    embedding[1] = 1.0 - seed;
+    embedding
+}
+
+#[cfg(feature = "testing")]
+#[tokio::test]
+async fn full_integrity_reports_missing_live_hnsw_key() {
+    let (store, _tmp) = test_store();
+    let fact_id = store
+        .add_fact_with_embedding(
+            "integrity",
+            "missing key target",
+            &fixed_embedding(0.25),
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+    store.flush_hnsw().unwrap();
+
+    store
+        .raw_execute(
+            "DELETE FROM hnsw_keymap WHERE item_key = ?1",
+            vec![format!("fact:{fact_id}")],
+        )
+        .await
+        .unwrap();
+
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(report.issues.iter().any(|issue| {
+        issue.contains("HNSW keymap missing live embedded SQLite row")
+            && issue.contains(&format!("fact:{fact_id}"))
+    }));
+}
+
+#[cfg(feature = "testing")]
+#[tokio::test]
+async fn full_integrity_reports_stale_or_wrong_domain_hnsw_key() {
+    let (store, _tmp) = test_store();
+    let fact_id = store
+        .add_fact_with_embedding(
+            "integrity",
+            "wrong domain target",
+            &fixed_embedding(0.35),
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+    store.flush_hnsw().unwrap();
+
+    store
+        .raw_execute(
+            "UPDATE hnsw_keymap SET item_key = ?1 WHERE item_key = ?2",
+            vec!["bogus:not-live".to_string(), format!("fact:{fact_id}")],
+        )
+        .await
+        .unwrap();
+
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(report.issues.iter().any(|issue| {
+        issue.contains("unsupported key domain") && issue.contains("bogus:not-live")
+    }));
+    assert!(report.issues.iter().any(|issue| {
+        issue.contains("HNSW keymap missing live embedded SQLite row")
+            && issue.contains(&format!("fact:{fact_id}"))
+    }));
+}
+
+#[cfg(feature = "testing")]
+#[tokio::test]
+async fn full_integrity_reports_stale_valid_domain_hnsw_key() {
+    let (store, _tmp) = test_store();
+    let fact_id = store
+        .add_fact_with_embedding(
+            "integrity",
+            "stale valid domain target",
+            &fixed_embedding(0.55),
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+    store.flush_hnsw().unwrap();
+
+    store
+        .raw_execute(
+            "UPDATE hnsw_keymap SET item_key = ?1 WHERE item_key = ?2",
+            vec!["fact:not-live".to_string(), format!("fact:{fact_id}")],
+        )
+        .await
+        .unwrap();
+
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(report.issues.iter().any(|issue| {
+        issue.contains("stale active entry without live embedded SQLite row")
+            && issue.contains("fact:not-live")
+    }));
+    assert!(report.issues.iter().any(|issue| {
+        issue.contains("HNSW keymap missing live embedded SQLite row")
+            && issue.contains(&format!("fact:{fact_id}"))
+    }));
+}
+
+#[cfg(feature = "testing")]
+#[tokio::test]
+async fn full_integrity_catches_swapped_hnsw_key_ids_when_counts_match() {
+    let (store, _tmp) = test_store();
+    let first_id = store
+        .add_fact_with_embedding(
+            "integrity",
+            "first swapped vector target",
+            &fixed_embedding(0.10),
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+    let second_id = store
+        .add_fact_with_embedding(
+            "integrity",
+            "second swapped vector target",
+            &fixed_embedding(0.90),
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+    store.flush_hnsw().unwrap();
+
+    let first_key = format!("fact:{first_id}");
+    let second_key = format!("fact:{second_id}");
+    let temporary_key = format!("fact:{first_id}-swap-temp");
+    store
+        .raw_execute(
+            "UPDATE hnsw_keymap SET item_key = ?1 WHERE item_key = ?2",
+            vec![temporary_key.clone(), first_key.clone()],
+        )
+        .await
+        .unwrap();
+    store
+        .raw_execute(
+            "UPDATE hnsw_keymap SET item_key = ?1 WHERE item_key = ?2",
+            vec![first_key.clone(), second_key.clone()],
+        )
+        .await
+        .unwrap();
+    store
+        .raw_execute(
+            "UPDATE hnsw_keymap SET item_key = ?1 WHERE item_key = ?2",
+            vec![second_key.clone(), temporary_key],
+        )
+        .await
+        .unwrap();
+
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(
+        report.issues.iter().any(|issue| {
+            issue.contains("vector does not match the authoritative SQLite embedding")
+                && (issue.contains(&first_key) || issue.contains(&second_key))
+        }),
+        "expected swapped key/vector mismatch, got {:?}",
+        report.issues
+    );
+    assert!(
+        !report
+            .issues
+            .iter()
+            .any(|issue| issue.contains("HNSW keymap drift:")),
+        "count parity should remain intact for this corruption: {:?}",
+        report.issues
+    );
+}
+
+#[tokio::test]
+async fn unsupported_hnsw_sidecar_version_rebuilds_from_sqlite_on_reopen() {
+    let tmp = TempDir::new().unwrap();
+    let base_dir = tmp.path().to_path_buf();
+    let fact_id;
+
+    {
+        let store = reopen_store(&base_dir);
+        fact_id = store
+            .add_fact_with_embedding(
+                "integrity",
+                "unsupported sidecar version target",
+                &fixed_embedding(0.45),
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+        store.flush_hnsw().unwrap();
+    }
+
+    let paths = StoragePaths::new(&base_dir);
+    let mut graph_bytes = std::fs::read(paths.hnsw_graph_path()).unwrap();
+    graph_bytes[4..6].copy_from_slice(&99u16.to_le_bytes());
+    std::fs::write(paths.hnsw_graph_path(), graph_bytes).unwrap();
+
+    let store = reopen_store(&base_dir);
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(
+        report.ok,
+        "reopen should rebuild unsupported HNSW sidecar from SQLite: {:?}",
+        report.issues
+    );
+
+    let results = store
+        .search_fts_only(
+            "unsupported sidecar version target",
+            Some(5),
+            None,
+            Some(&[SearchSourceType::Facts]),
+        )
+        .await
+        .unwrap();
+    assert!(results.iter().any(|result| {
+        matches!(
+            &result.source,
+            SearchSource::Fact { fact_id: found, .. } if found == &fact_id
+        )
+    }));
+}
+
+#[tokio::test]
+async fn wrong_hnsw_sidecar_dimension_rebuilds_from_sqlite_on_reopen() {
+    let tmp = TempDir::new().unwrap();
+    let base_dir = tmp.path().to_path_buf();
+
+    {
+        let store = reopen_store(&base_dir);
+        store
+            .add_fact_with_embedding(
+                "integrity",
+                "wrong sidecar dimension target",
+                &fixed_embedding(0.65),
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+        store.flush_hnsw().unwrap();
+    }
+
+    let paths = StoragePaths::new(&base_dir);
+    let mut data_bytes = std::fs::read(paths.hnsw_data_path()).unwrap();
+    data_bytes[8..12].copy_from_slice(&123u32.to_le_bytes());
+    std::fs::write(paths.hnsw_data_path(), data_bytes).unwrap();
+
+    let store = reopen_store(&base_dir);
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(
+        report.ok,
+        "reopen should rebuild wrong-dimension HNSW sidecar from SQLite: {:?}",
+        report.issues
+    );
+}
+
+#[tokio::test]
+async fn hnsw_manifest_written_after_graph_and_data() {
+    let tmp = TempDir::new().unwrap();
+    let base_dir = tmp.path().to_path_buf();
+    {
+        let store = reopen_store(&base_dir);
+        store
+            .add_fact_with_embedding(
+                "integrity",
+                "manifest written target",
+                &fixed_embedding(0.42),
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+        store.flush_hnsw().unwrap();
+    }
+
+    let paths = StoragePaths::new(&base_dir);
+    assert!(paths.hnsw_graph_path().exists());
+    assert!(paths.hnsw_data_path().exists());
+    assert!(paths.hnsw_manifest_path().exists());
+
+    let manifest: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(paths.hnsw_manifest_path()).unwrap()).unwrap();
+    assert_eq!(manifest["schema_version"], 1);
+    assert_eq!(manifest["basename"], "memory");
+    assert_eq!(manifest["graph_file_name"], "memory.hnsw.graph");
+    assert_eq!(manifest["data_file_name"], "memory.hnsw.data");
+    assert_eq!(manifest["dimensions"], 768);
+    assert_eq!(manifest["vector_count"], 1);
+    assert!(manifest["graph_digest"]
+        .as_str()
+        .unwrap()
+        .starts_with("blake3:"));
+    assert!(manifest["data_digest"]
+        .as_str()
+        .unwrap()
+        .starts_with("blake3:"));
+}
+
+#[tokio::test]
+async fn hnsw_manifest_graph_digest_mismatch_rebuilds_from_sqlite() {
+    let tmp = TempDir::new().unwrap();
+    let base_dir = tmp.path().to_path_buf();
+    let fact_id;
+    {
+        let store = reopen_store(&base_dir);
+        fact_id = store
+            .add_fact_with_embedding(
+                "integrity",
+                "graph digest mismatch target",
+                &fixed_embedding(0.11),
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+        store.flush_hnsw().unwrap();
+    }
+
+    let paths = StoragePaths::new(&base_dir);
+    let mut graph = std::fs::read(paths.hnsw_graph_path()).unwrap();
+    graph.push(0xff);
+    std::fs::write(paths.hnsw_graph_path(), graph).unwrap();
+
+    let store = reopen_store(&base_dir);
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(
+        report.ok,
+        "graph digest mismatch should rebuild from SQLite: {:?}",
+        report.issues
+    );
+    let results = store
+        .search_fts_only(
+            "graph digest mismatch target",
+            Some(5),
+            None,
+            Some(&[SearchSourceType::Facts]),
+        )
+        .await
+        .unwrap();
+    assert!(results.iter().any(|result| {
+        matches!(
+            &result.source,
+            SearchSource::Fact { fact_id: found, .. } if found == &fact_id
+        )
+    }));
+}
+
+#[tokio::test]
+async fn hnsw_manifest_data_digest_mismatch_rebuilds_from_sqlite() {
+    let tmp = TempDir::new().unwrap();
+    let base_dir = tmp.path().to_path_buf();
+    {
+        let store = reopen_store(&base_dir);
+        store
+            .add_fact_with_embedding(
+                "integrity",
+                "data digest mismatch target",
+                &fixed_embedding(0.21),
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+        store.flush_hnsw().unwrap();
+    }
+
+    let paths = StoragePaths::new(&base_dir);
+    let mut data = std::fs::read(paths.hnsw_data_path()).unwrap();
+    let last = data.len().saturating_sub(1);
+    data[last] ^= 0xff;
+    std::fs::write(paths.hnsw_data_path(), data).unwrap();
+
+    let store = reopen_store(&base_dir);
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(
+        report.ok,
+        "data digest mismatch should rebuild from SQLite: {:?}",
+        report.issues
+    );
+}
+
+#[tokio::test]
+async fn hnsw_manifest_points_to_missing_file_rebuilds_from_sqlite() {
+    let tmp = TempDir::new().unwrap();
+    let base_dir = tmp.path().to_path_buf();
+    {
+        let store = reopen_store(&base_dir);
+        store
+            .add_fact_with_embedding(
+                "integrity",
+                "manifest missing file target",
+                &fixed_embedding(0.31),
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+        store.flush_hnsw().unwrap();
+    }
+
+    let paths = StoragePaths::new(&base_dir);
+    let mut manifest: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(paths.hnsw_manifest_path()).unwrap()).unwrap();
+    manifest["data_file_name"] = serde_json::Value::String("missing.hnsw.data".to_string());
+    std::fs::write(
+        paths.hnsw_manifest_path(),
+        serde_json::to_vec_pretty(&manifest).unwrap(),
+    )
+    .unwrap();
+
+    let store = reopen_store(&base_dir);
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(
+        report.ok,
+        "manifest file mismatch should rebuild from SQLite: {:?}",
+        report.issues
+    );
+}
+
+#[tokio::test]
+async fn legacy_hnsw_sidecar_without_manifest_loads_deterministically() {
+    let tmp = TempDir::new().unwrap();
+    let base_dir = tmp.path().to_path_buf();
+    {
+        let store = reopen_store(&base_dir);
+        store
+            .add_fact_with_embedding(
+                "integrity",
+                "legacy no manifest target",
+                &fixed_embedding(0.41),
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+        store.flush_hnsw().unwrap();
+    }
+
+    let paths = StoragePaths::new(&base_dir);
+    std::fs::remove_file(paths.hnsw_manifest_path()).unwrap();
+
+    let store = reopen_store(&base_dir);
+    let report = store.verify_integrity(VerifyMode::Full).await.unwrap();
+    assert!(
+        report.ok,
+        "legacy no-manifest sidecar should load or rebuild deterministically: {:?}",
+        report.issues
     );
 }

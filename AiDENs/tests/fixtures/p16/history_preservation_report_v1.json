@@ -1,0 +1,38 @@
+{
+  "report_id": "history-preservation-report:p16-fixture",
+  "kind": "history-preservation-report",
+  "plan_id": "subtraction-plan:p16-fixture",
+  "invariant_budget_id": "invariant-budget:p16-fixture",
+  "before_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "after_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "checked_query_receipt_ids": [
+    "as-of-query:p16-before",
+    "as-of-query:p16-after"
+  ],
+  "preserved_invariants": [
+    "replay",
+    "as-of-query",
+    "claim-support",
+    "receipt-lineage",
+    "legal-retention",
+    "operator-proof"
+  ],
+  "as_of_queries_preserved": true,
+  "claim_support_preserved": true,
+  "receipt_lineage_preserved": true,
+  "legal_retention_preserved": true,
+  "degraded": false,
+  "reason_codes": [
+    "history-preservation-passed",
+    "before-after-digests-stable"
+  ],
+  "recorded_at": "2026-04-27T00:00:04Z"
+}

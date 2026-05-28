@@ -1,0 +1,240 @@
+   Compiling llm-pipeline v0.2.0 (/home/sikmindz/Coding/Libraries/llm-pipeline)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.77s
+     Running unittests src/lib.rs (llm-pipeline/target/debug/deps/llm_pipeline-09cd5fee706ff040)
+
+running 175 tests
+test backend::backoff::tests::test_backoff_delay_exponential ... ok
+test backend::backoff::tests::test_backoff_delay_capped_at_max ... ok
+test backend::backoff::tests::test_backoff_none_preset ... ok
+test backend::backoff::tests::test_backoff_standard_preset ... ok
+test backend::backoff::tests::test_backoff_jitter_full_in_range ... ok
+test backend::ollama::tests::test_ollama_backend_custom_options ... ok
+test backend::ollama::tests::test_ollama_backend_chat_payload ... ok
+test backend::ollama::tests::test_ollama_backend_chat_with_history ... ok
+test backend::ollama::tests::test_ollama_backend_generate_payload ... ok
+test backend::ollama::tests::test_ollama_backend_json_mode ... ok
+test backend::ollama::tests::test_ollama_backend_use_chat_logic ... ok
+test backend::ollama::tests::test_ollama_backend_streaming_body ... ok
+test backend::ollama::tests::test_ollama_backend_thinking_mode ... ok
+test backend::tests::test_backoff_none_no_retry ... ok
+test backend::tests::test_backoff_respects_retry_after_parsing ... ok
+test backend::tests::test_is_retryable_400_not_retried ... ok
+test backend::tests::test_is_retryable_429 ... ok
+test backend::tests::test_is_retryable_503 ... ok
+test backend::tests::test_is_retryable_cancelled_not_retried ... ok
+test backend::tests::test_is_retryable_other_error_not_retried ... ok
+test client::tests::test_llm_config_builder ... ok
+test client::tests::test_llm_config_defaults ... ok
+test diagnostics::tests::test_apply_trace_copies_parser_details ... ok
+test diagnostics::tests::test_diagnostics_default_is_ok ... ok
+test diagnostics::tests::test_diagnostics_retry_ids ... ok
+test diagnostics::tests::test_diagnostics_with_error_is_not_ok ... ok
+test exec_ctx::tests::test_normalize_base_url_preserves_clean ... ok
+test exec_ctx::tests::test_normalize_base_url_strips_api ... ok
+test exec_ctx::tests::test_normalize_base_url_strips_full_path ... ok
+test exec_ctx::tests::test_normalize_base_url_strips_v1 ... ok
+test exec_ctx::tests::test_normalize_base_url_trailing_slash ... ok
+test chain::tests::test_chain_pipes_output ... ok
+test backend::mock::tests::test_mock_fixed_response ... ok
+test backend::mock::tests::test_mock_streaming ... ok
+test limits::tests::test_custom_limits ... ok
+test chain::tests::test_chain_empty_fails ... ok
+test limits::tests::test_default_limits ... ok
+test llm_call::tests::test_build_output_choice_strategy ... ok
+test llm_call::tests::test_build_output_custom_strategy ... ok
+test llm_call::tests::test_build_output_json_strategy_fails ... ok
+test llm_call::tests::test_build_output_json_strategy_repairs ... ok
+test llm_call::tests::test_build_output_json_strategy_succeeds ... ok
+test llm_call::tests::test_build_output_lossy_backward_compat ... ok
+test llm_call::tests::test_build_output_number_in_range_rejects ... ok
+test llm_call::tests::test_build_output_number_strategy ... ok
+test llm_call::tests::test_build_output_string_list_strategy ... ok
+test llm_call::tests::test_build_output_text_strategy ... ok
+test llm_call::tests::test_build_output_with_thinking ... ok
+test chain::tests::test_chain_as_payload ... ok
+test llm_call::tests::test_build_output_xml_tag_strategy ... ok
+test llm_call::tests::test_build_request ... ok
+test llm_call::tests::test_build_request_with_messages ... ok
+test llm_call::tests::test_choice_strategy_succeeds ... ok
+test llm_call::tests::test_choice_strategy_with_retry_detects_failure ... ok
+test llm_call::tests::test_custom_validator_with_retry ... ok
+test llm_call::tests::test_diagnostics_attached_to_output ... ok
+test backend::recording::tests::test_recording_backend_captures_calls ... ok
+test chain::tests::test_chain_single_payload ... ok
+test backend::mock::tests::test_mock_cycles_responses ... ok
+test llm_call::tests::test_llm_call_accessors ... ok
+test llm_call::tests::test_number_in_range_with_retry_detects_failure ... ok
+test exec_ctx::tests::test_legacy_trace_id_derives_trace_ctx ... ok
+test chain::tests::test_chain_execute_all ... ok
+test llm_call::tests::test_retry_no_cool_down ... ok
+test llm_call::tests::test_retry_cool_down_reduces_temperature ... ok
+test exec_ctx::tests::test_default_timeout_applied ... ok
+test llm_call::tests::test_retry_not_triggered_on_success ... ok
+test llm_call::tests::test_retry_requiring_keys_passes ... ok
+test llm_call::tests::test_retry_triggered_on_parse_failure ... ok
+test llm_call::tests::test_retry_triggered_on_semantic_failure ... ok
+test output_parser::streaming::tests::test_auto_complete_closes_brace ... ok
+test llm_call::tests::test_transport_retry_populates_diagnostics ... ok
+test output_parser::streaming::tests::test_auto_complete_already_valid ... ok
+test backend::recording::tests::test_recording_backend_streaming ... ok
+test output_parser::streaming::tests::test_auto_complete_closes_bracket ... ok
+test output_parser::streaming::tests::test_auto_complete_nested ... ok
+test output_parser::streaming::tests::test_auto_complete_closes_string ... ok
+test output_parser::streaming::tests::test_auto_complete_with_think_tags ... ok
+test output_parser::streaming::tests::test_auto_complete_not_json ... ok
+test output_parser::streaming::tests::test_auto_complete_trailing_comma ... ok
+test output_parser::streaming::tests::test_json_parser_truncated_in_string ... ok
+test output_parser::streaming::tests::test_json_parser_recovers_truncated_object ... ok
+test output_parser::streaming::tests::test_streaming_parser_cache_no_reparse ... ok
+test output_parser::streaming::tests::test_streaming_parser_clear_resets ... ok
+test output_parser::streaming::tests::test_streaming_parser_progressive ... ok
+test output_strategy::tests::test_debug_output ... ok
+test chain::tests::test_chain_cancellation ... ok
+test output_strategy::tests::test_default_is_lossy ... ok
+test output_parser::streaming::tests::test_auto_complete_with_null_fill ... ok
+test parsing::tests::test_extract_json_candidate_embedded ... ok
+test output_parser::streaming::tests::test_json_parser_recovers_truncated_array ... ok
+test parsing::tests::test_extract_json_block ... ok
+test parsing::tests::test_extract_json_block_none ... ok
+test parsing::tests::test_extract_thinking_empty ... ok
+test parsing::tests::test_extract_thinking_absent ... ok
+test parsing::tests::test_extract_json_candidate_from_block ... ok
+test parsing::tests::test_extract_thinking_present ... ok
+test parsing::tests::test_parse_as_direct ... ok
+test parsing::tests::test_parse_as_embedded ... ok
+test parsing::tests::test_parse_as_failure ... ok
+test parsing::tests::test_parse_as_markdown_block ... ok
+test parsing::tests::test_parse_value_lossy_json ... ok
+test parsing::tests::test_parse_value_lossy_string ... ok
+test parsing::tests::test_parse_value_defensively_ok ... ok
+test pipeline::tests::test_all_disabled_pipeline_fails ... ok
+test pipeline::tests::test_empty_pipeline_fails ... ok
+test pipeline::tests::test_build_payloads_skips_disabled ... ok
+test pipeline::tests::test_pipeline_stages_accessor ... ok
+test pipeline::tests::test_pipeline_builder_success ... ok
+test pipeline::tests::test_pipeline_with_context ... ok
+test prompt::tests::test_numbered_list_empty ... ok
+test prompt::tests::test_numbered_list ... ok
+test pipeline::tests::test_pipeline_with_cancellation ... ok
+test prompt::tests::test_render_basic ... ok
+test parsing::tests::test_parse_value_defensively_err ... ok
+test prompt::tests::test_render_mixed_escaped_and_placeholder ... ok
+test prompt::tests::test_render_escaped_braces ... ok
+test prompt::tests::test_render_escaped_braces_no_substitution ... ok
+test prompt::tests::test_render_no_placeholders ... ok
+test prompt::tests::test_section ... ok
+test retry::tests::test_custom_validator ... ok
+test retry::tests::test_requiring_keys_missing ... ok
+test retry::tests::test_requiring_keys_null ... ok
+test retry::tests::test_retry_config_new ... ok
+test retry::tests::test_retry_config_capped_at_5 ... ok
+test retry::tests::test_retry_no_cool_down ... ok
+test retry_policy::tests::test_semantic_retry_capped_at_5 ... ok
+test retry_policy::tests::test_semantic_retry_default ... ok
+test retry_policy::tests::test_semantic_retry_from_retry_config ... ok
+test retry::tests::test_requiring_keys_ok ... ok
+test retry_policy::tests::test_transport_retry_none ... ok
+test retry_policy::tests::test_semantic_retry_requiring_keys ... ok
+test retry_policy::tests::test_semantic_retry_to_retry_config ... ok
+test retry_policy::tests::test_transport_retry_default ... ok
+test retry_policy::tests::test_transport_retry_roundtrip ... ok
+test backend::recording::tests::test_recording_backend_clear ... ok
+test retry_policy::tests::test_transport_retry_to_backoff_config ... ok
+test exec_ctx::tests::test_trace_ctx_explicit_sets_legacy ... ok
+test stage::tests::test_stage_builder_empty_prompt_fails ... ok
+test stage::tests::test_prompt_rendering_no_context ... ok
+test stage::tests::test_stage_builder_success ... ok
+test stage::tests::test_prompt_rendering ... ok
+test stage::tests::test_stage_creation ... ok
+test stage::tests::test_stage_disabled ... ok
+test stage::tests::test_system_prompt_none ... ok
+test streaming::tests::test_empty_chunks ... ok
+test streaming::tests::test_complete_lines ... ok
+test streaming::tests::test_flush_empty ... ok
+test backend::tests::test_backoff_respects_cancellation ... ok
+test stage::tests::test_system_prompt_rendering ... ok
+test streaming::tests::test_multiple_chunks_multiple_lines ... ok
+test streaming::tests::test_non_json_lines_skipped ... ok
+test streaming::tests::test_ollama_streaming_simulation ... ok
+test streaming::tests::test_flush_remaining ... ok
+test streaming::tests::test_split_mid_value ... ok
+test streaming::tests::test_streaming_decoder_flush_recovers_truncated ... ok
+test streaming::tests::test_split_across_chunks ... ok
+test trace::tests::test_trace_id_default ... ok
+test llm_call::tests::test_backend_default_is_ollama ... ok
+test trace::tests::test_trace_id_display ... ok
+test trace::tests::test_trace_id_from_conversions ... ok
+test trace::tests::test_trace_id_from_string ... ok
+test trace::tests::test_trace_id_new_is_unique ... ok
+test trace::tests::test_trace_id_serde_roundtrip ... ok
+test exec_ctx::tests::test_trace_ctx_generated_by_default ... ok
+test exec_ctx::tests::test_trace_ctx_takes_priority_over_trace_id ... ok
+test llm_call::tests::test_invoke_no_retry_ids_without_retries ... ok
+test llm_call::tests::test_invoke_rejects_oversized_response ... ok
+test llm_call::tests::test_invoke_tracks_semantic_retry_usage ... ok
+test llm_call::tests::test_invoke_times_out_on_slow_backend ... ok
+test tool_loop::tests::ollama_tool_loop_executes_local_function_calls ... ok
+test tool_loop::tests::openai_tool_loop_executes_local_function_calls ... ok
+test tool_loop::tests::ollama_streaming_checks_cancellation_between_chunks ... ok
+test llm_call::tests::test_streaming_idle_timeout_is_enforced ... ok
+test tool_loop::tests::openai_tool_loop_persists_forge_raw_receipts_via_receipt_sink ... ok
+
+test result: ok. 175 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/integration_tests.rs (llm-pipeline/target/debug/deps/integration_tests-8e4aff73ae066e70)
+
+running 21 tests
+test test_all_disabled_pipeline_fails ... ok
+test test_cancellation_flag ... ok
+test test_error_display ... ok
+test test_empty_pipeline_fails ... ok
+test test_llm_config_chaining ... ok
+test test_llm_config_defaults ... ok
+test test_mixed_enabled_disabled_stages ... ok
+test test_pipeline_builder ... ok
+test test_pipeline_context ... ok
+test test_pipeline_context_overwrite ... ok
+test test_pipeline_input ... ok
+test test_pipeline_input_with_concepts ... ok
+test test_prompt_numbered_list ... ok
+test test_prompt_rendering ... ok
+test test_prompt_rendering_missing_placeholders ... ok
+test test_prompt_section ... ok
+test test_stage_builder_with_prompt_succeeds ... ok
+test test_stage_builder_without_prompt_fails ... ok
+test test_stage_creation ... ok
+test test_stage_with_system_prompt ... ok
+test test_stage_without_system_prompt ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests llm_pipeline
+
+running 24 tests
+test src/chain.rs - chain::Chain (line 24) ... ignored
+test src/llm_call.rs - llm_call::LlmCall (line 33) ... ignored
+test src/llm_call.rs - llm_call::LlmCall::with_timeout (line 176) ... ignored
+test src/payload.rs - payload::PayloadOutput::parse_as (line 105) ... ignored
+test src/lib.rs - (line 62) - compile ... ok
+test src/lib.rs - (line 27) - compile ... ok
+test src/backend/backoff.rs - backend::backoff::JitterStrategy (line 59) ... ok
+test src/events.rs - events::EventHandler (line 90) ... ok
+test src/limits.rs - limits::PipelineLimits (line 25) ... ok
+test src/events.rs - events::FnEventHandler (line 122) ... ok
+test src/backend/recording.rs - backend::recording::RecordingBackend (line 29) ... ok
+test src/output_strategy.rs - output_strategy::OutputStrategy (line 25) ... ok
+test src/retry.rs - retry::RetryConfig (line 23) ... ok
+test src/backend/backoff.rs - backend::backoff::BackoffConfig (line 17) ... ok
+test src/backend/mock.rs - backend::mock (line 8) ... ok
+test src/output_parser.rs - output_parser::streaming::auto_complete_json (line 31) ... ok
+test src/diagnostics.rs - diagnostics::ParseDiagnostics (line 19) ... ok
+test src/output_parser.rs - output_parser::streaming::StreamingJsonParser (line 169) ... ok
+test src/prompt.rs - prompt::render (line 17) ... ok
+test src/retry_policy.rs - retry_policy::TransportRetryPolicy (line 18) ... ok
+test src/retry_policy.rs - retry_policy::SemanticRetryPolicy (line 115) ... ok
+test src/streaming.rs - streaming::StreamingDecoder (line 18) ... ok
+test src/trace.rs - trace::TraceId (line 32) ... ok
+test src/exec_ctx.rs - exec_ctx::ExecCtx (line 30) ... ok
+
+test result: ok. 20 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 4.45s
+

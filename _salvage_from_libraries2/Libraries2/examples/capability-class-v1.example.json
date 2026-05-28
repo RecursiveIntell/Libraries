@@ -1,0 +1,13 @@
+{
+  "schema_version": "CapabilityClassV1",
+  "capability_class_id": "cap_001",
+  "governed_effect_families": [
+    "external_write",
+    "deploy_gate"
+  ],
+  "blast_radius_ceiling": "single-service",
+  "disclosure_ceiling": "internal",
+  "required_review_class": "dual_control",
+  "dual_control_required": true,
+  "max_delegation_depth": 1
+}

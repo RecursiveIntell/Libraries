@@ -1,0 +1,17 @@
+{
+  "run_id": "P21_USABLE_AGENT_BUILDER_PROOF_SUPERPASS",
+  "mission": "Take AiDENs past v0.1 foundation into usable agent-builder proof while preserving canonical ownership and evidence-first execution.",
+  "phases": [
+    {"id": "P21-00", "name": "Package/source closure", "must_stop_after": true},
+    {"id": "P21-01", "name": "Build certification", "must_stop_after": true},
+    {"id": "P21-02", "name": "run-test-agent CLI", "must_stop_after": true},
+    {"id": "P21-03", "name": "Generated agent project proof", "must_stop_after": true},
+    {"id": "P21-04", "name": "Profile and plan usability", "must_stop_after": true},
+    {"id": "P21-05", "name": "Provider/tool certification", "must_stop_after": true},
+    {"id": "P21-06", "name": "Agency governance v0.2", "must_stop_after": true},
+    {"id": "P21-07", "name": "Recall/Recall-Coding extraction", "must_stop_after": true},
+    {"id": "P21-08", "name": "Archive replay certification", "must_stop_after": true},
+    {"id": "P21-09", "name": "Guarded stretch", "must_stop_after": true},
+    {"id": "P21-10", "name": "Final hostile audit", "must_stop_after": false}
+  ]
+}

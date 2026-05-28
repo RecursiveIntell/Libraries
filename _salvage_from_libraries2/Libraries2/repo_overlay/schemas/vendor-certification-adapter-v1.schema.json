@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VendorCertificationAdapterV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "vendor_certification_adapter_id": {
+      "type": "string"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "product_surface": {
+      "type": "string"
+    },
+    "covered_artifact_families": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "translation_mode": {
+      "type": "string"
+    },
+    "support_window": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "vendor_certification_adapter_id",
+    "vendor_name",
+    "product_surface",
+    "covered_artifact_families",
+    "translation_mode",
+    "support_window"
+  ]
+}

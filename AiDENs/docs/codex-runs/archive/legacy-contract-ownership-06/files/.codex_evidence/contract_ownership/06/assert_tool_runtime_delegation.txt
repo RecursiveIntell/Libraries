@@ -1,0 +1,44 @@
+COMMAND: bash scripts/assert_tool_runtime_delegation.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T14:55:28-05:00
+crates/aidens-contracts/src/lib.rs:6198:pub struct ToolDescriptorV1 {
+crates/aidens-contracts/Cargo.toml:17:llm-tool-runtime.workspace = true
+crates/aidens-contracts/src/lib.rs:23:    pub use llm_tool_runtime::ToolSideEffectClass as CanonicalToolSideEffectClass;
+crates/aidens-contracts/src/lib.rs:1245:                "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:1287:                "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:1589:                "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:1635:                "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:6190:            "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:6218:            "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:6250:            "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:8665:                "llm-tool-runtime",
+crates/aidens-provider-kit/Cargo.toml:15:llm-tool-runtime.workspace = true
+crates/aidens-provider-kit/src/lib.rs:18:    pub use llm_tool_runtime::{
+crates/aidens-receipts/Cargo.toml:14:llm-tool-runtime.workspace = true
+crates/aidens-receipts/src/lib.rs:10:pub use llm_tool_runtime::{
+crates/aidens-receipts/src/lib.rs:134:            "llm-tool-runtime",
+crates/aidens-security-kit/Cargo.toml:12:llm-tool-runtime.workspace = true
+crates/aidens-security-kit/src/lib.rs:3:use llm_tool_runtime::ToolSideEffectClass;
+crates/aidens-testkit/Cargo.toml:34:llm-tool-runtime.workspace = true
+crates/aidens-testkit/tests/stack_import_smoke.rs:5:    let tool_result = llm_tool_runtime::ToolResult::text("ok");
+crates/aidens-testkit/tests/phase_00_source_truth.rs:53:        "llm-tool-runtime",
+crates/aidens-testkit/tests/phase_02_adapter_delegation.rs:34:        TypeId::of::<llm_tool_runtime::ToolReceipt>()
+crates/aidens-testkit/tests/phase_02_adapter_delegation.rs:66:        TypeId::of::<llm_tool_runtime::ToolRuntime>()
+crates/aidens-testkit/tests/phase_02_adapter_delegation.rs:70:        TypeId::of::<llm_tool_runtime::ToolRegistry>()
+crates/aidens-testkit/tests/phase_03_golden_vertical_slice.rs:8:use llm_tool_runtime::{
+crates/aidens-testkit/tests/phase_03_golden_vertical_slice.rs:56:    assert_eq!(runtime_record.owner_crate, "llm-tool-runtime");
+crates/aidens-testkit/tests/phase_04_failure_honesty.rs:7:use llm_tool_runtime::{
+crates/aidens-testkit/tests/phase_04_failure_honesty.rs:112:        llm_tool_runtime::ToolApprovalState::Denied
+crates/aidens-testkit/tests/phase_04_failure_honesty.rs:120:    assert_eq!(runtime_entry.owner_crate, "llm-tool-runtime");
+crates/aidens-testkit/tests/phase_04_failure_honesty.rs:255:        retry_owner: Some(llm_tool_runtime::ToolRetryOwner::ForgeOrchestration),
+crates/aidens-testkit/tests/phase_09_release_audit.rs:95:        r#"llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }"#,
+crates/aidens-tool-kit/Cargo.toml:17:llm-tool-runtime.workspace = true
+crates/aidens-tool-kit/src/lib.rs:22:    pub use llm_tool_runtime::{
+crates/aidens-tool-kit/src/lib.rs:216:            "canonical_owner": "llm-tool-runtime",
+crates/aidens-tool-kit/src/lib.rs:438:                "llm-tool-runtime",
+Cargo.toml:69:llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
+crates/aidens-contracts/src/lib.rs:1211:pub struct ToolCallRequestV1 {
+crates/aidens-contracts/src/lib.rs:1255:pub struct ToolCallResultV1 {
+PASS: tool runtime delegation gate did not find blocking local-only tool truth.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T14:55:28-05:00

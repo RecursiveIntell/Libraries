@@ -1,0 +1,214 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CrateImplementationStatusV1": {
+      "enum": [
+        "implemented",
+        "partial",
+        "scaffold-only"
+      ],
+      "type": "string"
+    },
+    "CrateSurfaceStatusV1": {
+      "properties": {
+        "approximate_rust_loc": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "crate_name": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "rust_files": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "status": {
+          "$ref": "#/definitions/CrateImplementationStatusV1"
+        }
+      },
+      "required": [
+        "approximate_rust_loc",
+        "crate_name",
+        "note",
+        "rust_files",
+        "status"
+      ],
+      "type": "object"
+    },
+    "FakeReadyFindingV1": {
+      "properties": {
+        "blocked": {
+          "type": "boolean"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "found_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "surface": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "blocked",
+        "finding_id",
+        "found_at",
+        "pattern",
+        "reason",
+        "surface"
+      ],
+      "type": "object"
+    },
+    "ScaffoldSurfaceReportV1": {
+      "properties": {
+        "crates": {
+          "items": {
+            "$ref": "#/definitions/CrateSurfaceStatusV1"
+          },
+          "type": "array"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "crates",
+        "generated_at",
+        "report_id"
+      ],
+      "type": "object"
+    },
+    "SourceBasisLockV1": {
+      "properties": {
+        "approximate_rust_loc": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "extraction_root": {
+          "type": "string"
+        },
+        "lock_id": {
+          "type": "string"
+        },
+        "locked_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "research_archive": {
+          "type": "string"
+        },
+        "research_files": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "rust_files": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "scaffold_only_files": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "snapshot_date": {
+          "type": "string"
+        },
+        "source_archive": {
+          "type": "string"
+        },
+        "workspace_crates": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "approximate_rust_loc",
+        "extraction_root",
+        "lock_id",
+        "locked_at",
+        "research_archive",
+        "research_files",
+        "rust_files",
+        "scaffold_only_files",
+        "snapshot_date",
+        "source_archive",
+        "workspace_crates"
+      ],
+      "type": "object"
+    },
+    "SuperPassDispositionV1": {
+      "enum": [
+        "pending",
+        "in-progress",
+        "done",
+        "blocked",
+        "deferred"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "blockers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "current_pass": {
+      "type": "string"
+    },
+    "disposition": {
+      "$ref": "#/definitions/SuperPassDispositionV1"
+    },
+    "fake_ready_findings": {
+      "items": {
+        "$ref": "#/definitions/FakeReadyFindingV1"
+      },
+      "type": "array"
+    },
+    "scaffold_report": {
+      "$ref": "#/definitions/ScaffoldSurfaceReportV1"
+    },
+    "source_basis": {
+      "$ref": "#/definitions/SourceBasisLockV1"
+    },
+    "status_id": {
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "current_pass",
+    "disposition",
+    "scaffold_report",
+    "source_basis",
+    "status_id",
+    "updated_at"
+  ],
+  "title": "SuperPassStatusV1",
+  "type": "object"
+}

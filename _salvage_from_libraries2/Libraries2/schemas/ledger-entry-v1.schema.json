@@ -1,0 +1,902 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "CaseRegion": {
+      "properties": {
+        "as_of_recorded_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "claim_version_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "region_digest_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "region_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope_key": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ScopeKey"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "target_key"
+      ],
+      "type": "object"
+    },
+    "CheapCheckKindV1": {
+      "enum": [
+        "schema_validation",
+        "provenance_audit",
+        "replay_preflight",
+        "oracle_preflight",
+        "refutation_preflight"
+      ],
+      "type": "string"
+    },
+    "CheapCheckStatusV1": {
+      "properties": {
+        "check": {
+          "$ref": "#/definitions/CheapCheckKindV1"
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "satisfied": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "check",
+        "satisfied"
+      ],
+      "type": "object"
+    },
+    "CheckMethod": {
+      "enum": [
+        "exact_bounded_oracle",
+        "conservative_oracle",
+        "delta_parity_oracle",
+        "temporal_replay_oracle",
+        "causal_refuter",
+        "minimal_perturbation_oracle",
+        "paired_patch",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "CheckPlan": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "cheap_check_ladder": {
+          "items": {
+            "$ref": "#/definitions/CheapCheckStatusV1"
+          },
+          "type": "array"
+        },
+        "cheapest_adequate": {
+          "type": "boolean"
+        },
+        "check_names": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "evidence_admissibility": {
+          "$ref": "#/definitions/EvidenceAdmissibilityV1"
+        },
+        "input": true,
+        "method": {
+          "$ref": "#/definitions/CheckMethod"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "planner_family": {
+          "type": "string"
+        },
+        "promotable_if_completed": {
+          "type": "boolean"
+        },
+        "promotion_class": {
+          "$ref": "#/definitions/PromotionClass"
+        },
+        "proof_obligations_remaining": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "proof_profile": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ProofProfileV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "reversibility_class": {
+          "$ref": "#/definitions/ReversibilityClass"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "target_exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        }
+      },
+      "required": [
+        "advisory_only",
+        "case_id",
+        "cheapest_adequate",
+        "degraded",
+        "evidence_admissibility",
+        "input",
+        "method",
+        "plan_id",
+        "planner_family",
+        "promotable_if_completed",
+        "promotion_class",
+        "rationale",
+        "reversibility_class",
+        "schema_version",
+        "target_exactness"
+      ],
+      "type": "object"
+    },
+    "ConstitutionalContextStatus": {
+      "enum": [
+        "missing",
+        "partial",
+        "complete"
+      ],
+      "type": "string"
+    },
+    "ControlActionKind": {
+      "enum": [
+        "tool_execution",
+        "orchestration_loop",
+        "verification_execution"
+      ],
+      "type": "string"
+    },
+    "ControlReceipt": {
+      "properties": {
+        "action_kind": {
+          "$ref": "#/definitions/ControlActionKind"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "applicability_context_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "blocking_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "budget_context": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ReceiptBudgetContext"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "case_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "citation_status": {
+          "$ref": "#/definitions/ConstitutionalContextStatus"
+        },
+        "compiled_obligation_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_conflict_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "details": true,
+        "effective_constitution_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "finished_at": {
+          "type": "string"
+        },
+        "monitoring_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "non_authoritative": {
+          "type": "boolean"
+        },
+        "obligation_refs_status": {
+          "$ref": "#/definitions/ConstitutionalContextStatus"
+        },
+        "parent_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "planner_stage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "profile_exception_bundle_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profile_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "promotable": {
+          "type": "boolean"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "replay_parent_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "required_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry_owner": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ControlRetryOwnerV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "source_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_receipt_kind": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": "string"
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workload_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "action_kind",
+        "actor",
+        "advisory_only",
+        "attempt_id",
+        "citation_status",
+        "degraded",
+        "details",
+        "finished_at",
+        "non_authoritative",
+        "obligation_refs_status",
+        "promotable",
+        "receipt_id",
+        "schema_version",
+        "source_receipt_kind",
+        "started_at",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "ControlRetryOwnerV1": {
+      "enum": [
+        "llm_pipeline",
+        "agent_graph",
+        "job_queue",
+        "ai_batch_queue",
+        "forge_orchestration",
+        "external"
+      ],
+      "type": "string"
+    },
+    "EvidenceAdmissibilityV1": {
+      "enum": [
+        "admissible",
+        "restricted",
+        "inadmissible",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "LedgerEvent": {
+      "oneOf": [
+        {
+          "properties": {
+            "case": {
+              "$ref": "#/definitions/VerificationCase"
+            },
+            "event_type": {
+              "enum": [
+                "case_opened"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "case",
+            "event_type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "event_type": {
+              "enum": [
+                "plan_adopted"
+              ],
+              "type": "string"
+            },
+            "plan": {
+              "$ref": "#/definitions/CheckPlan"
+            }
+          },
+          "required": [
+            "event_type",
+            "plan"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "attempt": {
+              "$ref": "#/definitions/VerificationAttempt"
+            },
+            "event_type": {
+              "enum": [
+                "attempt_recorded"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "attempt",
+            "event_type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "event_type": {
+              "enum": [
+                "receipt_appended"
+              ],
+              "type": "string"
+            },
+            "receipt": {
+              "$ref": "#/definitions/ControlReceipt"
+            }
+          },
+          "required": [
+            "event_type",
+            "receipt"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "case_id": {
+              "type": "string"
+            },
+            "disposition": {
+              "$ref": "#/definitions/TerminalDisposition"
+            },
+            "event_type": {
+              "enum": [
+                "case_closed"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "case_id",
+            "disposition",
+            "event_type"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "PromotionClass": {
+      "enum": [
+        "p0",
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "type": "string"
+    },
+    "ProofProfileV1": {
+      "properties": {
+        "admissible_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "cheap_checks": {
+          "items": {
+            "$ref": "#/definitions/CheapCheckStatusV1"
+          },
+          "type": "array"
+        },
+        "evidence_admissibility": {
+          "$ref": "#/definitions/EvidenceAdmissibilityV1"
+        },
+        "profile_name": {
+          "type": "string"
+        },
+        "proof_obligations_remaining": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_admissibility",
+        "profile_name"
+      ],
+      "type": "object"
+    },
+    "ReceiptBudgetContext": {
+      "properties": {
+        "budget_kind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_steps": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "time_budget_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ReversibilityClass": {
+      "enum": [
+        "reversible_local",
+        "reversible_scoped",
+        "requires_supersession",
+        "requires_authority_workflow"
+      ],
+      "type": "string"
+    },
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    },
+    "TerminalDisposition": {
+      "enum": [
+        "eligible_for_promotion",
+        "advisory_only",
+        "degraded_no_promotion",
+        "refuted",
+        "quarantined",
+        "rolled_back",
+        "exhausted",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "VerificationAttempt": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "finished_at": {
+          "type": "string"
+        },
+        "outcome_signature": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/definitions/VerificationAttemptState"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "advisory_only",
+        "attempt_id",
+        "case_id",
+        "degraded",
+        "finished_at",
+        "plan_id",
+        "schema_version",
+        "started_at",
+        "state"
+      ],
+      "type": "object"
+    },
+    "VerificationAttemptState": {
+      "enum": [
+        "scheduled",
+        "running",
+        "succeeded",
+        "failed",
+        "advisory_only",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "VerificationCase": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "class": {
+          "$ref": "#/definitions/VerificationCaseClass"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "lifecycle_state": {
+          "$ref": "#/definitions/VerificationCaseLifecycleState"
+        },
+        "non_authoritative": {
+          "type": "boolean"
+        },
+        "opened_at": {
+          "type": "string"
+        },
+        "region": {
+          "$ref": "#/definitions/CaseRegion"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "terminal_disposition": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TerminalDisposition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        }
+      },
+      "required": [
+        "advisory_only",
+        "attempt_id",
+        "case_id",
+        "class",
+        "degraded",
+        "lifecycle_state",
+        "non_authoritative",
+        "opened_at",
+        "region",
+        "schema_version",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "VerificationCaseClass": {
+      "enum": [
+        "active_syndrome",
+        "fragile_node",
+        "thin_export",
+        "unverified_claim_version",
+        "refutation_gap",
+        "supersession_verification",
+        "comparability_drift",
+        "calibration_caveat",
+        "scope_stale"
+      ],
+      "type": "string"
+    },
+    "VerificationCaseLifecycleState": {
+      "enum": [
+        "open",
+        "planned",
+        "executing",
+        "closed"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "entry_id": {
+      "type": "string"
+    },
+    "event": {
+      "$ref": "#/definitions/LedgerEvent"
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "sequence_no": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "case_id",
+    "entry_id",
+    "event",
+    "recorded_at",
+    "schema_version",
+    "sequence_no"
+  ],
+  "title": "LedgerEntry",
+  "type": "object"
+}

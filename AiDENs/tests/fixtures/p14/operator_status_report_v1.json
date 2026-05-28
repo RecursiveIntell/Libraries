@@ -1,0 +1,42 @@
+{
+  "report_id": "operator-status:p14-fixture",
+  "kind": "operator-status-report",
+  "app_id": "aidens-next-mock",
+  "config_status": "loaded examples/aidens.mock.toml",
+  "provider_route_label": "mock",
+  "memory_mode": "disabled",
+  "receipt_store_configured": true,
+  "doctor": {
+    "report_id": "doctor-report:p14-fixture",
+    "app_id": "aidens-next-mock",
+    "sections": {
+      "provider_route": [
+        {
+          "capability_id": "provider-route:mock",
+          "states": [
+            "configured",
+            "available",
+            "executable-this-turn"
+          ],
+          "reason": "mock-response-configured"
+        }
+      ],
+      "scaffold_surfaces": [
+        {
+          "capability_id": "crate:aidens-kernel-kit",
+          "states": [
+            "disabled",
+            "deferred"
+          ],
+          "reason": "scaffold-only; deferred to P15 regional kernel work"
+        }
+      ]
+    }
+  },
+  "next_commands": [
+    "aidens provider-check --config <config>",
+    "aidens inspect-tools --config <config>",
+    "aidens receipts list --config <config>"
+  ],
+  "generated_at": "2026-04-27T00:00:00Z"
+}

@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CheapCheckKindV1": {
+      "enum": [
+        "schema_validation",
+        "provenance_audit",
+        "replay_preflight",
+        "oracle_preflight",
+        "refutation_preflight"
+      ],
+      "type": "string"
+    },
+    "CheapCheckStatusV1": {
+      "properties": {
+        "check": {
+          "$ref": "#/definitions/CheapCheckKindV1"
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "satisfied": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "check",
+        "satisfied"
+      ],
+      "type": "object"
+    },
+    "CheckMethod": {
+      "enum": [
+        "exact_bounded_oracle",
+        "conservative_oracle",
+        "delta_parity_oracle",
+        "temporal_replay_oracle",
+        "causal_refuter",
+        "minimal_perturbation_oracle",
+        "paired_patch",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "EvidenceAdmissibilityV1": {
+      "enum": [
+        "admissible",
+        "restricted",
+        "inadmissible",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "PromotionClass": {
+      "enum": [
+        "p0",
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "type": "string"
+    },
+    "ProofProfileV1": {
+      "properties": {
+        "admissible_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "cheap_checks": {
+          "items": {
+            "$ref": "#/definitions/CheapCheckStatusV1"
+          },
+          "type": "array"
+        },
+        "evidence_admissibility": {
+          "$ref": "#/definitions/EvidenceAdmissibilityV1"
+        },
+        "profile_name": {
+          "type": "string"
+        },
+        "proof_obligations_remaining": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_admissibility",
+        "profile_name"
+      ],
+      "type": "object"
+    },
+    "ReversibilityClass": {
+      "enum": [
+        "reversible_local",
+        "reversible_scoped",
+        "requires_supersession",
+        "requires_authority_workflow"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "case_id": {
+      "type": "string"
+    },
+    "cheap_check_ladder": {
+      "items": {
+        "$ref": "#/definitions/CheapCheckStatusV1"
+      },
+      "type": "array"
+    },
+    "cheapest_adequate": {
+      "type": "boolean"
+    },
+    "check_names": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "evidence_admissibility": {
+      "$ref": "#/definitions/EvidenceAdmissibilityV1"
+    },
+    "input": true,
+    "method": {
+      "$ref": "#/definitions/CheckMethod"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "planner_family": {
+      "type": "string"
+    },
+    "promotable_if_completed": {
+      "type": "boolean"
+    },
+    "promotion_class": {
+      "$ref": "#/definitions/PromotionClass"
+    },
+    "proof_obligations_remaining": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "proof_profile": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ProofProfileV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "reversibility_class": {
+      "$ref": "#/definitions/ReversibilityClass"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "target_exactness": {
+      "$ref": "#/definitions/ExactnessLevelV1"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "case_id",
+    "cheapest_adequate",
+    "degraded",
+    "evidence_admissibility",
+    "input",
+    "method",
+    "plan_id",
+    "planner_family",
+    "promotable_if_completed",
+    "promotion_class",
+    "rationale",
+    "reversibility_class",
+    "schema_version",
+    "target_exactness"
+  ],
+  "title": "CheckPlan",
+  "type": "object"
+}

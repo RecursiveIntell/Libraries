@@ -1,0 +1,4 @@
+canonical_types=633
+aidens_contracts_types=193
+duplicate_findings=0
+PASS: no local aidens-contracts public type definitions duplicate canonical public type names.

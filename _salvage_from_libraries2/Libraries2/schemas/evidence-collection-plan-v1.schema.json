@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "EvidenceClassRequirementV1": {
+      "properties": {
+        "evidence_class": {
+          "type": "string"
+        },
+        "minimum_family": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_class",
+        "minimum_family"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "collection_cadence": {
+      "type": "string"
+    },
+    "evidence_collection_plan_id": {
+      "type": "string"
+    },
+    "owner_ref": {
+      "type": "string"
+    },
+    "regulatory_regime_profile_id": {
+      "type": "string"
+    },
+    "required_evidence_classes": {
+      "items": {
+        "$ref": "#/definitions/EvidenceClassRequirementV1"
+      },
+      "type": "array"
+    },
+    "retention_class": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "collection_cadence",
+    "evidence_collection_plan_id",
+    "owner_ref",
+    "regulatory_regime_profile_id",
+    "retention_class",
+    "schema_version"
+  ],
+  "title": "EvidenceCollectionPlanV1",
+  "type": "object"
+}

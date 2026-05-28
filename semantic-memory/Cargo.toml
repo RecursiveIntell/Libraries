@@ -4,7 +4,7 @@ version = "0.5.0"
 edition = "2021"
 rust-version = "1.75"
 description = "Hybrid semantic search with SQLite, FTS5, and HNSW — built for AI agents"
-license = "MIT"
+license = "Apache-2.0"
 repository = "https://www.github.com/recursiveintell/semantic-memory"
 homepage = "https://www.github.com/recursiveintell/semantic-memory"
 keywords = ["search", "semantic", "sqlite", "hnsw", "embeddings"]
@@ -16,6 +16,7 @@ default = ["hnsw"]
 hnsw = ["dep:hnsw_rs"]
 brute-force = []
 testing = []
+turbo-quant-codec = ["dep:turbo-quant"]
 
 [dependencies]
 bytemuck = { version = "1", features = ["derive"] }
@@ -28,14 +29,19 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
 chrono = { workspace = true, features = ["serde"] }
-stack-ids = { path = "../stack-ids" }
-forge-memory-bridge = { path = "../forge-memory-bridge" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
+forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
 schemars = { workspace = true }
 
 # HNSW approximate nearest neighbor search (optional)
 hnsw_rs = { version = "0.3", optional = true }
+turbo-quant = { version = "0.2.0-alpha.1", path = "../turbo-quant", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 tempfile = { workspace = true }
-semantic-memory-forge = { path = "../semantic-memory-forge" }
+semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

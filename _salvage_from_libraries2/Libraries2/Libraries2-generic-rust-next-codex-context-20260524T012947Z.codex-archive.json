@@ -1,0 +1,18 @@
+{
+  "active_stale_after": [],
+  "archive_only": false,
+  "archive_root": "/home/sikmindz/Coding/Libraries2/docs/codex-runs/archive",
+  "collisions": [],
+  "current_run": "P30",
+  "dry_run": false,
+  "enabled": true,
+  "errors": [],
+  "manifest_paths": [],
+  "moved": [],
+  "planned": [],
+  "report_path": "/home/sikmindz/Coding/Libraries2/Libraries2-generic-rust-next-codex-context-20260524T012947Z.codex-archive.json",
+  "skipped_existing": [],
+  "stale_active_before": [],
+  "unclassified": [],
+  "verify_only": false
+}

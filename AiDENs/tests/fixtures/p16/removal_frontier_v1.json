@@ -1,0 +1,28 @@
+{
+  "frontier_id": "removal-frontier:p16-fixture",
+  "kind": "removal-frontier",
+  "support_core_id": "support-core:p16-fixture",
+  "candidate_claim_ids": [
+    "claim:p16-accepted"
+  ],
+  "candidate_evidence_ids": [],
+  "candidate_receipt_ids": [],
+  "removable_claim_ids": [
+    "claim:p16-accepted"
+  ],
+  "blocked_claim_ids": [],
+  "removable_evidence_ids": [],
+  "blocked_evidence_ids": [],
+  "removable_receipt_ids": [],
+  "blocked_receipt_ids": [],
+  "invariant_checks": [
+    "claim-support-preserved",
+    "as-of-query-preserved",
+    "receipt-lineage-preserved",
+    "legal-retention-preserved"
+  ],
+  "reason_codes": [
+    "removal-frontier-lawful"
+  ],
+  "computed_at": "2026-04-27T00:00:02Z"
+}

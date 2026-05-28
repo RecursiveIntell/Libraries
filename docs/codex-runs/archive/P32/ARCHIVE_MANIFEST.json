@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-24T01:20:26Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P32/files/scr-runtime/.codex/rules/p32r3.rules",
+      "bytes": 941,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/rules/p32r3.rules",
+      "reason": "stale-codex-control",
+      "run_id": "P32",
+      "sha256": "a350c4b03631fe2ad5a993524e45d718ce27e470cf2362aeea2b4c7d658d01aa"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P32",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

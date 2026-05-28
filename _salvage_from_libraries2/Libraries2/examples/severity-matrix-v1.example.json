@@ -1,0 +1,17 @@
+{
+  "schema_version": "SeverityMatrixV1",
+  "severity_matrix_id": "sm_001",
+  "severity_rules": [
+    {
+      "condition": "customer_data_exposure",
+      "severity": "sev1"
+    },
+    {
+      "condition": "regional_latency_above_slo",
+      "severity": "sev2"
+    }
+  ],
+  "customer_impact_rubric": "breadth_and_duration",
+  "internal_impact_rubric": "operational_blast_radius",
+  "override_rule": "commander_may_raise_but_not_lower_without_review"
+}

@@ -1,0 +1,265 @@
+{
+  "findings": [
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/AI-Batch-Queue/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/AI-Batch-Queue/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/ComfyUI-RS/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/ComfyUI-RS/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "zone": "salvage",
+      "section": "dev-dependencies",
+      "dependency": "forge-engine",
+      "path": "../living-memory/living-memory",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/living-memory/living-memory",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/Tauri-Queue/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/Tauri-Queue/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/agent-graph/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/agent-graph/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/attestation-exchange/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/attestation-exchange/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "forge-memory-bridge",
+      "path": "../forge-memory-bridge",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/forge-memory-bridge",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "recursive-kernel-core",
+      "path": "../recursive-kernel-core",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/recursive-kernel-core",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "semantic-memory-forge",
+      "path": "../semantic-memory-forge",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/semantic-memory-forge",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/discovery-portfolio/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/discovery-portfolio/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/federated-settlement/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/federated-settlement/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/job-queue/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/job-queue/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "assurance-runtime",
+      "path": "../assurance-runtime",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/assurance-runtime",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "authority-delegation",
+      "path": "../authority-delegation",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/authority-delegation",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "continuity-runtime",
+      "path": "../continuity-runtime",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/continuity-runtime",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "verification-policy",
+      "path": "../verification-policy",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/verification-policy",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/remote-oracle-admission/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/remote-oracle-admission/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/spec-execution/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/spec-execution/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "semantic-memory",
+      "path": "../../semantic-memory",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/semantic-memory",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "semantic-memory-forge",
+      "path": "../../semantic-memory-forge",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/semantic-memory-forge",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "forge-memory-bridge",
+      "path": "../../forge-memory-bridge",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/forge-memory-bridge",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "knowledge-runtime",
+      "path": "../../knowledge-runtime",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/knowledge-runtime",
+      "severity": "broken-path-dep"
+    },
+    {
+      "manifest": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "manifest_rel": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "zone": "salvage",
+      "section": "dependencies",
+      "dependency": "stack-ids",
+      "path": "../../stack-ids",
+      "resolved": "/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids",
+      "severity": "broken-path-dep"
+    }
+  ],
+  "parse_errors": []
+}

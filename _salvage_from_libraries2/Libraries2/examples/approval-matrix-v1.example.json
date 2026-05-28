@@ -1,0 +1,27 @@
+{
+  "schema_version": "ApprovalMatrixV1",
+  "approval_matrix_id": "am_001",
+  "approval_rules": [
+    {
+      "action_class": "prod_release",
+      "required_roles": [
+        "release-manager",
+        "service-owner"
+      ]
+    },
+    {
+      "action_class": "continuity_exception",
+      "required_roles": [
+        "incident-commander",
+        "ops-manager"
+      ]
+    }
+  ],
+  "default_quorum": "2_of_2",
+  "requires_independent_review_for": [
+    "cross_tenant_change",
+    "production_break_glass",
+    "customer_visible_release"
+  ],
+  "break_glass_post_hoc_review_hours": 24
+}

@@ -1,0 +1,26 @@
+{
+  "receipt_id": "turn:fixture",
+  "kind": "turn",
+  "run_id": "run:fixture",
+  "attempt_id": "attempt:fixture",
+  "plan_id": "turn-plan:fixture",
+  "mode": "parser-fallback",
+  "final_state": "final-output",
+  "degraded": true,
+  "blocked": false,
+  "tool_call_ids": [
+    "tool-call:fixture"
+  ],
+  "tool_invocation_receipt_ids": [
+    "tool-invocation:fixture"
+  ],
+  "stop_rule_receipt_ids": [
+    "stop-rule:fixture"
+  ],
+  "budget_exhaustion_receipt_id": null,
+  "reason_codes": [
+    "parser-fallback-selected"
+  ],
+  "started_at": "2026-04-26T00:00:00Z",
+  "completed_at": "2026-04-26T00:00:01Z"
+}

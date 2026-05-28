@@ -1,0 +1,74 @@
+{
+  "schema_version": "audit_evaluation_input_v1",
+  "case_id": "high_hazard_confirmed_fixable",
+  "input_id": {
+    "kind": "fixture",
+    "id": "high_hazard_confirmed_fixable",
+    "schema_version": "audit_evaluation_input_v1"
+  },
+  "actor_ref": {
+    "kind": "actor",
+    "id": "codex",
+    "schema_version": "external_ref_v1"
+  },
+  "permit_ref": {
+    "kind": "permit",
+    "id": "p0a-local-fixture-permit",
+    "schema_version": "external_ref_v1"
+  },
+  "domain": "Audit",
+  "proposed_action": {
+    "kind": "GenerateRepairPacket"
+  },
+  "requested_effect": {
+    "kind": "PrepareCodexRepairPacket",
+    "mutation": false,
+    "destructive": false,
+    "release_blocking": true
+  },
+  "subject_ref": {
+    "kind": "audit_issue",
+    "id": "AUD-HIGH-001",
+    "schema_version": "external_ref_v1"
+  },
+  "audit_issue": {
+    "issue_id": "AUD-HIGH-001",
+    "severity_bps": 9000,
+    "blast_radius_bps": 8500,
+    "evidence_confidence_bps": 9000,
+    "uncertainty_bps": 1500,
+    "authority_bps": 9000,
+    "containment_bps": 8000,
+    "integrity_risk_bps": 3000,
+    "fixability_bps": 8500,
+    "recurrence_bps": 7000,
+    "owner_known": true,
+    "rollback_available": true,
+    "missing_tests": false,
+    "source_truth_drift": false,
+    "false_completion": false,
+    "flags": [
+      "HIGH_HAZARD",
+      "HIGH_CONFIDENCE",
+      "FIXABLE"
+    ]
+  },
+  "evidence_refs": [
+    {
+      "kind": "fixture_evidence",
+      "id": "high_hazard_confirmed_fixable_evidence",
+      "schema_version": "external_ref_v1"
+    }
+  ],
+  "environment_ref": {
+    "kind": "fixture_environment",
+    "id": "p0a_fixture_env",
+    "schema_version": "external_ref_v1"
+  },
+  "valid_time_basis": {
+    "start": "2026-05-13T00:00:00Z",
+    "end": null
+  },
+  "recorded_time": "2026-05-13T00:00:00Z",
+  "expected_minimum": "GenerateRepairPacket"
+}

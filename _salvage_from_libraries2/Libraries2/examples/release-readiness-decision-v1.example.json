@@ -1,0 +1,13 @@
+{
+  "schema_version": "ReleaseReadinessDecisionV1",
+  "release_readiness_decision_id": "rrd_001",
+  "deployment_profile_id": "dpf_001",
+  "decision_state": "approved_with_monitoring",
+  "blocking_gaps": [],
+  "required_monitors": [
+    "error_budget",
+    "latency_p95"
+  ],
+  "advisory_only": false,
+  "generated_at": "2026-03-15T12:03:00Z"
+}

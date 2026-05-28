@@ -14,11 +14,15 @@ fn projection_scan_limit(query: &ProjectionQuery) -> usize {
 
 fn query_terms(text_query: Option<&str>) -> Vec<String> {
     text_query
-        .unwrap_or_default()
+        .unwrap_or("")
         .split_whitespace()
         .map(|term| term.trim().to_lowercase())
         .filter(|term| !term.is_empty())
         .collect()
+}
+
+fn optional_search_token(value: Option<&str>) -> &str {
+    value.unwrap_or("")
 }
 
 fn text_score(terms: &[String], searchable: &str) -> usize {
@@ -268,8 +272,8 @@ pub(crate) fn query_relation_versions(
             row.get::<_, String>(2)?,
             subject_entity_id,
             object_anchor_raw,
-            claim_id.clone().unwrap_or_default(),
-            source_episode_id.clone().unwrap_or_default()
+            optional_search_token(claim_id.as_deref()),
+            optional_search_token(source_episode_id.as_deref())
         );
         let score = text_score(&terms, &searchable);
         if !terms.is_empty() && score == 0 {
@@ -583,7 +587,7 @@ pub(crate) fn query_evidence_refs(
         let searchable = format!(
             "{} {} {}",
             claim_id,
-            claim_version_id.clone().unwrap_or_default(),
+            optional_search_token(claim_version_id.as_deref()),
             fetch_handle
         );
         let score = text_score(&terms, &searchable);

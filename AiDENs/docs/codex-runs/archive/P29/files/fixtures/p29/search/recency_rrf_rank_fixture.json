@@ -1,0 +1,16 @@
+{
+  "description": "Recency contribution must not always use rank=1.",
+  "items": [
+    {
+      "id": "old-high-rank",
+      "rank": 1,
+      "age_days": 100
+    },
+    {
+      "id": "new-low-rank",
+      "rank": 100,
+      "age_days": 0
+    }
+  ],
+  "expected": "recency does not dominate without rank-sensitive formula"
+}

@@ -5,8 +5,9 @@
 //! review artifacts (effect, delegation, release-gate, continuity). It also
 //! provides scheduling, promotion-eligibility, and ledger-replay functions
 //! consumed by `forge-pilot` and the verification pipeline crates.
+#![cfg_attr(test, allow(clippy::expect_used))]
 
-use llm_tool_runtime::{ToolReceipt, ToolRetryOwner};
+use llm_tool_runtime::{ToolExposureDecision, ToolReceipt, ToolRetryOwner};
 use schemars::JsonSchema;
 use semantic_memory_forge::{
     DegradationKindV1, EvidenceAdmissibilityV1, ExactnessBudgetV1, ExactnessEscalationRuleV1,
@@ -35,6 +36,11 @@ pub use v14::{
 
 pub const VERIFICATION_CASE_V1_SCHEMA: &str = "verification_case_v1";
 pub const CHECK_PLAN_V1_SCHEMA: &str = "check_plan_v1";
+pub const DISPATCH_DECISION_V1_SCHEMA: &str = "dispatch_decision_v1";
+pub const TOOL_EXPOSURE_V1_SCHEMA: &str = "tool_exposure_v1";
+pub const RETRY_DECISION_V1_SCHEMA: &str = "retry_decision_v1";
+pub const BUDGET_DEBIT_V1_SCHEMA: &str = "budget_debit_v1";
+pub const ROLLBACK_DECISION_V1_SCHEMA: &str = "rollback_decision_v1";
 pub const VERIFICATION_ATTEMPT_V1_SCHEMA: &str = "verification_attempt_v1";
 pub const CONTROL_RECEIPT_V1_SCHEMA: &str = "control_receipt_v1";
 pub const LEDGER_ENTRY_V1_SCHEMA: &str = "ledger_entry_v1";
@@ -47,6 +53,14 @@ pub const EFFECT_BLOCK_RECEIPT_V1_SCHEMA: &str = "effect_block_receipt_v1";
 pub const DELEGATION_REVIEW_CASE_V1_SCHEMA: &str = "delegation_review_case_v1";
 pub const RELEASE_GATE_CASE_V1_SCHEMA: &str = "release_gate_case_v1";
 pub const CONTINUITY_REVIEW_CASE_V1_SCHEMA: &str = "continuity_review_case_v1";
+pub const CONTROL_CASE_V1_SCHEMA: &str = VERIFICATION_CASE_V1_SCHEMA;
+pub const EXECUTION_PLAN_V1_SCHEMA: &str = CHECK_PLAN_V1_SCHEMA;
+pub const REPAIR_RECORD_V1_SCHEMA: &str = BOUNDARY_REPAIR_RECORD_V1_SCHEMA;
+pub const ROLLBACK_RECORD_V1_SCHEMA: &str = ROLLBACK_DECISION_V1_SCHEMA;
+
+pub use BoundaryRepairRecord as RepairRecord;
+pub use CheckPlan as ExecutionPlan;
+pub use VerificationCase as ControlCase;
 
 /// Constitutional citation context attached to governance review artifacts.
 ///
@@ -323,6 +337,7 @@ pub enum VerificationCaseClass {
     ComparabilityDrift,
     CalibrationCaveat,
     ScopeStale,
+    QueryTurn,
 }
 
 /// Scope and location metadata for a verification case target.
@@ -550,6 +565,255 @@ pub struct SchedulerDecision {
     #[serde(default)]
     pub degradation_markers: Vec<DegradationMarker>,
     pub promotion_blocked: bool,
+}
+
+/// How a turn ultimately dispatched after planning completed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum DispatchPathKind {
+    ProviderNative,
+    RuntimeNative,
+    ParserFallback,
+    NoTools,
+    PolicyBlocked,
+}
+
+/// Terminal reason why a turn stopped.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ExecutionStopReason {
+    Success,
+    PolicyBlocked,
+    RoundTripBudgetExhausted,
+    BudgetExhausted,
+    RetryExhausted,
+    EscalationRequested,
+    Abstained,
+}
+
+/// Per-turn dispatch truth: which backend ran and why.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct DispatchDecision {
+    pub schema_version: String,
+    pub case_id: VerificationCaseId,
+    pub plan_id: CheckPlanId,
+    pub trace_ctx: TraceCtx,
+    pub provider_kind: String,
+    pub backend_kind: String,
+    pub execution_mode_label: String,
+    pub dispatch_path: DispatchPathKind,
+    pub query_mode: String,
+    pub dispatch_reason: String,
+    pub stop_reason: ExecutionStopReason,
+}
+
+impl DispatchDecision {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        case_id: VerificationCaseId,
+        plan_id: CheckPlanId,
+        trace_ctx: TraceCtx,
+        provider_kind: impl Into<String>,
+        backend_kind: impl Into<String>,
+        execution_mode_label: impl Into<String>,
+        dispatch_path: DispatchPathKind,
+        query_mode: impl Into<String>,
+        dispatch_reason: impl Into<String>,
+        stop_reason: ExecutionStopReason,
+    ) -> Self {
+        Self {
+            schema_version: DISPATCH_DECISION_V1_SCHEMA.into(),
+            case_id,
+            plan_id,
+            trace_ctx,
+            provider_kind: provider_kind.into(),
+            backend_kind: backend_kind.into(),
+            execution_mode_label: execution_mode_label.into(),
+            dispatch_path,
+            query_mode: query_mode.into(),
+            dispatch_reason: dispatch_reason.into(),
+            stop_reason,
+        }
+    }
+}
+
+/// Explicit per-turn tool exposure, including the empty set.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ToolExposureDecisionV1 {
+    pub tool_name: String,
+    pub exposed: bool,
+    pub reason: String,
+}
+
+impl From<ToolExposureDecision> for ToolExposureDecisionV1 {
+    fn from(value: ToolExposureDecision) -> Self {
+        Self {
+            tool_name: value.tool_name,
+            exposed: value.exposed,
+            reason: value.reason,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ToolExposure {
+    pub schema_version: String,
+    pub case_id: VerificationCaseId,
+    pub plan_id: CheckPlanId,
+    pub trace_ctx: TraceCtx,
+    pub planner_stage: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub exposed_tools: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub decisions: Vec<ToolExposureDecisionV1>,
+    pub explicit_empty: bool,
+}
+
+impl ToolExposure {
+    pub fn new(
+        case_id: VerificationCaseId,
+        plan_id: CheckPlanId,
+        trace_ctx: TraceCtx,
+        planner_stage: impl Into<String>,
+        decisions: Vec<ToolExposureDecision>,
+    ) -> Self {
+        let exposed_tools = decisions
+            .iter()
+            .filter(|decision| decision.exposed)
+            .map(|decision| decision.tool_name.clone())
+            .collect::<Vec<_>>();
+        let explicit_empty = exposed_tools.is_empty();
+        let decisions = decisions
+            .into_iter()
+            .map(ToolExposureDecisionV1::from)
+            .collect();
+        Self {
+            schema_version: TOOL_EXPOSURE_V1_SCHEMA.into(),
+            case_id,
+            plan_id,
+            trace_ctx,
+            planner_stage: planner_stage.into(),
+            exposed_tools,
+            decisions,
+            explicit_empty,
+        }
+    }
+}
+
+/// Queryable retry lineage for a turn or tool family.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct RetryDecision {
+    pub schema_version: String,
+    pub case_id: VerificationCaseId,
+    pub plan_id: CheckPlanId,
+    pub retry_family: String,
+    pub attempt_number: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub backoff_ms: Option<u64>,
+    pub will_retry: bool,
+    pub stop_reason: ExecutionStopReason,
+    pub owner: ControlRetryOwnerV1,
+    pub reason: String,
+}
+
+impl RetryDecision {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        case_id: VerificationCaseId,
+        plan_id: CheckPlanId,
+        retry_family: impl Into<String>,
+        attempt_number: u32,
+        backoff_ms: Option<u64>,
+        will_retry: bool,
+        stop_reason: ExecutionStopReason,
+        owner: ControlRetryOwnerV1,
+        reason: impl Into<String>,
+    ) -> Self {
+        Self {
+            schema_version: RETRY_DECISION_V1_SCHEMA.into(),
+            case_id,
+            plan_id,
+            retry_family: retry_family.into(),
+            attempt_number,
+            backoff_ms,
+            will_retry,
+            stop_reason,
+            owner,
+            reason: reason.into(),
+        }
+    }
+}
+
+/// Budget lineage for one debit against a turn's execution envelope.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct BudgetDebit {
+    pub schema_version: String,
+    pub case_id: VerificationCaseId,
+    pub plan_id: CheckPlanId,
+    pub debit_kind: String,
+    pub unit: String,
+    pub amount: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remaining: Option<u64>,
+    pub exhausted: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
+impl BudgetDebit {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        case_id: VerificationCaseId,
+        plan_id: CheckPlanId,
+        debit_kind: impl Into<String>,
+        unit: impl Into<String>,
+        amount: u64,
+        remaining: Option<u64>,
+        exhausted: bool,
+        detail: Option<String>,
+    ) -> Self {
+        Self {
+            schema_version: BUDGET_DEBIT_V1_SCHEMA.into(),
+            case_id,
+            plan_id,
+            debit_kind: debit_kind.into(),
+            unit: unit.into(),
+            amount,
+            remaining,
+            exhausted,
+            detail,
+        }
+    }
+}
+
+/// Canonical rollback/compensation requirement for a turn.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct RollbackDecision {
+    pub schema_version: String,
+    pub case_id: VerificationCaseId,
+    pub plan_id: CheckPlanId,
+    pub required: bool,
+    pub reason: String,
+    pub source: String,
+}
+
+impl RollbackDecision {
+    pub fn new(
+        case_id: VerificationCaseId,
+        plan_id: CheckPlanId,
+        required: bool,
+        reason: impl Into<String>,
+        source: impl Into<String>,
+    ) -> Self {
+        Self {
+            schema_version: ROLLBACK_DECISION_V1_SCHEMA.into(),
+            case_id,
+            plan_id,
+            required,
+            reason: reason.into(),
+            source: source.into(),
+        }
+    }
 }
 
 /// A check plan specifying the verification method, promotion class, and proof profile for a case.

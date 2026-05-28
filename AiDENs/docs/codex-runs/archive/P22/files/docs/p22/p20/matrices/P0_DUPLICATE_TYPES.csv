@@ -1,0 +1,7 @@
+type_name,local_file,approx_line,canonical_owner,canonical_crate,required_action
+AttestationEnvelopeV1,crates/aidens-contracts/src/lib.rs,2481,attestation-exchange,attestation-exchange,delete_or_pub_use
+SharedDispositionV1,crates/aidens-contracts/src/lib.rs,2843,federated-settlement,federated-settlement,delete_or_pub_use
+SettlementCaseV1,crates/aidens-contracts/src/lib.rs,2891,federated-settlement,federated-settlement,delete_or_pub_use
+TheoryRefuterSuiteV1,crates/aidens-contracts/src/lib.rs,3508,mechanism-runtime,mechanism-runtime,delete_or_pub_use
+TheoryVersionV1,crates/aidens-contracts/src/lib.rs,3603,mechanism-runtime,mechanism-runtime,delete_or_pub_use
+HypothesisLibraryV1,crates/aidens-contracts/src/lib.rs,3815,mechanism-runtime,mechanism-runtime,delete_or_pub_use

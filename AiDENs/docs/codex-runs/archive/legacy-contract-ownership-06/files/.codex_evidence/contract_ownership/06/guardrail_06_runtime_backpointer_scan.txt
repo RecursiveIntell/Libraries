@@ -1,0 +1,72 @@
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:19:| Runtime views, query traces, widening/degradation disclosure | `knowledge-runtime`, `semantic-memory`, `forge-memory-bridge` | Workspace dependencies remain under `~/Coding/Libraries`; runtime adapters live in `aidens-memory-kit` and CLI view surfaces report canonical owner metadata. | Phase 06: local runtime-view DTOs are display/report wrappers with canonical backpointers to query trace, widening disclosure, import receipts, and projection batches. |
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:21:| Support/retraction/subtraction semantics | `semantic-memory-forge` | Workspace dependency `path = "../semantic-memory-forge"`; `aidens-contracts` depends through `semantic-memory-forge.workspace = true`. | Phase 06: support, frontier, and subtraction DTOs are non-authoritative report wrappers pointing at canonical support/retraction families; unresolved lawful-subtraction owner depth is quarantined. |
+crates/aidens-contracts/src/lib.rs:1223:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:1244:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:1267:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:1286:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:1559:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:1588:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:1633:        self.canonical_backpointers
+crates/aidens-contracts/src/lib.rs:3490:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3510:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3511:                "knowledge-runtime",
+crates/aidens-contracts/src/lib.rs:3513:                "canonical-runtime-query-owner",
+crates/aidens-contracts/src/lib.rs:3530:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3531:                "knowledge-runtime",
+crates/aidens-contracts/src/lib.rs:3533:                "canonical-runtime-query-owner",
+crates/aidens-contracts/src/lib.rs:3586:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3603:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3604:                "knowledge-runtime",
+crates/aidens-contracts/src/lib.rs:3606:                "canonical-runtime-view-owner",
+crates/aidens-contracts/src/lib.rs:3649:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3671:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3672:                "knowledge-runtime",
+crates/aidens-contracts/src/lib.rs:3674:                "canonical-widening-disclosure-owner",
+crates/aidens-contracts/src/lib.rs:3698:    pub canonical_degradation_record_id: Option<StackDegradationRecordId>,
+crates/aidens-contracts/src/lib.rs:3700:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3722:            canonical_degradation_record_id: None,
+crates/aidens-contracts/src/lib.rs:3723:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3724:                "knowledge-runtime",
+crates/aidens-contracts/src/lib.rs:3726:                "canonical-degradation-disclosure-owner",
+crates/aidens-contracts/src/lib.rs:3750:    pub canonical_projection_id: Option<StackProjectionId>,
+crates/aidens-contracts/src/lib.rs:3752:    pub canonical_import_batch_id: Option<StackImportBatchId>,
+crates/aidens-contracts/src/lib.rs:3758:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3779:            canonical_projection_id: None,
+crates/aidens-contracts/src/lib.rs:3780:            canonical_import_batch_id: None,
+crates/aidens-contracts/src/lib.rs:3784:            canonical_backpointers: vec![
+crates/aidens-contracts/src/lib.rs:3786:                    "semantic-memory",
+crates/aidens-contracts/src/lib.rs:3788:                    "canonical-memory-import-owner",
+crates/aidens-contracts/src/lib.rs:3791:                    "forge-memory-bridge",
+crates/aidens-contracts/src/lib.rs:3793:                    "canonical-projection-transform-owner",
+crates/aidens-contracts/src/lib.rs:3824:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3849:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3850:                "knowledge-runtime",
+crates/aidens-contracts/src/lib.rs:3852:                "canonical-runtime-disclosure-owner",
+crates/aidens-contracts/src/lib.rs:5067:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5102:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5144:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5194:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5265:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5300:            canonical_backpointers: vec![
+crates/aidens-contracts/src/lib.rs:5348:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5373:            canonical_backpointers: vec![
+crates/aidens-contracts/src/lib.rs:5556:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5613:            canonical_backpointers: vec![
+crates/aidens-contracts/src/lib.rs:5775:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5801:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5802:                "semantic-memory-forge",
+crates/aidens-contracts/src/lib.rs:5842:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5931:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5932:                "semantic-memory-forge",
+crates/aidens-contracts/src/lib.rs:5965:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6000:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:6001:                "semantic-memory-forge",
+crates/aidens-contracts/src/lib.rs:6285:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6302:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6411:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6432:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:6450:            canonical_backpointers: receipt.canonical_backpointers,
+crates/aidens-contracts/src/lib.rs:6487:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6514:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:8664:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:8871:            canonical_backpointers: canonical_owner_backpointer(

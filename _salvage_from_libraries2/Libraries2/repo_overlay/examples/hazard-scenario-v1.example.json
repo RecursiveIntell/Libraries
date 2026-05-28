@@ -1,0 +1,19 @@
+{
+  "schema_version": "HazardScenarioV1",
+  "hazard_scenario_id": "hs_001",
+  "hazard_library_id": "hl_001",
+  "trigger_conditions": [
+    "unexpected retry amplification",
+    "error_budget_drop>20%",
+    "failed compensation path"
+  ],
+  "affected_surfaces": [
+    "payments-api",
+    "settlement-worker"
+  ],
+  "severity_baseline": "sev1",
+  "required_monitor_refs": [
+    "mc_001:retry-burn",
+    "mc_001:error-budget"
+  ]
+}

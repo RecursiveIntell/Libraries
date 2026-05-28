@@ -1,0 +1,54 @@
+../stack-ids/src/digest.rs:15://! `compute_json()` and `DigestBuilder::update_json()` do not trust map key order from
+../stack-ids/src/digest.rs:23://! use stack_ids::ContentDigest;
+../stack-ids/src/digest.rs:25://! let digest = ContentDigest::compute(b"hello world");
+../stack-ids/src/digest.rs:40:pub struct ContentDigest(pub String);
+../stack-ids/src/digest.rs:42:impl ContentDigest {
+../stack-ids/src/digest.rs:50:    pub fn compute_str(data: &str) -> Self {
+../stack-ids/src/digest.rs:62:    pub fn compute_json<T: Serialize>(value: &T) -> Result<Self, DigestError> {
+../stack-ids/src/digest.rs:72:        Ok(Self::compute_str(&canonical))
+../stack-ids/src/digest.rs:106:impl std::fmt::Display for ContentDigest {
+../stack-ids/src/digest.rs:116:pub struct DigestBuilder {
+../stack-ids/src/digest.rs:120:impl DigestBuilder {
+../stack-ids/src/digest.rs:165:    pub fn finalize(self) -> ContentDigest {
+../stack-ids/src/digest.rs:167:        ContentDigest(hash.to_hex().to_string())
+../stack-ids/src/digest.rs:192:impl Default for DigestBuilder {
+../stack-ids/src/digest.rs:238:        let digest = ContentDigest::compute(b"hello world");
+../stack-ids/src/digest.rs:245:        let a = ContentDigest::compute(b"test data");
+../stack-ids/src/digest.rs:246:        let b = ContentDigest::compute(b"test data");
+../stack-ids/src/digest.rs:252:        let a = ContentDigest::compute(b"input A");
+../stack-ids/src/digest.rs:253:        let b = ContentDigest::compute(b"input B");
+../stack-ids/src/digest.rs:258:    fn compute_json_deterministic() {
+../stack-ids/src/digest.rs:262:        let d1 = ContentDigest::compute_json(&map).unwrap();
+../stack-ids/src/digest.rs:267:        let d2 = ContentDigest::compute_json(&map2).unwrap();
+../stack-ids/src/digest.rs:274:    fn compute_json_normalizes_hash_map_key_order() {
+../stack-ids/src/digest.rs:283:        let left = ContentDigest::compute_json(&unsorted).unwrap();
+../stack-ids/src/digest.rs:284:        let right = ContentDigest::compute_json(&reordered).unwrap();
+../stack-ids/src/digest.rs:290:    fn compute_json_matches_pinned_golden_digest() {
+../stack-ids/src/digest.rs:295:        let digest = ContentDigest::compute_json(&ordered).unwrap();
+../stack-ids/src/digest.rs:305:        let digest = ContentDigest::compute(b"test");
+../stack-ids/src/digest.rs:306:        let restored = ContentDigest::from_hex(digest.hex()).unwrap();
+../stack-ids/src/digest.rs:312:        let err = ContentDigest::from_hex("abc").unwrap_err();
+../stack-ids/src/digest.rs:318:        let err = ContentDigest::from_hex("g".repeat(64)).unwrap_err();
+../stack-ids/src/digest.rs:325:            let mut b = DigestBuilder::new();
+../stack-ids/src/digest.rs:330:            let mut b = DigestBuilder::new();
+../stack-ids/src/digest.rs:341:            let mut b = DigestBuilder::new();
+../stack-ids/src/digest.rs:346:            let mut b = DigestBuilder::new();
+../stack-ids/src/digest.rs:355:        let digest = ContentDigest::compute(b"test");
+../stack-ids/src/digest.rs:357:        let back: ContentDigest = serde_json::from_str(&json).unwrap();
+docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:9:- `stack_ids::ContentDigest` and `stack_ids::DigestBuilder` for stack-owned digest computation;
+docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:23:- digest bytes are computed by `stack_ids::ContentDigest`;
+docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:28:AiDENs-local idempotency IDs for queue, schedule, wake, and report wrappers may derive local `ArtifactId` strings from `stack_ids::ContentDigest`, but they do not define stack-wide artifact identity law.
+crates/aidens-contracts/src/lib.rs:29:        ArtifactId, AttemptId, ClaimId, ClaimVersionId, ContentDigest, DigestBuilder, EnvelopeId,
+crates/aidens-contracts/src/lib.rs:39:    pub fn digest_json(value: &serde_json::Value) -> Result<ContentDigest, stack_ids::DigestError> {
+crates/aidens-contracts/src/lib.rs:40:        ContentDigest::compute_json(value)
+crates/aidens-contracts/src/lib.rs:49:    ClaimVersionId as StackClaimVersionId, ContentDigest as StackContentDigest,
+crates/aidens-contracts/src/lib.rs:50:    DigestBuilder as StackDigestBuilder, EnvelopeId as StackEnvelopeId,
+crates/aidens-contracts/src/lib.rs:67:    let digest = canonical_stack::digest_json(value)
+crates/aidens-contracts/src/lib.rs:73:    let digest = StackContentDigest::compute_str(text);
+crates/aidens-contracts/src/lib.rs:77:fn non_authoritative_display_digest_string(digest: &StackContentDigest) -> String {
+crates/aidens-contracts/src/lib.rs:82:    let digest = StackContentDigest::compute_str(material);
+crates/aidens-contracts/src/lib.rs:87:// `stack_ids::ContentDigest` and this string must not be used as identity.
+crates/aidens-contracts/src/lib.rs:6011:        digest: StackContentDigest,
+crates/aidens-contracts/src/lib.rs:8453:        let digest = canonical_stack::digest_json(&serde_json::json!({"b": 2, "a": 1})).unwrap();
+crates/aidens-contracts/src/lib.rs:10113:            StackContentDigest::compute_str("remote-ready"),
+EXIT_STATUS=0

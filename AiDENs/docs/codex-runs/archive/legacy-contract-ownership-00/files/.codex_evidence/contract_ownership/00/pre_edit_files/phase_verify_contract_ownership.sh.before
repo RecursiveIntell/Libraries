@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PHASE="${1:-manual}"
+ROOT="$(pwd)"
+EVIDENCE_DIR="$ROOT/.codex_evidence/contract_ownership/$PHASE"
+mkdir -p "$EVIDENCE_DIR"
+
+run_capture() {
+  local name="$1"
+  shift
+  {
+    echo "COMMAND: $*"
+    echo "WORKING_DIRECTORY: $ROOT"
+    echo "START_TIME: $(date -Is)"
+    set +e
+    "$@"
+    local status=$?
+    set -e
+    echo "EXIT_STATUS: $status"
+    echo "END_TIME: $(date -Is)"
+    return "$status"
+  } 2>&1 | tee "$EVIDENCE_DIR/${name}.txt"
+}
+
+git status --short > "$EVIDENCE_DIR/git_status_before_gate.txt" || true
+
+FAIL=0
+run_capture assert_no_crate_split bash scripts/assert_no_crate_split.sh || FAIL=1
+run_capture assert_docs_source_basis_current bash scripts/assert_docs_source_basis_current.sh || FAIL=1
+run_capture make_type_ownership_inventory python3 scripts/make_type_ownership_inventory.py || FAIL=1
+run_capture assert_no_canonical_type_duplicates python3 scripts/assert_no_canonical_type_duplicates.py || FAIL=1
+run_capture assert_no_local_canonical_digest_law bash scripts/assert_no_local_canonical_digest_law.sh || FAIL=1
+run_capture assert_schema_generation_scope python3 scripts/assert_schema_generation_scope.py || FAIL=1
+run_capture assert_tool_runtime_delegation bash scripts/assert_tool_runtime_delegation.sh || FAIL=1
+run_capture assert_wrapper_backpointers bash scripts/assert_wrapper_backpointers.sh || FAIL=1
+run_capture assert_no_compatibility_ledgers bash scripts/assert_no_compatibility_ledgers.sh || FAIL=1
+run_capture assert_no_local_substitute_dependencies bash scripts/assert_no_local_substitute_dependencies.sh || FAIL=1
+
+git status --short > "$EVIDENCE_DIR/git_status_after_gate.txt" || true
+git diff --stat > "$EVIDENCE_DIR/git_diff_stat.txt" || true
+git diff --binary > "$EVIDENCE_DIR/git_diff.patch" || true
+
+if [[ "$FAIL" -ne 0 ]]; then
+  echo "FAIL: one or more contract ownership gates failed. Evidence in $EVIDENCE_DIR" >&2
+  exit 1
+fi
+
+echo "PASS: contract ownership verification passed. Evidence in $EVIDENCE_DIR"

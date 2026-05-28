@@ -1,0 +1,11 @@
+id,status,priority,phase,area,title,owners,depends_on
+BASE-001,landed-by-evidence,P0,Done,hardening-closeout,Keep the 2026-03-22 hardening closeout green,root; contract-schema-gen; verification-*; living-memory,
+BASE-002,landed-by-evidence,P0,Done,schema-governance,Keep schema publication single-truth across wave/profile manifests,contract-schema-gen; wave/profile owner crates,BASE-001
+BASE-003,landed-by-evidence,P1,Done,artifact-surfaces,"Treat v21-v24 waves and P1-P7 profiles as landed artifact surfaces, not future fiction",effect-runtime; authority-delegation; assurance-runtime; continuity-runtime; verification-policy; attestation-exchange,BASE-002
+DOC-001,ready-to-apply,P0,Phase 0,repo-front-door,Restore the canonical root control-plane pack on disk,root docs,BASE-001
+DOC-002,ready-to-apply,P0,Phase 0,truth-reconciliation,Collapse stale scans and hostile audits into one active truth statement,root docs,DOC-001
+SCOPE-001,ready-to-apply,P0,Phase 0,support-scope,Make the supported closeout lane and adjacent artifact-owner crates explicit,root docs,DOC-002
+DEMO-001,open,P0,Phase 1,external-demonstrability,Ship one narrated end-to-end demonstrator across v21 -> v22 -> v23,effect-runtime; authority-delegation; assurance-runtime; verification-control; llm-tool-runtime,SCOPE-001; BASE-003
+BENCH-001,open,P1,Phase 2,benchmark-proof,Ship the benchmark / forge-bench proof package,knowledge-runtime; verification-control; forge-pilot,DEMO-001
+ARCH-001,open,P1,Phase 3,archive-cleanup,Finish physical root reduction,root docs,DOC-001
+HORIZON-001,deferred,P2,Later,horizon-work,Keep V10/V14-V20 backlog out of the finish bar,kernel; semantic-memory; knowledge-runtime; spec-execution,DEMO-001; BENCH-001; ARCH-001

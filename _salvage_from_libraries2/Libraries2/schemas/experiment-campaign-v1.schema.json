@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "campaign_name": {
+      "type": "string"
+    },
+    "experiment_campaign_id": {
+      "type": "string"
+    },
+    "information_value_estimate_id": {
+      "type": "string"
+    },
+    "required_review_slots": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "utility_case": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "campaign_name",
+    "experiment_campaign_id",
+    "information_value_estimate_id",
+    "required_review_slots",
+    "schema_version",
+    "utility_case"
+  ],
+  "title": "ExperimentCampaignV1",
+  "type": "object"
+}

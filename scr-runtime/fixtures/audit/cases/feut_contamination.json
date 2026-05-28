@@ -1,0 +1,8 @@
+{
+  "schema_version": "audit_fixture_case_v1",
+  "case_id": "feut_contamination",
+  "domain": "audit",
+  "proposed_action": "quarantine",
+  "requested_effect": "advisory_only",
+  "signals": ["forbidden_production_term", "high_hazard"]
+}

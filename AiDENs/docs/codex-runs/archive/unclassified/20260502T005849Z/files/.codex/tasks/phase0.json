@@ -1,0 +1,20 @@
+{
+  "phase": "0-foundation",
+  "destination": "~/Coding/Libraries/AiDENs",
+  "source": "~/Coding/Recall",
+  "must_create_or_finish": [
+    "aidens-contracts",
+    "aidens-boundary-kit",
+    "aidens-config",
+    "aidens-receipts",
+    "aidens-capability-kit",
+    "aidens-testkit"
+  ],
+  "required_tests": [
+    "config redaction",
+    "strict JSON rejects invalid input",
+    "boundary repair receipt model",
+    "receipt ledger appends",
+    "capability disabled is not healthy"
+  ]
+}

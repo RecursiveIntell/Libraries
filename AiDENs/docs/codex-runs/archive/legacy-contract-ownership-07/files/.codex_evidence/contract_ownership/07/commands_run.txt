@@ -1,0 +1,17 @@
+2026-04-29T15:01:54-05:00 read Phase 07 prompt
+2026-04-29T15:01:54-05:00 attempted parallel evidence init; commands_run write raced mkdir and failed; repaired immediately
+2026-04-29T15:01:54-05:00 captured pre-phase git status/diff
+2026-04-29T15:02:05-05:00 bash scripts/phase_verify_contract_ownership.sh final > .codex_evidence/contract_ownership/07/phase_verify_final_initial.txt
+2026-04-29T15:02:15-05:00 cargo check --workspace > .codex_evidence/contract_ownership/07/cargo_check_workspace.txt
+2026-04-29T15:02:19-05:00 cargo test --workspace > .codex_evidence/contract_ownership/07/cargo_test_workspace.txt
+2026-04-29T15:02:44-05:00 refreshed current git status/diff stat for final docs
+bash scripts/phase_verify_contract_ownership.sh final > .codex_evidence/contract_ownership/07/phase_verify_final_after_docs.txt 2>&1
+git status --short > .codex_evidence/contract_ownership/07/git_status_after.txt
+git diff --stat > .codex_evidence/contract_ownership/07/git_diff_stat.txt
+git diff --binary > .codex_evidence/contract_ownership/07/git_diff.patch
+git diff --name-only > .codex_evidence/contract_ownership/07/git_diff_name_only.txt
+wrote .codex_evidence/contract_ownership/07/gate_outputs.txt from final gate, cargo check, and cargo test outputs
+recaptured git_status_after.txt, git_diff_stat.txt, and git_diff.patch after writing phase_report.md
+apply_patch added .codex_evidence/contract_ownership/07/phase_report.md
+sed/read verification of final docs and Phase 07 report
+wrote .codex_evidence/contract_ownership/07/final_stop_hostile_auditor_proof.txt

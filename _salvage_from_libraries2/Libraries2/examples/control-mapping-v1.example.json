@@ -1,0 +1,12 @@
+{
+  "schema_version": "ControlMappingV1",
+  "control_mapping_id": "ctl_001",
+  "hazard_register_id": "hzr_001",
+  "control_refs": [
+    "canary",
+    "rollback",
+    "slo-monitoring"
+  ],
+  "coverage_state": "covered",
+  "gaps": []
+}

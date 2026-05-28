@@ -1,0 +1,13 @@
+{
+  "aidens_contracts_local_def_count": 251,
+  "aidens_overlay_only": false,
+  "artifact_kind": "local_operator_ownership_scan_status",
+  "canonical_inventory_unavailable": false,
+  "canonical_local_def_count": 633,
+  "canonical_root": "/home/sikmindz/Coding/Libraries",
+  "duplicate_findings": 0,
+  "known_limits": [],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "semantic_status": "exact_check",
+  "support_tier": "verification"
+}

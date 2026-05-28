@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use assurance_runtime::{
     EvidenceCollectionPlanV1, RecertificationScheduleV1, RegulatoryRegimeProfileV1,
     RequirementControlMapV1,

@@ -1,0 +1,23 @@
+{
+  "support_core_id": "support-core:p16-fixture",
+  "kind": "support-core",
+  "accepted_claim_ids": [
+    "claim:p16-accepted"
+  ],
+  "support_claim_ids": [
+    "claim:p16-accepted"
+  ],
+  "support_evidence_ids": [
+    "evidence:p16-accepted"
+  ],
+  "support_receipt_ids": [
+    "memory-write:p16-accepted"
+  ],
+  "superseded_claim_ids": [
+    "claim:p16-accepted"
+  ],
+  "reason_codes": [
+    "accepted-claim-support-core"
+  ],
+  "computed_at": "2026-04-27T00:00:01Z"
+}

@@ -1,0 +1,324 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "QueryWarning": {
+      "description": "A warning or degradation notice emitted during query execution.\n\nThese make runtime behavior transparent to callers — especially when the runtime falls back to simpler behavior than requested.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "A temporal search leg was downgraded to hybrid search because temporal execution is not implemented.",
+          "properties": {
+            "TemporalDowngradedToHybrid": {
+              "properties": {
+                "temporal_expr": {
+                  "description": "The original temporal expression from the query.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "temporal_expr"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "TemporalDowngradedToHybrid"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Scope enforcement is limited to namespace-only at the adapter level. Full scope (domain, workspace_id, repo_id) was used for runtime-owned logic but NOT enforced during upstream search.",
+          "properties": {
+            "ScopePartiallyEnforced": {
+              "properties": {
+                "full_scope": {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/ScopeKey"
+                    }
+                  ],
+                  "description": "The full scope that was requested."
+                }
+              },
+              "required": [
+                "full_scope"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "ScopePartiallyEnforced"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Entity resolution fell back to a broader scope.",
+          "properties": {
+            "EntityScopeFallback": {
+              "properties": {
+                "mention": {
+                  "type": "string"
+                },
+                "queried_scope": {
+                  "$ref": "#/definitions/ScopeKey"
+                }
+              },
+              "required": [
+                "mention",
+                "queried_scope"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "EntityScopeFallback"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Projection data for this scope is stale due to import lag or failure.",
+          "properties": {
+            "ProjectionImportStale": {
+              "properties": {
+                "last_import_at": {
+                  "description": "When the last successful import occurred, if ever.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "scope": {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/ScopeKey"
+                    }
+                  ],
+                  "description": "Scope affected."
+                }
+              },
+              "required": [
+                "scope"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "ProjectionImportStale"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "RuntimeView": {
+      "enum": [
+        "semantic",
+        "temporal",
+        "entity",
+        "causal",
+        "control"
+      ],
+      "type": "string"
+    },
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "WideningDisclosure": {
+      "properties": {
+        "executed_view": {
+          "$ref": "#/definitions/RuntimeView"
+        },
+        "leg_index": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "requested_view": {
+          "$ref": "#/definitions/RuntimeView"
+        }
+      },
+      "required": [
+        "executed_view",
+        "leg_index",
+        "reason",
+        "requested_view"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "classification_mode": {
+      "type": "string"
+    },
+    "classification_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "duplicates_fused": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "executed_views": {
+      "items": {
+        "$ref": "#/definitions/RuntimeView"
+      },
+      "type": "array"
+    },
+    "kernel_degraded_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "leg_strategies": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "leg_timings_ms": {
+      "items": {
+        "format": "uint64",
+        "minimum": 0.0,
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "merged_result_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "query": {
+      "type": "string"
+    },
+    "raw_result_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "requested_views": {
+      "items": {
+        "$ref": "#/definitions/RuntimeView"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope": {
+      "$ref": "#/definitions/ScopeKey"
+    },
+    "total_duration_ms": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "trace_ctx": {
+      "$ref": "#/definitions/TraceCtx"
+    },
+    "warnings": {
+      "items": {
+        "$ref": "#/definitions/QueryWarning"
+      },
+      "type": "array"
+    },
+    "widenings": {
+      "items": {
+        "$ref": "#/definitions/WideningDisclosure"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "classification_mode",
+    "duplicates_fused",
+    "merged_result_count",
+    "query",
+    "raw_result_count",
+    "schema_version",
+    "scope",
+    "total_duration_ms",
+    "trace_ctx"
+  ],
+  "title": "RuntimeQueryProvenanceV1",
+  "type": "object"
+}

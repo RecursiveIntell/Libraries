@@ -1,0 +1,52 @@
+{
+  "discovery_program": {
+    "schema_version": "discovery_program_v1",
+    "discovery_program_id": "program-overload-001",
+    "program_name": "Budget Overload Test Program",
+    "canonical_owner": "test-owner",
+    "publication_status": "advisory_only"
+  },
+  "program_hypothesis_set": {
+    "schema_version": "program_hypothesis_set_v1",
+    "discovery_program_id": "program-overload-001",
+    "hypothesis_refs": [],
+    "horizon_only": false
+  },
+  "portfolio_plan": {
+    "schema_version": "portfolio_plan_v1",
+    "portfolio_plan_id": "plan-overload-001",
+    "discovery_program_id": "program-overload-001",
+    "campaign_ids": ["campaign-overload-001"],
+    "utility_rationale": "Test budget exhaustion",
+    "review_load_rationale": "Test budget exhaustion",
+    "advisory_only": true
+  },
+  "campaigns": [
+    {
+      "schema_version": "experiment_campaign_v1",
+      "experiment_campaign_id": "campaign-overload-001",
+      "campaign_name": "Overloaded Campaign",
+      "utility_case": "test-overload",
+      "information_value_estimate_id": "ive-overload-001",
+      "required_review_slots": 10,
+      "advisory_only": true
+    }
+  ],
+  "information_value_estimates": [
+    {
+      "schema_version": "information_value_estimate_v1",
+      "information_value_estimate_id": "ive-overload-001",
+      "campaign_id": "campaign-overload-001",
+      "expected_information_gain": 50,
+      "estimated_review_cost": 10
+    }
+  ],
+  "verification_load_budget": {
+    "schema_version": "verification_load_budget_v1",
+    "verification_load_budget_id": "budget-overload-001",
+    "total_review_slots": 0,
+    "remaining_review_slots": 0,
+    "exhausted": true,
+    "horizon_only": false
+  }
+}

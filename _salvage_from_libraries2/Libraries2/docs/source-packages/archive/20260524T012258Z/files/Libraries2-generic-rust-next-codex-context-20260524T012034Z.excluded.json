@@ -1,0 +1,822 @@
+{
+  "created_utc": "2026-05-24T01:20:37Z",
+  "excluded": [
+    {
+      "path": ".stignore",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Coding-research-next-codex-context-20260511.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Coding-research-next-codex-context-20260511.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Coding-research-next-codex-context-20260511.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Coding-research-next-codex-context-20260511.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Coding-research-next-codex-context-20260511.zip",
+      "reason": "max-file-size-exceeded"
+    },
+    {
+      "path": "Everything.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries2/Libraries2-generic-rust-next-codex-context-20260524T012034Z.codex-archive.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "Libraries2/docs/13_settings_persistence_and_secret_handling.md",
+      "reason": "secret-like-filename"
+    },
+    {
+      "path": "Libraries2/libraries-source-clean-20260325.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries2/libraries-source-clean-20260326.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries2/libraries2 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries2/libraries2(3-25-26).zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries2/libraries2.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/CACHEDIR.TAG",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.cargo-lock",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/arrayref-4bd7d876aaa2b074/dep-lib-arrayref",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/arrayref-4bd7d876aaa2b074/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/arrayref-4bd7d876aaa2b074/lib-arrayref",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/arrayvec-47055fdd3f20a762/dep-lib-arrayvec",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/arrayvec-47055fdd3f20a762/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/arrayvec-47055fdd3f20a762/lib-arrayvec",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/autocfg-480856fe582151a5/dep-lib-autocfg",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/autocfg-480856fe582151a5/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/autocfg-480856fe582151a5/lib-autocfg",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/bitflags-e945bb0fd5b23b06/dep-lib-bitflags",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/bitflags-e945bb0fd5b23b06/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/bitflags-e945bb0fd5b23b06/lib-bitflags",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/bytes-b46f8d6fa0b395d6/dep-lib-bytes",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/bytes-b46f8d6fa0b395d6/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/bytes-b46f8d6fa0b395d6/lib-bytes",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cc-91bde27d78d9ef8e/dep-lib-cc",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cc-91bde27d78d9ef8e/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cc-91bde27d78d9ef8e/lib-cc",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cfg-if-6144ded3927a5abf/dep-lib-cfg_if",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cfg-if-6144ded3927a5abf/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cfg-if-6144ded3927a5abf/lib-cfg_if",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/constant_time_eq-9ebad7ead4eb6205/dep-lib-constant_time_eq",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/constant_time_eq-9ebad7ead4eb6205/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/constant_time_eq-9ebad7ead4eb6205/lib-constant_time_eq",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cpufeatures-f74de42d5b0dd0f7/dep-lib-cpufeatures",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cpufeatures-f74de42d5b0dd0f7/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/cpufeatures-f74de42d5b0dd0f7/lib-cpufeatures",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/dyn-clone-274f41bc868e414a/dep-lib-dyn_clone",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/dyn-clone-274f41bc868e414a/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/dyn-clone-274f41bc868e414a/lib-dyn_clone",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/find-msvc-tools-6552b0316ad6716b/dep-lib-find_msvc_tools",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/find-msvc-tools-6552b0316ad6716b/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/find-msvc-tools-6552b0316ad6716b/lib-find_msvc_tools",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/getrandom-69e43e52c9bb7099/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/getrandom-69e43e52c9bb7099/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/getrandom-69e43e52c9bb7099/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/getrandom-afe67ee2ace6c454/run-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/iana-time-zone-c6282ac1cc305a47/dep-lib-iana_time_zone",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/iana-time-zone-c6282ac1cc305a47/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/iana-time-zone-c6282ac1cc305a47/lib-iana_time_zone",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/itoa-2d6d0c22a448d0bb/dep-lib-itoa",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/itoa-2d6d0c22a448d0bb/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/itoa-2d6d0c22a448d0bb/lib-itoa",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/libc-a0ea2dcf494e60ee/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/libc-a0ea2dcf494e60ee/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/libc-a0ea2dcf494e60ee/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/libc-a4feb85d31ef1d27/run-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/memchr-da4bd2e233380ced/dep-lib-memchr",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/memchr-da4bd2e233380ced/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/memchr-da4bd2e233380ced/lib-memchr",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/once_cell-240d2d4e9d6b53ed/dep-lib-once_cell",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/once_cell-240d2d4e9d6b53ed/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/once_cell-240d2d4e9d6b53ed/lib-once_cell",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/pin-project-lite-01421e286ce843dd/dep-lib-pin_project_lite",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/pin-project-lite-01421e286ce843dd/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/pin-project-lite-01421e286ce843dd/lib-pin_project_lite",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/proc-macro2-0facd67b09f9301c/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/proc-macro2-0facd67b09f9301c/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/proc-macro2-0facd67b09f9301c/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/quote-69de712b7102c3fe/run-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/quote-d76dd5f9d9ff0473/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/quote-d76dd5f9d9ff0473/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/quote-d76dd5f9d9ff0473/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/schemars-ffe3d1a9a249b69a/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/schemars-ffe3d1a9a249b69a/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/schemars-ffe3d1a9a249b69a/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde-711b2af9c84f032c/run-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde-a51ddc50c94f2994/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde-a51ddc50c94f2994/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde-a51ddc50c94f2994/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde_core-d0fc30747de5a319/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde_core-d0fc30747de5a319/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde_core-d0fc30747de5a319/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde_json-ded05041f23c96de/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde_json-ded05041f23c96de/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde_json-ded05041f23c96de/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/serde_json-fa4cdd24997c90b7/run-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/shlex-198e402b4b505f09/dep-lib-shlex",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/shlex-198e402b4b505f09/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/shlex-198e402b4b505f09/lib-shlex",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/smallvec-44935519e9562d00/dep-lib-smallvec",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/smallvec-44935519e9562d00/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/smallvec-44935519e9562d00/lib-smallvec",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/thiserror-b6122b8a9761129f/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/thiserror-b6122b8a9761129f/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/thiserror-b6122b8a9761129f/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/tracing-core-18afeb887659e407/dep-lib-tracing_core",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/tracing-core-18afeb887659e407/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/tracing-core-18afeb887659e407/lib-tracing_core",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/unicode-ident-5e2fd99d661f4ec6/dep-lib-unicode_ident",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/unicode-ident-5e2fd99d661f4ec6/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/unicode-ident-5e2fd99d661f4ec6/lib-unicode_ident",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/version_check-5cdcaa9e8e00f339/dep-lib-version_check",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/version_check-5cdcaa9e8e00f339/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/version_check-5cdcaa9e8e00f339/lib-version_check",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zerocopy-2fc34b6a32657e32/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zerocopy-2fc34b6a32657e32/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zerocopy-2fc34b6a32657e32/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zmij-0f4d6d3a9dcbce80/dep-lib-zmij",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zmij-0f4d6d3a9dcbce80/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zmij-0f4d6d3a9dcbce80/lib-zmij",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zmij-4f9d77a6e667d6e9/run-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zmij-fa850a7fd97e339c/build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zmij-fa850a7fd97e339c/dep-build-script-build-script-build",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/.fingerprint/zmij-fa850a7fd97e339c/invoked.timestamp",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/arrayref-4bd7d876aaa2b074.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/arrayvec-47055fdd3f20a762.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/autocfg-480856fe582151a5.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/bitflags-e945bb0fd5b23b06.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/bytes-b46f8d6fa0b395d6.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/cc-91bde27d78d9ef8e.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/cfg_if-6144ded3927a5abf.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/constant_time_eq-9ebad7ead4eb6205.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/cpufeatures-f74de42d5b0dd0f7.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/dyn_clone-274f41bc868e414a.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/find_msvc_tools-6552b0316ad6716b.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/iana_time_zone-c6282ac1cc305a47.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/itoa-2d6d0c22a448d0bb.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libarrayref-4bd7d876aaa2b074.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libarrayref-4bd7d876aaa2b074.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libarrayvec-47055fdd3f20a762.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libarrayvec-47055fdd3f20a762.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libautocfg-480856fe582151a5.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libautocfg-480856fe582151a5.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libbitflags-e945bb0fd5b23b06.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libbitflags-e945bb0fd5b23b06.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libbytes-b46f8d6fa0b395d6.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libbytes-b46f8d6fa0b395d6.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libcc-91bde27d78d9ef8e.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libcc-91bde27d78d9ef8e.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libcfg_if-6144ded3927a5abf.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libcfg_if-6144ded3927a5abf.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libconstant_time_eq-9ebad7ead4eb6205.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libconstant_time_eq-9ebad7ead4eb6205.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libcpufeatures-f74de42d5b0dd0f7.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libcpufeatures-f74de42d5b0dd0f7.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libdyn_clone-274f41bc868e414a.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libdyn_clone-274f41bc868e414a.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libfind_msvc_tools-6552b0316ad6716b.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libfind_msvc_tools-6552b0316ad6716b.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libiana_time_zone-c6282ac1cc305a47.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libiana_time_zone-c6282ac1cc305a47.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libitoa-2d6d0c22a448d0bb.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libitoa-2d6d0c22a448d0bb.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libmemchr-da4bd2e233380ced.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libmemchr-da4bd2e233380ced.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libonce_cell-240d2d4e9d6b53ed.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libonce_cell-240d2d4e9d6b53ed.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libpin_project_lite-01421e286ce843dd.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libpin_project_lite-01421e286ce843dd.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libshlex-198e402b4b505f09.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libshlex-198e402b4b505f09.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libsmallvec-44935519e9562d00.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libsmallvec-44935519e9562d00.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libtracing_core-18afeb887659e407.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libtracing_core-18afeb887659e407.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libunicode_ident-5e2fd99d661f4ec6.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libunicode_ident-5e2fd99d661f4ec6.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libversion_check-5cdcaa9e8e00f339.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libversion_check-5cdcaa9e8e00f339.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libzmij-0f4d6d3a9dcbce80.rlib",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/libzmij-0f4d6d3a9dcbce80.rmeta",
+      "reason": "binary-build-artifact"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/memchr-da4bd2e233380ced.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/once_cell-240d2d4e9d6b53ed.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/pin_project_lite-01421e286ce843dd.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/shlex-198e402b4b505f09.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/smallvec-44935519e9562d00.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/tracing_core-18afeb887659e407.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/unicode_ident-5e2fd99d661f4ec6.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/version_check-5cdcaa9e8e00f339.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/deps/zmij-0f4d6d3a9dcbce80.d",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "MASTER_CODEBASE_REFERENCE.pdf",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "backup.zip",
+      "reason": "max-file-size-exceeded"
+    },
+    {
+      "path": "libraries-source-clean-20260326.zip",
+      "reason": "max-file-size-exceeded"
+    },
+    {
+      "path": "libraries-source-clean-20260402.zip",
+      "reason": "max-file-size-exceeded"
+    },
+    {
+      "path": "libraries-source-code-clean-20260310.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "now5.zip",
+      "reason": "archive-file"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": "Libraries/stack-ids/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "Libraries/stack-ids/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "Libraries2/docs/archive",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "Libraries2/docs/benchmarks/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "Libraries2/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "Libraries2/docs/source-packages/archive",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "Libraries2/overlay/docs/archive",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "Libraries2/target_schema_gen/debug/build",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries2",
+  "summary": {
+    "archive-file": 8,
+    "binary-build-artifact": 44,
+    "doc-binary-disabled": 1,
+    "generated-output": 1,
+    "generated-sidecar": 4,
+    "max-file-size-exceeded": 4,
+    "secret-like-filename": 1,
+    "unsupported-extension-or-basename": 130
+  }
+}

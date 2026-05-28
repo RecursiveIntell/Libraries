@@ -1,0 +1,25 @@
+{
+  "classification_values": [
+    "canonical_reexport",
+    "aidens_orchestration_dto",
+    "display_or_report_projection",
+    "compatibility_legacy_adapter",
+    "duplicate_canonical_concept",
+    "ambiguous_shadow_semantics"
+  ],
+  "must_not_remain": [
+    "duplicate_canonical_concept",
+    "ambiguous_shadow_semantics"
+  ],
+  "canonical_owners": {
+    "ids_digests_trace": "stack-ids",
+    "evidence_export_truth": "semantic-memory-forge",
+    "bridge_transform": "forge-memory-bridge",
+    "projected_memory_truth": "semantic-memory",
+    "runtime_views": "knowledge-runtime",
+    "kernel": "recursive-kernel-core/constraint-compiler/kernel-*",
+    "verification": "verification-*",
+    "tool_runtime": "llm-tool-runtime",
+    "agency_boundary": "aidens-agency-kit v0.1"
+  }
+}

@@ -1,0 +1,16 @@
+app_id = "aidens-example-openai-unavailable"
+profile_id = "chat-only"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "openai"
+model = "gpt-test"
+
+[receipts]
+store_root = "target/aidens-receipts/aidens-example-openai-unavailable"
+
+[security]
+approval_mode = "require-side-effects"
+network_policy = "disabled"
+write_policy = "approval-required"

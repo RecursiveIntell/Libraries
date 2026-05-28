@@ -1,0 +1,33 @@
+{
+  "pass_id": "P10",
+  "title": "Coding-agent tool suite, sandbox discipline, and Codex packet generator",
+  "phase": "Product-grade coding spine",
+  "prompt_file": "prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md",
+  "pass_doc": "passes/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.md",
+  "crates": [
+    "aidens-tool-kit",
+    "aidens-security-kit",
+    "aidens-permit-kit",
+    "aidens-runner",
+    "aidens-cli",
+    "aidens-profile-coding"
+  ],
+  "artifacts": [
+    "RepoReadReceiptV1",
+    "RepoListReceiptV1",
+    "PatchProposalV1",
+    "PatchApplyReceiptV1",
+    "CommandRunReportV1",
+    "CodexPacketV1",
+    "SandboxCapabilityTruthV1"
+  ],
+  "acceptance": [
+    "Coding profile can read repo, propose a patch, request approval, apply patch after permit, and run cargo checks with receipts.",
+    "Attempted path traversal/sensitive prefix access fails with receipt.",
+    "Codex packet contains enough state for another agent to resume without archaeology."
+  ],
+  "forbidden": [
+    "Do not allow shell/file-write/network by default.",
+    "Do not let patch-propose mutate files."
+  ]
+}

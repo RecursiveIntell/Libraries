@@ -1,0 +1,13 @@
+{
+  "schema_version": "AuthorityChainV1",
+  "authority_chain_id": "auc_001",
+  "local_principal": "agent:ops-runner",
+  "delegated_principals": [
+    "person:alice"
+  ],
+  "external_principals": [],
+  "approval_refs": [
+    "approval:dc_001"
+  ],
+  "current_validity_state": "valid"
+}

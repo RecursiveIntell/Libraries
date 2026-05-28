@@ -1,43 +1,33 @@
 [workspace]
 resolver = "2"
 members = [
+    "agent-graph",
+    "ai-batch-queue",
     "assurance-runtime",
     "attestation-exchange",
     "authority-delegation",
+    "comfyui-rs",
     "constraint-compiler",
     "constitutional-memory",
     "continuity-runtime",
     "contract-schema-gen",
     "discovery-portfolio",
     "effect-runtime",
+    "fib-quant",
     "federated-settlement",
     "forge-memory-bridge",
     "forge-pilot",
+    "job-queue",
     "kernel-conformance",
     "kernel-execution",
     "kernel-oracles",
     "knowledge-runtime",
     "living-memory/living-memory",
+    "llm-output-parser",
+    "llm-pipeline",
     "llm-tool-runtime",
     "mechanism-runtime",
-    "profile-runtime",
-    "remote-oracle-admission",
-    "recursive-kernel-core",
-    "semantic-memory",
-    "semantic-memory-forge",
-    "spec-execution",
-    "stack-ids",
-    "verification-adjudication",
-    "verification-calibration",
-    "verification-control",
-    "verification-policy",
-]
-exclude = [
-    ".parser-lib",
-    "AI-Batch-Queue",
-    "ComfyUI-RS",
-    "LLM-Pipeline",
-    "Ollama-Vision-RS",
+    "ollama-vision",
     "Primitives/cea-core",
     "Primitives/cea-sqlite",
     "Primitives/cea-store",
@@ -48,15 +38,34 @@ exclude = [
     "Primitives/sandbox-workspace",
     "Primitives/stabilizer-core",
     "Primitives/typed-patch",
-    "Tauri-Queue",
-    "agent-graph",
+    "profile-runtime",
+    "recursive-kernel-core",
+    "remote-oracle-admission",
+    "semantic-memory",
+    "semantic-memory-forge",
+    "spec-execution",
+    "stack-ids",
+    "tauri-queue",
+    "turbo-quant",
+    "verification-adjudication",
+    "verification-calibration",
+    "verification-control",
+    "verification-policy",
+]
+exclude = [
+    # TypeScript package — not a Rust crate
+    "tauri-react-hooks",
+    # Demo subcrate that does not exist on disk
     "demo-tauri-libraries/src-tauri",
-    "job-queue",
 ]
 default-members = [
+    "agent-graph",
+    "ai-batch-queue",
     "assurance-runtime",
     "attestation-exchange",
     "authority-delegation",
+    "comfyui-rs",
+    "constraint-compiler",
     "constitutional-memory",
     "continuity-runtime",
     "contract-schema-gen",
@@ -65,25 +74,51 @@ default-members = [
     "federated-settlement",
     "forge-memory-bridge",
     "forge-pilot",
+    "job-queue",
     "kernel-conformance",
     "kernel-execution",
     "kernel-oracles",
     "knowledge-runtime",
     "living-memory/living-memory",
+    "llm-output-parser",
+    "llm-pipeline",
     "llm-tool-runtime",
     "mechanism-runtime",
+    "ollama-vision",
+    "Primitives/cea-core",
+    "Primitives/cea-sqlite",
+    "Primitives/cea-store",
+    "Primitives/check-runner",
+    "Primitives/effect-signature",
+    "Primitives/forge-policy",
+    "Primitives/mindstate-core",
+    "Primitives/sandbox-workspace",
+    "Primitives/stabilizer-core",
+    "Primitives/typed-patch",
     "profile-runtime",
-    "remote-oracle-admission",
     "recursive-kernel-core",
+    "remote-oracle-admission",
     "semantic-memory",
     "semantic-memory-forge",
     "spec-execution",
     "stack-ids",
+    "tauri-queue",
+    "turbo-quant",
     "verification-adjudication",
     "verification-calibration",
     "verification-control",
     "verification-policy",
 ]
+
+# LIB-005: Workspace-level lint enforcement — compile-time law, not just scripts.
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+todo = "deny"
+dbg_macro = "deny"
+unimplemented = "deny"
+expect_used = { level = "warn", priority = -1 }
 
 [workspace.dependencies]
 async-trait = "0.1.89"

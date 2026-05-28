@@ -1,0 +1,120 @@
+diff -ruN ../Libraries2/federated-settlement/CHANGELOG.md federated-settlement/CHANGELOG.md
+--- ../Libraries2/federated-settlement/CHANGELOG.md	2026-03-26 12:03:54.569088177 -0500
++++ federated-settlement/CHANGELOG.md	2026-03-26 08:13:31.384747915 -0500
+@@ -1,6 +1,4 @@
+ # Changelog
+ 
+ ## [Unreleased]
+-### Changed
+-- Path dependencies normalized to `../crate-name` format
+-- Test fixture paths unified to v18 convention
++<!-- No changes in this sprint -->
+diff -ruN ../Libraries2/federated-settlement/Cargo.toml federated-settlement/Cargo.toml
+--- ../Libraries2/federated-settlement/Cargo.toml	2026-03-23 18:40:25.047673300 -0500
++++ federated-settlement/Cargo.toml	2026-03-30 22:31:16.589505655 -0500
+@@ -13,3 +13,7 @@
+ 
+ [dev-dependencies]
+ serde_json = { workspace = true }
++
++# LIB-005: inherit workspace lint policy
++[lints]
++workspace = true
+diff -ruN ../Libraries2/federated-settlement/README.md federated-settlement/README.md
+--- ../Libraries2/federated-settlement/README.md	2026-03-26 12:03:00.711248373 -0500
++++ federated-settlement/README.md	2026-03-26 08:16:22.067010185 -0500
+@@ -1,24 +1,40 @@
+ # federated-settlement
+ 
+-Typed treaty and settlement surface crate with bounded shared-view evaluators for cross-runtime settlement, replay, divergence, and suspension artifacts.
++Typed surface crate for v16 treaty, equivalence, settlement, replay, divergence, and suspension artifacts.
+ 
+-## Example
++## Usage
+ 
+ ```rust
+-use federated_settlement::{evaluate_settlement, SettlementDisposition};
+-
+-let receipt = evaluate_settlement(&case, "2026-03-14T00:00:00Z");
+-match receipt.disposition {
+-    SettlementDisposition::SharedDispositionIssued => println!("Settlement lawful"),
+-    SettlementDisposition::DegradedSharedView => println!("Degraded: {}", receipt.downgrade.unwrap().detail),
+-    SettlementDisposition::AdvisoryOnly => println!("Advisory only"),
+-}
++use federated_settlement::{TreatyBundleV1, SettlementCaseV1, SharedDispositionV1};
+ ```
+ 
++## Owns
++
++- treaty artifacts
++- runtime identity/equivalence artifacts
++- settlement case/receipt artifacts
++- local dissent and downgrade artifacts
++- bounded shared replay / divergence / suspension artifacts
++
++## Does not own
++
++- network transport
++- trust-root exchange infrastructure
++- authoritative truth mutation
++- hidden cross-runtime promotion
++
+ ## Ecosystem
+ 
+-- **stack-ids**: All artifact IDs plus `SurfaceStatus` and `V25ConstitutionCitation`
++**Depends on:**
++- `stack-ids` -- identity primitives (treaty, settlement, dissent, replay, divergence, and suspension IDs)
++
++**Depended on by:**
++- `kernel-conformance`
++- `contract-schema-gen`
+ 
+ ## stack-ids integration
+ 
+-Fully integrated. `SurfaceStatus` and `V25ConstitutionCitation` are re-exported from `stack-ids`.
++Uses `TreatyBundleId`, `SettlementCaseId`, `SettlementReceiptId`,
++`SharedDispositionId`, `LocalDissentId`, `SharedReplaySliceId`,
++`SharedDivergenceReportId`, `TreatySuspensionId`, and others from `stack-ids`.
++Also re-exports `SurfaceStatus` and `V25ConstitutionCitation`.
+diff -ruN ../Libraries2/federated-settlement/tests/divergence_and_suspension_slice.rs federated-settlement/tests/divergence_and_suspension_slice.rs
+--- ../Libraries2/federated-settlement/tests/divergence_and_suspension_slice.rs	2026-03-26 07:56:26.177106667 -0500
++++ federated-settlement/tests/divergence_and_suspension_slice.rs	2026-05-12 20:03:21.105434865 -0500
+@@ -1,3 +1,5 @@
++#![allow(clippy::expect_used)]
++
+ use federated_settlement::{
+     evaluate_divergence_or_suspension, evaluate_shared_replay, SettlementCaseV1,
+ };
+@@ -10,7 +12,7 @@
+ 
+ fn load_fixture(name: &str) -> DivergenceFixture {
+     let path = format!(
+-        "{}/../contracts/fixtures/v18/{name}",
++        "{}/../contracts/fixtures/v16/{name}",
+         env!("CARGO_MANIFEST_DIR")
+     );
+     serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
+diff -ruN ../Libraries2/federated-settlement/tests/replay_publication_slice.rs federated-settlement/tests/replay_publication_slice.rs
+--- ../Libraries2/federated-settlement/tests/replay_publication_slice.rs	2026-03-26 07:56:26.765100824 -0500
++++ federated-settlement/tests/replay_publication_slice.rs	2026-03-14 19:55:38.000000000 -0500
+@@ -8,7 +8,7 @@
+ 
+ fn load_fixture(name: &str) -> ReplayFixture {
+     let path = format!(
+-        "{}/../contracts/fixtures/v18/{name}",
++        "{}/../contracts/fixtures/v16/{name}",
+         env!("CARGO_MANIFEST_DIR")
+     );
+     serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
+diff -ruN ../Libraries2/federated-settlement/tests/settlement_slice.rs federated-settlement/tests/settlement_slice.rs
+--- ../Libraries2/federated-settlement/tests/settlement_slice.rs	2026-03-26 07:56:27.501093510 -0500
++++ federated-settlement/tests/settlement_slice.rs	2026-03-14 18:40:54.000000000 -0500
+@@ -6,7 +6,7 @@
+ 
+ fn load_bundle(name: &str) -> Value {
+     let path = format!(
+-        "{}/../contracts/fixtures/v18/{name}",
++        "{}/../contracts/fixtures/v16/{name}",
+         env!("CARGO_MANIFEST_DIR")
+     );
+     serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()

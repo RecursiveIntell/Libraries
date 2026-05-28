@@ -1,0 +1,16 @@
+COMMAND: python3 scripts/assert_no_canonical_type_duplicates.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T02:33:36-05:00
+canonical_types=633
+aidens_contracts_types=193
+duplicate_findings=0
+PASS: no local aidens-contracts public type definitions duplicate canonical public type names.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T02:33:36-05:00
+COMMAND: bash scripts/assert_no_compatibility_ledgers.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T02:33:36-05:00
+PASS: no compatibility ledger entries or obvious compat/shim files detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T02:33:36-05:00
+PASS: contract ownership verification passed. Evidence in /home/sikmindz/Coding/Libraries/AiDENs/.codex_evidence/contract_ownership/02

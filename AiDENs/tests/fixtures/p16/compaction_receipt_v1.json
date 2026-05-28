@@ -1,0 +1,30 @@
+{
+  "receipt_id": "compaction-report:p16-fixture",
+  "kind": "compaction-report",
+  "plan_id": "subtraction-plan:p16-fixture",
+  "support_core_id": "support-core:p16-fixture",
+  "removal_frontier_id": "removal-frontier:p16-fixture",
+  "invariant_budget_id": "invariant-budget:p16-fixture",
+  "history_report_id": "history-preservation-report:p16-fixture",
+  "operator": "compact",
+  "before_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "after_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "compacted": true,
+  "destructive_deletion": false,
+  "receipt_compaction_approved": true,
+  "source_receipt_ids": [
+    "memory-write:p16-accepted"
+  ],
+  "reason_codes": [
+    "append-only-compaction-recorded"
+  ],
+  "compacted_at": "2026-04-27T00:00:05Z"
+}

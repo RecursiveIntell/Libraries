@@ -1,0 +1,21 @@
+   Compiling aidens-contracts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts)
+   Compiling aidens-permit-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit)
+   Compiling aidens-boundary-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit)
+   Compiling aidens-provider-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit)
+   Compiling aidens-wake-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-wake-kit)
+   Compiling aidens-queue-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-queue-kit)
+   Compiling aidens-config v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config)
+   Compiling aidens-schedule-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-schedule-kit)
+   Compiling aidens-capability-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-capability-kit)
+   Compiling aidens-tool-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit)
+   Compiling aidens-daemon-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-daemon-kit)
+   Compiling aidens-runner v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner)
+   Compiling aidens-app-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit)
+   Compiling aidens-cli v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.41s
+     Running `target/debug/aidens-cli schemas generate schemas`
+error: unexpected argument 'schemas' found
+
+Usage: aidens-cli schemas generate [OPTIONS]
+
+For more information, try '--help'.

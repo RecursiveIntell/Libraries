@@ -1,0 +1,21 @@
+{
+  "artifact_family": "ExampleFamily",
+  "artifact_version": 1,
+  "artifact_id": "af:uuidv7-or-cid",
+  "logical_id": null,
+  "content_digest": "sha256:...",
+  "created_record_time": "2026-04-26T00:00:00Z",
+  "valid_time": {
+    "start": null,
+    "end": null,
+    "bounds": "[)"
+  },
+  "producer": {
+    "crate": "aidens-contracts",
+    "version": "0.1.0",
+    "build_digest": null
+  },
+  "schema_digest": "sha256:...",
+  "parent_artifact_ids": [],
+  "receipt_ids": []
+}

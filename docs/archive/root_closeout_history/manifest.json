@@ -30,7 +30,7 @@
       "group": "prior_pack_numbered_documents",
       "root_globs": ["[0-9][0-9]_*.md", "[0-9][0-9]_*.json", "[0-9][0-9]_*.csv"],
       "archived_dir": "docs/archive/superseded_packs",
-      "archived_count": 63,
+      "archived_count": 72,
       "superseded_by": [
         "00_START_HERE.md",
         "01_MASTER_ISSUE_TENSOR.json",
@@ -47,7 +47,7 @@
       "group": "superseded_canonical_specs",
       "root_globs": ["CANONICAL_STACK_SPEC_V6*.md", "CANONICAL_STACK_SPEC_V7*.md"],
       "archived_dir": "docs/archive/superseded_packs",
-      "archived_count": 63,
+      "archived_count": 72,
       "superseded_by": [
         "CANONICAL_STACK_SPEC_V25_EFFECTIVE_CONSTITUTION_PROFILE_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md",
         "CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md"
@@ -57,7 +57,7 @@
       "group": "superseded_standalone_control_docs",
       "root_globs": ["HOSTILE_AUDIT_REPORT.md", "IMPLEMENTATION_PLAYBOOK.md", "MASTER_ISSUE_MATRIX.*", "SCAN_SUMMARY.json", "TASK_GRAPH.json"],
       "archived_dir": "docs/archive/superseded_packs",
-      "archived_count": 63,
+      "archived_count": 72,
       "superseded_by": [
         "01_MASTER_ISSUE_TENSOR.json",
         "02_MASTER_ISSUE_MATRIX.md",

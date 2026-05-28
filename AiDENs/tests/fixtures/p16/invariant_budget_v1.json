@@ -1,0 +1,23 @@
+{
+  "budget_id": "invariant-budget:p16-fixture",
+  "kind": "invariant-budget",
+  "history_budget_label": "full-history-preserved",
+  "as_of_query_horizon": "all-recorded-history",
+  "preserved_invariants": [
+    "replay",
+    "as-of-query",
+    "claim-support",
+    "receipt-lineage",
+    "legal-retention",
+    "operator-proof"
+  ],
+  "max_removed_claims": 1,
+  "max_removed_evidence_records": 0,
+  "max_compacted_receipts": 0,
+  "requires_receipt_retention": true,
+  "reason_codes": [
+    "full-history-budget-preserves-as-of-queries",
+    "explicit-reduction-limits-declared"
+  ],
+  "declared_at": "2026-04-27T00:00:00Z"
+}

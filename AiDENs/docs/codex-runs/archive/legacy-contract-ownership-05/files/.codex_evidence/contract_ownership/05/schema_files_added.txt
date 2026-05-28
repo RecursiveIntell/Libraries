@@ -1,0 +1,2 @@
+schemas/display-digest/v1.schema.json
+schemas/install-smoke-report/v1.schema.json

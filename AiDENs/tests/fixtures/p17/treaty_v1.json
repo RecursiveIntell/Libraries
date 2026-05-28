@@ -1,0 +1,16 @@
+{
+  "treaty_id": "treaty:fixture",
+  "kind": "treaty",
+  "local_authority_id": "local-fixture",
+  "remote_authority_id": "remote-fixture",
+  "scope": "claims",
+  "settlement_policy": "local-authority-first",
+  "active": true,
+  "trust_root_ids": [
+    "trust-root:fixture"
+  ],
+  "reason_codes": [
+    "treaty-records-federation-boundary"
+  ],
+  "ratified_at": "2026-04-27T00:00:03Z"
+}

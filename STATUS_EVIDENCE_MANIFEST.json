@@ -1,7 +1,7 @@
 {
-  "snapshot": "2026-03-30-hardening-closeout",
-  "captured_at": "2026-03-30",
-  "captured_at_local": "2026-03-30T16:49:26-05:00",
+  "snapshot": "2026-05-13-hardening-closeout",
+  "captured_at": "2026-05-13",
+  "captured_at_local": "2026-05-13T13:08:23-05:00",
   "gate_definition": {
     "path": "scripts/release_gate_set.py",
     "sha256": "6640386b859b75bd122be3f8970fc8b5cfb7b75d48e02a8d433c0346656e36bf",
@@ -81,18 +81,6 @@
     },
     {
       "command": "python3 scripts/check_root_archive_manifest.py",
-      "result": "pass"
-    },
-    {
-      "command": "python3 scripts/check_public_api_docs.py",
-      "result": "pass"
-    },
-    {
-      "command": "bash scripts/check_schema_compat.sh",
-      "result": "pass"
-    },
-    {
-      "command": "make release-lane",
       "result": "fail"
     }
   ],

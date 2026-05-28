@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use authority_delegation::{
     ApprovalMatrixV1, ConflictClassCatalogV1, DelegationMatrixV1, RoleCatalogV1,
 };

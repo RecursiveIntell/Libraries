@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PagerRouteProfileV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "pager_route_profile_id": {
+      "type": "string"
+    },
+    "rotation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "handoff_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ack_timeout_minutes": {
+      "type": "number"
+    },
+    "max_levels": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "schema_version",
+    "pager_route_profile_id",
+    "rotation_refs",
+    "handoff_rules",
+    "ack_timeout_minutes",
+    "max_levels"
+  ]
+}

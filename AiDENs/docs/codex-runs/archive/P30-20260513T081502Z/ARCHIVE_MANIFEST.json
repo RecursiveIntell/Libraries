@@ -1,0 +1,113 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-13T08:15:02Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-00_REPORT.md",
+      "bytes": 2739,
+      "mtime_utc": "2026-05-13T06:26:00Z",
+      "original_path": "handoffs/p30/P30-00_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "ab757b8efad1606bfb1e696518fab4dd338c39a62c9b7bfe43e6b826d83e1df5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-01_REPORT.md",
+      "bytes": 4699,
+      "mtime_utc": "2026-05-13T02:38:21Z",
+      "original_path": "handoffs/p30/P30-01_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "d0fac9382ed2bbc7d119597be732daaa5074e8fd1a80ed98a422e93ab2837df8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-02_REPORT.md",
+      "bytes": 3984,
+      "mtime_utc": "2026-05-13T02:42:56Z",
+      "original_path": "handoffs/p30/P30-02_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "900d39e9e2ee561f597ec55df41fcb13f392aa73802f56a61e4ed5f26a03244e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-03_REPORT.md",
+      "bytes": 4767,
+      "mtime_utc": "2026-05-13T06:09:02Z",
+      "original_path": "handoffs/p30/P30-03_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "9c2aed9bf8e95bdb6639a2106dff69de752bd1c54ed37615f54a0c7bd1ee7d5b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-04_REPORT.md",
+      "bytes": 4312,
+      "mtime_utc": "2026-05-13T06:10:09Z",
+      "original_path": "handoffs/p30/P30-04_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "fba1a0e45769e55b28e14d526f39ebdccbd435e17cfbf685658eaf7c7c8c7a23"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-05_REPORT.md",
+      "bytes": 5251,
+      "mtime_utc": "2026-05-13T06:15:07Z",
+      "original_path": "handoffs/p30/P30-05_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "ad20cee0eb30b34b6118f0b65225778c7aa897b158aa5219bf424fe27003d4fa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-06_REPORT.md",
+      "bytes": 6239,
+      "mtime_utc": "2026-05-13T06:21:28Z",
+      "original_path": "handoffs/p30/P30-06_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "265bd510ecc223869a3c266705aad6f9562b06ac878626b3b97b822ea1814d29"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-07_REPORT.md",
+      "bytes": 4315,
+      "mtime_utc": "2026-05-13T06:25:30Z",
+      "original_path": "handoffs/p30/P30-07_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "8eb10d1350da1dcc65933e9a37ff8e73dcbc5f50fe39a425dc0f54d71a94a2e2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-08_REPORT.md",
+      "bytes": 3003,
+      "mtime_utc": "2026-05-13T06:22:14Z",
+      "original_path": "handoffs/p30/P30-08_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P30",
+      "sha256": "252793a40fd3c4c4bb230c98dacb05e802e61e6264e206c06f605615d984f660"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/scripts/p30_guard.py",
+      "bytes": 4175,
+      "mtime_utc": "2026-05-11T00:44:44Z",
+      "original_path": "scripts/p30_guard.py",
+      "reason": "stale-run-script",
+      "run_id": "P30",
+      "sha256": "470512ba1cff729e7644af9108eaa30a5cef05f21bf7f7c0308883439fbc4859"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P30-20260513T081502Z/files/scripts/p30_verify.sh",
+      "bytes": 1260,
+      "mtime_utc": "2026-05-11T00:45:04Z",
+      "original_path": "scripts/p30_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P30",
+      "sha256": "7140bbe8ef0a4c866f85e4969e732415a1a9f5ff9ca51bb4f58f91fac29d1102"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P30",
+  "skipped_existing": [],
+  "superseded_by": "P31",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

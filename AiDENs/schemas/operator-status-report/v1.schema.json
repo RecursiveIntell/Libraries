@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AiDENsDoctorReportV1": {
+      "properties": {
+        "app_id": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "sections": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/definitions/RuntimeCapabilityTruthV1"
+            },
+            "type": "array"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "app_id",
+        "report_id",
+        "sections"
+      ],
+      "type": "object"
+    },
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "CapabilityStateV1": {
+      "enum": [
+        "configured",
+        "available",
+        "healthy",
+        "registered",
+        "exposed-this-turn",
+        "executable-this-turn",
+        "attempted",
+        "succeeded",
+        "failed",
+        "declared",
+        "invoked",
+        "hidden",
+        "degraded",
+        "fallback-only",
+        "unavailable",
+        "deferred",
+        "disabled",
+        "blocked-by-policy",
+        "requires-approval"
+      ],
+      "type": "string"
+    },
+    "MemoryModeV1": {
+      "enum": [
+        "disabled",
+        "optional",
+        "required"
+      ],
+      "type": "string"
+    },
+    "RuntimeCapabilityTruthV1": {
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "states": {
+          "items": {
+            "$ref": "#/definitions/CapabilityStateV1"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "capability_id",
+        "states"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "app_id": {
+      "type": "string"
+    },
+    "blocked_modes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "config_status": {
+      "type": "string"
+    },
+    "degraded_modes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "doctor": {
+      "$ref": "#/definitions/AiDENsDoctorReportV1"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "memory_mode": {
+      "$ref": "#/definitions/MemoryModeV1"
+    },
+    "next_commands": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "provider_route_label": {
+      "type": "string"
+    },
+    "receipt_store_configured": {
+      "type": "boolean"
+    },
+    "report_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "app_id",
+    "config_status",
+    "doctor",
+    "generated_at",
+    "kind",
+    "memory_mode",
+    "provider_route_label",
+    "receipt_store_configured",
+    "report_id"
+  ],
+  "title": "OperatorStatusReportV1",
+  "type": "object"
+}

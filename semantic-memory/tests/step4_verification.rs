@@ -1,4 +1,5 @@
 //! Step 4 verification tests: Episodes, explainable search, embedding displacement.
+#![allow(clippy::expect_used)]
 
 use semantic_memory::{
     EmbeddingDisplacement, EpisodeMeta, EpisodeOutcome, ExplainedResult, MemoryConfig, MemoryStore,

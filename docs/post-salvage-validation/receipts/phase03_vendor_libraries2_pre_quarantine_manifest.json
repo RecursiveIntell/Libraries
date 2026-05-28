@@ -1,0 +1,892 @@
+[
+  {
+    "root": "/home/sikmindz/Coding/Recall/_vendor/Libraries2",
+    "exists": true,
+    "file_count": 73,
+    "files": [
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/AGENTS.md",
+        "rel": "agent-graph/AGENTS.md",
+        "bytes": 1744,
+        "sha256": "b376e989550cddd88742684b3056d067d0ce514168ce172f261039c3812769d1"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/ARCHITECTURE.md",
+        "rel": "agent-graph/ARCHITECTURE.md",
+        "bytes": 7967,
+        "sha256": "93f931c433ebc65c01ba3433d08ef3bd56d606174c6457a6e351689b533b9a6b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/CHANGELOG.md",
+        "rel": "agent-graph/CHANGELOG.md",
+        "bytes": 522,
+        "sha256": "65d78c2181c325c487484652c41c9c026dabbd4b645d2a4726daf2d20e95f3dc"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/CLAUDE.md",
+        "rel": "agent-graph/CLAUDE.md",
+        "bytes": 1335,
+        "sha256": "47c16af48b0b5c1dc5231a678244344e20678d87314add1df7f0832eb1f53dc6"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/Cargo.lock",
+        "rel": "agent-graph/Cargo.lock",
+        "bytes": 39623,
+        "sha256": "782d6defc8f469c6d0a12bb4a56f8e945fc4ea47628c07d7f5f7a5220eb33a14"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/Cargo.toml",
+        "rel": "agent-graph/Cargo.toml",
+        "bytes": 1063,
+        "sha256": "011e53cf31fd6569d213a4747fabdf7c2cf5d255bc82f10630e4e5bb2c903d6f"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/LICENSE",
+        "rel": "agent-graph/LICENSE",
+        "bytes": 1056,
+        "sha256": "06dcddbb6908a0c6dd4a9e8ec822eea41d5a460a53089fecccc8a68049e99241"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/README.md",
+        "rel": "agent-graph/README.md",
+        "bytes": 879,
+        "sha256": "e8eeff016f79b04802ff9b5b9144a4873d0fd929b1643d50f001c02fb4509d15"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/benches/graph_bench.rs",
+        "rel": "agent-graph/benches/graph_bench.rs",
+        "bytes": 3368,
+        "sha256": "a85fa98739447fd5da0e1db99317f7dae66de6895e97aa736d488c9e9b55f474"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/basic.rs",
+        "rel": "agent-graph/examples/basic.rs",
+        "bytes": 1555,
+        "sha256": "30ce6881b711973ffd05c2c91db63e53077de855070bef032018821b29a6a1cd"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/checkpointing.rs",
+        "rel": "agent-graph/examples/checkpointing.rs",
+        "bytes": 2881,
+        "sha256": "3633333b437d9fba39e932a18b95d54f1152e035c862fff019bd20090cb70076"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/conditional.rs",
+        "rel": "agent-graph/examples/conditional.rs",
+        "bytes": 2273,
+        "sha256": "f70bd9822c377f169af007fed48d7d6e8c79c6026629085f742f366c3cfa3a4c"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/human_in_loop.rs",
+        "rel": "agent-graph/examples/human_in_loop.rs",
+        "bytes": 6399,
+        "sha256": "2c1326f010d5a2107e39962c10324e1c1097a20bd6f173305eba112bd44c78ae"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/loop_example.rs",
+        "rel": "agent-graph/examples/loop_example.rs",
+        "bytes": 2158,
+        "sha256": "d614dbe6b7e562245a8ed9236b42304b9c5f91497ac8aeac8ba1bfb179069d31"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/map_reduce.rs",
+        "rel": "agent-graph/examples/map_reduce.rs",
+        "bytes": 4188,
+        "sha256": "63be6f08321bc6cb866a0a38e4a33fd1a7f8921118f7645f2734ed15be6c0968"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/parallel.rs",
+        "rel": "agent-graph/examples/parallel.rs",
+        "bytes": 4895,
+        "sha256": "f5fe03709a97025257c2645e41a888a064d65ab3a3c3e1a51b4dadef3e60b308"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/pipeline_node.rs",
+        "rel": "agent-graph/examples/pipeline_node.rs",
+        "bytes": 3088,
+        "sha256": "ba6321cce54dd3009ce63b5c906bc48a904023fc8b2c863f67ec789b84a3bab5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/reducers.rs",
+        "rel": "agent-graph/examples/reducers.rs",
+        "bytes": 4417,
+        "sha256": "8385fb3411a6578a761f8ca67504446580a0b532853f6f84d26f7a5aee7fafb5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/research_agent.rs",
+        "rel": "agent-graph/examples/research_agent.rs",
+        "bytes": 3757,
+        "sha256": "ff7f7730fa88a035d2ec696838bbb83ef374ddfc01b1eaad127c865cdb9b5744"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/retry.rs",
+        "rel": "agent-graph/examples/retry.rs",
+        "bytes": 6864,
+        "sha256": "9dd526bdfc911bace0683a1e8db3c941b7371c22e885dc69fe57b1c82130ac26"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/streaming.rs",
+        "rel": "agent-graph/examples/streaming.rs",
+        "bytes": 5283,
+        "sha256": "3fe37cd11ad19ebd99b19329626fcf41b6d6866da4ee65b6e9194a5c8a8ab4d3"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/subgraph.rs",
+        "rel": "agent-graph/examples/subgraph.rs",
+        "bytes": 4129,
+        "sha256": "6f8ddaf77a6863a88f97fa074146311493d759b3f5249a9277505e99b306f5ef"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/examples/visualization.rs",
+        "rel": "agent-graph/examples/visualization.rs",
+        "bytes": 1764,
+        "sha256": "1a956b7d16e97f3294903fc30eaf3e8bf90d6557557b7ac7a02b4dd90e32d296"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/builder.rs",
+        "rel": "agent-graph/src/builder.rs",
+        "bytes": 7066,
+        "sha256": "889ecee708b4133a009bfebfb9d0f6a1158f79a2e0ba9f0d8594675fc847f7f5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/checkpoint.rs",
+        "rel": "agent-graph/src/checkpoint.rs",
+        "bytes": 5518,
+        "sha256": "a7dc671bd000366abfda4fb011211719e221de4883add9b9053d92064bd218fc"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/checkpoint_store.rs",
+        "rel": "agent-graph/src/checkpoint_store.rs",
+        "bytes": 15158,
+        "sha256": "ebecbe1c71df257245bafefd621af043256059042073b4dbda41c553422d1ff3"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/checkpointer.rs",
+        "rel": "agent-graph/src/checkpointer.rs",
+        "bytes": 3577,
+        "sha256": "e862db1c13ad6711b2a50ea140547caa38ba9a22e1df3131b39cabe74abf2cce"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/command.rs",
+        "rel": "agent-graph/src/command.rs",
+        "bytes": 2625,
+        "sha256": "0829e49231321fb1875a78920106b8680a784f5e66dd08df39f6e3c12cc7e4e6"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/config.rs",
+        "rel": "agent-graph/src/config.rs",
+        "bytes": 3946,
+        "sha256": "bcd901c41233fd6f4666a22a6850daf010c76cda05dabf28e260c592ff6f86f5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/edge.rs",
+        "rel": "agent-graph/src/edge.rs",
+        "bytes": 560,
+        "sha256": "dc7e6af09fd4cc717e1da4a623b488b80f6c6a357fbd72f7dbae806ca5c27df6"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/engine.rs",
+        "rel": "agent-graph/src/engine.rs",
+        "bytes": 41942,
+        "sha256": "386f8ab917d7b8bee6fce691188798c12555dce2cc06269d8723664db75c3e9b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/error.rs",
+        "rel": "agent-graph/src/error.rs",
+        "bytes": 2609,
+        "sha256": "55420331dc1228e71562b0c88ad8644495568a76fe11ce1c88d8bab5d46568fb"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/event_sink.rs",
+        "rel": "agent-graph/src/event_sink.rs",
+        "bytes": 11458,
+        "sha256": "2572082ea574b0e83eb05c3d4e7d230e95e1115c45a61a4d34bb50b2d3283b7e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/executor.rs",
+        "rel": "agent-graph/src/executor.rs",
+        "bytes": 1690,
+        "sha256": "ce010458e5bc0dc554de25e4e63166c0b861692582b91076733175c2c619bbb4"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/graph.rs",
+        "rel": "agent-graph/src/graph.rs",
+        "bytes": 11124,
+        "sha256": "e11a2541c434d7f83f83bb863b66779a2e683ed09a2eda899d0ee0fe7dbe59dd"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/interrupt.rs",
+        "rel": "agent-graph/src/interrupt.rs",
+        "bytes": 2241,
+        "sha256": "992d7d933efb854048b89c987d1da4dc508f26e9d534a5c7b9cd691537486a2d"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/join.rs",
+        "rel": "agent-graph/src/join.rs",
+        "bytes": 4287,
+        "sha256": "fe797e1686e2303b7b505e1d9a7a3ffe89015e987858d7a5da83663ba5f66ff6"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/lib.rs",
+        "rel": "agent-graph/src/lib.rs",
+        "bytes": 1474,
+        "sha256": "f0a6d95958ad156af83288fa93fc4cbee90714903e330d9cadc379e800a3c377"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/node.rs",
+        "rel": "agent-graph/src/node.rs",
+        "bytes": 4765,
+        "sha256": "609a72782e2af0fa9d7d50d872a88db843c03aadb90c6b80963980427a940c13"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/outcome.rs",
+        "rel": "agent-graph/src/outcome.rs",
+        "bytes": 2438,
+        "sha256": "0a610d36aeba88de90f03f8c73ca878e0b70067ec24eae795c6c243eb06a1419"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/payload.rs",
+        "rel": "agent-graph/src/payload.rs",
+        "bytes": 7079,
+        "sha256": "c7c571cb466beb5587aed404cef33158c0d0303b5b1235e104b8180d3f97fd9e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/prelude.rs",
+        "rel": "agent-graph/src/prelude.rs",
+        "bytes": 1843,
+        "sha256": "64ab6618df3188ea78e8d0899f673f551f168394ef6a661c56bedab58a873bc0"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/reducer.rs",
+        "rel": "agent-graph/src/reducer.rs",
+        "bytes": 4239,
+        "sha256": "4496c63518d321777d9b2bbdf62750c89b5ce1be8ca69aa4e303bd70e84a870e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/retry.rs",
+        "rel": "agent-graph/src/retry.rs",
+        "bytes": 3783,
+        "sha256": "671a8972e24df4c6e932cfc496fc02391ef0325439785cffc494b9c0bc8fc264"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/router.rs",
+        "rel": "agent-graph/src/router.rs",
+        "bytes": 3677,
+        "sha256": "0a2728a4f80e830adc791b2e7ce23f6e553f011a573ad5a54865909903cfd23e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/state.rs",
+        "rel": "agent-graph/src/state.rs",
+        "bytes": 18017,
+        "sha256": "0cb725c27da5c3c178af712ad42e57830732a395a7f40ff5da3efa44af48cc27"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/src/stream.rs",
+        "rel": "agent-graph/src/stream.rs",
+        "bytes": 1252,
+        "sha256": "cc8a9992daf4c3fe58c7fb95be397a2f427491a8f853b4d7c0ce156604c878db"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/checkpointer_tests.rs",
+        "rel": "agent-graph/tests/checkpointer_tests.rs",
+        "bytes": 6255,
+        "sha256": "8b530adbceccc6340c99de64472407a91192fcbd2f9e5d92716086e20f58bf24"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/execution_tests.rs",
+        "rel": "agent-graph/tests/execution_tests.rs",
+        "bytes": 8559,
+        "sha256": "60c992ba22fce28b4ac92c2159d68644cf86af8a4168291f3148f105b1dc180a"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/integration_tests.rs",
+        "rel": "agent-graph/tests/integration_tests.rs",
+        "bytes": 10450,
+        "sha256": "85697a10077040a5f5250f2afb6d2de3d5ec91797a170520a7a649563484e65e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/interrupt_tests.rs",
+        "rel": "agent-graph/tests/interrupt_tests.rs",
+        "bytes": 7343,
+        "sha256": "7417d68290c258ceb044a175a4ce03ccc845f482d83fe68f28b9c1145281b820"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/parallel_tests.rs",
+        "rel": "agent-graph/tests/parallel_tests.rs",
+        "bytes": 11650,
+        "sha256": "bae8f3db52611cc8f7b4d3a86c07d0c21081f245e5f061d7543a35634e95f765"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/public_error_surface.rs",
+        "rel": "agent-graph/tests/public_error_surface.rs",
+        "bytes": 510,
+        "sha256": "c77cfe527e7b3b7d1afa5162d8b03cadf8c3eb5a0026befd7431b4000753de7b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/reducer_tests.rs",
+        "rel": "agent-graph/tests/reducer_tests.rs",
+        "bytes": 4574,
+        "sha256": "c83673db020e34548aab74b7de07ec4c8a9e5e43aba7656853fd71bbd9a74be9"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/retry_tests.rs",
+        "rel": "agent-graph/tests/retry_tests.rs",
+        "bytes": 10936,
+        "sha256": "4b482b4d7aa949bd65833e5506fcd306a9fa4e87f4db93079bbd33cdb467a8df"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/routing_tests.rs",
+        "rel": "agent-graph/tests/routing_tests.rs",
+        "bytes": 5341,
+        "sha256": "73856056f87f674fb1eb9b2277fd83b3f7fb006f34564272fe8b144b6eb061c5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/runtime_tests.rs",
+        "rel": "agent-graph/tests/runtime_tests.rs",
+        "bytes": 29296,
+        "sha256": "4d0ce48cbe61c3775e2d55fd615e2ca7af4dde2836cae5b95d25ed70553116dc"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/state_tests.rs",
+        "rel": "agent-graph/tests/state_tests.rs",
+        "bytes": 4667,
+        "sha256": "f0259c3dfdacdd361e0ccc77a5b67ebbf57a4fae05753fa47cdd02666b648511"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/step5_verification.rs",
+        "rel": "agent-graph/tests/step5_verification.rs",
+        "bytes": 17337,
+        "sha256": "714b15123b94b629435ba65b33d6c5422972e0f66ed971c7f4decb59bd282f05"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/streaming_tests.rs",
+        "rel": "agent-graph/tests/streaming_tests.rs",
+        "bytes": 3966,
+        "sha256": "904c172fae58ff58863812743a0691035a93b7bc996b8854e98eeec9e773a5b9"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/agent-graph/tests/subgraph_tests.rs",
+        "rel": "agent-graph/tests/subgraph_tests.rs",
+        "bytes": 6507,
+        "sha256": "a73263c4ea3cc942c1ac74d6824095af0d498a8afa65610aa2a26c98e8055d6c"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/CHANGELOG.md",
+        "rel": "job-queue/CHANGELOG.md",
+        "bytes": 310,
+        "sha256": "2422be293d46d5f8a54b43f6b478363f78cd6492307ef24c120944de257a2e54"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/Cargo.lock",
+        "rel": "job-queue/Cargo.lock",
+        "bytes": 28968,
+        "sha256": "1ac4f57c0d88e3ed4792bf469c8b7db60b60905d05e9865b9bc2adf472973177"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/Cargo.toml",
+        "rel": "job-queue/Cargo.toml",
+        "bytes": 706,
+        "sha256": "5a8d0132af076f5dc4b3f87d64c64b3e40d4be864702ec9babcbbd6f3ea24083"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/README.md",
+        "rel": "job-queue/README.md",
+        "bytes": 901,
+        "sha256": "54a7929a82186848fa75f457fb493c5de99c3939d61248c8de85f1b88cd486f9"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/src/config.rs",
+        "rel": "job-queue/src/config.rs",
+        "bytes": 3540,
+        "sha256": "68244e5437364abe6a15b9f5d3f6cbdb97c75a706b77fc9783ebd0317547dc1b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/src/db.rs",
+        "rel": "job-queue/src/db.rs",
+        "bytes": 48696,
+        "sha256": "baf32077ee7005a5ac7058f433698fc72aa68339856a5ca4fcaae4628341c2ee"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/src/error.rs",
+        "rel": "job-queue/src/error.rs",
+        "bytes": 1580,
+        "sha256": "4bff3fb601314a3f46358d39d9e26286910e7dd94824b0f825486ecab0ab847b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/src/events.rs",
+        "rel": "job-queue/src/events.rs",
+        "bytes": 9924,
+        "sha256": "36f383b83bd37cf95a5ea2e7d33cec0421e223f29648ce8c02fd5f05291bdbdf"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/src/executor.rs",
+        "rel": "job-queue/src/executor.rs",
+        "bytes": 31846,
+        "sha256": "8ae086ca53f18d1c7d168f3293d8f414460cf25ec2f53ad78b944bc51056b63c"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/src/lib.rs",
+        "rel": "job-queue/src/lib.rs",
+        "bytes": 12143,
+        "sha256": "73286b9007a29af5d05a03a60be1e14f2da4b0ba1cd716dfb753e32d9139e1ef"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/src/queue.rs",
+        "rel": "job-queue/src/queue.rs",
+        "bytes": 7505,
+        "sha256": "ab730be367bd3eff7307c1dffb2009e4d031875410b8ff6839f3200ef013a662"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall/_vendor/Libraries2/job-queue/src/types.rs",
+        "rel": "job-queue/src/types.rs",
+        "bytes": 11890,
+        "sha256": "5dba029f34d740057ee27a590288cf7f5f95b94150875d20add433a065feb6b5"
+      }
+    ]
+  },
+  {
+    "root": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2",
+    "exists": true,
+    "file_count": 73,
+    "files": [
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/AGENTS.md",
+        "rel": "agent-graph/AGENTS.md",
+        "bytes": 1744,
+        "sha256": "b376e989550cddd88742684b3056d067d0ce514168ce172f261039c3812769d1"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/ARCHITECTURE.md",
+        "rel": "agent-graph/ARCHITECTURE.md",
+        "bytes": 7967,
+        "sha256": "93f931c433ebc65c01ba3433d08ef3bd56d606174c6457a6e351689b533b9a6b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/CHANGELOG.md",
+        "rel": "agent-graph/CHANGELOG.md",
+        "bytes": 522,
+        "sha256": "65d78c2181c325c487484652c41c9c026dabbd4b645d2a4726daf2d20e95f3dc"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/CLAUDE.md",
+        "rel": "agent-graph/CLAUDE.md",
+        "bytes": 1335,
+        "sha256": "47c16af48b0b5c1dc5231a678244344e20678d87314add1df7f0832eb1f53dc6"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/Cargo.lock",
+        "rel": "agent-graph/Cargo.lock",
+        "bytes": 39623,
+        "sha256": "782d6defc8f469c6d0a12bb4a56f8e945fc4ea47628c07d7f5f7a5220eb33a14"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/Cargo.toml",
+        "rel": "agent-graph/Cargo.toml",
+        "bytes": 1063,
+        "sha256": "011e53cf31fd6569d213a4747fabdf7c2cf5d255bc82f10630e4e5bb2c903d6f"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/LICENSE",
+        "rel": "agent-graph/LICENSE",
+        "bytes": 1056,
+        "sha256": "06dcddbb6908a0c6dd4a9e8ec822eea41d5a460a53089fecccc8a68049e99241"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/README.md",
+        "rel": "agent-graph/README.md",
+        "bytes": 879,
+        "sha256": "e8eeff016f79b04802ff9b5b9144a4873d0fd929b1643d50f001c02fb4509d15"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/benches/graph_bench.rs",
+        "rel": "agent-graph/benches/graph_bench.rs",
+        "bytes": 3368,
+        "sha256": "a85fa98739447fd5da0e1db99317f7dae66de6895e97aa736d488c9e9b55f474"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/basic.rs",
+        "rel": "agent-graph/examples/basic.rs",
+        "bytes": 1555,
+        "sha256": "30ce6881b711973ffd05c2c91db63e53077de855070bef032018821b29a6a1cd"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/checkpointing.rs",
+        "rel": "agent-graph/examples/checkpointing.rs",
+        "bytes": 2881,
+        "sha256": "3633333b437d9fba39e932a18b95d54f1152e035c862fff019bd20090cb70076"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/conditional.rs",
+        "rel": "agent-graph/examples/conditional.rs",
+        "bytes": 2273,
+        "sha256": "f70bd9822c377f169af007fed48d7d6e8c79c6026629085f742f366c3cfa3a4c"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/human_in_loop.rs",
+        "rel": "agent-graph/examples/human_in_loop.rs",
+        "bytes": 6399,
+        "sha256": "2c1326f010d5a2107e39962c10324e1c1097a20bd6f173305eba112bd44c78ae"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/loop_example.rs",
+        "rel": "agent-graph/examples/loop_example.rs",
+        "bytes": 2158,
+        "sha256": "d614dbe6b7e562245a8ed9236b42304b9c5f91497ac8aeac8ba1bfb179069d31"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/map_reduce.rs",
+        "rel": "agent-graph/examples/map_reduce.rs",
+        "bytes": 4188,
+        "sha256": "63be6f08321bc6cb866a0a38e4a33fd1a7f8921118f7645f2734ed15be6c0968"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/parallel.rs",
+        "rel": "agent-graph/examples/parallel.rs",
+        "bytes": 4895,
+        "sha256": "f5fe03709a97025257c2645e41a888a064d65ab3a3c3e1a51b4dadef3e60b308"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/pipeline_node.rs",
+        "rel": "agent-graph/examples/pipeline_node.rs",
+        "bytes": 3088,
+        "sha256": "ba6321cce54dd3009ce63b5c906bc48a904023fc8b2c863f67ec789b84a3bab5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/reducers.rs",
+        "rel": "agent-graph/examples/reducers.rs",
+        "bytes": 4417,
+        "sha256": "8385fb3411a6578a761f8ca67504446580a0b532853f6f84d26f7a5aee7fafb5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/research_agent.rs",
+        "rel": "agent-graph/examples/research_agent.rs",
+        "bytes": 3757,
+        "sha256": "ff7f7730fa88a035d2ec696838bbb83ef374ddfc01b1eaad127c865cdb9b5744"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/retry.rs",
+        "rel": "agent-graph/examples/retry.rs",
+        "bytes": 6864,
+        "sha256": "9dd526bdfc911bace0683a1e8db3c941b7371c22e885dc69fe57b1c82130ac26"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/streaming.rs",
+        "rel": "agent-graph/examples/streaming.rs",
+        "bytes": 5283,
+        "sha256": "3fe37cd11ad19ebd99b19329626fcf41b6d6866da4ee65b6e9194a5c8a8ab4d3"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/subgraph.rs",
+        "rel": "agent-graph/examples/subgraph.rs",
+        "bytes": 4129,
+        "sha256": "6f8ddaf77a6863a88f97fa074146311493d759b3f5249a9277505e99b306f5ef"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/examples/visualization.rs",
+        "rel": "agent-graph/examples/visualization.rs",
+        "bytes": 1764,
+        "sha256": "1a956b7d16e97f3294903fc30eaf3e8bf90d6557557b7ac7a02b4dd90e32d296"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/builder.rs",
+        "rel": "agent-graph/src/builder.rs",
+        "bytes": 7066,
+        "sha256": "889ecee708b4133a009bfebfb9d0f6a1158f79a2e0ba9f0d8594675fc847f7f5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/checkpoint.rs",
+        "rel": "agent-graph/src/checkpoint.rs",
+        "bytes": 5518,
+        "sha256": "a7dc671bd000366abfda4fb011211719e221de4883add9b9053d92064bd218fc"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/checkpoint_store.rs",
+        "rel": "agent-graph/src/checkpoint_store.rs",
+        "bytes": 15158,
+        "sha256": "ebecbe1c71df257245bafefd621af043256059042073b4dbda41c553422d1ff3"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/checkpointer.rs",
+        "rel": "agent-graph/src/checkpointer.rs",
+        "bytes": 3577,
+        "sha256": "e862db1c13ad6711b2a50ea140547caa38ba9a22e1df3131b39cabe74abf2cce"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/command.rs",
+        "rel": "agent-graph/src/command.rs",
+        "bytes": 2625,
+        "sha256": "0829e49231321fb1875a78920106b8680a784f5e66dd08df39f6e3c12cc7e4e6"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/config.rs",
+        "rel": "agent-graph/src/config.rs",
+        "bytes": 3946,
+        "sha256": "bcd901c41233fd6f4666a22a6850daf010c76cda05dabf28e260c592ff6f86f5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/edge.rs",
+        "rel": "agent-graph/src/edge.rs",
+        "bytes": 560,
+        "sha256": "dc7e6af09fd4cc717e1da4a623b488b80f6c6a357fbd72f7dbae806ca5c27df6"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/engine.rs",
+        "rel": "agent-graph/src/engine.rs",
+        "bytes": 41942,
+        "sha256": "386f8ab917d7b8bee6fce691188798c12555dce2cc06269d8723664db75c3e9b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/error.rs",
+        "rel": "agent-graph/src/error.rs",
+        "bytes": 2609,
+        "sha256": "55420331dc1228e71562b0c88ad8644495568a76fe11ce1c88d8bab5d46568fb"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/event_sink.rs",
+        "rel": "agent-graph/src/event_sink.rs",
+        "bytes": 11458,
+        "sha256": "2572082ea574b0e83eb05c3d4e7d230e95e1115c45a61a4d34bb50b2d3283b7e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/executor.rs",
+        "rel": "agent-graph/src/executor.rs",
+        "bytes": 1690,
+        "sha256": "ce010458e5bc0dc554de25e4e63166c0b861692582b91076733175c2c619bbb4"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/graph.rs",
+        "rel": "agent-graph/src/graph.rs",
+        "bytes": 11124,
+        "sha256": "e11a2541c434d7f83f83bb863b66779a2e683ed09a2eda899d0ee0fe7dbe59dd"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/interrupt.rs",
+        "rel": "agent-graph/src/interrupt.rs",
+        "bytes": 2241,
+        "sha256": "992d7d933efb854048b89c987d1da4dc508f26e9d534a5c7b9cd691537486a2d"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/join.rs",
+        "rel": "agent-graph/src/join.rs",
+        "bytes": 4287,
+        "sha256": "fe797e1686e2303b7b505e1d9a7a3ffe89015e987858d7a5da83663ba5f66ff6"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/lib.rs",
+        "rel": "agent-graph/src/lib.rs",
+        "bytes": 1474,
+        "sha256": "f0a6d95958ad156af83288fa93fc4cbee90714903e330d9cadc379e800a3c377"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/node.rs",
+        "rel": "agent-graph/src/node.rs",
+        "bytes": 4765,
+        "sha256": "609a72782e2af0fa9d7d50d872a88db843c03aadb90c6b80963980427a940c13"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/outcome.rs",
+        "rel": "agent-graph/src/outcome.rs",
+        "bytes": 2438,
+        "sha256": "0a610d36aeba88de90f03f8c73ca878e0b70067ec24eae795c6c243eb06a1419"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/payload.rs",
+        "rel": "agent-graph/src/payload.rs",
+        "bytes": 7079,
+        "sha256": "c7c571cb466beb5587aed404cef33158c0d0303b5b1235e104b8180d3f97fd9e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/prelude.rs",
+        "rel": "agent-graph/src/prelude.rs",
+        "bytes": 1843,
+        "sha256": "64ab6618df3188ea78e8d0899f673f551f168394ef6a661c56bedab58a873bc0"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/reducer.rs",
+        "rel": "agent-graph/src/reducer.rs",
+        "bytes": 4239,
+        "sha256": "4496c63518d321777d9b2bbdf62750c89b5ce1be8ca69aa4e303bd70e84a870e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/retry.rs",
+        "rel": "agent-graph/src/retry.rs",
+        "bytes": 3783,
+        "sha256": "671a8972e24df4c6e932cfc496fc02391ef0325439785cffc494b9c0bc8fc264"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/router.rs",
+        "rel": "agent-graph/src/router.rs",
+        "bytes": 3677,
+        "sha256": "0a2728a4f80e830adc791b2e7ce23f6e553f011a573ad5a54865909903cfd23e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/state.rs",
+        "rel": "agent-graph/src/state.rs",
+        "bytes": 18017,
+        "sha256": "0cb725c27da5c3c178af712ad42e57830732a395a7f40ff5da3efa44af48cc27"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/src/stream.rs",
+        "rel": "agent-graph/src/stream.rs",
+        "bytes": 1252,
+        "sha256": "cc8a9992daf4c3fe58c7fb95be397a2f427491a8f853b4d7c0ce156604c878db"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/checkpointer_tests.rs",
+        "rel": "agent-graph/tests/checkpointer_tests.rs",
+        "bytes": 6255,
+        "sha256": "8b530adbceccc6340c99de64472407a91192fcbd2f9e5d92716086e20f58bf24"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/execution_tests.rs",
+        "rel": "agent-graph/tests/execution_tests.rs",
+        "bytes": 8559,
+        "sha256": "60c992ba22fce28b4ac92c2159d68644cf86af8a4168291f3148f105b1dc180a"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/integration_tests.rs",
+        "rel": "agent-graph/tests/integration_tests.rs",
+        "bytes": 10450,
+        "sha256": "85697a10077040a5f5250f2afb6d2de3d5ec91797a170520a7a649563484e65e"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/interrupt_tests.rs",
+        "rel": "agent-graph/tests/interrupt_tests.rs",
+        "bytes": 7343,
+        "sha256": "7417d68290c258ceb044a175a4ce03ccc845f482d83fe68f28b9c1145281b820"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/parallel_tests.rs",
+        "rel": "agent-graph/tests/parallel_tests.rs",
+        "bytes": 11650,
+        "sha256": "bae8f3db52611cc8f7b4d3a86c07d0c21081f245e5f061d7543a35634e95f765"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/public_error_surface.rs",
+        "rel": "agent-graph/tests/public_error_surface.rs",
+        "bytes": 510,
+        "sha256": "c77cfe527e7b3b7d1afa5162d8b03cadf8c3eb5a0026befd7431b4000753de7b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/reducer_tests.rs",
+        "rel": "agent-graph/tests/reducer_tests.rs",
+        "bytes": 4574,
+        "sha256": "c83673db020e34548aab74b7de07ec4c8a9e5e43aba7656853fd71bbd9a74be9"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/retry_tests.rs",
+        "rel": "agent-graph/tests/retry_tests.rs",
+        "bytes": 10936,
+        "sha256": "4b482b4d7aa949bd65833e5506fcd306a9fa4e87f4db93079bbd33cdb467a8df"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/routing_tests.rs",
+        "rel": "agent-graph/tests/routing_tests.rs",
+        "bytes": 5341,
+        "sha256": "73856056f87f674fb1eb9b2277fd83b3f7fb006f34564272fe8b144b6eb061c5"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/runtime_tests.rs",
+        "rel": "agent-graph/tests/runtime_tests.rs",
+        "bytes": 29296,
+        "sha256": "4d0ce48cbe61c3775e2d55fd615e2ca7af4dde2836cae5b95d25ed70553116dc"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/state_tests.rs",
+        "rel": "agent-graph/tests/state_tests.rs",
+        "bytes": 4667,
+        "sha256": "f0259c3dfdacdd361e0ccc77a5b67ebbf57a4fae05753fa47cdd02666b648511"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/step5_verification.rs",
+        "rel": "agent-graph/tests/step5_verification.rs",
+        "bytes": 17337,
+        "sha256": "714b15123b94b629435ba65b33d6c5422972e0f66ed971c7f4decb59bd282f05"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/streaming_tests.rs",
+        "rel": "agent-graph/tests/streaming_tests.rs",
+        "bytes": 3966,
+        "sha256": "904c172fae58ff58863812743a0691035a93b7bc996b8854e98eeec9e773a5b9"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/agent-graph/tests/subgraph_tests.rs",
+        "rel": "agent-graph/tests/subgraph_tests.rs",
+        "bytes": 6507,
+        "sha256": "a73263c4ea3cc942c1ac74d6824095af0d498a8afa65610aa2a26c98e8055d6c"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/CHANGELOG.md",
+        "rel": "job-queue/CHANGELOG.md",
+        "bytes": 310,
+        "sha256": "2422be293d46d5f8a54b43f6b478363f78cd6492307ef24c120944de257a2e54"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/Cargo.lock",
+        "rel": "job-queue/Cargo.lock",
+        "bytes": 28968,
+        "sha256": "1ac4f57c0d88e3ed4792bf469c8b7db60b60905d05e9865b9bc2adf472973177"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/Cargo.toml",
+        "rel": "job-queue/Cargo.toml",
+        "bytes": 706,
+        "sha256": "5a8d0132af076f5dc4b3f87d64c64b3e40d4be864702ec9babcbbd6f3ea24083"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/README.md",
+        "rel": "job-queue/README.md",
+        "bytes": 901,
+        "sha256": "54a7929a82186848fa75f457fb493c5de99c3939d61248c8de85f1b88cd486f9"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/src/config.rs",
+        "rel": "job-queue/src/config.rs",
+        "bytes": 3540,
+        "sha256": "68244e5437364abe6a15b9f5d3f6cbdb97c75a706b77fc9783ebd0317547dc1b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/src/db.rs",
+        "rel": "job-queue/src/db.rs",
+        "bytes": 48696,
+        "sha256": "baf32077ee7005a5ac7058f433698fc72aa68339856a5ca4fcaae4628341c2ee"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/src/error.rs",
+        "rel": "job-queue/src/error.rs",
+        "bytes": 1580,
+        "sha256": "4bff3fb601314a3f46358d39d9e26286910e7dd94824b0f825486ecab0ab847b"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/src/events.rs",
+        "rel": "job-queue/src/events.rs",
+        "bytes": 9924,
+        "sha256": "36f383b83bd37cf95a5ea2e7d33cec0421e223f29648ce8c02fd5f05291bdbdf"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/src/executor.rs",
+        "rel": "job-queue/src/executor.rs",
+        "bytes": 31864,
+        "sha256": "84407868a50f2608a7a31b95d3ce8ea1e06b9880e600b4cf5eca163d7ea7166c"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/src/lib.rs",
+        "rel": "job-queue/src/lib.rs",
+        "bytes": 12143,
+        "sha256": "73286b9007a29af5d05a03a60be1e14f2da4b0ba1cd716dfb753e32d9139e1ef"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/src/queue.rs",
+        "rel": "job-queue/src/queue.rs",
+        "bytes": 7505,
+        "sha256": "ab730be367bd3eff7307c1dffb2009e4d031875410b8ff6839f3200ef013a662"
+      },
+      {
+        "path": "/home/sikmindz/Coding/Recall-Coding/_vendor/Libraries2/job-queue/src/types.rs",
+        "rel": "job-queue/src/types.rs",
+        "bytes": 11899,
+        "sha256": "2b6a51143207f972eedb92a4349fbd2c8da6a5c2d3f9716fb81e17847bf84be8"
+      }
+    ]
+  }
+]

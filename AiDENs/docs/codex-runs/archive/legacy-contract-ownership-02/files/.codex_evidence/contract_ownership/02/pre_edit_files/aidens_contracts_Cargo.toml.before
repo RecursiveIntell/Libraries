@@ -1,0 +1,25 @@
+[package]
+name = "aidens-contracts"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+chrono.workspace = true
+kernel-execution.workspace = true
+kernel-oracles.workspace = true
+llm-tool-runtime.workspace = true
+recursive-kernel-core.workspace = true
+schemars.workspace = true
+semantic-memory-forge.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+stack-ids.workspace = true
+uuid.workspace = true
+verification-adjudication.workspace = true
+verification-control.workspace = true

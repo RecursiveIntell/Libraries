@@ -1,0 +1,98 @@
+[
+  {
+    "id": "P26-001",
+    "priority": "P0",
+    "area": "Replay parity",
+    "problem": "Extracted package self-replay cargo gates failed in P25",
+    "required_fix": "Fix package self-replay or classify exact environment cause with executable reproduction",
+    "acceptance": "No final P26 success if replay failure is untriaged"
+  },
+  {
+    "id": "P26-002",
+    "priority": "P0",
+    "area": "AgentSpecV1",
+    "problem": "AiDENs lacks one declarative agent contract tying profile/tools/memory/permits/evidence",
+    "required_fix": "Add AgentSpecV1 + schema + fixtures + CLI validation",
+    "acceptance": "Must not invent canonical sibling semantics"
+  },
+  {
+    "id": "P26-003",
+    "priority": "P0",
+    "area": "Plan/Act/Verify loop",
+    "problem": "Current local demo proves pieces, not a reusable advanced loop",
+    "required_fix": "Implement reusable local PlanActVerify loop with bounded turns, receipts, verification ladder, abstention",
+    "acceptance": "No cloud, no unbounded autonomy"
+  },
+  {
+    "id": "P26-004",
+    "priority": "P0",
+    "area": "Memory grounding",
+    "problem": "Memory seam fixture exists but is not yet an agent grounding primitive",
+    "required_fix": "Agent run can import/query/use memory seam evidence with view/widening disclosure",
+    "acceptance": "No local memory truth store"
+  },
+  {
+    "id": "P26-005",
+    "priority": "P0",
+    "area": "Coding agent v1",
+    "problem": "Flagship demo is fixture-scoped",
+    "required_fix": "Generalize supported-local coding agent against sandbox roots with read/search/propose/apply/check/inspect",
+    "acceptance": "Permit-gated writes only"
+  },
+  {
+    "id": "P26-006",
+    "priority": "P0",
+    "area": "RunBundleV3",
+    "problem": "P25 run evidence exists but advanced loop needs richer artifact shape",
+    "required_fix": "Add AiDENsRunBundleV3 or equivalent extension preserving V2 compatibility",
+    "acceptance": "Backpointers to canonical execution context required"
+  },
+  {
+    "id": "P26-007",
+    "priority": "P1",
+    "area": "Repair/abstention",
+    "problem": "Failure honesty exists but not full agent loop behavior",
+    "required_fix": "Explicit AbstentionReceipt/RepairPlan display artifacts for blocked/ambiguous/failed tasks",
+    "acceptance": "No fake completion"
+  },
+  {
+    "id": "P26-008",
+    "priority": "P1",
+    "area": "Verifier",
+    "problem": "P25 verifier is hygiene-focused",
+    "required_fix": "P26 verifier checks AgentSpec, loop receipts, memory grounding, coding agent, replay",
+    "acceptance": "All checks emit evidence"
+  },
+  {
+    "id": "P26-009",
+    "priority": "P1",
+    "area": "CLI/UX",
+    "problem": "Existing commands are fragmented",
+    "required_fix": "Add/normalize agent commands: agent validate/run/inspect/doctor/new if safe",
+    "acceptance": "Avoid breaking old commands"
+  },
+  {
+    "id": "P26-010",
+    "priority": "P1",
+    "area": "V10-ready seams",
+    "problem": "Need future graph/kernel interface without V10 implementation",
+    "required_fix": "Add design-only descriptors and tests proving no storage/retrieval/inference graph collapse",
+    "acceptance": "Do not implement V10 runtime"
+  },
+  {
+    "id": "P26-011",
+    "priority": "P2",
+    "area": "Large-file containment",
+    "problem": "contracts and cli megafiles are large",
+    "required_fix": "Only split if required; otherwise update containment with precise module plan",
+    "acceptance": "No broad refactor momentum"
+  },
+  {
+    "id": "P26-012",
+    "priority": "P2",
+    "area": "Root markdown archive",
+    "problem": "P25 feature is too conservative",
+    "required_fix": "Tighten classification only if necessary for package clarity",
+    "acceptance": "No broad z.py work"
+  }
+]

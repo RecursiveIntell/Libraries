@@ -1,0 +1,27 @@
+{
+  "auto_injections_required": true,
+  "dry_run": true,
+  "errors": [],
+  "execute": false,
+  "finished_at": "2026-05-13T22:15:16.127262+00:00",
+  "manifest": ".codex/prompt_manifest.json",
+  "manual_injections_required": false,
+  "phases": [
+    {
+      "auto_injection": ".codex/auto_injections/phase_02_gate.md",
+      "commands": [],
+      "id": "phase_02",
+      "name": "automated phase runner",
+      "prompt": ".codex/prompts/phase_02_auto_phase_runner.md",
+      "prompt_bytes": 732,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+      "required_commands": [
+        "python .codex/tools/auto_phase_runner.py --dry-run --print-prompts --receipt .codex/runs/P0-completion/auto_phase_dry_run.json"
+      ],
+      "status": "ok"
+    }
+  ],
+  "receipt_version": "AutoPhaseRunnerReceiptV1",
+  "started_at": "2026-05-13T22:15:16.126990+00:00",
+  "status": "ok"
+}

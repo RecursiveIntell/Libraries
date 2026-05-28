@@ -1,0 +1,146 @@
+{
+  "spec_bundle": {
+    "schema_version": "spec_bundle_v1",
+    "spec_bundle_id": "spec-bundle-happy-001",
+    "spec_name": "Happy Path Spec",
+    "canonical_owner": "test-owner",
+    "publication_status": "advisory_only"
+  },
+  "normative_ast": {
+    "schema_version": "normative_ast_v1",
+    "normative_ast_id": "normative-ast-happy-001",
+    "spec_bundle_id": "spec-bundle-happy-001",
+    "nodes": [
+      {"node_id": "node-alpha", "kind": "requirement", "normative_text": "All schemas must preserve backpointers."},
+      {"node_id": "node-beta", "kind": "constraint", "normative_text": "Migration plans must be referentially complete."}
+    ],
+    "publication_status": "advisory_only"
+  },
+  "proof_obligation_set": {
+    "schema_version": "proof_obligation_set_v1",
+    "proof_obligation_set_id": "pos-happy-001",
+    "spec_bundle_id": "spec-bundle-happy-001",
+    "normative_ast_id": "normative-ast-happy-001",
+    "obligations": [
+      {"obligation_id": "obligation-alpha", "description": "Backpointer integrity", "satisfied": true, "blocking": true},
+      {"obligation_id": "obligation-beta", "description": "Referential completeness", "satisfied": true, "blocking": false}
+    ]
+  },
+  "discovery_program": {
+    "schema_version": "discovery_program_v1",
+    "discovery_program_id": "program-happy-001",
+    "program_name": "Happy Path Test Program",
+    "canonical_owner": "test-owner",
+    "publication_status": "advisory_only"
+  },
+  "program_hypothesis_set": {
+    "schema_version": "program_hypothesis_set_v1",
+    "discovery_program_id": "program-happy-001",
+    "hypothesis_refs": ["hypothesis-alpha", "hypothesis-beta"],
+    "horizon_only": false
+  },
+  "portfolio_plan": {
+    "schema_version": "portfolio_plan_v1",
+    "portfolio_plan_id": "plan-happy-001",
+    "discovery_program_id": "program-happy-001",
+    "campaign_ids": ["campaign-happy-001"],
+    "utility_rationale": "Test happy path launch",
+    "review_load_rationale": "Budget available",
+    "advisory_only": false
+  },
+  "campaigns": [
+    {
+      "schema_version": "experiment_campaign_v1",
+      "experiment_campaign_id": "campaign-happy-001",
+      "campaign_name": "Happy Campaign",
+      "utility_case": "test-happy",
+      "information_value_estimate_id": "ive-happy-001",
+      "required_review_slots": 3,
+      "advisory_only": false
+    }
+  ],
+  "information_value_estimates": [
+    {
+      "schema_version": "information_value_estimate_v1",
+      "information_value_estimate_id": "ive-happy-001",
+      "campaign_id": "campaign-happy-001",
+      "expected_information_gain": 80,
+      "estimated_review_cost": 3
+    }
+  ],
+  "verification_load_budget": {
+    "schema_version": "verification_load_budget_v1",
+    "verification_load_budget_id": "budget-happy-001",
+    "total_review_slots": 10,
+    "remaining_review_slots": 10,
+    "exhausted": false,
+    "horizon_only": false
+  },
+  "treaty_bundle": {
+    "schema_version": "treaty_bundle_v1",
+    "treaty_bundle_id": "treaty-happy-001",
+    "treaty_name": "Happy Treaty",
+    "parties": [
+      {"runtime_name": "runtime-a", "local_authority": "auth-a", "admission_lane": "standard"},
+      {"runtime_name": "runtime-b", "local_authority": "auth-b", "admission_lane": "standard"}
+    ],
+    "canonical_owner": "test-owner",
+    "publication_status": "advisory_only",
+    "advisory_only": false,
+    "non_authoritative": false
+  },
+  "runtime_identity_set": {
+    "schema_version": "runtime_identity_set_v1",
+    "runtime_identity_set_id": "ris-happy-001",
+    "treaty_bundle_id": "treaty-happy-001",
+    "identities": [
+      {"runtime_name": "runtime-a", "local_subject_ref": "local-a", "shared_subject_ref": "shared-a", "evidence_ref": "evidence-a"}
+    ],
+    "canonical_owner": "test-owner",
+    "publication_status": "advisory_only"
+  },
+  "equivalence_bundle": {
+    "schema_version": "cross_runtime_equivalence_bundle_v1",
+    "equivalence_bundle_id": "eq-happy-001",
+    "treaty_bundle_id": "treaty-happy-001",
+    "runtime_identity_set_id": "ris-happy-001",
+    "equivalence_scope": "full",
+    "evidence": [],
+    "canonical_owner": "test-owner",
+    "publication_status": "advisory_only"
+  },
+  "settlement_case": {
+    "schema_version": "settlement_case_v1",
+    "settlement_case_id": "case-happy-001",
+    "treaty_bundle_id": "treaty-happy-001",
+    "equivalence_bundle_id": "eq-happy-001",
+    "applicability_context_id": "ac-happy-001",
+    "profile_set_id": "ps-happy-001",
+    "composition_receipt_id": "cr-happy-001",
+    "effective_constitution_id": "ec-happy-001",
+    "compiled_obligation_set_id": "cos-happy-001",
+    "profile_exception_bundle_ids": [],
+    "shared_disposition": {
+      "schema_version": "shared_disposition_v1",
+      "shared_disposition_id": "sd-happy-001",
+      "disposition_label": "agreed",
+      "treatment": "standard",
+      "advisory_only": false
+    },
+    "replay_requirements": [
+      {"runtime_name": "runtime-a", "required": true, "replay_available": true},
+      {"runtime_name": "runtime-b", "required": true, "replay_available": true}
+    ],
+    "local_dissent": [
+      {
+        "schema_version": "local_dissent_record_v1",
+        "local_dissent_id": "ld-happy-001",
+        "runtime_name": "runtime-a",
+        "reason": "minor disagreement on claim weight",
+        "blocks_shared_settlement": false
+      }
+    ],
+    "advisory_only": false,
+    "non_admitted": false
+  }
+}

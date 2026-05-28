@@ -1,0 +1,11 @@
+{
+  "schema_version": "experiment_budget_v1",
+  "experiment_budget_id": "exp-budget-medium",
+  "budget_class": "medium",
+  "max_exactness": "bounded_exact",
+  "refuter_allowance": "up_to_3",
+  "oracle_allowance": "one_exact_slice",
+  "replay_allowance": "full_replay_family",
+  "human_review_allowance": "one_required_if_rollout",
+  "exhaustion_behavior": "emit_typed_degradation_and_hold_advisory"
+}

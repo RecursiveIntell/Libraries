@@ -1,0 +1,54 @@
+{
+  "schema": "AgentSpecV1",
+  "agent_id": "agent:local-coding-example",
+  "display_name": "Local Coding Agent",
+  "support_label": "supported-local",
+  "profile": "coding",
+  "provider_policy": {
+    "provider": "local",
+    "cloud_allowed": false,
+    "fallback_allowed": false
+  },
+  "memory_policy": {
+    "enabled": false,
+    "mode": "canonical-seam",
+    "requires_view_disclosure": false
+  },
+  "tool_policy": {
+    "allowed_tools": [
+      "repo.read",
+      "repo.list",
+      "repo.search",
+      "patch.propose",
+      "patch.apply",
+      "checks.run",
+      "run.inspect"
+    ],
+    "write_tools_require_permit": true
+  },
+  "permit_policy": {
+    "writes": "operator-approved",
+    "commands": "operator-approved",
+    "network": "forbidden"
+  },
+  "verification_policy": {
+    "required_checks": [
+      "schema",
+      "sandbox",
+      "digest",
+      "support-claim"
+    ],
+    "fail_closed": true
+  },
+  "evidence_policy": {
+    "emit_run_bundle": true,
+    "emit_tool_receipts": true,
+    "emit_permit_receipts": true,
+    "emit_abstention_receipts": true
+  },
+  "budget_policy": {
+    "max_turns": 4,
+    "max_tool_calls": 8,
+    "deadline_seconds": 120
+  }
+}

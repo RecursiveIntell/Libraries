@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use verification_policy::{
     ContinuityPolicyProfileV1, DelegationPolicyProfileV1, EffectPolicyProfileV1,
     ReleasePolicyProfileV1,

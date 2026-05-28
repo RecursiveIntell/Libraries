@@ -1,0 +1,254 @@
+{
+  "pack_name": "post_v24_profile_completion_pack",
+  "generated_for": "libraries-source-clean-20260315.zip",
+  "counts": {
+    "schemas": 28,
+    "examples": 28,
+    "fixtures": 14,
+    "specs": 7,
+    "conformance": 7
+  },
+  "profiles": [
+    {
+      "code": "p1",
+      "title": "Privacy, Retention, Disclosure, and Redaction",
+      "spec_file": "CANONICAL_STACK_PROFILE_SPEC_P1_PRIVACY_RETENTION_DISCLOSURE_AND_REDACTION.md",
+      "owner": "verification-policy",
+      "artifact_families": [
+        "PrivacyRetentionProfileV1",
+        "RedactionRuleSetV1",
+        "AccessPurposeMatrixV1",
+        "AuditExtractionPolicyV1"
+      ],
+      "fixture_bundles": [
+        "privacy_redaction_happy_path.bundle.json",
+        "audit_extraction_escalation.bundle.json"
+      ]
+    },
+    {
+      "code": "p2",
+      "title": "Locality, Tenancy, Residency, and Boundary Overlay",
+      "spec_file": "CANONICAL_STACK_PROFILE_SPEC_P2_LOCALITY_TENANCY_RESIDENCY_AND_BOUNDARY_OVERLAY.md",
+      "owner": "verification-policy",
+      "artifact_families": [
+        "ResidencyPolicyProfileV1",
+        "TenantBoundaryProfileV1",
+        "CrossBoundaryTransferClassV1",
+        "LocalityExceptionV1"
+      ],
+      "fixture_bundles": [
+        "residency_transfer_blocked.bundle.json",
+        "locality_exception_happy_path.bundle.json"
+      ]
+    },
+    {
+      "code": "p3",
+      "title": "Role Catalog, Duty Segregation, and Approval Matrix",
+      "spec_file": "CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+      "owner": "authority-delegation",
+      "artifact_families": [
+        "RoleCatalogV1",
+        "DelegationMatrixV1",
+        "ApprovalMatrixV1",
+        "ConflictClassCatalogV1"
+      ],
+      "fixture_bundles": [
+        "delegation_matrix_happy_path.bundle.json",
+        "conflict_recusal_blocked.bundle.json"
+      ]
+    },
+    {
+      "code": "p4",
+      "title": "Regulated Deployment, Control Mapping, and Recertification",
+      "spec_file": "CANONICAL_STACK_PROFILE_SPEC_P4_REGULATED_DEPLOYMENT_CONTROL_MAPPING_AND_RECERTIFICATION.md",
+      "owner": "assurance-runtime",
+      "artifact_families": [
+        "RegulatoryRegimeProfileV1",
+        "RequirementControlMapV1",
+        "EvidenceCollectionPlanV1",
+        "RecertificationScheduleV1"
+      ],
+      "fixture_bundles": [
+        "regulated_release_happy_path.bundle.json",
+        "recertification_overdue_blocked.bundle.json"
+      ]
+    },
+    {
+      "code": "p5",
+      "title": "Sector Hazard Library, Monitor Catalog, and Mitigation Playbook",
+      "spec_file": "CANONICAL_STACK_PROFILE_SPEC_P5_SECTOR_HAZARD_LIBRARY_MONITOR_CATALOG_AND_MITIGATION_PLAYBOOK.md",
+      "owner": "assurance-runtime",
+      "artifact_families": [
+        "HazardLibraryV1",
+        "HazardScenarioV1",
+        "MonitorCatalogV1",
+        "MitigationPlaybookV1"
+      ],
+      "fixture_bundles": [
+        "hazard_monitor_happy_path.bundle.json",
+        "hazard_playbook_activation.bundle.json"
+      ]
+    },
+    {
+      "code": "p6",
+      "title": "Vendor Certification Adapter and External Evidence Translation",
+      "spec_file": "CANONICAL_STACK_PROFILE_SPEC_P6_VENDOR_CERTIFICATION_ADAPTER_AND_EXTERNAL_EVIDENCE_TRANSLATION.md",
+      "owner": "attestation-exchange",
+      "artifact_families": [
+        "VendorCertificationAdapterV1",
+        "VendorEvidenceTranslationV1",
+        "VendorTrustRootBindingV1",
+        "VendorRevocationHandlingV1"
+      ],
+      "fixture_bundles": [
+        "vendor_adapter_happy_path.bundle.json",
+        "vendor_revocation_downgrade.bundle.json"
+      ]
+    },
+    {
+      "code": "p7",
+      "title": "Incident Taxonomy, Escalation, and Pager Routing Profile",
+      "spec_file": "CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+      "owner": "continuity-runtime",
+      "artifact_families": [
+        "IncidentTaxonomyV1",
+        "SeverityMatrixV1",
+        "PagerRouteProfileV1",
+        "EscalationClockPolicyV1"
+      ],
+      "fixture_bundles": [
+        "incident_taxonomy_happy_path.bundle.json",
+        "pager_route_escalation_timeout.bundle.json"
+      ]
+    }
+  ],
+  "files": [
+    "00_START_HERE.md",
+    "01_EXECUTIVE_SUMMARY.md",
+    "02_SOURCE_BASIS.md",
+    "03_NO_V25_RATIONALE_AND_PROFILE_LAYER_RULE.md",
+    "04_PROFILE_SUITE_OVERVIEW.md",
+    "05_PROFILE_IMPLEMENTATION_SEQUENCE.md",
+    "06_PROFILE_MASTER_ISSUE_MATRIX.json",
+    "06_PROFILE_MASTER_ISSUE_MATRIX.md",
+    "07_SCHEMA_REGISTRY_AND_COMPATIBILITY_PLAN.md",
+    "08_CRATE_BOUNDARY_AND_OWNERSHIP_MAP.md",
+    "09_EXACT_FILE_TOUCH_MAP.md",
+    "10_RELEASE_BAR_AND_ACCEPTANCE.md",
+    "11_PER_CRATE_APPLY_PLAN.md",
+    "12_RISK_REGISTER.md",
+    "13_FILE_CREATION_BACKLOG.md",
+    "14_REFERENCE_INTERPRETER_AND_CONFORMANCE_PLAN.md",
+    "15_IMPLEMENTATION_PLAYBOOK.md",
+    "16_CODEX_IMPLEMENTATION_PROMPT.md",
+    "17_CLAUDE_IMPLEMENTATION_PROMPT.md",
+    "18_HOSTILE_REVIEW_PROMPT.md",
+    "19_APPLY_PLAN.md",
+    "20_CURRENT_CODE_SNAPSHOT_NOTES_20260315.md",
+    "CANONICAL_STACK_PROFILE_SPEC_P1_PRIVACY_RETENTION_DISCLOSURE_AND_REDACTION.md",
+    "CANONICAL_STACK_PROFILE_SPEC_P2_LOCALITY_TENANCY_RESIDENCY_AND_BOUNDARY_OVERLAY.md",
+    "CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+    "CANONICAL_STACK_PROFILE_SPEC_P4_REGULATED_DEPLOYMENT_CONTROL_MAPPING_AND_RECERTIFICATION.md",
+    "CANONICAL_STACK_PROFILE_SPEC_P5_SECTOR_HAZARD_LIBRARY_MONITOR_CATALOG_AND_MITIGATION_PLAYBOOK.md",
+    "CANONICAL_STACK_PROFILE_SPEC_P6_VENDOR_CERTIFICATION_ADAPTER_AND_EXTERNAL_EVIDENCE_TRANSLATION.md",
+    "CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+    "CARGO_WORKSPACE_MEMBERS_POST_V24_PROFILES.snippet.toml",
+    "README.md",
+    "conformance/p1/README.md",
+    "conformance/p2/README.md",
+    "conformance/p3/README.md",
+    "conformance/p4/README.md",
+    "conformance/p5/README.md",
+    "conformance/p6/README.md",
+    "conformance/p7/README.md",
+    "contracts/fixtures/p1/audit_extraction_escalation.bundle.json",
+    "contracts/fixtures/p1/privacy_redaction_happy_path.bundle.json",
+    "contracts/fixtures/p2/locality_exception_happy_path.bundle.json",
+    "contracts/fixtures/p2/residency_transfer_blocked.bundle.json",
+    "contracts/fixtures/p3/conflict_recusal_blocked.bundle.json",
+    "contracts/fixtures/p3/delegation_matrix_happy_path.bundle.json",
+    "contracts/fixtures/p4/recertification_overdue_blocked.bundle.json",
+    "contracts/fixtures/p4/regulated_release_happy_path.bundle.json",
+    "contracts/fixtures/p5/hazard_monitor_happy_path.bundle.json",
+    "contracts/fixtures/p5/hazard_playbook_activation.bundle.json",
+    "contracts/fixtures/p6/vendor_adapter_happy_path.bundle.json",
+    "contracts/fixtures/p6/vendor_revocation_downgrade.bundle.json",
+    "contracts/fixtures/p7/incident_taxonomy_happy_path.bundle.json",
+    "contracts/fixtures/p7/pager_route_escalation_timeout.bundle.json",
+    "contracts/schemas/p1/manifest.json",
+    "contracts/schemas/p2/manifest.json",
+    "contracts/schemas/p3/manifest.json",
+    "contracts/schemas/p4/manifest.json",
+    "contracts/schemas/p5/manifest.json",
+    "contracts/schemas/p6/manifest.json",
+    "contracts/schemas/p7/manifest.json",
+    "docs/profile_completion_post_v24/EXACT_FILE_TOUCH_MAP.md",
+    "docs/profile_completion_post_v24/MASTER_ISSUE_MATRIX.md",
+    "docs/profile_completion_post_v24/PER_CRATE_APPLY_PLAN.md",
+    "docs/profile_completion_post_v24/README.md",
+    "docs/profile_completion_post_v24/RELEASE_BAR_AND_ACCEPTANCE.md",
+    "examples/access-purpose-matrix-v1.example.json",
+    "examples/approval-matrix-v1.example.json",
+    "examples/audit-extraction-policy-v1.example.json",
+    "examples/conflict-class-catalog-v1.example.json",
+    "examples/cross-boundary-transfer-class-v1.example.json",
+    "examples/delegation-matrix-v1.example.json",
+    "examples/escalation-clock-policy-v1.example.json",
+    "examples/evidence-collection-plan-v1.example.json",
+    "examples/hazard-library-v1.example.json",
+    "examples/hazard-scenario-v1.example.json",
+    "examples/incident-taxonomy-v1.example.json",
+    "examples/locality-exception-v1.example.json",
+    "examples/mitigation-playbook-v1.example.json",
+    "examples/monitor-catalog-v1.example.json",
+    "examples/pager-route-profile-v1.example.json",
+    "examples/privacy-retention-profile-v1.example.json",
+    "examples/recertification-schedule-v1.example.json",
+    "examples/redaction-rule-set-v1.example.json",
+    "examples/regulatory-regime-profile-v1.example.json",
+    "examples/requirement-control-map-v1.example.json",
+    "examples/residency-policy-profile-v1.example.json",
+    "examples/role-catalog-v1.example.json",
+    "examples/severity-matrix-v1.example.json",
+    "examples/tenant-boundary-profile-v1.example.json",
+    "examples/vendor-certification-adapter-v1.example.json",
+    "examples/vendor-evidence-translation-v1.example.json",
+    "examples/vendor-revocation-handling-v1.example.json",
+    "examples/vendor-trust-root-binding-v1.example.json",
+    "plans/post-v24-profile-completion.execplan.md",
+    "schemas/access-purpose-matrix-v1.schema.json",
+    "schemas/approval-matrix-v1.schema.json",
+    "schemas/audit-extraction-policy-v1.schema.json",
+    "schemas/conflict-class-catalog-v1.schema.json",
+    "schemas/cross-boundary-transfer-class-v1.schema.json",
+    "schemas/delegation-matrix-v1.schema.json",
+    "schemas/escalation-clock-policy-v1.schema.json",
+    "schemas/evidence-collection-plan-v1.schema.json",
+    "schemas/hazard-library-v1.schema.json",
+    "schemas/hazard-scenario-v1.schema.json",
+    "schemas/incident-taxonomy-v1.schema.json",
+    "schemas/locality-exception-v1.schema.json",
+    "schemas/mitigation-playbook-v1.schema.json",
+    "schemas/monitor-catalog-v1.schema.json",
+    "schemas/pager-route-profile-v1.schema.json",
+    "schemas/privacy-retention-profile-v1.schema.json",
+    "schemas/recertification-schedule-v1.schema.json",
+    "schemas/redaction-rule-set-v1.schema.json",
+    "schemas/regulatory-regime-profile-v1.schema.json",
+    "schemas/requirement-control-map-v1.schema.json",
+    "schemas/residency-policy-profile-v1.schema.json",
+    "schemas/role-catalog-v1.schema.json",
+    "schemas/severity-matrix-v1.schema.json",
+    "schemas/tenant-boundary-profile-v1.schema.json",
+    "schemas/vendor-certification-adapter-v1.schema.json",
+    "schemas/vendor-evidence-translation-v1.schema.json",
+    "schemas/vendor-revocation-handling-v1.schema.json",
+    "schemas/vendor-trust-root-binding-v1.schema.json",
+    "snippets/assurance_runtime_profile_bindings.md",
+    "snippets/authority_delegation_profile_bindings.md",
+    "snippets/continuity_runtime_profile_bindings.md",
+    "snippets/contract_schema_gen_profile_registry.rs",
+    "snippets/stack_ids_profile_additions.rs",
+    "snippets/verification_policy_profile_catalog.rs"
+  ]
+}

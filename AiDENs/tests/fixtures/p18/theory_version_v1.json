@@ -1,0 +1,22 @@
+{
+  "theory_id": "theory-version:linear-response-v1",
+  "kind": "theory-version",
+  "library_id": "hypothesis-library:linear-response",
+  "mechanism_id": "mechanism-report:linear-response-v1",
+  "version_number": 1,
+  "state": "published",
+  "title": "linear response theory",
+  "hypothesis": "intervening on x changes y under the declared simulator contract",
+  "fit_run_receipt_ids": ["fit-run-report:linear-response-v1"],
+  "refuter_suite_ids": ["theory-refuter-suite:linear-response-v1"],
+  "invariance_report_ids": ["invariance-report:linear-response-v1"],
+  "promotion_decision_id": "promotion-decision:linear-response-v1",
+  "control_receipt_id": "control-receipt:linear-response-v1",
+  "replay_handles": ["fit-run-report:linear-response-v1", "simulator-contract:linear-response-v1"],
+  "reason_codes": [
+    "theory-version-candidate-recorded",
+    "theory-version-fit-recorded",
+    "theory-version-published-with-refuter-and-governance"
+  ],
+  "created_at": "2026-04-27T00:04:00Z"
+}

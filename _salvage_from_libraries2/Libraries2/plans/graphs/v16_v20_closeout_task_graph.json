@@ -1,0 +1,122 @@
+{
+  "version": "1",
+  "goal": "Finish the bounded closeout pass for the existing v16-v20 workspace.",
+  "tasks": [
+    {
+      "id": "CLS-001",
+      "title": "Freeze closeout scope",
+      "depends_on": []
+    },
+    {
+      "id": "DOC-001",
+      "title": "Add crate-local owner docs",
+      "depends_on": [
+        "CLS-001"
+      ]
+    },
+    {
+      "id": "FED-101",
+      "title": "Add shared replay slice",
+      "depends_on": [
+        "CLS-001"
+      ]
+    },
+    {
+      "id": "FED-102",
+      "title": "Add divergence and suspension",
+      "depends_on": [
+        "FED-101"
+      ]
+    },
+    {
+      "id": "FED-103",
+      "title": "Widen v16 reference interpreters",
+      "depends_on": [
+        "FED-101",
+        "FED-102"
+      ]
+    },
+    {
+      "id": "THY-101",
+      "title": "Upgrade fit gating",
+      "depends_on": [
+        "CLS-001"
+      ]
+    },
+    {
+      "id": "THY-102",
+      "title": "Add v17 conformance coverage",
+      "depends_on": [
+        "THY-101"
+      ]
+    },
+    {
+      "id": "POR-101",
+      "title": "Make portfolio selection value-aware",
+      "depends_on": [
+        "CLS-001"
+      ]
+    },
+    {
+      "id": "POR-102",
+      "title": "Add hypothesis linkage and overload receipts",
+      "depends_on": [
+        "POR-101"
+      ]
+    },
+    {
+      "id": "GOV-101",
+      "title": "Bind amendment to diff/archive consequences",
+      "depends_on": [
+        "CLS-001"
+      ]
+    },
+    {
+      "id": "GOV-102",
+      "title": "Add archive/compaction conformance",
+      "depends_on": [
+        "GOV-101"
+      ]
+    },
+    {
+      "id": "SFX-101",
+      "title": "Add SelfHostingBuildReceiptV1",
+      "depends_on": [
+        "CLS-001"
+      ]
+    },
+    {
+      "id": "SFX-102",
+      "title": "Generate companion bundles",
+      "depends_on": [
+        "SFX-101"
+      ]
+    },
+    {
+      "id": "SFX-103",
+      "title": "Add veto/challenge baseline",
+      "depends_on": [
+        "SFX-102"
+      ]
+    },
+    {
+      "id": "SCH-101",
+      "title": "Sync generator/manifests",
+      "depends_on": [
+        "FED-102",
+        "THY-102",
+        "POR-102",
+        "GOV-102",
+        "SFX-103"
+      ]
+    },
+    {
+      "id": "DOC-002",
+      "title": "Truth pass over repo-level docs",
+      "depends_on": [
+        "DOC-001",
+        "SCH-101"
+      ]
+    }
+  ]
+}

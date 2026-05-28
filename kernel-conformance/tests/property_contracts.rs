@@ -1,3 +1,4 @@
+#![allow(clippy::expect_used)]
 #![allow(deprecated)]
 
 use constraint_compiler::{compile_batch, CompilerPolicy};

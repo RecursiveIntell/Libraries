@@ -1,0 +1,131 @@
+GIT_ROOT: /home/sikmindz/Coding/Libraries
+TARGET_DIR: /home/sikmindz/Coding/Libraries/AiDENs
+NOTE: AiDENs is nested under the parent git root. Parent status reports the target directory as untracked (?? ./), so file-level Phase 05 changes are also recorded in touched_file_diff.patch, schema_authority_audit.txt, and schema file lists.
+
+ D ../00_START_HERE.md
+ D ../01_MASTER_ISSUE_TENSOR.json
+ D ../02_MASTER_ISSUE_MATRIX.md
+ D ../03_IMPLEMENTATION_PLAYBOOK.md
+ D ../04_EXACT_FILE_TOUCH_MAP.md
+ D ../05_TEST_AND_CONFORMANCE_PLAN.md
+ D ../10_HOSTILE_AUDIT_CLAUDE.md
+ D ../11_HOSTILE_AUDIT_GPT.md
+ D ../11_HOSTILE_AUDIT_GPT_TENSOR.json
+ D ../CANONICAL_STACK_SPEC_V25_EFFECTIVE_CONSTITUTION_PROFILE_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md
+ D ../CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md
+ M ../CLAUDE.md
+ M ../Cargo.lock
+ M ../Cargo.toml
+ M ../Makefile
+ M ../PROMPT.md
+ M ../Primitives/README.md
+ M ../README.md
+ M ../SOURCE_BASIS.md
+ M ../STATUS_EVIDENCE_MANIFEST.json
+ M ../assurance-runtime/Cargo.toml
+ M ../attestation-exchange/Cargo.toml
+ M ../authority-delegation/Cargo.toml
+ M ../constitutional-memory/Cargo.toml
+ M ../constraint-compiler/Cargo.toml
+ M ../continuity-runtime/Cargo.toml
+ M ../contract-schema-gen/Cargo.toml
+ M ../contract-schema-gen/src/lib.rs
+ M ../discovery-portfolio/Cargo.toml
+ M ../effect-runtime/Cargo.toml
+ M ../federated-settlement/Cargo.toml
+ m ../forge-memory-bridge
+ M ../forge-pilot/Cargo.toml
+ M ../forge-pilot/src/act.rs
+ M ../forge-pilot/src/governance_gate.rs
+ M ../forge-pilot/src/history.rs
+ M ../forge-pilot/src/lib.rs
+ M ../forge-pilot/src/main_support/mod.rs
+ M ../forge-pilot/src/main_support/tests.rs
+ M ../forge-pilot/src/orient.rs
+ M ../kernel-conformance/Cargo.toml
+ M ../kernel-conformance/src/lib.rs
+ M ../kernel-execution/Cargo.toml
+ M ../kernel-oracles/Cargo.toml
+ M ../knowledge-runtime/Cargo.toml
+ M ../knowledge-runtime/src/adapters/semantic_memory.rs
+ M ../knowledge-runtime/src/obs/trace.rs
+ M ../knowledge-runtime/src/runtime/core.rs
+ M ../knowledge-runtime/tests/cross_crate_proof.rs
+ M ../knowledge-runtime/tests/ugly_case_tests.rs
+ M ../living-memory/living-memory/Cargo.toml
+ M ../llm-tool-runtime/Cargo.toml
+ M ../llm-tool-runtime/src/contracts.rs
+ M ../llm-tool-runtime/src/provider.rs
+ M ../llm-tool-runtime/tests/dispatch_tests.rs
+ M ../mechanism-runtime/Cargo.toml
+ M ../profile-runtime/Cargo.toml
+ M ../recursive-kernel-core/Cargo.toml
+ M ../release/closeout_receipt_v1.json
+ M ../remote-oracle-admission/Cargo.toml
+ M ../schemas/export-envelope-v3.schema.json
+ M ../scripts/check_hotspot_budgets.sh
+ M ../semantic-memory-forge/Cargo.toml
+ M ../semantic-memory-forge/src/envelope.rs
+ M ../semantic-memory/Cargo.toml
+ M ../semantic-memory/src/documents.rs
+ M ../semantic-memory/src/hnsw.rs
+ M ../semantic-memory/src/lib.rs
+ M ../semantic-memory/tests/hnsw_integration.rs
+ M ../spec-execution/Cargo.toml
+ m ../stack-ids
+ M ../verification-adjudication/Cargo.toml
+ M ../verification-calibration/Cargo.toml
+ M ../verification-control/Cargo.toml
+ M ../verification-control/src/lib.rs
+ M ../verification-policy/Cargo.toml
+?? ../4/
+?? ../AUDIT_2026-04-01.md
+?? ./
+?? ../COMBINED_AUDIT_2026-04-01.md
+?? ../CONTRACT_AND_TEMPORAL_TRUTH_HARDENING.md
+?? ../CRATE_HARDENING_MATRIX.md
+?? ../EXECUTION_EVIDENCE_AND_REFERENCE_INTERPRETER_PLAN.md
+?? ../HOSTILE_AUDIT_SYNTHESIS_V5.md
+?? ../KERNEL_AND_REGION_RUNTIME_PLAN.md
+?? ../LIBRARIES_MASTER_MATRIX_V8.md
+?? ../LIBRARIES_MASTER_TENSOR_V8.json
+?? ../LIBRARIES_PROMPT.md
+?? ../LIB_MASTER_ISSUE_MATRIX.md
+?? ../LIB_MASTER_ISSUE_TENSOR.json
+?? ../LIB_PROMPT.md
+?? ../MASTER_AUDIT_MATRIX.xlsx
+?? ../MASTER_ISSUE_MATRIX.md
+?? ../MASTER_ISSUE_MATRIX.xlsx
+?? ../MASTER_ISSUE_TENSOR.json
+?? ../MASTER_TENSOR.md
+?? ../RISK_REGISTER.md
+?? ../SNAPSHOT_2026-04-11.md
+?? ../TEST_AND_CONFORMANCE_PLAN.md
+?? ../V9_IMPLEMENTATION_PLAYBOOK.md
+?? ../claude_hard_audit_2026-03-30.md
+?? ../docs/CANONICAL_STACK_SPEC_V25_EFFECTIVE_CONSTITUTION_PROFILE_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md
+?? ../docs/CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md
+?? ../docs/archive/superseded_packs/00_START_HERE.md
+?? ../docs/archive/superseded_packs/01_MASTER_ISSUE_TENSOR.json
+?? ../docs/archive/superseded_packs/02_MASTER_ISSUE_MATRIX.md
+?? ../docs/archive/superseded_packs/03_IMPLEMENTATION_PLAYBOOK.md
+?? ../docs/archive/superseded_packs/04_EXACT_FILE_TOUCH_MAP.md
+?? ../docs/archive/superseded_packs/05_TEST_AND_CONFORMANCE_PLAN.md
+?? ../docs/archive/superseded_packs/10_HOSTILE_AUDIT_CLAUDE.md
+?? ../docs/archive/superseded_packs/11_HOSTILE_AUDIT_GPT.md
+?? ../docs/archive/superseded_packs/11_HOSTILE_AUDIT_GPT_TENSOR.json
+?? ../evidence/external_audit_report.json
+?? ../evidence/perf_release_20260401.json
+?? ../forge-pilot/src/main_support/cli.rs
+?? ../forge-pilot/src/main_support/explain.rs
+?? ../forge-pilot/src/main_support/provider.rs
+?? ../forge-pilot/src/main_support/storage.rs
+?? ../forge-pilot/src/main_support/tui.rs
+?? ../gpt54_hard_audit_2026-03-30.md
+?? ../gpt54_tensor_2026-03-30.json
+?? ../knowledge-runtime/tests/rrf_fusion_tests.rs
+?? ../profile-runtime/tests/composition_proptest.rs
+?? ../prompts/
+?? ../schemas/bridge-import-failure-artifact-v1.schema.json
+?? ../scripts/capture_release_profile_benchmarks.sh
+?? ../scripts/external_audit_harness.sh

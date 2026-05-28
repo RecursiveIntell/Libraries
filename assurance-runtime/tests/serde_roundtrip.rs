@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use assurance_runtime::{AssurancePublicationStatusV1, DeploymentProfileV1};
 
 #[test]

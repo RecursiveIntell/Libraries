@@ -1,0 +1,9 @@
+{
+  "artifact": "risk-bearing-output",
+  "proof": null,
+  "waiver": {
+    "reason": "operator override"
+  },
+  "expected_allowed_use": "degraded/advisory only",
+  "expected": "waiver-is-not-proof"
+}

@@ -1,0 +1,272 @@
+{
+  "ci_and_make": {
+    "ci_runs_no_local_recomposition": false,
+    "ci_runs_v25_json_surface": false,
+    "ci_runs_v25_repo_truth": false,
+    "make_has_production_closure_target": false,
+    "make_has_v25_local_checks": false
+  },
+  "no_local_recomposition_findings": [],
+  "repo_root": "/mnt/data/work/current",
+  "schema_and_example_state": {
+    "compensation-execution-receipt-v1": {
+      "example": true,
+      "registered": true,
+      "schema": true
+    },
+    "compensation-plan-v1": {
+      "example": true,
+      "registered": true,
+      "schema": true
+    },
+    "continuity-review-case-v1": {
+      "example": false,
+      "registered": false,
+      "schema": false
+    },
+    "control-receipt-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "cross-runtime-replay-ticket-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "delegation-review-case-v1": {
+      "example": false,
+      "registered": false,
+      "schema": false
+    },
+    "effect-adjudication-receipt-v1": {
+      "example": false,
+      "registered": false,
+      "schema": false
+    },
+    "effect-block-receipt-v1": {
+      "example": false,
+      "registered": false,
+      "schema": false
+    },
+    "effect-commit-decision-v1": {
+      "example": true,
+      "registered": true,
+      "schema": true
+    },
+    "effect-execution-receipt-v1": {
+      "example": true,
+      "registered": true,
+      "schema": true
+    },
+    "effect-intent-v1": {
+      "example": true,
+      "registered": true,
+      "schema": true
+    },
+    "effect-observation-bundle-v1": {
+      "example": true,
+      "registered": true,
+      "schema": true
+    },
+    "effect-preflight-report-v1": {
+      "example": true,
+      "registered": true,
+      "schema": true
+    },
+    "effect-review-case-v1": {
+      "example": false,
+      "registered": false,
+      "schema": false
+    },
+    "local-dissent-record-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "policy-decision-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "promotion-decision-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "refutation-decision-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "release-gate-case-v1": {
+      "example": false,
+      "registered": false,
+      "schema": false
+    },
+    "release-rollback-decision-v1": {
+      "example": false,
+      "registered": false,
+      "schema": false
+    },
+    "remote-slice-request-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "remote-slice-result-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "rollback-plan-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "settlement-case-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "settlement-receipt-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "shared-divergence-report-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "shared-replay-slice-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    },
+    "shared-view-downgrade-v1": {
+      "example": false,
+      "registered": true,
+      "schema": true
+    }
+  },
+  "targets": {
+    "effect-runtime": {
+      "files": [
+        "effect-runtime/src/lib.rs",
+        "effect-runtime/src/effect.rs",
+        "effect-runtime/src/observation.rs",
+        "effect-runtime/src/compensation.rs"
+      ],
+      "test_files": {
+        "effect-runtime/tests/fixture_conformance.rs": true,
+        "effect-runtime/tests/serde_roundtrip.rs": true,
+        "effect-runtime/tests/v25_citation_flow.rs": false
+      },
+      "typed_id_markers": {
+        "CompensationExecutionReceiptId": false,
+        "CompensationPlanId": false,
+        "EffectCommitDecisionId": false,
+        "EffectExecutionReceiptId": false,
+        "EffectIntentId": false,
+        "EffectObservationBundleId": false,
+        "EffectPreflightReportId": false,
+        "EffectWindowId": false
+      },
+      "v25_ref_markers": {
+        "ApplicabilityContextId": false,
+        "CompiledObligationSetId": false,
+        "CompositionConflictSetId": false,
+        "CompositionReceiptId": false,
+        "EffectiveConstitutionId": false,
+        "ProfileExceptionBundleId": false,
+        "ProfileSetId": false
+      }
+    },
+    "federated-settlement": {
+      "files": [
+        "federated-settlement/src/lib.rs"
+      ],
+      "test_files": {
+        "federated-settlement/tests/v25_local_constitution_refs.rs": false
+      },
+      "v25_ref_markers": {
+        "ApplicabilityContextId": false,
+        "CompiledObligationSetId": false,
+        "CompositionConflictSetId": false,
+        "CompositionReceiptId": false,
+        "EffectiveConstitutionId": false,
+        "ProfileExceptionBundleId": false,
+        "ProfileSetId": false
+      }
+    },
+    "remote-oracle-admission": {
+      "files": [
+        "remote-oracle-admission/src/lib.rs"
+      ],
+      "test_files": {
+        "remote-oracle-admission/tests/v25_local_constitution_refs.rs": false
+      },
+      "v25_ref_markers": {
+        "ApplicabilityContextId": false,
+        "CompiledObligationSetId": false,
+        "CompositionConflictSetId": false,
+        "CompositionReceiptId": false,
+        "EffectiveConstitutionId": false,
+        "ProfileExceptionBundleId": false,
+        "ProfileSetId": false
+      }
+    },
+    "verification-adjudication": {
+      "files": [
+        "verification-adjudication/src/lib.rs"
+      ],
+      "test_files": {
+        "verification-adjudication/tests/policy_flow_integration.rs": true,
+        "verification-adjudication/tests/v25_adjudication_citation_flow.rs": false
+      },
+      "v25_ref_markers": {
+        "ApplicabilityContextId": false,
+        "CompiledObligationSetId": false,
+        "CompositionConflictSetId": false,
+        "CompositionReceiptId": false,
+        "EffectiveConstitutionId": false,
+        "ProfileExceptionBundleId": false,
+        "ProfileSetId": false
+      }
+    },
+    "verification-control": {
+      "files": [
+        "verification-control/src/lib.rs"
+      ],
+      "test_files": {
+        "verification-control/tests/v25_citation_requirements.rs": false,
+        "verification-control/tests/v25_review_case_roundtrip.rs": false
+      },
+      "v25_ref_markers": {
+        "ApplicabilityContextId": false,
+        "CompiledObligationSetId": false,
+        "CompositionConflictSetId": false,
+        "CompositionReceiptId": false,
+        "EffectiveConstitutionId": false,
+        "ProfileExceptionBundleId": false,
+        "ProfileSetId": false
+      }
+    },
+    "verification-policy": {
+      "files": [
+        "verification-policy/src/lib.rs"
+      ],
+      "test_files": {
+        "verification-policy/tests/policy_profile_example_roundtrip.rs": true,
+        "verification-policy/tests/v25_policy_citation_flow.rs": false
+      },
+      "v25_ref_markers": {
+        "CompiledObligationSetId": false,
+        "CompositionReceiptId": false,
+        "EffectiveConstitutionId": false,
+        "ProfileExceptionBundleId": false
+      }
+    }
+  }
+}

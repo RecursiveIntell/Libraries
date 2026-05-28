@@ -1,0 +1,68 @@
+{
+  "discovery_program": {
+    "schema_version": "discovery_program_v1",
+    "discovery_program_id": "program-v18-1",
+    "program_name": "Value-Aware Selection Test",
+    "canonical_owner": "test-owner",
+    "publication_status": "advisory_only"
+  },
+  "program_hypothesis_set": {
+    "schema_version": "program_hypothesis_set_v1",
+    "discovery_program_id": "program-v18-1",
+    "hypothesis_refs": [],
+    "horizon_only": false
+  },
+  "portfolio_plan": {
+    "schema_version": "portfolio_plan_v1",
+    "portfolio_plan_id": "plan-v18-1",
+    "discovery_program_id": "program-v18-1",
+    "campaign_ids": ["campaign-v18-3", "campaign-v18-4"],
+    "utility_rationale": "Test value-aware selection ordering",
+    "review_load_rationale": "Budget is sufficient for one",
+    "advisory_only": false
+  },
+  "campaigns": [
+    {
+      "schema_version": "experiment_campaign_v1",
+      "experiment_campaign_id": "campaign-v18-3",
+      "campaign_name": "Low Value Campaign",
+      "utility_case": "test-low-value",
+      "information_value_estimate_id": "ive-v18-3",
+      "required_review_slots": 5,
+      "advisory_only": false
+    },
+    {
+      "schema_version": "experiment_campaign_v1",
+      "experiment_campaign_id": "campaign-v18-4",
+      "campaign_name": "High Value Campaign",
+      "utility_case": "test-high-value",
+      "information_value_estimate_id": "ive-v18-4",
+      "required_review_slots": 2,
+      "advisory_only": false
+    }
+  ],
+  "information_value_estimates": [
+    {
+      "schema_version": "information_value_estimate_v1",
+      "information_value_estimate_id": "ive-v18-3",
+      "campaign_id": "campaign-v18-3",
+      "expected_information_gain": 10,
+      "estimated_review_cost": 5
+    },
+    {
+      "schema_version": "information_value_estimate_v1",
+      "information_value_estimate_id": "ive-v18-4",
+      "campaign_id": "campaign-v18-4",
+      "expected_information_gain": 100,
+      "estimated_review_cost": 2
+    }
+  ],
+  "verification_load_budget": {
+    "schema_version": "verification_load_budget_v1",
+    "verification_load_budget_id": "budget-v18-1",
+    "total_review_slots": 10,
+    "remaining_review_slots": 10,
+    "exhausted": false,
+    "horizon_only": false
+  }
+}

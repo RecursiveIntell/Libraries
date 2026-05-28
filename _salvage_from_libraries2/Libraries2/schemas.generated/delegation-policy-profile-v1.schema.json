@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "break_glass_requires_post_hoc_review": {
+      "type": "boolean"
+    },
+    "delegation_policy_profile_id": {
+      "type": "string"
+    },
+    "forbidden_role_combinations": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "max_delegation_depth": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "require_typed_authority_chain": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "break_glass_requires_post_hoc_review",
+    "delegation_policy_profile_id",
+    "max_delegation_depth",
+    "require_typed_authority_chain",
+    "schema_version"
+  ],
+  "title": "DelegationPolicyProfileV1",
+  "type": "object"
+}

@@ -1,0 +1,17 @@
+app_id = "aidens-example-daemon"
+profile_id = "autonomous-daemon"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+model = "mock-daemon"
+mock_response = "mock daemon response from AiDENs"
+
+[receipts]
+store_root = "target/aidens-receipts/aidens-example-daemon"
+
+[security]
+approval_mode = "require-side-effects"
+network_policy = "disabled"
+write_policy = "approval-required"

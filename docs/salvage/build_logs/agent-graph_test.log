@@ -1,0 +1,328 @@
+   Compiling cfg-if v1.0.4
+   Compiling serde_core v1.0.228
+   Compiling zerocopy v0.8.39
+   Compiling memchr v2.8.0
+   Compiling serde v1.0.228
+   Compiling once_cell v1.21.3
+   Compiling pin-project-lite v0.2.16
+   Compiling num-traits v0.2.19
+   Compiling crossbeam-utils v0.8.21
+   Compiling smallvec v1.15.1
+   Compiling libc v0.2.181
+   Compiling futures-core v0.3.31
+   Compiling zmij v1.0.21
+   Compiling zerocopy-derive v0.8.39
+   Compiling itoa v1.0.17
+   Compiling scopeguard v1.2.0
+   Compiling futures-sink v0.3.31
+   Compiling rayon-core v1.13.0
+   Compiling lock_api v0.4.14
+   Compiling futures-channel v0.3.31
+   Compiling futures-io v0.3.31
+   Compiling pin-utils v0.1.0
+   Compiling slab v0.4.12
+   Compiling bytes v1.11.1
+   Compiling either v1.15.0
+   Compiling futures-task v0.3.31
+   Compiling iana-time-zone v0.1.65
+   Compiling arrayref v0.3.9
+   Compiling ciborium-io v0.2.2
+   Compiling cpufeatures v0.2.17
+   Compiling constant_time_eq v0.4.2
+   Compiling arrayvec v0.7.6
+   Compiling dyn-clone v1.0.20
+   Compiling plotters-backend v0.3.7
+   Compiling clap_lex v1.0.0
+   Compiling regex-syntax v0.8.9
+   Compiling anstyle v1.0.13
+   Compiling itertools v0.10.5
+   Compiling futures-util v0.3.31
+   Compiling blake3 v1.8.3
+   Compiling libsqlite3-sys v0.30.1
+   Compiling plotters-svg v0.3.7
+   Compiling clap_builder v4.5.58
+   Compiling tracing-core v0.1.36
+   Compiling bitflags v2.10.0
+   Compiling cast v0.3.0
+   Compiling crossbeam-epoch v0.9.18
+   Compiling fallible-iterator v0.3.0
+   Compiling same-file v1.0.6
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling thiserror v2.0.18
+   Compiling tracing v0.1.44
+   Compiling walkdir v2.5.0
+   Compiling parking_lot_core v0.9.12
+   Compiling errno v0.3.14
+   Compiling socket2 v0.6.2
+   Compiling signal-hook-registry v1.4.8
+   Compiling mio v1.1.1
+   Compiling crossbeam-deque v0.8.6
+   Compiling getrandom v0.4.2
+   Compiling plotters v0.3.7
+   Compiling parking_lot v0.12.5
+   Compiling is-terminal v0.4.17
+   Compiling anes v0.1.6
+   Compiling oorandom v11.1.5
+   Compiling tokio v1.49.0
+   Compiling regex-automata v0.4.14
+   Compiling rayon v1.11.0
+   Compiling criterion-plot v0.5.0
+   Compiling clap v4.5.58
+   Compiling serde_json v1.0.149
+   Compiling uuid v1.22.0
+   Compiling regex v1.12.3
+   Compiling futures-executor v0.3.31
+   Compiling futures v0.3.31
+   Compiling chrono v0.4.44
+   Compiling schemars v0.8.22
+   Compiling tinytemplate v1.2.1
+   Compiling stack-ids v0.1.1 (/home/sikmindz/Coding/Libraries/stack-ids)
+   Compiling ahash v0.8.12
+   Compiling half v2.7.1
+   Compiling hashbrown v0.14.5
+   Compiling tokio-stream v0.1.18
+   Compiling ciborium-ll v0.2.2
+   Compiling ciborium v0.2.2
+   Compiling tokio-test v0.4.5
+   Compiling hashlink v0.9.1
+   Compiling criterion v0.5.1
+   Compiling rusqlite v0.32.1
+   Compiling agent-graph v0.2.0 (/home/sikmindz/Coding/Libraries/agent-graph)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.83s
+     Running unittests src/lib.rs (agent-graph/target/debug/deps/agent_graph-fc3e6fb7943e76ad)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/checkpointer_tests.rs (agent-graph/target/debug/deps/checkpointer_tests-7da16f19abbd002c)
+
+running 7 tests
+test test_memory_saver_clear ... ok
+test test_memory_saver_basic ... ok
+test test_memory_saver_history ... ok
+test test_memory_saver_multiple_threads ... ok
+test test_graph_get_state ... ok
+test test_graph_with_checkpointer ... ok
+test test_sqlite_saver_basic ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/execution_tests.rs (agent-graph/target/debug/deps/execution_tests-1049cd245a9c391f)
+
+running 11 tests
+test test_build_invalid_edge ... ok
+test test_error_propagation ... ok
+test test_graph_with_initial_state ... ok
+test test_conditional_routing_with_state ... ok
+test test_loop_execution ... ok
+test test_max_iterations ... ok
+test test_node_not_found ... ok
+test test_three_node_chain ... ok
+test test_state_mutation_across_nodes ... ok
+test test_single_node_no_edges ... ok
+test test_simple_execution ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration_tests.rs (agent-graph/target/debug/deps/integration_tests-f9ebdfc43101eb5f)
+
+running 6 tests
+test test_snapshot_during_execution ... ok
+test test_state_accumulation ... ok
+test test_quality_loop_pattern ... ok
+test test_multi_branch_graph ... ok
+test test_research_pattern ... ok
+test test_checkpoint_save_load ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/interrupt_tests.rs (agent-graph/target/debug/deps/interrupt_tests-73ad6d5a2bb7bb0d)
+
+running 7 tests
+test test_interrupt_config_builder ... ok
+test test_execute_with_interrupt_complete ... ok
+test test_interrupt_before ... ok
+test test_execute_with_interrupt_interrupted ... ok
+test test_interrupt_after ... ok
+test test_dynamic_interrupt_from_node ... ok
+test test_resume_after_interrupt ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/parallel_tests.rs (agent-graph/target/debug/deps/parallel_tests-35e17ba09a14f9da)
+
+running 10 tests
+test test_command_end ... ok
+test test_command_goto ... ok
+test test_fan_out_fan_in ... ok
+test test_config_access_in_node ... ok
+test test_start_end_constants ... ok
+test test_conditional_fan_out ... ok
+test test_fan_out_parallel_execution ... ok
+test test_parallel_state_with_reducer ... ok
+test test_parallel_state_with_append_reducer ... ok
+test test_parallel_execution_actually_parallel ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/public_error_surface.rs (agent-graph/target/debug/deps/public_error_surface-e0290d9abf06deb3)
+
+running 2 tests
+test error_kind_matches_other_variant_without_anyhow_bridge ... ok
+test other_error_variant_is_string_bounded ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/reducer_tests.rs (agent-graph/target/debug/deps/reducer_tests-27bc688eaa480dd8)
+
+running 15 tests
+test test_append_reducer_array_and_scalar ... ok
+test test_add_reducer_floats ... ok
+test test_add_reducer_error_on_non_numbers ... ok
+test test_add_reducer ... ok
+test test_append_reducer_scalar_and_array ... ok
+test test_append_reducer_arrays ... ok
+test test_fn_reducer ... ok
+test test_last_write_wins_reducer ... ok
+test test_state_add_reducer ... ok
+test test_append_reducer_two_scalars ... ok
+test test_state_with_reducer ... ok
+test test_merge_reducer_objects ... ok
+test test_merge_reducer_deep ... ok
+test test_merge_reducer_non_object_replaces ... ok
+test test_graph_builder_with_reducer ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/retry_tests.rs (agent-graph/target/debug/deps/retry_tests-1e4fbfc7866e9bfc)
+
+running 8 tests
+test test_retry_policy_builder ... ok
+test test_retry_delay_calculation ... ok
+test test_no_retry_for_node_without_policy ... ok
+test test_retry_with_predicate ... ok
+test test_retry_events_share_trial_ids_per_concrete_attempt ... ok
+test test_checkpoint_store_records_every_retry_trial ... ok
+test test_retry_exhausted ... ok
+test test_retry_on_failure ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/routing_tests.rs (agent-graph/target/debug/deps/routing_tests-3f49915c0b6d7841)
+
+running 6 tests
+test test_router_returns_none ... ok
+test test_router_returns_node_name ... ok
+test test_router_end_execution ... ok
+test test_conditional_routing_high_value ... ok
+test test_conditional_routing_low_value ... ok
+test test_multi_stage_routing ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/runtime_tests.rs (agent-graph/target/debug/deps/runtime_tests-5a2b1826b538bf0e)
+
+running 23 tests
+test test_composite_event_sink ... ok
+test test_custom_executor ... ok
+test test_event_sink_captures_events ... ok
+test test_checkpoint_store_state_snapshots ... ok
+test test_checkpoint_store_records_failure ... ok
+test test_checkpoint_store_records_attempts ... ok
+test test_in_process_executor ... ok
+test test_event_sink_with_stream_compat ... ok
+test test_interrupt_resume_roundtrip ... ok
+test test_join_node_custom_merge ... ok
+test test_payload_node_basic ... ok
+test test_payload_token_streaming ... ok
+test test_payload_node_error_propagation ... ok
+test test_loop_with_explicit_termination ... ok
+test test_join_node_collect_array ... ok
+test test_payload_node_with_output_mapper ... ok
+test test_payload_node_with_input_selector ... ok
+test test_payload_node_in_chain ... ok
+test test_loop_with_max_steps ... ok
+test test_router_branching_with_payload ... ok
+test test_join_node_merge_objects ... ok
+test test_fan_out_fan_in_deterministic ... ok
+test test_cancellation_stops_execution ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/state_tests.rs (agent-graph/target/debug/deps/state_tests-4943afc6abed0d33)
+
+running 13 tests
+test test_state_get_missing_key ... ok
+test test_state_history ... ok
+test test_state_contains ... ok
+test test_state_complex_types ... ok
+test test_state_export ... ok
+test test_state_remove ... ok
+test test_state_with_data ... ok
+test test_state_get_opt ... ok
+test test_state_update ... ok
+test test_state_keys ... ok
+test test_state_snapshot_restore ... ok
+test test_state_set_get ... ok
+test test_state_concurrent_access ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/step5_verification.rs (agent-graph/target/debug/deps/step5_verification-d757efe42041171c)
+
+running 23 tests
+test test_error_kind_discriminants ... ok
+test test_checkpoint_metadata_graph_hash ... ok
+test test_checkpoint_metadata_mismatch_detection ... ok
+test test_parallelism_config_min_one ... ok
+test test_checkpoint_store_run_summary ... ok
+test test_state_limits_defaults ... ok
+test test_execute_with_summary_reports_trace_and_counts ... ok
+test test_parallelism_config_default ... ok
+test test_parallelism_config_hard_cap ... ok
+test test_run_summary_serialization ... ok
+test test_state_limit_enforcement_leaves_state_unchanged_on_failure ... ok
+test test_resume_force_still_works_on_mismatch ... ok
+test test_trace_id_on_config ... ok
+test test_resume_rejects_checkpoint_mismatch ... ok
+test test_transaction_commit ... ok
+test test_transaction_limit_failure_leaves_state_unchanged ... ok
+test test_transaction_conflict_on_concurrent_modification ... ok
+test test_transaction_isolated_before_commit ... ok
+test test_transaction_read_within ... ok
+test test_trace_id_in_events ... ok
+test test_parallelism_fan_out_with_config ... ok
+test test_transaction_rollback ... ok
+test test_parallelism_cap_actually_caps_concurrency ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/streaming_tests.rs (agent-graph/target/debug/deps/streaming_tests-30e362b0fbc81a20)
+
+running 3 tests
+test test_stream_state_updates ... ok
+test test_stream_superstep_events ... ok
+test test_stream_events ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/subgraph_tests.rs (agent-graph/target/debug/deps/subgraph_tests-ac4a1d61f10a5a02)
+
+running 4 tests
+test test_subgraph_state_isolation ... ok
+test test_subgraph_with_conditional_routing ... ok
+test test_subgraph_basic ... ok
+test test_nested_subgraphs ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests agent_graph
+
+running 3 tests
+test src/node.rs - node::node (line 69) ... ignored
+test src/router.rs - router::router (line 80) ... ignored
+test src/lib.rs - (line 7) - compile ... ok
+
+test result: ok. 1 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

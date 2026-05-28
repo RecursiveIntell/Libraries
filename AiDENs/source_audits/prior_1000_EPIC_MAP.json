@@ -1,0 +1,96 @@
+[
+  {
+    "id": "E01",
+    "title": "Receipt/log durability and no done without receipts",
+    "categories": [
+      "RCPT",
+      "ART",
+      "DOC"
+    ],
+    "description": "Make durable receipt emission mandatory before visible completion; add hash-chain verification and corruption quarantine."
+  },
+  {
+    "id": "E02",
+    "title": "Transactional patch and command execution hardening",
+    "categories": [
+      "PATCH",
+      "CMD",
+      "SEC"
+    ],
+    "description": "Replace patch/command footguns with atomic treatment receipts, structured argv, process-group kill, and replay fingerprints."
+  },
+  {
+    "id": "E03",
+    "title": "Sandbox and security hostile corpus",
+    "categories": [
+      "SEC",
+      "CFG"
+    ],
+    "description": "Add secret-path, symlink, hardlink, unicode, case-folding, TOCTOU, hidden metadata, and redaction tests."
+  },
+  {
+    "id": "E04",
+    "title": "Provider honesty and route discipline",
+    "categories": [
+      "PROV",
+      "TOOL"
+    ],
+    "description": "Separate mock/local/Ollama/live routes and block fallback without degradation/support-label changes."
+  },
+  {
+    "id": "E05",
+    "title": "Boundary compiler and schema governance",
+    "categories": [
+      "BOUND",
+      "SCHEMA"
+    ],
+    "description": "Strict compiler profiles, full schema validation or unsupported-key rejection, compatibility gates, canonical digest identity."
+  },
+  {
+    "id": "E06",
+    "title": "Queue/daemon concurrency",
+    "categories": [
+      "QUEUE",
+      "RCPT"
+    ],
+    "description": "Lock/single-writer queue append, lease ownership, idempotency, safe-mode quarantine, hop receipts."
+  },
+  {
+    "id": "E07",
+    "title": "Bitemporal/proof/view reference corpus",
+    "categories": [
+      "TIME",
+      "TEST"
+    ],
+    "description": "Build pure reference fixtures and differential production-path tests for temporal/proof/view semantics."
+  },
+  {
+    "id": "E08",
+    "title": "Minimal v11B regional runtime slice",
+    "categories": [
+      "REGION",
+      "TIME",
+      "ART"
+    ],
+    "description": "One tiny right-graph/region/convergence/syndrome/repair/support-core/oracle-diff golden slice."
+  },
+  {
+    "id": "E09",
+    "title": "Modularity/source-of-truth cleanup",
+    "categories": [
+      "MOD",
+      "ART",
+      "TOOL"
+    ],
+    "description": "Split gravity wells and prevent facades/contracts from becoming hidden semantic owners."
+  },
+  {
+    "id": "E10",
+    "title": "Docs/matrix/support evidence closure",
+    "categories": [
+      "DOC",
+      "TEST"
+    ],
+    "description": "Gate support labels from executable evidence, convert issue statuses, and clarify active/seeded/reserved surfaces."
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RequirementControlMapV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "requirement_control_map_id": {
+      "type": "string"
+    },
+    "regulatory_regime_profile_id": {
+      "type": "string"
+    },
+    "mappings": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "gap_classification_default": {
+      "type": "string"
+    },
+    "owner_ref": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "requirement_control_map_id",
+    "regulatory_regime_profile_id",
+    "mappings",
+    "gap_classification_default",
+    "owner_ref"
+  ]
+}

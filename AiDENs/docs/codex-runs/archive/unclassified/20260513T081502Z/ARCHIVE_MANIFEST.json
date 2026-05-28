@@ -1,0 +1,33 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-13T08:15:02Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T081502Z/files/templates/CODEX_ARTIFACT_CLASSIFICATION.template.json",
+      "bytes": 732,
+      "mtime_utc": "2026-05-13T13:05:40Z",
+      "original_path": "templates/CODEX_ARTIFACT_CLASSIFICATION.template.json",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f319a51ff2b9e090da9f1464d909c520f5b05aca05e8b891abebb0e5e95dddab"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "unclassified",
+  "skipped_existing": [],
+  "superseded_by": "P31",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T081502Z/files/templates/CODEX_ARTIFACT_CLASSIFICATION.template.json",
+      "bytes": 732,
+      "mtime_utc": "2026-05-13T13:05:40Z",
+      "original_path": "templates/CODEX_ARTIFACT_CLASSIFICATION.template.json",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f319a51ff2b9e090da9f1464d909c520f5b05aca05e8b891abebb0e5e95dddab"
+    }
+  ]
+}

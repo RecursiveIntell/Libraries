@@ -1,0 +1,26 @@
+{
+  "snapshot": "v21_v24_final_closeout_pack",
+  "captured_at": "2026-03-15",
+  "proof_commands": [
+    "cargo fmt --all --check",
+    "cargo clippy --workspace --all-targets --all-features -- -D warnings",
+    "cargo test --manifest-path effect-runtime/Cargo.toml",
+    "cargo test --manifest-path authority-delegation/Cargo.toml",
+    "cargo test --manifest-path assurance-runtime/Cargo.toml",
+    "cargo test --manifest-path continuity-runtime/Cargo.toml",
+    "cargo run -p contract-schema-gen -- schemas.generated",
+    "bash scripts/check_v21_v24_final_pack_truth.sh"
+  ],
+  "artifact_files": [
+    "schemas/",
+    "examples/",
+    "contracts/schemas/v21/",
+    "contracts/schemas/v22/",
+    "contracts/schemas/v23/",
+    "contracts/schemas/v24/",
+    "contracts/fixtures/v21/",
+    "contracts/fixtures/v22/",
+    "contracts/fixtures/v23/",
+    "contracts/fixtures/v24/"
+  ]
+}

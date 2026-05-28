@@ -1,0 +1,34 @@
+{
+  "status_id": "super-pass-status:fixture",
+  "current_pass": "P07",
+  "disposition": "done",
+  "source_basis": {
+    "lock_id": "source-basis-lock:fixture",
+    "snapshot_date": "2026-04-26",
+    "source_archive": "libraries-source-clean-20260426.zip",
+    "research_archive": "Full Provenance+ Research 4/24/26.zip",
+    "extraction_root": "/mnt/data/aidens_20260426",
+    "workspace_crates": 31,
+    "rust_files": 37,
+    "approximate_rust_loc": 5126,
+    "scaffold_only_files": 15,
+    "research_files": 52,
+    "locked_at": "2026-04-26T00:00:00Z"
+  },
+  "scaffold_report": {
+    "report_id": "scaffold-surface-report:fixture",
+    "generated_at": "2026-04-26T00:00:00Z",
+    "crates": [
+      {
+        "crate_name": "aidens-testkit",
+        "status": "scaffold-only",
+        "rust_files": 1,
+        "approximate_rust_loc": 69,
+        "note": "deferred to P08 reference harness work"
+      }
+    ]
+  },
+  "fake_ready_findings": [],
+  "blockers": [],
+  "updated_at": "2026-04-26T00:00:00Z"
+}

@@ -1,0 +1,206 @@
+{
+  "created_utc": "2026-05-24T01:20:37Z",
+  "error_count": 1,
+  "findings": [
+    {
+      "code": "context-package-command-evidence-missing",
+      "detail": "Context/audit package manifest must include command-run evidence (commands_run.log, commands_run.receipts.jsonl, COMMAND_RECEIPTS.jsonl, COMMAND_EXECUTION_RECEIPTS.jsonl, or *_COMMANDS_RUN.md).",
+      "path": "/",
+      "severity": "error"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/AI-Batch-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/ComfyUI-RS/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../living-memory/living-memory",
+      "path": "Libraries2/LLM-Pipeline/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/LLM-Pipeline/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/Tauri-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/agent-graph/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/attestation-exchange/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../forge-memory-bridge",
+      "path": "Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../recursive-kernel-core",
+      "path": "Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../semantic-memory-forge",
+      "path": "Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../forge-memory-bridge",
+      "path": "Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../knowledge-runtime",
+      "path": "Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../semantic-memory",
+      "path": "Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../semantic-memory-forge",
+      "path": "Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../stack-ids",
+      "path": "Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/discovery-portfolio/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/federated-settlement/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/job-queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../assurance-runtime",
+      "path": "Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../authority-delegation",
+      "path": "Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../continuity-runtime",
+      "path": "Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../verification-policy",
+      "path": "Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/remote-oracle-admission/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries2/spec-execution/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "missing-source-root",
+      "detail": "Missing src or crates. generic-rust profile expects src/ or crates/.",
+      "path": "/",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-content-named-secret-assignment",
+      "detail": "Potential secret-like content detected at line 1309; value intentionally not printed.",
+      "path": "AGENT-SYSTEM.md",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-content-named-secret-assignment",
+      "detail": "Potential secret-like content detected at line 152; value intentionally not printed.",
+      "path": "Libraries2/docs/benchmarks/run_forge_bench.py",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Libraries2/docs/13_settings_persistence_and_secret_handling.md",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-expected-file-not-packaged",
+      "detail": "rust adapter expected this existing file to be included.",
+      "path": "Cargo.lock",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-expected-file-not-packaged",
+      "detail": "rust adapter expected this existing file to be included.",
+      "path": "Cargo.toml",
+      "severity": "warning"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries2",
+  "warning_count": 32
+}

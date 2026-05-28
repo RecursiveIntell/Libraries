@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EffectPreflightReportV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "effect_preflight_report_id": {
+      "type": "string"
+    },
+    "effect_intent_id": {
+      "type": "string"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile_exception_bundle_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "required_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "blocking_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "monitoring_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "decision_basis_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "input_integrity_result": {
+      "type": "string"
+    },
+    "admission_check_result": {
+      "type": "string"
+    },
+    "dependency_reachability_result": {
+      "type": "string"
+    },
+    "budget_sufficiency_result": {
+      "type": "string"
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "blocked",
+        "advisory_only",
+        "commit_eligible"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "effect_preflight_report_id",
+    "effect_intent_id",
+    "applicability_context_id",
+    "profile_set_id",
+    "composition_receipt_id",
+    "effective_constitution_id",
+    "compiled_obligation_set_id",
+    "input_integrity_result",
+    "admission_check_result",
+    "dependency_reachability_result",
+    "budget_sufficiency_result",
+    "disposition",
+    "generated_at",
+    "notes"
+  ]
+}

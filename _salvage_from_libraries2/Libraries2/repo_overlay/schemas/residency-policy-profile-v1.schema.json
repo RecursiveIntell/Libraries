@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ResidencyPolicyProfileV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "residency_policy_profile_id": {
+      "type": "string"
+    },
+    "allowed_storage_regions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_execution_regions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_replay_regions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_transfer_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "default_exception_path": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "residency_policy_profile_id",
+    "allowed_storage_regions",
+    "allowed_execution_regions",
+    "allowed_replay_regions",
+    "forbidden_transfer_classes",
+    "default_exception_path"
+  ]
+}

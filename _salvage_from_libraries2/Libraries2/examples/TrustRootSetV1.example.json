@@ -1,0 +1,25 @@
+{
+  "schema_version": "trust_root_set_v1",
+  "trust_root_set_id": "trust-root-core",
+  "trust_root_identities": [
+    "root-key-1",
+    "root-key-2"
+  ],
+  "allowed_signer_classes": [
+    "local_service",
+    "remote_oracle_partner"
+  ],
+  "expiration_policy": "rotate_every_90_days",
+  "rotation_policy": "overlap_14_days_and_emit_supersession",
+  "allowed_artifact_families": [
+    "decision_trace_v1",
+    "remote_slice_result_v1"
+  ],
+  "revocation_sources": [
+    "transparency-log://core",
+    "revocation-feed://core"
+  ],
+  "policy_owner_refs": [
+    "policy-snapshot-7"
+  ]
+}

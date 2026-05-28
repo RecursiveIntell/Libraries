@@ -1,0 +1,26 @@
+{
+  "report_id": "reference-interpreter-report:fixture",
+  "interpreter_id": "aidens-testkit:p09",
+  "case_count": 1,
+  "passed": true,
+  "findings": [],
+  "covered_provider_kinds": [
+    "mock"
+  ],
+  "covered_risk_classes": [
+    "read_only"
+  ],
+  "covered_memory_modes": [
+    "disabled"
+  ],
+  "covered_receipt_levels": [
+    "standard"
+  ],
+  "covered_tool_lifecycle_states": [
+    "declared"
+  ],
+  "reason_codes": [
+    "reference-conformance-passed"
+  ],
+  "generated_at": "2026-04-30T00:00:00Z"
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RegionArtifactKind": {
+      "enum": [
+        "delta",
+        "residual",
+        "syndrome",
+        "witness",
+        "control_receipt",
+        "nuisance_state",
+        "oracle_parity"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifact_digest": {
+      "type": "string"
+    },
+    "artifact_id": {
+      "type": "string"
+    },
+    "artifact_kind": {
+      "$ref": "#/definitions/RegionArtifactKind"
+    },
+    "from_region_id": {
+      "type": "string"
+    },
+    "from_surface": {
+      "type": "string"
+    },
+    "replay_ref": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "to_region_id": {
+      "type": "string"
+    },
+    "to_surface": {
+      "type": "string"
+    },
+    "transport_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_digest",
+    "artifact_id",
+    "artifact_kind",
+    "from_region_id",
+    "from_surface",
+    "replay_ref",
+    "schema_version",
+    "to_region_id",
+    "to_surface",
+    "transport_id"
+  ],
+  "title": "RegionArtifactTransport",
+  "type": "object"
+}

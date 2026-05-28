@@ -1,0 +1,872 @@
+{
+  "created_utc": "2026-05-24T01:20:33Z",
+  "excluded": [
+    {
+      "path": "AiDENs/AiDENs 4\u204426.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260503.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260503.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260503.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260503.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260504.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260505.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260505.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260505.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260505.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260505.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260506.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260506.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260506.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260506.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260506.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260507.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260507.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260507.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260507.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260507.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260508.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260508.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260508.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260508.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260508.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260511.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260511.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260511.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260511.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260511.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260512.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260512.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260512.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260512.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260512.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260513.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260513.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260513.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260513.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260513.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/input_evidence/AiDENs-aidens-next-codex-context-20260508.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/input_evidence/AiDENs-aidens-next-codex-context-20260508.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/input_evidence/AiDENs-aidens-next-codex-context-20260508.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/input_evidence/AiDENs-aidens-next-codex-context-20260508.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260425.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260429.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260430.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/source_audits/AiDENs-aidens-next-codex-context-20260507.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/source_audits/AiDENs-aidens-next-codex-context-20260507.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/source_audits/AiDENs-aidens-next-codex-context-20260507.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/source_audits/AiDENs-aidens-next-codex-context-20260507.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries(3-25-26).zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20442-2.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20443.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260524T012026Z.codex-archive.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "MASTER_AUDIT_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "MASTER_ISSUE_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "discovery-portfolio/tests/property_contracts.proptest-regressions",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "fib-quant/CITATION.cff",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/diagrams/codec_artifact_flow.mmd",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/diagrams/final_hardening_dependency_dag.mmd",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/diagrams/release_state_machine.mmd",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/root-sidecars/fib-quant-generic-rust-next-codex-context-20260516.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/root-sidecars/fib-quant-generic-rust-next-codex-context-20260516.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/root-sidecars/fib-quant-generic-rust-next-codex-context-20260516.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/root-sidecars/fib-quant-generic-rust-next-codex-context-20260516.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/root-sidecars/fib-quant-generic-rust-next-codex-context-20260516.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "fib-quant/fib-quant-generic-rust-next-codex-context-20260516.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "fib-quant/fib-quant-generic-rust-next-codex-context-20260516.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "fib-quant/fib-quant-generic-rust-next-codex-context-20260516.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "fib-quant/fib-quant-generic-rust-next-codex-context-20260516.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "fib-quant/fib-quant-generic-rust-next-codex-context-20260516.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-3.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-4.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260323.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260324.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260326.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260328.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260330.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "poly-kv/poly-kv-generic-rust-next-codex-context-20260522T080201Z.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "poly-kv/poly-kv-generic-rust-next-codex-context-20260522T080201Z.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "poly-kv/poly-kv-generic-rust-next-codex-context-20260522T080201Z.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "poly-kv/poly-kv-generic-rust-next-codex-context-20260522T080201Z.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "poly-kv/poly-kv-generic-rust-next-codex-context-20260522T080201Z.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "schemas.7z",
+      "reason": "archive-file"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260513.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260513.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260513.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260513.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260513.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260514.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260514.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260514.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260514.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-generic-rust-next-codex-context-20260514.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-p31.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-p31.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-p31.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-p31.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "scr-runtime/scr-runtime-p31.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_check_workspace.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_check_workspace_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_clippy_semantic_memory_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_clippy_turbo_quant.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_clippy_turbo_quant_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_fmt_check.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_test_semantic_memory_turbo.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_test_semantic_memory_turbo_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_test_turbo_quant.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_test_turbo_quant_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-generic-rust-next-codex-context-20260511.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260511.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260512.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-check.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-clippy.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-doc.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-fmt.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-package.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-publish-dry-run.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-semver-checks.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-test-doc.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-test.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/package-scope-gate.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/readme-gate.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/semantic-memory-harness.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/v0.2.0/cargo-package.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/v0.2.0/cargo-publish-dry-run.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "turbo-semantic/semantic-memory-generic-rust-next-codex-context-20260507.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-semantic/semantic-memory-generic-rust-next-codex-context-20260507.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-semantic/semantic-memory-generic-rust-next-codex-context-20260507.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-semantic/semantic-memory-generic-rust-next-codex-context-20260507.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-semantic/semantic-memory-generic-rust-next-codex-context-20260507.zip",
+      "reason": "archive-file"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": ".claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": ".git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "docs/archive",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "docs/source-packages/archive",
+      "reason": "root-package-archive-disabled"
+    },
+    {
+      "path": "fib-quant/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/hidden-root/.codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "fib-quant/docs/codex-runs/fibquant-final-hardening/archive-inputs/overlays/.codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "forge-memory-bridge/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "forge-memory-bridge/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "poly-kv/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "poly-kv/.pytest_cache",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "poly-kv/codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "poly-kv/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "poly-kv/docs/source-packages/archive",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "poly-kv/python/poly_kv/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "poly-kv/python/poly_kv/adapters/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "poly-kv/python/tests/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "scr-runtime/.codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "scr-runtime/.pytest_cache",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "scr-runtime/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "scr-runtime/scripts/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "scr-runtime/tests/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "scr-runtime/tmp",
+      "reason": "excluded-directory-prefix"
+    },
+    {
+      "path": "scripts/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "scripts/archive",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "semantic-memory/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "semantic-memory/scripts/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "stack-ids/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "stack-ids/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "turbo-quant/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "turbo-quant/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "turbo-quant/codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "turbo-quant/p33boot/__pycache__",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries",
+  "summary": {
+    "archive-file": 47,
+    "doc-binary-disabled": 2,
+    "generated-output": 1,
+    "generated-sidecar": 96,
+    "log-disabled": 24,
+    "unsupported-extension-or-basename": 5
+  }
+}

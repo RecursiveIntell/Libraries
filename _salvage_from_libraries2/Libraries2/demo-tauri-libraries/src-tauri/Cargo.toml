@@ -1,0 +1,26 @@
+[package]
+name = "demo-tauri-libraries"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Demo Tauri application for the core lane and queue crates"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+async-trait = "0.1"
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync"] }
+semantic-memory = { path = "../../semantic-memory", default-features = false, features = ["brute-force"] }
+semantic-memory-forge = { path = "../../semantic-memory-forge" }
+forge-memory-bridge = { path = "../../forge-memory-bridge" }
+knowledge-runtime = { path = "../../knowledge-runtime" }
+tauri-queue = { path = "../../Tauri-Queue" }
+stack-ids = { path = "../../stack-ids" }
+
+[workspace]

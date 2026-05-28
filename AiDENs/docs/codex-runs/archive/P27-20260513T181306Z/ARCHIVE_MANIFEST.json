@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-13T18:13:06Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P27-20260513T181306Z/files/scripts/p27_verify.sh",
+      "bytes": 225,
+      "mtime_utc": "2026-05-13T09:38:19Z",
+      "original_path": "scripts/p27_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P27",
+      "sha256": "886a04ce4801bf9828599cf1ace0a5e64623cc42e60d293c534873738c608a3f"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P27",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

@@ -1,0 +1,45 @@
+[workspace]
+resolver = "2"
+exclude = [
+    "AI-Batch-Queue",
+    "Tauri-Queue",
+    "LLM-Pipeline",
+    "llm-tool-runtime",
+    "constraint-compiler",
+    "profile-runtime",
+    "demo-tauri-libraries",
+    ".parser-lib",
+]
+members = [
+    "stack-ids",
+    "job-queue",
+    "agent-graph",
+    "ComfyUI-RS",
+    "Ollama-Vision-RS",
+    "discovery-portfolio",
+    "spec-execution",
+    "federated-settlement",
+    "attestation-exchange",
+    "remote-oracle-admission",
+]
+
+# Excluded from workspace (missing sibling deps or external build env):
+# - constraint-compiler    (needs forge-memory-bridge, recursive-kernel-core, semantic-memory-forge)
+# - profile-runtime        (needs assurance-runtime, authority-delegation, continuity-runtime, verification-policy)
+# - Tauri-Queue            (needs tauri build environment)
+# - AI-Batch-Queue         (needs tauri build environment)
+# - LLM-Pipeline           (needs llm-tool-runtime → semantic-memory-forge)
+# - llm-tool-runtime       (needs semantic-memory-forge)
+
+[workspace.dependencies]
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+anyhow = "1"
+schemars = "0.8"
+blake3 = "1"

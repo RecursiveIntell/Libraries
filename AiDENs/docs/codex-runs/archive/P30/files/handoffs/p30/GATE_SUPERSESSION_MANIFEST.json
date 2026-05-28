@@ -1,0 +1,39 @@
+{
+  "schema": "p30-gate-supersession-manifest-v1",
+  "supersedes_parent_release_gate": false,
+  "gates": [
+    {
+      "name": "AiDENs cargo command bar",
+      "status": "passed",
+      "evidence": [
+        "target/p30/audit/cargo_fmt_check.log",
+        "target/p30/audit/cargo_check_workspace_all_targets.log",
+        "target/p30/audit/cargo_test_workspace_all_targets.log",
+        "target/p30/audit/cargo_clippy_workspace_all_targets_all_features.log",
+        "target/p30/audit/cargo_doc_workspace_no_deps.log"
+      ]
+    },
+    {
+      "name": "P30 static guard",
+      "status": "passed-with-warning-debt",
+      "evidence": [
+        "target/p30/audit/p30_guard.log"
+      ]
+    },
+    {
+      "name": "AiDENs verifier",
+      "status": "passed",
+      "evidence": [
+        "target/p30/audit/scripts_verify.log"
+      ]
+    },
+    {
+      "name": "Parent Libraries release gate",
+      "status": "blocked",
+      "evidence": [
+        "target/p30/audit/parent_make_gate.log"
+      ],
+      "blocker": "missing parent-root pack-truth docs"
+    }
+  ]
+}

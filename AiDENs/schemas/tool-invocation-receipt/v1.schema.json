@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "CanonicalBackpointerV1": {
+      "description": "AiDENs-local wrapper pointer to a canonical owner artifact or owner type.\n\nThis does not make AiDENs authoritative for the pointed-to concept; it records where a display/report DTO must be reconciled for canonical truth.",
+      "properties": {
+        "artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "external_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_crate": {
+          "type": "string"
+        },
+        "owner_type": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_crate",
+        "owner_type",
+        "role"
+      ],
+      "type": "object"
+    },
+    "ToolInvocationOutcomeV1": {
+      "enum": [
+        "started",
+        "succeeded",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "ToolLifecycleStateV1": {
+      "enum": [
+        "declared",
+        "registered",
+        "executable",
+        "exposed",
+        "exposed-this-turn",
+        "invoked",
+        "succeeded",
+        "failed",
+        "hidden",
+        "blocked"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "approval_decision_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "approval_request_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attempt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "canonical_backpointers": {
+      "items": {
+        "$ref": "#/definitions/CanonicalBackpointerV1"
+      },
+      "type": "array"
+    },
+    "completed_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "input": true,
+    "input_digest": {
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "lifecycle": {
+      "items": {
+        "$ref": "#/definitions/ToolLifecycleStateV1"
+      },
+      "type": "array"
+    },
+    "outcome": {
+      "$ref": "#/definitions/ToolInvocationOutcomeV1"
+    },
+    "output": true,
+    "output_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "permit_grant_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "permit_use_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_validation_receipt_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "started_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "succeeded": {
+      "type": "boolean"
+    },
+    "tool_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "input",
+    "input_digest",
+    "kind",
+    "lifecycle",
+    "outcome",
+    "receipt_id",
+    "started_at",
+    "succeeded",
+    "tool_id"
+  ],
+  "title": "ToolInvocationReportV1",
+  "type": "object"
+}

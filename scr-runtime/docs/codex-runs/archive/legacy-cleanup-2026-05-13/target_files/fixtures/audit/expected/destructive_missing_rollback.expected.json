@@ -1,0 +1,9 @@
+{
+  "case_id": "destructive_missing_rollback",
+  "expected_minimum_action": "BlockRelease",
+  "required_reason_codes": [
+    "DESTRUCTIVE_CHANGE",
+    "MISSING_ROLLBACK"
+  ],
+  "notes": "Initial expected minimum. Codex should generate full golden receipts after evaluator exists. Updating generated golden receipts requires POLICY_CHANGE.md."
+}

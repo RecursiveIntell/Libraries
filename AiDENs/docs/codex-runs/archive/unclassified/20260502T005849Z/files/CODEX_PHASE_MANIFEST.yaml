@@ -1,0 +1,81 @@
+run_id: aidens_contract_ownership_collapse_v2_20260428
+target_repo: ~/Coding/Libraries/AiDENs
+canonical_root: ~/Coding/Libraries
+supplemental_reference_roots:
+  - ~/Coding/Libraries2
+  - ~/Coding/Recall
+  - ~/Coding/Recall-Coding
+no_feature_work: true
+no_crate_split: true
+requires_human_guardrail_between_phases: true
+phase_evidence_root: .codex_evidence/contract_ownership
+
+phases:
+  - id: "00"
+    name: "Preflight, source basis, evidence harness"
+    prompt: CODEX_PROMPTS/PHASE_00_PREFLIGHT_SOURCE_BASIS.md
+    human_guardrail: "GUARDRAIL_00_TO_01"
+    must_stop_after: true
+    gates:
+      - scripts/assert_docs_source_basis_current.sh
+      - scripts/assert_no_crate_split.sh
+  - id: "01"
+    name: "Generated ownership inventory and duplicate gate"
+    prompt: CODEX_PROMPTS/PHASE_01_GENERATED_OWNERSHIP_INVENTORY.md
+    human_guardrail: "GUARDRAIL_01_TO_02"
+    must_stop_after: true
+    gates:
+      - scripts/make_type_ownership_inventory.py
+      - scripts/assert_no_canonical_type_duplicates.py
+  - id: "02"
+    name: "P0 exact duplicate collapse"
+    prompt: CODEX_PROMPTS/PHASE_02_P0_EXACT_DUPLICATE_COLLAPSE.md
+    human_guardrail: "GUARDRAIL_02_TO_03"
+    must_stop_after: true
+    gates:
+      - scripts/assert_no_canonical_type_duplicates.py
+      - scripts/assert_no_compatibility_ledgers.sh
+  - id: "03"
+    name: "Canonical dependency and re-export wiring"
+    prompt: CODEX_PROMPTS/PHASE_03_CANONICAL_DEPENDENCY_WIRING.md
+    human_guardrail: "GUARDRAIL_03_TO_04"
+    must_stop_after: true
+    gates:
+      - scripts/assert_no_canonical_type_duplicates.py
+      - scripts/assert_no_local_substitute_dependencies.sh
+  - id: "04"
+    name: "Digest and artifact identity law collapse"
+    prompt: CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md
+    human_guardrail: "GUARDRAIL_04_TO_05"
+    must_stop_after: true
+    gates:
+      - scripts/assert_no_local_canonical_digest_law.sh
+  - id: "05"
+    name: "Schema ownership collapse"
+    prompt: CODEX_PROMPTS/PHASE_05_SCHEMA_OWNERSHIP_COLLAPSE.md
+    human_guardrail: "GUARDRAIL_05_TO_06"
+    must_stop_after: true
+    gates:
+      - scripts/assert_schema_generation_scope.py
+  - id: "06"
+    name: "Tool, repair, runtime-view wrapper collapse"
+    prompt: CODEX_PROMPTS/PHASE_06_TOOL_REPAIR_RUNTIME_WRAPPERS.md
+    human_guardrail: "GUARDRAIL_06_TO_07"
+    must_stop_after: true
+    gates:
+      - scripts/assert_tool_runtime_delegation.sh
+      - scripts/assert_wrapper_backpointers.sh
+  - id: "07"
+    name: "Docs, quarantine ledger, final hostile proof"
+    prompt: CODEX_PROMPTS/PHASE_07_FINAL_PROOF_AND_AUDITOR_HANDOFF.md
+    human_guardrail: "FINAL_REVIEW_GUARDRAIL"
+    must_stop_after: true
+    gates:
+      - scripts/phase_verify_contract_ownership.sh final
+
+final_required_outputs:
+  - docs/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md
+  - docs/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv
+  - docs/contract-ownership/FINAL_QUARANTINE_LEDGER.md
+  - docs/contract-ownership/FINAL_GATE_OUTPUTS.md
+  - docs/contract-ownership/FINAL_AUDITOR_HANDOFF.md

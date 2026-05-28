@@ -1,0 +1,17 @@
+{
+  "schema_version": "MonitorCatalogV1",
+  "monitor_catalog_id": "mc_001",
+  "monitor_definitions": [
+    {
+      "monitor": "retry-burn",
+      "threshold": "attempt_family_retry_burn>3x_baseline"
+    },
+    {
+      "monitor": "error-budget",
+      "threshold": "remaining_budget<30%"
+    }
+  ],
+  "evaluation_cadence": "5m",
+  "false_positive_budget": "moderate",
+  "owner_ref": "team:reliability"
+}

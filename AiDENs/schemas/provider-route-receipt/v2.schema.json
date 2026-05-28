@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "ProviderRouteKindV1": {
+      "enum": [
+        "mock",
+        "native-open-ai-responses",
+        "native-open-ai-chat",
+        "native-anthropic",
+        "native-ollama",
+        "ollama-chat",
+        "open-ai-compatible",
+        "parser-fallback",
+        "disabled",
+        "unavailable",
+        "degraded"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "chat_completion_executable": {
+      "type": "boolean"
+    },
+    "checked_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "degraded": {
+      "default": false,
+      "type": "boolean"
+    },
+    "degraded_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "model": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "native_tool_loop": {
+      "type": "boolean"
+    },
+    "provider_kind": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "route": {
+      "$ref": "#/definitions/ProviderRouteKindV1"
+    },
+    "route_label": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "chat_completion_executable",
+    "checked_at",
+    "kind",
+    "native_tool_loop",
+    "provider_kind",
+    "receipt_id",
+    "route",
+    "route_label"
+  ],
+  "title": "ProviderRouteReportV2",
+  "type": "object"
+}

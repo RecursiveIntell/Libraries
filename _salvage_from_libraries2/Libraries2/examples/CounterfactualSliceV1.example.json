@@ -1,0 +1,19 @@
+{
+  "schema_version": "counterfactual_slice_v1",
+  "counterfactual_slice_id": "cf-slice-2026-03-14-01",
+  "intervention_id": "intervention-2026-03-14-alpha",
+  "baseline_treatment": "message-passing only",
+  "cohort_contract_id": "cohort-core-contradictions",
+  "as_of_valid_time": "2026-03-14T00:00:00Z",
+  "as_of_recorded_time": "2026-03-14T12:00:00Z",
+  "replayable_data_slice": "replay-ticket-local://core/cf/2026-03-14/01",
+  "exactness_target": "bounded_exact",
+  "modeling_assumptions": [
+    "same workload family",
+    "no hidden policy override"
+  ],
+  "expected_failure_modes": [
+    "budget_exhausted",
+    "oracle_unavailable"
+  ]
+}

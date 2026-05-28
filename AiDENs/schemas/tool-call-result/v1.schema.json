@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CanonicalBackpointerV1": {
+      "description": "AiDENs-local wrapper pointer to a canonical owner artifact or owner type.\n\nThis does not make AiDENs authoritative for the pointed-to concept; it records where a display/report DTO must be reconciled for canonical truth.",
+      "properties": {
+        "artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "external_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_crate": {
+          "type": "string"
+        },
+        "owner_type": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_crate",
+        "owner_type",
+        "role"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "call_id": {
+      "type": "string"
+    },
+    "canonical_backpointers": {
+      "items": {
+        "$ref": "#/definitions/CanonicalBackpointerV1"
+      },
+      "type": "array"
+    },
+    "completed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "input_digest": {
+      "type": "string"
+    },
+    "invocation_receipt_id": {
+      "type": "string"
+    },
+    "output": true,
+    "output_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "result_id": {
+      "type": "string"
+    },
+    "succeeded": {
+      "type": "boolean"
+    },
+    "tool_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "call_id",
+    "completed_at",
+    "input_digest",
+    "invocation_receipt_id",
+    "result_id",
+    "succeeded",
+    "tool_id"
+  ],
+  "title": "ToolCallResultV1",
+  "type": "object"
+}

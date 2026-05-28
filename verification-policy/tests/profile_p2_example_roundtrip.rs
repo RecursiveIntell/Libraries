@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use verification_policy::{
     CrossBoundaryTransferClassV1, LocalityExceptionV1, ResidencyPolicyProfileV1,
     TenantBoundaryProfileV1,

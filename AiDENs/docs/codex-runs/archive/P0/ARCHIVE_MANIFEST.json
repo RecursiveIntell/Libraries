@@ -1,0 +1,50 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P0/files/CODEX_PROMPTS/PHASE_02_P0_EXACT_DUPLICATE_COLLAPSE.md",
+      "bytes": 1466,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_02_P0_EXACT_DUPLICATE_COLLAPSE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "P0",
+      "sha256": "39c922d5f4628129121cf2805cebc10097e74975321b20f2fa190131b432cd88"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P0/files/handoffs/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.md",
+      "bytes": 3540,
+      "mtime_utc": "2026-04-26T20:04:28Z",
+      "original_path": "handoffs/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P0",
+      "sha256": "e00691281bc72683009b24fdf6cd8247be220341b16cb732d92cf02e2ac80575"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P0/files/prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md",
+      "bytes": 1226,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P0",
+      "sha256": "8d7822b3b740581265d3a87e6b51500b1e9e9e4c24e5aff036831c493ed9e6e7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P0/files/tasks/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.json",
+      "bytes": 1050,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "tasks/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.json",
+      "reason": "stale-run-task",
+      "run_id": "P0",
+      "sha256": "90b9e986f6364ddd0b576aa666173bbaef77c49ccb0aa07bf9ef79ad4370f47d"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P0",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

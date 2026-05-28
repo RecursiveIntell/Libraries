@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use attestation_exchange::{
     VendorCertificationAdapterV1, VendorEvidenceTranslationV1, VendorRevocationHandlingV1,
     VendorTrustRootBindingV1,

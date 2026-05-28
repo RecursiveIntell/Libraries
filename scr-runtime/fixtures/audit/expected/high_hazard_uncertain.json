@@ -1,0 +1,116 @@
+{
+  "schema_version": "control_decision_receipt_v1",
+  "input_hash": "9afad1c50212d448b2cd165c44319179969d81327740d3a117f42fa71533b64b",
+  "canonical_policy_hash": "a49e5e20404d19377d540d58f4ad5f1873840a2c6eb9ddefe942014c7b6c69b0",
+  "evaluator_algorithm_id": "scr-p0a-reference-v1",
+  "evaluator_algorithm_hash": "25075251974fe7d1d5a22e7235a837dd773d9137f2860f8a338bc42e6921832d",
+  "hard_rules_checked": [
+    "HR_SCHEMA_INVALID",
+    "HR_AUTHORITY_MISSING",
+    "HR_FORBIDDEN_PRODUCTION_TERM",
+    "HR_UNKNOWN_OWNER_MUTATION",
+    "HR_SOURCE_TRUTH_DRIFT",
+    "HR_FALSE_COMPLETION_MISSING_TESTS",
+    "HR_DESTRUCTIVE_MISSING_ROLLBACK"
+  ],
+  "hard_rules_triggered": [],
+  "minimum_action_floors_applied": [],
+  "hard_rule_results": [
+    {
+      "rule_id": "HR_SCHEMA_INVALID",
+      "checked": true,
+      "triggered": false,
+      "reason_codes": []
+    },
+    {
+      "rule_id": "HR_AUTHORITY_MISSING",
+      "checked": true,
+      "triggered": false,
+      "reason_codes": []
+    },
+    {
+      "rule_id": "HR_FORBIDDEN_PRODUCTION_TERM",
+      "checked": true,
+      "triggered": false,
+      "reason_codes": []
+    },
+    {
+      "rule_id": "HR_UNKNOWN_OWNER_MUTATION",
+      "checked": true,
+      "triggered": false,
+      "reason_codes": []
+    },
+    {
+      "rule_id": "HR_SOURCE_TRUTH_DRIFT",
+      "checked": true,
+      "triggered": false,
+      "reason_codes": []
+    },
+    {
+      "rule_id": "HR_FALSE_COMPLETION_MISSING_TESTS",
+      "checked": true,
+      "triggered": false,
+      "reason_codes": []
+    },
+    {
+      "rule_id": "HR_DESTRUCTIVE_MISSING_ROLLBACK",
+      "checked": true,
+      "triggered": false,
+      "reason_codes": []
+    }
+  ],
+  "axes": {
+    "hazard": 9000,
+    "evidence_confidence": 3500,
+    "uncertainty": 8500,
+    "authority": 8500,
+    "containment": 7000,
+    "integrity_risk": 2000
+  },
+  "derived_pressures": {
+    "autonomy_pressure": 4500,
+    "verification_pressure": 9000,
+    "repair_priority": 4750,
+    "quarantine_pressure": 4250
+  },
+  "chosen_action": "require_verification",
+  "rejected_actions": [],
+  "reason_codes": [
+    "HIGH_HAZARD",
+    "LOW_CONFIDENCE_OR_HIGH_UNCERTAINTY"
+  ],
+  "authority_basis": {
+    "actor_ref": {
+      "ref_kind": "actor_ref",
+      "ref_value": "fixture_operator",
+      "owner_hint": "fixture"
+    },
+    "permit_ref": {
+      "ref_kind": "permit_ref",
+      "ref_value": "fixture_permit",
+      "owner_hint": "fixture"
+    },
+    "authority_result": "authority_basis_recorded",
+    "reason_codes": [
+      "authority_basis_recorded"
+    ]
+  },
+  "evidence_basis": {
+    "evidence_refs": [
+      {
+        "ref_kind": "signal",
+        "ref_value": "high_hazard"
+      },
+      {
+        "ref_kind": "signal",
+        "ref_value": "uncertain"
+      }
+    ],
+    "evidence_result": "evidence_uncertain",
+    "reason_codes": [
+      "evidence_uncertain"
+    ]
+  },
+  "valid_time_basis": "2026-05-13T00:00:00Z",
+  "recorded_time": "2026-05-13T00:00:00Z"
+}

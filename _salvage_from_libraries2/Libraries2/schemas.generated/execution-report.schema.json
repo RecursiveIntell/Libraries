@@ -1,0 +1,366 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ConstraintMessage": {
+      "properties": {
+        "from_constraint_id": {
+          "type": "string"
+        },
+        "iteration": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "support_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "to_node_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_constraint_id",
+        "iteration",
+        "support_micros",
+        "to_node_id"
+      ],
+      "type": "object"
+    },
+    "ConvergenceGovernance": {
+      "properties": {
+        "damping_factor_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "escalation_rule": {
+          "type": "string"
+        },
+        "max_iterations": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "residual_tolerance_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "stop_rule": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "damping_factor_micros",
+        "escalation_rule",
+        "max_iterations",
+        "residual_tolerance_micros",
+        "stop_rule"
+      ],
+      "type": "object"
+    },
+    "ConvergenceReport": {
+      "properties": {
+        "converged": {
+          "type": "boolean"
+        },
+        "convergence_report_id": {
+          "type": "string"
+        },
+        "escalated": {
+          "type": "boolean"
+        },
+        "governance": {
+          "$ref": "#/definitions/ConvergenceGovernance"
+        },
+        "residual_monotone_nonincreasing": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "converged",
+        "convergence_report_id",
+        "escalated",
+        "governance",
+        "residual_monotone_nonincreasing"
+      ],
+      "type": "object"
+    },
+    "ExecutionCalibrationReport": {
+      "properties": {
+        "caution_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "nuisance_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "caution_markers",
+        "degraded",
+        "nuisance_node_ids"
+      ],
+      "type": "object"
+    },
+    "ExecutionCertificateArtifact": {
+      "properties": {
+        "certificate_kind": {
+          "type": "string"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "supporting_constraint_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "certificate_kind",
+        "node_id",
+        "supporting_constraint_count"
+      ],
+      "type": "object"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "acyclic_baseline",
+        "message_passing_baseline",
+        "delta_propagation",
+        "residual_correction",
+        "multiscale_scheduler"
+      ],
+      "type": "string"
+    },
+    "ExecutionStopReason": {
+      "enum": [
+        "acyclic_completion",
+        "fixed_point",
+        "max_iterations",
+        "budget_exhausted",
+        "delta_window_completed"
+      ],
+      "type": "string"
+    },
+    "ExecutionWitnessArtifact": {
+      "properties": {
+        "belief_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "supporting_constraint_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "belief_micros",
+        "node_id",
+        "supporting_constraint_ids"
+      ],
+      "type": "object"
+    },
+    "NodeBelief": {
+      "properties": {
+        "belief_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "local_support_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "node_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "belief_micros",
+        "local_support_count",
+        "node_id"
+      ],
+      "type": "object"
+    },
+    "RegionExecutionTrace": {
+      "properties": {
+        "executed_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "region_digest": {
+          "type": "string"
+        },
+        "region_id": {
+          "type": "string"
+        },
+        "syndrome_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "witness_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "executed_node_ids",
+        "region_digest",
+        "region_id",
+        "syndrome_ids",
+        "witness_node_ids"
+      ],
+      "type": "object"
+    },
+    "ResidualSample": {
+      "properties": {
+        "iteration": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "total_residual_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "iteration",
+        "total_residual_micros"
+      ],
+      "type": "object"
+    },
+    "Syndrome": {
+      "properties": {
+        "blocked_by_degradation": {
+          "type": "boolean"
+        },
+        "signature": {
+          "type": "string"
+        },
+        "syndrome_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "blocked_by_degradation",
+        "signature",
+        "syndrome_id"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "calibration_report": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ExecutionCalibrationReport"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "certificates": {
+      "items": {
+        "$ref": "#/definitions/ExecutionCertificateArtifact"
+      },
+      "type": "array"
+    },
+    "convergence_report": {
+      "$ref": "#/definitions/ConvergenceReport"
+    },
+    "execution_mode": {
+      "$ref": "#/definitions/ExecutionMode"
+    },
+    "iteration_count": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "messages": {
+      "items": {
+        "$ref": "#/definitions/ConstraintMessage"
+      },
+      "type": "array"
+    },
+    "node_beliefs": {
+      "items": {
+        "$ref": "#/definitions/NodeBelief"
+      },
+      "type": "array"
+    },
+    "region_traces": {
+      "items": {
+        "$ref": "#/definitions/RegionExecutionTrace"
+      },
+      "type": "array"
+    },
+    "residuals": {
+      "items": {
+        "$ref": "#/definitions/ResidualSample"
+      },
+      "type": "array"
+    },
+    "stop_reason": {
+      "$ref": "#/definitions/ExecutionStopReason"
+    },
+    "syndromes": {
+      "items": {
+        "$ref": "#/definitions/Syndrome"
+      },
+      "type": "array"
+    },
+    "witnesses": {
+      "items": {
+        "$ref": "#/definitions/ExecutionWitnessArtifact"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "certificates",
+    "convergence_report",
+    "execution_mode",
+    "iteration_count",
+    "messages",
+    "node_beliefs",
+    "region_traces",
+    "residuals",
+    "stop_reason",
+    "syndromes",
+    "witnesses"
+  ],
+  "title": "ExecutionReport",
+  "type": "object"
+}

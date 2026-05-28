@@ -1,0 +1,29 @@
+{
+  "pass_id": "P07",
+  "title": "Schema generation, artifact registry, compatibility, and migration law",
+  "phase": "Contracted core",
+  "prompt_file": "prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md",
+  "pass_doc": "passes/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.md",
+  "crates": [
+    "aidens-contracts",
+    "aidens-cli",
+    "workspace root",
+    "schemas"
+  ],
+  "artifacts": [
+    "ArtifactFamilyRegistryV1",
+    "GeneratedSchemaManifestV1",
+    "SchemaCompatibilityReportV1",
+    "MigrationPlanV1",
+    "BackfillReceiptV1"
+  ],
+  "acceptance": [
+    "cargo run -p aidens-cli -- schemas generate creates deterministic schema files.",
+    "schemas check fails on unregistered artifact family or incompatible breaking change without major bump.",
+    "All old fixtures remain readable after migration path tests."
+  ],
+  "forbidden": [
+    "Do not hand-maintain schemas that drift from Rust types.",
+    "Do not change interpretation of a V1 artifact without new version."
+  ]
+}

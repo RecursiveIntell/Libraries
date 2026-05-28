@@ -1,0 +1,946 @@
+--- .codex_evidence/contract_ownership/06/pre_edit_files/aidens_contracts_lib.rs.before	2026-04-29 14:45:52.956209533 -0500
++++ .codex_evidence/contract_ownership/06/post_edit_files/aidens_contracts_lib.rs.after	2026-04-29 14:57:21.833117997 -0500
+@@ -26,8 +26,10 @@
+         EpisodeBundleV1 as ForgeEpisodeBundleV1, ExecutionContextV1 as ForgeExecutionContextV1,
+     };
+     pub use stack_ids::{
+-        ArtifactId, AttemptId, ClaimId, ClaimVersionId, ContentDigest, DigestBuilder, EnvelopeId,
+-        EpisodeId, ImportBatchId, KernelRunId, ProjectionId, Scope, ScopeKey, TraceCtx, TrialId,
++        ArtifactId, AttemptId, BoundaryRepairRecordId, ClaimId, ClaimVersionId, ContentDigest,
++        ControlReceiptId, DegradationRecordId, DigestBuilder, EnvelopeId, EpisodeId, ImportBatchId,
++        KernelRunId, ProjectionId, RegionId, ResidualId, Scope, ScopeKey, SyndromeId,
++        ToolEffectDispatchReceiptId, TraceCtx, TrialId,
+     };
+     pub use verification_adjudication::VerificationDisposition as CanonicalVerificationDisposition;
+     pub use verification_control::{
+@@ -45,12 +47,16 @@
+ pub use canonical_stack::CanonicalVerificationDisposition;
+ pub use canonical_stack::{
+     ArtifactId, ArtifactId as StackArtifactId, AttemptId as StackAttemptId,
+-    CanonicalKernelStopReason, CanonicalToolSideEffectClass, ClaimId as StackClaimId,
+-    ClaimVersionId as StackClaimVersionId, ContentDigest as StackContentDigest,
+-    DigestBuilder as StackDigestBuilder, EnvelopeId as StackEnvelopeId,
+-    EpisodeId as StackEpisodeId, ImportBatchId as StackImportBatchId,
+-    KernelRunId as StackKernelRunId, ProjectionId as StackProjectionId, Scope as StackScope,
+-    ScopeKey as StackScopeKey, TraceCtx as StackTraceCtx, TrialId as StackTrialId,
++    BoundaryRepairRecordId as StackBoundaryRepairRecordId, CanonicalKernelStopReason,
++    CanonicalToolSideEffectClass, ClaimId as StackClaimId, ClaimVersionId as StackClaimVersionId,
++    ContentDigest as StackContentDigest, ControlReceiptId as StackControlReceiptId,
++    DegradationRecordId as StackDegradationRecordId, DigestBuilder as StackDigestBuilder,
++    EnvelopeId as StackEnvelopeId, EpisodeId as StackEpisodeId,
++    ImportBatchId as StackImportBatchId, KernelRunId as StackKernelRunId,
++    ProjectionId as StackProjectionId, RegionId as StackRegionId, ResidualId as StackResidualId,
++    Scope as StackScope, ScopeKey as StackScopeKey, SyndromeId as StackSyndromeId,
++    ToolEffectDispatchReceiptId as StackToolEffectDispatchReceiptId, TraceCtx as StackTraceCtx,
++    TrialId as StackTrialId,
+ };
+ pub use federated_settlement::{SettlementCaseV1, SharedDispositionV1};
+ pub use mechanism_runtime::{HypothesisLibraryV1, TheoryRefuterSuiteV1, TheoryVersionV1};
+@@ -59,6 +65,84 @@
+     ArtifactId::new(format!("{prefix}:{}", Uuid::new_v4()))
+ }
+ 
++/// AiDENs-local wrapper pointer to a canonical owner artifact or owner type.
++///
++/// This does not make AiDENs authoritative for the pointed-to concept; it
++/// records where a display/report DTO must be reconciled for canonical truth.
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
++pub struct CanonicalBackpointerV1 {
++    pub owner_crate: String,
++    pub owner_type: String,
++    pub role: String,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub artifact_id: Option<ArtifactId>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub external_id: Option<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub reason_codes: Vec<String>,
++}
++
++impl CanonicalBackpointerV1 {
++    pub fn owner_type(
++        owner_crate: impl Into<String>,
++        owner_type: impl Into<String>,
++        role: impl Into<String>,
++    ) -> Self {
++        Self {
++            owner_crate: owner_crate.into(),
++            owner_type: owner_type.into(),
++            role: role.into(),
++            artifact_id: None,
++            external_id: None,
++            reason_codes: vec!["canonical-owner-backpointer".into()],
++        }
++    }
++
++    pub fn artifact(
++        owner_crate: impl Into<String>,
++        owner_type: impl Into<String>,
++        role: impl Into<String>,
++        artifact_id: ArtifactId,
++    ) -> Self {
++        Self {
++            owner_crate: owner_crate.into(),
++            owner_type: owner_type.into(),
++            role: role.into(),
++            artifact_id: Some(artifact_id),
++            external_id: None,
++            reason_codes: vec!["canonical-artifact-backpointer".into()],
++        }
++    }
++
++    pub fn external(
++        owner_crate: impl Into<String>,
++        owner_type: impl Into<String>,
++        role: impl Into<String>,
++        external_id: impl Into<String>,
++    ) -> Self {
++        Self {
++            owner_crate: owner_crate.into(),
++            owner_type: owner_type.into(),
++            role: role.into(),
++            artifact_id: None,
++            external_id: Some(external_id.into()),
++            reason_codes: vec!["canonical-external-id-backpointer".into()],
++        }
++    }
++}
++
++fn canonical_owner_backpointer(
++    owner_crate: &'static str,
++    owner_type: &'static str,
++    role: &'static str,
++) -> Vec<CanonicalBackpointerV1> {
++    vec![CanonicalBackpointerV1::owner_type(
++        owner_crate,
++        owner_type,
++        role,
++    )]
++}
++
+ fn json_digest(value: &serde_json::Value) -> String {
+     non_authoritative_json_display_digest(value)
+ }
+@@ -1135,6 +1219,8 @@
+     pub raw_provider_text: Option<String>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub requested_at: DateTime<Utc>,
+ }
+ 
+@@ -1155,6 +1241,11 @@
+             degraded: source == ToolCallSourceV1::ParserFallback,
+             raw_provider_text,
+             reason_codes,
++            canonical_backpointers: canonical_owner_backpointer(
++                "llm-tool-runtime",
++                "ToolCall",
++                "canonical-tool-call-owner",
++            ),
+             requested_at: Utc::now(),
+         }
+     }
+@@ -1172,6 +1263,8 @@
+     pub invocation_receipt_id: ArtifactId,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub completed_at: DateTime<Utc>,
+ }
+ 
+@@ -1190,6 +1283,11 @@
+             succeeded: invocation_receipt.succeeded,
+             invocation_receipt_id: invocation_receipt.receipt_id.clone(),
+             reason_codes: invocation_receipt.reason_codes.clone(),
++            canonical_backpointers: canonical_owner_backpointer(
++                "llm-tool-runtime",
++                "ToolResult",
++                "canonical-tool-result-owner",
++            ),
+             completed_at: Utc::now(),
+         }
+     }
+@@ -1457,6 +1555,8 @@
+     pub approval_request_id: Option<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub schema_validation_receipt_ids: Vec<ArtifactId>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub lifecycle: Vec<ToolLifecycleStateV1>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
+@@ -1485,6 +1585,11 @@
+             approval_decision_id: None,
+             approval_request_id: None,
+             schema_validation_receipt_ids: Vec::new(),
++            canonical_backpointers: canonical_owner_backpointer(
++                "llm-tool-runtime",
++                "ToolReceipt",
++                "canonical-tool-receipt-owner",
++            ),
+             lifecycle: vec![ToolLifecycleStateV1::Invoked],
+             reason_codes: Vec::new(),
+             started_at: Utc::now(),
+@@ -1524,6 +1629,17 @@
+         self
+     }
+ 
++    pub fn with_canonical_tool_receipt(mut self, receipt_id: impl Into<String>) -> Self {
++        self.canonical_backpointers
++            .push(CanonicalBackpointerV1::external(
++                "llm-tool-runtime",
++                "ToolReceipt",
++                "canonical-tool-receipt-id",
++                receipt_id,
++            ));
++        self
++    }
++
+     pub fn complete_success(mut self, output: serde_json::Value) -> Self {
+         self.output_digest = Some(json_digest(&output));
+         self.output = Some(output);
+@@ -3370,6 +3486,8 @@
+     pub scopes: Vec<String>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub created_at: DateTime<Utc>,
+ }
+ 
+@@ -3389,6 +3507,11 @@
+             allow_timeless_fallback: false,
+             scopes: Vec::new(),
+             reason_codes: vec!["time-scoped-query-no-silent-timeless-fallback".into()],
++            canonical_backpointers: canonical_owner_backpointer(
++                "knowledge-runtime",
++                "QueryTrace",
++                "canonical-runtime-query-owner",
++            ),
+             created_at: Utc::now(),
+         }
+     }
+@@ -3404,6 +3527,11 @@
+             allow_timeless_fallback: false,
+             scopes: Vec::new(),
+             reason_codes: vec!["timeless-query-explicit".into()],
++            canonical_backpointers: canonical_owner_backpointer(
++                "knowledge-runtime",
++                "QueryTrace",
++                "canonical-runtime-query-owner",
++            ),
+             created_at: Utc::now(),
+         }
+     }
+@@ -3454,6 +3582,8 @@
+     pub retrieval_policy: RetrievalPolicyV1,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub requested_at: DateTime<Utc>,
+ }
+ 
+@@ -3470,6 +3600,11 @@
+             aliases: Vec::new(),
+             retrieval_policy,
+             reason_codes: vec!["runtime-view-requested".into()],
++            canonical_backpointers: canonical_owner_backpointer(
++                "knowledge-runtime",
++                "QueryTrace",
++                "canonical-runtime-view-owner",
++            ),
+             requested_at: Utc::now(),
+         }
+     }
+@@ -3510,6 +3645,8 @@
+     pub allowed_by_policy: bool,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub recorded_at: DateTime<Utc>,
+ }
+ 
+@@ -3531,6 +3668,11 @@
+                 && request.retrieval_policy.identity_expansion
+                     == IdentityExpansionPolicyV1::AliasExpansionAllowed,
+             reason_codes: vec!["alias-expansion-disclosed".into()],
++            canonical_backpointers: canonical_owner_backpointer(
++                "knowledge-runtime",
++                "WideningDisclosure",
++                "canonical-widening-disclosure-owner",
++            ),
+             recorded_at: Utc::now(),
+         }
+     }
+@@ -3552,6 +3694,10 @@
+     pub reason_code: String,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub affected_claim_ids: Vec<ArtifactId>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub canonical_degradation_record_id: Option<StackDegradationRecordId>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub recorded_at: DateTime<Utc>,
+ }
+ 
+@@ -3573,6 +3719,12 @@
+             fallback_allowed,
+             reason_code: reason_code.into(),
+             affected_claim_ids,
++            canonical_degradation_record_id: None,
++            canonical_backpointers: canonical_owner_backpointer(
++                "knowledge-runtime",
++                "WideningDisclosure",
++                "canonical-degradation-disclosure-owner",
++            ),
+             recorded_at: Utc::now(),
+         }
+     }
+@@ -3594,10 +3746,16 @@
+     pub source_claim_ids: Vec<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub source_evidence_ids: Vec<ArtifactId>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub canonical_projection_id: Option<StackProjectionId>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub canonical_import_batch_id: Option<StackImportBatchId>,
+     pub digest: DisplayDigestV1,
+     pub rebuilt_from_authoritative_memory: bool,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub created_at: DateTime<Utc>,
+ }
+ 
+@@ -3618,9 +3776,23 @@
+             source_episode_ids,
+             source_claim_ids,
+             source_evidence_ids,
++            canonical_projection_id: None,
++            canonical_import_batch_id: None,
+             digest: DisplayDigestV1::for_json_value(&digest_payload),
+             rebuilt_from_authoritative_memory: true,
+             reason_codes: vec!["projection-rebuild-from-authoritative-memory".into()],
++            canonical_backpointers: vec![
++                CanonicalBackpointerV1::owner_type(
++                    "semantic-memory",
++                    "ImportReceipt",
++                    "canonical-memory-import-owner",
++                ),
++                CanonicalBackpointerV1::owner_type(
++                    "forge-memory-bridge",
++                    "ProjectionImportBatchV3",
++                    "canonical-projection-transform-owner",
++                ),
++            ],
+             created_at: Utc::now(),
+         }
+     }
+@@ -3648,6 +3820,8 @@
+     pub separates_execution_from_domain_truth: bool,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub recorded_at: DateTime<Utc>,
+ }
+ 
+@@ -3672,6 +3846,11 @@
+             authoritative_source: "append-only-memory-and-receipts".into(),
+             separates_execution_from_domain_truth: true,
+             reason_codes: vec!["view-disclosure-emitted-before-results".into()],
++            canonical_backpointers: canonical_owner_backpointer(
++                "knowledge-runtime",
++                "QueryTrace",
++                "canonical-runtime-disclosure-owner",
++            ),
+             recorded_at: Utc::now(),
+         }
+     }
+@@ -4873,6 +5052,8 @@
+     pub graph_id: ArtifactId,
+     pub graph_kind: RegionGraphKindV1,
+     pub region_id: ArtifactId,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub canonical_region_id: Option<StackRegionId>,
+     pub node_ids: Vec<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub boundary_node_ids: Vec<ArtifactId>,
+@@ -4882,6 +5063,8 @@
+     pub local_repair_allowed: bool,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub created_at: DateTime<Utc>,
+ }
+ 
+@@ -4909,12 +5092,18 @@
+             graph_id,
+             graph_kind,
+             region_id,
++            canonical_region_id: None,
+             node_ids,
+             boundary_node_ids,
+             factor_ids,
+             max_nodes,
+             local_repair_allowed,
+             reason_codes: vec!["region-boundary-contract".into()],
++            canonical_backpointers: canonical_owner_backpointer(
++                "constraint-compiler",
++                "CompiledRegion",
++                "canonical-region-contract-owner",
++            ),
+             created_at: Utc::now(),
+         }
+     }
+@@ -4951,6 +5140,8 @@
+     pub source_projection_ids: Vec<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub compiled_at: DateTime<Utc>,
+ }
+ 
+@@ -5000,6 +5191,11 @@
+             source_claim_ids,
+             source_projection_ids,
+             reason_codes,
++            canonical_backpointers: canonical_owner_backpointer(
++                "constraint-compiler",
++                "CompileOutput",
++                "canonical-region-graph-owner",
++            ),
+             compiled_at: Utc::now(),
+         }
+     }
+@@ -5052,6 +5248,10 @@
+     pub kind: ArtifactKindV1,
+     pub graph_id: ArtifactId,
+     pub region_id: ArtifactId,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub canonical_residual_id: Option<StackResidualId>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub canonical_region_id: Option<StackRegionId>,
+     pub iteration: u32,
+     pub previous_value: f64,
+     pub current_value: f64,
+@@ -5061,6 +5261,8 @@
+     pub stop_rule_evidence: StopRuleEvidenceV1,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub measured_at: DateTime<Utc>,
+ }
+ 
+@@ -5081,6 +5283,8 @@
+             kind: ArtifactKindV1::Residual,
+             graph_id,
+             region_id,
++            canonical_residual_id: None,
++            canonical_region_id: None,
+             iteration,
+             previous_value,
+             current_value,
+@@ -5093,6 +5297,18 @@
+             } else {
+                 vec!["residual-above-threshold".into()]
+             },
++            canonical_backpointers: vec![
++                CanonicalBackpointerV1::owner_type(
++                    "recursive-kernel-core",
++                    "ResidualArtifact",
++                    "canonical-residual-owner",
++                ),
++                CanonicalBackpointerV1::owner_type(
++                    "kernel-execution",
++                    "ResidualSample",
++                    "canonical-residual-execution-owner",
++                ),
++            ],
+             measured_at: Utc::now(),
+         }
+     }
+@@ -5114,16 +5330,22 @@
+     pub graph_id: ArtifactId,
+     pub region_id: ArtifactId,
+     #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub canonical_syndrome_id: Option<StackSyndromeId>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub canonical_region_id: Option<StackRegionId>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub contradiction_witness_id: Option<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub residual_id: Option<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub affected_claim_ids: Vec<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub canonical_repair_record_ids: Vec<ArtifactId>,
++    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+     pub global_recompute_required: bool,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub emitted_at: DateTime<Utc>,
+ }
+ 
+@@ -5140,12 +5362,26 @@
+             syndrome_kind: SyndromeKindV1::Contradiction,
+             graph_id,
+             region_id,
++            canonical_syndrome_id: None,
++            canonical_region_id: None,
+             contradiction_witness_id: Some(contradiction_witness_id),
+             residual_id: None,
+             affected_claim_ids,
+             canonical_repair_record_ids: Vec::new(),
+             global_recompute_required: true,
+             reason_codes: vec!["canonical-repair-required".into()],
++            canonical_backpointers: vec![
++                CanonicalBackpointerV1::owner_type(
++                    "recursive-kernel-core",
++                    "Syndrome",
++                    "canonical-syndrome-owner",
++                ),
++                CanonicalBackpointerV1::owner_type(
++                    "verification-control",
++                    "SyndromeRouteRecord",
++                    "canonical-syndrome-repair-routing-owner",
++                ),
++            ],
+             emitted_at: Utc::now(),
+         }
+     }
+@@ -5311,11 +5547,13 @@
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub oracle_request_ids: Vec<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub canonical_repair_record_ids: Vec<ArtifactId>,
++    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+     pub stop_rule_evidence: StopRuleEvidenceV1,
+     pub used_global_recompute: bool,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub recorded_at: DateTime<Utc>,
+ }
+ 
+@@ -5372,6 +5610,18 @@
+             stop_rule_evidence: convergence_report.stop_rule_evidence.clone(),
+             used_global_recompute,
+             reason_codes,
++            canonical_backpointers: vec![
++                CanonicalBackpointerV1::owner_type(
++                    "recursive-kernel-core",
++                    "KernelRun",
++                    "canonical-kernel-run-owner",
++                ),
++                CanonicalBackpointerV1::owner_type(
++                    "kernel-execution",
++                    "ExecutionReport",
++                    "canonical-kernel-execution-owner",
++                ),
++            ],
+             recorded_at: Utc::now(),
+         }
+     }
+@@ -5521,6 +5771,8 @@
+     pub quarantined_claim_ids: Vec<ArtifactId>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub computed_at: DateTime<Utc>,
+ }
+ 
+@@ -5546,6 +5798,11 @@
+             superseded_claim_ids: sorted_unique_artifact_ids(superseded_claim_ids),
+             quarantined_claim_ids: sorted_unique_artifact_ids(quarantined_claim_ids),
+             reason_codes: vec!["accepted-claim-support-core".into()],
++            canonical_backpointers: canonical_owner_backpointer(
++                "semantic-memory-forge",
++                "SupportSetV1",
++                "canonical-support-expression-owner",
++            ),
+             computed_at: Utc::now(),
+         }
+     }
+@@ -5581,6 +5838,8 @@
+     pub invariant_checks: Vec<String>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub computed_at: DateTime<Utc>,
+ }
+ 
+@@ -5669,6 +5928,11 @@
+             } else {
+                 vec!["removal-frontier-lawful".into()]
+             },
++            canonical_backpointers: canonical_owner_backpointer(
++                "semantic-memory-forge",
++                "SupportSetV1",
++                "canonical-removal-support-owner",
++            ),
+             computed_at: Utc::now(),
+         }
+     }
+@@ -5697,6 +5961,8 @@
+     pub blocked: bool,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub planned_at: DateTime<Utc>,
+ }
+ 
+@@ -5731,6 +5997,11 @@
+             destructive_deletion: false,
+             blocked,
+             reason_codes,
++            canonical_backpointers: canonical_owner_backpointer(
++                "semantic-memory-forge",
++                "RetractionRecordV1",
++                "canonical-subtraction-retraction-owner",
++            ),
+             planned_at: Utc::now(),
+         }
+     }
+@@ -5913,6 +6184,16 @@
+     pub parser_fallback_hint: String,
+ }
+ 
++impl ToolSchemaV1 {
++    pub fn canonical_backpointer(&self) -> CanonicalBackpointerV1 {
++        CanonicalBackpointerV1::owner_type(
++            "llm-tool-runtime",
++            "ToolDescriptor.input_schema",
++            "canonical-tool-schema-owner",
++        )
++    }
++}
++
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ pub struct ToolDescriptorV1 {
+     pub namespace: String,
+@@ -5931,6 +6212,15 @@
+     pub fn tool_id(&self) -> String {
+         format!("{}:{}:{}", self.namespace, self.name, self.version)
+     }
++
++    pub fn canonical_backpointer(&self) -> CanonicalBackpointerV1 {
++        CanonicalBackpointerV1::external(
++            "llm-tool-runtime",
++            "ToolDescriptor",
++            "canonical-tool-descriptor-owner",
++            self.tool_id(),
++        )
++    }
+ }
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+@@ -5954,6 +6244,15 @@
+             parser_fallback_hint: descriptor.schema.parser_fallback_hint.clone(),
+         }
+     }
++
++    pub fn canonical_backpointer(&self) -> CanonicalBackpointerV1 {
++        CanonicalBackpointerV1::external(
++            "llm-tool-runtime",
++            "ToolDescriptor",
++            "canonical-provider-schema-source",
++            self.tool_id.clone(),
++        )
++    }
+ }
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+@@ -5982,6 +6281,8 @@
+     pub degraded: bool,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub reason: Option<String>,
+ }
+ 
+@@ -5995,6 +6296,10 @@
+     pub repair_kind: String,
+     pub before_digest: Option<String>,
+     pub after_digest: Option<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub warnings: Vec<String>,
+ }
+ 
+@@ -6100,6 +6405,10 @@
+     pub warnings: Vec<String>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+ }
+ 
+ impl JsonRepairReportV2 {
+@@ -6119,6 +6428,12 @@
+             hard_failed: false,
+             warnings: Vec::new(),
+             reason_codes: Vec::new(),
++            canonical_repair_record_ids: Vec::new(),
++            canonical_backpointers: canonical_owner_backpointer(
++                "verification-control",
++                "BoundaryRepairRecord",
++                "canonical-boundary-repair-owner",
++            ),
+         }
+     }
+ }
+@@ -6131,6 +6446,8 @@
+             repair_kind: receipt.repair_kind,
+             before_digest: receipt.before_raw_digest,
+             after_digest: receipt.after_raw_digest,
++            canonical_repair_record_ids: receipt.canonical_repair_record_ids,
++            canonical_backpointers: receipt.canonical_backpointers,
+             warnings: receipt
+                 .warnings
+                 .into_iter()
+@@ -6164,6 +6481,10 @@
+     pub errors: Vec<String>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     pub reason_codes: Vec<String>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_control_receipt_ids: Vec<StackControlReceiptId>,
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+     pub checked_at: DateTime<Utc>,
+ }
+ 
+@@ -6189,6 +6510,12 @@
+             } else {
+                 vec!["schema-validation-failed".into()]
+             },
++            canonical_control_receipt_ids: Vec::new(),
++            canonical_backpointers: canonical_owner_backpointer(
++                "verification-control",
++                "ControlReceipt",
++                "canonical-schema-validation-owner",
++            ),
+             checked_at: Utc::now(),
+         }
+     }
+@@ -8334,6 +8661,11 @@
+             sandbox_root: Some(".".into()),
+             degraded: false,
+             reason_codes: Vec::new(),
++            canonical_backpointers: canonical_owner_backpointer(
++                "llm-tool-runtime",
++                "ToolExposurePlan",
++                "canonical-tool-exposure-owner",
++            ),
+             reason: None,
+         };
+         let provider_route = ProviderRouteReportV1::new(
+@@ -8535,6 +8867,12 @@
+             hard_failed: false,
+             warnings: vec!["extracted first JSON object or array before boundary parse".into()],
+             reason_codes: vec!["json-repair:json-substring-extracted".into()],
++            canonical_repair_record_ids: Vec::new(),
++            canonical_backpointers: canonical_owner_backpointer(
++                "verification-control",
++                "BoundaryRepairRecord",
++                "canonical-boundary-repair-owner",
++            ),
+         };
+         let outcome = BoundaryCompileOutcomeV1 {
+             outcome_id: generated_artifact_id("boundary-compile-outcome"),
+--- .codex_evidence/contract_ownership/06/pre_edit_files/aidens_tool_kit_lib.rs.before	2026-04-29 14:45:52.957209532 -0500
++++ .codex_evidence/contract_ownership/06/post_edit_files/aidens_tool_kit_lib.rs.after	2026-04-29 14:57:21.834117993 -0500
+@@ -1,13 +1,12 @@
+ //! Tool registry, exposure planning, and safe read-only dispatch.
+ 
+-use aidens_boundary_kit::validate_tool_input_schema;
+ use aidens_contracts::{
+-    ApprovalRequestV1, ArtifactId, CanonicalToolSideEffectClass, CapabilityGateDecisionDraftV1,
+-    CapabilityGateDecisionV1, CapabilityGateOutcomeV1, CommandRunReportV1, DisplayDigestV1,
+-    PatchApplyReportV1, PatchProposalV1, PermitUseReportV1, ProviderRouteReportV1, RepoListEntryV1,
+-    RepoListReportV1, RepoReadReportV1, SchemaValidationReportV1, ToolDescriptorV1,
+-    ToolExposureSetV1, ToolInvocationReportV1, ToolLifecycleStateV1, ToolProviderSchemaV1,
+-    ToolSchemaV1,
++    ApprovalRequestV1, ArtifactId, CanonicalBackpointerV1, CanonicalToolSideEffectClass,
++    CapabilityGateDecisionDraftV1, CapabilityGateDecisionV1, CapabilityGateOutcomeV1,
++    CommandRunReportV1, DisplayDigestV1, PatchApplyReportV1, PatchProposalV1, PermitUseReportV1,
++    ProviderRouteReportV1, RepoListEntryV1, RepoListReportV1, RepoReadReportV1,
++    SchemaValidationReportV1, ToolDescriptorV1, ToolExposureSetV1, ToolInvocationReportV1,
++    ToolLifecycleStateV1, ToolProviderSchemaV1, ToolSchemaV1,
+ };
+ use aidens_permit_kit::{requires_permit, PermitCheckContextV1, PermitDecisionV1, PermitPolicyV1};
+ use aidens_security_kit::{validate_sandbox_path, PathSafetyError};
+@@ -21,10 +20,12 @@
+ 
+ pub mod canonical_stack {
+     pub use llm_tool_runtime::{
+-        validate_arguments_against_schema, Tool as CanonicalTool, ToolCall as CanonicalToolCall,
+-        ToolCtx as CanonicalToolCtx, ToolDescriptor as CanonicalToolDescriptor,
+-        ToolError as CanonicalToolError, ToolExposurePlan as CanonicalToolExposurePlan,
+-        ToolExposureRequest as CanonicalToolExposureRequest, ToolReceipt as CanonicalToolReceipt,
++        validate_arguments_against_schema, McpSurfaceKind, Tool as CanonicalTool, ToolApprovalKind,
++        ToolBackendKind, ToolCall as CanonicalToolCall, ToolCtx as CanonicalToolCtx,
++        ToolDescriptor as CanonicalToolDescriptor, ToolError as CanonicalToolError,
++        ToolExposureMode, ToolExposurePlan as CanonicalToolExposurePlan,
++        ToolExposureRequest as CanonicalToolExposureRequest, ToolIdempotencyClass, ToolOutputMode,
++        ToolReceipt as CanonicalToolReceipt, ToolReceiptPersistence,
+         ToolRegistry as CanonicalToolRegistry, ToolResult as CanonicalToolResult,
+         ToolRuntime as CanonicalToolRuntime, ToolRuntimeConfig as CanonicalToolRuntimeConfig,
+     };
+@@ -175,6 +176,61 @@
+     }
+ }
+ 
++fn canonical_descriptor_from_aidens(
++    descriptor: &ToolDescriptorV1,
++) -> canonical_stack::CanonicalToolDescriptor {
++    canonical_stack::CanonicalToolDescriptor {
++        name: descriptor.tool_id(),
++        version: descriptor.version.clone(),
++        description: Some(descriptor.description.clone()),
++        backend_kind: canonical_stack::ToolBackendKind::LocalFunction,
++        input_schema: descriptor.schema.input_schema.clone(),
++        output_mode: canonical_stack::ToolOutputMode::StructuredJson,
++        read_only: descriptor.read_only,
++        side_effect_class: descriptor.risk_class.clone(),
++        idempotency_class: if descriptor.read_only {
++            canonical_stack::ToolIdempotencyClass::Idempotent
++        } else {
++            canonical_stack::ToolIdempotencyClass::BestEffort
++        },
++        approval_kind: if requires_permit(&descriptor.risk_class) {
++            canonical_stack::ToolApprovalKind::PolicyRequired
++        } else {
++            canonical_stack::ToolApprovalKind::None
++        },
++        timeout_ms: 30_000,
++        concurrency_key: None,
++        cache_ttl_ms: None,
++        exposure_mode: if descriptor.hidden {
++            canonical_stack::ToolExposureMode::Hidden
++        } else {
++            canonical_stack::ToolExposureMode::Auto
++        },
++        mcp_surface_kind: canonical_stack::McpSurfaceKind::Tool,
++        exposure_policy: Default::default(),
++        receipt_persistence: canonical_stack::ToolReceiptPersistence::Ephemeral,
++        output_size_limit_bytes: None,
++        provider_payload: Some(serde_json::json!({
++            "aidens_namespace": descriptor.namespace,
++            "aidens_name": descriptor.name,
++            "canonical_owner": "llm-tool-runtime",
++        })),
++    }
++}
++
++fn validate_tool_input_with_canonical_runtime(
++    descriptor: &ToolDescriptorV1,
++    input: &Value,
++) -> SchemaValidationReportV1 {
++    let canonical_descriptor = canonical_descriptor_from_aidens(descriptor);
++    let errors = canonical_stack::validate_canonical_arguments(&canonical_descriptor, input)
++        .err()
++        .map(|error| vec![error.message])
++        .unwrap_or_default();
++    SchemaValidationReportV1::new(Some(&descriptor.schema.input_schema), input, errors)
++        .with_tool_id(descriptor.tool_id())
++}
++
+ impl ToolRegistryV1 {
+     pub fn register_enabled(&mut self, descriptor: ToolDescriptorV1, enabled: bool) -> bool {
+         if enabled {
+@@ -378,6 +434,11 @@
+             sandbox_root,
+             degraded: false,
+             reason_codes,
++            canonical_backpointers: vec![CanonicalBackpointerV1::owner_type(
++                "llm-tool-runtime",
++                "ToolExposurePlan",
++                "canonical-tool-exposure-owner",
++            )],
+             reason: Some("policy-filtered exposure".into()),
+         }
+     }
+@@ -631,8 +692,7 @@
+         };
+ 
+         let mut receipt = ToolInvocationReportV1::started(tool_id, input.clone());
+-        let schema_validation =
+-            validate_tool_input_schema(tool_id, &descriptor.schema.input_schema, &input);
++        let schema_validation = validate_tool_input_with_canonical_runtime(descriptor, &input);
+         if !schema_validation.valid {
+             let failed = receipt
+                 .with_schema_validation(schema_validation.receipt_id.clone())
+--- .codex_evidence/contract_ownership/06/pre_edit_files/aidens_boundary_kit_lib.rs.before	2026-04-29 14:45:52.958209531 -0500
++++ .codex_evidence/contract_ownership/06/post_edit_files/aidens_boundary_kit_lib.rs.after	2026-04-29 14:57:21.835117988 -0500
+@@ -5,8 +5,9 @@
+ 
+ use aidens_contracts::{
+     non_authoritative_json_display_digest, non_authoritative_text_display_digest, ArtifactId,
+-    BoundaryCompileOutcomeV1, BoundaryCompileRequestV1, BoundaryRepairReportV1, DisplayDigestV1,
+-    DuplicateKeyFindingV1, JsonRepairReportV2, SchemaValidationReportV1,
++    BoundaryCompileOutcomeV1, BoundaryCompileRequestV1, BoundaryRepairReportV1,
++    CanonicalBackpointerV1, DisplayDigestV1, DuplicateKeyFindingV1, JsonRepairReportV2,
++    SchemaValidationReportV1,
+ };
+ use serde_json::Value;
+ use std::collections::{BTreeMap, BTreeSet};
+@@ -331,6 +332,12 @@
+         hard_failed: false,
+         warnings,
+         reason_codes,
++        canonical_repair_record_ids: Vec::new(),
++        canonical_backpointers: vec![CanonicalBackpointerV1::owner_type(
++            "verification-control",
++            "BoundaryRepairRecord",
++            "canonical-boundary-repair-owner",
++        )],
+     }
+ }
+ 
+@@ -561,6 +568,12 @@
+         repair_kind: "none".into(),
+         before_digest: None,
+         after_digest: None,
++        canonical_repair_record_ids: Vec::new(),
++        canonical_backpointers: vec![CanonicalBackpointerV1::owner_type(
++            "verification-control",
++            "BoundaryRepairRecord",
++            "canonical-boundary-repair-owner",
++        )],
+         warnings: Vec::new(),
+     }
+ }
+@@ -577,6 +590,12 @@
+         repair_kind: repair_kind.into(),
+         before_digest: Some(text_digest(before)),
+         after_digest: Some(text_digest(after)),
++        canonical_repair_record_ids: Vec::new(),
++        canonical_backpointers: vec![CanonicalBackpointerV1::owner_type(
++            "verification-control",
++            "BoundaryRepairRecord",
++            "canonical-boundary-repair-owner",
++        )],
+         warnings,
+     }
+ }

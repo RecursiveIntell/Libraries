@@ -1,0 +1,2231 @@
+{
+  "active_stale_after": [],
+  "archive_only": false,
+  "archive_root": "/home/sikmindz/Coding/Libraries/docs/codex-runs/archive",
+  "collisions": [],
+  "current_run": "P30",
+  "dry_run": false,
+  "enabled": true,
+  "errors": [],
+  "manifest_paths": [
+    "docs/codex-runs/archive/P26/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P27/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P28/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P29/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P31/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P32/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/unclassified/20260524T012026Z/ARCHIVE_MANIFEST.json"
+  ],
+  "moved": [
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/turbo-quant/docs/release-evidence/0.2.0/logs/p26-invariants.log",
+      "bytes": 27,
+      "mtime_utc": "2026-05-19T20:09:14Z",
+      "original_path": "turbo-quant/docs/release-evidence/0.2.0/logs/p26-invariants.log",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "9200056cdbf31625bc6ea276de68f13209a3e78e7a2d85ed27fbb16225dc5b68"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/turbo-quant/scripts/assert_p26_invariants.py",
+      "bytes": 6495,
+      "mtime_utc": "2026-05-19T19:58:13Z",
+      "original_path": "turbo-quant/scripts/assert_p26_invariants.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "0aafb42e0127fbe793f52846a1c765409891c4ef7149b09e20f2fe87048c4bc7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 2452,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "29f4309af92a9b2e4e5457a7b8cecdc2c357352d48afd50fad5e9da4dd0b25b5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 846,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "efe4ecfefaaa628e5ee16cc130e83a58894a8b85808db3cda1375bc262790832"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_MASTER_PACKET.md",
+      "bytes": 2593,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_MASTER_PACKET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "9694a26338ac8e536b75f470aa886e70eebfa16c641aee30d8f56e429ea729b4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_PHASE_PLAN.md",
+      "bytes": 7454,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_PHASE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "8b7c126dd82cfcb3b1252ff1491b872621a0f059e6d2ccdce55e2cb3cd262cff"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 776,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "96ea98f4eb34a428724b63eba051e36484f540767bf177fef835d885cdbba580"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 17655,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "5f7dda589567f8c75a2123b52132892779b0ba4508cfc4d805c8894aee2ec49c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 5789,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "4d90dee5250c8a0139615b96752e1134a5e2659edccf62c66808ea42c12f778f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 1194,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "71b8a62fcc889419737d4312bea9cc21a458cec6489613f84f91bbc223ff1cba"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_MASTER_PACKET.md",
+      "bytes": 3384,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_MASTER_PACKET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "cffb013e346b42fd9979e3ce772331b9eb8784bf3f91e9742c89559b22287033"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_PHASE_PLAN.md",
+      "bytes": 9737,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_PHASE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "bff35c14920d7d14344de9bfef226c3908d4a0bf11f79a24d078ca46eb6d652a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 1495,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "8a8ef98431265a4571b32005d96a912e8df2c0419106418283e17a6ece838cea"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_BUNDLE_INSTALL_PLAN.md",
+      "bytes": 422,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_BUNDLE_INSTALL_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "b7318702a68f4e97fc35bca72a3371918fa2e05b1764f34048fc05f60474b0dc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 1790,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "fc13c4c4fa82100de49884b41d8e5889d90d907244bd8d6fe26c44f6f68dd1b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 1927,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "2e3bf43166e01d0367aa6664e063a585bdf0c39287d33da617f410ac56eede18"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 324,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5d38f3d9c209f836a3af5c03113a7621d2308fc94299b5c91369e515dc2004e0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_MASTER_PACKET.md",
+      "bytes": 2664,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_MASTER_PACKET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "366e7f8e5231dd72d3901c505c8fb4d47709ef00c0d863f1d8ef23da920b1cb8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_PHASE_PLAN.md",
+      "bytes": 3133,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_PHASE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "b5425a137cce22c820340d45a9663652dc13e9e58505419737070b633f941dc9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+      "bytes": 1048,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "e85eebce42dcbb4e91490d8b9227d6297a2d79626089b53b592f8a02173c3737"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 932,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5c89a30b47583c64aa356bafa5ba78e68b4c28252bc83954672f2e51f925561d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/scr-runtime/scripts/run_p31_completion_checks.sh",
+      "bytes": 1676,
+      "mtime_utc": "2026-05-14T02:28:11Z",
+      "original_path": "scr-runtime/scripts/run_p31_completion_checks.sh",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "8ec6564597fe9727b2a81ccd4d3d467d6320927bdb2e33fc841dbe575e29328a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P32/files/scr-runtime/.codex/rules/p32r3.rules",
+      "bytes": 941,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/rules/p32r3.rules",
+      "reason": "stale-codex-control",
+      "run_id": "P32",
+      "sha256": "a350c4b03631fe2ad5a993524e45d718ce27e470cf2362aeea2b4c7d658d01aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks.json",
+      "bytes": 743,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": ".codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks/fibquant_guard.py",
+      "bytes": 1905,
+      "mtime_utc": "2026-05-16T23:32:38Z",
+      "original_path": ".codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2347,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": ".codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_guard.py",
+      "bytes": 1900,
+      "mtime_utc": "2026-05-17T02:25:25Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "45d7506c86062442f0ffc8ee33c28fade9e9c550aa4f1a4a309390883bfe3d1e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_kv_preflight.py",
+      "bytes": 167,
+      "mtime_utc": "2026-05-17T01:40:06Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_kv_preflight.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1909af8b76ac931dd291418ea6fa0d775f4460a03122fa8dc4693ea139991505"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2934,
+      "mtime_utc": "2026-05-17T02:25:38Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d579282ad97638f14cb079ccc19cb54d4d53c1783d2f23803f10f5687a1994c7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/overlays/.codex/hooks/fibquant_kv_preflight.py",
+      "bytes": 167,
+      "mtime_utc": "2026-05-17T01:40:06Z",
+      "original_path": "fib-quant/overlays/.codex/hooks/fibquant_kv_preflight.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1909af8b76ac931dd291418ea6fa0d775f4460a03122fa8dc4693ea139991505"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks.json",
+      "bytes": 743,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": "overlays/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks/fibquant_guard.py",
+      "bytes": 1905,
+      "mtime_utc": "2026-05-16T23:32:38Z",
+      "original_path": "overlays/.codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2347,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": "overlays/.codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/backend_runtime.md",
+      "bytes": 487,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/backend_runtime.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "e7a45d9ef251e71a04e2af68167739197402d3823e4d62bb1e7bf012dfd4d459"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/backend_runtime.toml",
+      "bytes": 1198,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/backend_runtime.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8629f400ca227687ed47c6a59f3b9ef49deafaf3ea1c52d784e3506af5451a2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/background_jobs.md",
+      "bytes": 428,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/background_jobs.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7c86100a3babcbf70f41edca7d33f7dfb50ea2e010ceed699ed3ff577b71e21e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/background_jobs.toml",
+      "bytes": 1147,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/background_jobs.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "21dc24e46250c4cf3ea5f1bed39dabba160340e2cddfdbf062b4575195c10baa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/frontend_state.md",
+      "bytes": 456,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/frontend_state.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "5e0d42932f8bf64f389569700c587dddaf0305f5f6533d205bb56615d77bb056"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/frontend_state.toml",
+      "bytes": 1189,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/frontend_state.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "029eb515bd25d129238ef3fbdb7965d6e65715f6db4666b94e85ed87932de875"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/hostile_review.md",
+      "bytes": 452,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/hostile_review.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "9f32acd0fee34c96e15eef3b2a902a4899188c89cf9ae4e440535d34f421a7fc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/hostile_review.toml",
+      "bytes": 1120,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/hostile_review.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "510b398698cfa827114d958e203c8b59dc7fb9d2308ab2b0fa6280bb3e5badfa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/ingestion_db.md",
+      "bytes": 481,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/ingestion_db.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "3c8a2ee12c8c96ab9c36077914a6b754b34739923e3da9d0ed4b3554d4c7c2e4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/ingestion_db.toml",
+      "bytes": 1187,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/ingestion_db.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "3c467e0b9c3d437e362dd47647c2af07ad40184d89c75a38752229281cd7c8aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/provider_truth.md",
+      "bytes": 455,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/provider_truth.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "46dd5b4ef6d829a185fa201d8d3e1ecf7131718c90065ef0a0758cf56b9cac18"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/provider_truth.toml",
+      "bytes": 1171,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/provider_truth.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ef756d651e5cc4bc59f3095486f8bd93a6f45db723db65f72d76627da7667c11"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_00_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_00_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c54c8c55addfd3abe219ecf897805e1ceb081a895cb61332b7a5061006eda6b9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_01_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_01_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "71f7e9f9ad496b1fcb14454db7e8614b6dad64658d2a166418a899a65436a502"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_02_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_02_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "809207d94acff3d2f730b63ac24776d10a7504940bd93571aaef5ab5da04cd44"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_03_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_03_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "394620792e696bed91b4e0e1985ee676922416e1505204ec2b870959f3ee8fd0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_04_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_04_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f400722558f88a4fbba8478bc50df5734755870eda1081830139de7189e35b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_05_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_05_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ba470683353a2f402c7fd4f82acc4c43042533b0478973a9100201224ece80c7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_06_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_06_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b0a8f1729053bf29f00d6499f73c001f82d7914086c6b084dc4c12619cd3f380"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/config.toml",
+      "bytes": 1200,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/config.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "beb55dfe6b3c2bc6b1e23cb7e896288a0077dc84b4f1a437484a0c163913851d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks.json",
+      "bytes": 2152,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "510dedcd625273b4460eb478920f91d8e62940b5fa7b8f4314e41748891c5643"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/permission_request_policy.py",
+      "bytes": 1139,
+      "mtime_utc": "2026-05-15T04:46:00Z",
+      "original_path": "scr-runtime/.codex/hooks/permission_request_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "daffb2b74b30520b6053448cadd9bd7c3dadff4dfb56cf821c080324fa5d4f7f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/post_tool_receipt.py",
+      "bytes": 1016,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/post_tool_receipt.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8de2b4707b0ddeb8e48d091db888acdfc60b03a504dfaa336a9add14d6063e86"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/pre_edit_policy.py",
+      "bytes": 822,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/pre_edit_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "9b45205440e4007a1ba5b62e2658cf32d614ebc5ba59095f80868e4768e460e6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/pre_tool_use_policy.py",
+      "bytes": 1343,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/pre_tool_use_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "631dbc5ed716753af6b2972cf1e94574d7938a22789f186c4e294cc06280e64e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/stop_phase_guard.py",
+      "bytes": 987,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/stop_phase_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "98049f3656208261be0c2e2e74bf59b8b6d567a2d9acb767b6cd1ea02aed7f30"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/user_prompt_contract.py",
+      "bytes": 736,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/user_prompt_contract.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c8378f8bd405b1cb54b1977ce02193b010b5a348ff5cbd34df156c5355a568a2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompt_manifest.json",
+      "bytes": 2386,
+      "mtime_utc": "2026-05-14T02:20:05Z",
+      "original_path": "scr-runtime/.codex/prompt_manifest.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "866bc75ba0de3c62355f1a96e2326f55c31b2b493dba8b2fc0e963114b781cb6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "bytes": 165,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "77c97a69ac02eebf39f0368d262b1aa8d88605ba8e72dcfd6ac00471ae975be2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "bytes": 259,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "468e5a5631a10edb21a7484e0a9fcb0bf520426d188d7b11619aba9f163bdfd0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "bytes": 235,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "cfaffd453e2e072ca4664b424a7601701d8fdfb87372e09847fd1eecbe36f723"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+      "bytes": 197,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "aaf681890a6b58f2e23edca4a4db37b66fe248b9b6f759c621a360c3cbff3890"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_03_packaging_policy.md",
+      "bytes": 367,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_03_packaging_policy.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "dabeca4a216aa0d9631409820be4b732a0f74747cb6506b2014f34af80322c3a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "bytes": 331,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b68fac776b6716618cc7dfdb04f27441d701d0cf609a75a263a7f2f7e089eedc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "bytes": 112,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "eaa71353e8e3b19d942123c2c15c4d3abec43936a898da11a4220bad716f8cfe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "bytes": 99,
+      "mtime_utc": "2026-05-14T02:20:25Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8a56b755a0022589acccd5bf0b4644ed2576a009a44fbe9c7b163d321d02439d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/requirements.toml",
+      "bytes": 411,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/requirements.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c1428ecc5748c38bd95bacff4147b5cc36dad1a69678c0d1b7becf2bdd8e7e52"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/rules/safety.rules",
+      "bytes": 176,
+      "mtime_utc": "2026-05-14T02:03:33Z",
+      "original_path": "scr-runtime/.codex/rules/safety.rules",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d76fefd28fa3cd37f2b8050752e2dfd4c260acad7b74ef991155bc85a3dee99f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/codex-control-pack/SKILL.md",
+      "bytes": 730,
+      "mtime_utc": "2026-05-14T02:20:07Z",
+      "original_path": "scr-runtime/.codex/skills/codex-control-pack/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "46f93ef95a52730c2e163ed0233bc7989fbc6aa11ea8fbd0d912baf65ff5f61c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/hostile-audit/SKILL.md",
+      "bytes": 524,
+      "mtime_utc": "2026-05-14T02:23:53Z",
+      "original_path": "scr-runtime/.codex/skills/hostile-audit/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "db7cbcde26869f5ab130ea6144bb9cd28ee57d7d370f8dc2180bf39eeb3c1a67"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/phase-gate/SKILL.md",
+      "bytes": 508,
+      "mtime_utc": "2026-05-14T02:20:10Z",
+      "original_path": "scr-runtime/.codex/skills/phase-gate/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "edf65291d5f0a9718a540f87d9e624cd167a5c9c1d57bfb7a04180214edd6768"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/run-certifier/SKILL.md",
+      "bytes": 498,
+      "mtime_utc": "2026-05-14T02:20:16Z",
+      "original_path": "scr-runtime/.codex/skills/run-certifier/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c68f7a8a4e721eee74daba6525f0b395621e88df8dc675c8e12a8d894c84fbbe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/source-of-truth-map/SKILL.md",
+      "bytes": 511,
+      "mtime_utc": "2026-05-14T02:20:14Z",
+      "original_path": "scr-runtime/.codex/skills/source-of-truth-map/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "05da5186899501b9174ebb501e1164203e6d2ca58edc63a55014afda9b7b1a39"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/auto_phase_runner.py",
+      "bytes": 6551,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/tools/auto_phase_runner.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "a250d2edaf5256197e942b11720f0cce110a81c1c936f189dbd43d8e6de55e97"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/inspect_codex_setup.py",
+      "bytes": 173,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/tools/inspect_codex_setup.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "321061a4401137a767030a16197ac7b96a7909f326eb4d571cb544804b1eb7e3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/phase_prompt_builder.py",
+      "bytes": 1627,
+      "mtime_utc": "2026-05-13T22:12:57Z",
+      "original_path": "scr-runtime/.codex/tools/phase_prompt_builder.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0acd9e479e01e98eaaa0124783c3688cc1f19715419e51cb1ab885a8a88c27e4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks.json",
+      "bytes": 1520,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4b5d19ce3588806a699f0711a157cbd48e71dd55d0d04738cc070168df78f771"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/post_tool_use_receipt.py",
+      "bytes": 729,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/post_tool_use_receipt.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "62cb54e0e8d70a21d032ed401e454afa39b336b0437ab5aa75112cc2066ce46c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/pre_tool_use_policy.py",
+      "bytes": 1241,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/pre_tool_use_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f651646caf61369443262f521823e4039de5f36791d407ca44b0afc78af1becc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/stop_final_gate.py",
+      "bytes": 929,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/stop_final_gate.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8cb84d23942edbd62cb375e781c930d2755cfdd8698e127b34735f6946cc785d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/user_prompt_submit_blockers.py",
+      "bytes": 1032,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/user_prompt_submit_blockers.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "a3d0f874507e98355ae73bb5b9031b5d9524753d14f817a1f1627505e8bddaf2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/turbo-quant/.codex/skills/turbo-quant-release/SKILL.md",
+      "bytes": 388,
+      "mtime_utc": "2026-05-20T00:47:36Z",
+      "original_path": "turbo-quant/.codex/skills/turbo-quant-release/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d5d9222e628b8a65448876931546921567097fdbcf4c4bf43d20033197ab71e8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/turbo-quant/.codex/skills/turbo-quant-release/scripts/README.txt",
+      "bytes": 69,
+      "mtime_utc": "2026-05-20T00:47:36Z",
+      "original_path": "turbo-quant/.codex/skills/turbo-quant-release/scripts/README.txt",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4fb198bcfba292f79236e45cf44f4d8fe3fc629514275f7a1e96c6223d285c22"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/turbo-quant/docs/release-evidence/0.2.0/logs/p26-invariants.log",
+      "bytes": 27,
+      "mtime_utc": "2026-05-19T20:09:14Z",
+      "original_path": "turbo-quant/docs/release-evidence/0.2.0/logs/p26-invariants.log",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "9200056cdbf31625bc6ea276de68f13209a3e78e7a2d85ed27fbb16225dc5b68"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/turbo-quant/scripts/assert_p26_invariants.py",
+      "bytes": 6495,
+      "mtime_utc": "2026-05-19T19:58:13Z",
+      "original_path": "turbo-quant/scripts/assert_p26_invariants.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "0aafb42e0127fbe793f52846a1c765409891c4ef7149b09e20f2fe87048c4bc7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 2452,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "29f4309af92a9b2e4e5457a7b8cecdc2c357352d48afd50fad5e9da4dd0b25b5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 846,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "efe4ecfefaaa628e5ee16cc130e83a58894a8b85808db3cda1375bc262790832"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_MASTER_PACKET.md",
+      "bytes": 2593,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_MASTER_PACKET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "9694a26338ac8e536b75f470aa886e70eebfa16c641aee30d8f56e429ea729b4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_PHASE_PLAN.md",
+      "bytes": 7454,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_PHASE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "8b7c126dd82cfcb3b1252ff1491b872621a0f059e6d2ccdce55e2cb3cd262cff"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 776,
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "96ea98f4eb34a428724b63eba051e36484f540767bf177fef835d885cdbba580"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 17655,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "5f7dda589567f8c75a2123b52132892779b0ba4508cfc4d805c8894aee2ec49c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 5789,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "4d90dee5250c8a0139615b96752e1134a5e2659edccf62c66808ea42c12f778f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 1194,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "71b8a62fcc889419737d4312bea9cc21a458cec6489613f84f91bbc223ff1cba"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_MASTER_PACKET.md",
+      "bytes": 3384,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_MASTER_PACKET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "cffb013e346b42fd9979e3ce772331b9eb8784bf3f91e9742c89559b22287033"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_PHASE_PLAN.md",
+      "bytes": 9737,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_PHASE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "bff35c14920d7d14344de9bfef226c3908d4a0bf11f79a24d078ca46eb6d652a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 1495,
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "8a8ef98431265a4571b32005d96a912e8df2c0419106418283e17a6ece838cea"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_BUNDLE_INSTALL_PLAN.md",
+      "bytes": 422,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_BUNDLE_INSTALL_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "b7318702a68f4e97fc35bca72a3371918fa2e05b1764f34048fc05f60474b0dc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 1790,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "fc13c4c4fa82100de49884b41d8e5889d90d907244bd8d6fe26c44f6f68dd1b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 1927,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "2e3bf43166e01d0367aa6664e063a585bdf0c39287d33da617f410ac56eede18"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 324,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5d38f3d9c209f836a3af5c03113a7621d2308fc94299b5c91369e515dc2004e0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_MASTER_PACKET.md",
+      "bytes": 2664,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_MASTER_PACKET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "366e7f8e5231dd72d3901c505c8fb4d47709ef00c0d863f1d8ef23da920b1cb8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_PHASE_PLAN.md",
+      "bytes": 3133,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_PHASE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "b5425a137cce22c820340d45a9663652dc13e9e58505419737070b633f941dc9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+      "bytes": 1048,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "e85eebce42dcbb4e91490d8b9227d6297a2d79626089b53b592f8a02173c3737"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 932,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5c89a30b47583c64aa356bafa5ba78e68b4c28252bc83954672f2e51f925561d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/scr-runtime/scripts/run_p31_completion_checks.sh",
+      "bytes": 1676,
+      "mtime_utc": "2026-05-14T02:28:11Z",
+      "original_path": "scr-runtime/scripts/run_p31_completion_checks.sh",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "8ec6564597fe9727b2a81ccd4d3d467d6320927bdb2e33fc841dbe575e29328a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P32/files/scr-runtime/.codex/rules/p32r3.rules",
+      "bytes": 941,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/rules/p32r3.rules",
+      "reason": "stale-codex-control",
+      "run_id": "P32",
+      "sha256": "a350c4b03631fe2ad5a993524e45d718ce27e470cf2362aeea2b4c7d658d01aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks.json",
+      "bytes": 743,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": ".codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks/fibquant_guard.py",
+      "bytes": 1905,
+      "mtime_utc": "2026-05-16T23:32:38Z",
+      "original_path": ".codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2347,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": ".codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_guard.py",
+      "bytes": 1900,
+      "mtime_utc": "2026-05-17T02:25:25Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "45d7506c86062442f0ffc8ee33c28fade9e9c550aa4f1a4a309390883bfe3d1e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_kv_preflight.py",
+      "bytes": 167,
+      "mtime_utc": "2026-05-17T01:40:06Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_kv_preflight.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1909af8b76ac931dd291418ea6fa0d775f4460a03122fa8dc4693ea139991505"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2934,
+      "mtime_utc": "2026-05-17T02:25:38Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d579282ad97638f14cb079ccc19cb54d4d53c1783d2f23803f10f5687a1994c7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/overlays/.codex/hooks/fibquant_kv_preflight.py",
+      "bytes": 167,
+      "mtime_utc": "2026-05-17T01:40:06Z",
+      "original_path": "fib-quant/overlays/.codex/hooks/fibquant_kv_preflight.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1909af8b76ac931dd291418ea6fa0d775f4460a03122fa8dc4693ea139991505"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks.json",
+      "bytes": 743,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": "overlays/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks/fibquant_guard.py",
+      "bytes": 1905,
+      "mtime_utc": "2026-05-16T23:32:38Z",
+      "original_path": "overlays/.codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2347,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": "overlays/.codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/backend_runtime.md",
+      "bytes": 487,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/backend_runtime.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "e7a45d9ef251e71a04e2af68167739197402d3823e4d62bb1e7bf012dfd4d459"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/backend_runtime.toml",
+      "bytes": 1198,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/backend_runtime.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8629f400ca227687ed47c6a59f3b9ef49deafaf3ea1c52d784e3506af5451a2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/background_jobs.md",
+      "bytes": 428,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/background_jobs.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7c86100a3babcbf70f41edca7d33f7dfb50ea2e010ceed699ed3ff577b71e21e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/background_jobs.toml",
+      "bytes": 1147,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/background_jobs.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "21dc24e46250c4cf3ea5f1bed39dabba160340e2cddfdbf062b4575195c10baa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/frontend_state.md",
+      "bytes": 456,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/frontend_state.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "5e0d42932f8bf64f389569700c587dddaf0305f5f6533d205bb56615d77bb056"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/frontend_state.toml",
+      "bytes": 1189,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/frontend_state.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "029eb515bd25d129238ef3fbdb7965d6e65715f6db4666b94e85ed87932de875"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/hostile_review.md",
+      "bytes": 452,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/hostile_review.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "9f32acd0fee34c96e15eef3b2a902a4899188c89cf9ae4e440535d34f421a7fc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/hostile_review.toml",
+      "bytes": 1120,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/hostile_review.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "510b398698cfa827114d958e203c8b59dc7fb9d2308ab2b0fa6280bb3e5badfa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/ingestion_db.md",
+      "bytes": 481,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/ingestion_db.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "3c8a2ee12c8c96ab9c36077914a6b754b34739923e3da9d0ed4b3554d4c7c2e4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/ingestion_db.toml",
+      "bytes": 1187,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/ingestion_db.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "3c467e0b9c3d437e362dd47647c2af07ad40184d89c75a38752229281cd7c8aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/provider_truth.md",
+      "bytes": 455,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/provider_truth.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "46dd5b4ef6d829a185fa201d8d3e1ecf7131718c90065ef0a0758cf56b9cac18"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/provider_truth.toml",
+      "bytes": 1171,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/provider_truth.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ef756d651e5cc4bc59f3095486f8bd93a6f45db723db65f72d76627da7667c11"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_00_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_00_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c54c8c55addfd3abe219ecf897805e1ceb081a895cb61332b7a5061006eda6b9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_01_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_01_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "71f7e9f9ad496b1fcb14454db7e8614b6dad64658d2a166418a899a65436a502"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_02_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_02_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "809207d94acff3d2f730b63ac24776d10a7504940bd93571aaef5ab5da04cd44"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_03_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_03_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "394620792e696bed91b4e0e1985ee676922416e1505204ec2b870959f3ee8fd0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_04_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_04_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f400722558f88a4fbba8478bc50df5734755870eda1081830139de7189e35b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_05_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_05_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ba470683353a2f402c7fd4f82acc4c43042533b0478973a9100201224ece80c7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_06_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_06_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b0a8f1729053bf29f00d6499f73c001f82d7914086c6b084dc4c12619cd3f380"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/config.toml",
+      "bytes": 1200,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/config.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "beb55dfe6b3c2bc6b1e23cb7e896288a0077dc84b4f1a437484a0c163913851d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks.json",
+      "bytes": 2152,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "510dedcd625273b4460eb478920f91d8e62940b5fa7b8f4314e41748891c5643"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/permission_request_policy.py",
+      "bytes": 1139,
+      "mtime_utc": "2026-05-15T04:46:00Z",
+      "original_path": "scr-runtime/.codex/hooks/permission_request_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "daffb2b74b30520b6053448cadd9bd7c3dadff4dfb56cf821c080324fa5d4f7f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/post_tool_receipt.py",
+      "bytes": 1016,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/post_tool_receipt.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8de2b4707b0ddeb8e48d091db888acdfc60b03a504dfaa336a9add14d6063e86"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/pre_edit_policy.py",
+      "bytes": 822,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/pre_edit_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "9b45205440e4007a1ba5b62e2658cf32d614ebc5ba59095f80868e4768e460e6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/pre_tool_use_policy.py",
+      "bytes": 1343,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/pre_tool_use_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "631dbc5ed716753af6b2972cf1e94574d7938a22789f186c4e294cc06280e64e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/stop_phase_guard.py",
+      "bytes": 987,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/stop_phase_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "98049f3656208261be0c2e2e74bf59b8b6d567a2d9acb767b6cd1ea02aed7f30"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/user_prompt_contract.py",
+      "bytes": 736,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/user_prompt_contract.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c8378f8bd405b1cb54b1977ce02193b010b5a348ff5cbd34df156c5355a568a2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompt_manifest.json",
+      "bytes": 2386,
+      "mtime_utc": "2026-05-14T02:20:05Z",
+      "original_path": "scr-runtime/.codex/prompt_manifest.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "866bc75ba0de3c62355f1a96e2326f55c31b2b493dba8b2fc0e963114b781cb6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "bytes": 165,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "77c97a69ac02eebf39f0368d262b1aa8d88605ba8e72dcfd6ac00471ae975be2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "bytes": 259,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "468e5a5631a10edb21a7484e0a9fcb0bf520426d188d7b11619aba9f163bdfd0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "bytes": 235,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "cfaffd453e2e072ca4664b424a7601701d8fdfb87372e09847fd1eecbe36f723"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+      "bytes": 197,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "aaf681890a6b58f2e23edca4a4db37b66fe248b9b6f759c621a360c3cbff3890"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_03_packaging_policy.md",
+      "bytes": 367,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_03_packaging_policy.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "dabeca4a216aa0d9631409820be4b732a0f74747cb6506b2014f34af80322c3a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "bytes": 331,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b68fac776b6716618cc7dfdb04f27441d701d0cf609a75a263a7f2f7e089eedc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "bytes": 112,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "eaa71353e8e3b19d942123c2c15c4d3abec43936a898da11a4220bad716f8cfe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "bytes": 99,
+      "mtime_utc": "2026-05-14T02:20:25Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8a56b755a0022589acccd5bf0b4644ed2576a009a44fbe9c7b163d321d02439d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/requirements.toml",
+      "bytes": 411,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/requirements.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c1428ecc5748c38bd95bacff4147b5cc36dad1a69678c0d1b7becf2bdd8e7e52"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/rules/safety.rules",
+      "bytes": 176,
+      "mtime_utc": "2026-05-14T02:03:33Z",
+      "original_path": "scr-runtime/.codex/rules/safety.rules",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d76fefd28fa3cd37f2b8050752e2dfd4c260acad7b74ef991155bc85a3dee99f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/codex-control-pack/SKILL.md",
+      "bytes": 730,
+      "mtime_utc": "2026-05-14T02:20:07Z",
+      "original_path": "scr-runtime/.codex/skills/codex-control-pack/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "46f93ef95a52730c2e163ed0233bc7989fbc6aa11ea8fbd0d912baf65ff5f61c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/hostile-audit/SKILL.md",
+      "bytes": 524,
+      "mtime_utc": "2026-05-14T02:23:53Z",
+      "original_path": "scr-runtime/.codex/skills/hostile-audit/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "db7cbcde26869f5ab130ea6144bb9cd28ee57d7d370f8dc2180bf39eeb3c1a67"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/phase-gate/SKILL.md",
+      "bytes": 508,
+      "mtime_utc": "2026-05-14T02:20:10Z",
+      "original_path": "scr-runtime/.codex/skills/phase-gate/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "edf65291d5f0a9718a540f87d9e624cd167a5c9c1d57bfb7a04180214edd6768"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/run-certifier/SKILL.md",
+      "bytes": 498,
+      "mtime_utc": "2026-05-14T02:20:16Z",
+      "original_path": "scr-runtime/.codex/skills/run-certifier/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c68f7a8a4e721eee74daba6525f0b395621e88df8dc675c8e12a8d894c84fbbe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/source-of-truth-map/SKILL.md",
+      "bytes": 511,
+      "mtime_utc": "2026-05-14T02:20:14Z",
+      "original_path": "scr-runtime/.codex/skills/source-of-truth-map/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "05da5186899501b9174ebb501e1164203e6d2ca58edc63a55014afda9b7b1a39"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/auto_phase_runner.py",
+      "bytes": 6551,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/tools/auto_phase_runner.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "a250d2edaf5256197e942b11720f0cce110a81c1c936f189dbd43d8e6de55e97"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/inspect_codex_setup.py",
+      "bytes": 173,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/tools/inspect_codex_setup.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "321061a4401137a767030a16197ac7b96a7909f326eb4d571cb544804b1eb7e3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/phase_prompt_builder.py",
+      "bytes": 1627,
+      "mtime_utc": "2026-05-13T22:12:57Z",
+      "original_path": "scr-runtime/.codex/tools/phase_prompt_builder.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0acd9e479e01e98eaaa0124783c3688cc1f19715419e51cb1ab885a8a88c27e4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks.json",
+      "bytes": 1520,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4b5d19ce3588806a699f0711a157cbd48e71dd55d0d04738cc070168df78f771"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/post_tool_use_receipt.py",
+      "bytes": 729,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/post_tool_use_receipt.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "62cb54e0e8d70a21d032ed401e454afa39b336b0437ab5aa75112cc2066ce46c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/pre_tool_use_policy.py",
+      "bytes": 1241,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/pre_tool_use_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f651646caf61369443262f521823e4039de5f36791d407ca44b0afc78af1becc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/stop_final_gate.py",
+      "bytes": 929,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/stop_final_gate.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8cb84d23942edbd62cb375e781c930d2755cfdd8698e127b34735f6946cc785d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/user_prompt_submit_blockers.py",
+      "bytes": 1032,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/user_prompt_submit_blockers.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "a3d0f874507e98355ae73bb5b9031b5d9524753d14f817a1f1627505e8bddaf2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/turbo-quant/.codex/skills/turbo-quant-release/SKILL.md",
+      "bytes": 388,
+      "mtime_utc": "2026-05-20T00:47:36Z",
+      "original_path": "turbo-quant/.codex/skills/turbo-quant-release/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d5d9222e628b8a65448876931546921567097fdbcf4c4bf43d20033197ab71e8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/turbo-quant/.codex/skills/turbo-quant-release/scripts/README.txt",
+      "bytes": 69,
+      "mtime_utc": "2026-05-20T00:47:36Z",
+      "original_path": "turbo-quant/.codex/skills/turbo-quant-release/scripts/README.txt",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4fb198bcfba292f79236e45cf44f4d8fe3fc629514275f7a1e96c6223d285c22"
+    }
+  ],
+  "report_path": "/home/sikmindz/Coding/Libraries/Libraries-libraries-next-codex-context-20260524T012026Z.codex-archive.json",
+  "skipped_existing": [],
+  "stale_active_before": [
+    "turbo-quant/docs/release-evidence/0.2.0/logs/p26-invariants.log",
+    "turbo-quant/scripts/assert_p26_invariants.py",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_CODEX_SUPER_PASS_PROMPT.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_MASTER_PACKET.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_PHASE_PLAN.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P27_ROLLBACK_AND_QUARANTINE_PLAN.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CLAUDE_AUDIT_ABSORPTION.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_CODEX_SUPER_PASS_PROMPT.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_MASTER_PACKET.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_PHASE_PLAN.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P28_ROLLBACK_AND_QUARANTINE_PLAN.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_BUNDLE_INSTALL_PLAN.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CLAUDE_AUDIT_ABSORPTION.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CODEX_SUPER_PASS_PROMPT.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_MASTER_PACKET.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_PHASE_PLAN.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+    "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+    "scr-runtime/scripts/run_p31_completion_checks.sh",
+    "scr-runtime/.codex/rules/p32r3.rules",
+    ".codex/hooks.json",
+    ".codex/hooks/fibquant_guard.py",
+    ".codex/hooks/fibquant_stop_guard.py",
+    "fib-quant/.codex/hooks/fibquant_guard.py",
+    "fib-quant/.codex/hooks/fibquant_kv_preflight.py",
+    "fib-quant/.codex/hooks/fibquant_stop_guard.py",
+    "fib-quant/overlays/.codex/hooks/fibquant_kv_preflight.py",
+    "overlays/.codex/hooks.json",
+    "overlays/.codex/hooks/fibquant_guard.py",
+    "overlays/.codex/hooks/fibquant_stop_guard.py",
+    "scr-runtime/.codex/agents/backend_runtime.md",
+    "scr-runtime/.codex/agents/backend_runtime.toml",
+    "scr-runtime/.codex/agents/background_jobs.md",
+    "scr-runtime/.codex/agents/background_jobs.toml",
+    "scr-runtime/.codex/agents/frontend_state.md",
+    "scr-runtime/.codex/agents/frontend_state.toml",
+    "scr-runtime/.codex/agents/hostile_review.md",
+    "scr-runtime/.codex/agents/hostile_review.toml",
+    "scr-runtime/.codex/agents/ingestion_db.md",
+    "scr-runtime/.codex/agents/ingestion_db.toml",
+    "scr-runtime/.codex/agents/provider_truth.md",
+    "scr-runtime/.codex/agents/provider_truth.toml",
+    "scr-runtime/.codex/auto_gates/phase_00_gate.md",
+    "scr-runtime/.codex/auto_gates/phase_01_gate.md",
+    "scr-runtime/.codex/auto_gates/phase_02_gate.md",
+    "scr-runtime/.codex/auto_gates/phase_03_gate.md",
+    "scr-runtime/.codex/auto_gates/phase_04_gate.md",
+    "scr-runtime/.codex/auto_gates/phase_05_gate.md",
+    "scr-runtime/.codex/auto_gates/phase_06_gate.md",
+    "scr-runtime/.codex/config.toml",
+    "scr-runtime/.codex/hooks.json",
+    "scr-runtime/.codex/hooks/permission_request_policy.py",
+    "scr-runtime/.codex/hooks/post_tool_receipt.py",
+    "scr-runtime/.codex/hooks/pre_edit_policy.py",
+    "scr-runtime/.codex/hooks/pre_tool_use_policy.py",
+    "scr-runtime/.codex/hooks/stop_phase_guard.py",
+    "scr-runtime/.codex/hooks/user_prompt_contract.py",
+    "scr-runtime/.codex/prompt_manifest.json",
+    "scr-runtime/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+    "scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+    "scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+    "scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+    "scr-runtime/.codex/prompts/phase_03_packaging_policy.md",
+    "scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+    "scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+    "scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md",
+    "scr-runtime/.codex/requirements.toml",
+    "scr-runtime/.codex/rules/safety.rules",
+    "scr-runtime/.codex/skills/codex-control-pack/SKILL.md",
+    "scr-runtime/.codex/skills/hostile-audit/SKILL.md",
+    "scr-runtime/.codex/skills/phase-gate/SKILL.md",
+    "scr-runtime/.codex/skills/run-certifier/SKILL.md",
+    "scr-runtime/.codex/skills/source-of-truth-map/SKILL.md",
+    "scr-runtime/.codex/tools/auto_phase_runner.py",
+    "scr-runtime/.codex/tools/inspect_codex_setup.py",
+    "scr-runtime/.codex/tools/phase_prompt_builder.py",
+    "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks.json",
+    "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/post_tool_use_receipt.py",
+    "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/pre_tool_use_policy.py",
+    "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/stop_final_gate.py",
+    "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/user_prompt_submit_blockers.py",
+    "turbo-quant/.codex/skills/turbo-quant-release/SKILL.md",
+    "turbo-quant/.codex/skills/turbo-quant-release/scripts/README.txt"
+  ],
+  "unclassified": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks.json",
+      "bytes": 743,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": ".codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks/fibquant_guard.py",
+      "bytes": 1905,
+      "mtime_utc": "2026-05-16T23:32:38Z",
+      "original_path": ".codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2347,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": ".codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_guard.py",
+      "bytes": 1900,
+      "mtime_utc": "2026-05-17T02:25:25Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "45d7506c86062442f0ffc8ee33c28fade9e9c550aa4f1a4a309390883bfe3d1e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_kv_preflight.py",
+      "bytes": 167,
+      "mtime_utc": "2026-05-17T01:40:06Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_kv_preflight.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1909af8b76ac931dd291418ea6fa0d775f4460a03122fa8dc4693ea139991505"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2934,
+      "mtime_utc": "2026-05-17T02:25:38Z",
+      "original_path": "fib-quant/.codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d579282ad97638f14cb079ccc19cb54d4d53c1783d2f23803f10f5687a1994c7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/fib-quant/overlays/.codex/hooks/fibquant_kv_preflight.py",
+      "bytes": 167,
+      "mtime_utc": "2026-05-17T01:40:06Z",
+      "original_path": "fib-quant/overlays/.codex/hooks/fibquant_kv_preflight.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1909af8b76ac931dd291418ea6fa0d775f4460a03122fa8dc4693ea139991505"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks.json",
+      "bytes": 743,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": "overlays/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks/fibquant_guard.py",
+      "bytes": 1905,
+      "mtime_utc": "2026-05-16T23:32:38Z",
+      "original_path": "overlays/.codex/hooks/fibquant_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/overlays/.codex/hooks/fibquant_stop_guard.py",
+      "bytes": 2347,
+      "mtime_utc": "2026-05-16T23:33:00Z",
+      "original_path": "overlays/.codex/hooks/fibquant_stop_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/backend_runtime.md",
+      "bytes": 487,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/backend_runtime.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "e7a45d9ef251e71a04e2af68167739197402d3823e4d62bb1e7bf012dfd4d459"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/backend_runtime.toml",
+      "bytes": 1198,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/backend_runtime.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8629f400ca227687ed47c6a59f3b9ef49deafaf3ea1c52d784e3506af5451a2d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/background_jobs.md",
+      "bytes": 428,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/background_jobs.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7c86100a3babcbf70f41edca7d33f7dfb50ea2e010ceed699ed3ff577b71e21e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/background_jobs.toml",
+      "bytes": 1147,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/background_jobs.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "21dc24e46250c4cf3ea5f1bed39dabba160340e2cddfdbf062b4575195c10baa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/frontend_state.md",
+      "bytes": 456,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/frontend_state.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "5e0d42932f8bf64f389569700c587dddaf0305f5f6533d205bb56615d77bb056"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/frontend_state.toml",
+      "bytes": 1189,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/frontend_state.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "029eb515bd25d129238ef3fbdb7965d6e65715f6db4666b94e85ed87932de875"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/hostile_review.md",
+      "bytes": 452,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/hostile_review.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "9f32acd0fee34c96e15eef3b2a902a4899188c89cf9ae4e440535d34f421a7fc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/hostile_review.toml",
+      "bytes": 1120,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/hostile_review.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "510b398698cfa827114d958e203c8b59dc7fb9d2308ab2b0fa6280bb3e5badfa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/ingestion_db.md",
+      "bytes": 481,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/ingestion_db.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "3c8a2ee12c8c96ab9c36077914a6b754b34739923e3da9d0ed4b3554d4c7c2e4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/ingestion_db.toml",
+      "bytes": 1187,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/ingestion_db.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "3c467e0b9c3d437e362dd47647c2af07ad40184d89c75a38752229281cd7c8aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/provider_truth.md",
+      "bytes": 455,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/provider_truth.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "46dd5b4ef6d829a185fa201d8d3e1ecf7131718c90065ef0a0758cf56b9cac18"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/agents/provider_truth.toml",
+      "bytes": 1171,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/agents/provider_truth.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ef756d651e5cc4bc59f3095486f8bd93a6f45db723db65f72d76627da7667c11"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_00_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_00_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c54c8c55addfd3abe219ecf897805e1ceb081a895cb61332b7a5061006eda6b9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_01_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_01_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "71f7e9f9ad496b1fcb14454db7e8614b6dad64658d2a166418a899a65436a502"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_02_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_02_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "809207d94acff3d2f730b63ac24776d10a7504940bd93571aaef5ab5da04cd44"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_03_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_03_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "394620792e696bed91b4e0e1985ee676922416e1505204ec2b870959f3ee8fd0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_04_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_04_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8f400722558f88a4fbba8478bc50df5734755870eda1081830139de7189e35b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_05_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_05_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ba470683353a2f402c7fd4f82acc4c43042533b0478973a9100201224ece80c7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/auto_gates/phase_06_gate.md",
+      "bytes": 108,
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "original_path": "scr-runtime/.codex/auto_gates/phase_06_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b0a8f1729053bf29f00d6499f73c001f82d7914086c6b084dc4c12619cd3f380"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/config.toml",
+      "bytes": 1200,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/config.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "beb55dfe6b3c2bc6b1e23cb7e896288a0077dc84b4f1a437484a0c163913851d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks.json",
+      "bytes": 2152,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "510dedcd625273b4460eb478920f91d8e62940b5fa7b8f4314e41748891c5643"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/permission_request_policy.py",
+      "bytes": 1139,
+      "mtime_utc": "2026-05-15T04:46:00Z",
+      "original_path": "scr-runtime/.codex/hooks/permission_request_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "daffb2b74b30520b6053448cadd9bd7c3dadff4dfb56cf821c080324fa5d4f7f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/post_tool_receipt.py",
+      "bytes": 1016,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/post_tool_receipt.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8de2b4707b0ddeb8e48d091db888acdfc60b03a504dfaa336a9add14d6063e86"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/pre_edit_policy.py",
+      "bytes": 822,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/pre_edit_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "9b45205440e4007a1ba5b62e2658cf32d614ebc5ba59095f80868e4768e460e6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/pre_tool_use_policy.py",
+      "bytes": 1343,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/pre_tool_use_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "631dbc5ed716753af6b2972cf1e94574d7938a22789f186c4e294cc06280e64e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/stop_phase_guard.py",
+      "bytes": 987,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/stop_phase_guard.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "98049f3656208261be0c2e2e74bf59b8b6d567a2d9acb767b6cd1ea02aed7f30"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/hooks/user_prompt_contract.py",
+      "bytes": 736,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/hooks/user_prompt_contract.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c8378f8bd405b1cb54b1977ce02193b010b5a348ff5cbd34df156c5355a568a2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompt_manifest.json",
+      "bytes": 2386,
+      "mtime_utc": "2026-05-14T02:20:05Z",
+      "original_path": "scr-runtime/.codex/prompt_manifest.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "866bc75ba0de3c62355f1a96e2326f55c31b2b493dba8b2fc0e963114b781cb6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "bytes": 165,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "77c97a69ac02eebf39f0368d262b1aa8d88605ba8e72dcfd6ac00471ae975be2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "bytes": 259,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "468e5a5631a10edb21a7484e0a9fcb0bf520426d188d7b11619aba9f163bdfd0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "bytes": 235,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "cfaffd453e2e072ca4664b424a7601701d8fdfb87372e09847fd1eecbe36f723"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+      "bytes": 197,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "aaf681890a6b58f2e23edca4a4db37b66fe248b9b6f759c621a360c3cbff3890"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_03_packaging_policy.md",
+      "bytes": 367,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_03_packaging_policy.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "dabeca4a216aa0d9631409820be4b732a0f74747cb6506b2014f34af80322c3a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "bytes": 331,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b68fac776b6716618cc7dfdb04f27441d701d0cf609a75a263a7f2f7e089eedc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "bytes": 112,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "eaa71353e8e3b19d942123c2c15c4d3abec43936a898da11a4220bad716f8cfe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "bytes": 99,
+      "mtime_utc": "2026-05-14T02:20:25Z",
+      "original_path": "scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8a56b755a0022589acccd5bf0b4644ed2576a009a44fbe9c7b163d321d02439d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/requirements.toml",
+      "bytes": 411,
+      "mtime_utc": "2026-05-15T04:45:14Z",
+      "original_path": "scr-runtime/.codex/requirements.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c1428ecc5748c38bd95bacff4147b5cc36dad1a69678c0d1b7becf2bdd8e7e52"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/rules/safety.rules",
+      "bytes": 176,
+      "mtime_utc": "2026-05-14T02:03:33Z",
+      "original_path": "scr-runtime/.codex/rules/safety.rules",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d76fefd28fa3cd37f2b8050752e2dfd4c260acad7b74ef991155bc85a3dee99f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/codex-control-pack/SKILL.md",
+      "bytes": 730,
+      "mtime_utc": "2026-05-14T02:20:07Z",
+      "original_path": "scr-runtime/.codex/skills/codex-control-pack/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "46f93ef95a52730c2e163ed0233bc7989fbc6aa11ea8fbd0d912baf65ff5f61c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/hostile-audit/SKILL.md",
+      "bytes": 524,
+      "mtime_utc": "2026-05-14T02:23:53Z",
+      "original_path": "scr-runtime/.codex/skills/hostile-audit/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "db7cbcde26869f5ab130ea6144bb9cd28ee57d7d370f8dc2180bf39eeb3c1a67"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/phase-gate/SKILL.md",
+      "bytes": 508,
+      "mtime_utc": "2026-05-14T02:20:10Z",
+      "original_path": "scr-runtime/.codex/skills/phase-gate/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "edf65291d5f0a9718a540f87d9e624cd167a5c9c1d57bfb7a04180214edd6768"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/run-certifier/SKILL.md",
+      "bytes": 498,
+      "mtime_utc": "2026-05-14T02:20:16Z",
+      "original_path": "scr-runtime/.codex/skills/run-certifier/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c68f7a8a4e721eee74daba6525f0b395621e88df8dc675c8e12a8d894c84fbbe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/skills/source-of-truth-map/SKILL.md",
+      "bytes": 511,
+      "mtime_utc": "2026-05-14T02:20:14Z",
+      "original_path": "scr-runtime/.codex/skills/source-of-truth-map/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "05da5186899501b9174ebb501e1164203e6d2ca58edc63a55014afda9b7b1a39"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/auto_phase_runner.py",
+      "bytes": 6551,
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "original_path": "scr-runtime/.codex/tools/auto_phase_runner.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "a250d2edaf5256197e942b11720f0cce110a81c1c936f189dbd43d8e6de55e97"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/inspect_codex_setup.py",
+      "bytes": 173,
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "original_path": "scr-runtime/.codex/tools/inspect_codex_setup.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "321061a4401137a767030a16197ac7b96a7909f326eb4d571cb544804b1eb7e3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/.codex/tools/phase_prompt_builder.py",
+      "bytes": 1627,
+      "mtime_utc": "2026-05-13T22:12:57Z",
+      "original_path": "scr-runtime/.codex/tools/phase_prompt_builder.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0acd9e479e01e98eaaa0124783c3688cc1f19715419e51cb1ab885a8a88c27e4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks.json",
+      "bytes": 1520,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4b5d19ce3588806a699f0711a157cbd48e71dd55d0d04738cc070168df78f771"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/post_tool_use_receipt.py",
+      "bytes": 729,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/post_tool_use_receipt.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "62cb54e0e8d70a21d032ed401e454afa39b336b0437ab5aa75112cc2066ce46c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/pre_tool_use_policy.py",
+      "bytes": 1241,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/pre_tool_use_policy.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f651646caf61369443262f521823e4039de5f36791d407ca44b0afc78af1becc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/stop_final_gate.py",
+      "bytes": 929,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/stop_final_gate.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8cb84d23942edbd62cb375e781c930d2755cfdd8698e127b34735f6946cc785d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/user_prompt_submit_blockers.py",
+      "bytes": 1032,
+      "mtime_utc": "2026-05-19T20:46:02Z",
+      "original_path": "scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/user_prompt_submit_blockers.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "a3d0f874507e98355ae73bb5b9031b5d9524753d14f817a1f1627505e8bddaf2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/turbo-quant/.codex/skills/turbo-quant-release/SKILL.md",
+      "bytes": 388,
+      "mtime_utc": "2026-05-20T00:47:36Z",
+      "original_path": "turbo-quant/.codex/skills/turbo-quant-release/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "d5d9222e628b8a65448876931546921567097fdbcf4c4bf43d20033197ab71e8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260524T012026Z/files/turbo-quant/.codex/skills/turbo-quant-release/scripts/README.txt",
+      "bytes": 69,
+      "mtime_utc": "2026-05-20T00:47:36Z",
+      "original_path": "turbo-quant/.codex/skills/turbo-quant-release/scripts/README.txt",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4fb198bcfba292f79236e45cf44f4d8fe3fc629514275f7a1e96c6223d285c22"
+    }
+  ],
+  "verify_only": false
+}

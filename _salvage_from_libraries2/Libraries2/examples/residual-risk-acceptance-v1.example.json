@@ -1,0 +1,15 @@
+{
+  "schema_version": "ResidualRiskAcceptanceV1",
+  "residual_risk_acceptance_id": "rra_001",
+  "deployment_profile_id": "dpf_001",
+  "accepted_by": [
+    "person:vp-eng"
+  ],
+  "accepted_risks": [
+    "minor latency spike under failover"
+  ],
+  "expires_at": "2026-04-15T00:00:00Z",
+  "notes": [
+    "recertify if traffic doubles"
+  ]
+}

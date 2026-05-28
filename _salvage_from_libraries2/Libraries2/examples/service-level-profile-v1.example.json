@@ -1,0 +1,9 @@
+{
+  "schema_version": "ServiceLevelProfileV1",
+  "service_level_profile_id": "slp_001",
+  "service_name": "alpha-service",
+  "availability_target": "99.9%",
+  "latency_target": "p95<250ms",
+  "owner_ref": "team:reliability",
+  "error_budget_ledger_id": "ebl_001"
+}

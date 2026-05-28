@@ -1,0 +1,2 @@
+    Checking aidens-delegation-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s

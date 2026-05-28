@@ -1,0 +1,213 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-04T19:59:59Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_00_PREFLIGHT_REPLAY_TRIAGE_AND_SCOPE_LOCK.md",
+      "bytes": 421,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_00_PREFLIGHT_REPLAY_TRIAGE_AND_SCOPE_LOCK.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "d31b95f91ebe61e162b707e165cc54e7a77c2ada4dad6a2a5526ec9c495be474"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_01_AGENT_SPEC_V1.md",
+      "bytes": 266,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_01_AGENT_SPEC_V1.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "40028332a849d26a42d5a2738908becebe470d08a180ff65a9d28583b991cac4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_02_PLAN_ACT_VERIFY_LOOP.md",
+      "bytes": 172,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_02_PLAN_ACT_VERIFY_LOOP.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "e15073576db1f67a41d65a1410e9b81de1a05bc034c1ce28a2d370c742cb4354"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_03_RUN_BUNDLE_V3_AND_EVIDENCE.md",
+      "bytes": 243,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_03_RUN_BUNDLE_V3_AND_EVIDENCE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "e34d0c03d38bcd2038cd3295d01b936089f3ad04c615b9b56a2e57cf4d1bb855"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_04_MEMORY_GROUNDED_AGENT.md",
+      "bytes": 158,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_04_MEMORY_GROUNDED_AGENT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "6c12756dfaef1eb2ce9409a1495cfa65b56f26a7df0c68e66d970ed08bd94692"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_05_CODING_AGENT_V1.md",
+      "bytes": 225,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_05_CODING_AGENT_V1.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "36a284f8c75522339ca94bea8362554dbc55f19ea7df1b1166e45ec278c521cd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_06_REPAIR_AND_ABSTENTION.md",
+      "bytes": 139,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_06_REPAIR_AND_ABSTENTION.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "33687302fc7769035a949603e1e72f892663009b013880de330b1bf33d2a0021"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_07_CLI_EXAMPLES_AND_OPERATOR_UX.md",
+      "bytes": 192,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_07_CLI_EXAMPLES_AND_OPERATOR_UX.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "edfd9d394881fafd5e819692af1db34952b9a7b977cd2efc07f36d447c7d9639"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_08_VERIFIER_AND_SUPPORT_CLAIMS.md",
+      "bytes": 138,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_08_VERIFIER_AND_SUPPORT_CLAIMS.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "789e0d5c5af27522a3da6f98fe0594d2af67bcd9d203354a234ae70f9a496fc1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_09_INTEGRATION_HOSTILE_AUDIT.md",
+      "bytes": 196,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_09_INTEGRATION_HOSTILE_AUDIT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "ced306643a8d4a3341d4c77219956e46cdc63fbc417d619ddaf3e360e1c1aec8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_10_FINAL_PACKAGE_AND_HANDOFF.md",
+      "bytes": 186,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_10_FINAL_PACKAGE_AND_HANDOFF.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "03571fba2254d46df1b569afc6c3475afb27b49253abee629b59fc3d803b458c"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "unclassified",
+  "skipped_existing": [],
+  "superseded_by": "P26",
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25",
+  "unclassified": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_00_PREFLIGHT_REPLAY_TRIAGE_AND_SCOPE_LOCK.md",
+      "bytes": 421,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_00_PREFLIGHT_REPLAY_TRIAGE_AND_SCOPE_LOCK.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "d31b95f91ebe61e162b707e165cc54e7a77c2ada4dad6a2a5526ec9c495be474"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_01_AGENT_SPEC_V1.md",
+      "bytes": 266,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_01_AGENT_SPEC_V1.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "40028332a849d26a42d5a2738908becebe470d08a180ff65a9d28583b991cac4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_02_PLAN_ACT_VERIFY_LOOP.md",
+      "bytes": 172,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_02_PLAN_ACT_VERIFY_LOOP.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "e15073576db1f67a41d65a1410e9b81de1a05bc034c1ce28a2d370c742cb4354"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_03_RUN_BUNDLE_V3_AND_EVIDENCE.md",
+      "bytes": 243,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_03_RUN_BUNDLE_V3_AND_EVIDENCE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "e34d0c03d38bcd2038cd3295d01b936089f3ad04c615b9b56a2e57cf4d1bb855"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_04_MEMORY_GROUNDED_AGENT.md",
+      "bytes": 158,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_04_MEMORY_GROUNDED_AGENT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "6c12756dfaef1eb2ce9409a1495cfa65b56f26a7df0c68e66d970ed08bd94692"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_05_CODING_AGENT_V1.md",
+      "bytes": 225,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_05_CODING_AGENT_V1.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "36a284f8c75522339ca94bea8362554dbc55f19ea7df1b1166e45ec278c521cd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_06_REPAIR_AND_ABSTENTION.md",
+      "bytes": 139,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_06_REPAIR_AND_ABSTENTION.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "33687302fc7769035a949603e1e72f892663009b013880de330b1bf33d2a0021"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_07_CLI_EXAMPLES_AND_OPERATOR_UX.md",
+      "bytes": 192,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_07_CLI_EXAMPLES_AND_OPERATOR_UX.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "edfd9d394881fafd5e819692af1db34952b9a7b977cd2efc07f36d447c7d9639"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_08_VERIFIER_AND_SUPPORT_CLAIMS.md",
+      "bytes": 138,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_08_VERIFIER_AND_SUPPORT_CLAIMS.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "789e0d5c5af27522a3da6f98fe0594d2af67bcd9d203354a234ae70f9a496fc1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_09_INTEGRATION_HOSTILE_AUDIT.md",
+      "bytes": 196,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_09_INTEGRATION_HOSTILE_AUDIT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "ced306643a8d4a3341d4c77219956e46cdc63fbc417d619ddaf3e360e1c1aec8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260504T195959Z/files/prompts/phases/PHASE_10_FINAL_PACKAGE_AND_HANDOFF.md",
+      "bytes": 186,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/phases/PHASE_10_FINAL_PACKAGE_AND_HANDOFF.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "03571fba2254d46df1b569afc6c3475afb27b49253abee629b59fc3d803b458c"
+    }
+  ]
+}

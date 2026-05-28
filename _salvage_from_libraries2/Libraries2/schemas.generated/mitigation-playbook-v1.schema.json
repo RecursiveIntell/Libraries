@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "approval_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "containment_steps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "hazard_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "mitigation_playbook_id": {
+      "type": "string"
+    },
+    "recovery_steps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "success_criteria": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "mitigation_playbook_id",
+    "schema_version"
+  ],
+  "title": "MitigationPlaybookV1",
+  "type": "object"
+}

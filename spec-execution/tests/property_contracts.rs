@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Property-based tests for spec-execution artifact types.
 //!
 //! Validates serde roundtrip fidelity and schema_version constant usage

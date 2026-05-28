@@ -1,0 +1,24 @@
+app_id = "p21-daemon-safe-example"
+profile_id = "autonomous-daemon"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+model = "mock-daemon-safe"
+mock_response = "mock daemon-safe response from AiDENs"
+
+[tools]
+enabled_bundles = []
+sandbox_root = "."
+
+[receipts]
+store_root = "target/aidens-receipts/p21-daemon-safe-example"
+
+[security]
+approval_mode = "require-side-effects"
+network_policy = "disabled"
+write_policy = "approval-required"
+
+[agency]
+enabled = true

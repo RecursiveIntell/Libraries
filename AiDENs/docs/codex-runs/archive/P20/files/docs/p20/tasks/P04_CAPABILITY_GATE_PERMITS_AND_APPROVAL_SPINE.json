@@ -1,0 +1,31 @@
+{
+  "pass_id": "P04",
+  "title": "Capability gate, permits, approvals, and side-effect denial law",
+  "phase": "Foundation / safety",
+  "prompt_file": "prompts/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE_PROMPT.md",
+  "pass_doc": "passes/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.md",
+  "crates": [
+    "aidens-tool-kit",
+    "aidens-permit-kit",
+    "aidens-security-kit",
+    "aidens-contracts",
+    "aidens-cli"
+  ],
+  "artifacts": [
+    "CapabilityGateDecisionV1",
+    "ToolExposurePlanV2",
+    "ApprovalRequestV1",
+    "ApprovalDecisionV1",
+    "PermitGrantV1",
+    "PermitUseReceiptV1"
+  ],
+  "acceptance": [
+    "list-tools and inspect-tools distinguish declared, registered, executable, exposed, hidden, blocked.",
+    "Side-effect tools cannot be exposed or invoked without permit; denial includes ApprovalRequestV1 or reason code.",
+    "Permits are scoped by risk, tool, sandbox root, time, and optional run/attempt family."
+  ],
+  "forbidden": [
+    "Do not grant risky tools through profile defaults.",
+    "Do not conflate hidden with blocked; operators need to know the difference."
+  ]
+}

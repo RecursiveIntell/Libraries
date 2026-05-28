@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P14/files/handoffs/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.md",
+      "bytes": 3821,
+      "mtime_utc": "2026-04-27T03:15:20Z",
+      "original_path": "handoffs/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P14",
+      "sha256": "c76d5ce06004c76a9a57953dbbf117bf5f43545ee24cf2dd6cec0f208f3b066c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P14/files/prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md",
+      "bytes": 1127,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P14",
+      "sha256": "4cbb424e708cb27ed6319d4840b86359a87f2c671b6a47af3a37ffc899dc5ada"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P14/files/tasks/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.json",
+      "bytes": 957,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "tasks/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.json",
+      "reason": "stale-run-task",
+      "run_id": "P14",
+      "sha256": "531deba5407942286f3b973ef085a835dec6a69a7433cbb5d1ec6589412f332b"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P14",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

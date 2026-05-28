@@ -232,6 +232,19 @@ fn error_class_serialization_roundtrip() {
 }
 
 #[test]
+fn tool_origin_kind_openai_chat_roundtrips_as_snake_case() {
+    let json = serde_json::to_string(&ToolOriginKind::OpenAiChat).unwrap();
+    assert_eq!(json, "\"open_ai_chat\"");
+
+    let roundtrip: ToolOriginKind = serde_json::from_str(&json).unwrap();
+    assert_eq!(roundtrip, ToolOriginKind::OpenAiChat);
+
+    let call = ToolCall::new("chat_tool", "1.0.0", json!({}), ToolOriginKind::OpenAiChat);
+    let call_json = serde_json::to_value(&call).unwrap();
+    assert_eq!(call_json["origin_kind"], "open_ai_chat");
+}
+
+#[test]
 fn retry_owner_as_str_matches_serde() {
     let owners = vec![
         ToolRetryOwner::LlmPipeline,

@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use llm_tool_runtime::ToolEffectDispatchReceiptV1;
 use stack_ids::{EffectCommitDecisionId, ToolEffectDispatchReceiptId};
 

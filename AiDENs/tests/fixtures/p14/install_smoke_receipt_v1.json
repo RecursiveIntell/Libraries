@@ -1,0 +1,29 @@
+{
+  "receipt_id": "install-smoke:p14-fixture",
+  "kind": "install-smoke-report",
+  "passed": true,
+  "steps": [
+    {
+      "step": "provider-check",
+      "command": "aidens provider-check --config examples/aidens.mock.toml",
+      "passed": true,
+      "output_digest": "blake3:8c6d8dfae8a0ea035a7bdaeb3c3cb0bb6be908c907602b41e4d4a589cbe66b22",
+      "reason_codes": [
+        "install-smoke-step-passed"
+      ]
+    },
+    {
+      "step": "mock-turn",
+      "command": "aidens run --config examples/aidens.mock.toml hello",
+      "passed": true,
+      "output_digest": "blake3:40e3d3fa5b2082bc9547bbf4bf8df11ffcf21b43b024aa936c4a74a3745caf41",
+      "reason_codes": [
+        "install-smoke-step-passed"
+      ]
+    }
+  ],
+  "reason_codes": [
+    "install-smoke-passed"
+  ],
+  "recorded_at": "2026-04-27T00:00:00Z"
+}

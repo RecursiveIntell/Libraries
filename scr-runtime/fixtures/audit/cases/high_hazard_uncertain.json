@@ -1,0 +1,8 @@
+{
+  "schema_version": "audit_fixture_case_v1",
+  "case_id": "high_hazard_uncertain",
+  "domain": "audit",
+  "proposed_action": "verify",
+  "requested_effect": "advisory_only",
+  "signals": ["high_hazard", "uncertain"]
+}

@@ -3,8 +3,15 @@
 use crate::config::{EmbeddingConfig, MemoryLimits, PoolConfig};
 use crate::error::MemoryError;
 use crate::quantize::unpack_quantized;
-use crate::types::{EpisodeOutcome, Role, VerificationStatus};
-use rusqlite::{params, Connection, OpenFlags};
+#[cfg(feature = "turbo-quant-codec")]
+use crate::types::{DerivedVectorArtifactGenerationV1, VectorArtifactBuildReceiptV1};
+use crate::types::{EpisodeOutcome, Role, VectorSearchReceiptV1, VerificationStatus};
+use chrono::{DateTime, Utc};
+use rusqlite::{params, Connection, OpenFlags, OptionalExtension};
+use serde::{Deserialize, Serialize};
+use stack_ids::ContentDigest;
+#[cfg(feature = "turbo-quant-codec")]
+use stack_ids::DigestBuilder;
 use std::path::Path;
 
 /// V1 migration: full schema.
@@ -228,6 +235,86 @@ ALTER TABLE episodes ADD COLUMN trace_id TEXT;
 /// Applied via `run_migration_v9()` because it requires table rebuild.
 const MIGRATION_V9: &str = "";
 
+/// V18 migration: durable, replay-addressable search receipts.
+const MIGRATION_V18: &str = r#"
+CREATE TABLE IF NOT EXISTS search_receipts (
+    receipt_id             TEXT PRIMARY KEY,
+    schema_version         TEXT NOT NULL,
+    evaluation_time        TEXT NOT NULL,
+    search_profile         TEXT NOT NULL,
+    candidate_backend      TEXT NOT NULL,
+    approximate            INTEGER NOT NULL CHECK (approximate IN (0, 1)),
+    exact_rerank           INTEGER NOT NULL CHECK (exact_rerank IN (0, 1)),
+    fallback               TEXT,
+    requested_candidates   INTEGER NOT NULL CHECK (requested_candidates >= 0),
+    returned_candidates    INTEGER NOT NULL CHECK (returned_candidates >= 0),
+    post_filter_candidates INTEGER NOT NULL CHECK (post_filter_candidates >= 0),
+    result_ids_json        TEXT NOT NULL,
+    receipt_json           TEXT NOT NULL,
+    receipt_digest         TEXT NOT NULL,
+    created_at             TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_search_receipts_created
+ON search_receipts(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_search_receipts_backend
+ON search_receipts(candidate_backend);
+"#;
+
+/// V19 migration: rebuildable derived vector acceleration artifacts.
+const MIGRATION_V19: &str = r#"
+CREATE TABLE IF NOT EXISTS derived_vector_artifacts (
+    item_key                TEXT NOT NULL,
+    codec_family            TEXT NOT NULL,
+    codec_profile_digest    TEXT NOT NULL,
+    source_embedding_digest TEXT NOT NULL,
+    encoded_digest          TEXT NOT NULL,
+    artifact_digest         TEXT NOT NULL,
+    encoding                TEXT NOT NULL,
+    dim                     INTEGER NOT NULL,
+    encoded                 BLOB NOT NULL,
+    created_at              TEXT NOT NULL DEFAULT (datetime('now')),
+    status                  TEXT NOT NULL DEFAULT 'active',
+    PRIMARY KEY (item_key, codec_family, codec_profile_digest)
+);
+
+CREATE INDEX IF NOT EXISTS idx_derived_vector_artifacts_profile
+ON derived_vector_artifacts(codec_family, codec_profile_digest, status);
+
+CREATE INDEX IF NOT EXISTS idx_derived_vector_artifacts_source_digest
+ON derived_vector_artifacts(source_embedding_digest);
+"#;
+
+/// V20 migration: align derived vector artifact rows with P31 evidence fields.
+const MIGRATION_V20: &str = r#"
+-- Procedural migration; see run_migration_v20.
+"#;
+
+/// V21 migration: generation-level manifests for derived vector artifacts.
+const MIGRATION_V21: &str = r#"
+CREATE TABLE IF NOT EXISTS derived_vector_artifact_generations (
+    generation_id            TEXT PRIMARY KEY,
+    schema_version           TEXT NOT NULL,
+    codec_family             TEXT NOT NULL,
+    codec_profile_digest     TEXT NOT NULL,
+    source_snapshot_digest   TEXT NOT NULL,
+    source_row_count         INTEGER NOT NULL,
+    artifact_count           INTEGER NOT NULL,
+    source_tables_json       TEXT NOT NULL,
+    dim                      INTEGER NOT NULL,
+    encoding                 TEXT NOT NULL,
+    created_at               TEXT NOT NULL,
+    build_receipt_id         TEXT,
+    artifact_manifest_digest TEXT NOT NULL,
+    status                   TEXT NOT NULL CHECK (status IN ('active', 'superseded', 'invalidated', 'failed')),
+    degradations_json        TEXT NOT NULL DEFAULT '[]'
+);
+
+CREATE INDEX IF NOT EXISTS idx_derived_vector_generations_profile
+ON derived_vector_artifact_generations(codec_family, codec_profile_digest, status, created_at DESC);
+"#;
+
 /// Ordered list of migrations.
 #[allow(deprecated)]
 const MIGRATIONS: &[(u32, &str)] = &[
@@ -248,10 +335,14 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (15, crate::projection_storage::MIGRATION_V15),
     (16, crate::projection_storage::MIGRATION_V16),
     (17, crate::projection_storage::MIGRATION_V17),
+    (18, MIGRATION_V18),
+    (19, MIGRATION_V19),
+    (20, MIGRATION_V20),
+    (21, MIGRATION_V21),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 17;
+pub const MAX_SCHEMA_VERSION: u32 = 21;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {
@@ -576,7 +667,10 @@ fn configure_connection(
 pub fn run_migrations(conn: &Connection) -> Result<(), MemoryError> {
     let user_version: u32 = conn
         .query_row("PRAGMA user_version", [], |row| row.get(0))
-        .unwrap_or(0);
+        .map_err(|e| MemoryError::MigrationFailed {
+            version: 0,
+            reason: format!("failed to read PRAGMA user_version: {e}"),
+        })?;
 
     if user_version > MAX_SCHEMA_VERSION {
         return Err(MemoryError::SchemaAhead {
@@ -605,64 +699,35 @@ pub fn run_migrations(conn: &Connection) -> Result<(), MemoryError> {
             continue;
         }
 
-        // V9, V16, and V17 require procedural migrations.
-        if version == 9 {
-            run_migration_v9(conn).map_err(|e| MemoryError::MigrationFailed {
-                version,
-                reason: e.to_string(),
-            })?;
-            conn.execute(
-                "INSERT INTO _schema_version (version) VALUES (?1)",
-                params![version],
-            )
-            .map_err(|e| MemoryError::MigrationFailed {
-                version,
-                reason: e.to_string(),
-            })?;
-            tracing::info!("Applied migration V{}", version);
-            continue;
-        }
-
-        if version == 16 {
-            run_migration_v16(conn).map_err(|e| MemoryError::MigrationFailed {
-                version,
-                reason: e.to_string(),
-            })?;
-            conn.execute(
-                "INSERT INTO _schema_version (version) VALUES (?1)",
-                params![version],
-            )
-            .map_err(|e| MemoryError::MigrationFailed {
-                version,
-                reason: e.to_string(),
-            })?;
-            tracing::info!("Applied migration V{}", version);
-            continue;
-        }
-
-        if version == 17 {
-            run_migration_v17(conn).map_err(|e| MemoryError::MigrationFailed {
-                version,
-                reason: e.to_string(),
-            })?;
-            conn.execute(
-                "INSERT INTO _schema_version (version) VALUES (?1)",
-                params![version],
-            )
-            .map_err(|e| MemoryError::MigrationFailed {
-                version,
-                reason: e.to_string(),
-            })?;
-            tracing::info!("Applied migration V{}", version);
-            continue;
-        }
-
         with_transaction(conn, |tx| {
-            tx.execute_batch(sql)
-                .map_err(|e| MemoryError::MigrationFailed {
+            match version {
+                9 => run_migration_v9(tx).map_err(|e| MemoryError::MigrationFailed {
                     version,
                     reason: e.to_string(),
-                })?;
+                })?,
+                16 => run_migration_v16(tx).map_err(|e| MemoryError::MigrationFailed {
+                    version,
+                    reason: e.to_string(),
+                })?,
+                17 => run_migration_v17(tx).map_err(|e| MemoryError::MigrationFailed {
+                    version,
+                    reason: e.to_string(),
+                })?,
+                20 => run_migration_v20(tx).map_err(|e| MemoryError::MigrationFailed {
+                    version,
+                    reason: e.to_string(),
+                })?,
+                21 => run_migration_v21(tx).map_err(|e| MemoryError::MigrationFailed {
+                    version,
+                    reason: e.to_string(),
+                })?,
+                _ => tx
+                    .execute_batch(sql)
+                    .map_err(|e| MemoryError::MigrationFailed {
+                        version,
+                        reason: e.to_string(),
+                    })?,
+            }
             tx.execute(
                 "INSERT INTO _schema_version (version) VALUES (?1)",
                 params![version],
@@ -728,6 +793,998 @@ fn run_migration_v17(conn: &Connection) -> Result<(), rusqlite::Error> {
         "TEXT",
     )?;
     Ok(())
+}
+
+fn run_migration_v20(conn: &Connection) -> Result<(), rusqlite::Error> {
+    add_column_if_missing(conn, "derived_vector_artifacts", "encoded_digest", "TEXT")?;
+    conn.execute(
+        "UPDATE derived_vector_artifacts
+         SET encoded_digest = artifact_digest
+         WHERE encoded_digest IS NULL OR encoded_digest = ''",
+        [],
+    )?;
+    add_column_if_missing(
+        conn,
+        "derived_vector_artifacts",
+        "encoding",
+        "TEXT NOT NULL DEFAULT 'turbo_code_wire_v1'",
+    )?;
+    add_column_if_missing(
+        conn,
+        "derived_vector_artifacts",
+        "dim",
+        "INTEGER NOT NULL DEFAULT 0",
+    )?;
+    add_column_if_missing(
+        conn,
+        "derived_vector_artifacts",
+        "status",
+        "TEXT NOT NULL DEFAULT 'active'",
+    )?;
+    conn.execute_batch(
+        "CREATE INDEX IF NOT EXISTS idx_derived_vector_artifacts_profile
+         ON derived_vector_artifacts(codec_family, codec_profile_digest, status);
+         CREATE INDEX IF NOT EXISTS idx_derived_vector_artifacts_source_digest
+         ON derived_vector_artifacts(source_embedding_digest);",
+    )?;
+    Ok(())
+}
+
+fn run_migration_v21(conn: &Connection) -> Result<(), rusqlite::Error> {
+    conn.execute_batch(MIGRATION_V21)?;
+    add_column_if_missing(conn, "derived_vector_artifacts", "generation_id", "TEXT")?;
+    conn.execute_batch(
+        "CREATE INDEX IF NOT EXISTS idx_derived_vector_artifacts_generation
+         ON derived_vector_artifacts(generation_id, status);",
+    )?;
+    Ok(())
+}
+
+const SEARCH_RECEIPT_SCHEMA_VERSION: &str = "vector_search_receipt_v1";
+
+#[derive(Debug, Serialize, Deserialize)]
+struct StoredVectorSearchReceiptV1 {
+    #[serde(default = "default_search_receipt_schema_version")]
+    schema_version: String,
+    receipt_id: String,
+    evaluation_time: DateTime<Utc>,
+    #[serde(default)]
+    receipt_digest: Option<String>,
+    #[serde(default)]
+    trace_id: Option<String>,
+    #[serde(default)]
+    attempt_family_id: Option<String>,
+    #[serde(default)]
+    attempt_id: Option<String>,
+    #[serde(default)]
+    replay_of: Option<String>,
+    query_embedding_digest: Option<String>,
+    #[serde(default)]
+    query_text_digest: Option<String>,
+    #[serde(default)]
+    query_input_digest: Option<String>,
+    #[serde(default)]
+    filter_digest: Option<String>,
+    #[serde(default)]
+    redaction_state: Option<String>,
+    #[serde(default)]
+    budget_id: Option<String>,
+    #[serde(default)]
+    deadline_at: Option<DateTime<Utc>>,
+    search_profile: String,
+    candidate_backend: String,
+    codec_family: Option<String>,
+    codec_profile_digest: Option<String>,
+    #[serde(default)]
+    artifact_profile_digest: Option<String>,
+    #[serde(default)]
+    artifact_count: Option<u64>,
+    #[serde(default)]
+    artifact_corruption_count: Option<u64>,
+    #[serde(default)]
+    artifact_missing_count: Option<u64>,
+    #[serde(default)]
+    vector_artifact_manifest_digest: Option<String>,
+    #[serde(default)]
+    artifact_generation_id: Option<String>,
+    #[serde(default)]
+    approximate_scanned_count: Option<u64>,
+    #[serde(default)]
+    approximate_returned_count: Option<u64>,
+    #[serde(default)]
+    raw_rows_loaded_count: Option<u64>,
+    #[serde(default)]
+    filter_strategy: Option<String>,
+    #[serde(default)]
+    vector_artifact_count: Option<u64>,
+    #[serde(default)]
+    vector_artifact_missing_count: Option<u64>,
+    #[serde(default)]
+    vector_artifact_stale_count: Option<u64>,
+    #[serde(default)]
+    exact_rerank_count: Option<u64>,
+    #[serde(default)]
+    approximate_candidate_count: Option<u64>,
+    #[serde(default)]
+    fallback_reason: Option<String>,
+    approximate: bool,
+    requested_candidates: u64,
+    returned_candidates: u64,
+    post_filter_candidates: u64,
+    fallback: Option<String>,
+    exact_rerank: bool,
+    result_ids: Vec<String>,
+    degradations: Vec<String>,
+}
+
+fn default_search_receipt_schema_version() -> String {
+    SEARCH_RECEIPT_SCHEMA_VERSION.to_string()
+}
+
+fn b3_digest(bytes: &[u8]) -> String {
+    format!("blake3:{}", ContentDigest::compute(bytes).hex())
+}
+
+/// Row from the derived vector artifact store.
+#[cfg(feature = "turbo-quant-codec")]
+#[derive(Debug, Clone)]
+pub(crate) struct DerivedVectorArtifactRow {
+    pub item_key: String,
+    pub generation_id: Option<String>,
+    pub codec_family: String,
+    pub codec_profile_digest: String,
+    pub source_embedding_digest: String,
+    pub encoded_digest: String,
+    pub encoding: String,
+    pub dim: usize,
+    pub status: String,
+    pub encoded: Vec<u8>,
+}
+
+/// Active derived vector artifact generation row.
+#[cfg(feature = "turbo-quant-codec")]
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
+pub(crate) struct DerivedVectorArtifactGenerationRow {
+    pub generation_id: String,
+    pub codec_family: String,
+    pub codec_profile_digest: String,
+    pub source_snapshot_digest: String,
+    pub source_row_count: usize,
+    pub artifact_count: usize,
+    pub dim: usize,
+    pub encoding: String,
+    pub artifact_manifest_digest: String,
+    pub status: String,
+}
+
+/// Stable digest for an authoritative raw f32 embedding BLOB.
+#[cfg(feature = "turbo-quant-codec")]
+pub(crate) fn source_embedding_digest(
+    blob: &[u8],
+    expected_dim: usize,
+) -> Result<String, MemoryError> {
+    validate_vector_blob_len(blob, expected_dim)?;
+    let mut builder = DigestBuilder::new();
+    builder
+        .update_str("semantic-memory.source_embedding.v1")
+        .separator()
+        .update(&(expected_dim as u64).to_le_bytes())
+        .separator()
+        .update(blob);
+    Ok(format!("blake3:{}", builder.finalize().hex()))
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+fn source_snapshot_digest(rows: &[DerivedVectorArtifactRow], dim: usize) -> String {
+    let mut entries = rows
+        .iter()
+        .map(|row| (row.item_key.as_str(), row.source_embedding_digest.as_str()))
+        .collect::<Vec<_>>();
+    entries.sort_unstable();
+
+    let mut builder = DigestBuilder::new();
+    builder
+        .update_str("semantic-memory.vector_source_snapshot.v1")
+        .separator()
+        .update(&(dim as u64).to_le_bytes())
+        .separator();
+    for (item_key, source_embedding_digest) in entries {
+        builder
+            .update_str(item_key)
+            .separator()
+            .update_str(source_embedding_digest)
+            .separator();
+    }
+    format!("blake3:{}", builder.finalize().hex())
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+pub(crate) fn current_source_snapshot_digest(
+    conn: &Connection,
+    dim: usize,
+) -> Result<(String, usize), MemoryError> {
+    let mut stmt = conn.prepare(
+        "SELECT 'fact:' || id AS item_key, embedding FROM facts WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'chunk:' || id AS item_key, embedding FROM chunks WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'msg:' || id AS item_key, embedding FROM messages WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'episode:' || episode_id AS item_key, embedding FROM episodes WHERE embedding IS NOT NULL",
+    )?;
+    let rows = stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
+    })?;
+
+    let mut entries = Vec::new();
+    for row in rows {
+        let (item_key, blob) = row?;
+        entries.push((item_key, source_embedding_digest(&blob, dim)?));
+    }
+    entries.sort_unstable();
+
+    let mut builder = DigestBuilder::new();
+    builder
+        .update_str("semantic-memory.vector_source_snapshot.v1")
+        .separator()
+        .update(&(dim as u64).to_le_bytes())
+        .separator();
+    for (item_key, source_embedding_digest) in &entries {
+        builder
+            .update_str(item_key)
+            .separator()
+            .update_str(source_embedding_digest)
+            .separator();
+    }
+    Ok((
+        format!("blake3:{}", builder.finalize().hex()),
+        entries.len(),
+    ))
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+fn derived_artifact_manifest_digest(rows: &[DerivedVectorArtifactRow]) -> String {
+    let mut entries = rows
+        .iter()
+        .map(|row| {
+            (
+                row.item_key.as_str(),
+                row.source_embedding_digest.as_str(),
+                row.encoded_digest.as_str(),
+            )
+        })
+        .collect::<Vec<_>>();
+    entries.sort_unstable();
+
+    let mut builder = DigestBuilder::new();
+    builder
+        .update_str("semantic-memory.vector_artifact_manifest.v1")
+        .separator();
+    for (item_key, source_embedding_digest, encoded_digest) in entries {
+        builder
+            .update_str(item_key)
+            .separator()
+            .update_str(source_embedding_digest)
+            .separator()
+            .update_str(encoded_digest)
+            .separator();
+    }
+    format!("blake3:{}", builder.finalize().hex())
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+pub(crate) fn upsert_derived_vector_artifact(
+    conn: &Connection,
+    row: &DerivedVectorArtifactRow,
+) -> Result<(), MemoryError> {
+    conn.execute(
+        "INSERT OR REPLACE INTO derived_vector_artifacts
+             (item_key, generation_id, codec_family, codec_profile_digest, source_embedding_digest,
+              encoded_digest, artifact_digest, encoding, dim, encoded, created_at, status)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6, ?7, ?8, ?9, datetime('now'), ?10)",
+        params![
+            row.item_key,
+            row.generation_id.as_deref(),
+            row.codec_family,
+            row.codec_profile_digest,
+            row.source_embedding_digest,
+            row.encoded_digest,
+            row.encoding,
+            i64::try_from(row.dim)
+                .map_err(|err| MemoryError::Other(format!("artifact dim overflow: {err}")))?,
+            row.encoded,
+            row.status
+        ],
+    )?;
+    Ok(())
+}
+
+pub fn delete_derived_vector_artifact(
+    conn: &Connection,
+    item_key: &str,
+) -> Result<(), MemoryError> {
+    conn.execute(
+        "DELETE FROM derived_vector_artifacts WHERE item_key = ?1",
+        params![item_key],
+    )?;
+    Ok(())
+}
+
+pub fn invalidate_derived_vector_artifact(
+    conn: &Connection,
+    item_key: &str,
+) -> Result<(), MemoryError> {
+    conn.execute(
+        "UPDATE derived_vector_artifacts
+         SET status = 'invalidated'
+         WHERE item_key = ?1 AND status = 'active'",
+        params![item_key],
+    )?;
+    conn.execute(
+        "UPDATE derived_vector_artifact_generations
+         SET status = 'invalidated'
+         WHERE status = 'active'",
+        [],
+    )?;
+    Ok(())
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+#[allow(dead_code)]
+pub(crate) fn load_derived_vector_artifacts_by_profile(
+    conn: &Connection,
+    codec_family: &str,
+    codec_profile_digest: &str,
+) -> Result<Vec<DerivedVectorArtifactRow>, MemoryError> {
+    let mut stmt = conn.prepare(
+        "SELECT item_key, generation_id, codec_family, codec_profile_digest, source_embedding_digest,
+                encoded_digest, encoding, dim, status, encoded
+         FROM derived_vector_artifacts
+         WHERE codec_family = ?1 AND codec_profile_digest = ?2 AND status = 'active'",
+    )?;
+    let rows = stmt.query_map(params![codec_family, codec_profile_digest], |row| {
+        let dim_i64: i64 = row.get(7)?;
+        Ok(DerivedVectorArtifactRow {
+            item_key: row.get(0)?,
+            generation_id: row.get(1)?,
+            codec_family: row.get(2)?,
+            codec_profile_digest: row.get(3)?,
+            source_embedding_digest: row.get(4)?,
+            encoded_digest: row.get(5)?,
+            encoding: row.get(6)?,
+            dim: usize::try_from(dim_i64).map_err(|err| {
+                rusqlite::Error::FromSqlConversionFailure(
+                    7,
+                    rusqlite::types::Type::Integer,
+                    Box::new(err),
+                )
+            })?,
+            status: row.get(8)?,
+            encoded: row.get(9)?,
+        })
+    })?;
+
+    let mut artifacts = Vec::new();
+    for row in rows {
+        artifacts.push(row?);
+    }
+    Ok(artifacts)
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+pub(crate) fn load_derived_vector_artifacts_by_generation(
+    conn: &Connection,
+    generation_id: &str,
+) -> Result<Vec<DerivedVectorArtifactRow>, MemoryError> {
+    let mut stmt = conn.prepare(
+        "SELECT item_key, generation_id, codec_family, codec_profile_digest, source_embedding_digest,
+                encoded_digest, encoding, dim, status, encoded
+         FROM derived_vector_artifacts
+         WHERE generation_id = ?1 AND status = 'active'",
+    )?;
+    let rows = stmt.query_map(params![generation_id], |row| {
+        let dim_i64: i64 = row.get(7)?;
+        Ok(DerivedVectorArtifactRow {
+            item_key: row.get(0)?,
+            generation_id: row.get(1)?,
+            codec_family: row.get(2)?,
+            codec_profile_digest: row.get(3)?,
+            source_embedding_digest: row.get(4)?,
+            encoded_digest: row.get(5)?,
+            encoding: row.get(6)?,
+            dim: usize::try_from(dim_i64).map_err(|err| {
+                rusqlite::Error::FromSqlConversionFailure(
+                    7,
+                    rusqlite::types::Type::Integer,
+                    Box::new(err),
+                )
+            })?,
+            status: row.get(8)?,
+            encoded: row.get(9)?,
+        })
+    })?;
+
+    let mut artifacts = Vec::new();
+    for row in rows {
+        artifacts.push(row?);
+    }
+    Ok(artifacts)
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+pub(crate) fn current_derived_vector_generation(
+    conn: &Connection,
+    codec_family: &str,
+    codec_profile_digest: &str,
+) -> Result<Option<DerivedVectorArtifactGenerationRow>, MemoryError> {
+    conn.query_row(
+        "SELECT generation_id, codec_family, codec_profile_digest, source_snapshot_digest,
+                source_row_count, artifact_count, dim, encoding, artifact_manifest_digest, status
+         FROM derived_vector_artifact_generations
+         WHERE codec_family = ?1 AND codec_profile_digest = ?2 AND status = 'active'
+         ORDER BY created_at DESC
+         LIMIT 1",
+        params![codec_family, codec_profile_digest],
+        |row| {
+            let source_row_count: i64 = row.get(4)?;
+            let artifact_count: i64 = row.get(5)?;
+            let dim: i64 = row.get(6)?;
+            Ok(DerivedVectorArtifactGenerationRow {
+                generation_id: row.get(0)?,
+                codec_family: row.get(1)?,
+                codec_profile_digest: row.get(2)?,
+                source_snapshot_digest: row.get(3)?,
+                source_row_count: usize::try_from(source_row_count).map_err(|err| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        4,
+                        rusqlite::types::Type::Integer,
+                        Box::new(err),
+                    )
+                })?,
+                artifact_count: usize::try_from(artifact_count).map_err(|err| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        5,
+                        rusqlite::types::Type::Integer,
+                        Box::new(err),
+                    )
+                })?,
+                dim: usize::try_from(dim).map_err(|err| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        6,
+                        rusqlite::types::Type::Integer,
+                        Box::new(err),
+                    )
+                })?,
+                encoding: row.get(7)?,
+                artifact_manifest_digest: row.get(8)?,
+                status: row.get(9)?,
+            })
+        },
+    )
+    .optional()
+    .map_err(MemoryError::from)
+}
+
+pub fn count_derived_vector_artifacts(
+    conn: &Connection,
+    codec_family: &str,
+    codec_profile_digest: &str,
+) -> Result<usize, MemoryError> {
+    let count: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM derived_vector_artifacts
+         WHERE codec_family = ?1 AND codec_profile_digest = ?2 AND status = 'active'",
+        params![codec_family, codec_profile_digest],
+        |row| row.get(0),
+    )?;
+    usize::try_from(count)
+        .map_err(|err| MemoryError::Other(format!("derived artifact count overflow: {err}")))
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+pub(crate) fn rebuild_turbo_quant_artifacts(
+    conn: &Connection,
+    dim: usize,
+    bits: u8,
+    projections: usize,
+    seed: u64,
+) -> Result<VectorArtifactBuildReceiptV1, MemoryError> {
+    use crate::vector_codec::{TurboQuantCodec, VectorCodec};
+
+    let started = std::time::Instant::now();
+    let codec = TurboQuantCodec::new(dim, bits, projections, seed)?;
+    let codec_profile_digest = codec.profile().digest();
+    let generation_id = uuid::Uuid::new_v4().to_string();
+    let mut source_row_count = 0usize;
+    let mut artifact_count = 0usize;
+    let mut skipped_row_count = 0usize;
+    let mut degradations = Vec::new();
+
+    let mut stmt = conn.prepare(
+        "SELECT 'fact:' || id AS item_key, embedding FROM facts WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'chunk:' || id AS item_key, embedding FROM chunks WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'msg:' || id AS item_key, embedding FROM messages WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'episode:' || episode_id AS item_key, embedding FROM episodes WHERE embedding IS NOT NULL",
+    )?;
+    let rows = stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
+    })?;
+
+    let mut pending = Vec::new();
+    for row in rows {
+        let (item_key, blob) = row?;
+        source_row_count += 1;
+        let embedding = match decode_f32_le(&blob, dim) {
+            Ok(embedding) => embedding,
+            Err(err) => {
+                skipped_row_count += 1;
+                degradations.push(format!(
+                    "skipped {item_key}: invalid authoritative embedding: {err}"
+                ));
+                continue;
+            }
+        };
+        let artifact = match codec.encode(&embedding) {
+            Ok(artifact) => artifact,
+            Err(err) => {
+                skipped_row_count += 1;
+                degradations.push(format!("skipped {item_key}: encode failed: {err}"));
+                continue;
+            }
+        };
+        pending.push(DerivedVectorArtifactRow {
+            item_key,
+            generation_id: Some(generation_id.clone()),
+            codec_family: "turbo_quant".to_string(),
+            codec_profile_digest: codec_profile_digest.clone(),
+            source_embedding_digest: source_embedding_digest(&blob, dim)?,
+            encoded_digest: artifact.artifact_digest,
+            encoding: "turbo_code_wire_v1".to_string(),
+            dim,
+            status: "active".to_string(),
+            encoded: artifact.encoded,
+        });
+    }
+    drop(stmt);
+
+    let source_snapshot_digest = source_snapshot_digest(&pending, dim);
+    let artifact_manifest_digest = derived_artifact_manifest_digest(&pending);
+    let source_tables = vec![
+        "facts".to_string(),
+        "chunks".to_string(),
+        "messages".to_string(),
+        "episodes".to_string(),
+    ];
+    let generation_manifest = DerivedVectorArtifactGenerationV1 {
+        schema_version: "derived_vector_artifact_generation_v1".to_string(),
+        generation_id: generation_id.clone(),
+        codec_family: "turbo_quant".to_string(),
+        codec_profile_digest: codec_profile_digest.clone(),
+        source_snapshot_digest: source_snapshot_digest.clone(),
+        source_row_count,
+        artifact_count: pending.len(),
+        source_tables,
+        dim,
+        encoding: "turbo_code_wire_v1".to_string(),
+        created_at: Utc::now(),
+        build_receipt_id: None,
+        artifact_manifest_digest: artifact_manifest_digest.clone(),
+        status: if skipped_row_count == 0 {
+            "active".to_string()
+        } else {
+            "failed".to_string()
+        },
+        degradations: degradations.clone(),
+    };
+
+    with_transaction(conn, |tx| {
+        tx.execute(
+            "UPDATE derived_vector_artifact_generations
+             SET status = 'superseded'
+             WHERE codec_family = ?1 AND codec_profile_digest = ?2 AND status = 'active'",
+            params!["turbo_quant", &codec_profile_digest],
+        )?;
+        tx.execute(
+            "DELETE FROM derived_vector_artifacts
+             WHERE codec_family = ?1 AND codec_profile_digest = ?2",
+            params!["turbo_quant", &codec_profile_digest],
+        )?;
+        tx.execute(
+            "INSERT INTO derived_vector_artifact_generations
+                (generation_id, schema_version, codec_family, codec_profile_digest,
+                 source_snapshot_digest, source_row_count, artifact_count, source_tables_json,
+                 dim, encoding, created_at, build_receipt_id, artifact_manifest_digest,
+                 status, degradations_json)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
+            params![
+                generation_manifest.generation_id,
+                generation_manifest.schema_version,
+                generation_manifest.codec_family,
+                generation_manifest.codec_profile_digest,
+                generation_manifest.source_snapshot_digest,
+                i64::try_from(generation_manifest.source_row_count).map_err(|err| {
+                    MemoryError::Other(format!("source row count overflow: {err}"))
+                })?,
+                i64::try_from(generation_manifest.artifact_count).map_err(|err| {
+                    MemoryError::Other(format!("artifact count overflow: {err}"))
+                })?,
+                serde_json::to_string(&generation_manifest.source_tables)
+                    .map_err(|err| MemoryError::Other(err.to_string()))?,
+                i64::try_from(generation_manifest.dim)
+                    .map_err(|err| MemoryError::Other(format!("artifact dim overflow: {err}")))?,
+                generation_manifest.encoding,
+                generation_manifest.created_at.to_rfc3339(),
+                generation_manifest.build_receipt_id,
+                generation_manifest.artifact_manifest_digest,
+                generation_manifest.status,
+                serde_json::to_string(&generation_manifest.degradations)
+                    .map_err(|err| MemoryError::Other(err.to_string()))?,
+            ],
+        )?;
+        for row in &pending {
+            upsert_derived_vector_artifact(tx, row)?;
+            artifact_count += 1;
+        }
+        Ok(())
+    })?;
+
+    Ok(VectorArtifactBuildReceiptV1 {
+        schema_version: "vector_artifact_build_receipt_v1".to_string(),
+        codec_family: "turbo_quant".to_string(),
+        codec_profile_digest,
+        source_row_count,
+        artifact_count,
+        generation_id: Some(generation_id),
+        source_snapshot_digest: Some(source_snapshot_digest),
+        artifact_manifest_digest: Some(artifact_manifest_digest),
+        skipped_row_count,
+        elapsed_ms: started.elapsed().as_millis(),
+        created_at: Utc::now(),
+        degradations,
+    })
+}
+
+fn receipt_count_to_u64(value: usize, field: &'static str) -> Result<u64, MemoryError> {
+    u64::try_from(value).map_err(|err| MemoryError::Other(format!("{field} is too large: {err}")))
+}
+
+fn receipt_count_to_i64(value: u64, field: &'static str) -> Result<i64, MemoryError> {
+    i64::try_from(value).map_err(|err| MemoryError::Other(format!("{field} is too large: {err}")))
+}
+
+fn receipt_count_to_usize(
+    value: u64,
+    receipt_id: &str,
+    field: &'static str,
+) -> Result<usize, MemoryError> {
+    usize::try_from(value).map_err(|err| MemoryError::CorruptData {
+        table: "search_receipts",
+        row_id: receipt_id.to_string(),
+        detail: format!("{field} does not fit this platform: {err}"),
+    })
+}
+
+fn stored_search_receipt(
+    receipt: &VectorSearchReceiptV1,
+) -> Result<StoredVectorSearchReceiptV1, MemoryError> {
+    Ok(StoredVectorSearchReceiptV1 {
+        schema_version: SEARCH_RECEIPT_SCHEMA_VERSION.to_string(),
+        receipt_id: receipt.receipt_id.clone(),
+        evaluation_time: receipt.evaluation_time,
+        receipt_digest: receipt.receipt_digest.clone(),
+        trace_id: receipt.trace_id.clone(),
+        attempt_family_id: receipt.attempt_family_id.clone(),
+        attempt_id: receipt.attempt_id.clone(),
+        replay_of: receipt.replay_of.clone(),
+        query_embedding_digest: receipt.query_embedding_digest.clone(),
+        query_text_digest: receipt.query_text_digest.clone(),
+        query_input_digest: receipt.query_input_digest.clone(),
+        filter_digest: receipt.filter_digest.clone(),
+        redaction_state: receipt.redaction_state.clone(),
+        budget_id: receipt.budget_id.clone(),
+        deadline_at: receipt.deadline_at,
+        search_profile: receipt.search_profile.clone(),
+        candidate_backend: receipt.candidate_backend.clone(),
+        codec_family: receipt.codec_family.clone(),
+        codec_profile_digest: receipt.codec_profile_digest.clone(),
+        artifact_profile_digest: receipt.artifact_profile_digest.clone(),
+        artifact_count: receipt
+            .artifact_count
+            .map(|value| receipt_count_to_u64(value, "artifact_count"))
+            .transpose()?,
+        artifact_corruption_count: receipt
+            .artifact_corruption_count
+            .map(|value| receipt_count_to_u64(value, "artifact_corruption_count"))
+            .transpose()?,
+        artifact_missing_count: receipt
+            .artifact_missing_count
+            .map(|value| receipt_count_to_u64(value, "artifact_missing_count"))
+            .transpose()?,
+        vector_artifact_manifest_digest: receipt.vector_artifact_manifest_digest.clone(),
+        artifact_generation_id: receipt.artifact_generation_id.clone(),
+        approximate_scanned_count: receipt
+            .approximate_scanned_count
+            .map(|value| receipt_count_to_u64(value, "approximate_scanned_count"))
+            .transpose()?,
+        approximate_returned_count: receipt
+            .approximate_returned_count
+            .map(|value| receipt_count_to_u64(value, "approximate_returned_count"))
+            .transpose()?,
+        raw_rows_loaded_count: receipt
+            .raw_rows_loaded_count
+            .map(|value| receipt_count_to_u64(value, "raw_rows_loaded_count"))
+            .transpose()?,
+        filter_strategy: receipt.filter_strategy.clone(),
+        vector_artifact_count: receipt
+            .vector_artifact_count
+            .map(|value| receipt_count_to_u64(value, "vector_artifact_count"))
+            .transpose()?,
+        vector_artifact_missing_count: receipt
+            .vector_artifact_missing_count
+            .map(|value| receipt_count_to_u64(value, "vector_artifact_missing_count"))
+            .transpose()?,
+        vector_artifact_stale_count: receipt
+            .vector_artifact_stale_count
+            .map(|value| receipt_count_to_u64(value, "vector_artifact_stale_count"))
+            .transpose()?,
+        exact_rerank_count: receipt
+            .exact_rerank_count
+            .map(|value| receipt_count_to_u64(value, "exact_rerank_count"))
+            .transpose()?,
+        approximate_candidate_count: receipt
+            .approximate_candidate_count
+            .map(|value| receipt_count_to_u64(value, "approximate_candidate_count"))
+            .transpose()?,
+        fallback_reason: receipt.fallback_reason.clone(),
+        approximate: receipt.approximate,
+        requested_candidates: receipt_count_to_u64(
+            receipt.requested_candidates,
+            "requested_candidates",
+        )?,
+        returned_candidates: receipt_count_to_u64(
+            receipt.returned_candidates,
+            "returned_candidates",
+        )?,
+        post_filter_candidates: receipt_count_to_u64(
+            receipt.post_filter_candidates,
+            "post_filter_candidates",
+        )?,
+        fallback: receipt.fallback.clone(),
+        exact_rerank: receipt.exact_rerank,
+        result_ids: receipt.result_ids.clone(),
+        degradations: receipt.degradations.clone(),
+    })
+}
+
+fn search_receipt_from_stored(
+    stored: StoredVectorSearchReceiptV1,
+) -> Result<VectorSearchReceiptV1, MemoryError> {
+    if stored.schema_version != SEARCH_RECEIPT_SCHEMA_VERSION {
+        return Err(MemoryError::CorruptData {
+            table: "search_receipts",
+            row_id: stored.receipt_id,
+            detail: format!(
+                "unsupported receipt schema version '{}'",
+                stored.schema_version
+            ),
+        });
+    }
+
+    Ok(VectorSearchReceiptV1 {
+        schema_version: stored.schema_version.clone(),
+        receipt_digest: stored.receipt_digest,
+        receipt_id: stored.receipt_id.clone(),
+        evaluation_time: stored.evaluation_time,
+        trace_id: stored.trace_id,
+        attempt_family_id: stored.attempt_family_id,
+        attempt_id: stored.attempt_id,
+        replay_of: stored.replay_of,
+        query_embedding_digest: stored.query_embedding_digest,
+        query_text_digest: stored.query_text_digest,
+        query_input_digest: stored.query_input_digest,
+        filter_digest: stored.filter_digest,
+        redaction_state: stored.redaction_state,
+        budget_id: stored.budget_id,
+        deadline_at: stored.deadline_at,
+        search_profile: stored.search_profile,
+        candidate_backend: stored.candidate_backend,
+        codec_family: stored.codec_family,
+        codec_profile_digest: stored.codec_profile_digest,
+        artifact_profile_digest: stored.artifact_profile_digest,
+        artifact_count: stored
+            .artifact_count
+            .map(|value| receipt_count_to_usize(value, &stored.receipt_id, "artifact_count"))
+            .transpose()?,
+        artifact_corruption_count: stored
+            .artifact_corruption_count
+            .map(|value| {
+                receipt_count_to_usize(value, &stored.receipt_id, "artifact_corruption_count")
+            })
+            .transpose()?,
+        artifact_missing_count: stored
+            .artifact_missing_count
+            .map(|value| {
+                receipt_count_to_usize(value, &stored.receipt_id, "artifact_missing_count")
+            })
+            .transpose()?,
+        vector_artifact_manifest_digest: stored.vector_artifact_manifest_digest,
+        artifact_generation_id: stored.artifact_generation_id,
+        approximate_scanned_count: stored
+            .approximate_scanned_count
+            .map(|value| {
+                receipt_count_to_usize(value, &stored.receipt_id, "approximate_scanned_count")
+            })
+            .transpose()?,
+        approximate_returned_count: stored
+            .approximate_returned_count
+            .map(|value| {
+                receipt_count_to_usize(value, &stored.receipt_id, "approximate_returned_count")
+            })
+            .transpose()?,
+        raw_rows_loaded_count: stored
+            .raw_rows_loaded_count
+            .map(|value| receipt_count_to_usize(value, &stored.receipt_id, "raw_rows_loaded_count"))
+            .transpose()?,
+        filter_strategy: stored.filter_strategy,
+        vector_artifact_count: stored
+            .vector_artifact_count
+            .map(|value| receipt_count_to_usize(value, &stored.receipt_id, "vector_artifact_count"))
+            .transpose()?,
+        vector_artifact_missing_count: stored
+            .vector_artifact_missing_count
+            .map(|value| {
+                receipt_count_to_usize(value, &stored.receipt_id, "vector_artifact_missing_count")
+            })
+            .transpose()?,
+        vector_artifact_stale_count: stored
+            .vector_artifact_stale_count
+            .map(|value| {
+                receipt_count_to_usize(value, &stored.receipt_id, "vector_artifact_stale_count")
+            })
+            .transpose()?,
+        exact_rerank_count: stored
+            .exact_rerank_count
+            .map(|value| receipt_count_to_usize(value, &stored.receipt_id, "exact_rerank_count"))
+            .transpose()?,
+        approximate_candidate_count: stored
+            .approximate_candidate_count
+            .map(|value| {
+                receipt_count_to_usize(value, &stored.receipt_id, "approximate_candidate_count")
+            })
+            .transpose()?,
+        fallback_reason: stored.fallback_reason,
+        approximate: stored.approximate,
+        requested_candidates: receipt_count_to_usize(
+            stored.requested_candidates,
+            &stored.receipt_id,
+            "requested_candidates",
+        )?,
+        returned_candidates: receipt_count_to_usize(
+            stored.returned_candidates,
+            &stored.receipt_id,
+            "returned_candidates",
+        )?,
+        post_filter_candidates: receipt_count_to_usize(
+            stored.post_filter_candidates,
+            &stored.receipt_id,
+            "post_filter_candidates",
+        )?,
+        fallback: stored.fallback,
+        exact_rerank: stored.exact_rerank,
+        result_ids: stored.result_ids,
+        degradations: stored.degradations,
+    })
+}
+
+/// Persist a search receipt as replay metadata.
+///
+/// SQLite rows remain authoritative for memory. This table stores only the
+/// execution receipt and digest so the search can be addressed later.
+pub fn store_search_receipt(
+    conn: &Connection,
+    receipt: &VectorSearchReceiptV1,
+) -> Result<(), MemoryError> {
+    let stored = stored_search_receipt(receipt)?;
+    let receipt_json = serde_json::to_string(&stored)
+        .map_err(|err| MemoryError::Other(format!("failed to serialize search receipt: {err}")))?;
+    let receipt_digest = b3_digest(receipt_json.as_bytes());
+
+    let existing_digest: Option<String> = conn
+        .query_row(
+            "SELECT receipt_digest FROM search_receipts WHERE receipt_id = ?1",
+            params![&stored.receipt_id],
+            |row| row.get(0),
+        )
+        .optional()?;
+    if let Some(existing_digest) = existing_digest {
+        if existing_digest == receipt_digest {
+            return Ok(());
+        }
+        return Err(MemoryError::SearchReceiptConflict {
+            receipt_id: stored.receipt_id,
+        });
+    }
+
+    let result_ids_json = serde_json::to_string(&stored.result_ids).map_err(|err| {
+        MemoryError::Other(format!(
+            "failed to serialize search receipt result IDs: {err}"
+        ))
+    })?;
+    conn.execute(
+        "INSERT INTO search_receipts (
+            receipt_id,
+            schema_version,
+            evaluation_time,
+            search_profile,
+            candidate_backend,
+            approximate,
+            exact_rerank,
+            fallback,
+            requested_candidates,
+            returned_candidates,
+            post_filter_candidates,
+            result_ids_json,
+            receipt_json,
+            receipt_digest
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+        params![
+            &stored.receipt_id,
+            SEARCH_RECEIPT_SCHEMA_VERSION,
+            stored.evaluation_time.to_rfc3339(),
+            &stored.search_profile,
+            &stored.candidate_backend,
+            if stored.approximate { 1_i64 } else { 0_i64 },
+            if stored.exact_rerank { 1_i64 } else { 0_i64 },
+            &stored.fallback,
+            receipt_count_to_i64(stored.requested_candidates, "requested_candidates")?,
+            receipt_count_to_i64(stored.returned_candidates, "returned_candidates")?,
+            receipt_count_to_i64(stored.post_filter_candidates, "post_filter_candidates")?,
+            &result_ids_json,
+            &receipt_json,
+            &receipt_digest,
+        ],
+    )?;
+    Ok(())
+}
+
+/// Load a durable search receipt by receipt/request ID.
+pub fn get_search_receipt(
+    conn: &Connection,
+    receipt_id: &str,
+) -> Result<Option<VectorSearchReceiptV1>, MemoryError> {
+    let row: Option<(String, String, String)> = conn
+        .query_row(
+            "SELECT schema_version, receipt_json, receipt_digest
+             FROM search_receipts
+             WHERE receipt_id = ?1",
+            params![receipt_id],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .optional()?;
+
+    let Some((schema_version, receipt_json, receipt_digest)) = row else {
+        return Ok(None);
+    };
+    if schema_version != SEARCH_RECEIPT_SCHEMA_VERSION {
+        return Err(MemoryError::CorruptData {
+            table: "search_receipts",
+            row_id: receipt_id.to_string(),
+            detail: format!("unsupported receipt schema version '{schema_version}'"),
+        });
+    }
+
+    let stored: StoredVectorSearchReceiptV1 =
+        serde_json::from_str(&receipt_json).map_err(|err| MemoryError::CorruptData {
+            table: "search_receipts",
+            row_id: receipt_id.to_string(),
+            detail: format!("invalid receipt JSON: {err}"),
+        })?;
+    let mut receipt = search_receipt_from_stored(stored)?;
+    receipt.receipt_digest = Some(receipt_digest);
+    Ok(Some(receipt))
 }
 
 fn add_column_if_missing(
@@ -802,11 +1859,79 @@ pub fn check_embedding_metadata(
 
 /// Encode an f32 slice as bytes for SQLite BLOB storage.
 pub fn embedding_to_bytes(embedding: &[f32]) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(embedding.len() * 4);
-    for value in embedding {
+    encode_f32_le(embedding)
+}
+
+/// Encode f32 values as a stable little-endian persisted representation.
+pub fn encode_f32_le(values: &[f32]) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(values.len() * 4);
+    for value in values {
         bytes.extend_from_slice(&value.to_le_bytes());
     }
     bytes
+}
+
+/// Validate an embedding vector before it is stored or indexed.
+pub(crate) fn validate_embedding(values: &[f32], expected_dim: usize) -> Result<(), MemoryError> {
+    if values.len() != expected_dim {
+        return Err(MemoryError::EmbeddingDimensionMismatch {
+            expected: expected_dim,
+            actual: values.len(),
+        });
+    }
+    if let Some((index, _)) = values
+        .iter()
+        .enumerate()
+        .find(|(_, value)| !value.is_finite())
+    {
+        return Err(MemoryError::NonFiniteEmbeddingValue { index });
+    }
+    Ok(())
+}
+
+/// Validate a returned embedding batch against the requested input count.
+pub(crate) fn validate_embedding_batch(
+    values: &[Vec<f32>],
+    requested: usize,
+    expected_dim: usize,
+) -> Result<(), MemoryError> {
+    if values.len() != requested {
+        return Err(MemoryError::EmbeddingBatchCountMismatch {
+            requested,
+            returned: values.len(),
+        });
+    }
+    for embedding in values {
+        validate_embedding(embedding, expected_dim)?;
+    }
+    Ok(())
+}
+
+/// Validate the exact byte length of a persisted f32 vector blob.
+pub(crate) fn validate_vector_blob_len(
+    bytes: &[u8],
+    expected_dim: usize,
+) -> Result<(), MemoryError> {
+    let expected_bytes = expected_dim
+        .checked_mul(4)
+        .ok_or_else(|| MemoryError::InvalidConfig {
+            field: "embedding.dimensions",
+            reason: "dimension byte length overflow".to_string(),
+        })?;
+    if bytes.len() != expected_bytes {
+        return Err(MemoryError::VectorBlobLengthMismatch {
+            expected_bytes,
+            actual_bytes: bytes.len(),
+        });
+    }
+    Ok(())
+}
+
+/// Decode a stable little-endian f32 persisted representation.
+#[allow(clippy::manual_is_multiple_of)]
+pub fn decode_f32_le(bytes: &[u8], expected_dim: usize) -> Result<Vec<f32>, MemoryError> {
+    validate_vector_blob_len(bytes, expected_dim)?;
+    decode_f32_le_unchecked_dim(bytes)
 }
 
 /// Decode a SQLite embedding BLOB back to f32 values.
@@ -819,16 +1944,19 @@ pub fn bytes_to_embedding(bytes: &[u8]) -> Result<Vec<f32>, MemoryError> {
         });
     }
 
-    match bytemuck::try_cast_slice::<u8, f32>(bytes) {
-        Ok(slice) => Ok(slice.to_vec()),
-        Err(_) => {
-            let mut embedding = Vec::with_capacity(bytes.len() / 4);
-            for chunk in bytes.chunks_exact(4) {
-                embedding.push(f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]));
-            }
-            Ok(embedding)
+    decode_f32_le_unchecked_dim(bytes)
+}
+
+fn decode_f32_le_unchecked_dim(bytes: &[u8]) -> Result<Vec<f32>, MemoryError> {
+    let mut embedding = Vec::with_capacity(bytes.len() / 4);
+    for (index, chunk) in bytes.chunks_exact(4).enumerate() {
+        let value = f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+        if !value.is_finite() {
+            return Err(MemoryError::NonFiniteEmbeddingValue { index });
         }
+        embedding.push(value);
     }
+    Ok(embedding)
 }
 
 pub fn is_embeddings_dirty(conn: &Connection) -> Result<bool, MemoryError> {

@@ -385,7 +385,8 @@ fn build_widenings(plan: &RoutePlan, warnings: &[QueryWarning]) -> Vec<WideningD
             QueryWarning::ScopePartiallyEnforced { .. } => {
                 "adapter enforced namespace-only scope; wider scope was disclosed".to_string()
             }
-            _ => unreachable!(),
+            // LIB-HIGH-001: replaced unreachable!() with safe fallback
+            _ => "unknown".into(),
         };
         widenings.push(WideningDisclosure {
             leg_index: 0,

@@ -1,0 +1,10 @@
+25:        ToolDescriptor as CanonicalToolDescriptor, ToolError as CanonicalToolError,
+33:    pub fn validate_canonical_arguments(
+34:        descriptor: &CanonicalToolDescriptor,
+179:fn canonical_descriptor_from_aidens(
+181:) -> canonical_stack::CanonicalToolDescriptor {
+182:    canonical_stack::CanonicalToolDescriptor {
+221:fn validate_tool_input_with_canonical_runtime(
+225:    let canonical_descriptor = canonical_descriptor_from_aidens(descriptor);
+226:    let errors = canonical_stack::validate_canonical_arguments(&canonical_descriptor, input)
+695:        let schema_validation = validate_tool_input_with_canonical_runtime(descriptor, &input);

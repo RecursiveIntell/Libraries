@@ -1,0 +1,29 @@
+2026-04-29T04:02:18-0500 read CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md
+2026-04-29T04:02:18-0500 read scripts/assert_no_local_canonical_digest_law.sh
+2026-04-29T04:02:18-0500 read docs/CANONICAL_OWNER_MAP.md
+2026-04-29T04:02:18-0500 captured phase 04 pre-edit evidence and aidens-contracts snapshot
+2026-04-29T04:04:00-0500 snapshot Phase 04 affected source and fixture files
+2026-04-29T04:04:07-0500 mechanical rename canonical/stable digest symbols to display/non-authoritative names
+2026-04-29T04:06:20-0500 updated JSON fixtures from local sha256/aidens c14n display markers to stack-ids blake3 display markers
+2026-04-29T04:06:59-0500 apply_patch digest helper implementation, DisplayDigestV1, serde field names, fixture rename, test updates
+2026-04-29T04:07:04-0500 bash scripts/assert_no_local_canonical_digest_law.sh
+2026-04-29T04:07:04-0500 cargo check --workspace
+2026-04-29T04:07:21-0500 cargo fmt --all
+2026-04-29T04:07:21-0500 bash scripts/phase_verify_contract_ownership.sh 04
+2026-04-29T04:07:21-0500 cargo check --workspace
+2026-04-29T04:07:21-0500 cargo test --workspace
+2026-04-29T04:08:20-0500 snapshot DIGEST_IDENTITY_SOURCE_OF_TRUTH.md before creation/update
+2026-04-29T04:08:36-0500 apply_patch docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md
+2026-04-29T04:08:36-0500 bash scripts/assert_no_crate_split.sh
+2026-04-29T04:08:36-0500 bash scripts/assert_no_compatibility_ledgers.sh
+2026-04-29T04:08:36-0500 bash scripts/assert_docs_source_basis_current.sh
+2026-04-29T04:08:36-0500 python3 scripts/assert_no_canonical_type_duplicates.py
+2026-04-29T04:08:41-0500 final bash scripts/phase_verify_contract_ownership.sh 04
+2026-04-29T04:09:15-0500 copied Phase 04 post-edit snapshots
+2026-04-29T04:09:31-0500 generate digest_identity_audit.txt
+2026-04-29T04:09:31-0500 generate skipped_checks.md and quarantine_delta.md
+2026-04-29T04:09:44-0500 save fixture_digest_marker_files.txt and final git evidence
+2026-04-29T04:11:55-0500 broad stale digest/schema/doc scan saved to schema_doc_stale_digest_scope.txt
+2026-04-29T04:12:37-0500 wrote phase_report.md
+2026-04-29T04:32:59-0500 guardrail 04-to-05 digest identity revalidation
+2026-04-29T04:33:25-0500 guardrail raw outputs saved

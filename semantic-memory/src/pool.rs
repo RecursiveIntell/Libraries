@@ -10,6 +10,7 @@ use crate::db;
 use crate::error::MemoryError;
 use rusqlite::Connection;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Condvar, Mutex};
 use std::time::{Duration, Instant};
 
@@ -24,6 +25,33 @@ pub(crate) struct SqlitePool {
     available_cv: Condvar,
     reader_count: usize,
     reader_timeout: Duration,
+    health: PoolHealth,
+}
+
+#[derive(Debug, Default)]
+struct PoolHealth {
+    reader_timeouts: AtomicU64,
+    writer_poison_recoveries: AtomicU64,
+    reader_poison_recoveries: AtomicU64,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct PoolHealthSnapshot {
+    pub reader_timeouts: u64,
+    pub writer_poison_recoveries: u64,
+    pub reader_poison_recoveries: u64,
+}
+
+impl PoolHealth {
+    #[allow(dead_code)]
+    fn snapshot(&self) -> PoolHealthSnapshot {
+        PoolHealthSnapshot {
+            reader_timeouts: self.reader_timeouts.load(Ordering::SeqCst),
+            writer_poison_recoveries: self.writer_poison_recoveries.load(Ordering::SeqCst),
+            reader_poison_recoveries: self.reader_poison_recoveries.load(Ordering::SeqCst),
+        }
+    }
 }
 
 /// RAII guard that returns a reader index to the pool on drop.
@@ -63,6 +91,8 @@ mod tests {
     use super::*;
     use crate::config::{MemoryLimits, PoolConfig};
     use std::panic::{self, AssertUnwindSafe};
+    use std::sync::mpsc;
+    use std::time::Duration;
     use tempfile::TempDir;
 
     #[test]
@@ -87,6 +117,7 @@ mod tests {
             panic_result.is_err(),
             "simulated panic should propagate as panic"
         );
+        assert_eq!(pool.health_snapshot().writer_poison_recoveries, 0);
 
         let table_exists_after_recovery = pool
             .with_write_conn(|conn| {
@@ -111,6 +142,48 @@ mod tests {
             healthy.is_ok(),
             "writer connection should be usable after recovery"
         );
+        assert!(
+            pool.health_snapshot().writer_poison_recoveries >= 1,
+            "poisoned mutex remains marked by std::sync; every later lock records recovery"
+        );
+    }
+
+    #[test]
+    fn reader_timeout_is_typed_and_recorded_in_pool_health() {
+        let tmp = TempDir::new().unwrap();
+        let db_path = tmp.path().join("reader-timeout.db");
+        let pool_config = PoolConfig {
+            max_read_connections: 1,
+            reader_timeout_secs: 1,
+            ..PoolConfig::default()
+        };
+        let pool = SqlitePool::open(&db_path, &pool_config, &MemoryLimits::default()).unwrap();
+        let (tx, rx) = mpsc::channel();
+
+        std::thread::scope(|scope| {
+            scope.spawn(|| {
+                pool.with_read_conn(|_| {
+                    tx.send(()).unwrap();
+                    std::thread::sleep(Duration::from_millis(1500));
+                    Ok(())
+                })
+                .unwrap();
+            });
+            rx.recv_timeout(Duration::from_secs(2)).unwrap();
+            let error = pool.with_read_conn(|_| Ok(())).unwrap_err();
+            match error {
+                MemoryError::PoolTimeout {
+                    elapsed_ms,
+                    pool_size,
+                } => {
+                    assert!(elapsed_ms >= 900);
+                    assert_eq!(pool_size, 1);
+                }
+                other => panic!("expected pool timeout, got {other:?}"),
+            }
+        });
+
+        assert_eq!(pool.health_snapshot().reader_timeouts, 1);
     }
 }
 
@@ -142,7 +215,13 @@ impl SqlitePool {
             available_cv: Condvar::new(),
             reader_count,
             reader_timeout,
+            health: PoolHealth::default(),
         })
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn health_snapshot(&self) -> PoolHealthSnapshot {
+        self.health.snapshot()
     }
 
     /// Run work against the single writer connection.
@@ -154,6 +233,9 @@ impl SqlitePool {
             Ok(conn) => conn,
             Err(err) => {
                 let conn = err.into_inner();
+                self.health
+                    .writer_poison_recoveries
+                    .fetch_add(1, Ordering::SeqCst);
                 tracing::warn!("Writer lock was poisoned; entering recovery path");
                 if !conn.is_autocommit() {
                     if let Err(rollback_err) = conn.execute("ROLLBACK", []) {
@@ -208,6 +290,7 @@ impl SqlitePool {
                         pool_size = self.reader_count,
                         "Reader pool acquisition timed out"
                     );
+                    self.health.reader_timeouts.fetch_add(1, Ordering::SeqCst);
                     return Err(MemoryError::PoolTimeout {
                         elapsed_ms: elapsed.as_millis() as u64,
                         pool_size: self.reader_count,
@@ -228,9 +311,16 @@ impl SqlitePool {
 
         // RAII guard ensures the reader index is returned even on panic
         let _guard = ReaderGuard::new(self, reader_idx);
-        let conn = self.readers[reader_idx]
-            .lock()
-            .unwrap_or_else(|e| e.into_inner());
+        let conn = self.readers[reader_idx].lock().unwrap_or_else(|e| {
+            self.health
+                .reader_poison_recoveries
+                .fetch_add(1, Ordering::SeqCst);
+            tracing::warn!(
+                reader_idx,
+                "Reader lock was poisoned; recovering connection and marking pool health"
+            );
+            e.into_inner()
+        });
         f(&conn)
     }
 }

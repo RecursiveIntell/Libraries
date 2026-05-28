@@ -1,0 +1,17 @@
+[package]
+name = "scr-kernel"
+version = "0.1.0"
+edition = "2021"
+description = "Canonical SCR-P0A deterministic control evaluator types."
+license = "MIT"
+
+[dependencies]
+schemars = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

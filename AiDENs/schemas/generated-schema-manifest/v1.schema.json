@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "GeneratedSchemaEntryV1": {
+      "properties": {
+        "family": {
+          "type": "string"
+        },
+        "rust_type": {
+          "type": "string"
+        },
+        "schema_digest": {
+          "type": "string"
+        },
+        "schema_identity": {
+          "type": "string"
+        },
+        "schema_path": {
+          "type": "string"
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "family",
+        "rust_type",
+        "schema_digest",
+        "schema_path",
+        "version"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "AiDENs-local, non-authoritative manifest for generated display/report schemas.\n\nCanonical family schema generation is delegated to `contract-schema-gen`.",
+  "properties": {
+    "manifest_id": {
+      "type": "string"
+    },
+    "manifest_version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "registry_digest": {
+      "type": "string"
+    },
+    "schemas": {
+      "items": {
+        "$ref": "#/definitions/GeneratedSchemaEntryV1"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "manifest_id",
+    "manifest_version",
+    "registry_digest",
+    "schemas"
+  ],
+  "title": "GeneratedSchemaManifestV1",
+  "type": "object"
+}

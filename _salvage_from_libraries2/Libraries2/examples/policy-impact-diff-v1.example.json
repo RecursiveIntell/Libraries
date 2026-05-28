@@ -1,0 +1,38 @@
+{
+  "schema_version": "PolicyImpactDiffV1",
+  "policy_impact_diff_id": "policy-impact-diff-001",
+  "from_effective_constitution_ref": "effective-constitution-000",
+  "to_effective_constitution_ref": "effective-constitution-001",
+  "changed_obligation_families": [
+    "approval.required",
+    "monitor.required",
+    "residency.allowed_execution_regions"
+  ],
+  "unchanged_obligation_families": [
+    "effect.allowed_run_modes",
+    "delegation.max_depth"
+  ],
+  "newly_blocked_paths": [],
+  "newly_admitted_paths": [
+    "residency.forbidden_transfer_classes:customer_pii_to_non_us"
+  ],
+  "changed_approval_behavior": [
+    "locality-review-board"
+  ],
+  "changed_monitoring_behavior": [
+    "cross_region_replay_monitor"
+  ],
+  "changed_disclosure_behavior": [
+    "cross_boundary_disclosure_class:regulated_audit"
+  ],
+  "changed_residency_behavior": [
+    "eu-west"
+  ],
+  "changed_incident_behavior": [],
+  "migration_consequences": [
+    "monitoring plan update required",
+    "previously blocked paths are now conditionally admissible"
+  ],
+  "simulation_only": false,
+  "explanation_summary": "locality exception admitted one replay path and added monitoring plus review obligations"
+}

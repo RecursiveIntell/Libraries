@@ -1,0 +1,17 @@
+{
+  "profile": "p4",
+  "title": "Regulated Deployment, Control Mapping, and Recertification",
+  "primary_owner": "assurance-runtime",
+  "schemas": [
+    "regulatory-regime-profile-v1.schema.json",
+    "requirement-control-map-v1.schema.json",
+    "evidence-collection-plan-v1.schema.json",
+    "recertification-schedule-v1.schema.json"
+  ],
+  "examples": [
+    "regulatory-regime-profile-v1.example.json",
+    "requirement-control-map-v1.example.json",
+    "evidence-collection-plan-v1.example.json",
+    "recertification-schedule-v1.example.json"
+  ]
+}

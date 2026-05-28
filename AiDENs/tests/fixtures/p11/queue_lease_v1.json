@@ -1,0 +1,15 @@
+{
+  "lease_id": "queue-lease:fixture",
+  "kind": "queue-lease",
+  "namespace_id": "daemon-namespace:fixture",
+  "job_id": "job:fixture",
+  "attempt_family_id": "attempt-family:fixture",
+  "owner": "daemon-a",
+  "acquired_at": "2026-04-27T00:00:00Z",
+  "expires_at": "2026-04-27T00:05:00Z",
+  "stolen_from": null,
+  "active": true,
+  "reason_codes": [
+    "lease-acquired"
+  ]
+}

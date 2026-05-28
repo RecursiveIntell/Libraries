@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "assurance_case_id": {
+      "type": "string"
+    },
+    "criticality_class": {
+      "type": "string"
+    },
+    "deployment_environment": {
+      "type": "string"
+    },
+    "deployment_profile_id": {
+      "type": "string"
+    },
+    "operating_envelope_id": {
+      "type": "string"
+    },
+    "publication_status": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "system_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "assurance_case_id",
+    "criticality_class",
+    "deployment_environment",
+    "deployment_profile_id",
+    "operating_envelope_id",
+    "publication_status",
+    "schema_version",
+    "system_name"
+  ],
+  "title": "DeploymentProfileV1",
+  "type": "object"
+}

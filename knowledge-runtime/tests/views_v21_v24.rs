@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use knowledge_runtime::{
     ContinuityRuntimeViewV1, DelegationRuntimeViewV1, DeployabilityRuntimeViewV1,
     EffectRuntimeViewV1,

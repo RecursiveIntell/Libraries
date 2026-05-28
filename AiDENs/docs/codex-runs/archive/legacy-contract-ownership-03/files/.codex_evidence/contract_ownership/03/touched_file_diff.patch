@@ -1,0 +1,519 @@
+--- .codex_evidence/contract_ownership/03/pre_edit_files/root_Cargo.toml.before	2026-04-29 03:43:53.752908852 -0500
++++ Cargo.toml	2026-04-29 03:51:53.821300435 -0500
+@@ -59,6 +59,7 @@
+ attestation-exchange = { version = "0.1.0", path = "../attestation-exchange" }
+ authority-delegation = { version = "0.1.0", path = "../authority-delegation" }
+ constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
++contract-schema-gen = { version = "0.1.0", path = "../contract-schema-gen" }
+ federated-settlement = { version = "0.1.0", path = "../federated-settlement" }
+ forge-memory-bridge = { version = "0.1.0", path = "../forge-memory-bridge" }
+ kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
+@@ -68,10 +69,12 @@
+ llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
+ mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime" }
+ recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
++remote-oracle-admission = { version = "0.1.0", path = "../remote-oracle-admission" }
+ semantic-memory = { version = "0.5.0", path = "../semantic-memory", default-features = false, features = ["brute-force"] }
+ semantic-memory-forge = { version = "0.1.0", path = "../semantic-memory-forge" }
+ stack-ids = { version = "0.1.0", path = "../stack-ids" }
+ verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }
++verification-calibration = { version = "0.1.0", path = "../verification-calibration" }
+ verification-control = { version = "0.1.0", path = "../verification-control" }
+ verification-policy = { version = "0.1.0", path = "../verification-policy" }
+ 
+--- .codex_evidence/contract_ownership/03/pre_edit_files/Cargo.lock.before	2026-04-29 03:43:53.753908847 -0500
++++ Cargo.lock	2026-04-29 03:55:47.829113363 -0500
+@@ -103,6 +103,7 @@
+  "anyhow",
+  "chrono",
+  "clap",
++ "contract-schema-gen",
+  "serde",
+  "serde_json",
+  "tokio",
+@@ -133,6 +134,7 @@
+  "llm-tool-runtime",
+  "mechanism-runtime",
+  "recursive-kernel-core",
++ "remote-oracle-admission",
+  "schemars",
+  "semantic-memory-forge",
+  "serde",
+@@ -648,6 +650,41 @@
+ ]
+ 
+ [[package]]
++name = "cea-core"
++version = "0.1.0"
++dependencies = [
++ "bincode",
++ "blake3",
++ "check-runner",
++ "petgraph",
++ "serde",
++ "serde_json",
++ "thiserror 2.0.18",
++ "typed-patch",
++]
++
++[[package]]
++name = "cea-sqlite"
++version = "0.1.0"
++dependencies = [
++ "cea-core",
++ "cea-store",
++ "chrono",
++ "forge-policy",
++ "rusqlite",
++]
++
++[[package]]
++name = "cea-store"
++version = "0.1.0"
++dependencies = [
++ "cea-core",
++ "check-runner",
++ "serde_json",
++ "thiserror 2.0.18",
++]
++
++[[package]]
+ name = "cfg-if"
+ version = "1.0.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -660,6 +697,21 @@
+ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
+ 
+ [[package]]
++name = "check-runner"
++version = "0.1.0"
++dependencies = [
++ "async-trait",
++ "effect-signature",
++ "forge-policy",
++ "libc",
++ "sandbox-workspace",
++ "serde",
++ "thiserror 2.0.18",
++ "tokio",
++ "tracing",
++]
++
++[[package]]
+ name = "chrono"
+ version = "0.4.44"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -760,6 +812,48 @@
+ ]
+ 
+ [[package]]
++name = "continuity-runtime"
++version = "0.1.0"
++dependencies = [
++ "schemars",
++ "serde",
++ "thiserror 2.0.18",
++]
++
++[[package]]
++name = "contract-schema-gen"
++version = "0.1.0"
++dependencies = [
++ "assurance-runtime",
++ "attestation-exchange",
++ "authority-delegation",
++ "constitutional-memory",
++ "constraint-compiler",
++ "continuity-runtime",
++ "discovery-portfolio",
++ "effect-runtime",
++ "federated-settlement",
++ "forge-memory-bridge",
++ "forge-pilot",
++ "kernel-execution",
++ "kernel-oracles",
++ "knowledge-runtime",
++ "mechanism-runtime",
++ "profile-runtime",
++ "remote-oracle-admission",
++ "schemars",
++ "semantic-memory",
++ "semantic-memory-forge",
++ "serde_json",
++ "spec-execution",
++ "tempfile",
++ "verification-adjudication",
++ "verification-calibration",
++ "verification-control",
++ "verification-policy",
++]
++
++[[package]]
+ name = "core-foundation-sys"
+ version = "0.8.7"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -865,6 +959,26 @@
+ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
+ 
+ [[package]]
++name = "effect-runtime"
++version = "0.1.0"
++dependencies = [
++ "chrono",
++ "schemars",
++ "serde",
++ "stack-ids",
++ "thiserror 2.0.18",
++]
++
++[[package]]
++name = "effect-signature"
++version = "0.1.0"
++dependencies = [
++ "blake3",
++ "serde",
++ "serde_json",
++]
++
++[[package]]
+ name = "either"
+ version = "1.15.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -955,12 +1069,58 @@
+ checksum = "5baebc0774151f905a1a2cc41989300b1e6fbb29aff0ceffa1064fdd3088d582"
+ 
+ [[package]]
++name = "fixedbitset"
++version = "0.4.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
++
++[[package]]
+ name = "foldhash"
+ version = "0.1.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
+ 
+ [[package]]
++name = "forge-engine"
++version = "0.2.0"
++dependencies = [
++ "anyhow",
++ "async-trait",
++ "blake3",
++ "cea-core",
++ "cea-sqlite",
++ "cea-store",
++ "check-runner",
++ "chrono",
++ "effect-signature",
++ "forge-memory-bridge",
++ "forge-policy",
++ "glob",
++ "llm-tool-runtime",
++ "mindstate-core",
++ "once_cell",
++ "petgraph",
++ "rand",
++ "regex",
++ "rusqlite",
++ "sandbox-workspace",
++ "semantic-memory",
++ "semantic-memory-forge",
++ "serde",
++ "serde_json",
++ "similar",
++ "stabilizer-core",
++ "stack-ids",
++ "tempfile",
++ "thiserror 2.0.18",
++ "tokio",
++ "tracing",
++ "typed-patch",
++ "uuid",
++ "walkdir",
++]
++
++[[package]]
+ name = "forge-memory-bridge"
+ version = "0.1.0"
+ dependencies = [
+@@ -975,6 +1135,55 @@
+ ]
+ 
+ [[package]]
++name = "forge-pilot"
++version = "0.1.0"
++dependencies = [
++ "assurance-runtime",
++ "attestation-exchange",
++ "authority-delegation",
++ "blake3",
++ "chrono",
++ "constitutional-memory",
++ "constraint-compiler",
++ "continuity-runtime",
++ "effect-runtime",
++ "forge-engine",
++ "forge-memory-bridge",
++ "kernel-execution",
++ "kernel-oracles",
++ "knowledge-runtime",
++ "mechanism-runtime",
++ "recursive-kernel-core",
++ "reqwest",
++ "rusqlite",
++ "schemars",
++ "semantic-memory",
++ "semantic-memory-forge",
++ "serde",
++ "serde_json",
++ "stack-ids",
++ "thiserror 2.0.18",
++ "tokio",
++ "tracing",
++ "uuid",
++ "verification-adjudication",
++ "verification-calibration",
++ "verification-control",
++ "verification-policy",
++]
++
++[[package]]
++name = "forge-policy"
++version = "0.1.0"
++dependencies = [
++ "glob",
++ "rusqlite",
++ "serde",
++ "thiserror 2.0.18",
++ "tracing",
++]
++
++[[package]]
+ name = "form_urlencoded"
+ version = "1.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -1067,6 +1276,12 @@
+ ]
+ 
+ [[package]]
++name = "glob"
++version = "0.3.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
++
++[[package]]
+ name = "hashbrown"
+ version = "0.14.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -1624,6 +1839,16 @@
+ checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
+ 
+ [[package]]
++name = "mindstate-core"
++version = "0.1.0"
++dependencies = [
++ "blake3",
++ "serde",
++ "serde_json",
++ "thiserror 2.0.18",
++]
++
++[[package]]
+ name = "mio"
+ version = "1.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -1724,6 +1949,16 @@
+ checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
+ 
+ [[package]]
++name = "petgraph"
++version = "0.6.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b4c5cc86750666a3ed20bdaf5ca2a0344f9c67674cae0515bec2da16fbaa47db"
++dependencies = [
++ "fixedbitset",
++ "indexmap",
++]
++
++[[package]]
+ name = "pin-project-lite"
+ version = "0.2.17"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -1788,6 +2023,23 @@
+ ]
+ 
+ [[package]]
++name = "profile-runtime"
++version = "0.1.0"
++dependencies = [
++ "assurance-runtime",
++ "attestation-exchange",
++ "authority-delegation",
++ "continuity-runtime",
++ "schemars",
++ "serde",
++ "serde_json",
++ "stack-ids",
++ "thiserror 2.0.18",
++ "tracing",
++ "verification-policy",
++]
++
++[[package]]
+ name = "quinn"
+ version = "0.11.9"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -1960,6 +2212,16 @@
+ checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
+ 
+ [[package]]
++name = "remote-oracle-admission"
++version = "0.1.0"
++dependencies = [
++ "attestation-exchange",
++ "schemars",
++ "serde",
++ "stack-ids",
++]
++
++[[package]]
+ name = "reqwest"
+ version = "0.12.28"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -2101,6 +2363,16 @@
+ ]
+ 
+ [[package]]
++name = "sandbox-workspace"
++version = "0.1.0"
++dependencies = [
++ "forge-policy",
++ "tempfile",
++ "thiserror 2.0.18",
++ "walkdir",
++]
++
++[[package]]
+ name = "schemars"
+ version = "0.8.22"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -2278,6 +2550,22 @@
+ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
+ 
+ [[package]]
++name = "signal-hook-registry"
++version = "1.4.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c4db69cba1110affc0e9f7bcd48bbf87b3f4fc7c61fc9155afd4c469eb3d6c1b"
++dependencies = [
++ "errno",
++ "libc",
++]
++
++[[package]]
++name = "similar"
++version = "2.7.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "bbbb5d9659141646ae647b42fe094daf6c6192d1620870b449d9557f748b2daa"
++
++[[package]]
+ name = "slab"
+ version = "0.4.12"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -2311,6 +2599,14 @@
+ ]
+ 
+ [[package]]
++name = "stabilizer-core"
++version = "0.1.0"
++dependencies = [
++ "thiserror 2.0.18",
++ "typed-patch",
++]
++
++[[package]]
+ name = "stable_deref_trait"
+ version = "1.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -2473,6 +2769,7 @@
+  "libc",
+  "mio",
+  "pin-project-lite",
++ "signal-hook-registry",
+  "socket2",
+  "tokio-macros",
+  "windows-sys 0.61.2",
+@@ -2623,6 +2920,20 @@
+ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
+ 
+ [[package]]
++name = "typed-patch"
++version = "0.1.0"
++dependencies = [
++ "forge-policy",
++ "sandbox-workspace",
++ "serde",
++ "similar",
++ "thiserror 2.0.18",
++ "tokio",
++ "uuid",
++ "walkdir",
++]
++
++[[package]]
+ name = "typenum"
+ version = "1.20.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+--- .codex_evidence/contract_ownership/03/pre_edit_files/aidens_contracts_Cargo.toml.before	2026-04-29 03:43:53.754908842 -0500
++++ crates/aidens-contracts/Cargo.toml	2026-04-29 03:51:53.821300435 -0500
+@@ -17,6 +17,7 @@
+ llm-tool-runtime.workspace = true
+ mechanism-runtime.workspace = true
+ recursive-kernel-core.workspace = true
++remote-oracle-admission.workspace = true
+ schemars.workspace = true
+ semantic-memory-forge.workspace = true
+ serde.workspace = true
+--- .codex_evidence/contract_ownership/03/pre_edit_files/aidens_cli_Cargo.toml.before	2026-04-29 03:55:29.079208475 -0500
++++ crates/aidens-cli/Cargo.toml	2026-04-29 03:55:37.054168022 -0500
+@@ -23,6 +23,7 @@
+ anyhow.workspace = true
+ chrono.workspace = true
+ clap.workspace = true
++contract-schema-gen.workspace = true
+ serde.workspace = true
+ serde_json.workspace = true
+ tokio.workspace = true
+--- .codex_evidence/contract_ownership/03/pre_edit_files/aidens_governance_kit_Cargo.toml.before	2026-04-29 03:49:33.492012307 -0500
++++ crates/aidens-governance-kit/Cargo.toml	2026-04-29 03:51:53.822300430 -0500
+@@ -14,6 +14,6 @@
+ serde_json.workspace = true
+ stack-ids.workspace = true
+ verification-adjudication.workspace = true
+-verification-calibration = { path = "../../../verification-calibration" }
++verification-calibration.workspace = true
+ verification-control.workspace = true
+ verification-policy.workspace = true
+--- /dev/null	2026-04-22 13:11:05.642527016 -0500
++++ docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md	2026-04-29 03:55:37.054168022 -0500
+@@ -0,0 +1,18 @@
++# Dependency Source Of Truth
++
++SOURCE BASIS: 2026-04-28
++
++AiDENs uses `~/Coding/Libraries` as the canonical dependency source for stack owner crates. `~/Coding/Libraries2`, `~/Coding/Recall`, and `~/Coding/Recall-Coding` are reference-only and must not be wired as dependencies when a canonical owner exists in `~/Coding/Libraries`.
++
++| Canonical concept | Owner crate | AiDENs dependency wiring | Phase 03 decision |
++| --- | --- | --- | --- |
++| Identity and content-addressed stack IDs | `stack-ids` | Workspace dependency `path = "../stack-ids"`; consumed through workspace dependencies in AiDENs crates. | Canonical ID/digest owner remains outside AiDENs. |
++| Attestation envelope | `attestation-exchange` | Workspace dependency `path = "../attestation-exchange"`; `aidens-contracts` depends through `attestation-exchange.workspace = true`. | `AttestationEnvelopeV1` is an explicit canonical re-export, not a local type. |
++| Settlement and shared disposition | `federated-settlement` | Workspace dependency `path = "../federated-settlement"`; `aidens-contracts` depends through `federated-settlement.workspace = true`. | `SettlementCaseV1` and `SharedDispositionV1` are explicit canonical re-exports. |
++| Mechanism theory artifacts | `mechanism-runtime` | Workspace dependency `path = "../mechanism-runtime"`; `aidens-contracts` depends through `mechanism-runtime.workspace = true`. | `TheoryVersionV1`, `TheoryRefuterSuiteV1`, and `HypothesisLibraryV1` are explicit canonical re-exports. |
++| Remote oracle admission | `remote-oracle-admission` | Workspace dependency `path = "../remote-oracle-admission"`; `aidens-contracts` depends through `remote-oracle-admission.workspace = true` while remaining local admission/report surfaces are collapsed or quarantined in later phases. | Canonical owner is wired; no AiDENs-local replacement is introduced. |
++| Canonical schema generation | `contract-schema-gen` | Workspace dependency `path = "../contract-schema-gen"`; `aidens-cli` depends through `contract-schema-gen.workspace = true` because the CLI exposes schema generate/check commands. | Existing AiDENs schema registry/generation surfaces are not treated as authoritative and remain a Phase 05 collapse target. |
++| Verification calibration | `verification-calibration` | Workspace dependency `path = "../verification-calibration"`; `aidens-governance-kit` depends through `verification-calibration.workspace = true`. | `CalibrationSnapshot` is imported from the canonical owner. |
++| Pilot/control-loop receipts | `forge-pilot` | No Phase 03 AiDENs dependency is wired because current AiDENs code only contains report-string mentions, not typed pilot/control-loop receipt surfaces. | Add a dependency only if a typed pilot/control-loop surface is introduced or discovered. |
++
++No Phase 03 dependency points to `Libraries2`, `Recall`, or `Recall-Coding`. No local substitute crate or module was added for any missing canonical owner API.

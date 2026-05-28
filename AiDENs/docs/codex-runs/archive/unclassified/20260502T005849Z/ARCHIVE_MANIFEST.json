@@ -1,0 +1,1779 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/prompts/MAIN.md",
+      "bytes": 355,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/prompts/MAIN.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1a0e8802c1819b3e494bcddadfd82dda2b2c7378e452ffeae5b47bd2f18ca74f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/prompts/NEXT_RUN_REAL_PLATFORM.md",
+      "bytes": 9208,
+      "mtime_utc": "2026-04-26T04:02:28Z",
+      "original_path": ".codex/prompts/NEXT_RUN_REAL_PLATFORM.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "6d4cbd73cd82b2b053c58b5d477f2db3db937bc6327f63c7f7a8d3ab23764be9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/prompts/PHASE0.md",
+      "bytes": 200,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/prompts/PHASE0.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8fd93fc65e3ee4730248912d16e5543a3f7a0faccc0165253cf05f12211362bd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/prompts/PHASE1.md",
+      "bytes": 235,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/prompts/PHASE1.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "e005a692dab974b82b7e140eff328a68a8e42ed3ad778253170151b1176085e9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/tasks/next_run.json",
+      "bytes": 498,
+      "mtime_utc": "2026-04-26T04:04:32Z",
+      "original_path": ".codex/tasks/next_run.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "3bbd058a619fc18bcb2ee51473902e1761df1af1866661256231133ed4fe4d4e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/tasks/phase0.json",
+      "bytes": 486,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/tasks/phase0.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "6197ce815b6bb419f91fbef74b81412d0eb76760d07a291ff1944779d7e19ebe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/tasks/phase1.json",
+      "bytes": 505,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/tasks/phase1.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "471aafb2c5ac45d6b3d5faea953f248067d9c1b939dfecbd6a662d08486fbd60"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_docs_source_basis_current.txt",
+      "bytes": 257,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_docs_source_basis_current.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "60eb69d597a193e56ed720adfe5f61148cbb72dc91c1ca3fba9bb605c45e96c1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_canonical_type_duplicates.txt",
+      "bytes": 374,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_canonical_type_duplicates.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "5133637c7b2184d04a44942497a4b2cb798cdab94adc131ecfd789615c48e16d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_compatibility_ledgers.txt",
+      "bytes": 281,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_compatibility_ledgers.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "fd721cff95f754456c1621e7c40c1f37cd7150890bf45b03e728dfc201725b2f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_crate_split.txt",
+      "bytes": 243,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_crate_split.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "a44f7482825b62692c5083c3eb12a1624f686e0d6dc6cf2626edeb9b2592ee29"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_local_canonical_digest_law.txt",
+      "bytes": 264,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_local_canonical_digest_law.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "f914195fc9ebf508d553fc0011583306adc32a5586b332bffc509c822a85eae2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_local_substitute_dependencies.txt",
+      "bytes": 269,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_local_substitute_dependencies.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "e659f53a263d39dd7414d0025eb2640b3a6bf30316a3a2812cb18e390ab35bc1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_schema_generation_scope.txt",
+      "bytes": 326,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_schema_generation_scope.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "5bc9c32c85d8f0f186c96ae9dc7b160f6c441a5525ac0ed749ad0fa0b24ca3d7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_tool_runtime_delegation.txt",
+      "bytes": 3619,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_tool_runtime_delegation.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "c23cc7e3782213a510cf2893614df5d16e753db76b87ca28159a977c15d79583"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_wrapper_backpointers.txt",
+      "bytes": 269,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_wrapper_backpointers.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "cd7c6ea3cdfb9c432dcc658d1a24fd856b42036043dc6b290e9ea181ce5b4581"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/git_diff.patch",
+      "bytes": 279806,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/git_diff.patch",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "7a2d524855f7c0ca5c2e6ef3a659dd16fe88b055d5b65fa4f1e97d1632f81608"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/git_diff_stat.txt",
+      "bytes": 4754,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/git_diff_stat.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "4ef6c5f28b49c3a84fa8100f33ae866c50e9c3f76f628b4c0b2bf43d13444490"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/git_status_after_gate.txt",
+      "bytes": 5075,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/git_status_after_gate.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "ebe2db9b7dbe0136e53f9504c334ccd8ed409d867fd31214d7169f657488058b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/git_status_before_gate.txt",
+      "bytes": 5075,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/git_status_before_gate.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "ebe2db9b7dbe0136e53f9504c334ccd8ed409d867fd31214d7169f657488058b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_MASTER_PROMPT.md",
+      "bytes": 3851,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_MASTER_PROMPT.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0f832637d6a2766a488df45aecd9828ca2657f60d48c5f86fedaba25372221be"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PHASE_MANIFEST.yaml",
+      "bytes": 3049,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PHASE_MANIFEST.yaml",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "69f73b8e4a8699c7c65e92ce0b6ef6798c45a1ee82e50e3222a9a20c2f26e220"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_00_PREFLIGHT_SOURCE_BASIS.md",
+      "bytes": 1379,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_00_PREFLIGHT_SOURCE_BASIS.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "58e5b9b6954e4110f22e9427584f06adedf35f3e7f80d93d9d9b170e05e89315"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_00_SOURCE_TRUTH_AND_LAYOUT.md",
+      "bytes": 2693,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_00_SOURCE_TRUTH_AND_LAYOUT.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "43465771023c41b6708469a7f38f3e797fa8ca5ffc186f74d682290f53ce185f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_01_CONTRACT_COLLAPSE.md",
+      "bytes": 2662,
+      "mtime_utc": "2026-04-28T20:22:01Z",
+      "original_path": "CODEX_PROMPTS/PHASE_01_CONTRACT_COLLAPSE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "6326ae69a8a18882500392f5cfe85cb04fbf22ba3d7614a0fde73d8075392d09"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_01_GENERATED_OWNERSHIP_INVENTORY.md",
+      "bytes": 1211,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_01_GENERATED_OWNERSHIP_INVENTORY.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "225e6ab9e0d9877d019181432f2e288d19b154137c2969504ec98accbaed0a3d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_02_CANONICAL_ADAPTER_SPINE.md",
+      "bytes": 2639,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_02_CANONICAL_ADAPTER_SPINE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f738812133345ac112eea772db5130c7a91286f8ee3a8955dd51915612d8455c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_03_CANONICAL_DEPENDENCY_WIRING.md",
+      "bytes": 1220,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_03_CANONICAL_DEPENDENCY_WIRING.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ab3e1c0caaac2b2434b3be60d58152acee32123506e94fbf58ea271a4271b3dc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_03_GOLDEN_VERTICAL_SLICE.md",
+      "bytes": 2585,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_03_GOLDEN_VERTICAL_SLICE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c488a27c30e1cd5d051b01c19df8580fc892aed3d4e942516ba39a7caaf5c549"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md",
+      "bytes": 1068,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "103069d0dd06b8fe7f474ee9070bfef8e12584cf12ebb8aa59d5b4d0b475cfde"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_04_FAILURE_HONESTY.md",
+      "bytes": 2751,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_04_FAILURE_HONESTY.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1533f02ec4018833fcb395b292a69a56b2fd7fea5a3d5ed79f544b334b50d6dc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_05_MEMORY_RUNTIME_HARDENING.md",
+      "bytes": 2665,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "CODEX_PROMPTS/PHASE_05_MEMORY_RUNTIME_HARDENING.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "2436785200a17248b04dcbd7038384119f5b21a0e4e341f5859e38002d1643b8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_05_SCHEMA_OWNERSHIP_COLLAPSE.md",
+      "bytes": 1227,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_05_SCHEMA_OWNERSHIP_COLLAPSE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "11129add7390682dd592687dc5962ee5eb8a469d76239ba01f08663b40ef1e7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_06_GOVERNANCE_PROMOTION.md",
+      "bytes": 2718,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_06_GOVERNANCE_PROMOTION.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b64d4b9c4b04dc9e57acb0c9e2a82b076f293728dafdf5bebc185b0983fa27da"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_06_TOOL_REPAIR_RUNTIME_WRAPPERS.md",
+      "bytes": 1603,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_06_TOOL_REPAIR_RUNTIME_WRAPPERS.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "90f07f0f69c7f817c08776cdcd536430942593a66c65663f061cd6cd6b279abe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_07_DAEMON_QUEUE_SCHEDULE_WAKE.md",
+      "bytes": 2798,
+      "mtime_utc": "2026-04-28T20:25:50Z",
+      "original_path": "CODEX_PROMPTS/PHASE_07_DAEMON_QUEUE_SCHEDULE_WAKE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8a6388c232fd10967be817dd893f00b7ce292e4977e04ec324b2d3f807d38bf4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_07_FINAL_PROOF_AND_AUDITOR_HANDOFF.md",
+      "bytes": 1287,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_07_FINAL_PROOF_AND_AUDITOR_HANDOFF.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "9227a59649832b82ce0fea8bd74a9e7be7f84b20da09c75809f891abd0abf1e6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_08_KERNEL_ORACLE_INTEGRATION.md",
+      "bytes": 2678,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_08_KERNEL_ORACLE_INTEGRATION.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ecd5998f7cf5f7f991796df5f794984d85242c84561c19d7b5d290efc48b21bf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_09_RELEASE_AUDIT.md",
+      "bytes": 2724,
+      "mtime_utc": "2026-04-28T20:22:01Z",
+      "original_path": "CODEX_PROMPTS/PHASE_09_RELEASE_AUDIT.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "cb6db36c68c51bcdddabf730618f520ade4051d4faec6334f3a48680ffaf4d96"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/README.md",
+      "bytes": 190,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/README.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "702314d5627f9e61c8a4f600a7a5fbc691b3ea323f566cae715b239b1ffee38d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_RUN_PROMPT.md",
+      "bytes": 1651,
+      "mtime_utc": "2026-04-28T20:25:50Z",
+      "original_path": "CODEX_RUN_PROMPT.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "87e444806530e70fc90df25130358f1a9db9205dd256813800c93056d58ab2c5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_START_HERE.md",
+      "bytes": 1955,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "CODEX_START_HERE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "298f100ca2f0644cff465d20b48ddfdb34e294e410021c6931b9039a5a63aab2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_SUPER_PASS_ORCHESTRATION.md",
+      "bytes": 1048,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "CODEX_SUPER_PASS_ORCHESTRATION.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f297cc1c5046dd963a94fc51961dfe38fc9b79e7b4d155c59a398498522d5641"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/NEXT_CODEX_TASK_MATRIX.md",
+      "bytes": 1261,
+      "mtime_utc": "2026-04-30T05:30:31Z",
+      "original_path": "NEXT_CODEX_TASK_MATRIX.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8926d8fd0a3ff444f4e0de9cae3655cd1f3d6fcd76b7ee5d17a7d79f901a7614"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "bytes": 1341,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "8b4341e9ddb77a7f92df2407ecab384536efb3dc8c5edfeb658ac1b555ad08ca"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_00_CODE_PACKAGE_AUDIT_INJECTION.md",
+      "bytes": 508,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_00_CODE_PACKAGE_AUDIT_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "41cf4443217900a08073ccfdcc1072103f2aaf05039caacfbb50708f6eb86d09"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_00_SOURCE_TRUTH_PREFLIGHT_INJECTION.md",
+      "bytes": 559,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_00_SOURCE_TRUTH_PREFLIGHT_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "fcae2e7aeddb5d3807d1956be195827452878a8cfabbfcbfa3d0636359342b88"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_00_START_INJECTION.md",
+      "bytes": 405,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_00_START_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "80d89af87a3515ba22abea7b17bf4490c9b88433143d0034857074d24f9db0b2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md",
+      "bytes": 484,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "22bfb2f5341350e5f7d47740754e8fd0df26903b141340a5128a9dc917179a97"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_01_PACKAGE_INTEGRITY_CLOSURE_INJECTION.md",
+      "bytes": 576,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_01_PACKAGE_INTEGRITY_CLOSURE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "802f24274e1e11bec036a374dbeab1ac679189771611de7842f6983053045f3c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_01_RESTORE_MISSING_FILES_INJECTION.md",
+      "bytes": 409,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_01_RESTORE_MISSING_FILES_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "a9009a3cebbf48963b4ff00a2b02ac25d5a168e359130e63ccbb54ca1ba9e0a5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md",
+      "bytes": 552,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "d82cdf2b13bfcc9bee16fb29a11d7784dcc190ef0f52fef2fdd8b9e2bcb55f08"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE_INJECTION.md",
+      "bytes": 553,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "7c889aaf15b0f2686dc0d667fd8652344ab96587c42dabcfd9634a9a14fe0126"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_02_TESTKIT_TOPOLOGY_INJECTION.md",
+      "bytes": 478,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_02_TESTKIT_TOPOLOGY_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "9f8cd569b8fcc66f4133e93042617745738b551556d648e916175403dbb7b792"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_03_BUILD_GATE_STABILIZATION_INJECTION.md",
+      "bytes": 520,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_03_BUILD_GATE_STABILIZATION_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "7be82ebcf518868b526aa0b0b6624c86a7abeef77b16581ec7ab38ebab5757e7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md",
+      "bytes": 662,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "ae379784fbd5d1f8698efb19272379dd56a38dacde8685f4a142c6f6726d17ae"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_03_SCANNER_HARDENING_INJECTION.md",
+      "bytes": 390,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_03_SCANNER_HARDENING_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "44f9a03140b98e8680281faf6e8354b3b7b0e38920c6855d21e836fdf46822af"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE_INJECTION.md",
+      "bytes": 583,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "42e1816103557c751cb426862083be5669fa9ff8fe8bb57db786230b369f92f4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_04_CARGO_GATE_INJECTION.md",
+      "bytes": 415,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_04_CARGO_GATE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "7dadef57474a993bfd3cf036a52f339655ffe91c33f06752852576771344fa9b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md",
+      "bytes": 410,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "e31603081d6328ff6c008e86f4f37a3ad0c484b3312e067cd8d1a778b958aacf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING_INJECTION.md",
+      "bytes": 577,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "bcb24a5b7756498adcf9c66e70a8e3a15a83cf887c0e1b92df438a249b87625d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md",
+      "bytes": 388,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "64e23ce98421ce3042f80dbf269f87c84d4c378eef97fb21ba6a87aad2705b70"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_05_RUNNER_PROVIDER_AGENCY_REVALIDATION_INJECTION.md",
+      "bytes": 560,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_05_RUNNER_PROVIDER_AGENCY_REVALIDATION_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "1c378c07f945b8c1cd2dac0decaec9c54a19ddcc9632dab67e08c5a8ff867cfe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING_INJECTION.md",
+      "bytes": 571,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "6b100b651005ccb6b4e4b842a59cb4c9372098c03ce243c159598178301a37cc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_06_FINAL_AUDIT_ARCHIVE_INJECTION.md",
+      "bytes": 492,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_06_FINAL_AUDIT_ARCHIVE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "48374505808b937b3f7d38d24ab50bcc99e56a8305d8543736a0ad0e6a2add45"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md",
+      "bytes": 485,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "f0e4abf7ffad0d3cadfba2b1e1aad896ac0325ff3002fe7ce439be0e5cfe46d4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md",
+      "bytes": 423,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "082a4caac32ec50e1b86164a4b40552d3d7ffb7f8dc66e83a28d12206fd2af5a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_07_RELEASE_ZIP_RECHECK_INJECTION.md",
+      "bytes": 977,
+      "mtime_utc": "2026-04-30T12:28:30Z",
+      "original_path": "prompts/phase_injections/PHASE_07_RELEASE_ZIP_RECHECK_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "52f78c2982b2473076844c934d70180e252636fc72002f3d92b16f89858bfdfa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_07_V0_1_USABILITY_EXAMPLES_INJECTION.md",
+      "bytes": 533,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_07_V0_1_USABILITY_EXAMPLES_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "eea09ecf14a9e330feb91a066408fc5527f3cead853a31188761f2facd2e784f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md",
+      "bytes": 703,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "237941c616a742d536b55072f199a23ed793adc44c081ddc814759f8916c511b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_08_SCANNER_CONFORMANCE_HARDENING_INJECTION.md",
+      "bytes": 545,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_08_SCANNER_CONFORMANCE_HARDENING_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "02c685b5342d08dd1378d3f65bc01bf3634a386d929ee50436a745ab3f50a990"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md",
+      "bytes": 502,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "a30efe7019760aa07d003240064e56668bbacb84ce83b33daede31983942acb8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY_INJECTION.md",
+      "bytes": 547,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "ce7f384b9cd02147b328b8ad5c05558370875a3aa29f14d44be6d2b7972eb6cf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md",
+      "bytes": 414,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "9efc2c968295d84e62acdaae2ed99f2f3c142707b85c5a36430f3c6c7b1184a2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_10_GUARDED_STRETCH_LANE_INJECTION.md",
+      "bytes": 535,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_10_GUARDED_STRETCH_LANE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "8479a4b8e287e207171b78a2fc89f37cb95aa18f1545a03e923166378e51338d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/README.md",
+      "bytes": 355,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/README.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "7fda0adcf324a8f066baafd9fa140c48f1ff4f6623dad6d269c68c928ec831f5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md",
+      "bytes": 681,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "291c2d39c7a889543754861e77f49aee5e96e8b20b2bac3d269c04c2a39d1e21"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_00_SOURCE_TRUTH_PREFLIGHT.md",
+      "bytes": 684,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_00_SOURCE_TRUTH_PREFLIGHT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "2a113a0b083ddc305c46819e1f51ca593b1fa849efc5ad0a3b0d4122024628a7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_01_BUILD_CERTIFICATION.md",
+      "bytes": 949,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_01_BUILD_CERTIFICATION.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5e24a0ae837eec5ecff2e59201d0415b5924e800e651a5e8a25bd5da4a5e7bff"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_01_PACKAGE_INTEGRITY_CLOSURE.md",
+      "bytes": 683,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_01_PACKAGE_INTEGRITY_CLOSURE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5bfb39056bda694be09f524a6b1b70056d571ed7fbeba4fb43a7118949c37296"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md",
+      "bytes": 471,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "153d5889cfe1510c0ed8c5e509bcff743419c732cd204df549e4c80a4405257b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE.md",
+      "bytes": 710,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "c0409551104fd3e3dbe9b6fb2692116d3d4393f7de0f2c8f1644b1b604e9faef"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_03_BUILD_GATE_STABILIZATION.md",
+      "bytes": 668,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_03_BUILD_GATE_STABILIZATION.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "db382016501a5bb88221a7c0c84acbe2121fc0ec83561e8a6e2f2515942752dd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md",
+      "bytes": 505,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5f8470ea95b94b8d6edd41a918a8f5ec78d7e10674cd2f3d3fe95435b3d60b1f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md",
+      "bytes": 544,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "43ddfc144a10cf7805a514e7cba5ab7198dac10853f3e218f97d5bfb72007925"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE.md",
+      "bytes": 718,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "cb569ce80cf73eb85d4631e279d200c8eb8697d52372a55a13176266ad7759d3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md",
+      "bytes": 453,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "b1b433e9942641248a300ad091c1c7dcd0d00eb74e678dd70d212e418fba479b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING.md",
+      "bytes": 678,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "f84b50143d4b01cee393c0769f142731eb26696846a3d8868373a9c5005c3aea"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING.md",
+      "bytes": 657,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "ed206cdc867cd05010ea933163d907561c337190464dae23730311b07f89fefd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md",
+      "bytes": 438,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5d68746129010f0e4e10ce61d746009d739127dc0ee57cc97a0e43c2f6db0078"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md",
+      "bytes": 502,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "761a1d78b19e67ce7d7ab907c89439ebd2ac67264db52fb101103ea2f72568a3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_07_V0_1_USABILITY_EXAMPLES.md",
+      "bytes": 680,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_07_V0_1_USABILITY_EXAMPLES.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5570f11a79e280af895bb271c0cf999863c8201909b11c9e28550cf17c795cd4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md",
+      "bytes": 465,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "7fc49ef68aa126009ee0e4532a462480277099505a488e0f7d428762f8636af6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_08_SCANNER_CONFORMANCE_HARDENING.md",
+      "bytes": 669,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_08_SCANNER_CONFORMANCE_HARDENING.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "c727a022cf80a096f755024cd9fd9bf18ca4fb7a44f42d5ddb79530d721d9235"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md",
+      "bytes": 480,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "239461e40a28e52b84413c7391b9c9b7c7caecb3f249cf262865438cc156e393"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY.md",
+      "bytes": 688,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "939f7ea6416d77001818bd526b1a95d8d7666f96d83240e66a09f363eab75749"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_10_GUARDED_STRETCH_LANE.md",
+      "bytes": 674,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_10_GUARDED_STRETCH_LANE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "9dfc6b45521769f8e7e09b5ac3f4baad146a2eeb3362e11136a770a575ea9ef5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md",
+      "bytes": 380,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "7cd4ae23ee20aee61f0df1996abbea3d844955afc0a35376b7cefa30710f7019"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "unclassified",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/prompts/MAIN.md",
+      "bytes": 355,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/prompts/MAIN.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1a0e8802c1819b3e494bcddadfd82dda2b2c7378e452ffeae5b47bd2f18ca74f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/prompts/NEXT_RUN_REAL_PLATFORM.md",
+      "bytes": 9208,
+      "mtime_utc": "2026-04-26T04:02:28Z",
+      "original_path": ".codex/prompts/NEXT_RUN_REAL_PLATFORM.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "6d4cbd73cd82b2b053c58b5d477f2db3db937bc6327f63c7f7a8d3ab23764be9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/prompts/PHASE0.md",
+      "bytes": 200,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/prompts/PHASE0.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8fd93fc65e3ee4730248912d16e5543a3f7a0faccc0165253cf05f12211362bd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/prompts/PHASE1.md",
+      "bytes": 235,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/prompts/PHASE1.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "e005a692dab974b82b7e140eff328a68a8e42ed3ad778253170151b1176085e9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/tasks/next_run.json",
+      "bytes": 498,
+      "mtime_utc": "2026-04-26T04:04:32Z",
+      "original_path": ".codex/tasks/next_run.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "3bbd058a619fc18bcb2ee51473902e1761df1af1866661256231133ed4fe4d4e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/tasks/phase0.json",
+      "bytes": 486,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/tasks/phase0.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "6197ce815b6bb419f91fbef74b81412d0eb76760d07a291ff1944779d7e19ebe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex/tasks/phase1.json",
+      "bytes": 505,
+      "mtime_utc": "2026-04-25T08:39:20Z",
+      "original_path": ".codex/tasks/phase1.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "471aafb2c5ac45d6b3d5faea953f248067d9c1b939dfecbd6a662d08486fbd60"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_docs_source_basis_current.txt",
+      "bytes": 257,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_docs_source_basis_current.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "60eb69d597a193e56ed720adfe5f61148cbb72dc91c1ca3fba9bb605c45e96c1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_canonical_type_duplicates.txt",
+      "bytes": 374,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_canonical_type_duplicates.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "5133637c7b2184d04a44942497a4b2cb798cdab94adc131ecfd789615c48e16d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_compatibility_ledgers.txt",
+      "bytes": 281,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_compatibility_ledgers.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "fd721cff95f754456c1621e7c40c1f37cd7150890bf45b03e728dfc201725b2f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_crate_split.txt",
+      "bytes": 243,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_crate_split.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "a44f7482825b62692c5083c3eb12a1624f686e0d6dc6cf2626edeb9b2592ee29"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_local_canonical_digest_law.txt",
+      "bytes": 264,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_local_canonical_digest_law.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "f914195fc9ebf508d553fc0011583306adc32a5586b332bffc509c822a85eae2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_no_local_substitute_dependencies.txt",
+      "bytes": 269,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_no_local_substitute_dependencies.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "e659f53a263d39dd7414d0025eb2640b3a6bf30316a3a2812cb18e390ab35bc1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_schema_generation_scope.txt",
+      "bytes": 326,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_schema_generation_scope.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "5bc9c32c85d8f0f186c96ae9dc7b160f6c441a5525ac0ed749ad0fa0b24ca3d7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_tool_runtime_delegation.txt",
+      "bytes": 3619,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_tool_runtime_delegation.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "c23cc7e3782213a510cf2893614df5d16e753db76b87ca28159a977c15d79583"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/assert_wrapper_backpointers.txt",
+      "bytes": 269,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/assert_wrapper_backpointers.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "cd7c6ea3cdfb9c432dcc658d1a24fd856b42036043dc6b290e9ea181ce5b4581"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/git_diff.patch",
+      "bytes": 279806,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/git_diff.patch",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "7a2d524855f7c0ca5c2e6ef3a659dd16fe88b055d5b65fa4f1e97d1632f81608"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/git_diff_stat.txt",
+      "bytes": 4754,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/git_diff_stat.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "4ef6c5f28b49c3a84fa8100f33ae866c50e9c3f76f628b4c0b2bf43d13444490"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/git_status_after_gate.txt",
+      "bytes": 5075,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/git_status_after_gate.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "ebe2db9b7dbe0136e53f9504c334ccd8ed409d867fd31214d7169f657488058b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/.codex_evidence/contract_ownership/final/git_status_before_gate.txt",
+      "bytes": 5075,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/final/git_status_before_gate.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "unclassified",
+      "sha256": "ebe2db9b7dbe0136e53f9504c334ccd8ed409d867fd31214d7169f657488058b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_MASTER_PROMPT.md",
+      "bytes": 3851,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_MASTER_PROMPT.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0f832637d6a2766a488df45aecd9828ca2657f60d48c5f86fedaba25372221be"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PHASE_MANIFEST.yaml",
+      "bytes": 3049,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PHASE_MANIFEST.yaml",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "69f73b8e4a8699c7c65e92ce0b6ef6798c45a1ee82e50e3222a9a20c2f26e220"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_00_PREFLIGHT_SOURCE_BASIS.md",
+      "bytes": 1379,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_00_PREFLIGHT_SOURCE_BASIS.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "58e5b9b6954e4110f22e9427584f06adedf35f3e7f80d93d9d9b170e05e89315"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_00_SOURCE_TRUTH_AND_LAYOUT.md",
+      "bytes": 2693,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_00_SOURCE_TRUTH_AND_LAYOUT.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "43465771023c41b6708469a7f38f3e797fa8ca5ffc186f74d682290f53ce185f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_01_CONTRACT_COLLAPSE.md",
+      "bytes": 2662,
+      "mtime_utc": "2026-04-28T20:22:01Z",
+      "original_path": "CODEX_PROMPTS/PHASE_01_CONTRACT_COLLAPSE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "6326ae69a8a18882500392f5cfe85cb04fbf22ba3d7614a0fde73d8075392d09"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_01_GENERATED_OWNERSHIP_INVENTORY.md",
+      "bytes": 1211,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_01_GENERATED_OWNERSHIP_INVENTORY.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "225e6ab9e0d9877d019181432f2e288d19b154137c2969504ec98accbaed0a3d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_02_CANONICAL_ADAPTER_SPINE.md",
+      "bytes": 2639,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_02_CANONICAL_ADAPTER_SPINE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f738812133345ac112eea772db5130c7a91286f8ee3a8955dd51915612d8455c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_03_CANONICAL_DEPENDENCY_WIRING.md",
+      "bytes": 1220,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_03_CANONICAL_DEPENDENCY_WIRING.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ab3e1c0caaac2b2434b3be60d58152acee32123506e94fbf58ea271a4271b3dc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_03_GOLDEN_VERTICAL_SLICE.md",
+      "bytes": 2585,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_03_GOLDEN_VERTICAL_SLICE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c488a27c30e1cd5d051b01c19df8580fc892aed3d4e942516ba39a7caaf5c549"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md",
+      "bytes": 1068,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "103069d0dd06b8fe7f474ee9070bfef8e12584cf12ebb8aa59d5b4d0b475cfde"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_04_FAILURE_HONESTY.md",
+      "bytes": 2751,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_04_FAILURE_HONESTY.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "1533f02ec4018833fcb395b292a69a56b2fd7fea5a3d5ed79f544b334b50d6dc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_05_MEMORY_RUNTIME_HARDENING.md",
+      "bytes": 2665,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "CODEX_PROMPTS/PHASE_05_MEMORY_RUNTIME_HARDENING.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "2436785200a17248b04dcbd7038384119f5b21a0e4e341f5859e38002d1643b8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_05_SCHEMA_OWNERSHIP_COLLAPSE.md",
+      "bytes": 1227,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_05_SCHEMA_OWNERSHIP_COLLAPSE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "11129add7390682dd592687dc5962ee5eb8a469d76239ba01f08663b40ef1e7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_06_GOVERNANCE_PROMOTION.md",
+      "bytes": 2718,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_06_GOVERNANCE_PROMOTION.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b64d4b9c4b04dc9e57acb0c9e2a82b076f293728dafdf5bebc185b0983fa27da"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_06_TOOL_REPAIR_RUNTIME_WRAPPERS.md",
+      "bytes": 1603,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_06_TOOL_REPAIR_RUNTIME_WRAPPERS.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "90f07f0f69c7f817c08776cdcd536430942593a66c65663f061cd6cd6b279abe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_07_DAEMON_QUEUE_SCHEDULE_WAKE.md",
+      "bytes": 2798,
+      "mtime_utc": "2026-04-28T20:25:50Z",
+      "original_path": "CODEX_PROMPTS/PHASE_07_DAEMON_QUEUE_SCHEDULE_WAKE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8a6388c232fd10967be817dd893f00b7ce292e4977e04ec324b2d3f807d38bf4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_07_FINAL_PROOF_AND_AUDITOR_HANDOFF.md",
+      "bytes": 1287,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "CODEX_PROMPTS/PHASE_07_FINAL_PROOF_AND_AUDITOR_HANDOFF.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "9227a59649832b82ce0fea8bd74a9e7be7f84b20da09c75809f891abd0abf1e6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_08_KERNEL_ORACLE_INTEGRATION.md",
+      "bytes": 2678,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/PHASE_08_KERNEL_ORACLE_INTEGRATION.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ecd5998f7cf5f7f991796df5f794984d85242c84561c19d7b5d290efc48b21bf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/PHASE_09_RELEASE_AUDIT.md",
+      "bytes": 2724,
+      "mtime_utc": "2026-04-28T20:22:01Z",
+      "original_path": "CODEX_PROMPTS/PHASE_09_RELEASE_AUDIT.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "cb6db36c68c51bcdddabf730618f520ade4051d4faec6334f3a48680ffaf4d96"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_PROMPTS/README.md",
+      "bytes": 190,
+      "mtime_utc": "2026-04-28T20:19:43Z",
+      "original_path": "CODEX_PROMPTS/README.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "702314d5627f9e61c8a4f600a7a5fbc691b3ea323f566cae715b239b1ffee38d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_RUN_PROMPT.md",
+      "bytes": 1651,
+      "mtime_utc": "2026-04-28T20:25:50Z",
+      "original_path": "CODEX_RUN_PROMPT.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "87e444806530e70fc90df25130358f1a9db9205dd256813800c93056d58ab2c5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_START_HERE.md",
+      "bytes": 1955,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "CODEX_START_HERE.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "298f100ca2f0644cff465d20b48ddfdb34e294e410021c6931b9039a5a63aab2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_SUPER_PASS_ORCHESTRATION.md",
+      "bytes": 1048,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "CODEX_SUPER_PASS_ORCHESTRATION.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f297cc1c5046dd963a94fc51961dfe38fc9b79e7b4d155c59a398498522d5641"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/NEXT_CODEX_TASK_MATRIX.md",
+      "bytes": 1261,
+      "mtime_utc": "2026-04-30T05:30:31Z",
+      "original_path": "NEXT_CODEX_TASK_MATRIX.md",
+      "reason": "stale-root-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8926d8fd0a3ff444f4e0de9cae3655cd1f3d6fcd76b7ee5d17a7d79f901a7614"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "bytes": 1341,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "8b4341e9ddb77a7f92df2407ecab384536efb3dc8c5edfeb658ac1b555ad08ca"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_00_CODE_PACKAGE_AUDIT_INJECTION.md",
+      "bytes": 508,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_00_CODE_PACKAGE_AUDIT_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "41cf4443217900a08073ccfdcc1072103f2aaf05039caacfbb50708f6eb86d09"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_00_SOURCE_TRUTH_PREFLIGHT_INJECTION.md",
+      "bytes": 559,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_00_SOURCE_TRUTH_PREFLIGHT_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "fcae2e7aeddb5d3807d1956be195827452878a8cfabbfcbfa3d0636359342b88"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_00_START_INJECTION.md",
+      "bytes": 405,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_00_START_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "80d89af87a3515ba22abea7b17bf4490c9b88433143d0034857074d24f9db0b2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md",
+      "bytes": 484,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "22bfb2f5341350e5f7d47740754e8fd0df26903b141340a5128a9dc917179a97"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_01_PACKAGE_INTEGRITY_CLOSURE_INJECTION.md",
+      "bytes": 576,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_01_PACKAGE_INTEGRITY_CLOSURE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "802f24274e1e11bec036a374dbeab1ac679189771611de7842f6983053045f3c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_01_RESTORE_MISSING_FILES_INJECTION.md",
+      "bytes": 409,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_01_RESTORE_MISSING_FILES_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "a9009a3cebbf48963b4ff00a2b02ac25d5a168e359130e63ccbb54ca1ba9e0a5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md",
+      "bytes": 552,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "d82cdf2b13bfcc9bee16fb29a11d7784dcc190ef0f52fef2fdd8b9e2bcb55f08"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE_INJECTION.md",
+      "bytes": 553,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "7c889aaf15b0f2686dc0d667fd8652344ab96587c42dabcfd9634a9a14fe0126"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_02_TESTKIT_TOPOLOGY_INJECTION.md",
+      "bytes": 478,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_02_TESTKIT_TOPOLOGY_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "9f8cd569b8fcc66f4133e93042617745738b551556d648e916175403dbb7b792"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_03_BUILD_GATE_STABILIZATION_INJECTION.md",
+      "bytes": 520,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_03_BUILD_GATE_STABILIZATION_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "7be82ebcf518868b526aa0b0b6624c86a7abeef77b16581ec7ab38ebab5757e7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md",
+      "bytes": 662,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "ae379784fbd5d1f8698efb19272379dd56a38dacde8685f4a142c6f6726d17ae"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_03_SCANNER_HARDENING_INJECTION.md",
+      "bytes": 390,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_03_SCANNER_HARDENING_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "44f9a03140b98e8680281faf6e8354b3b7b0e38920c6855d21e836fdf46822af"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE_INJECTION.md",
+      "bytes": 583,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "42e1816103557c751cb426862083be5669fa9ff8fe8bb57db786230b369f92f4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_04_CARGO_GATE_INJECTION.md",
+      "bytes": 415,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_04_CARGO_GATE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "7dadef57474a993bfd3cf036a52f339655ffe91c33f06752852576771344fa9b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md",
+      "bytes": 410,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "e31603081d6328ff6c008e86f4f37a3ad0c484b3312e067cd8d1a778b958aacf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING_INJECTION.md",
+      "bytes": 577,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "bcb24a5b7756498adcf9c66e70a8e3a15a83cf887c0e1b92df438a249b87625d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md",
+      "bytes": 388,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "64e23ce98421ce3042f80dbf269f87c84d4c378eef97fb21ba6a87aad2705b70"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_05_RUNNER_PROVIDER_AGENCY_REVALIDATION_INJECTION.md",
+      "bytes": 560,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_05_RUNNER_PROVIDER_AGENCY_REVALIDATION_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "1c378c07f945b8c1cd2dac0decaec9c54a19ddcc9632dab67e08c5a8ff867cfe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING_INJECTION.md",
+      "bytes": 571,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "6b100b651005ccb6b4e4b842a59cb4c9372098c03ce243c159598178301a37cc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_06_FINAL_AUDIT_ARCHIVE_INJECTION.md",
+      "bytes": 492,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/phase_injections/PHASE_06_FINAL_AUDIT_ARCHIVE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "48374505808b937b3f7d38d24ab50bcc99e56a8305d8543736a0ad0e6a2add45"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md",
+      "bytes": 485,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "f0e4abf7ffad0d3cadfba2b1e1aad896ac0325ff3002fe7ce439be0e5cfe46d4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md",
+      "bytes": 423,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "082a4caac32ec50e1b86164a4b40552d3d7ffb7f8dc66e83a28d12206fd2af5a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_07_RELEASE_ZIP_RECHECK_INJECTION.md",
+      "bytes": 977,
+      "mtime_utc": "2026-04-30T12:28:30Z",
+      "original_path": "prompts/phase_injections/PHASE_07_RELEASE_ZIP_RECHECK_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "52f78c2982b2473076844c934d70180e252636fc72002f3d92b16f89858bfdfa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_07_V0_1_USABILITY_EXAMPLES_INJECTION.md",
+      "bytes": 533,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_07_V0_1_USABILITY_EXAMPLES_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "eea09ecf14a9e330feb91a066408fc5527f3cead853a31188761f2facd2e784f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md",
+      "bytes": 703,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "237941c616a742d536b55072f199a23ed793adc44c081ddc814759f8916c511b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_08_SCANNER_CONFORMANCE_HARDENING_INJECTION.md",
+      "bytes": 545,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_08_SCANNER_CONFORMANCE_HARDENING_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "02c685b5342d08dd1378d3f65bc01bf3634a386d929ee50436a745ab3f50a990"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md",
+      "bytes": 502,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "a30efe7019760aa07d003240064e56668bbacb84ce83b33daede31983942acb8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY_INJECTION.md",
+      "bytes": 547,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "ce7f384b9cd02147b328b8ad5c05558370875a3aa29f14d44be6d2b7972eb6cf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md",
+      "bytes": 414,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "9efc2c968295d84e62acdaae2ed99f2f3c142707b85c5a36430f3c6c7b1184a2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/PHASE_10_GUARDED_STRETCH_LANE_INJECTION.md",
+      "bytes": 535,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/PHASE_10_GUARDED_STRETCH_LANE_INJECTION.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "8479a4b8e287e207171b78a2fc89f37cb95aa18f1545a03e923166378e51338d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phase_injections/README.md",
+      "bytes": 355,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phase_injections/README.md",
+      "reason": "stale-phase-injection-prompt",
+      "run_id": "unclassified",
+      "sha256": "7fda0adcf324a8f066baafd9fa140c48f1ff4f6623dad6d269c68c928ec831f5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md",
+      "bytes": 681,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "291c2d39c7a889543754861e77f49aee5e96e8b20b2bac3d269c04c2a39d1e21"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_00_SOURCE_TRUTH_PREFLIGHT.md",
+      "bytes": 684,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_00_SOURCE_TRUTH_PREFLIGHT.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "2a113a0b083ddc305c46819e1f51ca593b1fa849efc5ad0a3b0d4122024628a7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_01_BUILD_CERTIFICATION.md",
+      "bytes": 949,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_01_BUILD_CERTIFICATION.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5e24a0ae837eec5ecff2e59201d0415b5924e800e651a5e8a25bd5da4a5e7bff"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_01_PACKAGE_INTEGRITY_CLOSURE.md",
+      "bytes": 683,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_01_PACKAGE_INTEGRITY_CLOSURE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5bfb39056bda694be09f524a6b1b70056d571ed7fbeba4fb43a7118949c37296"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md",
+      "bytes": 471,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "153d5889cfe1510c0ed8c5e509bcff743419c732cd204df549e4c80a4405257b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE.md",
+      "bytes": 710,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "c0409551104fd3e3dbe9b6fb2692116d3d4393f7de0f2c8f1644b1b604e9faef"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_03_BUILD_GATE_STABILIZATION.md",
+      "bytes": 668,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_03_BUILD_GATE_STABILIZATION.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "db382016501a5bb88221a7c0c84acbe2121fc0ec83561e8a6e2f2515942752dd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md",
+      "bytes": 505,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5f8470ea95b94b8d6edd41a918a8f5ec78d7e10674cd2f3d3fe95435b3d60b1f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md",
+      "bytes": 544,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "43ddfc144a10cf7805a514e7cba5ab7198dac10853f3e218f97d5bfb72007925"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE.md",
+      "bytes": 718,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "cb569ce80cf73eb85d4631e279d200c8eb8697d52372a55a13176266ad7759d3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md",
+      "bytes": 453,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "b1b433e9942641248a300ad091c1c7dcd0d00eb74e678dd70d212e418fba479b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING.md",
+      "bytes": 678,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "f84b50143d4b01cee393c0769f142731eb26696846a3d8868373a9c5005c3aea"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING.md",
+      "bytes": 657,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "ed206cdc867cd05010ea933163d907561c337190464dae23730311b07f89fefd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md",
+      "bytes": 438,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5d68746129010f0e4e10ce61d746009d739127dc0ee57cc97a0e43c2f6db0078"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md",
+      "bytes": 502,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "761a1d78b19e67ce7d7ab907c89439ebd2ac67264db52fb101103ea2f72568a3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_07_V0_1_USABILITY_EXAMPLES.md",
+      "bytes": 680,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_07_V0_1_USABILITY_EXAMPLES.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "5570f11a79e280af895bb271c0cf999863c8201909b11c9e28550cf17c795cd4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md",
+      "bytes": 465,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "7fc49ef68aa126009ee0e4532a462480277099505a488e0f7d428762f8636af6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_08_SCANNER_CONFORMANCE_HARDENING.md",
+      "bytes": 669,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_08_SCANNER_CONFORMANCE_HARDENING.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "c727a022cf80a096f755024cd9fd9bf18ca4fb7a44f42d5ddb79530d721d9235"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md",
+      "bytes": 480,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "239461e40a28e52b84413c7391b9c9b7c7caecb3f249cf262865438cc156e393"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY.md",
+      "bytes": 688,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "939f7ea6416d77001818bd526b1a95d8d7666f96d83240e66a09f363eab75749"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_10_GUARDED_STRETCH_LANE.md",
+      "bytes": 674,
+      "mtime_utc": "2026-05-01T06:27:38Z",
+      "original_path": "prompts/phases/PHASE_10_GUARDED_STRETCH_LANE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "9dfc6b45521769f8e7e09b5ac3f4baad146a2eeb3362e11136a770a575ea9ef5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260502T005849Z/files/prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md",
+      "bytes": 380,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "unclassified",
+      "sha256": "7cd4ae23ee20aee61f0df1996abbea3d844955afc0a35376b7cefa30710f7019"
+    }
+  ]
+}

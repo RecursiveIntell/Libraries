@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/handoffs/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.md",
+      "bytes": 2688,
+      "mtime_utc": "2026-04-26T20:30:53Z",
+      "original_path": "handoffs/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P2",
+      "sha256": "48b23c72372a1f00ca6cd92dde2b677c8921b6d02b68f9099d8f002e13850a80"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md",
+      "bytes": 1273,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P2",
+      "sha256": "11748de496dfa1b41aa74f3df1ecc007501d6dbeb7c1d004aa8e6e2b628aac13"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/tasks/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.json",
+      "bytes": 1099,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "tasks/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.json",
+      "reason": "stale-run-task",
+      "run_id": "P2",
+      "sha256": "c7079b9175b0708f73773233b5673ccc44e70676eaf32cfc419a8034cdc11e6c"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P2",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

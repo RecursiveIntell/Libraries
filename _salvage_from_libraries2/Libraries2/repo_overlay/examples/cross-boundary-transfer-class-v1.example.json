@@ -1,0 +1,13 @@
+{
+  "schema_version": "CrossBoundaryTransferClassV1",
+  "cross_boundary_transfer_class_id": "cbt_001",
+  "source_class": "prod_us_pii",
+  "destination_class": "vendor_analytics_redacted",
+  "allowed_artifact_families": [
+    "EffectObservationBundleV1",
+    "PostmortemBundleV1"
+  ],
+  "required_attestation": "signed_export_envelope",
+  "required_disclosure_policy_class": "redacted_vendor_export",
+  "downgrade_behavior": "summary_only_or_block"
+}

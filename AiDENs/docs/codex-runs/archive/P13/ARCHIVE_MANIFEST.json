@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P13/files/handoffs/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.md",
+      "bytes": 3322,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "handoffs/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P13",
+      "sha256": "146d2dbbb19ad5feee1b092cdb0d4fb4f4c5b1c2e32df2b2ed10e582906511cb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P13/files/prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md",
+      "bytes": 1219,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P13",
+      "sha256": "437871314527c18a83c6b5304a09a96b0aa94eefe216f4e464912d50c2bac886"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P13/files/tasks/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.json",
+      "bytes": 1053,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "tasks/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.json",
+      "reason": "stale-run-task",
+      "run_id": "P13",
+      "sha256": "7c303e7e7ba0b313161b5ce9476f2030bd2964c1677ed908ceb8279ac68242b6"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P13",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

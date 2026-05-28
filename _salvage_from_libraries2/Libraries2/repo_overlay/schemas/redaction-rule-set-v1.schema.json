@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RedactionRuleSetV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "redaction_rule_set_id": {
+      "type": "string"
+    },
+    "target_artifact_families": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "field_actions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "reversibility_class": {
+      "type": "string"
+    },
+    "approval_requirement": {
+      "type": "string"
+    },
+    "default_disclosure_budget_class": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "redaction_rule_set_id",
+    "target_artifact_families",
+    "field_actions",
+    "reversibility_class",
+    "approval_requirement",
+    "default_disclosure_budget_class"
+  ]
+}

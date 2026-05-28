@@ -6,10 +6,11 @@ use crate::db;
 use crate::db::{bytes_to_embedding, parse_optional_json, with_transaction};
 #[cfg(feature = "hnsw")]
 use crate::db::{enqueue_pending_index_op, PendingIndexOpKind};
+#[cfg(feature = "hnsw")]
 use crate::episodes;
 use crate::error::MemoryError;
 use crate::quantize::{self, Quantizer};
-use crate::types::Fact;
+use crate::types::{Fact, NamespaceDeleteReport};
 use crate::{merge_trace_ctx, MemoryStore};
 use rusqlite::{params, Connection};
 use stack_ids::TraceCtx;
@@ -83,6 +84,7 @@ pub fn insert_fact_with_fts_q8(
             "fact",
             PendingIndexOpKind::Upsert,
         )?;
+        db::invalidate_derived_vector_artifact(tx, &format!("fact:{fact_id}"))?;
 
         Ok(())
     })
@@ -135,6 +137,7 @@ pub fn insert_fact_in_tx(
         "fact",
         PendingIndexOpKind::Upsert,
     )?;
+    db::invalidate_derived_vector_artifact(tx, &format!("fact:{fact_id}"))?;
 
     Ok(())
 }
@@ -166,6 +169,16 @@ pub fn delete_fact_with_fts(conn: &Connection, fact_id: &str) -> Result<(), Memo
             "DELETE FROM facts_rowid_map WHERE fact_id = ?1",
             params![fact_id],
         )?;
+        tx.execute(
+            "DELETE FROM episode_causes WHERE cause_node_id IN (?1, ?2)",
+            params![fact_id, format!("fact:{fact_id}")],
+        )?;
+        tx.execute(
+            "DELETE FROM derivation_edges
+             WHERE (source_kind = 'fact' AND source_id = ?1)
+                OR (target_kind = 'fact' AND target_id = ?1)",
+            params![fact_id],
+        )?;
         tx.execute("DELETE FROM facts WHERE id = ?1", params![fact_id])?;
 
         #[cfg(feature = "hnsw")]
@@ -175,6 +188,7 @@ pub fn delete_fact_with_fts(conn: &Connection, fact_id: &str) -> Result<(), Memo
             "fact",
             PendingIndexOpKind::Delete,
         )?;
+        db::invalidate_derived_vector_artifact(tx, &format!("fact:{fact_id}"))?;
 
         Ok(())
     })
@@ -219,6 +233,12 @@ pub fn update_fact_with_fts(
             "INSERT INTO facts_fts(rowid, content) VALUES (?1, ?2)",
             params![fts_rowid, new_content],
         )?;
+        tx.execute(
+            "DELETE FROM derivation_edges
+             WHERE (source_kind = 'fact' AND source_id = ?1)
+                OR (target_kind = 'fact' AND target_id = ?1)",
+            params![fact_id],
+        )?;
 
         #[cfg(feature = "hnsw")]
         enqueue_pending_index_op(
@@ -227,15 +247,20 @@ pub fn update_fact_with_fts(
             "fact",
             PendingIndexOpKind::Upsert,
         )?;
+        db::invalidate_derived_vector_artifact(tx, &format!("fact:{fact_id}"))?;
 
         Ok(())
     })
 }
 
-/// Delete all facts in a namespace atomically. Returns the deleted count.
-pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, MemoryError> {
+/// Delete all namespace-scoped memory atomically and report every affected surface.
+pub fn delete_namespace(
+    conn: &Connection,
+    namespace: &str,
+) -> Result<NamespaceDeleteReport, MemoryError> {
     with_transaction(conn, |tx| {
-        let delete_session = |session_id: &str| -> Result<(), MemoryError> {
+        let mut report = NamespaceDeleteReport::default();
+        let delete_session = |session_id: &str| -> Result<(usize, usize), MemoryError> {
             let message_data: Vec<(i64, String, i64, bool)> = {
                 let mut stmt = tx.prepare(
                     "SELECT m.id, m.content, mm.rowid, m.embedding IS NOT NULL
@@ -250,6 +275,8 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
             };
 
             for (message_id, content, fts_rowid, has_embedding) in &message_data {
+                #[cfg(not(feature = "hnsw"))]
+                let _ = (message_id, has_embedding);
                 tx.execute(
                     "INSERT INTO messages_fts(messages_fts, rowid, content) VALUES('delete', ?1, ?2)",
                     params![fts_rowid, content],
@@ -269,7 +296,11 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
             if affected == 0 {
                 return Err(MemoryError::SessionNotFound(session_id.to_string()));
             }
-            Ok(())
+            let hnsw_ops = message_data
+                .iter()
+                .filter(|(_, _, _, has_embedding)| *has_embedding)
+                .count();
+            Ok((message_data.len(), hnsw_ops))
         };
 
         let document_ids: Vec<String> = {
@@ -311,8 +342,11 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
         };
 
         for session_id in &session_ids {
-            delete_session(session_id)?;
+            let (messages, hnsw_ops) = delete_session(session_id)?;
+            report.messages += messages;
+            report.hnsw_ops += hnsw_ops;
         }
+        report.sessions = session_ids.len();
 
         let delete_derivation_edges_for_id = |kind: &str, id: &str| -> Result<(), MemoryError> {
             tx.execute(
@@ -364,8 +398,13 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
                 "fact",
                 PendingIndexOpKind::Delete,
             )?;
+            #[cfg(feature = "hnsw")]
+            {
+                report.hnsw_ops += 1;
+            }
         }
         tx.execute("DELETE FROM facts WHERE namespace = ?1", params![namespace])?;
+        report.facts = facts.len();
 
         for doc_id in &document_ids {
             let mut stmt = tx.prepare(
@@ -379,6 +418,7 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
                     Ok((row.get(0)?, row.get(1)?, row.get(2)?))
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
+            report.chunks += chunk_rows.len();
 
             for (chunk_id, content, fts_rowid) in &chunk_rows {
                 tx.execute(
@@ -396,6 +436,10 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
                     "chunk",
                     PendingIndexOpKind::Delete,
                 )?;
+                #[cfg(feature = "hnsw")]
+                {
+                    report.hnsw_ops += 1;
+                }
             }
 
             tx.execute("DELETE FROM chunks WHERE document_id = ?1", params![doc_id])?;
@@ -413,6 +457,7 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
                     Ok((row.get(0)?, row.get(1)?, row.get(2)?))
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
+            report.episodes += episode_rows.len();
 
             for (episode_id, search_text, fts_rowid) in &episode_rows {
                 tx.execute(
@@ -434,6 +479,10 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
                     "episode",
                     PendingIndexOpKind::Delete,
                 )?;
+                #[cfg(feature = "hnsw")]
+                {
+                    report.hnsw_ops += 1;
+                }
             }
 
             tx.execute(
@@ -442,6 +491,7 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
             )?;
             tx.execute("DELETE FROM documents WHERE id = ?1", params![doc_id])?;
         }
+        report.documents = document_ids.len();
 
         let claim_ids: Vec<String> = {
             let mut stmt =
@@ -512,38 +562,38 @@ pub fn delete_namespace(conn: &Connection, namespace: &str) -> Result<usize, Mem
         delete_derivation_edges_for_ids("evidence_ref", &evidence_handles)?;
         delete_derivation_edges_for_ids("episode", &episode_ids)?;
 
-        tx.execute(
+        report.projection_rows += tx.execute(
             "DELETE FROM claim_versions WHERE scope_namespace = ?1",
             params![namespace],
         )?;
-        tx.execute(
+        report.projection_rows += tx.execute(
             "DELETE FROM relation_versions WHERE scope_namespace = ?1",
             params![namespace],
         )?;
-        tx.execute(
+        report.projection_rows += tx.execute(
             "DELETE FROM entity_aliases WHERE scope_namespace = ?1",
             params![namespace],
         )?;
-        tx.execute(
+        report.projection_rows += tx.execute(
             "DELETE FROM evidence_refs
              WHERE source_envelope_id IN (SELECT source_envelope_id FROM projection_import_log WHERE scope_namespace = ?1)",
             params![namespace],
         )?;
-        tx.execute(
+        report.projection_rows += tx.execute(
             "DELETE FROM episode_links
              WHERE source_envelope_id IN (SELECT source_envelope_id FROM projection_import_log WHERE scope_namespace = ?1)",
             params![namespace],
         )?;
-        tx.execute(
+        report.projection_rows += tx.execute(
             "DELETE FROM projection_import_failures WHERE scope_namespace = ?1",
             params![namespace],
         )?;
-        tx.execute(
+        report.projection_rows += tx.execute(
             "DELETE FROM projection_import_log WHERE scope_namespace = ?1",
             params![namespace],
         )?;
 
-        Ok(facts.len())
+        Ok(report)
     })
 }
 
@@ -841,8 +891,11 @@ impl MemoryStore {
         Ok(())
     }
 
-    /// Delete all facts in a namespace. Returns the count of deleted facts.
-    pub async fn delete_namespace(&self, namespace: &str) -> Result<usize, MemoryError> {
+    /// Delete all memory in a namespace and return a per-surface report.
+    pub async fn delete_namespace(
+        &self,
+        namespace: &str,
+    ) -> Result<NamespaceDeleteReport, MemoryError> {
         let ns = namespace.to_string();
         let count = self
             .with_write_conn(move |conn| delete_namespace(conn, &ns))

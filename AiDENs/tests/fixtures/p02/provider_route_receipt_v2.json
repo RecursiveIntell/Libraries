@@ -1,0 +1,18 @@
+{
+  "receipt_id": "provider-route:fixture",
+  "kind": "provider-route",
+  "provider_kind": "ollama",
+  "model": "llama3",
+  "route": "ollama-chat",
+  "route_label": "ollama-chat",
+  "chat_completion_executable": true,
+  "native_tool_loop": false,
+  "degraded": false,
+  "degraded_reason": null,
+  "reason_codes": [
+    "ollama-chat-boundary-configured",
+    "ollama-local-service-required",
+    "ollama-native-tool-loop-unimplemented"
+  ],
+  "checked_at": "2026-04-26T00:00:00Z"
+}

@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "TurnFinalStateV1": {
+      "enum": [
+        "final-output",
+        "provider-unavailable",
+        "tool-blocked",
+        "tool-failed",
+        "budget-exhausted",
+        "stop-rule-triggered"
+      ],
+      "type": "string"
+    },
+    "TurnModeV1": {
+      "enum": [
+        "no-tools",
+        "native-tool-loop",
+        "parser-fallback",
+        "provider-unavailable",
+        "budget-exhausted"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "attempt_id": {
+      "type": "string"
+    },
+    "blocked": {
+      "default": false,
+      "type": "boolean"
+    },
+    "budget_exhaustion_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "completed_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "degraded": {
+      "default": false,
+      "type": "boolean"
+    },
+    "final_state": {
+      "$ref": "#/definitions/TurnFinalStateV1"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "mode": {
+      "$ref": "#/definitions/TurnModeV1"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "stop_rule_receipt_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tool_call_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tool_invocation_receipt_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "attempt_id",
+    "final_state",
+    "kind",
+    "mode",
+    "plan_id",
+    "receipt_id",
+    "run_id",
+    "started_at"
+  ],
+  "title": "TurnReportV1",
+  "type": "object"
+}

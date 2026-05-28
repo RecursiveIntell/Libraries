@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use federated_settlement::{
     evaluate_divergence_or_suspension, evaluate_shared_replay, SettlementCaseV1,
 };

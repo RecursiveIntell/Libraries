@@ -1,0 +1,18 @@
+app_id = "p24-coding-agent-example"
+profile_id = "coding-agent"
+memory_mode = "optional"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+mock_response = "{\"tool_call\":{\"tool_id\":\"aidens:repo-read:1\",\"input\":{\"path\":\"README.md\"}}}\n---aidens-next-response---\nRead complete."
+
+[tools]
+enabled_bundles = ["repo-read", "repo-list", "repo-search", "file-stat", "patch-propose"]
+sandbox_root = "../../fixtures/p24/coding-agent-repo"
+
+[receipts]
+store_root = "target/aidens-receipts/p24-coding-agent-example"
+
+[agency]
+enabled = true

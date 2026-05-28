@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "MemoryModeV1": {
+      "enum": [
+        "disabled",
+        "optional",
+        "required"
+      ],
+      "type": "string"
+    },
+    "ReportLevelV1": {
+      "enum": [
+        "minimal",
+        "standard",
+        "full"
+      ],
+      "type": "string"
+    },
+    "ToolLifecycleStateV1": {
+      "enum": [
+        "declared",
+        "registered",
+        "executable",
+        "exposed",
+        "exposed-this-turn",
+        "invoked",
+        "succeeded",
+        "failed",
+        "hidden",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "ToolSideEffectClass": {
+      "enum": [
+        "read_only",
+        "analysis",
+        "preview_write",
+        "write",
+        "admin"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "fixture_paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "manifest_id": {
+      "type": "string"
+    },
+    "memory_modes": {
+      "items": {
+        "$ref": "#/definitions/MemoryModeV1"
+      },
+      "type": "array"
+    },
+    "provider_kinds": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_levels": {
+      "items": {
+        "$ref": "#/definitions/ReportLevelV1"
+      },
+      "type": "array"
+    },
+    "reference_case_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "risk_classes": {
+      "items": {
+        "$ref": "#/definitions/ToolSideEffectClass"
+      },
+      "type": "array"
+    },
+    "tool_lifecycle_states": {
+      "items": {
+        "$ref": "#/definitions/ToolLifecycleStateV1"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "fixture_paths",
+    "generated_at",
+    "manifest_id",
+    "memory_modes",
+    "provider_kinds",
+    "receipt_levels",
+    "reference_case_ids",
+    "risk_classes",
+    "tool_lifecycle_states"
+  ],
+  "title": "GoldenFixtureManifestV1",
+  "type": "object"
+}

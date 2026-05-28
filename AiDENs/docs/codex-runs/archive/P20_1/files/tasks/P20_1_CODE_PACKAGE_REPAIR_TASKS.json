@@ -1,0 +1,26 @@
+{
+  "final_commands": [
+    "python3 scripts/p20_1_hard_code_audit.py --fail-on-blocking",
+    "python3 scripts/p20_validate_agency_cases.py evals/p20_agency_eval_cases.jsonl",
+    "cargo fmt --all --check",
+    "cargo check --workspace --all-targets --all-features",
+    "cargo test --workspace --all-targets --all-features",
+    "cargo clippy --workspace --all-targets --all-features -- -D warnings"
+  ],
+  "must_not": [
+    "add architecture",
+    "shadow canonical crates",
+    "claim pass without cargo gates",
+    "skip phase injections"
+  ],
+  "phases": [
+    "package audit",
+    "restore missing files",
+    "testkit topology",
+    "scanner hardening",
+    "cargo gates",
+    "runner/provider/agency revalidation",
+    "final archive integrity"
+  ],
+  "task": "P20.1_CODE_PACKAGE_REPAIR"
+}

@@ -1,0 +1,9 @@
+canonical_types=633
+aidens_contracts_types=199
+duplicate_findings=6
+P0: AttestationEnvelopeV1 local crates/aidens-contracts/src/lib.rs:2481 canonical attestation-exchange attestation-exchange/src/lib.rs:117
+P0: SharedDispositionV1 local crates/aidens-contracts/src/lib.rs:2843 canonical federated-settlement federated-settlement/src/lib.rs:95
+P0: SettlementCaseV1 local crates/aidens-contracts/src/lib.rs:2891 canonical federated-settlement federated-settlement/src/lib.rs:144
+P0: TheoryRefuterSuiteV1 local crates/aidens-contracts/src/lib.rs:3508 canonical mechanism-runtime mechanism-runtime/src/lib.rs:131
+P0: TheoryVersionV1 local crates/aidens-contracts/src/lib.rs:3603 canonical mechanism-runtime mechanism-runtime/src/lib.rs:61
+P0: HypothesisLibraryV1 local crates/aidens-contracts/src/lib.rs:3815 canonical mechanism-runtime mechanism-runtime/src/lib.rs:81

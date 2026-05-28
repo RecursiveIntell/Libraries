@@ -1,0 +1,7 @@
+{
+  "operation": "repo.patch.apply",
+  "operator_contract": true,
+  "execution_context": true,
+  "receipt": false,
+  "expected": "reject completion"
+}

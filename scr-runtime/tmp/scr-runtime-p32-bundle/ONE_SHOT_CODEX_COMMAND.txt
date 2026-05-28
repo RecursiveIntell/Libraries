@@ -1,0 +1,24 @@
+Start Codex from the repository root:
+
+```bash
+cd ~/Coding/Libraries/scr-runtime
+codex
+```
+
+Inside Codex:
+
+```text
+/plan
+```
+
+Paste `01_MASTER_PROMPT.md`.
+
+After Codex produces the Phase 00 plan and preflight, paste each manual injection from `manual_injections/` at the appropriate phase boundary.
+
+Do not approve final completion until:
+
+```bash
+bash scripts/scr_superpass_run_all.sh final
+```
+
+passes and the P32 final artifact set exists.

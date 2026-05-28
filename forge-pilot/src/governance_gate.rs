@@ -44,6 +44,33 @@ use semantic_memory::{MemoryStore, ProjectionClaimVersion, ProjectionQuery};
 use serde::{Deserialize, Serialize};
 use stack_ids::ScopeKey;
 
+/// LIB-001: Governance enforcement mode.
+///
+/// `FailOpen` preserves existing behavior — missing or broken governance
+/// artifacts produce a default observation and execution proceeds.
+/// `Strict` fails closed — observation errors and missing governance
+/// artifacts produce a `GovernanceGateError` and the caller must handle it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum GovernanceMode {
+    /// Existing default: return empty observation on errors (fail-open).
+    #[default]
+    FailOpen,
+    /// Constitutional mode: return error on missing/broken governance (fail-closed).
+    Strict,
+}
+
+/// LIB-001: Error returned when strict governance mode detects a problem.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, thiserror::Error)]
+pub enum GovernanceGateError {
+    /// Governance observation failed and strict mode does not allow fallback.
+    #[error("governance observation failed in strict mode: {reason}")]
+    ObservationFailed { reason: String },
+    /// No governance claims found — strict mode requires governance artifacts.
+    #[error("no governance claims found in strict mode")]
+    NoGovernanceClaims,
+}
+
 /// Observed governance artifact state at a point in time.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema)]
 pub struct GovernanceObservation {
@@ -150,6 +177,9 @@ pub mod predicates {
 ///
 /// Returns a default (empty) observation on any error — fail-open by design.
 /// This function is read-only and never writes governance artifacts.
+///
+/// For strict (fail-closed) behavior, use [`observe_governance_with_mode`]
+/// with [`GovernanceMode::Strict`].
 pub async fn observe_governance(store: &MemoryStore) -> GovernanceObservation {
     match observe_governance_inner(store).await {
         Ok(obs) => obs,
@@ -161,6 +191,59 @@ pub async fn observe_governance(store: &MemoryStore) -> GovernanceObservation {
             GovernanceObservation::default()
         }
     }
+}
+
+/// LIB-001: Observe governance with explicit mode selection.
+///
+/// In `FailOpen` mode, behaves identically to [`observe_governance`].
+/// In `Strict` mode, returns `Err` when governance observation fails or
+/// when no governance claims are found. This forces callers to explicitly
+/// handle the absence of governance artifacts rather than silently proceeding.
+pub async fn observe_governance_with_mode(
+    store: &MemoryStore,
+    mode: GovernanceMode,
+) -> Result<GovernanceObservation, GovernanceGateError> {
+    match observe_governance_inner(store).await {
+        Ok(obs) => {
+            // LIB-001: In strict mode, require at least one governance claim.
+            if mode == GovernanceMode::Strict && is_empty_observation(&obs) {
+                tracing::warn!(
+                    "strict governance mode: no governance claims found, failing closed"
+                );
+                return Err(GovernanceGateError::NoGovernanceClaims);
+            }
+            Ok(obs)
+        }
+        Err(err) => match mode {
+            GovernanceMode::FailOpen => {
+                tracing::warn!(
+                    error = %err,
+                    "governance observation failed, returning default (fail-open)"
+                );
+                Ok(GovernanceObservation::default())
+            }
+            GovernanceMode::Strict => {
+                tracing::error!(
+                    error = %err,
+                    "governance observation failed in strict mode, failing closed"
+                );
+                Err(GovernanceGateError::ObservationFailed {
+                    reason: err.to_string(),
+                })
+            }
+        },
+    }
+}
+
+/// Returns true if the observation has no governance data populated.
+fn is_empty_observation(obs: &GovernanceObservation) -> bool {
+    obs.effect_preflight_status.is_none()
+        && !obs.assurance_ready
+        && !obs.authority_delegation_valid
+        && !obs.continuity_incident_active
+        && !obs.constitutional_amendment_pending
+        && obs.mechanism_fit_disposition.is_none()
+        && obs.governance_degradations.is_empty()
 }
 
 /// Inner implementation that can propagate errors. The outer function catches
@@ -275,6 +358,9 @@ fn parse_bool_claim(content: &str) -> bool {
 }
 
 /// Evaluates whether governance state permits execution to proceed.
+///
+/// For strict-mode gating that returns an error on governance failures,
+/// use [`gate_execution_with_mode`].
 pub fn gate_execution(observation: &GovernanceObservation) -> GovernanceGateResult {
     // Active continuity incident blocks execution.
     if observation.continuity_incident_active {
@@ -305,6 +391,26 @@ pub fn gate_execution(observation: &GovernanceObservation) -> GovernanceGateResu
         };
     }
     GovernanceGateResult::Allow
+}
+
+/// LIB-001: Evaluates governance with explicit mode.
+///
+/// In `Strict` mode, a `Blocked` result is promoted to an error so callers
+/// cannot accidentally ignore it. `Allow` and `AdvisoryOnly` pass through.
+/// In `FailOpen` mode, behaves identically to [`gate_execution`].
+pub fn gate_execution_with_mode(
+    observation: &GovernanceObservation,
+    mode: GovernanceMode,
+) -> Result<GovernanceGateResult, GovernanceGateError> {
+    let result = gate_execution(observation);
+    match (&result, mode) {
+        (GovernanceGateResult::Blocked { reason }, GovernanceMode::Strict) => {
+            Err(GovernanceGateError::ObservationFailed {
+                reason: format!("governance blocked in strict mode: {reason}"),
+            })
+        }
+        _ => Ok(result),
+    }
 }
 
 /// Builds a typed governance receipt for a loop iteration report.
@@ -536,6 +642,119 @@ mod tests {
             matches!(gate, GovernanceGateResult::Blocked { .. }),
             "expected Blocked due to active incident, got: {:?}",
             gate
+        );
+    }
+
+    // --- LIB-001: strict mode tests ---
+
+    #[test]
+    fn strict_mode_blocks_on_blocked_gate_result() {
+        // LIB-001: In strict mode, a Blocked gate result becomes an error.
+        let obs = GovernanceObservation {
+            continuity_incident_active: true,
+            ..Default::default()
+        };
+        let result = gate_execution_with_mode(&obs, GovernanceMode::Strict);
+        assert!(result.is_err(), "strict mode should error on blocked gate");
+    }
+
+    #[test]
+    fn strict_mode_allows_on_allow_gate_result() {
+        // LIB-001: In strict mode, Allow passes through.
+        let obs = GovernanceObservation {
+            assurance_ready: true,
+            authority_delegation_valid: true,
+            ..Default::default()
+        };
+        let result = gate_execution_with_mode(&obs, GovernanceMode::Strict);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), GovernanceGateResult::Allow);
+    }
+
+    #[test]
+    fn strict_mode_allows_advisory_only() {
+        // LIB-001: In strict mode, AdvisoryOnly passes through (not an error).
+        let obs = GovernanceObservation {
+            constitutional_amendment_pending: true,
+            ..Default::default()
+        };
+        let result = gate_execution_with_mode(&obs, GovernanceMode::Strict);
+        assert!(result.is_ok());
+        assert!(matches!(
+            result.unwrap(),
+            GovernanceGateResult::AdvisoryOnly { .. }
+        ));
+    }
+
+    #[test]
+    fn fail_open_mode_returns_blocked_without_error() {
+        // LIB-001: In fail-open mode, Blocked is returned as-is (not an error).
+        let obs = GovernanceObservation {
+            continuity_incident_active: true,
+            ..Default::default()
+        };
+        let result = gate_execution_with_mode(&obs, GovernanceMode::FailOpen);
+        assert!(result.is_ok());
+        assert!(matches!(
+            result.unwrap(),
+            GovernanceGateResult::Blocked { .. }
+        ));
+    }
+
+    #[tokio::test]
+    async fn strict_mode_errors_on_empty_store() {
+        // LIB-001: Strict mode rejects empty governance state.
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let config = semantic_memory::MemoryConfig {
+            base_dir: dir.path().to_path_buf(),
+            ..Default::default()
+        };
+        let store = MemoryStore::open(config).expect("open store");
+        let result = observe_governance_with_mode(&store, GovernanceMode::Strict).await;
+        assert!(
+            result.is_err(),
+            "strict mode should error when no governance claims exist"
+        );
+        assert!(matches!(
+            result.unwrap_err(),
+            GovernanceGateError::NoGovernanceClaims
+        ));
+    }
+
+    #[tokio::test]
+    async fn strict_mode_allows_populated_store() {
+        // LIB-001: Strict mode succeeds when governance claims exist.
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let config = semantic_memory::MemoryConfig {
+            base_dir: dir.path().to_path_buf(),
+            ..Default::default()
+        };
+        let store = MemoryStore::open(config).expect("open store");
+        insert_governance_claim(&store, predicates::ASSURANCE_READY, "true").await;
+
+        let result = observe_governance_with_mode(&store, GovernanceMode::Strict).await;
+        assert!(
+            result.is_ok(),
+            "strict mode should succeed with governance claims present"
+        );
+        let obs = result.unwrap();
+        assert!(obs.assurance_ready);
+    }
+
+    #[tokio::test]
+    async fn fail_open_mode_returns_default_on_empty_store() {
+        // LIB-001: Fail-open mode returns default (not error) when store is empty.
+        let dir = tempfile::tempdir().expect("create temp dir");
+        let config = semantic_memory::MemoryConfig {
+            base_dir: dir.path().to_path_buf(),
+            ..Default::default()
+        };
+        let store = MemoryStore::open(config).expect("open store");
+        let result = observe_governance_with_mode(&store, GovernanceMode::FailOpen).await;
+        assert!(result.is_ok(), "fail-open mode should not error");
+        assert_eq!(
+            gate_execution(&result.unwrap()),
+            GovernanceGateResult::Allow
         );
     }
 

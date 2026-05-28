@@ -1,0 +1,29 @@
+{
+  "pass_id": "P00",
+  "title": "Source-basis lock, fake-ready freeze, and repo hygiene gate",
+  "phase": "Foundation / honesty",
+  "prompt_file": "prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md",
+  "pass_doc": "passes/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.md",
+  "crates": [
+    "workspace root",
+    "scripts",
+    "docs",
+    "aidens-testkit"
+  ],
+  "artifacts": [
+    "SourceBasisLockV1",
+    "ScaffoldSurfaceReportV1",
+    "FakeReadyFindingV1",
+    "SuperPassStatusV1"
+  ],
+  "acceptance": [
+    "bash scripts/verify.sh exists and is referenced by README, AGENTS.md, and CI.",
+    "grep for stale 20260425 metrics either returns none or only explicit historical references.",
+    "Scaffold-only crates are listed in status and doctor as deferred/blocked, never healthy.",
+    "assert_no_fake_completion.sh and assert_no_scaffold_promoted.sh both pass."
+  ],
+  "forbidden": [
+    "Do not delete scaffold crates to make metrics look cleaner.",
+    "Do not rename scaffolds \u201cexperimental\u201d while exposing them as usable."
+  ]
+}

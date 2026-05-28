@@ -1,0 +1,30 @@
+{
+  "pass_id": "P08",
+  "title": "Reference interpreters and semantic conformance harness",
+  "phase": "Contracted core",
+  "prompt_file": "prompts/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE_PROMPT.md",
+  "pass_doc": "passes/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.md",
+  "crates": [
+    "aidens-testkit",
+    "aidens-config",
+    "aidens-tool-kit",
+    "aidens-permit-kit",
+    "aidens-boundary-kit",
+    "aidens-receipts"
+  ],
+  "artifacts": [
+    "ReferenceCaseV1",
+    "ReferenceInterpreterReportV1",
+    "DifferentialConformanceFindingV1",
+    "GoldenFixtureManifestV1"
+  ],
+  "acceptance": [
+    "Reference fixtures cover all provider kinds, risk classes, memory modes, receipt levels, and tool lifecycle states.",
+    "Any production/reference mismatch fails tests with human-readable diff.",
+    "The testkit is dependency-light and does not call production internals in a circular way."
+  ],
+  "forbidden": [
+    "Do not make the reference interpreter a thin wrapper around production code.",
+    "Do not bless implementation behavior by copying its bugs into fixtures."
+  ]
+}

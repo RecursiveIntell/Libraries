@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "admissibility_judgment": {
+      "type": "string"
+    },
+    "attestation_envelope_id": {
+      "type": "string"
+    },
+    "inclusion_material": {
+      "type": "string"
+    },
+    "recorded_time": {
+      "type": "string"
+    },
+    "registry_identity": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "transparency_receipt_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "admissibility_judgment",
+    "attestation_envelope_id",
+    "inclusion_material",
+    "recorded_time",
+    "registry_identity",
+    "schema_version",
+    "transparency_receipt_id"
+  ],
+  "title": "TransparencyReceiptV1",
+  "type": "object"
+}

@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "DispatchOutcomeV1": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "degraded",
+        "cancelled",
+        "exhausted"
+      ],
+      "type": "string"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "attempt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cancellation_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cost_budget_units": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "deadline": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "degradation_markers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dispatch_outcome": {
+      "$ref": "#/definitions/DispatchOutcomeV1"
+    },
+    "environment_fingerprint": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "provider_route": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "queue_hops": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_link": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "trace_ctx": {
+      "$ref": "#/definitions/TraceCtx"
+    },
+    "trial_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "workload_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "dispatch_outcome",
+    "schema_version",
+    "trace_ctx"
+  ],
+  "title": "ExecutionContextV1",
+  "type": "object"
+}

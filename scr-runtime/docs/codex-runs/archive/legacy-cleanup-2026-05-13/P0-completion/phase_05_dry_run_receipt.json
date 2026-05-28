@@ -1,0 +1,27 @@
+{
+  "auto_injections_required": true,
+  "dry_run": true,
+  "errors": [],
+  "execute": false,
+  "finished_at": "2026-05-13T22:15:16.274008+00:00",
+  "manifest": ".codex/prompt_manifest.json",
+  "manual_injections_required": false,
+  "phases": [
+    {
+      "auto_injection": ".codex/auto_injections/phase_05_gate.md",
+      "commands": [],
+      "id": "phase_05",
+      "name": "fresh unzip certification",
+      "prompt": ".codex/prompts/phase_05_fresh_unzip_certification.md",
+      "prompt_bytes": 558,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "required_commands": [
+        "bash scripts/run_completion_checks.sh"
+      ],
+      "status": "ok"
+    }
+  ],
+  "receipt_version": "AutoPhaseRunnerReceiptV1",
+  "started_at": "2026-05-13T22:15:16.273753+00:00",
+  "status": "ok"
+}

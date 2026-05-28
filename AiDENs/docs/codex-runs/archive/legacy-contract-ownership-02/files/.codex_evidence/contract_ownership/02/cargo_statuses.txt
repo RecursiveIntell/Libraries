@@ -1,0 +1,2 @@
+cargo_check_aidens_contracts=0
+cargo_check_aidens_delegation_kit=101

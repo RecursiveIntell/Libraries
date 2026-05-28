@@ -1,0 +1,82 @@
+[policy]
+id = "audit_policy_v1"
+version = "1.0.0"
+domain = "audit"
+algorithm_version = "scr-reference-0.1.0"
+canonicalization = "canonical-json-v1"
+
+[action_precedence]
+Backlog = 10
+AllowWithReceipt = 20
+RequireVerification = 30
+RequireSourceBasis = 35
+RequireOwnerResolution = 40
+RequireApproval = 45
+GenerateRepairPacket = 60
+QuarantineArtifact = 80
+BlockMutation = 90
+BlockRelease = 95
+
+[thresholds.autonomy_pressure]
+allow_with_receipt = 2500
+require_verification = 5000
+require_approval = 7000
+block_mutation = 9000
+
+[thresholds.verification_pressure]
+allow_with_receipt = 2500
+require_verification = 5000
+generate_repair_packet = 8500
+
+[thresholds.repair_priority]
+backlog = 2500
+include_if_adjacent = 4500
+generate_repair_packet = 7500
+
+[thresholds.quarantine_pressure]
+require_verification = 4000
+quarantine_artifact = 7000
+block_mutation = 9000
+
+[minimum_actions]
+source_truth_drift = "RequireVerification"
+false_completion_missing_tests = "GenerateRepairPacket"
+unknown_owner_mutation = "RequireOwnerResolution"
+destructive_missing_rollback = "BlockRelease"
+invalid_schema = "QuarantineArtifact"
+feut_contamination = "QuarantineArtifact"
+
+[hard_rules.HR_SCHEMA_INVALID]
+enabled = true
+action = "QuarantineArtifact"
+reason = "SCHEMA_INVALID"
+
+[hard_rules.HR_AUTHORITY_MISSING]
+enabled = true
+action = "RequireApproval"
+reason = "AUTHORITY_MISSING"
+
+[hard_rules.HR_FEUT_CONTAMINATION]
+enabled = true
+action = "QuarantineArtifact"
+reason = "FORBIDDEN_PRODUCTION_TERM"
+
+[hard_rules.HR_UNKNOWN_OWNER_MUTATION]
+enabled = true
+action = "RequireOwnerResolution"
+reason = "UNKNOWN_OWNER_MUTATION"
+
+[hard_rules.HR_SOURCE_TRUTH_DRIFT]
+enabled = true
+minimum_action = "RequireVerification"
+reason = "SOURCE_TRUTH_DRIFT"
+
+[hard_rules.HR_FALSE_COMPLETION_MISSING_TESTS]
+enabled = true
+action = "GenerateRepairPacket"
+reason = "FALSE_COMPLETION_MISSING_TESTS"
+
+[hard_rules.HR_DESTRUCTIVE_MISSING_ROLLBACK]
+enabled = true
+action = "BlockRelease"
+reason = "DESTRUCTIVE_MISSING_ROLLBACK"

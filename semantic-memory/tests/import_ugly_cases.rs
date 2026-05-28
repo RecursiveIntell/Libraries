@@ -1,4 +1,5 @@
 //! Release-blocking ugly-case tests for projection batch import.
+#![allow(clippy::expect_used)]
 //!
 //! Covers edge cases that could surface in production but are easy to miss:
 //!

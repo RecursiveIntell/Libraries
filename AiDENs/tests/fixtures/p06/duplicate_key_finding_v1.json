@@ -1,0 +1,10 @@
+{
+  "finding_id": "duplicate-key-finding:fixture",
+  "path": "$",
+  "key": "path",
+  "first_offset": 1,
+  "duplicate_offset": 12,
+  "reason_codes": [
+    "duplicate-json-object-key"
+  ]
+}

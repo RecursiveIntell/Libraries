@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use remote_oracle_admission::{
     CrossRuntimeReplayTicketV1, LocalAdmissionRecommendationV1, RemoteDisclosureClassV1,
     RemoteExactnessClassV1, RemoteSliceRequestV1, RemoteSliceResultV1, ReplayFailureBehaviorV1,

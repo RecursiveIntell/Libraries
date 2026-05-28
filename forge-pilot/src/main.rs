@@ -1,3 +1,5 @@
+#![cfg_attr(test, allow(clippy::expect_used))]
+
 mod main_support;
 
 #[tokio::main(flavor = "current_thread")]

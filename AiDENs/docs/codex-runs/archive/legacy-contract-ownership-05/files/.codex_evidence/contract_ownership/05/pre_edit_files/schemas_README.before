@@ -1,0 +1,13 @@
+# Schemas
+
+P07 and later schema-owning passes generate wire-visible artifact schemas from Rust `JsonSchema` derives:
+
+```bash
+cargo run -p aidens-cli -- schemas generate
+cargo run -p aidens-cli -- schemas check
+```
+
+Generated schemas live under `schemas/<artifact-family>/vN.schema.json`.
+`generated_schema_manifest_v1.json` records the generated set and schema digests.
+
+The remaining `*.sketch.json` files are historical design sketches only; they are not the compatibility gate.

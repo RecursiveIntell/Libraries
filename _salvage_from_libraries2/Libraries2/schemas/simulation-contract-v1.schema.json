@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "mechanism_bundle_id": {
+      "type": "string"
+    },
+    "required_inputs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "simulation_contract_id": {
+      "type": "string"
+    },
+    "target_outcome": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "mechanism_bundle_id",
+    "schema_version",
+    "simulation_contract_id",
+    "target_outcome"
+  ],
+  "title": "SimulationContractV1",
+  "type": "object"
+}

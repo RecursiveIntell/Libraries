@@ -1,0 +1,7 @@
+{
+  "schema_version": "local_dissent_record_v1",
+  "local_dissent_id": "local-dissent-v25",
+  "runtime_name": "runtime-a",
+  "reason": "operator blocked settlement due to unresolved replay confidence",
+  "blocks_shared_settlement": true
+}

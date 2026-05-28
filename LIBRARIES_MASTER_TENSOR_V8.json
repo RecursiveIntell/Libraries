@@ -1,0 +1,43 @@
+{
+  "schema_version": "8",
+  "audit_date": "2026-04-02",
+  "auditors": ["Claude Opus 4.6 (full code review, 125K lines)"],
+  "scope": {
+    "lines": 124934,
+    "crates": 40,
+    "tests": 1320,
+    "schemas": 210,
+    "typed_ids": 218,
+    "production_unwraps": 0,
+    "production_unsafe_outside_primitives": 0
+  },
+  "executive_summary": "The libraries workspace is a mature substrate. Zero production unwraps, 210 JSON schemas, 218 typed IDs, real verification lifecycle with CommitToken enforcement, and a principled authority boundary model. The dominant work is consumption-readiness: ensuring Recall and future consumers can wire into the platform cleanly. No new crates or artifact families should be added during the CLARA closure pass.",
+  "confirmed_strengths": [
+    "CommitToken with private RuntimeSeal — compile-time forgery prevention",
+    "forge-pilot OODA loop consumes ExecutionPermit via issue_execution_permit()",
+    "GovernanceObservation reads 6 governance surfaces without writing",
+    "GovernanceMode::Strict fails closed on missing artifacts",
+    "verification-control → verification-policy → verification-adjudication → verification-calibration pipeline",
+    "effect-runtime: full intent → preflight → commit → execution receipt → observation bundle lifecycle",
+    "semantic-memory: 29K lines, FTS5+HNSW+RRF, graph_view, search_explained, projection storage",
+    "knowledge-runtime: query routing, entity resolution, temporal query support",
+    "llm-tool-runtime: dispatch, approval, receipt gen, timeout, cancel, typed descriptors",
+    "stack-ids: 218 typed ID newtypes with define_id! macro",
+    "contract-schema-gen: schema generation from Rust types",
+    "Zero production unwraps across all workspace members (excl. Primitives)",
+    "Zero unsafe outside Primitives"
+  ],
+  "issues": [
+    {"id": "LIB-001", "severity": "HIGH", "category": "consumption", "title": "Recall session doesn't consume CommitToken/ExecutionPermit", "surface": "verification-policy/src/permit.rs → recall-session/mod.rs:2379", "fix": "Wire permit chain into session query/tool paths", "notes": "Platform has the capability, app doesn't use it yet. Post-CLARA."},
+    {"id": "LIB-002", "severity": "HIGH", "category": "consumption", "title": "forge-pilot governance observation not consumed when forge-governance feature disabled", "surface": "recall-session Cargo.toml: forge-governance feature is optional", "fix": "Consider enabling by default or documenting activation path"},
+    {"id": "LIB-003", "severity": "MED", "category": "schema", "title": "Schema compatibility checks not yet CI-enforced", "surface": "scripts/check_schema_compat.sh exists but not in CI", "fix": "Add to CI pipeline"},
+    {"id": "LIB-004", "severity": "MED", "category": "schema", "title": "New artifact families need compatibility gates before promotion", "surface": "contract-schema-gen, schemas/", "fix": "Gate new families on compat check"},
+    {"id": "LIB-005", "severity": "MED", "category": "documentation", "title": "Supported-lane manifest may be stale relative to actual crate maturity", "surface": "support_lane.toml, STATUS_DASHBOARD.md", "fix": "Verify and update"},
+    {"id": "LIB-006", "severity": "MED", "category": "conformance", "title": "kernel-conformance and spec-execution surfaces incomplete", "surface": "kernel-conformance/, spec-execution/", "fix": "Add executable semantic oracles for promoted surfaces"},
+    {"id": "LIB-007", "severity": "MED", "category": "repair", "title": "Bounded repair and contradiction surfaces need tightening", "surface": "kernel/runtime repair artifacts", "fix": "Type and bound repair artifacts for downstream consumption"},
+    {"id": "LIB-008", "severity": "LOW", "category": "primitives", "title": "Primitives/ has unwraps and unsafe that don't match workspace policy", "surface": "cea-sqlite (77 unwraps), sandbox-workspace (42 unwraps), check-runner (unsafe)", "fix": "These are excluded from default workspace and separately governed, but document the policy"},
+    {"id": "LIB-009", "severity": "LOW", "category": "attestation", "title": "attestation-exchange wired but not consumed by governance observation", "surface": "forge-pilot governance_gate.rs GOV-002 comment", "fix": "V2 scope — document as planned"},
+    {"id": "LIB-010", "severity": "HIGH", "category": "consumption", "title": "knowledge-runtime query routing not used by most Recall retrieval paths", "surface": "recall-session tools use MemoryStore directly", "fix": "Recall-side fix (RPD-001) — library API is correct"}
+  ],
+  "severity_summary": {"HIGH": 3, "MED": 5, "LOW": 2, "total": 10}
+}

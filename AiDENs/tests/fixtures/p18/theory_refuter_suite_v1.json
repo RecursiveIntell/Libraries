@@ -1,0 +1,19 @@
+{
+  "suite_id": "theory-refuter-suite:linear-response-v1",
+  "kind": "theory-refuter-suite",
+  "theory_id": "theory-version:linear-response-v1",
+  "mechanism_id": "mechanism-report:linear-response-v1",
+  "refuter_case_ids": ["refuter:intervention-shift"],
+  "fit_run_receipt_ids": ["fit-run-report:linear-response-v1"],
+  "invariance_report_ids": ["invariance-report:linear-response-v1"],
+  "outcome": "no-refutation-found",
+  "required_refuter_count": 1,
+  "passed_refuter_count": 1,
+  "falsifiable": true,
+  "replay_handles": ["fit-run-report:linear-response-v1"],
+  "reason_codes": [
+    "theory-refuter-suite-recorded",
+    "no-refutation-found-is-not-final-truth"
+  ],
+  "recorded_at": "2026-04-27T00:03:00Z"
+}

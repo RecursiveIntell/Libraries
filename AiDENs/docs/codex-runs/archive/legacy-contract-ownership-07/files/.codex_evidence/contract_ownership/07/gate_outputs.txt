@@ -1,0 +1,190 @@
+# Phase 07 Gate Outputs
+
+## final ownership gate
+Source: .codex_evidence/contract_ownership/07/phase_verify_final_after_docs.txt
+
+COMMAND: bash scripts/assert_no_crate_split.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: no aidens-contracts split crates detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+COMMAND: bash scripts/assert_docs_source_basis_current.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: no blocking stale source-basis docs detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+COMMAND: python3 scripts/assert_no_canonical_type_duplicates.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+canonical_types=633
+aidens_contracts_types=194
+duplicate_findings=0
+PASS: no local aidens-contracts public type definitions duplicate canonical public type names.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+COMMAND: bash scripts/assert_no_local_canonical_digest_law.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: no exported local canonical digest law detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+COMMAND: python3 scripts/assert_schema_generation_scope.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: schema generation scope appears AiDENs-local/non-authoritative (registered_families=58, checked_schema_files=58).
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+COMMAND: bash scripts/assert_tool_runtime_delegation.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+crates/aidens-contracts/src/lib.rs:6198:pub struct ToolDescriptorV1 {
+crates/aidens-contracts/Cargo.toml:17:llm-tool-runtime.workspace = true
+crates/aidens-contracts/src/lib.rs:23:    pub use llm_tool_runtime::ToolSideEffectClass as CanonicalToolSideEffectClass;
+crates/aidens-contracts/src/lib.rs:1245:                "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:1287:                "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:1589:                "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:1635:                "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:6190:            "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:6218:            "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:6250:            "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:8665:                "llm-tool-runtime",
+crates/aidens-provider-kit/Cargo.toml:15:llm-tool-runtime.workspace = true
+crates/aidens-provider-kit/src/lib.rs:18:    pub use llm_tool_runtime::{
+crates/aidens-receipts/Cargo.toml:14:llm-tool-runtime.workspace = true
+crates/aidens-receipts/src/lib.rs:10:pub use llm_tool_runtime::{
+crates/aidens-receipts/src/lib.rs:134:            "llm-tool-runtime",
+crates/aidens-security-kit/Cargo.toml:12:llm-tool-runtime.workspace = true
+crates/aidens-security-kit/src/lib.rs:3:use llm_tool_runtime::ToolSideEffectClass;
+crates/aidens-testkit/Cargo.toml:34:llm-tool-runtime.workspace = true
+crates/aidens-testkit/tests/stack_import_smoke.rs:5:    let tool_result = llm_tool_runtime::ToolResult::text("ok");
+crates/aidens-testkit/tests/phase_00_source_truth.rs:53:        "llm-tool-runtime",
+crates/aidens-testkit/tests/phase_02_adapter_delegation.rs:34:        TypeId::of::<llm_tool_runtime::ToolReceipt>()
+crates/aidens-testkit/tests/phase_02_adapter_delegation.rs:66:        TypeId::of::<llm_tool_runtime::ToolRuntime>()
+crates/aidens-testkit/tests/phase_02_adapter_delegation.rs:70:        TypeId::of::<llm_tool_runtime::ToolRegistry>()
+crates/aidens-testkit/tests/phase_03_golden_vertical_slice.rs:8:use llm_tool_runtime::{
+crates/aidens-testkit/tests/phase_03_golden_vertical_slice.rs:56:    assert_eq!(runtime_record.owner_crate, "llm-tool-runtime");
+crates/aidens-testkit/tests/phase_04_failure_honesty.rs:7:use llm_tool_runtime::{
+crates/aidens-testkit/tests/phase_04_failure_honesty.rs:112:        llm_tool_runtime::ToolApprovalState::Denied
+crates/aidens-testkit/tests/phase_04_failure_honesty.rs:120:    assert_eq!(runtime_entry.owner_crate, "llm-tool-runtime");
+crates/aidens-testkit/tests/phase_04_failure_honesty.rs:255:        retry_owner: Some(llm_tool_runtime::ToolRetryOwner::ForgeOrchestration),
+crates/aidens-testkit/tests/phase_09_release_audit.rs:95:        r#"llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }"#,
+crates/aidens-tool-kit/Cargo.toml:17:llm-tool-runtime.workspace = true
+crates/aidens-tool-kit/src/lib.rs:22:    pub use llm_tool_runtime::{
+crates/aidens-tool-kit/src/lib.rs:216:            "canonical_owner": "llm-tool-runtime",
+crates/aidens-tool-kit/src/lib.rs:438:                "llm-tool-runtime",
+Cargo.toml:69:llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
+crates/aidens-contracts/src/lib.rs:1211:pub struct ToolCallRequestV1 {
+crates/aidens-contracts/src/lib.rs:1255:pub struct ToolCallResultV1 {
+PASS: tool runtime delegation gate did not find blocking local-only tool truth.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+COMMAND: bash scripts/assert_wrapper_backpointers.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: wrapper backpointer gate did not find blocking risky wrappers.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+COMMAND: bash scripts/assert_no_compatibility_ledgers.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: no compatibility ledger entries or obvious compat/shim files detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+COMMAND: bash scripts/assert_no_local_substitute_dependencies.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: no local substitute dependency red flags detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00
+PASS: contract ownership verification passed. Evidence in /home/sikmindz/Coding/Libraries/AiDENs/.codex_evidence/contract_ownership/final
+
+## cargo check --workspace
+Source: .codex_evidence/contract_ownership/07/cargo_check_workspace.txt
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+
+## cargo test --workspace
+Source: .codex_evidence/contract_ownership/07/cargo_test_workspace.txt
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_profile_desktop
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_profile_memory
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_profile_research
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_provider_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_queue_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_receipts
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_repair_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_runner
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_schedule_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_security_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_testkit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_tool_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests aidens_wake_kit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

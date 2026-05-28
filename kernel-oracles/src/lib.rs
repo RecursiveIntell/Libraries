@@ -1,3 +1,4 @@
+#![cfg_attr(test, allow(clippy::expect_used))]
 use chrono::{DateTime, FixedOffset};
 use constraint_compiler::{compile_batch, CompileOutput, CompilerPolicy};
 use forge_memory_bridge::ProjectionImportBatchV3;

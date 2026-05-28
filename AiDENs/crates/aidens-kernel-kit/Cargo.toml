@@ -1,0 +1,19 @@
+[package]
+name = "aidens-kernel-kit"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+constraint-compiler.workspace = true
+forge-memory-bridge.workspace = true
+kernel-conformance.workspace = true
+kernel-execution.workspace = true
+kernel-oracles.workspace = true
+recursive-kernel-core.workspace = true
+
+[dev-dependencies]

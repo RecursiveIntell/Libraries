@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "EquivalenceEvidenceV1": {
+      "properties": {
+        "evidence_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "local_claim_ref": {
+          "type": "string"
+        },
+        "shared_claim_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "local_claim_ref",
+        "shared_claim_ref"
+      ],
+      "type": "object"
+    },
+    "SurfaceStatus": {
+      "description": "Shared publication-status primitive for thin governance/profile surfaces.\n\nDomain crates may only use the variants they need, but they should not redefine the status family locally because that creates schema drift bait.",
+      "enum": [
+        "advisory_only",
+        "non_admitted",
+        "degraded",
+        "horizon_only"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "canonical_owner": {
+      "type": "string"
+    },
+    "equivalence_bundle_id": {
+      "type": "string"
+    },
+    "equivalence_scope": {
+      "type": "string"
+    },
+    "evidence": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/EquivalenceEvidenceV1"
+      },
+      "type": "array"
+    },
+    "publication_status": {
+      "$ref": "#/definitions/SurfaceStatus"
+    },
+    "runtime_identity_set_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "treaty_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "canonical_owner",
+    "equivalence_bundle_id",
+    "equivalence_scope",
+    "publication_status",
+    "runtime_identity_set_id",
+    "schema_version",
+    "treaty_bundle_id"
+  ],
+  "title": "CrossRuntimeEquivalenceBundleV1",
+  "type": "object"
+}

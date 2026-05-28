@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-05-02T06:04:37Z",
+  "error_count": 0,
+  "findings": [
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "AiDENs/prompts/phases/PHASE_05_SECRET_REDACTION_AND_API_KEY_WARNING_CLOSURE.md",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "AiDENs/scripts/p22_secret_scan_fixture_test.py",
+      "severity": "warning"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "warning_count": 2
+}

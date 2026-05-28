@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "counterfactual_slice_id": {
+      "type": "string"
+    },
+    "promotion_impact": {
+      "type": "string"
+    },
+    "refuter_kind": {
+      "type": "string"
+    },
+    "refuter_result_id": {
+      "type": "string"
+    },
+    "replay_linkage": {
+      "type": "string"
+    },
+    "result_summary": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "counterfactual_slice_id",
+    "promotion_impact",
+    "refuter_kind",
+    "refuter_result_id",
+    "replay_linkage",
+    "result_summary",
+    "schema_version",
+    "state"
+  ],
+  "title": "RefuterResultV1",
+  "type": "object"
+}

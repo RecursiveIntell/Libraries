@@ -20,3 +20,7 @@ schemars = { workspace = true }
 semantic-memory-forge = { path = "../semantic-memory-forge" }
 serde_json = { workspace = true }
 proptest = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

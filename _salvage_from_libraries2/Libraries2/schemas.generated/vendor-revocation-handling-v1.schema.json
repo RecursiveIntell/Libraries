@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "admission_impact": {
+      "type": "string"
+    },
+    "local_invalidation_actions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_impact": {
+      "type": "string"
+    },
+    "revocation_inputs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "vendor_certification_adapter_id": {
+      "type": "string"
+    },
+    "vendor_revocation_handling_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "admission_impact",
+    "replay_impact",
+    "schema_version",
+    "vendor_certification_adapter_id",
+    "vendor_revocation_handling_id"
+  ],
+  "title": "VendorRevocationHandlingV1",
+  "type": "object"
+}

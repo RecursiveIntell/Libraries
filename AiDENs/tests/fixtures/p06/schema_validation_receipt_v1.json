@@ -1,0 +1,23 @@
+{
+  "receipt_id": "schema-validation:fixture",
+  "kind": "schema-validation",
+  "tool_id": "aidens:repo-read:1",
+  "schema_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:39b714704935190561ed407980480b9a4a0b346b97346e0bff71fb9ace820194"
+  },
+  "input_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:d826062fb4772d1122c14809cbffb52c7cca418c310f91e63e1dad553ae92e24"
+  },
+  "valid": false,
+  "errors": [
+    "$.path: expected type string, got integer"
+  ],
+  "reason_codes": [
+    "schema-validation-failed"
+  ],
+  "checked_at": "2026-04-26T00:00:00Z"
+}

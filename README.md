@@ -1,59 +1,60 @@
-# RecursiveIntell
+# FibQuant Paper-Core Codex Bundle — 2026-05-16
 
-A 30-crate Rust workspace implementing an OODA governance orchestrator for recursive intelligence systems.
+Purpose: drive one Codex pass that creates a paper-faithful `fib-quant` Rust crate without mutating `semantic-memory`, `turbo-quant`, Gloss, or product behavior.
 
-## What it does
+This bundle is designed for `~/Coding/Libraries` and the package `Libraries-libraries-next-codex-context-20260512.zip`.
 
-RecursiveIntell provides a full **Observe → Orient → Decide → Act** loop with integrated verification, calibration, and adjudication. The system enforces governance constraints at every stage: observations are checked against constitutional memory, decisions are gated by execution permits, and actions produce auditable effect receipts.
+## What this pass must produce
 
-The stack generates 211 JSON schemas from the Rust type system via `contract-schema-gen`, ensuring wire-format contracts stay synchronized with code.
+- A new workspace member `fib-quant`, not in `default-members`.
+- Paper-faithful FibQuant math core:
+  - normalize -> Haar rotate -> split into k-blocks;
+  - spherical-Beta source sampler;
+  - Beta-quantile radii;
+  - k=2 Fibonacci spiral, k=3 Fibonacci sphere, k>=4 Roberts-Kronecker directions;
+  - multi-restart Lloyd-Max refinement with deterministic empty-cell repair;
+  - fixed-rate index payload and fp16 norm header;
+  - decode by lookup + inverse rotation;
+  - deterministic profile/codebook/encoded digests;
+  - receipts and math conformance docs.
+- Tests proving math and failure behavior.
 
-## Crate architecture
+## What this pass must not do
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Tier 1 — Core Intelligence                             │
-│  constraint-compiler · kernel-oracles                   │
-├─────────────────────────────────────────────────────────┤
-│  Tier 2 — Orchestration                                 │
-│  semantic-memory · forge-engine (living-memory)          │
-│  knowledge-runtime · forge-pilot                        │
-├─────────────────────────────────────────────────────────┤
-│  Tier 3 — Support & Bridge                              │
-│  stack-ids · llm-tool-runtime · profile-runtime          │
-│  forge-memory-bridge · semantic-memory-forge             │
-├─────────────────────────────────────────────────────────┤
-│  Governance                                             │
-│  assurance-runtime · attestation-exchange                │
-│  authority-delegation · constitutional-memory            │
-│  continuity-runtime · effect-runtime · mechanism-runtime │
-├─────────────────────────────────────────────────────────┤
-│  Verification Pipeline                                  │
-│  verification-control · verification-policy              │
-│  verification-calibration · verification-adjudication    │
-└─────────────────────────────────────────────────────────┘
-```
+- No production integration into `semantic-memory`.
+- No changes to `semantic-memory/src/**` or `turbo-quant/src/**`.
+- No FEUT/SCR variant.
+- No default-on compression.
+- No “zero loss” or performance win claims.
+- No deletion/replacement of raw embeddings or canonical memory.
 
-## Build
+## Recommended use
 
-```bash
-cargo build --workspace
-cargo test --workspace
-cargo clippy --workspace -- -D warnings
-```
+1. From repo root, install the optional context/hook overlay:
 
-## Gate verification
+   ```bash
+   bash scripts/install_fibquant_codex_bundle.sh /path/to/this/bundle
+   ```
 
-```bash
-make gate
-```
+   Or manually copy `overlays/.agents/skills/fibquant-paper-core` into `<repo>/.agents/skills/` and review `.codex/hooks.json` before use.
 
-This runs the full release gate set including permit path checks, hotspot budgets, panic safety, doc coverage, and schema compatibility.
+2. Start Codex in `~/Coding/Libraries`.
+3. Open `/hooks` and approve only the two FibQuant hook scripts if installed.
+4. Use Plan mode first for a source-basis plan.
+5. Paste `OPERATOR_PASTE_FIRST.md`.
+6. After completion, run:
 
-## Canonical specification
+   ```bash
+   python3 scripts/fibquant_final_assert.py --repo .
+   cargo fmt --all --check
+   cargo test -p fib-quant
+   ```
 
-See [`CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md`](CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md) for the current constitutional specification.
+## Why this bundle uses Codex features
 
-## Snapshot
-
-Source basis: `libraries-source-clean-20260330.zip`
+- `AGENTS.md` / skill: durable repo-local instructions.
+- Hooks: deterministic guardrails at prompt/stop boundaries.
+- Phase prompts: bounded work slices.
+- Final assertion script: executable closeout check.
+- Backstop prompts: human override when hooks are unavailable.
+- Matrices/fixtures: reduce ambiguity and prevent “creative” math substitution.

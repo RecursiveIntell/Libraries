@@ -1,0 +1,228 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BlockEntryV1": {
+      "properties": {
+        "admissible_exception_classes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "block_key": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "source_profile_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "block_key",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "CompiledObligationEntryV1": {
+      "properties": {
+        "blocking": {
+          "type": "boolean"
+        },
+        "expiry_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "fold_class": {
+          "$ref": "#/definitions/FoldClassV1"
+        },
+        "numeric_value": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "obligation_entry_id": {
+          "type": "string"
+        },
+        "obligation_family": {
+          "type": "string"
+        },
+        "obligation_key": {
+          "type": "string"
+        },
+        "output_kind": {
+          "$ref": "#/definitions/CompiledObligationKindV1"
+        },
+        "source_exception_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "source_profile_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "string_values": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "blocking",
+        "explanation",
+        "fold_class",
+        "obligation_entry_id",
+        "obligation_family",
+        "obligation_key",
+        "output_kind"
+      ],
+      "type": "object"
+    },
+    "CompiledObligationKindV1": {
+      "enum": [
+        "approval",
+        "check",
+        "monitor",
+        "evidence",
+        "disclosure",
+        "residency",
+        "tenancy",
+        "assurance",
+        "continuity",
+        "effect",
+        "delegation",
+        "replay",
+        "rollback",
+        "compensation",
+        "post_hoc_review",
+        "warning",
+        "block"
+      ],
+      "type": "string"
+    },
+    "FoldClassV1": {
+      "enum": [
+        "intersection",
+        "union",
+        "min_of_maxima",
+        "max_of_minima",
+        "earliest_expiry",
+        "conflict_if_different",
+        "block_dominant"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "block_entries": {
+      "items": {
+        "$ref": "#/definitions/BlockEntryV1"
+      },
+      "type": "array"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "effect_eligibility_summary": {
+      "type": "string"
+    },
+    "effective_constitution_ref": {
+      "type": "string"
+    },
+    "obligation_entries": {
+      "items": {
+        "$ref": "#/definitions/CompiledObligationEntryV1"
+      },
+      "type": "array"
+    },
+    "promotion_eligibility_summary": {
+      "type": "string"
+    },
+    "release_eligibility_summary": {
+      "type": "string"
+    },
+    "required_approvals": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_checks": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_compensation_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_disclosure_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_evidence_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_monitors": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_post_hoc_review_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_rollback_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "unresolved_dependency_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "compiled_obligation_set_id",
+    "effect_eligibility_summary",
+    "effective_constitution_ref",
+    "promotion_eligibility_summary",
+    "release_eligibility_summary",
+    "schema_version"
+  ],
+  "title": "CompiledObligationSetV1",
+  "type": "object"
+}

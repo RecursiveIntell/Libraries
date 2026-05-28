@@ -863,6 +863,10 @@ const SCHEMA_SPECS: &[SchemaSpec] = &[
         name: "vendor-trust-root-binding-v1.schema.json",
         writer: write_schema::<attestation_exchange::VendorTrustRootBindingV1>,
     },
+    SchemaSpec {
+        name: "bridge-import-failure-artifact-v1.schema.json",
+        writer: write_schema::<forge_memory_bridge::BridgeImportFailureArtifact>,
+    },
 ];
 
 /// Generates every registered schema into the supplied output directory.
@@ -992,6 +996,117 @@ mod tests {
             assert!(
                 SCHEMA_SPECS.iter().any(|spec| spec.name == name),
                 "missing execution-evidence schema registration for {name}"
+            );
+        }
+    }
+
+    // ─── LIB-C004: v9 constitutional artifact families must all have registered schemas ───
+
+    #[test]
+    fn v9_canonical_bundle_schemas_are_registered() {
+        // LIB-C001: Freeze canonical episode/claim/evidence package law.
+        // Every wire-visible v9 bundle artifact must be governed by contract-schema-gen.
+        let required = [
+            "episode-bundle-v1.schema.json",
+            "evidence-bundle-v1.schema.json",
+            "execution-context-v1.schema.json",
+            "export-envelope-v3.schema.json",
+            "projection-import-batch-v3.schema.json",
+        ];
+        for name in required {
+            assert!(
+                SCHEMA_SPECS.iter().any(|spec| spec.name == name),
+                "LIB-C001: missing canonical bundle schema registration for {name}"
+            );
+        }
+    }
+
+    #[test]
+    fn v9_execution_evidence_schemas_are_complete() {
+        // LIB-C002: Freeze execution evidence artifacts.
+        // All execution-evidence families must be governed.
+        let required = [
+            "forge-tool-receipt-v2.schema.json",
+            "episode-bundle-v1.schema.json",
+            "execution-context-v1.schema.json",
+            "control-receipt-v1.schema.json",
+            "scheduler-decision-v1.schema.json",
+            "loop-iteration-report-v1.schema.json",
+            "loop-report-v1.schema.json",
+            "verification-plan-artifact-v1.schema.json",
+            "repair-record-v1.schema.json",
+            "runtime-query-provenance-v1.schema.json",
+            "import-failure-record-v1.schema.json",
+        ];
+        for name in required {
+            assert!(
+                SCHEMA_SPECS.iter().any(|spec| spec.name == name),
+                "LIB-C002: missing execution-evidence schema registration for {name}"
+            );
+        }
+    }
+
+    #[test]
+    fn v9_repair_law_schema_is_registered() {
+        // LIB-C008: Repair law hardening.
+        // RepairRecordV1 must be a governed schema, not folkloric.
+        assert!(
+            SCHEMA_SPECS
+                .iter()
+                .any(|spec| spec.name == "repair-record-v1.schema.json"),
+            "LIB-C008: RepairRecordV1 must be a governed schema"
+        );
+    }
+
+    #[test]
+    fn v9_runtime_provenance_schema_is_registered() {
+        // LIB-C009: Runtime provenance completeness.
+        // RuntimeQueryProvenanceV1 must be a governed schema.
+        assert!(
+            SCHEMA_SPECS
+                .iter()
+                .any(|spec| spec.name == "runtime-query-provenance-v1.schema.json"),
+            "LIB-C009: RuntimeQueryProvenanceV1 must be a governed schema"
+        );
+    }
+
+    #[test]
+    fn v9_bridge_atomicity_schemas_are_registered() {
+        // LIB-C005: Bridge atomicity proofs.
+        // Bridge failure and region transport artifacts must be governed schemas.
+        let required = [
+            "import-failure-record-v1.schema.json",
+            "boundary-repair-record-v1.schema.json",
+            "region-artifact-transport-v1.schema.json",
+            "syndrome-route-record-v1.schema.json",
+            "bridge-import-failure-artifact-v1.schema.json",
+        ];
+        for name in required {
+            assert!(
+                SCHEMA_SPECS.iter().any(|spec| spec.name == name),
+                "LIB-C005: missing bridge atomicity schema registration for {name}"
+            );
+        }
+    }
+
+    #[test]
+    fn v9_governance_review_schemas_are_registered() {
+        // LIB-C004: Schema governance enforcement.
+        // All governance review case families must be governed schemas.
+        let required = [
+            "effect-review-case-v1.schema.json",
+            "effect-block-receipt-v1.schema.json",
+            "delegation-review-case-v1.schema.json",
+            "release-gate-case-v1.schema.json",
+            "continuity-review-case-v1.schema.json",
+            "verification-case-v1.schema.json",
+            "check-plan-v1.schema.json",
+            "verification-attempt-v1.schema.json",
+        ];
+        for name in required {
+            assert!(
+                SCHEMA_SPECS.iter().any(|spec| spec.name == name),
+                "LIB-C004: missing governance review schema registration for {name}"
             );
         }
     }

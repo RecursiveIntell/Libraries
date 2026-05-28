@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "hazard_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "hazard_library_id": {
+      "type": "string"
+    },
+    "linked_operating_envelopes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scoring_model_ref": {
+      "type": "string"
+    },
+    "sector": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "hazard_library_id",
+    "schema_version",
+    "scoring_model_ref",
+    "sector"
+  ],
+  "title": "HazardLibraryV1",
+  "type": "object"
+}

@@ -11,3 +11,7 @@ schemars = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 stack-ids = { path = "../stack-ids" }
 attestation-exchange = { path = "../attestation-exchange" }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

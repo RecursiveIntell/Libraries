@@ -1,0 +1,37 @@
+# Gloss P32R3 command policy. Rules are intentionally conservative.
+
+prefix_rule(
+  pattern = ["git", "reset", "--hard"],
+  decision = "forbidden",
+  justification = "P32R3 forbids destructive repository reset without explicit operator approval."
+)
+
+prefix_rule(
+  pattern = ["git", "clean", "-xfd"],
+  decision = "forbidden",
+  justification = "P32R3 forbids broad destructive cleanup."
+)
+
+prefix_rule(
+  pattern = ["rm", "-rf", "/"],
+  decision = "forbidden",
+  justification = "Never allow root deletion."
+)
+
+prefix_rule(
+  pattern = ["npm", "publish"],
+  decision = "forbidden",
+  justification = "Publishing is outside this repair pass."
+)
+
+prefix_rule(
+  pattern = ["cargo", "publish"],
+  decision = "forbidden",
+  justification = "Publishing is outside this repair pass."
+)
+
+prefix_rule(
+  pattern = ["curl"],
+  decision = "prompt",
+  justification = "Network access should be exceptional; Ollama localhost checks may be approved."
+)

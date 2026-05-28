@@ -1,0 +1,240 @@
+{
+  "run_id": "P25",
+  "created_utc": "2026-05-04T01:00:25.484728+00:00",
+  "package_sha256": "885824c8dc913faf0fad64a33b2f0f13ec8c5f0197494b02edc8756c02c235ea",
+  "commands": [
+    {
+      "command": "python3 scripts/assert_phase_gate_integrity.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_01_assert_phase_gate_integrity.txt"
+    },
+    {
+      "command": "python3 scripts/assert_root_markdown_archive_policy.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_02_assert_root_markdown_archive_policy.txt"
+    },
+    {
+      "command": "python3 scripts/assert_current_run_truth.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_03_assert_current_run_truth.txt"
+    },
+    {
+      "command": "python3 scripts/assert_codex_artifact_classification.py .",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_04_assert_codex_artifact_classification.txt"
+    },
+    {
+      "command": "python3 scripts/assert_root_markdown_archive_manifest.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_05_assert_root_markdown_archive_manifest.txt"
+    },
+    {
+      "command": "python3 scripts/assert_support_claims.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_06_assert_support_claims.txt"
+    },
+    {
+      "command": "bash scripts/assert_docs_source_basis_current.sh",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_07_assert_source_basis_staleness.txt"
+    },
+    {
+      "command": "bash scripts/assert_no_fake_completion.sh",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_08_assert_no_fake_completion.txt"
+    },
+    {
+      "command": "bash scripts/assert_no_local_substitute_dependencies.sh",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_09_assert_no_local_substitute_dependencies.txt"
+    },
+    {
+      "command": "python3 z.py --root . --profile aidens --mode codex-context --no-strict --verify-root-markdown-noise-hygiene --archive-root-markdown-noise --root-markdown-archive-dry-run",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_10_root_markdown_archive_dry_run.txt"
+    },
+    {
+      "command": "python3 z.py --root . --profile aidens --mode codex-context --strict --check-script-refs --codex-current-run P25 --output /home/sikmindz/Coding/Libraries/AiDENs/target/p25/package/AiDENs-p25-codex-context.zip",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_11_package_validation.txt"
+    },
+    {
+      "command": "python3 scripts/assert_package_validation.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_12_assert_package_validation.txt"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_13_cargo_fmt_--all_--_--check.txt"
+    },
+    {
+      "command": "cargo check --workspace",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_14_cargo_check_--workspace.txt"
+    },
+    {
+      "command": "cargo test --workspace",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_15_cargo_test_--workspace.txt"
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_16_cargo_clippy_--workspace_--all-targets_--_-D_warnings.txt"
+    },
+    {
+      "command": "cargo doc --workspace --no-deps",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_17_cargo_doc_--workspace_--no-deps.txt"
+    }
+  ],
+  "changed_files": [
+    "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225904Z/ROOT_MARKDOWN_ARCHIVE_MANIFEST.json",
+    "P25_STATUS_EVIDENCE_MANIFEST.json",
+    "handoffs/p25/PHASE_05_GATE_REVALIDATION.md",
+    "handoffs/p25/PHASE_05_REPORT.md",
+    "scripts/assert_package_validation.py",
+    "scripts/assert_root_markdown_archive_manifest.py",
+    "scripts/assert_support_claims.py",
+    "scripts/p25_verify.py",
+    "scripts/p25_verify.sh",
+    "scripts/verify_current.sh",
+    "target/p25/audit/phase05_command_log.txt",
+    "target/p25/audit/phase05_command_results.jsonl",
+    "target/p25/package/AiDENs-p25-codex-context.codex-archive.json",
+    "target/p25/package/AiDENs-p25-codex-context.excluded.json",
+    "target/p25/package/AiDENs-p25-codex-context.findings.json",
+    "target/p25/package/AiDENs-p25-codex-context.manifest.json",
+    "target/p25/package/AiDENs-p25-codex-context.report.md",
+    "target/p25/package/AiDENs-p25-codex-context.zip"
+  ],
+  "phase_gates": [
+    {
+      "phase": "05",
+      "name": "Verifier and evidence manifest hardening",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_command_log.txt"
+    }
+  ],
+  "root_markdown_archive": {
+    "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225904Z/ROOT_MARKDOWN_ARCHIVE_MANIFEST.json",
+    "inspected_count": 69,
+    "protected_count": 5,
+    "candidate_count": 0,
+    "ambiguous_count": 64,
+    "moved_count": 0
+  },
+  "validation_results": [
+    {
+      "check": "python3 scripts/assert_phase_gate_integrity.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_01_assert_phase_gate_integrity.txt",
+      "return_code": 0
+    },
+    {
+      "check": "python3 scripts/assert_root_markdown_archive_policy.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_02_assert_root_markdown_archive_policy.txt",
+      "return_code": 0
+    },
+    {
+      "check": "python3 scripts/assert_current_run_truth.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_03_assert_current_run_truth.txt",
+      "return_code": 0
+    },
+    {
+      "check": "python3 scripts/assert_codex_artifact_classification.py .",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_04_assert_codex_artifact_classification.txt",
+      "return_code": 0
+    },
+    {
+      "check": "python3 scripts/assert_root_markdown_archive_manifest.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_05_assert_root_markdown_archive_manifest.txt",
+      "return_code": 0
+    },
+    {
+      "check": "python3 scripts/assert_support_claims.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_06_assert_support_claims.txt",
+      "return_code": 0
+    },
+    {
+      "check": "bash scripts/assert_docs_source_basis_current.sh",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_07_assert_source_basis_staleness.txt",
+      "return_code": 0
+    },
+    {
+      "check": "bash scripts/assert_no_fake_completion.sh",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_08_assert_no_fake_completion.txt",
+      "return_code": 0
+    },
+    {
+      "check": "bash scripts/assert_no_local_substitute_dependencies.sh",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_09_assert_no_local_substitute_dependencies.txt",
+      "return_code": 0
+    },
+    {
+      "check": "python3 z.py --root . --profile aidens --mode codex-context --no-strict --verify-root-markdown-noise-hygiene --archive-root-markdown-noise --root-markdown-archive-dry-run",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_10_root_markdown_archive_dry_run.txt",
+      "return_code": 0
+    },
+    {
+      "check": "python3 z.py --root . --profile aidens --mode codex-context --strict --check-script-refs --codex-current-run P25 --output /home/sikmindz/Coding/Libraries/AiDENs/target/p25/package/AiDENs-p25-codex-context.zip",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_11_package_validation.txt",
+      "return_code": 0
+    },
+    {
+      "check": "python3 scripts/assert_package_validation.py",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_12_assert_package_validation.txt",
+      "return_code": 0
+    },
+    {
+      "check": "cargo fmt --all -- --check",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_13_cargo_fmt_--all_--_--check.txt",
+      "return_code": 0
+    },
+    {
+      "check": "cargo check --workspace",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_14_cargo_check_--workspace.txt",
+      "return_code": 0
+    },
+    {
+      "check": "cargo test --workspace",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_15_cargo_test_--workspace.txt",
+      "return_code": 0
+    },
+    {
+      "check": "cargo clippy --workspace --all-targets -- -D warnings",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_16_cargo_clippy_--workspace_--all-targets_--_-D_warnings.txt",
+      "return_code": 0
+    },
+    {
+      "check": "cargo doc --workspace --no-deps",
+      "status": "pass",
+      "log": "/home/sikmindz/Coding/Libraries/AiDENs/target/p25/audit/phase05_17_cargo_doc_--workspace_--no-deps.txt",
+      "return_code": 0
+    }
+  ],
+  "support_claims": [
+    "Supported-local and fixture-backed support claims remain evidence-bearing; no additional cloud/autonomy support claims were introduced in this phase."
+  ],
+  "known_limitations": [
+    "No additional runtime/semantic capability expansion in this phase."
+  ],
+  "unresolved_risks": [],
+  "failed_checks": []
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "family": {
+      "type": "string"
+    },
+    "markers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "nuisance_state_id": {
+      "type": "string"
+    },
+    "operator_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "region_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantic_change_confounded": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "family",
+    "markers",
+    "nuisance_state_id",
+    "operator_families",
+    "recorded_at",
+    "schema_version",
+    "semantic_change_confounded"
+  ],
+  "title": "NuisanceStateArtifact",
+  "type": "object"
+}

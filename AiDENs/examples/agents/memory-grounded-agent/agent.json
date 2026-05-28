@@ -1,0 +1,49 @@
+{
+  "schema": "AgentSpecV1",
+  "agent_id": "agent:memory-grounded-example",
+  "display_name": "Memory Grounded Local Agent",
+  "support_label": "supported-local",
+  "profile": "memory",
+  "provider_policy": {
+    "provider": "local",
+    "cloud_allowed": false,
+    "fallback_allowed": false
+  },
+  "memory_policy": {
+    "enabled": true,
+    "mode": "canonical-seam",
+    "requires_view_disclosure": true
+  },
+  "tool_policy": {
+    "allowed_tools": [
+      "repo.read",
+      "repo.search"
+    ],
+    "write_tools_require_permit": true
+  },
+  "permit_policy": {
+    "writes": "operator-approved",
+    "commands": "operator-approved",
+    "network": "forbidden"
+  },
+  "verification_policy": {
+    "required_checks": [
+      "schema",
+      "sandbox",
+      "digest",
+      "support-claim"
+    ],
+    "fail_closed": true
+  },
+  "evidence_policy": {
+    "emit_run_bundle": true,
+    "emit_tool_receipts": true,
+    "emit_permit_receipts": true,
+    "emit_abstention_receipts": true
+  },
+  "budget_policy": {
+    "max_turns": 4,
+    "max_tool_calls": 6,
+    "deadline_seconds": 120
+  }
+}

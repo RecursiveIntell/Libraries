@@ -1,0 +1,327 @@
+[
+  {
+    "id": "BASE-001",
+    "status": "landed-by-evidence",
+    "priority": "P0",
+    "phase": "Done",
+    "area": "hardening-closeout",
+    "owners": [
+      "root",
+      "contract-schema-gen",
+      "verification-*",
+      "living-memory"
+    ],
+    "title": "Keep the 2026-03-22 hardening closeout green",
+    "current_state": "The active hardening receipt records passing results for repo surface, doc truth, manifest truth, schema registry uniqueness, no production panics, mirror discipline, hotspot budgets, public type drift, root archive manifest, public API docs, schema compatibility, selected cargo tests, and closeout receipt generation.",
+    "required_change": "No architectural change is required. Preserve the active gate set and keep release/closeout_receipt_v1.json reproducible from the same support scope.",
+    "acceptance": [
+      "STATUS_EVIDENCE_MANIFEST.json remains the release-facing proof ledger for the hardening lane.",
+      "release/closeout_receipt_v1.json regenerates without drift.",
+      "No open allowlist debt is reintroduced for public type drift or production panics."
+    ],
+    "proof": [
+      "python3 scripts/check_closeout_receipt.py",
+      "python3 scripts/check_public_type_drift.py",
+      "bash scripts/check_no_prod_panics.sh"
+    ],
+    "touch_files": [],
+    "depends_on": []
+  },
+  {
+    "id": "BASE-002",
+    "status": "landed-by-evidence",
+    "priority": "P0",
+    "phase": "Done",
+    "area": "schema-governance",
+    "owners": [
+      "contract-schema-gen",
+      "wave/profile owner crates"
+    ],
+    "title": "Keep schema publication single-truth across wave/profile manifests",
+    "current_state": "The closeout receipt records 17 schema manifests across v16-v25 and P1-P7, each with one owner crate and one canonical publication directory under schemas/.",
+    "required_change": "Preserve the current owner mapping and do not introduce a second publication surface or duplicate owner claims.",
+    "acceptance": [
+      "contracts/schemas/*/manifest.json keeps one owner crate per schema family.",
+      "schemas/ remains the canonical publication directory.",
+      "bash scripts/check_schema_registry_uniqueness.sh stays green."
+    ],
+    "proof": [
+      "bash scripts/check_schema_registry_uniqueness.sh",
+      "python3 scripts/generate_closeout_receipt.py"
+    ],
+    "touch_files": [],
+    "depends_on": [
+      "BASE-001"
+    ]
+  },
+  {
+    "id": "BASE-003",
+    "status": "landed-by-evidence",
+    "priority": "P1",
+    "phase": "Done",
+    "area": "artifact-surfaces",
+    "owners": [
+      "effect-runtime",
+      "authority-delegation",
+      "assurance-runtime",
+      "continuity-runtime",
+      "verification-policy",
+      "attestation-exchange"
+    ],
+    "title": "Treat v21-v24 waves and P1-P7 profiles as landed artifact surfaces, not future fiction",
+    "current_state": "The repo already contains v21-v24 and P1-P7 schemas, examples, fixtures, and per-crate fixture conformance tests. The gap is not artifact existence; it is narrated end-to-end demonstration.",
+    "required_change": "Do not reopen owner-crate or schema-family debates. Use the landed fixtures as the substrate for the public demonstrator and benchmark pack.",
+    "acceptance": [
+      "No new owner crate is invented for v21-v24 or P1-P7.",
+      "Demo and benchmark work consume the existing fixture corpus instead of redefining it.",
+      "Horizon work remains explicitly separate from the finish bar."
+    ],
+    "proof": [
+      "contracts/fixtures/v21-v24 and p1-p7 remain present",
+      "crate fixture_conformance tests remain present"
+    ],
+    "touch_files": [],
+    "depends_on": [
+      "BASE-002"
+    ]
+  },
+  {
+    "id": "DOC-001",
+    "status": "ready-to-apply",
+    "priority": "P0",
+    "phase": "Phase 0",
+    "area": "repo-front-door",
+    "owners": [
+      "root docs"
+    ],
+    "title": "Restore the canonical root control-plane pack on disk",
+    "current_state": "The supplied source tree is missing the root closeout pack even though scripts, archive manifest, and receipt all assume it exists.",
+    "required_change": "Create the root control-plane files, numbered aliases, and prompt files supplied in this pack so the repo root once again matches the hardening receipt and archive manifest.",
+    "acceptance": [
+      "bash scripts/check_repo_surface.sh passes.",
+      "bash scripts/check_doc_truth.sh passes.",
+      "python3 scripts/check_root_archive_manifest.py passes.",
+      "README.md points contributors to make gate and the active front door."
+    ],
+    "proof": [
+      "bash scripts/check_repo_surface.sh",
+      "bash scripts/check_doc_truth.sh",
+      "python3 scripts/check_root_archive_manifest.py"
+    ],
+    "touch_files": [
+      "README.md",
+      "00_START_HERE.md",
+      "PACK_README.md",
+      "MASTER_ISSUE_MATRIX.md",
+      "MASTER_ISSUE_MATRIX.json",
+      "SOURCE_BASIS.md",
+      "SUPPORT_PROFILE.md",
+      "STATUS_DASHBOARD.md",
+      "RELEASE_CHECKLIST.md",
+      "AGENTS.md",
+      "PROMPT.md"
+    ],
+    "depends_on": [
+      "BASE-001"
+    ]
+  },
+  {
+    "id": "DOC-002",
+    "status": "ready-to-apply",
+    "priority": "P0",
+    "phase": "Phase 0",
+    "area": "truth-reconciliation",
+    "owners": [
+      "root docs"
+    ],
+    "title": "Collapse stale scans and hostile audits into one active truth statement",
+    "current_state": "The stale scan summary still shows pre-closeout failures, while the active 2026-03-22 hardening receipt shows those failures closed. External reviewers can be misled if both are presented without reconciliation.",
+    "required_change": "Make the active docs explicitly mark the stale findings as superseded, preserve the useful critique about external demonstrability, and route readers to the current receipt as authority.",
+    "acceptance": [
+      "CLAUDE_AUDIT_RECONCILIATION.md explicitly says the stale zero-test claims are wrong now.",
+      "MASTER_ISSUE_MATRIX.md preserves the audit reconciliation note.",
+      "STATUS_DASHBOARD.md names the stale scan as superseded evidence, not current truth."
+    ],
+    "proof": [
+      "bash scripts/check_doc_truth.sh"
+    ],
+    "touch_files": [
+      "CLAUDE_AUDIT_RECONCILIATION.md",
+      "02_HOSTILE_AUDIT_RECONCILED.md",
+      "MASTER_ISSUE_MATRIX.md",
+      "STATUS_DASHBOARD.md"
+    ],
+    "depends_on": [
+      "DOC-001"
+    ]
+  },
+  {
+    "id": "SCOPE-001",
+    "status": "ready-to-apply",
+    "priority": "P0",
+    "phase": "Phase 0",
+    "area": "support-scope",
+    "owners": [
+      "root docs"
+    ],
+    "title": "Make the supported closeout lane and adjacent artifact-owner crates explicit",
+    "current_state": "The receipt hardens a 17-crate closeout lane, but the workspace default-members list is broader and includes adjacent owner crates such as effect-runtime, authority-delegation, assurance-runtime, continuity-runtime, profile-runtime, and spec-execution.",
+    "required_change": "Teach the support scope once: the 17-crate hardening lane is the release claim; the adjacent owner crates are landed artifact surfaces and the substrate for the public demonstrator, but they are not the narrow build-certified claim for this receipt.",
+    "acceptance": [
+      "SUPPORT_PROFILE.md parses into the same 17 crates recorded in the receipt.",
+      "The adjacency list accounts for the remaining default-members not in the support lane.",
+      "No front-door doc claims that the full 29 default-members lane was build-certified by the hardening receipt."
+    ],
+    "proof": [
+      "python3 scripts/generate_closeout_receipt.py",
+      "release/closeout_receipt_v1.json"
+    ],
+    "touch_files": [
+      "SUPPORT_PROFILE.md",
+      "09_CRATE_BOUNDARY_MAP.md",
+      "PACK_README.md",
+      "README.md"
+    ],
+    "depends_on": [
+      "DOC-002"
+    ]
+  },
+  {
+    "id": "DEMO-001",
+    "status": "open",
+    "priority": "P0",
+    "phase": "Phase 1",
+    "area": "external-demonstrability",
+    "owners": [
+      "effect-runtime",
+      "authority-delegation",
+      "assurance-runtime",
+      "verification-control",
+      "llm-tool-runtime"
+    ],
+    "title": "Ship one narrated end-to-end demonstrator across v21 -> v22 -> v23",
+    "current_state": "The repo has separate fixture corpora for effect execution, delegated authority, and release assurance, but no single operator-readable path stitches them into one story that an external reviewer can run and understand in one sitting.",
+    "required_change": "Create one demo bundle, one walkthrough README, and one validating test or script that binds effect_happy_path, delegated_effect_happy_path, and release_happy_path into a single evidentiary narrative. Continuity v24 may be added as an optional extension rather than a blocker.",
+    "acceptance": [
+      "A reviewer can run one command or read one README and see preflight -> delegation -> release readiness without hand-assembling wave fixtures.",
+      "The demo outputs typed artifacts, not prose-only claims.",
+      "The demo README names which existing fixture bundles and owner crates participate."
+    ],
+    "proof": [
+      "docs/demos/effect_authority_assurance_release.md",
+      "contracts/fixtures/demo/effect_authority_assurance_release.bundle.json",
+      "verification-control/tests/e2e_effect_authority_assurance_release.rs or equivalent script"
+    ],
+    "touch_files": [
+      "docs/demos/effect_authority_assurance_release.md",
+      "contracts/fixtures/demo/effect_authority_assurance_release.bundle.json",
+      "verification-control/tests/e2e_effect_authority_assurance_release.rs",
+      "README.md",
+      "11_BENCHMARK_PLAN.md"
+    ],
+    "depends_on": [
+      "SCOPE-001",
+      "BASE-003"
+    ]
+  },
+  {
+    "id": "BENCH-001",
+    "status": "open",
+    "priority": "P1",
+    "phase": "Phase 2",
+    "area": "benchmark-proof",
+    "owners": [
+      "knowledge-runtime",
+      "verification-control",
+      "forge-pilot"
+    ],
+    "title": "Ship the benchmark / forge-bench proof package",
+    "current_state": "The architecture is now internally consistent, but there is still no external score sheet that proves superiority on replayable evidence-bound reasoning, temporal correctness, contradiction handling, and verification yield.",
+    "required_change": "Define the benchmark suite, publish fixture inputs and expected outputs, and add one reproducible score sheet. The benchmark must target what ordinary RAG or generic agent stacks cannot do: replayability, temporal correctness, widening disclosure, and repair honesty.",
+    "acceptance": [
+      "11_BENCHMARK_PLAN.md is implemented as runnable benchmark assets, not just aspirations.",
+      "A score sheet compares the stack against at least one weaker baseline on temporal correctness and replayability.",
+      "Benchmark artifacts are stored under contracts/fixtures/bench or docs/benchmarks with a reproducibility note."
+    ],
+    "proof": [
+      "bench harness or script",
+      "score sheet",
+      "fixture manifest"
+    ],
+    "touch_files": [
+      "docs/benchmarks/README.md",
+      "contracts/fixtures/bench/**",
+      "forge-pilot or knowledge-runtime benchmark harness"
+    ],
+    "depends_on": [
+      "DEMO-001"
+    ]
+  },
+  {
+    "id": "ARCH-001",
+    "status": "open",
+    "priority": "P1",
+    "phase": "Phase 3",
+    "area": "archive-cleanup",
+    "owners": [
+      "root docs"
+    ],
+    "title": "Finish physical root reduction",
+    "current_state": "The archive manifest already describes logical supersession, and the legacy prompt/apply-plan cluster is physically archived, but the receipt still records physical root reduction as open debt.",
+    "required_change": "Move the remaining superseded root residue under docs/archive/root_closeout_history or delete it, then tighten the archive manifest accordingly.",
+    "acceptance": [
+      "The active root file set is small, stable, and physically matches the archive manifest.",
+      "No stale numbered matrices or prompts remain in the root decision path.",
+      "The receipt's residual debt list no longer includes physical root reduction."
+    ],
+    "proof": [
+      "python3 scripts/check_root_archive_manifest.py",
+      "release/closeout_receipt_v1.json"
+    ],
+    "touch_files": [
+      "docs/archive/root_closeout_history/manifest.json",
+      "docs/archive/root_closeout_history/**",
+      "STATUS_DASHBOARD.md",
+      "release/closeout_receipt_v1.json"
+    ],
+    "depends_on": [
+      "DOC-001"
+    ]
+  },
+  {
+    "id": "HORIZON-001",
+    "status": "deferred",
+    "priority": "P2",
+    "phase": "Later",
+    "area": "horizon-work",
+    "owners": [
+      "kernel",
+      "semantic-memory",
+      "knowledge-runtime",
+      "spec-execution"
+    ],
+    "title": "Keep V10/V14-V20 backlog out of the finish bar",
+    "current_state": "The repo contains real horizon material for V10 graph/control semantics, V14/V15 causal and remote exchange, and V16-V20 federated/theory/portfolio/constitutional/spec-execution waves. None of that should be reopened while the finish bar still lacks a public demo and benchmark package.",
+    "required_change": "Document the horizon backlog clearly and forbid using it as an excuse to reopen the closeout lane.",
+    "acceptance": [
+      "12_V10_HORIZON_BACKLOG.md exists and is explicitly non-blocking.",
+      "AGENTS.md and PROMPT.md instruct implementers to leave horizon work untouched unless the finish bar is already green.",
+      "No release-facing doc treats horizon work as part of the current closeout claim."
+    ],
+    "proof": [
+      "12_V10_HORIZON_BACKLOG.md",
+      "AGENTS.md",
+      "PROMPT.md"
+    ],
+    "touch_files": [
+      "12_V10_HORIZON_BACKLOG.md",
+      "AGENTS.md",
+      "PROMPT.md"
+    ],
+    "depends_on": [
+      "DEMO-001",
+      "BENCH-001",
+      "ARCH-001"
+    ]
+  }
+]

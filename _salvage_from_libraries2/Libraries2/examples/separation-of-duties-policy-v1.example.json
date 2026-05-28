@@ -1,0 +1,19 @@
+{
+  "schema_version": "SeparationOfDutiesPolicyV1",
+  "separation_of_duties_policy_id": "sod_001",
+  "prohibited_role_combinations": [
+    "requester+approver",
+    "approver+executor"
+  ],
+  "required_reviewer_independence": "different_human_principal",
+  "required_dual_control_classes": [
+    "deploy_gate"
+  ],
+  "emergency_exceptions": [
+    "break_glass_only"
+  ],
+  "violation_consequences": [
+    "block",
+    "emit_incident"
+  ]
+}

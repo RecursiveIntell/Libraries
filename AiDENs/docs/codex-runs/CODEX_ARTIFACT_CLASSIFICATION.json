@@ -1,0 +1,2184 @@
+{
+  "artifacts": [
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "AiDENs-aidens-codex-context-20260502.codex-archive.json",
+      "reason": "Prior emitted package identity/report retained as evidence, not current package truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "AiDENs-aidens-codex-context-20260502.excluded.json",
+      "reason": "Prior emitted package identity/report retained as evidence, not current package truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "AiDENs-aidens-codex-context-20260502.findings.json",
+      "reason": "Prior emitted package identity/report retained as evidence, not current package truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "AiDENs-aidens-codex-context-20260502.manifest.json",
+      "reason": "Prior emitted package identity/report retained as evidence, not current package truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "AiDENs-aidens-codex-context-20260502.report.md",
+      "reason": "Prior emitted package identity/report retained as evidence, not current package truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "AiDENs-aidens-codex-context-20260502.zip",
+      "reason": "Prior emitted package identity/report retained as evidence, not current package truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "HANDOFF_TEMPLATE.md",
+      "reason": "Handoff template/operator document retained as active support surface.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "audit/AIDENS_P20_1_CODE_FIRST_AUDIT_SUMMARY.md",
+      "reason": "Historical audit evidence retained outside active instruction space.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "audit/AIDENS_P20_2_CODE_FIRST_AUDIT.md",
+      "reason": "Historical audit evidence retained outside active instruction space.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "audit/p21/P21_SOURCE_BASIS_AND_CODE_FIRST_AUDIT.md",
+      "reason": "Historical audit evidence retained outside active instruction space.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-app-kit/tests/phase_06_runner_vertical_slice.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/p20_2_test_agent_vertical_slice.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_00_source_truth.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_01_contract_collapse.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_02_adapter_delegation.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_03_golden_vertical_slice.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_04_failure_honesty.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_05_memory_runtime_hardening.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_06_governance_promotion.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_07_canonical_adapter_proof.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_07_daemon_queue_schedule_wake.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_07_recall_extraction.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_08_kernel_oracle_integration.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_09_daemon_smoke.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_09_reference_hostile_tests.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-integration-tests/tests/phase_09_release_audit.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-runner/tests/phase_06_agency_v02.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "crates/aidens-runner/tests/phase_08_agency_gate.rs",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/00_CODEX_START_HERE.md",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/03_IMPLEMENTATION_PHASES.md",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/09_CODEX_PHASE0_PROMPT.md",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/10_CODEX_PHASE1_PROMPT.md",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/11_CODEX_PHASE2_PROMPT.md",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/AUDITOR_HANDOFF.md",
+      "reason": "Handoff template/operator document retained as active support surface.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/codex-runs/ARCHIVAL_POLICY.md",
+      "reason": "Codex run index/policy is active operator state, not historical instructions.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "included in current/codex package roles; release role may exclude Codex control surfaces",
+      "path": "docs/codex-runs/CODEX_ARTIFACT_CLASSIFICATION.json",
+      "reason": "Active registry that classifies Codex/run-marked artifacts outside the archive.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/codex-runs/CODEX_RUN_INDEX.md",
+      "reason": "Codex run index/policy is active operator state, not historical instructions.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/codex-runs/CURRENT_RUN.md",
+      "reason": "Codex run index/policy is active operator state, not historical instructions.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/contract-ownership/FINAL_AUDITOR_HANDOFF.md",
+      "reason": "Handoff template/operator document retained as active support surface.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/contract-ownership/quarantine/phase05-schema-sketches.md",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-support-matrix",
+      "package_policy": "included as active support matrix in normal package roles",
+      "path": "docs/matrices/P0_DUPLICATE_TYPES.csv",
+      "reason": "P0 duplicate-type matrix remains active support evidence, not Codex run instruction.",
+      "role": "active-support-matrix"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/00_CODEX_START_HERE.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/01_SOURCE_AND_EXTRACTION_MAP.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/02_CRATE_BOUNDARY_MAP.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/03_IMPLEMENTATION_PHASES.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/04_ACCEPTANCE_GATES.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/05_FOOTGUN_TEST_MATRIX.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/06_RECALL_SOURCE_TOUCH_MAP.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/07_API_TARGETS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/08_CI_AND_COMMANDS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/09_CODEX_PHASE0_PROMPT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/10_CODEX_PHASE1_PROMPT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/11_CODEX_PHASE2_PROMPT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/12_DEFERRED_ADVANCED_PROMPT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/13_DEPENDENCY_BOUNDARY_CHECKLIST.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/14_DESIGN_LAWS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/15_CURRENT_RECALL_AUDIT_SUMMARY.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/ACCEPTANCE_GATES.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/APP_PLAN_AND_DOCTOR_SPEC.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/AUDITOR_HANDOFF.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/CANONICAL_OWNER_MAP.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/CURRENT_AIDENS_AUDIT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/DEPENDENCY_AND_PATH_GUIDE.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/EVIDENCE_REPORTING_REQUIREMENTS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/FINAL_STATE_SPEC.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/FORBIDDEN_PATTERNS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/HUMAN_GUARDRAIL_PROMPTS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/IMPLEMENTATION_SEQUENCE.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/MASTER_ISSUE_MATRIX.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/NON_GOALS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/ODD_COMBINATION_MATRIX.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/OPEN_AMBIGUITIES_AND_STOP_RULES.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/OPERATOR_QUICKSTART.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/PROVIDER_INTEGRATION_SPEC.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/RESEARCH_CONSTRAINTS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/RE_RUN_AND_VERIFICATION.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/RISK_REGISTER.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/SOURCE_ROOTS_AND_TOUCH_MAP.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/TOOL_DISPATCH_SPEC.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/CANONICAL_TYPE_INVENTORY.csv",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/COMPATIBILITY_LEDGER.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/FINAL_AUDITOR_HANDOFF.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/FINAL_GATE_OUTPUTS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/FINAL_QUARANTINE_LEDGER.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/FINAL_UNRESOLVED_RISKS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/quarantine/delegation-kit-attestation-settlement.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/quarantine/phase05-schema-sketches.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/matrices/P0_DUPLICATE_TYPES.csv",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/matrices/SOURCE_OF_TRUTH_MATRIX.csv",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/03_CRATE_BOUNDARY_MAP.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/04_EXTRACTION_PROCEDURE.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/14_RISK_REGISTER.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/15_API_SKETCHES.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/16_TRACEABILITY_MATRIX.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/MANIFEST.json",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/MANIFEST.txt",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/prior-design-packet/README.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/templates/PHASE_REPORT_TEMPLATE.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/p22/templates/QUARANTINE_RECORD_TEMPLATE.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "docs/templates/PHASE_REPORT_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "evals/p20_agency_eval_cases.jsonl",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "evals/p21_agency_eval_cases.jsonl",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "fixtures/runner/p21_mock_test_agent_turns.json",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "fixtures/test-agent/p21-basic-agent.toml",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/FINAL_AUDIT_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/KNOWN_LIMITATIONS.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_00_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_01_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_02_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_03_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_04_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_05_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_06_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_07_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "handoffs/p22/PHASE_08_REPORT.md",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/FINAL_AUDIT_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/KNOWN_LIMITATIONS.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_00_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_01_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_02_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_03_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_04_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_05_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_06_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_07_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "handoffs/p23/PHASE_08_REPORT.md",
+      "reason": "Superseded P23 handoff material retained as archive evidence, not active P24 support truth.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "passes/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.md",
+      "reason": "Pass document retained as operator context.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/PHASE_00_TO_01_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/PHASE_01_TO_02_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/PHASE_02_TO_03_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/PHASE_03_TO_04_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/PHASE_04_TO_05_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/PHASE_05_TO_06_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/PHASE_06_TO_07_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "phase_injections/PHASE_07_TO_08_REVALIDATION.md",
+      "reason": "Phase invariant prompts retained for current controlled execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active P24 current/support/fixture surfaces; P23 archive-evidence is excluded unless audit-full is explicit",
+      "path": "prompts/P23_CODEX_RUN_PROMPT.md",
+      "reason": "Superseded P23 run prompt retained as archive evidence, not active P24 instruction.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_00_PREFLIGHT_HOSTILE_AUDIT.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_00_PREFLIGHT_SOURCE_BASIS_AND_CONTAMINATION_INVENTORY.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_01_ZPY_ARCHIVAL_NORMALIZATION.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_01_ZPY_TOTAL_CLOSURE.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_02_ARCHIVE_CLASSIFICATION_AND_REPO_HYGIENE.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_02_PACKAGE_POLICY_AND_VERIFIER_INTEGRATION.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_03_APPLY_REPO_NORMALIZATION_AND_ACTIVE_DOC_CLEANUP.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_03_PACKAGE_MODE_AND_REPLAY_VERIFIER.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_04_AGENT_RUN_CAPABILITY_VERTICAL_SLICE.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_04_RELEASE_TRUTH_DOCS_AND_OPERATOR_STATE.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_05_OPERATOR_CLI_AND_SUPPORT_TIER_PRODUCT_FLOW.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_05_SECRET_REDACTION_AND_API_KEY_WARNING_CLOSURE.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_06_ASSERTION_SUITE_AND_CI_GATES.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_06_PROVENANCE_RECEIPT_AND_EXECUTION_CONTEXT_HARDENING.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_07_GUARDED_PRODUCT_STRETCH.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_07_TEST_MATRIX_CI_AND_HOSTILE_ASSERTIONS.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_08_FINAL_HOSTILE_AUDIT_AND_RELEASE_PACKAGE.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "current-instruction",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "prompts/phases/PHASE_08_FINAL_REPLAY_AUDIT_AND_HANDOFF.md",
+      "reason": "Phase prompt library retained for current P23 execution and comparison.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "repo_overlay/README_P20_2_OVERLAY.md",
+      "reason": "Prior overlay/template material retained for audit comparison only.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "repo_overlay/evals/p20_agency_eval_cases.jsonl",
+      "reason": "Prior overlay/template material retained for audit comparison only.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "schemas/codex-packet/v1.schema.json",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/assert_codex_artifact_classification.py",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/assert_p22_codex_archival_hygiene.py",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/assert_p22_release_package_clean.py",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/assert_p22_zpy_archive_contract.py",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/collect_phase_evidence.sh",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/p22_collect_final_audit.sh",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/p22_secret_scan_fixture_test.py",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/p22_verify.sh",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/p22_verify_release_archive.sh",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/p22_zpy_archival_selftest.py",
+      "reason": "Superseded P22 run material retained as evidence and excluded from normal package roles.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/phase_verify_contract_ownership.sh",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-operator-doc",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "scripts/run_codex_phases.sh",
+      "reason": "Classified active operator/Codex-marked artifact.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-support-matrix",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "supporting/matrices/p21_phase_acceptance_gates.csv",
+      "reason": "Support matrix retained as operator/audit reference.",
+      "role": "active-support-matrix"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-support-matrix",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "supporting/matrices/p21_source_of_truth_matrix.csv",
+      "reason": "Support matrix retained as operator/audit reference.",
+      "role": "active-support-matrix"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-support-matrix",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "supporting/matrices/phase_acceptance_gates.csv",
+      "reason": "Support matrix retained as operator/audit reference.",
+      "role": "active-support-matrix"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "templates/P20_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "templates/P20_KNOWN_LIMITATIONS_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "templates/P20_RELEASE_READINESS_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "templates/PHASE_REPORT_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "templates/p21/FINAL_AUDIT_REPORT_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "deprecated-template",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "templates/p21/PHASE_REPORT_TEMPLATE.md",
+      "reason": "Template retained for compatibility/audit reference; not current instruction.",
+      "role": "deprecated-template"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "classification": "active-regression-fixture",
+      "package_policy": "normal roles include only active current/support/fixture surfaces; archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "path": "tests/fixtures/p10/codex_packet_v1.json",
+      "reason": "Version-marked fixture/test remains active regression coverage, not canonical truth.",
+      "role": "active-regression-fixture"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "AiDENs-aidens-next-codex-context-20260502.codex-archive.json",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles exclude superseded package sidecars unless audit-full is explicit",
+      "reason": "Superseded May 2 package sidecar retained as historical package evidence, not active P24 output.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "AiDENs-aidens-next-codex-context-20260502.excluded.json",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles exclude superseded package sidecars unless audit-full is explicit",
+      "reason": "Superseded May 2 package sidecar retained as historical package evidence, not active P24 output.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "AiDENs-aidens-next-codex-context-20260502.findings.json",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles exclude superseded package sidecars unless audit-full is explicit",
+      "reason": "Superseded May 2 package sidecar retained as historical package evidence, not active P24 output.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "AiDENs-aidens-next-codex-context-20260502.manifest.json",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles exclude superseded package sidecars unless audit-full is explicit",
+      "reason": "Superseded May 2 package sidecar retained as historical package evidence, not active P24 output.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "AiDENs-aidens-next-codex-context-20260502.report.md",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles exclude superseded package sidecars unless audit-full is explicit",
+      "reason": "Superseded May 2 package sidecar retained as historical package evidence, not active P24 output.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "AiDENs-aidens-next-codex-context-20260502.zip",
+      "classification": "archive-evidence",
+      "package_policy": "normal roles exclude superseded package sidecars unless audit-full is explicit",
+      "reason": "Superseded May 2 package sidecar retained as historical package evidence, not active P24 output.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "P24_CODEX_RUN_PROMPT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 run prompt is historical context, retained as archive evidence.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "P24_PHASE_PLAN.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase plan is historical context, retained as archive evidence.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoff/P24_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 final auditor handoff template is historical context, retained as archive evidence.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_00_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_01_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_02_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_03_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_04_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_05_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_06_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_07_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_08_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p24/PHASE_09_REPORT.md",
+      "classification": "archive-evidence",
+      "package_policy": "archive-evidence and deprecated-template are excluded unless audit-full is explicit",
+      "reason": "P24 phase handoff report is historical evidence after the run completed.",
+      "role": "archive-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "P25_CODEX_RUN_PROMPT.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 current-run instruction surface.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "P25_PHASE_GATE_PROTOCOL.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase-gate protocol retained as active run instructions.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "P25_PHASE_PLAN.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 required phase sequence and acceptance surface.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "scripts/assert_phase_gate_integrity.py",
+      "classification": "active-operator-doc",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator tooling",
+      "reason": "Phase-gate integrity verifier is required for P25 control surfaces.",
+      "role": "active-operator-doc"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "phase_injections/P25_GATE_AFTER_PHASE_01_BEFORE_PHASE_02.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 01/02 gate injection.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "phase_injections/P25_GATE_AFTER_PHASE_03_BEFORE_PHASE_04.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 03/04 gate injection.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "phase_injections/P25_GATE_AFTER_PHASE_05_BEFORE_PHASE_06.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 05/06 gate injection.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "phase_injections/P25_GATE_AFTER_PHASE_07_BEFORE_PHASE_08.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 07/08 gate injection.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "phase_injections/P25_GATE_AFTER_PHASE_09_BEFORE_FINAL.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 09/final gate injection.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "phase_injections/P25_GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 pre-phase invariant gate injection.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "evidence/p25_phase_injection_findings.csv",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase gate findings for the active run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoff/P25_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 final auditor handoff template retained for current run evidence.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_00_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase handoff report for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_01_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase handoff report for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_01_GATE_VIOLATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 01 gate failure handling evidence for current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_01_GATE_REVALIDATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 01/02 gate revalidation for the active run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_02_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase handoff report for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_03_GATE_REVALIDATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 03/04 gate revalidation evidence.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_03_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase handoff report for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_04_GATE_REVALIDATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 04 gate revalidation evidence for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_04_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 04 completion evidence for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_05_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 05 completion evidence for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_05_GATE_REVALIDATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 05 gate revalidation evidence.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_06_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 06 completion evidence for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_06_GATE_REVALIDATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 06 gate revalidation evidence.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_07_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 07 completion evidence for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_07_GATE_REVALIDATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 07 gate revalidation evidence.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_08_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 08 completion evidence for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_07_TO_08_REVALIDATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 07/08 gate revalidation evidence.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_09_REPORT.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 09 completion evidence for the active current run.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/PHASE_09_GATE_REVALIDATION.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 phase 09 gate revalidation evidence.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "handoffs/p25/FINAL_AUDITOR_HANDOFF.md",
+      "classification": "current-run-evidence",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full; release role may exclude Codex control surfaces",
+      "reason": "P25 final handoff evidence for operator audit and replay risk review.",
+      "role": "current-run-evidence"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_00_PREFLIGHT_SOURCE_BASIS_AND_SCOPE_LOCK.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 00 preflight prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_01_ROOT_MARKDOWN_CLASSIFICATION.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 01 prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_02_SURGICAL_Z_PY_ROOT_MARKDOWN_ARCHIVER.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 02 prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_03_PHASE_GATE_INTEGRITY_IMPLEMENTATION.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 03 prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_04_CURRENT_RUN_CLASSIFICATION_CLEANUP.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 04 prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_05_VERIFIER_AND_EVIDENCE_MANIFEST_HARDENING.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 05 prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_06_FLAGSHIP_SUPPORTED_LOCAL_CODING_AGENT_DEMO.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 06 prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_07_SUPPORT_PROFILE_AND_DOCS_CONVERGENCE.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 07 prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_08_LARGE_FILE_CONTAINMENT_PLAN.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 08 prompt retained for run execution.",
+      "role": "current-instruction"
+    },
+    {
+      "canonical_truth_owner": "none; AiDENs operator/audit classification only",
+      "path": "prompts/phases/P25_PHASE_09_FINAL_HOSTILE_AUDIT_AND_PACKAGE_REPLAY.md",
+      "classification": "current-instruction",
+      "package_policy": "included in next-codex-context/codex-run-full/audit-full as active P25 operator context",
+      "reason": "P25 phase 09 prompt retained for run execution.",
+      "role": "current-instruction"
+    }
+  ],
+  "current_run": "P25",
+  "generated_by": "P25 Codex classification pass",
+  "schema": "CodexArtifactClassificationV1",
+  "scope": "P20/P21/P22/P23/P24/P25/Codex/handoff/phase-marked active-path artifacts outside docs/codex-runs/archive and target"
+}

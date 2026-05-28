@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allowed_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "allowed_graph_or_slice_kinds": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "budget_ceiling": {
+      "type": "string"
+    },
+    "disclosure_ceiling": {
+      "type": "string"
+    },
+    "exactness_class_ceiling": {
+      "type": "string"
+    },
+    "lease_expiry": {
+      "type": "string"
+    },
+    "oracle_identity": {
+      "type": "string"
+    },
+    "policy_owner_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "remote_oracle_lease_id": {
+      "type": "string"
+    },
+    "replay_obligation": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "budget_ceiling",
+    "disclosure_ceiling",
+    "exactness_class_ceiling",
+    "lease_expiry",
+    "oracle_identity",
+    "remote_oracle_lease_id",
+    "replay_obligation",
+    "schema_version"
+  ],
+  "title": "RemoteOracleLeaseV1",
+  "type": "object"
+}

@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P15/files/handoffs/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.md",
+      "bytes": 4626,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "handoffs/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P15",
+      "sha256": "155361cfaafc960beeec31ae37c2181e6baaefac88ae143dfca7a332192f4ad3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P15/files/prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md",
+      "bytes": 1268,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P15",
+      "sha256": "52432de7fc94f5615573e0ff177c5d057755e1f4f74106b44a8cc2192a409a50"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P15/files/tasks/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.json",
+      "bytes": 1123,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "tasks/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.json",
+      "reason": "stale-run-task",
+      "run_id": "P15",
+      "sha256": "3bab12170ac880982405d9e696583249c020de2796897783fb51b40c835cab8a"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P15",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

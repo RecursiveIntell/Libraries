@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allow_json_substring_extract": {
+      "type": "boolean"
+    },
+    "allow_markdown_fence_repair": {
+      "type": "boolean"
+    },
+    "hard_fail_on_treatment_change": {
+      "default": false,
+      "type": "boolean"
+    },
+    "input": {
+      "type": "string"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "schema": true,
+    "schema_dialect": {
+      "type": "string"
+    },
+    "treatment_critical_fields": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "allow_json_substring_extract",
+    "allow_markdown_fence_repair",
+    "input",
+    "request_id",
+    "schema_dialect"
+  ],
+  "title": "BoundaryCompileRequestV1",
+  "type": "object"
+}

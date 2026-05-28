@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactFamilyRegistrationV1": {
+      "description": "AiDENs-local schema registration metadata.\n\nEntries in this structure are not canonical stack artifact ownership claims.",
+      "properties": {
+        "admission": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/SchemaFamilyAdmissionV1"
+            }
+          ],
+          "default": "local-display-only"
+        },
+        "compatibility_policy": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "first_pass": {
+          "type": "string"
+        },
+        "fixture_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_crate": {
+          "type": "string"
+        },
+        "rust_type": {
+          "type": "string"
+        },
+        "schema_identity": {
+          "type": "string"
+        },
+        "schema_path": {
+          "type": "string"
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "compatibility_policy",
+        "family",
+        "first_pass",
+        "owner_crate",
+        "rust_type",
+        "schema_path",
+        "version"
+      ],
+      "type": "object"
+    },
+    "SchemaFamilyAdmissionV1": {
+      "enum": [
+        "local-display-only",
+        "quarantined-external",
+        "admitted-by-canonical-owner"
+      ],
+      "type": "string"
+    },
+    "SchemaRegistryGovernanceStatusV1": {
+      "enum": [
+        "local-display-index-only",
+        "quarantined-external-families",
+        "admitted-by-canonical-owner"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "AiDENs-local, non-authoritative schema index for product/display/report DTOs.\n\nCanonical stack artifact family schemas are owned by their owner crates and `contract-schema-gen`, not by this registry.",
+  "properties": {
+    "canonical_truth_owner": {
+      "default": "contract-schema-gen",
+      "type": "string"
+    },
+    "families": {
+      "items": {
+        "$ref": "#/definitions/ArtifactFamilyRegistrationV1"
+      },
+      "type": "array"
+    },
+    "governance_status": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/SchemaRegistryGovernanceStatusV1"
+        }
+      ],
+      "default": "local-display-index-only"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "registry_id": {
+      "type": "string"
+    },
+    "registry_version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "families",
+    "registry_id",
+    "registry_version"
+  ],
+  "title": "ArtifactFamilyRegistryV1",
+  "type": "object"
+}

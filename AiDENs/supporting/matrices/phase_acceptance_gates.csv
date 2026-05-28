@@ -1,0 +1,12 @@
+phase,required_gate
+00,source truth report exists
+01,package scan passes
+02,testkit purity scan passes
+03,cargo gates pass
+04,test agent integration passes
+05,provider capability matrix honest
+06,agency evals pass
+07,examples smoke
+08,scanner gates pass
+09,release zip replay passes
+10,stretch only after all gates

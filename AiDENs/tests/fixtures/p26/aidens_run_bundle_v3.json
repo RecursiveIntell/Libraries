@@ -1,0 +1,208 @@
+{
+  "schema": "AiDENsRunBundleV3",
+  "bundle_id": "aidens-run-bundle-v3:7eb3e35d-3c54-4e7b-b8d9-6d4a4fdedca7",
+  "ownership": "AiDENs-local operator run bundle; canonical execution, trace, identity, receipt, memory, and verification semantics remain in owner crates.",
+  "run_id": "aidens-basic-test-agent-test_agent_basic",
+  "profile": "coding-agent",
+  "created_at": "2026-05-04T03:23:14.946924274Z",
+  "canonical_execution_context": {
+    "schema_version": "execution_context_v1",
+    "trace_ctx": {
+      "trace_id": "trace:897b2373-4872-43b8-ab62-ac16dd983043"
+    },
+    "attempt_id": "attempt:94811a30-a219-42d1-8b51-926b7f7a96e9",
+    "trial_id": "753af44c-4a9e-4147-9c2b-46d53e23022f",
+    "replay_link": "cargo run -p aidens-cli -- run-test-agent /home/sikmindz/Coding/Libraries/AiDENs/fixtures/test-agent/basic-agent.toml --out /home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3",
+    "workload_class": "fixture-test-agent",
+    "deadline": "120000ms",
+    "cost_budget_units": 16,
+    "degradation_markers": [
+      "agency-policy:tool-output-influence-classified",
+      "mock-provider-selected",
+      "permit-required:admin",
+      "permit-required:write",
+      "tool-exposure:permit-required:admin",
+      "tool-exposure:permit-required:write",
+      "turn-degraded"
+    ],
+    "dispatch_outcome": "degraded",
+    "environment_fingerprint": "7382bf8febc25f5f3670d869ac65f27d0cfc6adca7542b78bb8b3ff48ebd1f4b"
+  },
+  "trace_ctx": {
+    "trace_id": "trace:897b2373-4872-43b8-ab62-ac16dd983043"
+  },
+  "attempt_family_id": "attempt-family:0e31fc6d-6c54-4c95-a5cd-6f7af0b8c5f1",
+  "attempt_id": "attempt:94811a30-a219-42d1-8b51-926b7f7a96e9",
+  "trial_id": "753af44c-4a9e-4147-9c2b-46d53e23022f",
+  "event_log": {
+    "event_log_path": "/home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3/event-log.ndjson",
+    "digest": "4412648d83e17f800459446a8bd83329c35a6e7204cd400127e5611cfa13baf1",
+    "replay_normalized_digest": "fe84826c253598a466f7504f652ce9ff9a878d23cba76798f42e2726873e6242",
+    "canonical_record_count": 5,
+    "event_count": 13,
+    "reason_codes": [
+      "event-log-digested-by-stack-ids"
+    ]
+  },
+  "provider_receipts": [
+    "receipt:18c18e52-4775-4537-b856-06b505fa23ae"
+  ],
+  "tool_receipts": [
+    "tool-invocation:617bfb1c-76df-4a72-9466-2ecb8c88d596"
+  ],
+  "permit_receipts": [
+    "permit-use:9b5b8c55-95a6-4b8c-bf7a-8ab2e5fb7f2a"
+  ],
+  "memory_grounding_receipts": [
+    "memory-grounding:disabled-for-p26-v3"
+  ],
+  "verification_receipts": [
+    "agent-verification:11f6b8d3-7f2a-4304-9e7c-2fcb7dc2d8e5",
+    "agent-verification:9b7f7a9c-8f31-4f67-84cb-4f5a8ecff1c3"
+  ],
+  "abstention_receipts": [
+    "agent-abstention:5f3c1c18-4f87-4b0a-a1e2-77db1bf8efab"
+  ],
+  "repair_plan_receipts": [
+    "agent-repair:cb7a1ff3-0a35-4cb0-b1a5-2c9f3e6f7e9a"
+  ],
+  "agent_spec_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "0f4fd4d6f7a2f0bd67e7a4d2ac2f7ce0cb4f9e39d8f9d4f6a7b3d9ac5e1f2b4a",
+    "non_authoritative": true,
+    "reason_codes": [
+      "display-only-not-artifact-identity"
+    ]
+  },
+  "budget": {
+    "max_steps": 16,
+    "max_tool_calls": 16,
+    "max_retries": 2,
+    "max_turn_millis": 120000,
+    "elapsed_ms": 3,
+    "deadline": "120000ms",
+    "cost_budget_units": 16,
+    "degradation_markers": [
+      "agency-policy:tool-output-influence-classified",
+      "mock-provider-selected",
+      "permit-required:admin",
+      "permit-required:write",
+      "tool-exposure:permit-required:admin",
+      "tool-exposure:permit-required:write",
+      "turn-degraded"
+    ]
+  },
+  "support": {
+    "support_tier": "fixture-supported",
+    "supported": [
+      "fixture-backed-mock-provider",
+      "repo-read-tool-route",
+      "durable-canonical-event-log",
+      "run-bundle-v3-inspect"
+    ],
+    "partial": [
+      "parser-fallback-tool-loop"
+    ],
+    "deferred": [
+      "cloud-provider-execution",
+      "native-provider-tool-loop",
+      "autonomous-daemon-readiness"
+    ],
+    "reason_codes": [
+      "p26-v3-run-bundle"
+    ]
+  },
+  "support_labels": [
+    "supported",
+    "supported-local"
+  ],
+  "replay": {
+    "replay_command": "cargo run -p aidens-cli -- run-test-agent /home/sikmindz/Coding/Libraries/AiDENs/fixtures/test-agent/basic-agent.toml --out /home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3",
+    "fixture_path": "/home/sikmindz/Coding/Libraries/AiDENs/fixtures/runner/test_agent_basic.json",
+    "normalized_fields": [
+      "created_at",
+      "receipt_id",
+      "recorded_at",
+      "content_digest"
+    ],
+    "deterministic_compare": true,
+    "normalized_digest": "fe84826c253598a466f7504f652ce9ff9a878d23cba76798f42e2726873e6242",
+    "reason_codes": [
+      "timestamp-and-id-normalized"
+    ]
+  },
+  "replay_instructions": [
+    "re-run with same task prompt and fixture to capture comparable evidence",
+    "compare canonical receipt log and run output before declaring pass"
+  ],
+  "failure": {
+    "class": "verification-unavailable",
+    "reason_codes": [
+      "parser-fallback-selected",
+      "parser-fallback-degraded"
+    ],
+    "degraded": true,
+    "blocked": false
+  },
+  "outputs": [
+    "/home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3/final.txt",
+    "/home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3/run-report.json",
+    "/home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3/turn-report.json",
+    "/home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3/tool-exposure.json",
+    "/home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3/agency-policy-reports.json",
+    "/home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3/event-log.ndjson",
+    "/home/sikmindz/Coding/Libraries/AiDENs/target/p26/run-bundle-v3/receipts/canonical-receipts.ndjson"
+  ],
+  "canonical_backpointers": [
+    {
+      "owner_crate": "semantic-memory-forge",
+      "owner_type": "ExecutionContextV1",
+      "role": "canonical-execution-context-owner",
+      "reason_codes": [
+        "canonical-owner-backpointer"
+      ]
+    },
+    {
+      "owner_crate": "stack-ids",
+      "owner_type": "TraceCtx",
+      "role": "canonical-trace-owner",
+      "reason_codes": [
+        "canonical-owner-backpointer"
+      ]
+    },
+    {
+      "owner_crate": "stack-ids",
+      "owner_type": "AttemptFamilyId",
+      "role": "canonical-attempt-family-owner",
+      "reason_codes": [
+        "canonical-owner-backpointer"
+      ]
+    },
+    {
+      "owner_crate": "stack-ids",
+      "owner_type": "AttemptId",
+      "role": "canonical-attempt-owner",
+      "reason_codes": [
+        "canonical-owner-backpointer"
+      ]
+    },
+    {
+      "owner_crate": "stack-ids",
+      "owner_type": "TrialId",
+      "role": "canonical-trial-owner",
+      "reason_codes": [
+        "canonical-owner-backpointer"
+      ]
+    },
+    {
+      "owner_crate": "llm-tool-runtime",
+      "owner_type": "ToolReceipt",
+      "role": "canonical-tool-receipt-owner",
+      "reason_codes": [
+        "canonical-owner-backpointer"
+      ]
+    }
+  ],
+  "blocked_checks": []
+}

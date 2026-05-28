@@ -1,0 +1,30 @@
+{
+  "pass_id": "P14",
+  "title": "Release-grade product surface, operator UX, and status truth",
+  "phase": "Product readiness",
+  "prompt_file": "prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md",
+  "pass_doc": "passes/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.md",
+  "crates": [
+    "aidens-cli",
+    "aidens-app-kit",
+    "aidens",
+    "docs",
+    "examples",
+    "CI"
+  ],
+  "artifacts": [
+    "ReleaseReadinessReportV1",
+    "OperatorStatusReportV1",
+    "ExampleAppManifestV1",
+    "InstallSmokeReceiptV1"
+  ],
+  "acceptance": [
+    "A new user can create an app, run provider-check, inspect tools, run mock turn, inspect receipts, and run verify.sh.",
+    "Release readiness report blocks if any public docs claim a scaffolded crate is complete.",
+    "CI exercises examples as compile/test fixtures."
+  ],
+  "forbidden": [
+    "Do not document horizon features as available.",
+    "Do not hide degraded modes in friendly prose."
+  ]
+}

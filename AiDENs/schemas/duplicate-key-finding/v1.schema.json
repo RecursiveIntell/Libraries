@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "duplicate_offset": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "finding_id": {
+      "type": "string"
+    },
+    "first_offset": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "key": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "finding_id",
+    "key",
+    "path"
+  ],
+  "title": "DuplicateKeyFindingV1",
+  "type": "object"
+}

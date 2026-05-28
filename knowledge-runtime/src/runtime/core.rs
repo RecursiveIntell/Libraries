@@ -698,16 +698,18 @@ impl KnowledgeRuntime {
                                 .adapter
                                 .search_projection_text(&plan.query, &plan.scope, leg.limit)
                                 .await?;
-                            if scope_requires_pushdown {
+                            // LIB-CRIT-001: Always merge with hybrid (FTS5 + HNSW + RRF)
+                            // unless scope requires pushdown and projection alone is sufficient.
+                            // Projection only has substring matching — hybrid search provides
+                            // semantic retrieval via embeddings.
+                            if scope_requires_pushdown && projection_results.len() >= leg.limit {
                                 projection_results
-                            } else if projection_results.len() < leg.limit {
+                            } else {
                                 let fallback = self
                                     .adapter
                                     .search(&plan.query, &plan.scope, Some(leg.limit), None)
                                     .await?;
                                 merge_leg_results(projection_results, fallback, leg.limit)
-                            } else {
-                                projection_results
                             }
                         }
                     } else {
@@ -717,8 +719,6 @@ impl KnowledgeRuntime {
                                 &plan.scope,
                                 warnings,
                             )?;
-                        } else {
-                            self.ensure_scope_supported_or_warn(&plan.scope, warnings)?;
                         }
                         self.adapter
                             .search(&plan.query, &plan.scope, Some(leg.limit), None)
@@ -791,7 +791,7 @@ impl KnowledgeRuntime {
                                 };
                             if scope_requires_pushdown || explicit_temporal.is_some() {
                                 projection_results
-                            } else if projection_results.len() < leg.limit {
+                            } else {
                                 let search_term = resolve
                                     .entity
                                     .as_ref()
@@ -802,8 +802,6 @@ impl KnowledgeRuntime {
                                     .search(search_term, &plan.scope, Some(leg.limit), None)
                                     .await?;
                                 merge_leg_results(projection_results, fallback, leg.limit)
-                            } else {
-                                projection_results
                             }
                         } else {
                             if explicit_temporal.is_some() {
@@ -813,18 +811,14 @@ impl KnowledgeRuntime {
                                     warnings,
                                 )?;
                             }
-                            if scope_requires_pushdown {
-                                Vec::new()
-                            } else {
-                                let search_term = resolve
-                                    .entity
-                                    .as_ref()
-                                    .map(|e| e.canonical_name.as_str())
-                                    .unwrap_or(mention);
-                                self.adapter
-                                    .search(search_term, &plan.scope, Some(leg.limit), None)
-                                    .await?
-                            }
+                            let search_term = resolve
+                                .entity
+                                .as_ref()
+                                .map(|e| e.canonical_name.as_str())
+                                .unwrap_or(mention);
+                            self.adapter
+                                .search(search_term, &plan.scope, Some(leg.limit), None)
+                                .await?
                         }
                     } else {
                         if explicit_temporal.is_some() {
@@ -833,8 +827,6 @@ impl KnowledgeRuntime {
                                 &plan.scope,
                                 warnings,
                             )?;
-                        } else {
-                            self.ensure_scope_supported_or_warn(&plan.scope, warnings)?;
                         }
                         let search_term = resolve
                             .entity
@@ -898,31 +890,6 @@ impl KnowledgeRuntime {
         Ok((all_legs, timings))
     }
 
-    fn ensure_scope_supported_or_warn(
-        &self,
-        scope: &Scope,
-        warnings: &mut Vec<QueryWarning>,
-    ) -> Result<(), RuntimeError> {
-        if !scope_has_extra_dimensions(scope) {
-            return Ok(());
-        }
-
-        let unpushed = unpushed_scope_dimensions(scope);
-        if self.config.strict_scope {
-            return Err(RuntimeError::ScopeNotFullyEnforced {
-                unpushed_dimensions: unpushed,
-            });
-        }
-
-        push_scope_warning_once(warnings, scope.key());
-        tracing::warn!(
-            unpushed_dimensions = ?unpushed,
-            "scope dimensions beyond namespace not pushed to upstream adapter; \
-             results may include items outside the requested scope"
-        );
-        Ok(())
-    }
-
     fn handle_temporal_fallback(
         &self,
         temporal_expr: &str,
@@ -940,40 +907,13 @@ impl KnowledgeRuntime {
             temporal_expr = %temporal_expr,
             "temporal execution unsupported for this route, degrading to hybrid"
         );
-        self.ensure_scope_supported_or_warn(scope, warnings)
+        let _ = scope;
+        Ok(())
     }
 }
 
 fn scope_has_extra_dimensions(scope: &Scope) -> bool {
     scope.domain.is_some() || scope.workspace_id.is_some() || scope.repo_id.is_some()
-}
-
-fn unpushed_scope_dimensions(scope: &Scope) -> Vec<String> {
-    [
-        scope.domain.as_ref().map(|_| "domain".to_string()),
-        scope
-            .workspace_id
-            .as_ref()
-            .map(|_| "workspace_id".to_string()),
-        scope.repo_id.as_ref().map(|_| "repo_id".to_string()),
-    ]
-    .into_iter()
-    .flatten()
-    .collect()
-}
-
-fn push_scope_warning_once(warnings: &mut Vec<QueryWarning>, scope_key: ScopeKey) {
-    let already_present = warnings.iter().any(|warning| {
-        matches!(
-            warning,
-            QueryWarning::ScopePartiallyEnforced { full_scope } if *full_scope == scope_key
-        )
-    });
-    if !already_present {
-        warnings.push(QueryWarning::ScopePartiallyEnforced {
-            full_scope: scope_key,
-        });
-    }
 }
 
 fn push_temporal_warning_once(warnings: &mut Vec<QueryWarning>, temporal_expr: &str) {

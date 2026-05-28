@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DegradationKindV1": {
+      "enum": [
+        "thin_export",
+        "missing_proof",
+        "missing_replay",
+        "scope_withheld",
+        "evidence_unavailable",
+        "oracle_unavailable",
+        "budget_exceeded",
+        "exactness_downgraded",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifact_family": {
+      "type": "string"
+    },
+    "artifact_id": {
+      "type": "string"
+    },
+    "blocked_action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "degradation": {
+      "items": {
+        "$ref": "#/definitions/DegradationKindV1"
+      },
+      "type": "array"
+    },
+    "degradation_record_id": {
+      "type": "string"
+    },
+    "exactness_impact": {
+      "$ref": "#/definitions/ExactnessLevelV1"
+    },
+    "fallback_used": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "triggered_by": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "artifact_family",
+    "artifact_id",
+    "degradation",
+    "degradation_record_id",
+    "exactness_impact",
+    "schema_version",
+    "semantics_profile_id"
+  ],
+  "title": "DegradationRecordV1",
+  "type": "object"
+}

@@ -169,11 +169,14 @@ pub fn get_messages_within_budget(
     let mut collected = Vec::new();
     let mut total_tokens = 0u32;
     for msg in all_messages {
-        let msg_tokens = msg.token_count.unwrap_or(0);
-        if total_tokens + msg_tokens > max_tokens && !collected.is_empty() {
+        let msg_tokens = msg
+            .token_count
+            .unwrap_or_else(|| (msg.content.len() / 4).max(1) as u32);
+        let next_total = total_tokens.saturating_add(msg_tokens);
+        if next_total > max_tokens && !collected.is_empty() {
             break;
         }
-        total_tokens += msg_tokens;
+        total_tokens = next_total;
         collected.push(msg);
     }
 
@@ -188,6 +191,13 @@ pub fn session_token_count(conn: &Connection, session_id: &str) -> Result<u64, M
         params![session_id],
         |row| row.get(0),
     )?;
+    if count < 0 {
+        return Err(MemoryError::CorruptData {
+            table: "messages",
+            row_id: session_id.to_string(),
+            detail: format!("negative token_count aggregate: {count}"),
+        });
+    }
     Ok(count as u64)
 }
 
@@ -246,6 +256,7 @@ pub fn add_message_with_embedding_q8(
             "message",
             PendingIndexOpKind::Upsert,
         )?;
+        crate::db::invalidate_derived_vector_artifact(tx, &format!("msg:{msg_id}"))?;
 
         tx.execute(
             "UPDATE sessions SET updated_at = datetime('now') WHERE id = ?1",
@@ -360,6 +371,9 @@ pub fn delete_session(conn: &Connection, session_id: &str) -> Result<(), MemoryE
             {
                 let _ = msg_id;
                 let _ = has_embedding;
+            }
+            if *has_embedding {
+                crate::db::invalidate_derived_vector_artifact(tx, &format!("msg:{msg_id}"))?;
             }
         }
 
@@ -669,23 +683,45 @@ impl MemoryStore {
         top_k: Option<usize>,
         session_ids: Option<&[&str]>,
     ) -> Result<Vec<SearchResult>, MemoryError> {
-        let k = top_k.unwrap_or(self.inner.config.search.default_top_k);
+        const MAX_TOP_K: usize = 1_000;
+        let k = top_k
+            .unwrap_or(self.inner.config.search.default_top_k)
+            .min(MAX_TOP_K);
 
         let query_embedding = self.embed_text_internal(query).await?;
 
         #[cfg(feature = "hnsw")]
         let hnsw_hits = {
-            let guard = self
+            let index = self
                 .inner
                 .hnsw_index
                 .read()
-                .unwrap_or_else(|e| e.into_inner());
-            let candidates = self.inner.config.search.candidate_pool_size.max(k * 3);
-            match guard.search(&query_embedding, candidates) {
-                Ok(hits) => hits,
-                Err(err) => {
+                .unwrap_or_else(|e| e.into_inner())
+                .clone();
+            let candidates = self
+                .inner
+                .config
+                .search
+                .candidate_pool_size
+                .max(k.saturating_mul(3))
+                .min(MAX_TOP_K.saturating_mul(10));
+            let query_embedding_for_hnsw = query_embedding.clone();
+            match tokio::task::spawn_blocking(move || {
+                index.search(&query_embedding_for_hnsw, candidates)
+            })
+            .await
+            {
+                Ok(Ok(hits)) => hits,
+                Ok(Err(err)) => {
                     tracing::error!(
                         "HNSW conversation search failed, falling back to brute-force message search: {}",
+                        err
+                    );
+                    Vec::new()
+                }
+                Err(err) => {
+                    tracing::error!(
+                        "HNSW conversation search task failed, falling back to brute-force message search: {}",
                         err
                     );
                     Vec::new()

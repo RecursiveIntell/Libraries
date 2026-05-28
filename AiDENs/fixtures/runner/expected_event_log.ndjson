@@ -1,0 +1,4 @@
+{"schema":"CanonicalEventLogEntryV1","event_kind":"run-started","note":"P20.1 seed fixture; Codex must replace with exact runner output if tests require byte parity."}
+{"schema":"CanonicalEventLogEntryV1","event_kind":"provider-route","note":"P20.1 seed fixture."}
+{"schema":"CanonicalEventLogEntryV1","event_kind":"tool-invocation","note":"P20.1 seed fixture."}
+{"schema":"CanonicalEventLogEntryV1","event_kind":"run-completed","note":"P20.1 seed fixture."}

@@ -1,0 +1,1366 @@
+# P22 Phase 00 Report - Preflight Source Basis and Contamination Inventory
+
+Created UTC: `2026-05-02T00:46:38Z`
+
+## Scope
+
+Phase 00 performed source-basis intake and active Codex-run contamination inventory only. No implementation source files, root truth docs, scripts, or archives were modified.
+
+## Source Basis Read
+
+- Read P21 final audit and known limitations: P21 passed after the Ollama example-status repair; cloud providers, native tool loops, full daemon UX, federation, mechanism search, and research workbench remain deferred.
+- Read `z.py`: current packager is a stdlib zip/source certifier, but it lacks P22 archival normalization, lacks `audit-full`, and includes Codex artifacts by default for `codex-context`/`full-context`.
+- Read P21 verifier scripts: P21 release replay is hardcoded to P21 paths and cannot serve as the P22 final verifier.
+- Read active root docs: `README.md` is already a P22 bundle landing doc, but `STATUS.md` and `SOURCE_BASIS.md` still record P20-era truth.
+- Read P22 prompt/task bundle present under `prompts/`, `prompts/phases/`, `tasks/`, `docs/p22`, and `scripts/`. Expected paths `AGENTS_P22.md`, `prompts/p22/P22_CODEX_RUN_PROMPT.md`, `docs/p22/P22_ZPY_CODEX_ARCHIVAL_SPEC.md`, and `P22_RUN_ORDER.md` are not present as standalone files.
+
+## Inventory Summary
+
+- `ambiguous_unclassified_archive_candidate`: `260`
+- `current_p22_run_control_or_spec`: `106`
+- `other_active_file`: `566`
+- `stable_current_truth_doc`: `9`
+- `stale_run_artifact_to_archive`: `826`
+
+Authoritative exact inventory JSON: `target/p22/audit/phase00_codex_artifact_inventory.json`.
+
+## Current `z.py` Package Contamination
+
+Dry-run command output is captured in `target/p22/audit/phase00_current_zpy_default.*`. The current default dry-run included `2272` files from archive root `/home/sikmindz/Coding/Libraries` because external Cargo path dependencies are included by default.
+
+- Included `archive_history` paths: `0`
+- Included `docs_p20` paths: `199`
+- Included `docs_p21` paths: `15`
+- Included `dot_codex` paths: `13`
+- Included `dot_codex_evidence` paths: `241`
+- Included `handoffs_p21` paths: `13`
+- Included `old_scripts` paths: `32`
+- Included `prompts_p21` paths: `25`
+- Included `root_codex` paths: `6`
+
+Current `z.py` emitted five warnings: two API-key field-copy/content false positives, one documentation security-plan content warning, and two secret-like filename exclusions for P22 secret-scanner test assets. These must be handled precisely in the P22 secret-scanning phase, without weakening literal secret detection.
+
+## Stable Current Truth Docs Observed
+
+- `AGENTS.md` - protected/current root or phase report surface
+- `Cargo.lock` - protected/current root or phase report surface
+- `Cargo.toml` - protected/current root or phase report surface
+- `README.md` - protected/current root or phase report surface
+- `SOURCE_BASIS.md` - protected/current root or phase report surface
+- `STATUS.md` - protected/current root or phase report surface
+- `handoffs/p22/PHASE_00_REPORT.md` - protected/current root or phase report surface
+- `rust-toolchain.toml` - protected/current root or phase report surface
+- `z.py` - protected/current root or phase report surface
+
+## Current P22 Run Control or Spec Files Observed
+
+- `docs/p22/00_CODEX_START_HERE.md` - current P22 bundle/control surface
+- `docs/p22/01_SOURCE_AND_EXTRACTION_MAP.md` - current P22 bundle/control surface
+- `docs/p22/02_CRATE_BOUNDARY_MAP.md` - current P22 bundle/control surface
+- `docs/p22/03_IMPLEMENTATION_PHASES.md` - current P22 bundle/control surface
+- `docs/p22/04_ACCEPTANCE_GATES.md` - current P22 bundle/control surface
+- `docs/p22/05_FOOTGUN_TEST_MATRIX.md` - current P22 bundle/control surface
+- `docs/p22/06_RECALL_SOURCE_TOUCH_MAP.md` - current P22 bundle/control surface
+- `docs/p22/07_API_TARGETS.md` - current P22 bundle/control surface
+- `docs/p22/08_CI_AND_COMMANDS.md` - current P22 bundle/control surface
+- `docs/p22/09_CODEX_PHASE0_PROMPT.md` - current P22 bundle/control surface
+- `docs/p22/10_CODEX_PHASE1_PROMPT.md` - current P22 bundle/control surface
+- `docs/p22/11_CODEX_PHASE2_PROMPT.md` - current P22 bundle/control surface
+- `docs/p22/12_DEFERRED_ADVANCED_PROMPT.md` - current P22 bundle/control surface
+- `docs/p22/13_DEPENDENCY_BOUNDARY_CHECKLIST.md` - current P22 bundle/control surface
+- `docs/p22/14_DESIGN_LAWS.md` - current P22 bundle/control surface
+- `docs/p22/15_CURRENT_RECALL_AUDIT_SUMMARY.md` - current P22 bundle/control surface
+- `docs/p22/ACCEPTANCE_GATES.md` - current P22 bundle/control surface
+- `docs/p22/APP_PLAN_AND_DOCTOR_SPEC.md` - current P22 bundle/control surface
+- `docs/p22/AUDITOR_HANDOFF.md` - current P22 bundle/control surface
+- `docs/p22/CANONICAL_OWNER_MAP.md` - current P22 bundle/control surface
+- `docs/p22/CURRENT_AIDENS_AUDIT.md` - current P22 bundle/control surface
+- `docs/p22/DEPENDENCY_AND_PATH_GUIDE.md` - current P22 bundle/control surface
+- `docs/p22/EVIDENCE_REPORTING_REQUIREMENTS.md` - current P22 bundle/control surface
+- `docs/p22/FINAL_STATE_SPEC.md` - current P22 bundle/control surface
+- `docs/p22/FORBIDDEN_PATTERNS.md` - current P22 bundle/control surface
+- `docs/p22/HUMAN_GUARDRAIL_PROMPTS.md` - current P22 bundle/control surface
+- `docs/p22/IMPLEMENTATION_SEQUENCE.md` - current P22 bundle/control surface
+- `docs/p22/MASTER_ISSUE_MATRIX.md` - current P22 bundle/control surface
+- `docs/p22/NON_GOALS.md` - current P22 bundle/control surface
+- `docs/p22/ODD_COMBINATION_MATRIX.md` - current P22 bundle/control surface
+- `docs/p22/OPEN_AMBIGUITIES_AND_STOP_RULES.md` - current P22 bundle/control surface
+- `docs/p22/OPERATOR_QUICKSTART.md` - current P22 bundle/control surface
+- `docs/p22/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md` - current P22 bundle/control surface
+- `docs/p22/PROVIDER_INTEGRATION_SPEC.md` - current P22 bundle/control surface
+- `docs/p22/RESEARCH_CONSTRAINTS.md` - current P22 bundle/control surface
+- `docs/p22/RE_RUN_AND_VERIFICATION.md` - current P22 bundle/control surface
+- `docs/p22/RISK_REGISTER.md` - current P22 bundle/control surface
+- `docs/p22/ROLLBACK_AND_QUARANTINE_PLAN.md` - current P22 bundle/control surface
+- `docs/p22/SHADOW_OWNERSHIP_ISSUE_MATRIX.md` - current P22 bundle/control surface
+- `docs/p22/SOURCE_ROOTS_AND_TOUCH_MAP.md` - current P22 bundle/control surface
+- `docs/p22/TOOL_DISPATCH_SPEC.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/CANONICAL_TYPE_INVENTORY.csv` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/COMPATIBILITY_LEDGER.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/FINAL_AUDITOR_HANDOFF.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/FINAL_GATE_OUTPUTS.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/FINAL_QUARANTINE_LEDGER.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/FINAL_UNRESOLVED_RISKS.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/quarantine/delegation-kit-attestation-settlement.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/quarantine/phase05-schema-sketches.md` - current P22 bundle/control surface
+- `docs/p22/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md` - current P22 bundle/control surface
+- `docs/p22/matrices/P0_DUPLICATE_TYPES.csv` - current P22 bundle/control surface
+- `docs/p22/matrices/SOURCE_OF_TRUTH_MATRIX.csv` - current P22 bundle/control surface
+- `docs/p22/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/00_EXECUTIVE_SUMMARY.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/03_CRATE_BOUNDARY_MAP.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/04_EXTRACTION_PROCEDURE.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/14_RISK_REGISTER.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/15_API_SKETCHES.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/16_TRACEABILITY_MATRIX.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/MANIFEST.json` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/MANIFEST.txt` - current P22 bundle/control surface
+- `docs/p22/prior-design-packet/README.md` - current P22 bundle/control surface
+- `docs/p22/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md` - current P22 bundle/control surface
+- `docs/p22/templates/PHASE_REPORT_TEMPLATE.md` - current P22 bundle/control surface
+- `docs/p22/templates/QUARANTINE_RECORD_TEMPLATE.md` - current P22 bundle/control surface
+- `prompts/P22_CODEX_RUN_PROMPT.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_00_PREFLIGHT_SOURCE_BASIS_AND_CONTAMINATION_INVENTORY.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_01_ZPY_ARCHIVAL_NORMALIZATION.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_02_PACKAGE_POLICY_AND_VERIFIER_INTEGRATION.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_03_APPLY_REPO_NORMALIZATION_AND_ACTIVE_DOC_CLEANUP.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_04_RELEASE_TRUTH_DOCS_AND_OPERATOR_STATE.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_05_SECRET_REDACTION_AND_API_KEY_WARNING_CLOSURE.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_06_ASSERTION_SUITE_AND_CI_GATES.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_07_GUARDED_PRODUCT_STRETCH.md` - current P22 bundle/control surface
+- `prompts/phases/PHASE_08_FINAL_HOSTILE_AUDIT_AND_RELEASE_PACKAGE.md` - current P22 bundle/control surface
+- `scripts/assert_p22_codex_archival_hygiene.py` - current P22 bundle/control surface
+- `scripts/assert_p22_release_package_clean.py` - current P22 bundle/control surface
+- `scripts/assert_p22_zpy_archive_contract.py` - current P22 bundle/control surface
+- `scripts/p22_collect_final_audit.sh` - current P22 bundle/control surface
+- `scripts/p22_secret_scan_fixture_test.py` - current P22 bundle/control surface
+- `scripts/p22_verify.sh` - current P22 bundle/control surface
+- `scripts/p22_verify_release_archive.sh` - current P22 bundle/control surface
+- `scripts/p22_zpy_archival_selftest.py` - current P22 bundle/control surface
+- `tasks/P22_TASK_MATRIX.csv` - current P22 bundle/control surface
+- `tasks/P22_TASK_MATRIX.json` - current P22 bundle/control surface
+
+## Exact Stale Active Paths Planned for Archive
+
+### P20-family stale artifacts -> docs/codex-runs/archive/P20*/
+
+- `.codex/prompts/MAIN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/prompts/NEXT_RUN_REAL_PLATFORM.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/prompts/P20_1_CODE_PACKAGE_REPAIR.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/prompts/P20_2_CODEX_RUN_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/prompts/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/prompts/PHASE0.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/prompts/PHASE1.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/tasks/P20_2_TASK_MATRIX.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/tasks/next_run.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/tasks/p20_1_code_package_repair.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/tasks/p20_truthful_finish_and_release_hardening.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/tasks/phase0.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex/tasks/phase1.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/assert_docs_source_basis_current.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/assert_docs_source_basis_current.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/assert_docs_source_basis_current.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/assert_no_compatibility_ledgers.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/assert_no_compatibility_ledgers.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/assert_no_crate_split.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/assert_no_crate_split.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/assert_no_crate_split.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/bash_n_phase_verify.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/bash_n_phase_verify.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/gate_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/git_diff_before.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/git_status_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/git_status_after_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/git_status_after_untracked_all.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/git_status_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/git_status_before_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/guardrail_00_to_01_revalidation.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/phase00_gate_commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/phase_report.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/phase_verify_00.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/phase_verify_00.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/phase_verify_00_final.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/phase_verify_00_final.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/post_edit_files/COMPATIBILITY_LEDGER.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/post_edit_files/FINAL_QUARANTINE_LEDGER.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/post_edit_files/STATUS.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/post_edit_files/phase_verify_contract_ownership.sh.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/pre_edit_files/COMPATIBILITY_LEDGER.md.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/pre_edit_files/FINAL_QUARANTINE_LEDGER.md.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/pre_edit_files/STATUS.md.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/pre_edit_files/phase_verify_contract_ownership.sh.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/quarantine_delta.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/skipped_checks.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/source_basis_evidence.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/00/touched_file_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/AIDENS_CONTRACTS_TYPE_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/CANONICAL_DUPLICATE_FINDINGS.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/CANONICAL_TYPE_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/TYPE_OWNERSHIP_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/assert_no_canonical_type_duplicates_expected_fail.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/assert_no_canonical_type_duplicates_expected_fail.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/expected_duplicate_gate_status.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/gate_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/git_diff_before.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/git_status_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/git_status_after_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/git_status_after_untracked_all.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/git_status_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/git_status_before_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/guardrail_01_to_02_revalidation.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/inventory_summary.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/make_type_ownership_inventory.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/make_type_ownership_inventory.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/phase_01_expected_duplicates.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/phase_report.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/phase_verify_01.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/phase_verify_01.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/post_edit_files/CANONICAL_DUPLICATE_FINDINGS.csv.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/post_edit_files/TYPE_OWNERSHIP_INVENTORY.csv.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/post_edit_files/make_type_ownership_inventory.py.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/pre_edit_files/CANONICAL_DUPLICATE_FINDINGS.csv.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/pre_edit_files/TYPE_OWNERSHIP_INVENTORY.csv.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/pre_edit_files/make_type_ownership_inventory.py.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/python_compile_inventory.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/python_compile_inventory.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/quarantine_delta.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/skipped_checks.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/touched_file_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/validate_expected_p0_duplicates.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/01/validate_expected_p0_duplicates.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/AIDENS_CONTRACTS_TYPE_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/CANONICAL_DUPLICATE_FINDINGS.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/CANONICAL_TYPE_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/TYPE_OWNERSHIP_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_canonical_type_duplicates.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_canonical_type_duplicates.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_canonical_type_duplicates.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_canonical_type_duplicates_after_quarantine.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_canonical_type_duplicates_after_quarantine.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_compatibility_ledgers.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_compatibility_ledgers.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_compatibility_ledgers.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_compatibility_ledgers_after_quarantine.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/assert_no_compatibility_ledgers_after_quarantine.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_aidens_contracts.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_aidens_contracts.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_aidens_contracts_after_quarantine.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_aidens_contracts_after_quarantine.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_aidens_delegation_kit.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_aidens_delegation_kit.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_aidens_delegation_kit_after_quarantine.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_aidens_delegation_kit_after_quarantine.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_workspace.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_check_workspace.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_statuses.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_test_aidens_contracts.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_test_aidens_contracts.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_test_aidens_delegation_kit.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_test_aidens_delegation_kit.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_test_workspace.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/cargo_test_workspace.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/final_assert_no_canonical_type_duplicates.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/final_assert_no_canonical_type_duplicates.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/final_assert_no_compatibility_ledgers.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/final_assert_no_compatibility_ledgers.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/final_make_type_ownership_inventory.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/final_make_type_ownership_inventory.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/final_phase_verify_02.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/final_phase_verify_02.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/gate_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/git_diff_before.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/git_status_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/git_status_after_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/git_status_after_untracked_all.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/git_status_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/git_status_before_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/guardrail_02_to_03_revalidation.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/inventory_summary.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/make_type_ownership_inventory.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/make_type_ownership_inventory.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/phase_report.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/phase_verify_02.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/phase_verify_02.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/phase_verify_02_after_quarantine.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/phase_verify_02_after_quarantine.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/CANONICAL_DUPLICATE_FINDINGS.csv.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/Cargo.lock.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/FINAL_QUARANTINE_LEDGER.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/TYPE_OWNERSHIP_INVENTORY.csv.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/aidens_contracts_Cargo.toml.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/aidens_contracts_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/aidens_delegation_kit_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/quarantine_delegation-kit-attestation-settlement.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_edit_files/root_Cargo.toml.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_quarantine_ledger_phase_verify_02.stderr.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/post_quarantine_ledger_phase_verify_02.stdout.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/pre_edit_files/aidens_contracts_Cargo.toml.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/pre_edit_files/aidens_contracts_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/pre_edit_files/phase_verify_contract_ownership.sh.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/pre_edit_files/root_Cargo.toml.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/quarantine_delta.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/skipped_checks.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/02/touched_file_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/GUARDRAIL_03_TO_04.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/assert_no_canonical_type_duplicates.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/assert_no_local_substitute_dependencies.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/cargo_metadata.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/dependency_audit.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/gate_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/git_diff_before.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/git_status_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/git_status_after_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/git_status_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/git_status_before_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/guardrail_03_to_04_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/phase_report.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/post_edit_files/Cargo.lock.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/post_edit_files/DEPENDENCY_SOURCE_OF_TRUTH.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/post_edit_files/aidens_cli_Cargo.toml.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/post_edit_files/aidens_contracts_Cargo.toml.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/post_edit_files/aidens_governance_kit_Cargo.toml.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/post_edit_files/root_Cargo.toml.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/pre_edit_files/Cargo.lock.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/pre_edit_files/DEPENDENCY_SOURCE_OF_TRUTH.md.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/pre_edit_files/aidens_cli_Cargo.toml.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/pre_edit_files/aidens_contracts_Cargo.toml.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/pre_edit_files/aidens_governance_kit_Cargo.toml.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/pre_edit_files/root_Cargo.toml.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/quarantine_delta.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/skipped_checks.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/03/touched_file_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/assert_no_local_canonical_digest_law.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/digest_identity_audit.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/fixture_digest_marker_files.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/gate_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/git_diff_before.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/git_status_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/git_status_after_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/git_status_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/git_status_before_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/guardrail_04_to_05_digest_identity_revalidation.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/guardrail_digest_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/guardrail_display_digest_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/guardrail_identity_path_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/guardrail_no_old_digest_exports.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/guardrail_stack_ids_owner_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/phase_report.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/aidens_boundary_kit_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/aidens_cli_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/aidens_contracts_Cargo.toml.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/aidens_contracts_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/aidens_runner_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/aidens_tool_kit_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/boundary_compile_outcome_v1.json.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/display_digest_v1.json.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/json_repair_receipt_v2.json.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/post_edit_files/projection_digest_v1.json.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/aidens_boundary_kit_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/aidens_cli_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/aidens_contracts_Cargo.toml.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/aidens_contracts_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/aidens_runner_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/aidens_tool_kit_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/boundary_compile_outcome_v1.json.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/canonical_digest_v1.json.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/json_repair_receipt_v2.json.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/pre_edit_files/projection_digest_v1.json.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/quarantine_delta.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/schema_doc_stale_digest_scope.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/skipped_checks.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/04/touched_file_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/assert_schema_generation_scope.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/gate_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/git_diff_before.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/git_status_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/git_status_after_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/git_status_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/git_status_before_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/guardrail_05_to_06_schema_ownership_revalidation.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/guardrail_aidens_manifest_local_schema_list.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/guardrail_contract_schema_gen_owner_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/guardrail_forbidden_schema_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/guardrail_schema_scope_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/phase_report.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/DEPENDENCY_SOURCE_OF_TRUTH.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/FINAL_QUARANTINE_LEDGER.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/aidens_cli_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/aidens_contracts_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/artifact_family_registry_v1_fixture.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/assert_schema_generation_scope.py.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/generated_schema_manifest_v1_fixture.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/generated_schema_manifest_v1_schema.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/phase05-schema-sketches.md.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/post_edit_files/schemas_README.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/pre_edit_files/aidens_cli_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/pre_edit_files/aidens_contracts_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/pre_edit_files/generated_schema_manifest_v1_fixture.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/pre_edit_files/generated_schema_manifest_v1_schema.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/pre_edit_files/schemas_README.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/quarantine_delta.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/removed_schema_families.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_authority_audit.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_files_added.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_files_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_files_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_files_deleted_for_regeneration.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_files_removed.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_generate_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_generate_output_after_artifact_kind_demote.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_generate_output_retry.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_registrations_after.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/schema_registrations_before.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/skipped_checks.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/05/touched_file_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/assert_tool_runtime_delegation.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/assert_wrapper_backpointers.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/cargo_check_workspace.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/cargo_test_workspace.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/digest_gate_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/duplicate_gate_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/files_changed.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/gate_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/git_diff_before.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/git_status_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/git_status_after_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/git_status_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/git_status_before_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/guardrail_06_display_wrapper_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/guardrail_06_repair_grounding_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/guardrail_06_runtime_backpointer_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/guardrail_06_to_07_wrapper_discipline.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/guardrail_06_tool_runtime_delegation.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/guardrail_06_tool_runtime_grounding_scan.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/guardrail_06_wrapper_backpointers.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/guardrail_06_wrapper_type_locations.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/no_compatibility_ledgers_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/no_crate_split_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/no_local_substitute_dependencies_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/phase_report.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/post_edit_files/aidens_boundary_kit_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/post_edit_files/aidens_contracts_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/post_edit_files/aidens_runner_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/post_edit_files/aidens_tool_kit_lib.rs.after` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/pre_edit_files/aidens_boundary_kit_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/pre_edit_files/aidens_contracts_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/pre_edit_files/aidens_runner_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/pre_edit_files/aidens_tool_kit_lib.rs.before` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/schema_check_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/schema_generate_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/schema_scope_gate_output.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/tool_runtime_delegation_inventory.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/touched_file_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/06/wrapper_backpointer_inventory.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/cargo_check_workspace.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/cargo_test_workspace.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/commands_run.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/final_stop_hostile_auditor_proof.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/gate_outputs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/git_diff_before.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/git_diff_name_only.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/git_diff_stat_current_for_docs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/git_status_after.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/git_status_before.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/git_status_current_for_docs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/phase_report.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/phase_verify_final_after_docs.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/phase_verify_final_initial.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/quarantine_delta.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/07/skipped_checks.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_docs_source_basis_current.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_no_canonical_type_duplicates.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_no_compatibility_ledgers.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_no_crate_split.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_no_local_canonical_digest_law.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_no_local_substitute_dependencies.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_schema_generation_scope.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_tool_runtime_delegation.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/assert_wrapper_backpointers.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/git_diff.patch` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/git_diff_stat.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/git_status_after_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `.codex_evidence/contract_ownership/final/git_status_before_gate.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/00_CODEX_START_HERE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/01_SOURCE_AND_EXTRACTION_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/02_CRATE_BOUNDARY_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/03_IMPLEMENTATION_PHASES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/04_ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/05_FOOTGUN_TEST_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/06_RECALL_SOURCE_TOUCH_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/07_API_TARGETS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/08_CI_AND_COMMANDS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/09_CODEX_PHASE0_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/10_CODEX_PHASE1_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/11_CODEX_PHASE2_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/12_DEFERRED_ADVANCED_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/13_DEPENDENCY_BOUNDARY_CHECKLIST.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/14_DESIGN_LAWS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/15_CURRENT_RECALL_AUDIT_SUMMARY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/APP_PLAN_AND_DOCTOR_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/AUDITOR_HANDOFF.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/CANONICAL_OWNER_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/CURRENT_AIDENS_AUDIT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/DEPENDENCY_AND_PATH_GUIDE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/DOCS_CODE_TRUTH_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/EVIDENCE_REPORTING_REQUIREMENTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/FINAL_STATE_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/FORBIDDEN_PATTERNS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/HUMAN_GUARDRAIL_PROMPTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/IMPLEMENTATION_SEQUENCE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/MASTER_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/NON_GOALS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/ODD_COMBINATION_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/OPEN_AMBIGUITIES_AND_STOP_RULES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/OPERATOR_QUICKSTART.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_AGENCY_EVAL_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_AGENCY_GOVERNANCE_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_AGENTS_ADDENDUM.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_CONTRACT_OWNERSHIP_INVENTORY_TEMPLATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_CONTROL_PLANE_EXECUTION_EVIDENCE_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_DELETION_QUARANTINE_RULES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_DOCS_TRUTH_REWRITE_GUIDE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_EXPECTED_FINAL_REPOSITORY_STATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_FINISHLINE_SCOPE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_IMPLEMENTATION_PLAYBOOK.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_INVARIANT_CHECKLISTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_MASTER_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_PHASE_ORDER_AND_OPERATOR_PROTOCOL.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_PROVIDER_CAPABILITY_MATRIX_TEMPLATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_PROVIDER_CAPABILITY_POLICY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_REFERENCE_INTERPRETER_CLOSEOUT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_REFERENCE_INTERPRETER_CONFORMANCE_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_RELEASE_AUDIT_REQUIREMENTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_RISK_REGISTER.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_ROLLBACK_REPAIR_QUARANTINE_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_SOURCE_BASIS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P20_VERIFICATION_COMMANDS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/P21_PROVIDER_EXPANSION_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/PROVIDER_CAPABILITY_MATRIX.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/PROVIDER_CAPABILITY_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/PROVIDER_INTEGRATION_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/RESEARCH_CONSTRAINTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/RE_RUN_AND_VERIFICATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/RISK_REGISTER.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/ROLLBACK_AND_QUARANTINE_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/SHADOW_OWNERSHIP_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/SOURCE_ROOTS_AND_TOUCH_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/TOOL_DISPATCH_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/CANONICAL_TYPE_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/COMPATIBILITY_LEDGER.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/FINAL_AUDITOR_HANDOFF.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/FINAL_GATE_OUTPUTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/FINAL_QUARANTINE_LEDGER.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/FINAL_UNRESOLVED_RISKS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/quarantine/delegation-kit-attestation-settlement.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/quarantine/phase05-schema-sketches.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/matrices/P0_DUPLICATE_TYPES.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/matrices/SOURCE_OF_TRUTH_MATRIX.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/00_EXECUTIVE_SUMMARY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/03_CRATE_BOUNDARY_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/04_EXTRACTION_PROCEDURE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/14_RISK_REGISTER.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/15_API_SKETCHES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/16_TRACEABILITY_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/MANIFEST.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/MANIFEST.txt` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prior-design-packet/README.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/P20_CODEX_RUN_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_00_START_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phase_injections/README.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_01_BUILD_CERTIFICATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_00_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_01_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_02_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_03_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_04_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_05_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_06_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_07_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_08_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_09_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/reports/PHASE_10_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/supporting/matrices/forbidden_leftovers.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/supporting/matrices/phase_acceptance_gates.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/supporting/matrices/source_of_truth_matrix.csv` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P20_PHASE_GATES.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P20_TASK_MATRIX.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/tasks/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.json` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/templates/PHASE_REPORT_TEMPLATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p20/templates/QUARANTINE_RECORD_TEMPLATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P20_1_CODEX_RUN_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P20_2_CODEX_RUN_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P20_CODEX_RUN_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_1_generate_audit_bundle.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_1_hard_code_audit.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_1_validate_archive_manifest.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_1_verify.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_1_verify_release_zip.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_generate_audit_bundle.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_phase_gate.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_run_test_agent.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_scan_package_integrity.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_scan_testkit_purity.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_scanner_selftest.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_validate_agency_cases.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_verify.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_2_verify_release_zip.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_generate_audit_bundle.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_phase_gate.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_scan_aidens.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_validate_agency_cases.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p20_verify.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+
+### P21-family stale artifacts -> docs/codex-runs/archive/P21/
+
+- `docs/p21/P21_ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_AGENCY_GOVERNANCE_V02.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_DELETION_QUARANTINE_RULES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_EXPECTED_FINAL_STATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_FAILURE_MODE_WARNINGS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_IMPLEMENTATION_PLAYBOOK.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_MASTER_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_PROVIDER_TOOL_CAPABILITY_POLICY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_RECALL_RECALL_CODING_EXTRACTION_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_RELEASE_AND_AUDIT_REQUIREMENTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_ROLLBACK_REPAIR_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/P21_SCOPE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/RECALL_CODING_EXTRACTION_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p21/RECALL_DAEMON_EXTRACTION_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/FINAL_AUDIT_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/KNOWN_LIMITATIONS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_00_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_01_BUILD_CERTIFICATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_02_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_03_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_04_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_05_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_06_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_07_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_08_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_09_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p21/PHASE_10_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/P21_CODEX_RUN_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_00_PACKAGE_SOURCE_CLOSURE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_01_BUILD_CERTIFICATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_02_RUN_TEST_AGENT_CLI.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_03_GENERATED_AGENT_PROJECT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_04_PROFILE_PLAN_USABILITY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_05_PROVIDER_TOOL_CERTIFICATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_06_AGENCY_V02.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_07_RECALL_EXTRACTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_08_ARCHIVE_REPLAY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_09_GUARDED_STRETCH.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/PHASE_10_FINAL_HOSTILE_AUDIT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phase_injections/README.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_00.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_01.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_02.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_03.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_04.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_05.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_06.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_07.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_08.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_09.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/p21/phases/PHASE_10.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p21_daemon_smoke.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p21_generate_audit_bundle.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p21_scan_package_integrity.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p21_scan_source_cross_refs.py` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p21_verify.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `scripts/p21_verify_release_archive.sh` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+
+### legacy root/phase prompt artifacts -> derived run archive or unclassified
+
+- `CODEX_MASTER_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PHASE_MANIFEST.yaml` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_00_PREFLIGHT_SOURCE_BASIS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_00_SOURCE_TRUTH_AND_LAYOUT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_01_CONTRACT_COLLAPSE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_01_GENERATED_OWNERSHIP_INVENTORY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_02_CANONICAL_ADAPTER_SPINE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_02_P0_EXACT_DUPLICATE_COLLAPSE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_03_CANONICAL_DEPENDENCY_WIRING.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_03_GOLDEN_VERTICAL_SLICE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_04_FAILURE_HONESTY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_05_MEMORY_RUNTIME_HARDENING.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_05_SCHEMA_OWNERSHIP_COLLAPSE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_06_GOVERNANCE_PROMOTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_06_TOOL_REPAIR_RUNTIME_WRAPPERS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_07_DAEMON_QUEUE_SCHEDULE_WAKE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_07_FINAL_PROOF_AND_AUDITOR_HANDOFF.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_08_KERNEL_ORACLE_INTEGRATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/PHASE_09_RELEASE_AUDIT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_PROMPTS/README.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_RUN_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_START_HERE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `CODEX_SUPER_PASS_ORCHESTRATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_00_CODE_PACKAGE_AUDIT_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_00_SOURCE_TRUTH_PREFLIGHT_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_00_START_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_01_PACKAGE_INTEGRITY_CLOSURE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_01_RESTORE_MISSING_FILES_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_02_TESTKIT_TOPOLOGY_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_03_BUILD_GATE_STABILIZATION_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_03_SCANNER_HARDENING_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_04_CARGO_GATE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_05_RUNNER_PROVIDER_AGENCY_REVALIDATION_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_06_FINAL_AUDIT_ARCHIVE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_07_RELEASE_ZIP_RECHECK_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_07_V0_1_USABILITY_EXAMPLES_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_08_SCANNER_CONFORMANCE_HARDENING_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/PHASE_10_GUARDED_STRETCH_LANE_INJECTION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phase_injections/README.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_00_SOURCE_TRUTH_PREFLIGHT.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_01_BUILD_CERTIFICATION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_01_PACKAGE_INTEGRITY_CLOSURE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_02_TESTKIT_SPLIT_AND_INTEGRATION_CRATE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_03_BUILD_GATE_STABILIZATION.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_04_CANONICAL_TEST_AGENT_VERTICAL_SLICE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_05_PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_06_AGENCY_EVAL_AND_RECEIPT_HARDENING.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_07_V0_1_USABILITY_EXAMPLES.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_08_SCANNER_CONFORMANCE_HARDENING.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_09_RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_10_GUARDED_STRETCH_LANE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+- `prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md` - legacy phase/injection prompt not in current P22 phase set; planned archive: `unclassified-or-derived-from-filename`
+
+### other stale run artifact -> derived run archive or unclassified
+
+- `NEXT_CODEX_TASK_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_1_ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_1_FINAL_AUDITOR_CHECKLIST.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_1_IMPLEMENTATION_PLAYBOOK.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_1_MASTER_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_1_PACKAGE_INTEGRITY_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_1_TESTKIT_SPLIT_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_AGENCY_EVAL_EXPANSION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_DELETION_QUARANTINE_RULES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_EVIDENCE_REPORTING.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_EXPECTED_FINAL_STATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_IMPLEMENTATION_PLAYBOOK.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_MASTER_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_PACKAGE_INTEGRITY_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_PROVIDER_TOOL_RECEIPT_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_RISK_REGISTER.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_ROLLBACK_REPAIR_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_SCOPE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_TESTKIT_SPLIT_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_2_TEST_AGENT_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_AGENCY_EVAL_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_AGENCY_GOVERNANCE_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_AGENTS_ADDENDUM.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_CONTRACT_OWNERSHIP_INVENTORY_TEMPLATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_CONTROL_PLANE_EXECUTION_EVIDENCE_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_DELETION_QUARANTINE_RULES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_DOCS_TRUTH_REWRITE_GUIDE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_EXPECTED_FINAL_REPOSITORY_STATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_FINISHLINE_SCOPE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_IMPLEMENTATION_PLAYBOOK.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_INVARIANT_CHECKLISTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_MASTER_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_PHASE_ORDER_AND_OPERATOR_PROTOCOL.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_PROVIDER_CAPABILITY_MATRIX_TEMPLATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_PROVIDER_CAPABILITY_POLICY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_REFERENCE_INTERPRETER_CLOSEOUT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_REFERENCE_INTERPRETER_CONFORMANCE_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_RELEASE_AUDIT_REQUIREMENTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_RISK_REGISTER.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_ROLLBACK_REPAIR_QUARANTINE_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_SOURCE_BASIS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P20_VERIFICATION_COMMANDS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P21_PROVIDER_EXPANSION_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_ACCEPTANCE_GATES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_DELETION_QUARANTINE_RULES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_EXPECTED_FINAL_STATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_FINAL_AUDIT_TEMPLATE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_GUARDED_STRETCH_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_MASTER_ISSUE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_PACKAGE_SURFACE_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_RELEASE_TRUTH_REQUIREMENTS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_RISK_REGISTER.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_ROLLBACK_REPAIR_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_SECURITY_REDACTION_PLAN.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_SOURCE_BASIS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_ZPY_CODEX_ARCHIVAL_SPEC.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/P22_ZPY_IMPLEMENTATION_NOTES.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `docs/p22/p20/prompts/P20_CODEX_RUN_PROMPT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+- `handoffs/p20_2/FINAL_AUDIT_REPORT.md` - matches stale Codex/Pxx path policy; planned archive: `derived-from-path`
+
+## Ambiguous / Unclassified Archive Candidates
+
+These are P20/P21-named or nested historical materials under active P22 paths. They should be routed to `docs/codex-runs/archive/unclassified/<stamp>/` unless Phase 01/03 rules can prove a safer run-specific destination.
+
+- `docs/p22/P20_1_ACCEPTANCE_GATES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_1_FINAL_AUDITOR_CHECKLIST.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_1_IMPLEMENTATION_PLAYBOOK.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_1_MASTER_ISSUE_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_1_PACKAGE_INTEGRITY_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_1_TESTKIT_SPLIT_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_ACCEPTANCE_GATES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_AGENCY_EVAL_EXPANSION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_DELETION_QUARANTINE_RULES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_EVIDENCE_REPORTING.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_EXPECTED_FINAL_STATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_IMPLEMENTATION_PLAYBOOK.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_MASTER_ISSUE_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_PACKAGE_INTEGRITY_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_PROVIDER_TOOL_RECEIPT_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_RISK_REGISTER.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_ROLLBACK_REPAIR_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_SCOPE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_TESTKIT_SPLIT_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_2_TEST_AGENT_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_ACCEPTANCE_GATES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_AGENCY_EVAL_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_AGENCY_GOVERNANCE_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_AGENTS_ADDENDUM.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_CONTRACT_OWNERSHIP_INVENTORY_TEMPLATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_CONTROL_PLANE_EXECUTION_EVIDENCE_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_DELETION_QUARANTINE_RULES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_DOCS_TRUTH_REWRITE_GUIDE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_EXPECTED_FINAL_REPOSITORY_STATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_FINISHLINE_SCOPE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_IMPLEMENTATION_PLAYBOOK.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_INVARIANT_CHECKLISTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_MASTER_ISSUE_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_PHASE_ORDER_AND_OPERATOR_PROTOCOL.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_PROVIDER_CAPABILITY_MATRIX_TEMPLATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_PROVIDER_CAPABILITY_POLICY.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_REFERENCE_INTERPRETER_CLOSEOUT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_REFERENCE_INTERPRETER_CONFORMANCE_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_RELEASE_AUDIT_REQUIREMENTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_RISK_REGISTER.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_ROLLBACK_REPAIR_QUARANTINE_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_SOURCE_BASIS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P20_VERIFICATION_COMMANDS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/P21_PROVIDER_EXPANSION_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/00_CODEX_START_HERE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/01_SOURCE_AND_EXTRACTION_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/02_CRATE_BOUNDARY_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/03_IMPLEMENTATION_PHASES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/04_ACCEPTANCE_GATES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/05_FOOTGUN_TEST_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/06_RECALL_SOURCE_TOUCH_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/07_API_TARGETS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/08_CI_AND_COMMANDS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/09_CODEX_PHASE0_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/10_CODEX_PHASE1_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/11_CODEX_PHASE2_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/12_DEFERRED_ADVANCED_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/13_DEPENDENCY_BOUNDARY_CHECKLIST.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/14_DESIGN_LAWS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/15_CURRENT_RECALL_AUDIT_SUMMARY.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/ACCEPTANCE_GATES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/APP_PLAN_AND_DOCTOR_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/AUDITOR_HANDOFF.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/CANONICAL_OWNER_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/CONTRACT_OWNERSHIP_INVENTORY.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/CONTRACT_OWNERSHIP_INVENTORY.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/CURRENT_AIDENS_AUDIT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/DEPENDENCY_AND_PATH_GUIDE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/DOCS_CODE_TRUTH_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/EVIDENCE_REPORTING_REQUIREMENTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/FINAL_STATE_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/FORBIDDEN_PATTERNS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/HUMAN_GUARDRAIL_PROMPTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/IMPLEMENTATION_SEQUENCE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/MASTER_ISSUE_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/NON_GOALS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/ODD_COMBINATION_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/OPEN_AMBIGUITIES_AND_STOP_RULES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/OPERATOR_QUICKSTART.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_ACCEPTANCE_GATES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_AGENCY_EVAL_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_AGENCY_GOVERNANCE_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_AGENTS_ADDENDUM.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_CONTRACT_OWNERSHIP_INVENTORY_TEMPLATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_CONTROL_PLANE_EXECUTION_EVIDENCE_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_DELETION_QUARANTINE_RULES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_DOCS_TRUTH_REWRITE_GUIDE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_EXPECTED_FINAL_REPOSITORY_STATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_FINISHLINE_SCOPE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_IMPLEMENTATION_PLAYBOOK.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_INVARIANT_CHECKLISTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_MASTER_ISSUE_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_PHASE_ORDER_AND_OPERATOR_PROTOCOL.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_PROVIDER_CAPABILITY_MATRIX_TEMPLATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_PROVIDER_CAPABILITY_POLICY.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_REFERENCE_INTERPRETER_CLOSEOUT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_REFERENCE_INTERPRETER_CONFORMANCE_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_RELEASE_AUDIT_REQUIREMENTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_RISK_REGISTER.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_ROLLBACK_REPAIR_QUARANTINE_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_SOURCE_BASIS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P20_VERIFICATION_COMMANDS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/P21_PROVIDER_EXPANSION_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/PROVIDER_CAPABILITY_MATRIX.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/PROVIDER_CAPABILITY_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/PROVIDER_INTEGRATION_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/RESEARCH_CONSTRAINTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/RE_RUN_AND_VERIFICATION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/RISK_REGISTER.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/ROLLBACK_AND_QUARANTINE_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/SHADOW_OWNERSHIP_ISSUE_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/SOURCE_ROOTS_AND_TOUCH_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/TOOL_DISPATCH_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/CANONICAL_TYPE_INVENTORY.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/COMPATIBILITY_LEDGER.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/FINAL_AUDITOR_HANDOFF.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/FINAL_GATE_OUTPUTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/FINAL_QUARANTINE_LEDGER.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/FINAL_UNRESOLVED_RISKS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/quarantine/delegation-kit-attestation-settlement.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/quarantine/phase05-schema-sketches.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/matrices/P0_DUPLICATE_TYPES.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/matrices/SOURCE_OF_TRUTH_MATRIX.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/00_EXECUTIVE_SUMMARY.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/03_CRATE_BOUNDARY_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/04_EXTRACTION_PROCEDURE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/14_RISK_REGISTER.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/15_API_SKETCHES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/16_TRACEABILITY_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/MANIFEST.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/MANIFEST.txt` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prior-design-packet/README.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT_PROMPT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_00_START_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phase_injections/README.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_01_BUILD_CERTIFICATION.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_00_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_01_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_02_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_03_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_04_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_05_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_06_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_07_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_08_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_09_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/reports/PHASE_10_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/supporting/matrices/forbidden_leftovers.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/supporting/matrices/phase_acceptance_gates.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/supporting/matrices/source_of_truth_matrix.csv` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P20_PHASE_GATES.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P20_TASK_MATRIX.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/tasks/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.json` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/templates/PHASE_REPORT_TEMPLATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p20/templates/QUARANTINE_RECORD_TEMPLATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_ACCEPTANCE_GATES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_AGENCY_GOVERNANCE_V02.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_DELETION_QUARANTINE_RULES.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_EXPECTED_FINAL_STATE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_FAILURE_MODE_WARNINGS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_IMPLEMENTATION_PLAYBOOK.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_MASTER_ISSUE_MATRIX.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_PROVIDER_TOOL_CAPABILITY_POLICY.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_RECALL_RECALL_CODING_EXTRACTION_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_RELEASE_AND_AUDIT_REQUIREMENTS.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_ROLLBACK_REPAIR_PLAN.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/P21_SCOPE.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/RECALL_CODING_EXTRACTION_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+- `docs/p22/p21/RECALL_DAEMON_EXTRACTION_REPORT.md` - P20/P21 material nested under docs/p22; likely historical reference but active-path status is ambiguous; planned archive: `unclassified`
+
+## Commands Run
+
+- `pwd && rg --files ... source-basis inventory`
+- `find docs/p22 prompts/p22 tasks/p22 docs/p21 prompts/p21 .codex .codex_evidence -maxdepth 3 -type f`
+- `find handoffs/p21 -maxdepth 2 -type f`
+- `git status --short`
+- `wc -l CLAUDE.md AGENTS.md AGENTS_P22.md z.py README.md STATUS.md SOURCE_BASIS.md Cargo.toml handoffs/p21/* scripts/p21_*`
+- `sed -n reads for AGENTS.md, ../CLAUDE.md, README.md, STATUS.md, SOURCE_BASIS.md, handoffs/p21/FINAL_AUDIT_REPORT.md, handoffs/p21/KNOWN_LIMITATIONS.md`
+- `sed/rg reads for z.py CLI/policy/build flow and P21/P22 verifier scripts`
+- `rg -n "z.py|archive|codex-runs|P22" docs/p22 scripts prompts tasks AGENTS.md README.md STATUS.md SOURCE_BASIS.md handoffs/p21`
+- `sed -n reads for prompts/P22_CODEX_RUN_PROMPT.md, prompts/phases/PHASE_00..03, tasks/P22_TASK_MATRIX.json`
+- `python3 inline classifier -> target/p22/audit/phase00_codex_artifact_inventory.json`
+- `python3 z.py --root . --profile aidens --mode codex-context --dry-run --no-strict --output target/p22/audit/phase00_current_zpy_default.zip --manifest-out target/p22/audit/phase00_current_zpy_default.manifest.json --report-out target/p22/audit/phase00_current_zpy_default.report.md --excluded-out target/p22/audit/phase00_current_zpy_default.excluded.json --findings-out target/p22/audit/phase00_current_zpy_default.findings.json`
+- `python3 inline manifest scan -> target/p22/audit/phase00_current_zpy_contamination_summary.json`
+
+## Changed Files
+
+- `target/p22/audit/phase00_codex_artifact_inventory.json`
+- `target/p22/audit/phase00_current_zpy_default.manifest.json`
+- `target/p22/audit/phase00_current_zpy_default.report.md`
+- `target/p22/audit/phase00_current_zpy_default.excluded.json`
+- `target/p22/audit/phase00_current_zpy_default.findings.json`
+- `target/p22/audit/phase00_current_zpy_contamination_summary.json`
+- `handoffs/p22/PHASE_00_REPORT.md`
+- `target/p22/audit/COMMAND_LOG_SUMMARY.md`
+- `target/p22/audit/CHANGED_FILE_SUMMARY.md`
+- `target/p22/audit/UNRESOLVED_RISKS.md`
+
+## Gates / Tests
+
+- Phase 00 acceptance gate: passed for inventory/report scope; only report/audit files were created.
+- P22 implementation gates were not run in Phase 00 because `z.py` is known not to expose the required P22 contract yet and Phase 01 owns that repair.
+- Cargo gates were not run in Phase 00; no Rust source edits were made.
+
+## Invariant Validation
+
+- Working directory confirmed as `/home/sikmindz/Coding/Libraries/AiDENs`.
+- Parent Git root is `/home/sikmindz/Coding/Libraries`; parent Git currently reports `AiDENs/` as untracked. P22 change accounting must therefore use workspace reports unless the repository boundary is corrected.
+- No historical Codex artifacts were deleted or archived in Phase 00.
+- No root protected files were moved or modified.
+- No canonical stack truth was added, reinterpreted, or promoted.
+
+## Archive / Quarantine Status
+
+- Archive operation performed: `no`.
+- Files moved to unclassified archive: `0`.
+- Files quarantined: `0`.
+- Planned stale archive candidates: `826`.
+- Planned ambiguous/unclassified candidates: `260`.
+
+## Unresolved Risks
+
+- Required P22 spec file `docs/p22/P22_ZPY_CODEX_ARCHIVAL_SPEC.md` is missing; Phase 01 must implement from the main prompt, AGENTS doctrine, task matrix, and phase prompts unless the operator supplies it.
+- `AGENTS_P22.md` is missing as a standalone file; equivalent doctrine currently exists in `AGENTS.md` and the user prompt.
+- `STATUS.md` and `SOURCE_BASIS.md` still describe P20/P21 state and must be rewritten after archival behavior is implemented.
+- The active tree contains large historical P20/P21 material under `docs/p22`; Phase 03 must decide whether to archive it as unclassified historical evidence or preserve selected files as current P22 source material with explicit policy.
+- Current `z.py` dry-run includes stale Codex material and has secret-scanner warnings; these are P22 P0 work items.
+- Parent Git root treats `AiDENs/` as untracked, limiting Git-based changed-file evidence.
+
+## Phase Boundary
+
+STOP: Phase 01 requires the human operator guardrail before implementation begins.
+
+## Post-Phase 00 Guardrail Revalidation
+
+Status: `FAIL - stop before Phase 01`.
+
+Commands run:
+
+- `python3 scripts/assert_p22_codex_archival_hygiene.py .`
+- `python3 scripts/assert_p22_zpy_archive_contract.py z.py`
+- `find docs/codex-runs -maxdepth 5 -type f`
+- `find handoffs/p22 target/p22/audit -maxdepth 2 -type f`
+
+Manual guardrail results:
+
+- Phase 00 acceptance gate status: `pass`; Phase 00 produced inventory/report artifacts only.
+- Exact changed files: `handoffs/p22/PHASE_00_REPORT.md`, `target/p22/audit/phase00_codex_artifact_inventory.json`, `target/p22/audit/phase00_current_zpy_default.manifest.json`, `target/p22/audit/phase00_current_zpy_default.report.md`, `target/p22/audit/phase00_current_zpy_default.excluded.json`, `target/p22/audit/phase00_current_zpy_default.findings.json`, `target/p22/audit/phase00_current_zpy_contamination_summary.json`, `target/p22/audit/COMMAND_LOG_SUMMARY.md`, `target/p22/audit/CHANGED_FILE_SUMMARY.md`, and `target/p22/audit/UNRESOLVED_RISKS.md`.
+- Codex artifacts archived/skipped/left active: `0` archived, `0` skipped by an archive operation, stale active artifacts remain.
+- Existing archives left untouched: `pass`; no `docs/codex-runs` files are present and no archive operation ran.
+- `z.py` deterministic/strict status: `partial/fail for P22`; existing strict dry-run behavior works, but `assert_p22_zpy_archive_contract.py` fails because P22 archival flags, `audit-full`, and required archive outputs are missing.
+- Contamination risk for next phase: `fail`; `assert_p22_codex_archival_hygiene.py .` reports stale active Codex-run artifacts, including root `CODEX_*`, historical P20/P21/P22 root docs, old run scripts, handoffs, prompts, and `.codex_evidence`.
+- Local substitute for canonical library truth introduced: `pass`; no source edits introduced substitutes.
+- Cargo/tests/assertion scripts: cargo not applicable for Phase 00; P22 assertion scripts fail as expected for the current pre-repair state.
+- Unresolved risks requiring stop/repair/quarantine: `yes`; Phase 01 must repair `z.py` before any repo normalization can be safely performed.
+
+Global invariant results:
+
+- AiDENs directs/wires/packages only: `pass`.
+- Canonical stack libraries own truth; no AiDENs substitutes: `pass`.
+- No stale Codex-run artifact active except current P22 phase files: `fail`.
+- Historical run material archived, not deleted: `pending/fail`; no deletion occurred, but archival has not run.
+- Existing archives must not be rewritten: `pass`.
+- `z.py` strict, deterministic, stdlib-only, source-closure aware: `partial`; existing implementation is stdlib-only and source-closure aware, but P22 archival strictness is absent.
+- No compatibility shim, shadow truth store, hidden database, or silent semantic widening: `pass`.
+- Provider/API-key material redacted in reports/package outputs: `partial`; current `z.py` emits redacted warnings without printing values, but false-positive scanner behavior remains unresolved.
+- Support claims backed by executable proof: `pass for Phase 00`; no support claims were promoted.
+- If any invariant fails, stop and repair/quarantine before proceeding: `fail/stop`; do not start Phase 01 under this guardrail without operator direction.

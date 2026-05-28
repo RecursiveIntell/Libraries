@@ -1,0 +1,13 @@
+phase,gate_command_or_artifact,required
+00,python3 scripts/p21_scan_package_integrity.py .,yes
+00,python3 scripts/p21_scan_source_cross_refs.py .,yes
+01,cargo check --workspace --all-targets --all-features,yes
+02,cargo run -p aidens-cli -- run-test-agent fixtures/test-agent/basic-agent.toml,yes
+03,cargo run -p aidens-cli -- new coding-agent target/demo-agent,yes
+04,cargo run -p aidens-cli -- plan validate --config fixtures/test-agent/basic-agent.toml,yes
+05,cargo run -p aidens-cli -- provider-check --config fixtures/test-agent/basic-agent.toml,yes
+06,agency eval report,yes
+07,Recall extraction report,yes
+08,bash scripts/p21_verify_release_archive.sh target/p21/aidens-v0.1-candidate.zip,yes
+09,stretch report,conditional
+10,handoffs/p21/FINAL_AUDIT_REPORT.md,yes

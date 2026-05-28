@@ -1,0 +1,29 @@
+{
+  "receipt_id": "receipt:fixture",
+  "kind": "run",
+  "context": {
+    "run_id": "run:fixture",
+    "trace_id": "trace:fixture",
+    "attempt_family_id": "attempt-family:fixture",
+    "attempt_id": "attempt:fixture",
+    "started_at": "2026-04-26T00:00:00Z",
+    "app_id": "fixture-app",
+    "config_generation": null
+  },
+  "provider_route": null,
+  "tool_exposure_ids": [],
+  "turn_receipts": [],
+  "tool_call_requests": [],
+  "tool_call_results": [],
+  "tool_invocation_receipts": [],
+  "approval_requests": [],
+  "approval_decisions": [],
+  "permit_use_receipts": [],
+  "boundary_repair_receipts": [],
+  "json_repair_receipts": [],
+  "schema_validation_receipts": [],
+  "stop_rule_receipts": [],
+  "budget_exhaustion_receipts": [],
+  "warnings": [],
+  "completed_at": "2026-04-26T00:00:01Z"
+}

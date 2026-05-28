@@ -1,0 +1,50 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-03T22:59:03Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225903Z/files/docs/root-markdown-archive/20260503T225812Z/files/P24_CODEX_RUN_PROMPT.md",
+      "bytes": 5070,
+      "mtime_utc": "2026-05-02T16:22:20Z",
+      "original_path": "docs/root-markdown-archive/20260503T225812Z/files/P24_CODEX_RUN_PROMPT.md",
+      "reason": "stale-codex-run-prompt",
+      "run_id": "P24",
+      "sha256": "957208bee37d50ae059c8d613c96f7a94283bbbd60fccbe8f990f7b64a72d383"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225903Z/files/docs/root-markdown-archive/20260503T225812Z/files/P24_MASTER_PACKET.md",
+      "bytes": 1882,
+      "mtime_utc": "2026-05-02T16:22:46Z",
+      "original_path": "docs/root-markdown-archive/20260503T225812Z/files/P24_MASTER_PACKET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "6030cd593fd9f3b66ad5dca4bcd5bbab31421a893617e0d30dae577a5d8d33ed"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225903Z/files/docs/root-markdown-archive/20260503T225812Z/files/P24_PHASE_PLAN.md",
+      "bytes": 9654,
+      "mtime_utc": "2026-05-02T16:22:20Z",
+      "original_path": "docs/root-markdown-archive/20260503T225812Z/files/P24_PHASE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "b13f1ccc0b26b42a9fc95c7e095255fd68a5ceb10637ece1b6f9e11d015a1e92"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225903Z/files/docs/root-markdown-archive/20260503T225812Z/files/P24_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 1438,
+      "mtime_utc": "2026-05-02T16:22:20Z",
+      "original_path": "docs/root-markdown-archive/20260503T225812Z/files/P24_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "12a5a8b139f2ec3a67557234124ed7a77c19d32cf852f95c0ad6da636ae18caa"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P24",
+  "skipped_existing": [],
+  "superseded_by": "P25",
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25",
+  "unclassified": []
+}

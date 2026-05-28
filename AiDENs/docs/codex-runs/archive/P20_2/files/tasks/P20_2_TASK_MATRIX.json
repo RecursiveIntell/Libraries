@@ -1,0 +1,68 @@
+{
+  "run_id": "P20.2_CODE_PACKAGE_TEST_AGENT_V0_1_CERTIFICATION",
+  "phases": [
+    {
+      "id": "00",
+      "name": "SOURCE_TRUTH_PREFLIGHT",
+      "objective": "Audit actual source/package state; generate baseline; do not modify architecture."
+    },
+    {
+      "id": "01",
+      "name": "PACKAGE_INTEGRITY_CLOSURE",
+      "objective": "Restore missing evals/fixtures/scripts; fix manifest/include target problems."
+    },
+    {
+      "id": "02",
+      "name": "TESTKIT_SPLIT_AND_INTEGRATION_CRATE",
+      "objective": "Make aidens-testkit pure/reference-only; create aidens-integration-tests for production tests."
+    },
+    {
+      "id": "03",
+      "name": "BUILD_GATE_STABILIZATION",
+      "objective": "Run and fix fmt/check/test/clippy without weakening invariants."
+    },
+    {
+      "id": "04",
+      "name": "CANONICAL_TEST_AGENT_VERTICAL_SLICE",
+      "objective": "Implement deterministic test-agent proof through runner/provider/tool/permit/boundary/agency/receipts."
+    },
+    {
+      "id": "05",
+      "name": "PROVIDER_TOOL_PERMIT_RECEIPT_HARDENING",
+      "objective": "Harden provider honesty and tool/permit/receipt assertions."
+    },
+    {
+      "id": "06",
+      "name": "AGENCY_EVAL_AND_RECEIPT_HARDENING",
+      "objective": "Expand agency evals and receipt assertions."
+    },
+    {
+      "id": "07",
+      "name": "V0_1_USABILITY_EXAMPLES",
+      "objective": "Add runnable examples and operator commands without broad feature expansion."
+    },
+    {
+      "id": "08",
+      "name": "SCANNER_CONFORMANCE_HARDENING",
+      "objective": "Strengthen package/testkit/ownership scanners and CI hooks."
+    },
+    {
+      "id": "09",
+      "name": "RELEASE_CERTIFICATION_AND_ARCHIVE_REPLAY",
+      "objective": "Generate final audit bundle and verify release archive after unzip."
+    },
+    {
+      "id": "10",
+      "name": "GUARDED_STRETCH_LANE",
+      "objective": "Only after green gates: profile smoke tests, quickstart polish, P21 plan."
+    }
+  ],
+  "required_gates": [
+    "package_integrity",
+    "testkit_purity",
+    "cargo_fmt_check_test_clippy",
+    "test_agent_vertical_slice",
+    "release_zip_recheck"
+  ],
+  "stretch_allowed_only_after_all_gates": true
+}

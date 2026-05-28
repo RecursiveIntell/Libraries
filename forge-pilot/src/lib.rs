@@ -4,6 +4,7 @@
 //! semantic-memory state, selects verification targets, executes oracle
 //! or paired-patch plans, and exports evidence bundles through the
 //! canonical Forge bridge path.
+#![cfg_attr(test, allow(clippy::expect_used))]
 
 pub mod act;
 pub mod bootstrap;
@@ -52,10 +53,11 @@ pub use export::{
 };
 #[cfg(feature = "governance")]
 pub use governance_gate::{
-    build_governance_receipt, gate_execution, observe_governance,
-    predicates as governance_predicates, GovernanceDegradation, GovernanceGateResult,
-    GovernanceObservation, GovernanceObservationSummary, GovernanceReceiptV1,
-    GOVERNANCE_PROJECTION_FAMILY, GOVERNANCE_RECEIPT_V1_SCHEMA, GOVERNANCE_SCOPE_NAMESPACE,
+    build_governance_receipt, gate_execution, gate_execution_with_mode, observe_governance,
+    observe_governance_with_mode, predicates as governance_predicates, GovernanceDegradation,
+    GovernanceGateError, GovernanceGateResult, GovernanceMode, GovernanceObservation,
+    GovernanceObservationSummary, GovernanceReceiptV1, GOVERNANCE_PROJECTION_FAMILY,
+    GOVERNANCE_RECEIPT_V1_SCHEMA, GOVERNANCE_SCOPE_NAMESPACE,
 };
 pub use history::{PilotHistory, TargetAttemptRecord, TargetHistoryEntry};
 pub use loop_runner::{

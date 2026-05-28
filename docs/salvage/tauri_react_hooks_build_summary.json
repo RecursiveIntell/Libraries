@@ -1,0 +1,26 @@
+[
+  {
+    "workstream": "tauri-react-hooks",
+    "command": "npm ci",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 1.99,
+    "log": "docs/salvage/build_logs/tauri-react-hooks_npm_ci.log"
+  },
+  {
+    "workstream": "tauri-react-hooks",
+    "command": "npm run typecheck",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 1.09,
+    "log": "docs/salvage/build_logs/tauri-react-hooks_typecheck.log"
+  },
+  {
+    "workstream": "tauri-react-hooks",
+    "command": "npm run build",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 1.81,
+    "log": "docs/salvage/build_logs/tauri-react-hooks_build.log"
+  }
+]

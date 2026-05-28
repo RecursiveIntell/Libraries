@@ -1,0 +1,80 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/aidens",
+    "crates/aidens-contracts",
+    "crates/aidens-boundary-kit",
+    "crates/aidens-config",
+    "crates/aidens-receipts",
+    "crates/aidens-capability-kit",
+    "crates/aidens-provider-kit",
+    "crates/aidens-tool-kit",
+    "crates/aidens-security-kit",
+    "crates/aidens-permit-kit",
+    "crates/aidens-arbiter-kit",
+    "crates/aidens-budget-kit",
+    "crates/aidens-governance-kit",
+    "crates/aidens-schedule-kit",
+    "crates/aidens-queue-kit",
+    "crates/aidens-wake-kit",
+    "crates/aidens-daemon-kit",
+    "crates/aidens-memory-kit",
+    "crates/aidens-kernel-kit",
+    "crates/aidens-delegation-kit",
+    "crates/aidens-plan-kit",
+    "crates/aidens-repair-kit",
+    "crates/aidens-runner",
+    "crates/aidens-app-kit",
+    "crates/aidens-cli",
+    "crates/aidens-testkit",
+    "crates/aidens-profile-coding",
+    "crates/aidens-profile-research",
+    "crates/aidens-profile-desktop",
+    "crates/aidens-profile-daemon",
+    "crates/aidens-profile-memory"
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
+authors = ["RecursiveIntell"]
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["derive"] }
+schemars = { version = "0.8", features = ["chrono", "uuid1"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+sha2 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+toml = "0.8"
+tracing = "0.1"
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+assurance-runtime = { version = "0.1.0", path = "../assurance-runtime" }
+authority-delegation = { version = "0.1.0", path = "../authority-delegation" }
+constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
+forge-memory-bridge = { version = "0.1.0", path = "../forge-memory-bridge" }
+kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
+kernel-conformance = { version = "0.1.0", path = "../kernel-conformance" }
+kernel-oracles = { version = "0.1.0", path = "../kernel-oracles" }
+knowledge-runtime = { version = "0.1.0", path = "../knowledge-runtime" }
+llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
+recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
+semantic-memory = { version = "0.5.0", path = "../semantic-memory", default-features = false, features = ["brute-force"] }
+semantic-memory-forge = { version = "0.1.0", path = "../semantic-memory-forge" }
+stack-ids = { version = "0.1.0", path = "../stack-ids" }
+verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }
+verification-control = { version = "0.1.0", path = "../verification-control" }
+verification-policy = { version = "0.1.0", path = "../verification-policy" }
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "deny"

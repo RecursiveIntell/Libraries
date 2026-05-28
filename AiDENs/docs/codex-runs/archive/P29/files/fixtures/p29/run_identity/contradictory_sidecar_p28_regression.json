@@ -1,0 +1,18 @@
+{
+  "schema": "P29RunIdentityRegressionFixtureV1",
+  "description": "P28-style failure: current_run says P27 while P28 artifacts are moved as stale.",
+  "codex_archive": {
+    "current_run": "P27",
+    "moved": [
+      {
+        "original_path": "handoffs/p28/PHASE_00_REPORT.md",
+        "run_id": "P28"
+      },
+      {
+        "original_path": "scripts/p28_verify.sh",
+        "run_id": "P28"
+      }
+    ]
+  },
+  "expected": "reject"
+}

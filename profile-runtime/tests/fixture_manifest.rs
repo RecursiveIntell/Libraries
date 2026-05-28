@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use serde_json::Value;
 
 #[test]

@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ReleaseAssuranceSectionV1": {
+      "enum": [
+        "hazard_summary",
+        "control_evidence",
+        "rollback_plan"
+      ],
+      "type": "string"
+    },
+    "ReleaseMonitorClassV1": {
+      "enum": [
+        "error_budget",
+        "latency_p95",
+        "saturation"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "block_on_open_obligations": {
+      "type": "boolean"
+    },
+    "forbid_score_only_gate": {
+      "type": "boolean"
+    },
+    "release_policy_profile_id": {
+      "type": "string"
+    },
+    "required_assurance_sections": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/ReleaseAssuranceSectionV1"
+      },
+      "type": "array"
+    },
+    "required_monitor_classes": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/ReleaseMonitorClassV1"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "block_on_open_obligations",
+    "forbid_score_only_gate",
+    "release_policy_profile_id",
+    "schema_version"
+  ],
+  "title": "ReleasePolicyProfileV1",
+  "type": "object"
+}

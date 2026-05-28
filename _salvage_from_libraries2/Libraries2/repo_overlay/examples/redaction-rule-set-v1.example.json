@@ -1,0 +1,26 @@
+{
+  "schema_version": "RedactionRuleSetV1",
+  "redaction_rule_set_id": "rrs_001",
+  "target_artifact_families": [
+    "EpisodeBundleV1",
+    "EffectObservationBundleV1",
+    "PostmortemBundleV1"
+  ],
+  "field_actions": [
+    {
+      "field": "email",
+      "action": "tokenize"
+    },
+    {
+      "field": "free_text_note",
+      "action": "mask"
+    },
+    {
+      "field": "ip_address",
+      "action": "truncate"
+    }
+  ],
+  "reversibility_class": "operator_reversible_only",
+  "approval_requirement": "privacy-review",
+  "default_disclosure_budget_class": "limited_support_export"
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "HazardRegisterV1",
+  "hazard_register_id": "hzr_001",
+  "deployment_profile_id": "dpf_001",
+  "hazards": [
+    "bad migration",
+    "latency regression"
+  ],
+  "severity_class": "major",
+  "owner_ref": "team:reliability",
+  "last_reviewed_at": "2026-03-15T11:00:00Z"
+}

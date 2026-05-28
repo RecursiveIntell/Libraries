@@ -1,0 +1,14 @@
+{
+  "receipt_id": "queue-hop:fixture",
+  "kind": "queue-hop",
+  "namespace_id": "daemon-namespace:fixture",
+  "job_id": "job:fixture",
+  "lease_id": "queue-lease:fixture",
+  "hop": "lease-acquired",
+  "from_state": "queued",
+  "to_state": "leased",
+  "reason_codes": [
+    "lease-acquired"
+  ],
+  "recorded_at": "2026-04-27T00:00:00Z"
+}

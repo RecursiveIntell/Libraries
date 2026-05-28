@@ -1,3 +1,6 @@
+#![allow(clippy::expect_used)]
+#![allow(dead_code)]
+
 use assurance_runtime::{AssuranceCaseV1, ControlCoverageStateV1, ControlMappingV1};
 use proptest::prelude::*;
 

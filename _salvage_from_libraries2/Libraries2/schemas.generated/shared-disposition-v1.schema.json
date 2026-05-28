@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "disposition_label": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "shared_disposition_id": {
+      "type": "string"
+    },
+    "treatment": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "disposition_label",
+    "schema_version",
+    "shared_disposition_id",
+    "treatment"
+  ],
+  "title": "SharedDispositionV1",
+  "type": "object"
+}

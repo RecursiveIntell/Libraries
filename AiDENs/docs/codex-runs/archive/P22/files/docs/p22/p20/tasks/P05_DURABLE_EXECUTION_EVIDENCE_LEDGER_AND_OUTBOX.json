@@ -1,0 +1,29 @@
+{
+  "pass_id": "P05",
+  "title": "Durable execution evidence ledger, receipt store, and transactional outbox",
+  "phase": "Foundation / evidence",
+  "prompt_file": "prompts/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX_PROMPT.md",
+  "pass_doc": "passes/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.md",
+  "crates": [
+    "aidens-receipts",
+    "aidens-contracts",
+    "aidens-cli",
+    "aidens-runner",
+    "aidens-daemon-kit"
+  ],
+  "artifacts": [
+    "CanonicalReceiptLog",
+    "ToolReceiptSink",
+    "PoisonReceiptRecordV1",
+    "ExecutionLineageGraphV1"
+  ],
+  "acceptance": [
+    "A run can be inspected after process restart via durable store.",
+    "Receipt digests are stable across pretty/compact JSON representation.",
+    "Every provider/tool/boundary/permit failure has an emitted receipt or explicit test proving no durable store was configured and receipt-level is minimal."
+  ],
+  "forbidden": [
+    "Do not keep \u201cdurable\u201d evidence only in Vec/Mutex.",
+    "Do not export receipts by scanning mutable tables without outbox identity."
+  ]
+}

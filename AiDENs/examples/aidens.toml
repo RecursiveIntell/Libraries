@@ -1,0 +1,8 @@
+app_id = "example-aidens-app"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "ollama"
+model = "qwen2.5-coder:7b"
+base_url = "http://localhost:11434"

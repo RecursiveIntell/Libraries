@@ -1,0 +1,32 @@
+{
+  "pass_id": "P03",
+  "title": "TurnExecutorV1, provider/tool loop, and budgeted dispatch",
+  "phase": "Foundation / runtime",
+  "prompt_file": "prompts/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET_PROMPT.md",
+  "pass_doc": "passes/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.md",
+  "crates": [
+    "aidens-runner",
+    "aidens-provider-kit",
+    "aidens-tool-kit",
+    "aidens-budget-kit",
+    "aidens-boundary-kit",
+    "aidens-receipts"
+  ],
+  "artifacts": [
+    "TurnExecutionPlanV1",
+    "TurnReceiptV1",
+    "ToolCallRequestV1",
+    "ToolCallResultV1",
+    "StopRuleReceiptV1",
+    "BudgetExhaustionReceiptV1"
+  ],
+  "acceptance": [
+    "A mock/provider fixture can request repo-read and receive the tool result before final answer.",
+    "Every tool call has a receipt linked to run_id, attempt_id, tool_id, input digest, output digest, and outcome.",
+    "Budget exhaustion returns a degraded/blocked final state with receipt; it does not loop forever or silently truncate."
+  ],
+  "forbidden": [
+    "Do not handwave tool calls as prompt text without degraded receipt.",
+    "Do not let a provider call a tool that was not exposed in ToolExposurePlanV1."
+  ]
+}

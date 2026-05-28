@@ -1,0 +1,98 @@
+[
+  {
+    "id": "P25-001",
+    "priority": "P0",
+    "title": "Root workspace Markdown context noise",
+    "owner": "z.py/package hygiene",
+    "phase": "01-02",
+    "acceptance": "Root direct Markdown files classified; archive candidates moved only by strict safe rules; protected docs preserved; manifest emitted."
+  },
+  {
+    "id": "P25-002",
+    "priority": "P0",
+    "title": "z.py scope creep risk",
+    "owner": "z.py/package hygiene",
+    "phase": "02",
+    "acceptance": "No runtime/agent/schema semantics added to z.py; code and docs state z.py is operator-local certifier tooling."
+  },
+  {
+    "id": "P25-003",
+    "priority": "P0",
+    "title": "Phase gates not enforced as blocking operator approvals",
+    "owner": "run protocol/verifier",
+    "phase": "03",
+    "acceptance": "P25 injection docs contain STOP/WAIT language; verifier fails stale IDs or missing gate language."
+  },
+  {
+    "id": "P25-004",
+    "priority": "P0",
+    "title": "Stale P22/P23/P24 active instruction residue",
+    "owner": "docs/codex-runs",
+    "phase": "04",
+    "acceptance": "CURRENT_RUN.md, CODEX_RUN_INDEX.md, classification map, archival policy aligned to P25; no stale current-instruction entries."
+  },
+  {
+    "id": "P25-005",
+    "priority": "P0",
+    "title": "Verifier lacks complete release-hygiene checks",
+    "owner": "scripts/verify_current.sh",
+    "phase": "05",
+    "acceptance": "Verifier runs package validation, phase-gate integrity, root-md archive dry-run, support-profile truth checks, stale-run scans, cargo gates where available."
+  },
+  {
+    "id": "P25-006",
+    "priority": "P1",
+    "title": "Need flagship supported-local agent demo",
+    "owner": "examples/flagship-local-coding-agent",
+    "phase": "06",
+    "acceptance": "Demo proves inspect\u2192propose/abstain\u2192permit\u2192apply or dry-run\u2192receipts\u2192AiDENsRunBundleV2\u2192replay."
+  },
+  {
+    "id": "P25-007",
+    "priority": "P1",
+    "title": "Support profile needs post-P25 truth convergence",
+    "owner": "docs/status/support",
+    "phase": "07",
+    "acceptance": "README, STATUS, SUPPORT_PROFILE, known limitations distinguish supported-local, fixture-backed, deferred-cloud, deferred-autonomy."
+  },
+  {
+    "id": "P25-008",
+    "priority": "P1",
+    "title": "Large-file maintainability risk",
+    "owner": "architecture/debt",
+    "phase": "08",
+    "acceptance": "Containment plan emitted; no risky refactor unless needed for gates; split candidates and future tests specified."
+  },
+  {
+    "id": "P25-009",
+    "priority": "P1",
+    "title": "P25 evidence manifest missing",
+    "owner": "evidence/handoff",
+    "phase": "09",
+    "acceptance": "P25_STATUS_EVIDENCE_MANIFEST.json includes commands, hashes, moved files, test results, support claims, unresolved risk."
+  },
+  {
+    "id": "P25-010",
+    "priority": "P2",
+    "title": "V10+ architecture must not contaminate P25 implementation",
+    "owner": "architecture/design track",
+    "phase": "all",
+    "acceptance": "V10+ remains design-only; no runtime geometry/federation/mechanism implementation in P25."
+  },
+  {
+    "id": "P25-011",
+    "priority": "P2",
+    "title": "Claude audit must be absorbed explicitly",
+    "owner": "audit/handoff",
+    "phase": "00,09",
+    "acceptance": "Claude audit concerns mapped to P25 issue IDs and final report; unresolved items listed."
+  },
+  {
+    "id": "P25-012",
+    "priority": "P2",
+    "title": "Parent worktree ambiguity",
+    "owner": "operator/evidence",
+    "phase": "00,09",
+    "acceptance": "Parent dirty state recorded as external limitation; AiDENs package claims bounded to package root and included siblings."
+  }
+]

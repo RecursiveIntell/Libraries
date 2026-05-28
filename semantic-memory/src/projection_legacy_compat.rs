@@ -5,6 +5,15 @@ use crate::projection_import;
 use crate::quantize;
 use crate::MemoryStore;
 
+fn serialize_import_json<T: serde::Serialize>(
+    field: &'static str,
+    value: &T,
+) -> Result<String, MemoryError> {
+    serde_json::to_string(value).map_err(|err| MemoryError::ImportInvalid {
+        reason: format!("failed to serialize legacy episode {field}: {err}"),
+    })
+}
+
 pub(crate) async fn import_envelope(
     store: &MemoryStore,
     envelope: &projection_import::ImportEnvelope,
@@ -124,10 +133,11 @@ pub(crate) async fn import_envelope(
                                 }
                             })?;
                             let cause_ids_json =
-                                serde_json::to_string(&meta.cause_ids).unwrap_or_default();
-                            let verification_json =
-                                serde_json::to_string(&meta.verification_status)
-                                    .unwrap_or_default();
+                                serialize_import_json("cause_ids", &meta.cause_ids)?;
+                            let verification_json = serialize_import_json(
+                                "verification_status",
+                                &meta.verification_status,
+                            )?;
                             let search_text = format!(
                                 "{} {} {} {}",
                                 meta.effect_type,

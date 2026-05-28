@@ -1,0 +1,1 @@
+PASS: schema generation scope appears AiDENs-local/non-authoritative (registered_families=58, checked_schema_files=58).

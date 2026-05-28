@@ -1,0 +1,6 @@
+COMMAND: bash scripts/assert_no_local_canonical_digest_law.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T15:04:40-05:00
+PASS: no exported local canonical digest law detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T15:04:40-05:00

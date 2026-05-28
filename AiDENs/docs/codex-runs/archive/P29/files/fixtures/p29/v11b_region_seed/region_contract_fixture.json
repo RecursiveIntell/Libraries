@@ -1,0 +1,11 @@
+{
+  "region_id": "region:test",
+  "inputs": [
+    "artifact:a"
+  ],
+  "outputs": [
+    "artifact:b"
+  ],
+  "boundary_policy": "receipt-required",
+  "expected": "valid-seed"
+}

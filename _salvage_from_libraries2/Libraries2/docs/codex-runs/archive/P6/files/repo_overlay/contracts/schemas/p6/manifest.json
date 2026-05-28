@@ -1,0 +1,17 @@
+{
+  "profile": "p6",
+  "title": "Vendor Certification Adapter and External Evidence Translation",
+  "primary_owner": "attestation-exchange",
+  "schemas": [
+    "vendor-certification-adapter-v1.schema.json",
+    "vendor-evidence-translation-v1.schema.json",
+    "vendor-trust-root-binding-v1.schema.json",
+    "vendor-revocation-handling-v1.schema.json"
+  ],
+  "examples": [
+    "vendor-certification-adapter-v1.example.json",
+    "vendor-evidence-translation-v1.example.json",
+    "vendor-trust-root-binding-v1.example.json",
+    "vendor-revocation-handling-v1.example.json"
+  ]
+}

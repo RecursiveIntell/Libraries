@@ -1,0 +1,20 @@
+{
+  "schema": "ExecutionLineageGraphV1",
+  "graph_id": "execution-lineage-graph:...",
+  "run_id": "run:...",
+  "nodes": [
+    {
+      "receipt_id": "receipt:...",
+      "kind": "run",
+      "content_digest": "sha256:..."
+    }
+  ],
+  "edges": [
+    {
+      "parent_receipt_id": "receipt:...",
+      "child_receipt_id": "tool-invocation:...",
+      "relation": "parent-receipt"
+    }
+  ],
+  "generated_at": "RFC3339"
+}

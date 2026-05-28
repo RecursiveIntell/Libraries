@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SurfaceStatus": {
+      "description": "Shared publication-status primitive for thin governance/profile surfaces.\n\nDomain crates may only use the variants they need, but they should not redefine the status family locally because that creates schema drift bait.",
+      "enum": [
+        "advisory_only",
+        "non_admitted",
+        "degraded",
+        "horizon_only"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "hypothesis_library_id": {
+      "type": "string"
+    },
+    "hypothesis_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "publication_status": {
+      "$ref": "#/definitions/SurfaceStatus"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "hypothesis_library_id",
+    "publication_status",
+    "schema_version"
+  ],
+  "title": "HypothesisLibraryV1",
+  "type": "object"
+}

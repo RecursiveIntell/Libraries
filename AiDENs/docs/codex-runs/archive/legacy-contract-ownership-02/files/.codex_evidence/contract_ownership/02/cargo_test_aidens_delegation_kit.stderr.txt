@@ -1,0 +1,4 @@
+   Compiling aidens-delegation-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running unittests src/lib.rs (target/debug/deps/aidens_delegation_kit-1e536d7250b88df4)
+   Doc-tests aidens_delegation_kit

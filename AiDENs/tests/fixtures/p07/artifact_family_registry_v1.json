@@ -1,0 +1,19 @@
+{
+  "registry_id": "artifact-family-registry:v1",
+  "registry_version": 1,
+  "families": [
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "rust_type": "SchemaCompatibilityReportV1",
+      "owner_crate": "aidens-orchestration",
+      "first_pass": "P07",
+      "schema_path": "schema-compatibility-report/v1.schema.json",
+      "fixture_path": "tests/fixtures/p07/schema_compatibility_report_v1.json",
+      "compatibility_policy": "report-additions-compatible"
+    }
+  ],
+  "reason_codes": [
+    "aidens-local-non-authoritative-schema-index"
+  ]
+}

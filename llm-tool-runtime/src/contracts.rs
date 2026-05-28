@@ -1,3 +1,4 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use stack_ids::{
@@ -8,6 +9,7 @@ use stack_ids::{
     RemoteOracleLeaseId, RemoteSliceResultId, ScopeKey, ToolEffectDispatchReceiptId, TraceCtx,
     TrialId,
 };
+use std::fmt;
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -109,7 +111,9 @@ pub enum ToolOutputMode {
     JobHandle,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum ToolSideEffectClass {
     ReadOnly,
@@ -117,6 +121,18 @@ pub enum ToolSideEffectClass {
     PreviewWrite,
     Write,
     Admin,
+}
+
+impl fmt::Display for ToolSideEffectClass {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Self::ReadOnly => "read-only",
+            Self::Analysis => "analysis",
+            Self::PreviewWrite => "preview-write",
+            Self::Write => "write",
+            Self::Admin => "admin",
+        })
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -164,6 +180,7 @@ pub enum ToolReceiptPersistence {
 #[serde(rename_all = "snake_case")]
 pub enum ToolOriginKind {
     OpenAiResponses,
+    OpenAiChat,
     OllamaChat,
     Local,
     Mcp,

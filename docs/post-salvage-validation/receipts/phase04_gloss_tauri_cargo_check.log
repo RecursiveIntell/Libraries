@@ -1,0 +1,15 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Checking stack-ids v0.1.1 (/home/sikmindz/Coding/Libraries/stack-ids)
+    Checking turbo-quant v0.2.0 (/home/sikmindz/Coding/Libraries/turbo-quant)
+    Checking llm-output-parser v0.2.0 (/home/sikmindz/Coding/Libraries/llm-output-parser)
+   Compiling gloss v1.0.0 (/home/sikmindz/Coding/Gloss/src-tauri)
+    Checking semantic-memory-forge v0.1.1 (/home/sikmindz/Coding/Libraries/semantic-memory-forge)
+    Checking job-queue v0.2.0 (/home/sikmindz/Coding/Libraries/job-queue)
+    Checking tauri-queue v0.3.0 (/home/sikmindz/Coding/Libraries/tauri-queue)
+    Checking llm-tool-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/llm-tool-runtime)
+    Checking forge-memory-bridge v0.1.1 (/home/sikmindz/Coding/Libraries/forge-memory-bridge)
+    Checking semantic-memory v0.5.0 (/home/sikmindz/Coding/Libraries/semantic-memory)
+    Checking llm-pipeline v0.2.0 (/home/sikmindz/Coding/Libraries/llm-pipeline)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 45s

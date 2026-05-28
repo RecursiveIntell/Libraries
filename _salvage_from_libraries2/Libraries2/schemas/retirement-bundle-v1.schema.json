@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "deprecation_bundle_id": {
+      "type": "string"
+    },
+    "horizon_only": {
+      "type": "boolean"
+    },
+    "retirement_bundle_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "deprecation_bundle_id",
+    "horizon_only",
+    "retirement_bundle_id",
+    "schema_version"
+  ],
+  "title": "RetirementBundleV1",
+  "type": "object"
+}

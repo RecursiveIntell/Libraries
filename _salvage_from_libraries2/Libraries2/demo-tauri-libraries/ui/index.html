@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Library Stack Demo (Tauri)</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <h1>Semantic Stack Demo</h1>
+        <p>
+          Tauri showcase for: semantic-memory-forge → forge-memory-bridge →
+          semantic-memory → knowledge-runtime → tauri-queue
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>1) Initialize</h2>
+        <button id="init-demo">Initialize demo state</button>
+        <button id="refresh-status">Refresh status</button>
+        <pre id="init-output" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>2) Query flows</h2>
+        <div class="row">
+          <label>
+            Query
+            <input
+              id="query-input"
+              type="text"
+              value="auth service"
+            />
+          </label>
+          <label>
+            Limit
+            <input id="query-limit" type="number" value="5" min="1" max="25" />
+          </label>
+          <button id="run-runtime-query">Run runtime query</button>
+          <button id="run-memory-query">Run semantic-memory search</button>
+          <button id="run-plan-preview">Preview plan</button>
+        </div>
+        <pre id="query-output" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>3) Temporal query</h2>
+        <div class="row">
+          <label>
+            Query
+            <input id="temporal-query" type="text" value="auth service claims" />
+          </label>
+          <label>
+            Valid at
+            <input
+              id="temporal-valid-at"
+              type="text"
+              placeholder="2026-03-09T00:00:00Z"
+            />
+          </label>
+          <label>
+            Recorded at or before
+            <input
+              id="temporal-recorded-at"
+              type="text"
+              placeholder="2026-03-09T00:00:00Z"
+            />
+          </label>
+          <label>
+            Limit
+            <input id="temporal-limit" type="number" value="5" min="1" max="25" />
+          </label>
+          <button id="run-temporal-query">Run temporal query</button>
+        </div>
+        <pre id="temporal-output" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>4) Direct projection read APIs</h2>
+        <div class="row">
+          <label>
+            Text filter
+            <input
+              id="projection-filter"
+              type="text"
+              value="auth"
+              placeholder="optional text filter"
+            />
+          </label>
+          <button id="run-projection-summary">Read projection summary</button>
+        </div>
+        <pre id="projection-output" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>5) Explain/audit evidence lookup</h2>
+        <div class="row">
+          <label>
+            Claim ID
+            <input id="evidence-claim-id" type="text" value="claim-auth" />
+          </label>
+          <label>
+            Claim version ID (optional)
+            <input id="evidence-claim-version" type="text" />
+          </label>
+          <label>
+            Limit
+            <input id="evidence-limit" type="number" value="8" min="1" max="50" />
+          </label>
+          <button id="run-evidence-query">Fetch evidence refs</button>
+        </div>
+        <pre id="evidence-output" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>6) Queue demo</h2>
+        <div class="row">
+          <label>
+            Queue job query
+            <input
+              id="queue-job-query"
+              type="text"
+              value="refresh semantic index"
+            />
+          </label>
+          <label>
+            Steps
+            <input id="queue-job-steps" type="number" value="6" min="1" max="30" />
+          </label>
+          <button id="enqueue-job">Enqueue job</button>
+          <button id="list-jobs">List jobs</button>
+        </div>
+        <label>
+          Cancel by ID
+          <input id="cancel-job-id" type="text" placeholder="job id" />
+        </label>
+        <button id="cancel-job">Cancel job</button>
+        <pre id="queue-output" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>Queue events</h2>
+        <p>
+          tauri-queue emits <code>queue:job_started</code>,
+          <code>queue:job_progress</code>, <code>queue:job_completed</code>,
+          <code>queue:job_failed</code>, and <code>queue:job_cancelled</code>.
+        </p>
+        <pre id="event-log" class="output"></pre>
+      </section>
+    </main>
+
+    <script src="./main.js" type="module"></script>
+  </body>
+</html>

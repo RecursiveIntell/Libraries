@@ -1,0 +1,50 @@
+PHASE 03 DEPENDENCY AUDIT
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+SOURCE BASIS: 2026-04-28
+
+Cargo.toml canonical owner wiring:
+crates/aidens-contracts/Cargo.toml:12:attestation-exchange.workspace = true
+crates/aidens-contracts/Cargo.toml:14:federated-settlement.workspace = true
+crates/aidens-contracts/Cargo.toml:18:mechanism-runtime.workspace = true
+crates/aidens-contracts/Cargo.toml:20:remote-oracle-admission.workspace = true
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:10:| Attestation envelope | `attestation-exchange` | Workspace dependency `path = "../attestation-exchange"`; `aidens-contracts` depends through `attestation-exchange.workspace = true`. | `AttestationEnvelopeV1` is an explicit canonical re-export, not a local type. |
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:11:| Settlement and shared disposition | `federated-settlement` | Workspace dependency `path = "../federated-settlement"`; `aidens-contracts` depends through `federated-settlement.workspace = true`. | `SettlementCaseV1` and `SharedDispositionV1` are explicit canonical re-exports. |
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:12:| Mechanism theory artifacts | `mechanism-runtime` | Workspace dependency `path = "../mechanism-runtime"`; `aidens-contracts` depends through `mechanism-runtime.workspace = true`. | `TheoryVersionV1`, `TheoryRefuterSuiteV1`, and `HypothesisLibraryV1` are explicit canonical re-exports. |
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:13:| Remote oracle admission | `remote-oracle-admission` | Workspace dependency `path = "../remote-oracle-admission"`; `aidens-contracts` depends through `remote-oracle-admission.workspace = true` while remaining local admission/report surfaces are collapsed or quarantined in later phases. | Canonical owner is wired; no AiDENs-local replacement is introduced. |
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:14:| Canonical schema generation | `contract-schema-gen` | Workspace dependency `path = "../contract-schema-gen"`; `aidens-cli` depends through `contract-schema-gen.workspace = true` because the CLI exposes schema generate/check commands. | Existing AiDENs schema registry/generation surfaces are not treated as authoritative and remain a Phase 05 collapse target. |
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:15:| Verification calibration | `verification-calibration` | Workspace dependency `path = "../verification-calibration"`; `aidens-governance-kit` depends through `verification-calibration.workspace = true`. | `CalibrationSnapshot` is imported from the canonical owner. |
+docs/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md:16:| Pilot/control-loop receipts | `forge-pilot` | No Phase 03 AiDENs dependency is wired because current AiDENs code only contains report-string mentions, not typed pilot/control-loop receipt surfaces. | Add a dependency only if a typed pilot/control-loop surface is introduced or discovered. |
+crates/aidens-cli/Cargo.toml:26:contract-schema-gen.workspace = true
+Cargo.toml:59:attestation-exchange = { version = "0.1.0", path = "../attestation-exchange" }
+Cargo.toml:62:contract-schema-gen = { version = "0.1.0", path = "../contract-schema-gen" }
+Cargo.toml:63:federated-settlement = { version = "0.1.0", path = "../federated-settlement" }
+Cargo.toml:70:mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime" }
+Cargo.toml:72:remote-oracle-admission = { version = "0.1.0", path = "../remote-oracle-admission" }
+Cargo.toml:77:verification-calibration = { version = "0.1.0", path = "../verification-calibration" }
+crates/aidens-governance-kit/Cargo.toml:17:verification-calibration.workspace = true
+
+Libraries2 dependency scan in Cargo manifests:
+PASS: no Libraries2/Recall/Recall-Coding path appears in AiDENs Cargo manifests.
+
+Cargo metadata canonical package paths:
+stack-ids: manifest=/home/sikmindz/Coding/Libraries/stack-ids/Cargo.toml
+attestation-exchange: manifest=/home/sikmindz/Coding/Libraries/attestation-exchange/Cargo.toml
+federated-settlement: manifest=/home/sikmindz/Coding/Libraries/federated-settlement/Cargo.toml
+mechanism-runtime: manifest=/home/sikmindz/Coding/Libraries/mechanism-runtime/Cargo.toml
+remote-oracle-admission: manifest=/home/sikmindz/Coding/Libraries/remote-oracle-admission/Cargo.toml
+contract-schema-gen: manifest=/home/sikmindz/Coding/Libraries/contract-schema-gen/Cargo.toml
+verification-calibration: manifest=/home/sikmindz/Coding/Libraries/verification-calibration/Cargo.toml
+forge-pilot: manifest=/home/sikmindz/Coding/Libraries/forge-pilot/Cargo.toml
+
+Affected AiDENs package dependency edges:
+aidens-contracts:
+  attestation-exchange: path=/home/sikmindz/Coding/Libraries/attestation-exchange, source=None
+  federated-settlement: path=/home/sikmindz/Coding/Libraries/federated-settlement, source=None
+  mechanism-runtime: path=/home/sikmindz/Coding/Libraries/mechanism-runtime, source=None
+  remote-oracle-admission: path=/home/sikmindz/Coding/Libraries/remote-oracle-admission, source=None
+  stack-ids: path=/home/sikmindz/Coding/Libraries/stack-ids, source=None
+aidens-cli:
+  contract-schema-gen: path=/home/sikmindz/Coding/Libraries/contract-schema-gen, source=None
+aidens-governance-kit:
+  stack-ids: path=/home/sikmindz/Coding/Libraries/stack-ids, source=None
+  verification-calibration: path=/home/sikmindz/Coding/Libraries/verification-calibration, source=None

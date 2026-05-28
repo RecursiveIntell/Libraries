@@ -1,0 +1,94 @@
+{
+  "task_matrix_version": "P22TaskMatrixV1",
+  "created_utc": "2026-05-02T00:05:41Z",
+  "tasks": [
+    {
+      "id": "P22-001",
+      "priority": "P0",
+      "area": "z.py",
+      "problem": "Normal packages include stale Codex artifacts",
+      "required_action": "Add archival normalization before zipping",
+      "gate": "p22_zpy_archival_selftest.py passes"
+    },
+    {
+      "id": "P22-002",
+      "priority": "P0",
+      "area": "package-policy",
+      "problem": "codex-context includes run docs by default",
+      "required_action": "Exclude archive/run history unless explicit",
+      "gate": "release package clean assertion passes"
+    },
+    {
+      "id": "P22-003",
+      "priority": "P0",
+      "area": "repo-hygiene",
+      "problem": "P20/P21 prompts/docs/handoffs remain active",
+      "required_action": "Archive to docs/codex-runs/archive with receipts",
+      "gate": "hygiene assertion passes"
+    },
+    {
+      "id": "P22-004",
+      "priority": "P0",
+      "area": "release-truth",
+      "problem": "Root docs may reference older run state",
+      "required_action": "Update README/STATUS/SOURCE_BASIS to P22 truth",
+      "gate": "docs audit passes"
+    },
+    {
+      "id": "P22-005",
+      "priority": "P0",
+      "area": "secret-scanning",
+      "problem": "api_key field-copy false positives",
+      "required_action": "Refine scanner without weakening literal-secret detection",
+      "gate": "secret fixture passes"
+    },
+    {
+      "id": "P22-006",
+      "priority": "P0",
+      "area": "build-proof",
+      "problem": "P21 verifier cargo gates optional",
+      "required_action": "P22 verifier supports required cargo gate",
+      "gate": "P22_REQUIRE_CARGO=1 passes"
+    },
+    {
+      "id": "P22-007",
+      "priority": "P1",
+      "area": "release-archive",
+      "problem": "P21 verifier hardcodes old paths",
+      "required_action": "Add P22 archive verifier",
+      "gate": "archive replay ok true"
+    },
+    {
+      "id": "P22-008",
+      "priority": "P1",
+      "area": "support-claims",
+      "problem": "Partial/deferred surfaces can drift",
+      "required_action": "Regenerate support-tier docs and tests",
+      "gate": "status/package tests pass"
+    },
+    {
+      "id": "P22-009",
+      "priority": "P1",
+      "area": "assertions",
+      "problem": "No dedicated active-stale-run detector",
+      "required_action": "Add assertion scripts",
+      "gate": "scripts installed and run"
+    },
+    {
+      "id": "P22-010",
+      "priority": "P2",
+      "area": "operator-ux",
+      "problem": "Packaging modes not obvious",
+      "required_action": "Add docs and CLI report fields",
+      "gate": "README/status updated"
+    },
+    {
+      "id": "P22-011",
+      "priority": "P2",
+      "area": "stretch",
+      "problem": "Product surfaces can improve",
+      "required_action": "Only low-risk truth/UX upgrades after core gates",
+      "gate": "no deferred feature promotion"
+    }
+  ]
+}

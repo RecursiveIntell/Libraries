@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-13T22:12:10Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P0/files/docs/P0_COMPLETION_CURRENT_STATE.md",
+      "bytes": 555,
+      "mtime_utc": "2026-05-13T22:11:50Z",
+      "original_path": "docs/P0_COMPLETION_CURRENT_STATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P0",
+      "sha256": "7c6989e3f15fe0e9b4c0ecdc0b51d7e45e955ba6193f6de18f95968ed9188272"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P0/files/docs/P0_COMPLETION_FRESH_UNZIP_CERTIFICATION.md",
+      "bytes": 480,
+      "mtime_utc": "2026-05-13T22:11:51Z",
+      "original_path": "docs/P0_COMPLETION_FRESH_UNZIP_CERTIFICATION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P0",
+      "sha256": "9d223baf53ead78a483c744cdd6d5d797412c201688a63f76c259d83ac09465c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P0/files/docs/PASS_CL_P0_COMPLETION_AUTOMATED_PHASES.md",
+      "bytes": 2041,
+      "mtime_utc": "2026-05-13T22:11:52Z",
+      "original_path": "docs/PASS_CL_P0_COMPLETION_AUTOMATED_PHASES.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P0",
+      "sha256": "9585b65d999e7e8844899b32f8594b2a79a38ff363ddf658a0f1fff54b89fb36"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+  "run_id": "P0",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

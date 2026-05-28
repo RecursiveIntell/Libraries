@@ -1,0 +1,27 @@
+{
+  "auto_injections_required": true,
+  "dry_run": true,
+  "errors": [],
+  "execute": false,
+  "finished_at": "2026-05-13T22:15:16.077994+00:00",
+  "manifest": ".codex/prompt_manifest.json",
+  "manual_injections_required": false,
+  "phases": [
+    {
+      "auto_injection": ".codex/auto_injections/phase_01_gate.md",
+      "commands": [],
+      "id": "phase_01",
+      "name": "restore active Codex pack",
+      "prompt": ".codex/prompts/phase_01_restore_active_codex_pack.md",
+      "prompt_bytes": 686,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "required_commands": [
+        "python scripts/assert_codex_active_pack.py"
+      ],
+      "status": "ok"
+    }
+  ],
+  "receipt_version": "AutoPhaseRunnerReceiptV1",
+  "started_at": "2026-05-13T22:15:16.077730+00:00",
+  "status": "ok"
+}

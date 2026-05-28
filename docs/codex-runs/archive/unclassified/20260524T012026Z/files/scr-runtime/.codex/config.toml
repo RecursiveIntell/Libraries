@@ -1,0 +1,37 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# Gloss P32R3 project-scoped Codex config.
+# Project-local .codex config, hooks, and rules load only when this repo is trusted.
+
+model = "gpt-5.5"
+model_provider = "openai"
+model_reasoning_effort = "high"
+model_reasoning_summary = "concise"
+model_verbosity = "medium"
+review_model = "gpt-5.5"
+web_search = "disabled"
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+sandbox_mode = "workspace-write"
+tool_output_token_limit = 12000
+project_doc_max_bytes = 65536
+project_root_markers = [".git", "src-tauri", "package.json"]
+
+[sandbox_workspace_write]
+network_access = false
+writable_roots = ["."]
+
+[features]
+hooks = true
+plugin_hooks = false
+multi_agent = true
+
+[auto_review]
+policy = """
+Approve routine repo-local build, test, grep, read, write, and formatting commands that stay inside the trusted Gloss workspace. Deny or require user approval for destructive git operations, secret exfiltration, credential probing, publishing, network access, writes outside the workspace, or broad deletion. If denied, require a safer local alternative.
+"""
+
+[agents]
+max_threads = 6
+max_depth = 1
+job_max_runtime_seconds = 1800

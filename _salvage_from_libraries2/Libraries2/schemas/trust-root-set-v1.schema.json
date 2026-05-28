@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "TrustRootExpirationPolicyV1": {
+      "enum": [
+        "365d",
+        "rotate_every_90_days"
+      ],
+      "type": "string"
+    },
+    "TrustRootRotationPolicyV1": {
+      "enum": [
+        "published_keyset",
+        "overlap14_days_and_emit_supersession"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "allowed_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "allowed_signer_classes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "expiration_policy": {
+      "$ref": "#/definitions/TrustRootExpirationPolicyV1"
+    },
+    "policy_owner_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "revocation_sources": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "rotation_policy": {
+      "$ref": "#/definitions/TrustRootRotationPolicyV1"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "trust_root_identities": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trust_root_set_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "expiration_policy",
+    "rotation_policy",
+    "schema_version",
+    "trust_root_set_id"
+  ],
+  "title": "TrustRootSetV1",
+  "type": "object"
+}

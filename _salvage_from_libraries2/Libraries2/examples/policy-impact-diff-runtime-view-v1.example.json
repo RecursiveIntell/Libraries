@@ -1,0 +1,19 @@
+{
+  "schema_version": "policy_impact_diff_runtime_view_v1",
+  "policy_impact_diff_id": "policy-impact-diff-001",
+  "from_effective_constitution_id": "effective-constitution-000",
+  "to_effective_constitution_id": "effective-constitution-001",
+  "changed_obligation_families": [
+    "approval.required",
+    "monitor.required",
+    "residency.allowed_execution_regions"
+  ],
+  "newly_blocked_paths": [],
+  "newly_admitted_paths": [
+    "residency.forbidden_transfer_classes:customer_pii_to_non_us"
+  ],
+  "migration_consequences": [
+    "monitoring plan update required"
+  ],
+  "simulation_only": false
+}

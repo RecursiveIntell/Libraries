@@ -1,0 +1,18 @@
+name: v25-production-closure-reference
+
+# Reference only. Do not activate this until the closure code lands.
+
+jobs:
+  v25-production-closure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: bash scripts/check_v25_repo_truth.sh
+      - run: python3 scripts/check_v25_json_surface.py
+      - run: bash scripts/check_no_local_recomposition.sh
+      - run: python3 scripts/check_v25_production_closure.py
+      - run: bash scripts/run_v25_local_checks.sh

@@ -16,6 +16,52 @@ pub enum MemoryError {
     #[error("Embedding provider returned {actual} dimensions, expected {expected}")]
     DimensionMismatch { expected: usize, actual: usize },
 
+    /// Embedding provider returned a different number of vectors than requested.
+    #[error("Embedding provider returned {returned} vectors, expected {requested}")]
+    EmbeddingBatchCountMismatch { requested: usize, returned: usize },
+
+    /// Embedding vector has wrong number of dimensions.
+    #[error("Embedding vector has {actual} dimensions, expected {expected}")]
+    EmbeddingDimensionMismatch { expected: usize, actual: usize },
+
+    /// Embedding vector contains NaN or infinity.
+    #[error("Embedding vector contains non-finite value at index {index}")]
+    NonFiniteEmbeddingValue { index: usize },
+
+    /// Raw vector BLOB length does not match the expected f32 dimensions.
+    #[error("Vector blob length mismatch: expected {expected_bytes} bytes, got {actual_bytes}")]
+    VectorBlobLengthMismatch {
+        expected_bytes: usize,
+        actual_bytes: usize,
+    },
+
+    /// Encoded vector artifact was produced with a different codec profile.
+    #[error("Vector codec profile mismatch: expected {expected_digest}, got {actual_digest}")]
+    VectorCodecProfileMismatch {
+        /// Digest required by the decoding codec.
+        expected_digest: String,
+        /// Digest carried by the encoded artifact.
+        actual_digest: String,
+    },
+
+    /// A durable search receipt ID already exists with different payload bytes.
+    #[error("Search receipt ID conflict for {receipt_id}")]
+    SearchReceiptConflict {
+        /// Conflicting receipt/request ID.
+        receipt_id: String,
+    },
+
+    /// Canonical content digest computation failed.
+    #[error("Digest error: {0}")]
+    DigestError(String),
+
+    /// A requested durable search receipt was not found.
+    #[error("Search receipt not found: {receipt_id}")]
+    SearchReceiptNotFound {
+        /// Requested receipt/request ID.
+        receipt_id: String,
+    },
+
     /// Raw BLOB data is not a valid embedding.
     #[error("Invalid embedding data: expected {expected_bytes} bytes, got {actual_bytes}")]
     InvalidEmbedding {
@@ -123,6 +169,19 @@ pub enum MemoryError {
         pool_size: usize,
     },
 
+    /// Brute-force vector search would scan more rows than the configured hard limit.
+    #[error(
+        "Vector scan hard limit exceeded for {table}: scanned {scanned} rows, limit is {limit}"
+    )]
+    VectorScanLimitExceeded {
+        /// Logical table/collection being scanned.
+        table: String,
+        /// Rows scanned before the circuit breaker tripped.
+        scanned: usize,
+        /// Configured hard limit.
+        limit: usize,
+    },
+
     /// Configuration could not be normalized into a valid runtime state.
     #[error("Invalid configuration for '{field}': {reason}")]
     InvalidConfig {
@@ -180,6 +239,14 @@ impl MemoryError {
             Self::Database(_) => "database",
             Self::EmbeddingRequest(_) => "embedding_request",
             Self::DimensionMismatch { .. } => "dimension_mismatch",
+            Self::EmbeddingBatchCountMismatch { .. } => "embedding_batch_count_mismatch",
+            Self::EmbeddingDimensionMismatch { .. } => "embedding_dimension_mismatch",
+            Self::NonFiniteEmbeddingValue { .. } => "non_finite_embedding_value",
+            Self::VectorBlobLengthMismatch { .. } => "vector_blob_length_mismatch",
+            Self::VectorCodecProfileMismatch { .. } => "vector_codec_profile_mismatch",
+            Self::SearchReceiptConflict { .. } => "search_receipt_conflict",
+            Self::DigestError(_) => "digest_error",
+            Self::SearchReceiptNotFound { .. } => "search_receipt_not_found",
             Self::InvalidEmbedding { .. } => "invalid_embedding",
             Self::ModelMismatch { .. } => "model_mismatch",
             Self::SessionNotFound(_) => "session_not_found",
@@ -187,6 +254,7 @@ impl MemoryError {
             Self::DocumentNotFound(_) => "document_not_found",
             Self::EpisodeNotFound(_) => "episode_not_found",
             Self::PoolTimeout { .. } => "pool_timeout",
+            Self::VectorScanLimitExceeded { .. } => "vector_scan_limit_exceeded",
             Self::EmbedderUnavailable(_) => "embedder_unavailable",
             Self::MigrationFailed { .. } => "migration_failed",
             Self::HnswError(_) => "hnsw_error",

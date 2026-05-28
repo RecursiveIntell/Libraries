@@ -1,0 +1,174 @@
+PHASE 05 SCHEMA AUTHORITY AUDIT
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+SOURCE BASIS: 2026-04-28
+
+Generated AiDENs schema family count before/after:
+before_schema_files=100
+after_schema_files=58
+removed_schema_document_registrations=42
+
+Removed canonical schema families from aidens-contracts generation:
+admission-decision
+attestation-envelope
+compaction-report
+compiled-region-graph
+convergence-report
+degradation-event
+differential-conformance-finding
+execution-context
+execution-lineage-graph
+fit-run-report
+history-preservation-report
+hypothesis-library
+invariance-report
+invariant-budget
+json-repair-receipt
+kernel-run-report
+mechanism-report
+oracle-slice-request
+poison-receipt-record
+projection-digest
+query-widening-receipt
+reference-case
+reference-interpreter-report
+region-contract
+remote-oracle-report
+removal-frontier
+residual
+retrieval-policy
+runtime-view-request
+schema-validation-receipt
+settlement-case
+shared-disposition
+simulator-contract
+stop-rule-receipt
+subtraction-plan
+support-core
+syndrome
+theory-refuter-suite
+theory-version
+treaty
+trust-root
+view-disclosure-receipt
+
+Remaining generated AiDENs-local schema families:
+api-honesty-receipt
+approval-decision
+approval-request
+artifact-family-registry
+backfill-receipt
+boundary-compile-outcome
+boundary-compile-request
+budget-exhaustion-receipt
+display-digest
+capability-gate-decision
+config-apply-receipt
+codex-packet
+command-run-receipt
+completion-audit-report
+example-app-manifest
+duplicate-key-finding
+cross-pass-traceability-matrix
+fake-ready-finding
+generated-schema-manifest
+golden-fixture-manifest
+install-smoke-report
+known-limitations-register
+job
+queue-lease
+daemon-namespace
+duplicate-suppression-receipt
+migration-plan
+patch-apply-receipt
+operator-status-report
+patch-proposal
+permit-grant
+permit-use-receipt
+plan-runtime-parity-report
+queue-hop-receipt
+provider-backend-matrix
+provider-certification-fixture
+provider-readiness-receipt
+provider-route-receipt
+release-readiness-report
+release-artifact-manifest
+regression-debt-ledger
+repo-list-receipt
+repo-read-receipt
+run-receipt
+scaffold-surface-report
+schema-compatibility-report
+sandbox-capability-truth
+safe-mode-receipt
+schedule-occurrence
+source-basis-lock
+super-pass-status
+tool-call-request
+tool-call-result
+tool-exposure-plan
+tool-invocation-receipt
+turn-execution-plan
+turn-receipt
+wake-signal
+
+Canonical schema owner evidence in contract-schema-gen:
+51:        name: "episode-bundle-v1.schema.json",
+55:        name: "evidence-bundle-v1.schema.json",
+168:        writer: write_schema::<attestation_exchange::AttestationEnvelopeV1>,
+423:        name: "boundary-repair-record-v1.schema.json",
+431:        name: "syndrome-route-record-v1.schema.json",
+459:        name: "verification-disposition-v1.schema.json",
+491:        name: "verification-plan-artifact-v1.schema.json",
+495:        name: "repair-record-v1.schema.json",
+532:        writer: write_schema::<federated_settlement::SharedDispositionV1>,
+544:        writer: write_schema::<federated_settlement::SettlementCaseV1>,
+568:        writer: write_schema::<mechanism_runtime::TheoryVersionV1>,
+576:        writer: write_schema::<mechanism_runtime::HypothesisLibraryV1>,
+588:        writer: write_schema::<mechanism_runtime::TheoryRefuterSuiteV1>,
+988:            "episode-bundle-v1.schema.json",
+992:            "verification-plan-artifact-v1.schema.json",
+1010:            "episode-bundle-v1.schema.json",
+1011:            "evidence-bundle-v1.schema.json",
+1030:            "episode-bundle-v1.schema.json",
+1036:            "verification-plan-artifact-v1.schema.json",
+1037:            "repair-record-v1.schema.json",
+1056:                .any(|spec| spec.name == "repair-record-v1.schema.json"),
+1079:            "boundary-repair-record-v1.schema.json",
+1081:            "syndrome-route-record-v1.schema.json",
+
+Generated .schema.json forbidden family path scan:
+PASS: schema generation scope appears AiDENs-local/non-authoritative (registered_families=58, checked_schema_files=58).
+
+Historical sketch quarantine:
+# Quarantine: phase05-schema-sketches
+
+STATUS: quarantined historical sketches
+DISCOVERED_IN_PHASE: 05
+LOCAL FILES:
+- `schemas/core_artifact_header_v1.sketch.json`
+- `schemas/execution_lineage_graph_v1.sketch.json`
+- `schemas/poison_receipt_record_v1.sketch.json`
+
+SUSPECTED CANONICAL OWNER(S): `stack-ids`, `semantic-memory-forge`, `kernel-execution`, `verification-control`, `contract-schema-gen`
+
+SEARCHES PERFORMED:
+- `find schemas -name '*.schema.json'`
+- `python3 scripts/assert_schema_generation_scope.py`
+- `rg -n "sha256:|canonical-digest|CanonicalDigestV1|attestation-envelope|settlement-case|shared-disposition|theory-version|theory-refuter-suite|hypothesis-library" schemas`
+
+WHY AUTOMATIC COLLAPSE IS UNSAFE:
+These files are historical `*.sketch.json` design notes, not generated `*.schema.json` artifacts and not part of the schema compatibility gate. They still mention legacy `sha256:` examples and canonical-looking artifact header/lineage terms. Converting them into generated schemas, deleting their historical context, or rewriting their semantics as AiDENs-local schema law would blur the owner boundary.
+
+TEMPORARY ACTION TAKEN:
+The Phase 05 schema generator and checked-in generated `*.schema.json` set no longer emit canonical family schemas. `schemas/README.md` now states that sketches are historical design sketches only. The ambiguous sketch files are recorded here for human owner review.
+
+FORBIDDEN ACTIONS:
+- Do not promote these sketches into AiDENs-generated schemas.
+- Do not treat their `sha256:` examples as canonical digest law.
+- Do not use them as schema authority for canonical artifact headers, lineage, poison records, evidence, or digest/content-addressing.
+
+REQUIRED HUMAN DECISION:
+Decide whether to archive these sketches outside `schemas/`, rewrite them as non-authoritative docs, or replace them with owner-generated schemas from canonical crates / `contract-schema-gen`.
+
+RECOMMENDED NEXT RUN:
+Handle sketch archival in the final docs/auditor phase after wrapper/backpointer decisions are complete.

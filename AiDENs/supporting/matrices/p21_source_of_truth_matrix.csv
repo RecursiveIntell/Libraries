@@ -1,0 +1,11 @@
+concept,canonical_owner,aidens_allowed_role,forbidden
+primitive ids and digests,../stack-ids,import/re-export/use,local digest law
+raw evidence,../semantic-memory-forge,configure/delegate,local evidence truth
+bridge import,../forge-memory-bridge,configure/delegate,local bridge semantics
+projected memory,../semantic-memory,configure/delegate,local memory db
+runtime views,../knowledge-runtime,configure/report,shadow retrieval truth
+kernel inference,../recursive-kernel-core + kernel crates,configure/delegate,local kernel semantics
+verification,../verification-* crates,configure/delegate,local verification truth
+agent profiles,AiDENs,own,pretending profile state is evidence truth
+agency policy,AiDENs v0.2 policy surface,own with receipts,prompt-only policy
+Recall behavior,Recall/Recall-Coding,extract patterns only,copy app assumptions

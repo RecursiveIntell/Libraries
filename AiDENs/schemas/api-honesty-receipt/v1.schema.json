@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ApiHonestyOutcomeV1": {
+      "enum": [
+        "honored",
+        "rejected",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "accepted_inputs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "checked_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "honored_inputs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "outcome": {
+      "$ref": "#/definitions/ApiHonestyOutcomeV1"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "rejected_inputs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "surface": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "accepted_inputs",
+    "checked_at",
+    "honored_inputs",
+    "kind",
+    "outcome",
+    "receipt_id",
+    "rejected_inputs",
+    "surface"
+  ],
+  "title": "ApiHonestyReportV1",
+  "type": "object"
+}

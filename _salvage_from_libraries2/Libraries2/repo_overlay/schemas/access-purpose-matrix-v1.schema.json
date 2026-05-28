@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AccessPurposeMatrixV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "access_purpose_matrix_id": {
+      "type": "string"
+    },
+    "actor_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "purpose_rules": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "default_decision": {
+      "type": "string"
+    },
+    "elevation_path": {
+      "type": "string"
+    },
+    "audit_logging_required": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "access_purpose_matrix_id",
+    "actor_classes",
+    "purpose_rules",
+    "default_decision",
+    "elevation_path",
+    "audit_logging_required"
+  ]
+}

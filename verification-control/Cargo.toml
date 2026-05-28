@@ -14,3 +14,7 @@ semantic-memory-forge = { path = "../semantic-memory-forge" }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 stack-ids = { path = "../stack-ids" }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

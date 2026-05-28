@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use verification_control::{
     ConstitutionalContextStatus, ContinuityReviewCaseV1, ControlReceipt, DelegationReviewCaseV1,
     EffectBlockReceiptV1, EffectReviewCaseV1, ReleaseGateCaseV1,

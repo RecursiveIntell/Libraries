@@ -1,0 +1,27 @@
+{
+  "pass_id": "P01",
+  "title": "Public API honesty, no-op removal, and plan/runtime parity",
+  "phase": "Foundation / honesty",
+  "prompt_file": "prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md",
+  "pass_doc": "passes/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.md",
+  "crates": [
+    "aidens-app-kit",
+    "aidens-runner",
+    "aidens-cli",
+    "aidens-contracts"
+  ],
+  "artifacts": [
+    "ApiHonestyReceiptV1",
+    "PlanRuntimeParityReportV1",
+    "ConfigApplyReceiptV1"
+  ],
+  "acceptance": [
+    "No public method accepts meaningful input and silently discards it.",
+    "from_plan cannot produce a disabled-provider runner when provider_required=true unless the plan explicitly selects disabled and returns a blocked run.",
+    "plan compile output and doctor report agree on provider route, tool exposure, memory mode, and scaffold state."
+  ],
+  "forbidden": [
+    "Do not fix no-ops by hiding methods behind doc comments only.",
+    "Do not treat disabled provider as a valid provider when provider_required=true."
+  ]
+}

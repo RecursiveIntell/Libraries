@@ -1,6 +1,7 @@
-use super::{
-    detect_project_root, managed_storage_root_for_workspace, normalize_user_path, AppState,
+use super::storage::{
+    detect_project_root, managed_storage_root_for_workspace, normalize_user_path,
 };
+use super::tui::AppState;
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;

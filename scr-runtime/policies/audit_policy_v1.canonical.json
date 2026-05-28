@@ -1,0 +1,87 @@
+{
+  "action_precedence": {
+    "allow_with_receipt": 20,
+    "backlog": 10,
+    "block_mutation": 90,
+    "block_release": 95,
+    "generate_repair_packet": 65,
+    "quarantine_artifact": 80,
+    "require_approval": 55,
+    "require_owner_resolution": 50,
+    "require_source_basis": 35,
+    "require_verification": 40
+  },
+  "hard_rules": {
+    "HR_AUTHORITY_MISSING": {
+      "action": "require_approval",
+      "enabled": true,
+      "reason": "AUTHORITY_MISSING"
+    },
+    "HR_DESTRUCTIVE_MISSING_ROLLBACK": {
+      "action": "block_release",
+      "enabled": true,
+      "reason": "DESTRUCTIVE_MISSING_ROLLBACK"
+    },
+    "HR_FALSE_COMPLETION_MISSING_TESTS": {
+      "action": "generate_repair_packet",
+      "enabled": true,
+      "reason": "FALSE_COMPLETION_MISSING_TESTS"
+    },
+    "HR_FORBIDDEN_PRODUCTION_TERM": {
+      "action": "quarantine_artifact",
+      "enabled": true,
+      "reason": "FORBIDDEN_PRODUCTION_TERM"
+    },
+    "HR_SCHEMA_INVALID": {
+      "action": "quarantine_artifact",
+      "enabled": true,
+      "reason": "SCHEMA_INVALID"
+    },
+    "HR_SOURCE_TRUTH_DRIFT": {
+      "enabled": true,
+      "minimum_action": "require_verification",
+      "reason": "SOURCE_TRUTH_DRIFT"
+    },
+    "HR_UNKNOWN_OWNER_MUTATION": {
+      "action": "require_owner_resolution",
+      "enabled": true,
+      "reason": "UNKNOWN_OWNER_MUTATION"
+    }
+  },
+  "minimum_actions": {
+    "destructive_missing_rollback": "block_release",
+    "false_completion_missing_tests": "generate_repair_packet",
+    "forbidden_production_term": "quarantine_artifact",
+    "invalid_schema": "quarantine_artifact",
+    "source_truth_drift": "require_verification",
+    "unknown_owner_mutation": "require_owner_resolution"
+  },
+  "policy": {
+    "algorithm_version": "scr-p0a-reference-v1",
+    "canonicalization": "canonical-json-v1",
+    "domain": "audit",
+    "id": "audit_policy_v1",
+    "version": "1.0.0"
+  },
+  "thresholds": {
+    "autonomy_pressure": {
+      "allow_with_receipt": 2500,
+      "block_mutation": 9000,
+      "require_approval": 7000,
+      "require_verification": 5000
+    },
+    "quarantine_pressure": {
+      "block_mutation": 9000,
+      "quarantine_artifact": 7000,
+      "require_verification": 4000
+    },
+    "repair_priority": {
+      "backlog": 2500,
+      "generate_repair_packet": 7500
+    },
+    "verification_pressure": {
+      "allow_with_receipt": 2500,
+      "require_verification": 5000
+    }
+  }
+}

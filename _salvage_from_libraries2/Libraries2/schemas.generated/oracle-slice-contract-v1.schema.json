@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DegradationActionV1": {
+      "enum": [
+        "block",
+        "advisory_only",
+        "conservative_fallback"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "admissible_regions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "degradation_action": {
+      "$ref": "#/definitions/DegradationActionV1"
+    },
+    "evidence_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "exactness": {
+      "$ref": "#/definitions/ExactnessLevelV1"
+    },
+    "max_rows": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope_key": {
+      "$ref": "#/definitions/ScopeKey"
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "slice_id": {
+      "type": "string"
+    },
+    "slice_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "degradation_action",
+    "exactness",
+    "schema_version",
+    "scope_key",
+    "semantics_profile_id",
+    "slice_id",
+    "slice_name"
+  ],
+  "title": "OracleSliceContractV1",
+  "type": "object"
+}

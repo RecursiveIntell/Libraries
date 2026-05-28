@@ -1,0 +1,33 @@
+{
+  "report_id": "plan-runtime-parity:fixture",
+  "kind": "plan-runtime-parity",
+  "app_id": "fixture-app",
+  "checks": [
+    {
+      "check": "provider-route",
+      "expected": "mock",
+      "observed": "mock",
+      "passed": true
+    },
+    {
+      "check": "tool-exposure",
+      "expected": "aidens:repo-read:1",
+      "observed": "aidens:repo-read:1",
+      "passed": true
+    },
+    {
+      "check": "memory-mode",
+      "expected": "disabled",
+      "observed": "disabled",
+      "passed": true
+    },
+    {
+      "check": "scaffold-state",
+      "expected": "15 disabled/deferred",
+      "observed": "15 disabled/deferred",
+      "passed": true
+    }
+  ],
+  "mismatches": [],
+  "generated_at": "2026-04-26T00:00:00Z"
+}

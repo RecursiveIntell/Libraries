@@ -1,0 +1,31 @@
+{
+  "captured_at": "2026-04-01T11:56:45Z",
+  "issue_ref": "LIB-006",
+  "profile": "release (optimized)",
+  "tool": "kernel-conformance canonical_perf_snapshot --release",
+  "note": "Release-profile throughput numbers. Compare against evidence/perf_baseline_*.json (dev-profile) to see optimization impact.",
+  "fixtures": [
+    {
+      "name": "small",
+      "effect_records": 2,
+      "regions": 2,
+      "delta_regions": 1,
+      "export_ms": 0,
+      "transform_ms": 0,
+      "import_ms": 3,
+      "compile_ms": 0,
+      "advisory_ms": 1
+    },
+    {
+      "name": "large",
+      "effect_records": 11,
+      "regions": 2,
+      "delta_regions": 1,
+      "export_ms": 0,
+      "transform_ms": 0,
+      "import_ms": 2,
+      "compile_ms": 0,
+      "advisory_ms": 1
+    }
+  ]
+}

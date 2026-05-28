@@ -1,0 +1,1157 @@
+===== Cargo.toml =====
+--- .codex_evidence/contract_ownership/02/pre_edit_files/root_Cargo.toml.before	2026-04-29 02:25:19.052336245 -0500
++++ .codex_evidence/contract_ownership/02/post_edit_files/root_Cargo.toml.after	2026-04-29 02:34:21.530658609 -0500
+@@ -56,14 +56,17 @@
+ tracing = "0.1"
+ uuid = { version = "1", features = ["v4", "v7", "serde"] }
+ assurance-runtime = { version = "0.1.0", path = "../assurance-runtime" }
++attestation-exchange = { version = "0.1.0", path = "../attestation-exchange" }
+ authority-delegation = { version = "0.1.0", path = "../authority-delegation" }
+ constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
++federated-settlement = { version = "0.1.0", path = "../federated-settlement" }
+ forge-memory-bridge = { version = "0.1.0", path = "../forge-memory-bridge" }
+ kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
+ kernel-conformance = { version = "0.1.0", path = "../kernel-conformance" }
+ kernel-oracles = { version = "0.1.0", path = "../kernel-oracles" }
+ knowledge-runtime = { version = "0.1.0", path = "../knowledge-runtime" }
+ llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
++mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime" }
+ recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
+ semantic-memory = { version = "0.5.0", path = "../semantic-memory", default-features = false, features = ["brute-force"] }
+ semantic-memory-forge = { version = "0.1.0", path = "../semantic-memory-forge" }
+===== crates/aidens-contracts/Cargo.toml =====
+--- .codex_evidence/contract_ownership/02/pre_edit_files/aidens_contracts_Cargo.toml.before	2026-04-29 02:25:19.050336255 -0500
++++ .codex_evidence/contract_ownership/02/post_edit_files/aidens_contracts_Cargo.toml.after	2026-04-29 02:34:21.532658599 -0500
+@@ -9,10 +9,13 @@
+ workspace = true
+ 
+ [dependencies]
++attestation-exchange.workspace = true
+ chrono.workspace = true
++federated-settlement.workspace = true
+ kernel-execution.workspace = true
+ kernel-oracles.workspace = true
+ llm-tool-runtime.workspace = true
++mechanism-runtime.workspace = true
+ recursive-kernel-core.workspace = true
+ schemars.workspace = true
+ semantic-memory-forge.workspace = true
+===== crates/aidens-contracts/src/lib.rs =====
+--- .codex_evidence/contract_ownership/02/pre_edit_files/aidens_contracts_lib.rs.before	2026-04-29 02:25:19.049336260 -0500
++++ .codex_evidence/contract_ownership/02/post_edit_files/aidens_contracts_lib.rs.after	2026-04-29 02:34:21.533658594 -0500
+@@ -52,6 +52,9 @@
+     KernelRunId as StackKernelRunId, ProjectionId as StackProjectionId, Scope as StackScope,
+     ScopeKey as StackScopeKey, TraceCtx as StackTraceCtx, TrialId as StackTrialId,
+ };
++pub use attestation_exchange::AttestationEnvelopeV1;
++pub use federated_settlement::{SettlementCaseV1, SharedDispositionV1};
++pub use mechanism_runtime::{HypothesisLibraryV1, TheoryRefuterSuiteV1, TheoryVersionV1};
+ 
+ pub fn generated_artifact_id(prefix: &str) -> ArtifactId {
+     ArtifactId::new(format!("{prefix}:{}", Uuid::new_v4()))
+@@ -2477,97 +2480,6 @@
+     SchemaUnsupported,
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+-pub struct AttestationEnvelopeV1 {
+-    pub envelope_id: ArtifactId,
+-    pub kind: ArtifactKindV1,
+-    pub subject_artifact_id: ArtifactId,
+-    pub subject_digest: CanonicalDigestV1,
+-    pub producer_id: String,
+-    pub schema_family: String,
+-    pub schema_version: u32,
+-    pub policy_id: String,
+-    pub issued_at: DateTime<Utc>,
+-    pub expires_at: Option<DateTime<Utc>>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub trust_root_id: Option<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub signature_algorithm: Option<String>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub signature: Option<String>,
+-    pub verification_status: AttestationVerificationStatusV1,
+-    pub truth_bearing: bool,
+-    pub body: serde_json::Value,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub reason_codes: Vec<String>,
+-}
+-
+-impl AttestationEnvelopeV1 {
+-    pub fn new(
+-        subject_artifact_id: ArtifactId,
+-        producer_id: impl Into<String>,
+-        schema_family: impl Into<String>,
+-        schema_version: u32,
+-        policy_id: impl Into<String>,
+-        body: serde_json::Value,
+-    ) -> Self {
+-        let subject_digest = CanonicalDigestV1::for_json_value(&body);
+-        Self {
+-            envelope_id: generated_artifact_id("attestation-envelope"),
+-            kind: ArtifactKindV1::AttestationEnvelope,
+-            subject_artifact_id,
+-            subject_digest,
+-            producer_id: producer_id.into(),
+-            schema_family: schema_family.into(),
+-            schema_version,
+-            policy_id: policy_id.into(),
+-            issued_at: Utc::now(),
+-            expires_at: None,
+-            trust_root_id: None,
+-            signature_algorithm: None,
+-            signature: None,
+-            verification_status: AttestationVerificationStatusV1::Unsigned,
+-            truth_bearing: true,
+-            body,
+-            reason_codes: vec!["attestation-envelope-created".into()],
+-        }
+-    }
+-
+-    pub fn signed(
+-        mut self,
+-        trust_root_id: ArtifactId,
+-        signature_algorithm: impl Into<String>,
+-        signature: impl Into<String>,
+-    ) -> Self {
+-        self.trust_root_id = Some(trust_root_id);
+-        self.signature_algorithm = Some(signature_algorithm.into());
+-        self.signature = Some(signature.into());
+-        self.verification_status = AttestationVerificationStatusV1::Verified;
+-        self.reason_codes.push("signature-verified".into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-
+-    pub fn verification_failed(
+-        mut self,
+-        status: AttestationVerificationStatusV1,
+-        reason: impl Into<String>,
+-    ) -> Self {
+-        self.verification_status = status;
+-        self.reason_codes.push(reason.into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-
+-    pub fn is_signed_and_verified(&self) -> bool {
+-        self.verification_status == AttestationVerificationStatusV1::Verified
+-            && self.trust_root_id.is_some()
+-            && self.signature.is_some()
+-    }
+-}
+-
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ #[serde(rename_all = "kebab-case")]
+ pub enum TrustRootStatusV1 {
+@@ -2671,71 +2583,6 @@
+     pub decided_at: DateTime<Utc>,
+ }
+ 
+-impl AdmissionDecisionV1 {
+-    pub fn from_envelope(
+-        envelope: &AttestationEnvelopeV1,
+-        disposition: AdmissionDispositionV1,
+-        decided_by: impl Into<String>,
+-        mut reason_codes: Vec<String>,
+-    ) -> Self {
+-        let import_allowed = matches!(
+-            disposition,
+-            AdmissionDispositionV1::Accept
+-                | AdmissionDispositionV1::Quarantine
+-                | AdmissionDispositionV1::Downgrade
+-        );
+-        let advisory_only = !matches!(disposition, AdmissionDispositionV1::Accept);
+-        if !import_allowed {
+-            reason_codes.push("external-artifact-import-blocked".into());
+-        }
+-        if advisory_only {
+-            reason_codes.push("external-artifact-advisory-only".into());
+-        }
+-        reason_codes.push("admission-decision-required-before-import".into());
+-        reason_codes.sort();
+-        reason_codes.dedup();
+-        Self {
+-            decision_id: generated_artifact_id("admission-decision"),
+-            kind: ArtifactKindV1::AdmissionDecision,
+-            envelope_id: envelope.envelope_id.clone(),
+-            subject_artifact_id: envelope.subject_artifact_id.clone(),
+-            subject_digest: envelope.subject_digest.clone(),
+-            producer_id: envelope.producer_id.clone(),
+-            trust_root_id: envelope.trust_root_id.clone(),
+-            disposition,
+-            import_allowed,
+-            advisory_only,
+-            local_promotion_required: true,
+-            required_witnesses: Vec::new(),
+-            decided_by: decided_by.into(),
+-            reason_codes,
+-            decided_at: Utc::now(),
+-        }
+-    }
+-
+-    pub fn requiring_witness(
+-        envelope: &AttestationEnvelopeV1,
+-        decided_by: impl Into<String>,
+-        witnesses: Vec<String>,
+-        reason: impl Into<String>,
+-    ) -> Self {
+-        let mut decision = Self::from_envelope(
+-            envelope,
+-            AdmissionDispositionV1::RequireAdditionalWitness,
+-            decided_by,
+-            vec![reason.into()],
+-        );
+-        decision.required_witnesses = witnesses;
+-        decision
+-    }
+-
+-    pub fn permits_import(&self, envelope: &AttestationEnvelopeV1) -> bool {
+-        self.import_allowed
+-            && self.envelope_id == envelope.envelope_id
+-            && self.subject_digest == envelope.subject_digest
+-    }
+-}
+-
+ #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+ pub struct RemoteOracleReportV1 {
+     pub receipt_id: ArtifactId,
+@@ -2753,43 +2600,6 @@
+     pub recorded_at: DateTime<Utc>,
+ }
+ 
+-impl RemoteOracleReportV1 {
+-    pub fn imported(envelope: &AttestationEnvelopeV1, decision: &AdmissionDecisionV1) -> Self {
+-        let imported = decision.permits_import(envelope);
+-        let mut reason_codes = vec!["remote-oracle-import-is-advisory".into()];
+-        if imported {
+-            reason_codes.push("external-artifact-imported-through-admission-decision".into());
+-        } else {
+-            reason_codes.push("external-artifact-not-imported".into());
+-        }
+-        Self {
+-            receipt_id: generated_artifact_id("remote-oracle-report"),
+-            kind: ArtifactKindV1::RemoteOracleReport,
+-            envelope_id: envelope.envelope_id.clone(),
+-            admission_decision_id: decision.decision_id.clone(),
+-            subject_artifact_id: envelope.subject_artifact_id.clone(),
+-            subject_digest: envelope.subject_digest.clone(),
+-            advisory_only: decision.advisory_only || decision.local_promotion_required,
+-            imported,
+-            locally_promoted: false,
+-            oracle_payload: envelope.body.clone(),
+-            reason_codes,
+-            recorded_at: Utc::now(),
+-        }
+-    }
+-
+-    pub fn not_imported(envelope: &AttestationEnvelopeV1, decision: &AdmissionDecisionV1) -> Self {
+-        let mut receipt = Self::imported(envelope, decision);
+-        receipt.imported = false;
+-        receipt
+-            .reason_codes
+-            .push("remote-oracle-import-denied".into());
+-        receipt.reason_codes.sort();
+-        receipt.reason_codes.dedup();
+-        receipt
+-    }
+-}
+-
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ pub struct TreatyV1 {
+     pub treaty_id: ArtifactId,
+@@ -2840,44 +2650,6 @@
+ }
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+-pub struct SharedDispositionV1 {
+-    pub disposition_id: ArtifactId,
+-    pub kind: ArtifactKindV1,
+-    pub settlement_case_id: ArtifactId,
+-    pub outcome: SharedDispositionOutcomeV1,
+-    pub local_disposition: CanonicalVerificationDisposition,
+-    pub remote_disposition: AdmissionDispositionV1,
+-    pub local_authority_preserved: bool,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub accepted_by: Vec<String>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub reason_codes: Vec<String>,
+-    pub recorded_at: DateTime<Utc>,
+-}
+-
+-impl SharedDispositionV1 {
+-    pub fn local_preserved(
+-        settlement_case_id: ArtifactId,
+-        local_disposition: CanonicalVerificationDisposition,
+-        remote_disposition: AdmissionDispositionV1,
+-        accepted_by: Vec<String>,
+-    ) -> Self {
+-        Self {
+-            disposition_id: generated_artifact_id("shared-disposition"),
+-            kind: ArtifactKindV1::SharedDisposition,
+-            settlement_case_id,
+-            outcome: SharedDispositionOutcomeV1::LocalAuthorityPreserved,
+-            local_disposition,
+-            remote_disposition,
+-            local_authority_preserved: true,
+-            accepted_by,
+-            reason_codes: vec!["remote-claim-did-not-overwrite-local-truth".into()],
+-            recorded_at: Utc::now(),
+-        }
+-    }
+-}
+-
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ #[serde(rename_all = "kebab-case")]
+ pub enum SettlementStateV1 {
+     Open,
+@@ -2887,70 +2659,6 @@
+     Rejected,
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+-pub struct SettlementCaseV1 {
+-    pub case_id: ArtifactId,
+-    pub kind: ArtifactKindV1,
+-    pub local_claim_id: ArtifactId,
+-    pub remote_subject_artifact_id: ArtifactId,
+-    pub remote_envelope_id: ArtifactId,
+-    pub admission_decision_id: ArtifactId,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub treaty_id: Option<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub shared_disposition_id: Option<ArtifactId>,
+-    pub state: SettlementStateV1,
+-    pub local_authority_preserved: bool,
+-    pub direct_overwrite_prevented: bool,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub reason_codes: Vec<String>,
+-    pub opened_at: DateTime<Utc>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub resolved_at: Option<DateTime<Utc>>,
+-}
+-
+-impl SettlementCaseV1 {
+-    pub fn disputed(
+-        local_claim_id: ArtifactId,
+-        envelope: &AttestationEnvelopeV1,
+-        admission_decision_id: ArtifactId,
+-        treaty_id: Option<ArtifactId>,
+-        reason: impl Into<String>,
+-    ) -> Self {
+-        Self {
+-            case_id: generated_artifact_id("settlement-case"),
+-            kind: ArtifactKindV1::SettlementCase,
+-            local_claim_id,
+-            remote_subject_artifact_id: envelope.subject_artifact_id.clone(),
+-            remote_envelope_id: envelope.envelope_id.clone(),
+-            admission_decision_id,
+-            treaty_id,
+-            shared_disposition_id: None,
+-            state: SettlementStateV1::Disputed,
+-            local_authority_preserved: true,
+-            direct_overwrite_prevented: true,
+-            reason_codes: vec![
+-                reason.into(),
+-                "remote-contradiction-opened-settlement-case".into(),
+-                "local-truth-not-overwritten".into(),
+-            ],
+-            opened_at: Utc::now(),
+-            resolved_at: None,
+-        }
+-    }
+-
+-    pub fn settle(mut self, shared_disposition_id: ArtifactId) -> Self {
+-        self.shared_disposition_id = Some(shared_disposition_id);
+-        self.state = SettlementStateV1::Settled;
+-        self.resolved_at = Some(Utc::now());
+-        self.reason_codes
+-            .push("settlement-disposition-recorded".into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-}
+-
+ #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ #[serde(rename_all = "kebab-case")]
+ pub enum MechanismKindV1 {
+@@ -3505,252 +3213,6 @@
+ }
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+-pub struct TheoryRefuterSuiteV1 {
+-    pub suite_id: ArtifactId,
+-    pub kind: ArtifactKindV1,
+-    pub theory_id: ArtifactId,
+-    pub mechanism_id: ArtifactId,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub refuter_case_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub fit_run_receipt_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub invariance_report_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub refutation_result_ids: Vec<ArtifactId>,
+-    pub outcome: TheoryRefuterOutcomeV1,
+-    pub required_refuter_count: u32,
+-    pub passed_refuter_count: u32,
+-    pub falsifiable: bool,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub replay_handles: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub reason_codes: Vec<String>,
+-    pub recorded_at: DateTime<Utc>,
+-}
+-
+-impl TheoryRefuterSuiteV1 {
+-    pub fn new(
+-        theory_id: ArtifactId,
+-        mechanism_id: ArtifactId,
+-        refuter_case_ids: Vec<ArtifactId>,
+-        fit_run_receipt_ids: Vec<ArtifactId>,
+-        invariance_report_ids: Vec<ArtifactId>,
+-        outcome: TheoryRefuterOutcomeV1,
+-    ) -> Self {
+-        let passed_refuter_count = if outcome == TheoryRefuterOutcomeV1::NoRefutationFound {
+-            refuter_case_ids.len() as u32
+-        } else {
+-            0
+-        };
+-        let required_refuter_count = refuter_case_ids.len() as u32;
+-        let mut reason_codes = vec!["theory-refuter-suite-recorded".into()];
+-        if outcome == TheoryRefuterOutcomeV1::NoRefutationFound {
+-            reason_codes.push("no-refutation-found-is-not-final-truth".into());
+-        }
+-        if outcome == TheoryRefuterOutcomeV1::Refuted {
+-            reason_codes.push("candidate-theory-refuted".into());
+-        }
+-        Self {
+-            suite_id: generated_artifact_id("theory-refuter-suite"),
+-            kind: ArtifactKindV1::TheoryRefuterSuite,
+-            theory_id,
+-            mechanism_id,
+-            refuter_case_ids: sorted_unique_artifact_ids(refuter_case_ids),
+-            fit_run_receipt_ids: sorted_unique_artifact_ids(fit_run_receipt_ids),
+-            invariance_report_ids: sorted_unique_artifact_ids(invariance_report_ids),
+-            refutation_result_ids: Vec::new(),
+-            outcome,
+-            required_refuter_count,
+-            passed_refuter_count,
+-            falsifiable: true,
+-            replay_handles: Vec::new(),
+-            reason_codes,
+-            recorded_at: Utc::now(),
+-        }
+-    }
+-
+-    pub fn with_refutation_results(mut self, refutation_result_ids: Vec<ArtifactId>) -> Self {
+-        self.refutation_result_ids = sorted_unique_artifact_ids(refutation_result_ids);
+-        self
+-    }
+-
+-    pub fn with_replay_handles(mut self, replay_handles: Vec<ArtifactId>) -> Self {
+-        self.replay_handles = sorted_unique_artifact_ids(replay_handles);
+-        self
+-    }
+-
+-    pub fn not_falsifiable(mut self, reason: impl Into<String>) -> Self {
+-        self.falsifiable = false;
+-        self.outcome = TheoryRefuterOutcomeV1::Inconclusive;
+-        self.reason_codes.push(reason.into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-
+-    pub fn satisfies_promotion_bar(&self) -> bool {
+-        self.falsifiable
+-            && self.outcome == TheoryRefuterOutcomeV1::NoRefutationFound
+-            && self.required_refuter_count > 0
+-            && self.passed_refuter_count >= self.required_refuter_count
+-            && !self.fit_run_receipt_ids.is_empty()
+-            && !self.invariance_report_ids.is_empty()
+-    }
+-}
+-
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+-pub struct TheoryVersionV1 {
+-    pub theory_id: ArtifactId,
+-    pub kind: ArtifactKindV1,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub library_id: Option<ArtifactId>,
+-    pub mechanism_id: ArtifactId,
+-    pub version_number: u32,
+-    pub state: TheoryVersionStateV1,
+-    pub title: String,
+-    pub hypothesis: String,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub fit_run_receipt_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub refuter_suite_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub invariance_report_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub promotion_decision_id: Option<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub control_receipt_id: Option<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub supersedes_theory_id: Option<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Option::is_none")]
+-    pub refuted_by_suite_id: Option<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub replay_handles: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub reason_codes: Vec<String>,
+-    pub created_at: DateTime<Utc>,
+-}
+-
+-impl TheoryVersionV1 {
+-    pub fn candidate(
+-        mechanism_id: ArtifactId,
+-        version_number: u32,
+-        title: impl Into<String>,
+-        hypothesis: impl Into<String>,
+-    ) -> Self {
+-        let title = title.into();
+-        let hypothesis = hypothesis.into();
+-        let material = canonical_json_string(&serde_json::json!({
+-            "mechanism_id": &mechanism_id,
+-            "version_number": version_number,
+-            "title": &title,
+-            "hypothesis": &hypothesis,
+-        }));
+-        Self {
+-            theory_id: deterministic_artifact_id("theory-version", &material),
+-            kind: ArtifactKindV1::TheoryVersion,
+-            library_id: None,
+-            mechanism_id,
+-            version_number,
+-            state: TheoryVersionStateV1::Candidate,
+-            title,
+-            hypothesis,
+-            fit_run_receipt_ids: Vec::new(),
+-            refuter_suite_ids: Vec::new(),
+-            invariance_report_ids: Vec::new(),
+-            promotion_decision_id: None,
+-            control_receipt_id: None,
+-            supersedes_theory_id: None,
+-            refuted_by_suite_id: None,
+-            replay_handles: Vec::new(),
+-            reason_codes: vec!["theory-version-candidate-recorded".into()],
+-            created_at: Utc::now(),
+-        }
+-    }
+-
+-    pub fn in_library(mut self, library_id: ArtifactId) -> Self {
+-        self.library_id = Some(library_id);
+-        self
+-    }
+-
+-    pub fn fitted(
+-        mut self,
+-        fit_run_receipt_id: ArtifactId,
+-        invariance_report_id: Option<ArtifactId>,
+-    ) -> Self {
+-        self.state = TheoryVersionStateV1::Fitted;
+-        self.fit_run_receipt_ids.push(fit_run_receipt_id);
+-        if let Some(report_id) = invariance_report_id {
+-            self.invariance_report_ids.push(report_id);
+-        }
+-        self.fit_run_receipt_ids = sorted_unique_artifact_ids(self.fit_run_receipt_ids);
+-        self.invariance_report_ids = sorted_unique_artifact_ids(self.invariance_report_ids);
+-        self.reason_codes.push("theory-version-fit-recorded".into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-
+-    pub fn refuted(mut self, refuter_suite_id: ArtifactId) -> Self {
+-        self.state = TheoryVersionStateV1::Refuted;
+-        self.refuted_by_suite_id = Some(refuter_suite_id.clone());
+-        self.refuter_suite_ids.push(refuter_suite_id);
+-        self.refuter_suite_ids = sorted_unique_artifact_ids(self.refuter_suite_ids);
+-        self.reason_codes
+-            .push("theory-version-refuted-by-suite".into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-
+-    pub fn superseding(mut self, supersedes_theory_id: ArtifactId) -> Self {
+-        self.supersedes_theory_id = Some(supersedes_theory_id);
+-        self.reason_codes
+-            .push("theory-version-supersedes-prior-version".into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-
+-    pub fn superseded(mut self) -> Self {
+-        self.state = TheoryVersionStateV1::Superseded;
+-        self.reason_codes
+-            .push("theory-version-preserved-as-superseded".into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-
+-    pub fn published(
+-        mut self,
+-        refuter_suite_id: ArtifactId,
+-        promotion_decision_id: ArtifactId,
+-        control_receipt_id: ArtifactId,
+-    ) -> Self {
+-        self.state = TheoryVersionStateV1::Published;
+-        self.refuter_suite_ids.push(refuter_suite_id);
+-        self.refuter_suite_ids = sorted_unique_artifact_ids(self.refuter_suite_ids);
+-        self.promotion_decision_id = Some(promotion_decision_id);
+-        self.control_receipt_id = Some(control_receipt_id);
+-        self.reason_codes
+-            .push("theory-version-published-with-refuter-and-governance".into());
+-        self.reason_codes.sort();
+-        self.reason_codes.dedup();
+-        self
+-    }
+-
+-    pub fn is_replayable(&self) -> bool {
+-        !self.fit_run_receipt_ids.is_empty() || !self.replay_handles.is_empty()
+-    }
+-
+-    pub fn has_governance_basis(&self) -> bool {
+-        self.promotion_decision_id.is_some()
+-            && self.control_receipt_id.is_some()
+-            && !self.refuter_suite_ids.is_empty()
+-    }
+-}
+-
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ pub struct MechanismEquivalenceDecisionV1 {
+     pub decision_id: ArtifactId,
+     pub left_mechanism_id: ArtifactId,
+@@ -3812,88 +3274,6 @@
+ }
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+-pub struct HypothesisLibraryV1 {
+-    pub library_id: ArtifactId,
+-    pub kind: ArtifactKindV1,
+-    pub name: String,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub theory_version_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub mechanism_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub equivalence_decisions: Vec<MechanismEquivalenceDecisionV1>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub alias_decision_ids: Vec<ArtifactId>,
+-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+-    pub reason_codes: Vec<String>,
+-    pub updated_at: DateTime<Utc>,
+-}
+-
+-impl HypothesisLibraryV1 {
+-    pub fn new(
+-        name: impl Into<String>,
+-        theory_version_ids: Vec<ArtifactId>,
+-        mechanism_ids: Vec<ArtifactId>,
+-    ) -> Self {
+-        let name = name.into();
+-        let mechanism_ids = sorted_unique_artifact_ids(mechanism_ids);
+-        let theory_version_ids = sorted_unique_artifact_ids(theory_version_ids);
+-        let material = canonical_json_string(&serde_json::json!({
+-            "name": &name,
+-            "mechanism_ids": &mechanism_ids,
+-            "theory_version_ids": &theory_version_ids,
+-        }));
+-        Self {
+-            library_id: deterministic_artifact_id("hypothesis-library", &material),
+-            kind: ArtifactKindV1::HypothesisLibrary,
+-            name,
+-            theory_version_ids,
+-            mechanism_ids,
+-            equivalence_decisions: Vec::new(),
+-            alias_decision_ids: Vec::new(),
+-            reason_codes: vec![
+-                "hypothesis-library-versioned-artifact-index".into(),
+-                "mechanisms-remain-distinct-without-alias-decision".into(),
+-            ],
+-            updated_at: Utc::now(),
+-        }
+-    }
+-
+-    pub fn with_equivalence_decision(mut self, decision: MechanismEquivalenceDecisionV1) -> Self {
+-        if decision.disposition == EquivalenceDispositionV1::AliasAdmitted {
+-            self.alias_decision_ids.push(decision.decision_id.clone());
+-        }
+-        self.equivalence_decisions.push(decision);
+-        self.alias_decision_ids = sorted_unique_artifact_ids(self.alias_decision_ids);
+-        self
+-    }
+-
+-    pub fn add_theory(mut self, theory_id: ArtifactId) -> Self {
+-        self.theory_version_ids.push(theory_id);
+-        self.theory_version_ids = sorted_unique_artifact_ids(self.theory_version_ids);
+-        self.updated_at = Utc::now();
+-        self
+-    }
+-
+-    pub fn add_mechanism(mut self, mechanism_id: ArtifactId) -> Self {
+-        self.mechanism_ids.push(mechanism_id);
+-        self.mechanism_ids = sorted_unique_artifact_ids(self.mechanism_ids);
+-        self.updated_at = Utc::now();
+-        self
+-    }
+-
+-    pub fn mechanisms_should_merge(&self, left: &ArtifactId, right: &ArtifactId) -> bool {
+-        self.equivalence_decisions
+-            .iter()
+-            .any(|decision| decision.permits_alias(left, right))
+-    }
+-
+-    pub fn mechanisms_remain_distinct(&self, left: &ArtifactId, right: &ArtifactId) -> bool {
+-        !self.mechanisms_should_merge(left, right)
+-    }
+-}
+-
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+ #[serde(rename_all = "kebab-case")]
+ pub enum RuntimeViewModeV1 {
+     Semantic,
+@@ -10734,266 +10114,123 @@
+     }
+ 
+     #[test]
+-    fn p17_attestation_admission_and_settlement_constructors_are_typed() {
+-        let trust_root = TrustRootV1::active(
+-            "remote-a",
+-            "public-key-material",
+-            "claims",
+-            "admit-verified-v1",
+-        );
++    fn p17_attestation_and_settlement_names_are_canonical_reexports() {
+         let envelope = AttestationEnvelopeV1::new(
+-            ArtifactId("claim:remote-a".into()),
+-            "remote-a",
++            stack_ids::AttestationEnvelopeId::new("attestation:remote-a"),
+             "claim-record",
+-            1,
+-            "admit-verified-v1",
+-            serde_json::json!({"subject":"repo","predicate":"status","object":"ready"}),
++            "1",
++            StackContentDigest::compute_str("remote-ready"),
++            "claim-record-v1",
++            "remote-a",
++            "2026-04-29T00:00:00Z",
++            stack_ids::TrustRootSetId::new("trust-root-set:remote-a"),
++            "producer remote-a signed claim-record artifact",
++            stack_ids::DisclosurePolicyId::new("disclosure:claims"),
++            Some(stack_ids::ArtifactAdmissionPolicyId::new(
++                "artifact-admission:claims",
++            )),
++            attestation_exchange::AttestationReplayabilityClassV1::Replayable,
++            Vec::new(),
++            Vec::new(),
+         )
+-        .signed(
+-            trust_root.trust_root_id.clone(),
+-            "ed25519-test",
+-            "signature:test",
+-        );
+-        let decision = AdmissionDecisionV1::from_envelope(
+-            &envelope,
+-            AdmissionDispositionV1::Accept,
+-            "unit-test",
+-            vec!["verified-trust-root".into()],
++        .unwrap();
++
++        let shared = SharedDispositionV1 {
++            schema_version: federated_settlement::SHARED_DISPOSITION_V1_SCHEMA.to_string(),
++            shared_disposition_id: stack_ids::SharedDispositionId::new("shared:local-first"),
++            disposition_label: "local-authority-preserved".into(),
++            treatment: "remote advisory only".into(),
++            advisory_only: true,
++        };
++        let case = SettlementCaseV1 {
++            schema_version: federated_settlement::SETTLEMENT_CASE_V1_SCHEMA.to_string(),
++            settlement_case_id: stack_ids::SettlementCaseId::new("settlement:remote-a"),
++            treaty_bundle_id: stack_ids::TreatyBundleId::new("treaty:claims"),
++            equivalence_bundle_id: stack_ids::CrossRuntimeEquivalenceBundleId::new(
++                "equivalence:claims",
++            ),
++            citation: stack_ids::V25ConstitutionCitation::default(),
++            shared_disposition: shared.clone(),
++            replay_requirements: Vec::new(),
++            local_dissent: Vec::new(),
++            advisory_only: true,
++            non_admitted: false,
++        };
++
++        assert_eq!(envelope.artifact_family, "claim-record");
++        assert_eq!(
++            envelope.schema_version,
++            attestation_exchange::ATTESTATION_ENVELOPE_V1_SCHEMA
+         );
+-        let oracle = RemoteOracleReportV1::imported(&envelope, &decision);
+-        let treaty = TreatyV1::new(
+-            "local",
+-            "remote-a",
+-            "claims",
+-            "local-authority-first",
+-            vec![trust_root.trust_root_id.clone()],
+-        );
+-        let settlement = SettlementCaseV1::disputed(
+-            ArtifactId("claim:local".into()),
+-            &envelope,
+-            decision.decision_id.clone(),
+-            Some(treaty.treaty_id.clone()),
+-            "remote-claim-conflicts-with-local-claim",
+-        );
+-        let shared = SharedDispositionV1::local_preserved(
+-            settlement.case_id.clone(),
+-            CanonicalVerificationDisposition::DegradedNoPromotion,
+-            AdmissionDispositionV1::Downgrade,
+-            vec!["local".into(), "remote-a".into()],
+-        );
+-        let settled = settlement.settle(shared.disposition_id.clone());
+-        let revoked = trust_root.revoke(vec![envelope.envelope_id.clone()], "key-rotated");
+-
+-        assert_eq!(envelope.kind, ArtifactKindV1::AttestationEnvelope);
+-        assert!(envelope.is_signed_and_verified());
+-        assert_eq!(decision.kind, ArtifactKindV1::AdmissionDecision);
+-        assert!(decision.permits_import(&envelope));
+-        assert_eq!(oracle.kind, ArtifactKindV1::RemoteOracleReport);
+-        assert!(oracle.imported);
+-        assert!(!oracle.locally_promoted);
+-        assert_eq!(treaty.kind, ArtifactKindV1::Treaty);
+-        assert_eq!(settled.kind, ArtifactKindV1::SettlementCase);
+-        assert!(settled.direct_overwrite_prevented);
+-        assert_eq!(shared.kind, ArtifactKindV1::SharedDisposition);
+-        assert!(shared.local_authority_preserved);
+-        assert_eq!(revoked.status, TrustRootStatusV1::Revoked);
+-        assert!(revoked
+-            .reason_codes
+-            .contains(&"trust-root-revocation-downgrades-artifacts".into()));
++        assert_eq!(shared.disposition_label, "local-authority-preserved");
++        assert!(case.advisory_only);
++        assert_eq!(case.shared_disposition, shared);
+     }
+ 
+     #[test]
+-    fn p17_golden_fixtures_deserialize() {
+-        let envelope = include_str!("../../../tests/fixtures/p17/attestation_envelope_v1.json");
+-        let envelope: AttestationEnvelopeV1 = serde_json::from_str(envelope).unwrap();
+-        assert_eq!(envelope.kind, ArtifactKindV1::AttestationEnvelope);
+-        assert!(envelope.is_signed_and_verified());
+-
+-        let trust_root = include_str!("../../../tests/fixtures/p17/trust_root_v1.json");
+-        let trust_root: TrustRootV1 = serde_json::from_str(trust_root).unwrap();
+-        assert_eq!(trust_root.kind, ArtifactKindV1::TrustRoot);
+-        assert!(trust_root.is_active());
+-
+-        let decision = include_str!("../../../tests/fixtures/p17/admission_decision_v1.json");
+-        let decision: AdmissionDecisionV1 = serde_json::from_str(decision).unwrap();
+-        assert_eq!(decision.kind, ArtifactKindV1::AdmissionDecision);
+-        assert!(decision.import_allowed);
+-
+-        let oracle = include_str!("../../../tests/fixtures/p17/remote_oracle_receipt_v1.json");
+-        let oracle: RemoteOracleReportV1 = serde_json::from_str(oracle).unwrap();
+-        assert_eq!(oracle.kind, ArtifactKindV1::RemoteOracleReport);
+-        assert!(oracle.advisory_only);
+-
+-        let treaty = include_str!("../../../tests/fixtures/p17/treaty_v1.json");
+-        let treaty: TreatyV1 = serde_json::from_str(treaty).unwrap();
+-        assert_eq!(treaty.kind, ArtifactKindV1::Treaty);
+-        assert!(treaty.active);
+-
+-        let case = include_str!("../../../tests/fixtures/p17/settlement_case_v1.json");
+-        let case: SettlementCaseV1 = serde_json::from_str(case).unwrap();
+-        assert_eq!(case.kind, ArtifactKindV1::SettlementCase);
+-        assert!(case.local_authority_preserved);
+-
+-        let shared = include_str!("../../../tests/fixtures/p17/shared_disposition_v1.json");
+-        let shared: SharedDispositionV1 = serde_json::from_str(shared).unwrap();
+-        assert_eq!(shared.kind, ArtifactKindV1::SharedDisposition);
+-        assert!(shared.local_authority_preserved);
++    fn p17_canonical_reexport_shapes_roundtrip() {
++        let shared = SharedDispositionV1 {
++            schema_version: federated_settlement::SHARED_DISPOSITION_V1_SCHEMA.to_string(),
++            shared_disposition_id: stack_ids::SharedDispositionId::new("shared:roundtrip"),
++            disposition_label: "advisory".into(),
++            treatment: "display only".into(),
++            advisory_only: true,
++        };
++        let encoded = serde_json::to_string(&shared).unwrap();
++        let decoded: SharedDispositionV1 = serde_json::from_str(&encoded).unwrap();
++        assert_eq!(decoded.shared_disposition_id.as_str(), "shared:roundtrip");
++        assert!(decoded.advisory_only);
+     }
+ 
+     #[test]
+-    fn p18_mechanism_artifacts_keep_fit_refuter_and_alias_law_explicit() {
+-        let simulator = SimulatorContractV1::new(
+-            "linear-simulator",
+-            "deterministic-rust",
+-            serde_json::json!({"type":"object","required":["x"]}),
+-            serde_json::json!({"type":"object","required":["y"]}),
+-            vec![
+-                "cargo".into(),
+-                "run".into(),
+-                "--example".into(),
+-                "sim".into(),
+-            ],
+-        );
+-        let mechanism = MechanismReportV1::new(
+-            MechanismReportDraftV1::new(
+-                MechanismKindV1::Symbolic,
+-                "linear-response",
+-                "v1",
+-                "cargo run --example sim -- --seed 7",
+-            )
+-            .with_variables(vec!["x".into(), "y".into()])
+-            .with_assumptions(vec!["no-hidden-confounder".into()])
+-            .with_causal_claims(vec!["x-causes-y".into()])
+-            .with_program(vec!["y = alpha * x + beta".into()])
+-            .with_parameters(BTreeMap::from([("alpha".into(), serde_json::json!(1.0))])),
+-        )
+-        .with_simulator_contract(simulator.contract_id.clone())
+-        .with_raw_weight_digest("sha256:weights-are-not-the-artifact");
+-        let theory = TheoryVersionV1::candidate(
+-            mechanism.mechanism_id.clone(),
+-            1,
+-            "linear response theory",
+-            "x shifts y under intervention",
+-        );
+-        let fit = FitRunReportV1::new(
+-            mechanism.mechanism_id.clone(),
+-            Some(simulator.contract_id.clone()),
+-            serde_json::json!({"rows": 12}),
+-            serde_json::json!({"alpha": 1.0}),
+-            serde_json::json!({"loss": 0.01}),
+-            "least-squares",
+-            Some(0.99),
+-        )
+-        .for_theory(theory.theory_id.clone())
+-        .with_seed(7)
+-        .with_replay_command(simulator.replay_command.clone());
+-        let invariance = InvarianceReportV1::new(
+-            mechanism.mechanism_id.clone(),
+-            Some(theory.theory_id.clone()),
+-            Some(fit.receipt_id.clone()),
+-            vec![InvarianceCheckV1::new("shift-x", "lab", "x+1", 0.0, 0.01)],
+-        );
+-        let refuters = TheoryRefuterSuiteV1::new(
+-            theory.theory_id.clone(),
+-            mechanism.mechanism_id.clone(),
+-            vec![ArtifactId("refuter:intervention-shift".into())],
+-            vec![fit.receipt_id.clone()],
+-            vec![invariance.report_id.clone()],
+-            TheoryRefuterOutcomeV1::NoRefutationFound,
+-        )
+-        .with_replay_handles(vec![fit.receipt_id.clone()]);
+-        let published = theory
+-            .clone()
+-            .fitted(fit.receipt_id.clone(), Some(invariance.report_id.clone()))
+-            .published(
+-                refuters.suite_id.clone(),
+-                ArtifactId("promotion-decision:theory".into()),
+-                ArtifactId("control-receipt:theory".into()),
+-            );
+-        let sibling = MechanismReportV1::new(
+-            MechanismReportDraftV1::new(
+-                MechanismKindV1::Symbolic,
+-                "linear-response-reparameterized",
+-                "v1",
+-                "cargo run --example sim -- --seed 7 --basis centered",
+-            )
+-            .with_variables(vec!["x".into(), "y".into()])
+-            .with_assumptions(vec!["no-hidden-confounder".into()])
+-            .with_causal_claims(vec!["x-causes-y".into()])
+-            .with_program(vec!["y = gamma * (x - x0) + beta".into()]),
+-        );
+-        let library = HypothesisLibraryV1::new(
+-            "p18-library",
+-            vec![published.theory_id.clone()],
+-            vec![mechanism.mechanism_id.clone(), sibling.mechanism_id.clone()],
+-        )
+-        .with_equivalence_decision(MechanismEquivalenceDecisionV1::distinct(
+-            mechanism.mechanism_id.clone(),
+-            sibling.mechanism_id.clone(),
+-            true,
+-        ));
+-        let aliased = library.clone().with_equivalence_decision(
+-            MechanismEquivalenceDecisionV1::alias_admitted(
+-                mechanism.mechanism_id.clone(),
+-                sibling.mechanism_id.clone(),
+-                ArtifactId("admission-decision:alias".into()),
+-            ),
+-        );
++    fn p18_mechanism_names_are_canonical_reexports() {
++        let mechanism_id = stack_ids::MechanismBundleId::new("mechanism:linear");
++        let theory = TheoryVersionV1 {
++            schema_version: mechanism_runtime::THEORY_VERSION_V1_SCHEMA.to_string(),
++            theory_version_id: stack_ids::TheoryVersionId::new("theory:linear:v1"),
++            mechanism_bundle_id: mechanism_id.clone(),
++            theory_name: "linear response".into(),
++            semantic_version: "1.0.0".into(),
++            advisory_only: true,
++        };
++        let refuters = TheoryRefuterSuiteV1 {
++            schema_version: mechanism_runtime::THEORY_REFUTER_SUITE_V1_SCHEMA.to_string(),
++            theory_refuter_suite_id: stack_ids::TheoryRefuterSuiteId::new("refuters:linear:v1"),
++            theory_version_id: theory.theory_version_id.clone(),
++            required_refuters: vec!["intervention-shift".into()],
++            available_refuters: Vec::new(),
++            failing_refuters: Vec::new(),
++            horizon_only: true,
++        };
++        let library = HypothesisLibraryV1 {
++            schema_version: mechanism_runtime::HYPOTHESIS_LIBRARY_V1_SCHEMA.to_string(),
++            hypothesis_library_id: stack_ids::HypothesisLibraryId::new("hypothesis-library:p18"),
++            hypothesis_refs: vec![theory.theory_version_id.to_string()],
++            publication_status: stack_ids::SurfaceStatus::AdvisoryOnly,
++        };
+ 
+-        assert_eq!(mechanism.kind, ArtifactKindV1::MechanismReport);
+-        assert!(mechanism.is_replayable());
+-        assert!(simulator.is_replayable());
+-        assert_eq!(fit.kind, ArtifactKindV1::FitRunReport);
+-        assert!(fit.is_replayable());
+-        assert!(!fit.score_is_verification);
+-        assert_eq!(invariance.kind, ArtifactKindV1::InvarianceReport);
+-        assert!(!invariance.supports_causal_identification());
+-        assert!(refuters.satisfies_promotion_bar());
+-        assert_eq!(published.state, TheoryVersionStateV1::Published);
+-        assert!(published.has_governance_basis());
+-        assert!(library.mechanisms_remain_distinct(&mechanism.mechanism_id, &sibling.mechanism_id));
+-        assert!(aliased.mechanisms_should_merge(&mechanism.mechanism_id, &sibling.mechanism_id));
++        assert!(theory.advisory_only);
++        assert!(refuters.horizon_only);
++        assert_eq!(
++            library.publication_status,
++            stack_ids::SurfaceStatus::AdvisoryOnly
++        );
+     }
+ 
+     #[test]
+-    fn p18_golden_fixtures_deserialize() {
+-        let mechanism = include_str!("../../../tests/fixtures/p18/mechanism_bundle_v1.json");
+-        let mechanism: MechanismReportV1 = serde_json::from_str(mechanism).unwrap();
+-        assert_eq!(mechanism.kind, ArtifactKindV1::MechanismReport);
+-        assert!(mechanism.is_replayable());
+-
+-        let simulator = include_str!("../../../tests/fixtures/p18/simulator_contract_v1.json");
+-        let simulator: SimulatorContractV1 = serde_json::from_str(simulator).unwrap();
+-        assert_eq!(simulator.kind, ArtifactKindV1::SimulatorContract);
+-        assert!(simulator.is_replayable());
+-
+-        let fit = include_str!("../../../tests/fixtures/p18/fit_run_receipt_v1.json");
+-        let fit: FitRunReportV1 = serde_json::from_str(fit).unwrap();
+-        assert_eq!(fit.kind, ArtifactKindV1::FitRunReport);
+-        assert!(!fit.score_is_verification);
+-
+-        let invariance = include_str!("../../../tests/fixtures/p18/invariance_report_v1.json");
+-        let invariance: InvarianceReportV1 = serde_json::from_str(invariance).unwrap();
+-        assert_eq!(invariance.kind, ArtifactKindV1::InvarianceReport);
+-        assert!(!invariance.supports_causal_identification());
+-
+-        let refuters = include_str!("../../../tests/fixtures/p18/theory_refuter_suite_v1.json");
+-        let refuters: TheoryRefuterSuiteV1 = serde_json::from_str(refuters).unwrap();
+-        assert_eq!(refuters.kind, ArtifactKindV1::TheoryRefuterSuite);
+-        assert!(refuters.satisfies_promotion_bar());
+-
+-        let theory = include_str!("../../../tests/fixtures/p18/theory_version_v1.json");
+-        let theory: TheoryVersionV1 = serde_json::from_str(theory).unwrap();
+-        assert_eq!(theory.kind, ArtifactKindV1::TheoryVersion);
+-        assert!(theory.has_governance_basis());
+-
+-        let library = include_str!("../../../tests/fixtures/p18/hypothesis_library_v1.json");
+-        let library: HypothesisLibraryV1 = serde_json::from_str(library).unwrap();
+-        assert_eq!(library.kind, ArtifactKindV1::HypothesisLibrary);
+-        assert!(library.mechanisms_remain_distinct(
+-            &ArtifactId("mechanism-report:linear-response-v1".into()),
+-            &ArtifactId("mechanism-report:linear-response-centered-v1".into())
+-        ));
++    fn p18_canonical_reexport_shapes_roundtrip() {
++        let theory = TheoryVersionV1 {
++            schema_version: mechanism_runtime::THEORY_VERSION_V1_SCHEMA.to_string(),
++            theory_version_id: stack_ids::TheoryVersionId::new("theory:roundtrip"),
++            mechanism_bundle_id: stack_ids::MechanismBundleId::new("mechanism:roundtrip"),
++            theory_name: "roundtrip".into(),
++            semantic_version: "1.0.0".into(),
++            advisory_only: true,
++        };
++        let encoded = serde_json::to_string(&theory).unwrap();
++        let decoded: TheoryVersionV1 = serde_json::from_str(&encoded).unwrap();
++        assert_eq!(decoded.theory_name, "roundtrip");
++        assert!(decoded.advisory_only);
+     }
+ 
+     #[test]
+===== crates/aidens-delegation-kit/src/lib.rs =====
+No pre-edit file snapshot was captured before the delegation-kit quarantine rewrite; final content follows.
+//! Delegation status surface.
+//!
+//! Phase 02 removed the local duplicate attestation and settlement artifact
+//! types from `aidens-contracts`. The prior helper policy in this crate was
+//! coupled to those local shadow fields, so it is intentionally not preserved
+//! as a compatibility adapter.
+
+use thiserror::Error;
+
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum DelegationError {
+    #[error("delegation helper semantics are quarantined pending canonical owner wiring")]
+    CanonicalOwnerRequired,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DelegationKitStatus {
+    pub enabled: bool,
+    pub note: String,
+}
+
+impl Default for DelegationKitStatus {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            note: "delegation helpers are quarantined after canonical attestation and settlement ownership collapse".into(),
+        }
+    }
+}
+===== docs/contract-ownership/FINAL_QUARANTINE_LEDGER.md =====
+# Final Quarantine Ledger
+
+| Item | Status | Discovered in phase | Quarantine record | Required human decision | Next safe action |
+|---|---|---|---|---|---|
+| delegation-kit-attestation-settlement | needs human owner decision | 02 | `docs/contract-ownership/quarantine/delegation-kit-attestation-settlement.md` | Rebuild delegation/admission helper behavior against canonical `attestation-exchange`, `federated-settlement`, and `remote-oracle-admission`, or keep it removed from product surface. | Keep `aidens-delegation-kit` as a disabled quarantine/status surface until owner-approved canonical wiring exists. |
+===== docs/contract-ownership/quarantine/delegation-kit-attestation-settlement.md =====
+# Quarantine: delegation-kit-attestation-settlement
+
+STATUS: needs human owner decision
+DISCOVERED_IN_PHASE: 02
+LOCAL FILE/LINE: `crates/aidens-delegation-kit/src/lib.rs`
+LOCAL SYMBOLS: `AdmissionPolicyV1`, `TrustRootRegistryV1`, `import_remote_oracle`, `blocked_remote_oracle_receipt`, `open_remote_contradiction_settlement`, `revoke_trust_root_and_downgrade`
+SUSPECTED CANONICAL OWNER(S): `attestation-exchange`, `federated-settlement`, `remote-oracle-admission`
+SEARCHES PERFORMED:
+- `rg -n "\\b(AttestationEnvelopeV1|SharedDispositionV1|SettlementCaseV1|TheoryRefuterSuiteV1|TheoryVersionV1|HypothesisLibraryV1)\\b" crates tests docs scripts examples schemas`
+- `cargo check -p aidens-delegation-kit`
+- direct comparison of local `AttestationEnvelopeV1`, `SettlementCaseV1`, and `SharedDispositionV1` fields against canonical owner crate fields
+WHY AUTOMATIC COLLAPSE IS UNSAFE:
+The prior delegation helpers depended on AiDENs-local fields and methods removed in Phase 02, including `envelope_id`, `subject_artifact_id`, `subject_digest`, `producer_id`, `trust_root_id`, `verification_status`, `truth_bearing`, `body`, `is_signed_and_verified`, `AdmissionDecisionV1::from_envelope`, `RemoteOracleReportV1::imported`, and `SettlementCaseV1::disputed`.
+
+Canonical `attestation-exchange::AttestationEnvelopeV1` uses `attestation_envelope_id`, `artifact_family`, `content_digest`, `signer_identity`, `trust_root_set_id`, disclosure/admission policy IDs, replayability class, and revocation/supersession refs. Canonical `federated-settlement` settlement artifacts use settlement and shared-disposition IDs plus v25 constitutional citation/shared-view fields. Mapping the old helper behavior onto these canonical fields would require lossy reinterpretation of subject identity, signature verification status, trust-root semantics, remote-oracle import authority, and settlement state.
+TEMPORARY ACTION TAKEN:
+The shadow helper implementation was removed from `aidens-delegation-kit`; the crate now exposes only a disabled status and a `CanonicalOwnerRequired` error. This is a quarantine stop surface, not a compatibility adapter.
+FORBIDDEN ACTIONS:
+- Do not re-create the removed helper methods with synthetic field mappings.
+- Do not wrap canonical artifacts into untyped JSON blobs.
+- Do not preserve the old local admission/settlement semantics under renamed types.
+- Do not use `Libraries2` owner crates when `/home/sikmindz/Coding/Libraries` owners exist.
+REQUIRED HUMAN DECISION:
+Decide whether delegation/admission helper behavior should be rebuilt against `attestation-exchange`, `federated-settlement`, and `remote-oracle-admission`, or removed from the product surface until a later owner-approved run.
+RECOMMENDED NEXT RUN:
+Design a canonical delegation facade with explicit backpointers to canonical attestation envelope IDs, content digests, admission policy IDs, settlement case IDs, and remote-oracle admission records. Keep all admission/settlement truth in canonical owner crates.

@@ -1,0 +1,162 @@
+[
+  {
+    "item_id": "PSV001",
+    "crate_or_item": "ai-batch-queue",
+    "source": "Libraries2/AI-Batch-Queue/Cargo.toml",
+    "state": "promoted_pass_check_test",
+    "terminal": true,
+    "destination": "ai-batch-queue/Cargo.toml"
+  },
+  {
+    "item_id": "PSV002",
+    "crate_or_item": "(workspace)",
+    "source": "Libraries2/Cargo.toml",
+    "state": "archived_only",
+    "terminal": true,
+    "destination": "_salvage_from_libraries2/Libraries2/Cargo.toml"
+  },
+  {
+    "item_id": "PSV003",
+    "crate_or_item": "comfyui-rs",
+    "source": "Libraries2/ComfyUI-RS/Cargo.toml",
+    "state": "promoted_pass_check_test",
+    "terminal": true,
+    "destination": "comfyui-rs/Cargo.toml"
+  },
+  {
+    "item_id": "PSV004",
+    "crate_or_item": "llm-pipeline",
+    "source": "Libraries2/LLM-Pipeline/Cargo.toml",
+    "state": "promoted_pass_check_test_after_api_drift_repair",
+    "terminal": true,
+    "destination": "llm-pipeline/Cargo.toml"
+  },
+  {
+    "item_id": "PSV005",
+    "crate_or_item": "ollama-vision",
+    "source": "Libraries2/Ollama-Vision-RS/Cargo.toml",
+    "state": "promoted_pass_check_test_after_parser_path_repair",
+    "terminal": true,
+    "destination": "ollama-vision/Cargo.toml"
+  },
+  {
+    "item_id": "PSV006",
+    "crate_or_item": "tauri-queue",
+    "source": "Libraries2/Tauri-Queue/Cargo.toml",
+    "state": "promoted_pass_check_test",
+    "terminal": true,
+    "destination": "tauri-queue/Cargo.toml"
+  },
+  {
+    "item_id": "PSV007",
+    "crate_or_item": "agent-graph",
+    "source": "Libraries2/agent-graph/Cargo.toml",
+    "state": "promoted_pass_check_test",
+    "terminal": true,
+    "destination": "agent-graph/Cargo.toml"
+  },
+  {
+    "item_id": "PSV008",
+    "crate_or_item": "attestation-exchange",
+    "source": "Libraries2/attestation-exchange/Cargo.toml",
+    "state": "same_name_archived_diff_no_overwrite",
+    "terminal": true,
+    "destination": "attestation-exchange/Cargo.toml"
+  },
+  {
+    "item_id": "PSV009",
+    "crate_or_item": "constraint-compiler",
+    "source": "Libraries2/constraint-compiler/Cargo.toml",
+    "state": "same_name_archived_diff_no_overwrite",
+    "terminal": true,
+    "destination": "constraint-compiler/Cargo.toml"
+  },
+  {
+    "item_id": "PSV010",
+    "crate_or_item": "demo-tauri-libraries",
+    "source": "Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+    "state": "archived_only_demo",
+    "terminal": true,
+    "destination": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml"
+  },
+  {
+    "item_id": "PSV011",
+    "crate_or_item": "discovery-portfolio",
+    "source": "Libraries2/discovery-portfolio/Cargo.toml",
+    "state": "same_name_archived_diff_no_overwrite",
+    "terminal": true,
+    "destination": "discovery-portfolio/Cargo.toml"
+  },
+  {
+    "item_id": "PSV012",
+    "crate_or_item": "federated-settlement",
+    "source": "Libraries2/federated-settlement/Cargo.toml",
+    "state": "same_name_archived_diff_no_overwrite",
+    "terminal": true,
+    "destination": "federated-settlement/Cargo.toml"
+  },
+  {
+    "item_id": "PSV013",
+    "crate_or_item": "job-queue",
+    "source": "Libraries2/job-queue/Cargo.toml",
+    "state": "promoted_pass_check_test",
+    "terminal": true,
+    "destination": "job-queue/Cargo.toml"
+  },
+  {
+    "item_id": "PSV014",
+    "crate_or_item": "llm-output-parser",
+    "source": "Libraries2/llm-output-parser/Cargo.toml",
+    "state": "promoted_pass_check_test",
+    "terminal": true,
+    "destination": "llm-output-parser/Cargo.toml"
+  },
+  {
+    "item_id": "PSV015",
+    "crate_or_item": "profile-runtime",
+    "source": "Libraries2/profile-runtime/Cargo.toml",
+    "state": "same_name_archived_diff_no_overwrite",
+    "terminal": true,
+    "destination": "profile-runtime/Cargo.toml"
+  },
+  {
+    "item_id": "PSV016",
+    "crate_or_item": "remote-oracle-admission",
+    "source": "Libraries2/remote-oracle-admission/Cargo.toml",
+    "state": "same_name_archived_diff_no_overwrite",
+    "terminal": true,
+    "destination": "remote-oracle-admission/Cargo.toml"
+  },
+  {
+    "item_id": "PSV017",
+    "crate_or_item": "attestation-exchange",
+    "source": "Libraries2/repo_overlay/attestation-exchange/Cargo.toml",
+    "state": "archived_only_no_overwrite",
+    "terminal": true,
+    "destination": "_salvage_from_libraries2/Libraries2/repo_overlay/attestation-exchange/Cargo.toml"
+  },
+  {
+    "item_id": "PSV018",
+    "crate_or_item": "attestation-exchange",
+    "source": "Libraries2/scaffolds/attestation-exchange/Cargo.toml",
+    "state": "archived_only_no_overwrite",
+    "terminal": true,
+    "destination": "_salvage_from_libraries2/Libraries2/scaffolds/attestation-exchange/Cargo.toml"
+  },
+  {
+    "item_id": "PSV019",
+    "crate_or_item": "remote-oracle-admission",
+    "source": "Libraries2/scaffolds/remote-oracle-admission/Cargo.toml",
+    "state": "archived_only_no_overwrite",
+    "terminal": true,
+    "destination": "_salvage_from_libraries2/Libraries2/scaffolds/remote-oracle-admission/Cargo.toml"
+  },
+  {
+    "item_id": "PSV020",
+    "crate_or_item": "spec-execution",
+    "source": "Libraries2/spec-execution/Cargo.toml",
+    "state": "same_name_archived_diff_no_overwrite",
+    "terminal": true,
+    "destination": "spec-execution/Cargo.toml"
+  }
+]

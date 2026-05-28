@@ -1,0 +1,16 @@
+[package]
+name = "spec-execution"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75.0"
+description = "Typed spec and proof surface crate with bounded generated-artifact evaluators; not a compiler runtime"
+license = "MIT"
+
+[dependencies]
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+stack-ids = { path = "../stack-ids" }
+
+[dev-dependencies]
+serde_json = { workspace = true }

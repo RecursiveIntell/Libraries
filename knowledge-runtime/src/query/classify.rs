@@ -66,7 +66,7 @@ pub fn classify(query: &str) -> ClassifyResult {
     let mut components = Vec::new();
 
     // Check for entity mentions: quoted strings or @-prefixed tokens.
-    if let Some(mention) = extract_entity_mention(query) {
+    for mention in extract_entity_mentions(query) {
         components.push(QueryMode::EntityLookup { mention });
     }
 
@@ -109,27 +109,55 @@ pub fn classify(query: &str) -> ClassifyResult {
 /// Recognizes:
 /// - `@name` tokens
 /// - `"quoted strings"`
-fn extract_entity_mention(query: &str) -> Option<String> {
+fn extract_entity_mentions(query: &str) -> Vec<String> {
+    let mut mentions = Vec::new();
+
     // @-mention: first @-prefixed word
     for word in query.split_whitespace() {
         if let Some(name) = word.strip_prefix('@') {
             if !name.is_empty() {
-                return Some(name.to_string());
+                mentions.push(
+                    name.trim_matches(|c: char| !c.is_alphanumeric() && c != '_' && c != '-')
+                        .to_string(),
+                );
             }
         }
     }
 
-    // Quoted string: first double-quoted substring
-    if let Some(start) = query.find('"') {
-        if let Some(end) = query[start + 1..].find('"') {
-            let mention = &query[start + 1..start + 1 + end];
-            if !mention.is_empty() {
-                return Some(mention.to_string());
+    // Quoted strings, allowing escaped quotes.
+    let mut in_quote = false;
+    let mut escaped = false;
+    let mut current = String::new();
+    for ch in query.chars() {
+        if escaped {
+            if in_quote {
+                current.push(ch);
             }
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+        if ch == '"' {
+            if in_quote && !current.is_empty() {
+                mentions.push(std::mem::take(&mut current));
+            } else {
+                current.clear();
+            }
+            in_quote = !in_quote;
+            continue;
+        }
+        if in_quote {
+            current.push(ch);
         }
     }
 
-    None
+    mentions.retain(|mention| !mention.is_empty());
+    mentions.sort();
+    mentions.dedup();
+    mentions
 }
 
 /// Extract a temporal expression from a query.
@@ -156,7 +184,9 @@ fn extract_temporal_expr(query: &str) -> Option<String> {
         "earlier",
     ];
 
-    for marker in &temporal_markers {
+    let mut markers = temporal_markers.to_vec();
+    markers.sort_by_key(|marker| std::cmp::Reverse(marker.len()));
+    for marker in markers {
         if lower.contains(marker) {
             return Some(marker.to_string());
         }
@@ -207,5 +237,34 @@ mod tests {
     fn mixed_entity_and_temporal() {
         let result = classify("what did @alice do last week");
         assert_eq!(result.mode.kind(), "mixed");
+    }
+
+    #[test]
+    fn multiple_entity_mentions_are_preserved() {
+        let result = classify(r#"compare @alice and @bob with "MemoryStore""#);
+        match &result.mode {
+            QueryMode::Mixed { components } => {
+                let mentions: Vec<_> = components
+                    .iter()
+                    .filter_map(|component| match component {
+                        QueryMode::EntityLookup { mention } => Some(mention.as_str()),
+                        _ => None,
+                    })
+                    .collect();
+                assert_eq!(mentions, vec!["MemoryStore", "alice", "bob"]);
+            }
+            other => panic!("expected Mixed, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn temporal_marker_prefers_more_specific_phrase() {
+        let result = classify("summarize last week and recent changes");
+        match &result.mode {
+            QueryMode::TemporalLookup { temporal_expr } => {
+                assert_eq!(temporal_expr, "last week");
+            }
+            other => panic!("expected TemporalLookup, got {:?}", other),
+        }
     }
 }

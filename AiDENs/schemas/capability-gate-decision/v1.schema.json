@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ApprovalRequestV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "risk_class": {
+          "$ref": "#/definitions/ToolSideEffectClass"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox_root": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "request_id",
+        "requested_at",
+        "risk_class",
+        "sandbox_root",
+        "scope",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "CapabilityGateOutcomeV1": {
+      "enum": [
+        "exposed",
+        "hidden",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "ToolLifecycleStateV1": {
+      "enum": [
+        "declared",
+        "registered",
+        "executable",
+        "exposed",
+        "exposed-this-turn",
+        "invoked",
+        "succeeded",
+        "failed",
+        "hidden",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "ToolSideEffectClass": {
+      "enum": [
+        "read_only",
+        "analysis",
+        "preview_write",
+        "write",
+        "admin"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "approval_request": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ApprovalRequestV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "capability_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "executable_this_turn": {
+      "type": "boolean"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "lifecycle": {
+      "items": {
+        "$ref": "#/definitions/ToolLifecycleStateV1"
+      },
+      "type": "array"
+    },
+    "outcome": {
+      "$ref": "#/definitions/CapabilityGateOutcomeV1"
+    },
+    "permit_grant_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "permit_required": {
+      "default": false,
+      "type": "boolean"
+    },
+    "permit_use_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "risk_class": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ToolSideEffectClass"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sandbox_root": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "capability_id",
+    "decision_id",
+    "executable_this_turn",
+    "kind",
+    "lifecycle",
+    "outcome"
+  ],
+  "title": "CapabilityGateDecisionV1",
+  "type": "object"
+}

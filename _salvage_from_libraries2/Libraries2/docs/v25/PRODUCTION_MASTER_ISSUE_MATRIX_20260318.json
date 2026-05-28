@@ -1,0 +1,145 @@
+[
+  {
+    "phase": "Phase 0",
+    "priority": "P0",
+    "id": "V25P-001",
+    "stream": "Audit",
+    "title": "Freeze the production-closure seam list from the current repo snapshot",
+    "depends_on": "\u2014",
+    "acceptance": "The pack carries a generated gap audit plus an ordered issue matrix derived from the current repository state.",
+    "proof": "PRODUCTION_GAP_AUDIT_20260318.md/json + production issue matrix.",
+    "primary": "docs/v25 + scripts"
+  },
+  {
+    "phase": "Phase 1",
+    "priority": "P0",
+    "id": "V25P-101",
+    "stream": "effect-runtime",
+    "title": "Convert effect-runtime to typed stack-ids and add composite constitutional citations",
+    "depends_on": "V25P-001",
+    "acceptance": "Effect artifacts no longer use raw String IDs for effect-owned IDs and cite the v25 composition lane directly.",
+    "proof": "effect-runtime source + v25 citation tests + regenerated schemas/examples.",
+    "primary": "effect-runtime"
+  },
+  {
+    "phase": "Phase 1",
+    "priority": "P0",
+    "id": "V25P-102",
+    "stream": "effect-runtime",
+    "title": "Add a v25 helper surface that consumes compiled obligations instead of raw profiles",
+    "depends_on": "V25P-101",
+    "acceptance": "Preflight/commit surfaces can be assembled from compiled obligation outputs without local profile recomposition.",
+    "proof": "effect-runtime/src/v25.rs + tests + no-local-recomposition check.",
+    "primary": "effect-runtime"
+  },
+  {
+    "phase": "Phase 2",
+    "priority": "P0",
+    "id": "V25P-201",
+    "stream": "verification-control",
+    "title": "Thread constitutional citation fields through review and block-case artifacts",
+    "depends_on": "V25P-101,V25P-102",
+    "acceptance": "Effect, delegation, release, and continuity review surfaces all carry applicability/profile/composition/effective/obligation refs.",
+    "proof": "verification-control source + schemas/examples + citation tests.",
+    "primary": "verification-control"
+  },
+  {
+    "phase": "Phase 2",
+    "priority": "P0",
+    "id": "V25P-202",
+    "stream": "verification-policy",
+    "title": "Bind PolicyDecision to the composite constitutional lane using IDs and obligation refs only",
+    "depends_on": "V25P-201",
+    "acceptance": "PolicyDecision carries composition/effective/obligation refs and reason vectors derived from compiled obligations without creating a dependency cycle on profile-runtime types.",
+    "proof": "verification-policy source + policy citation tests + example JSON.",
+    "primary": "verification-policy"
+  },
+  {
+    "phase": "Phase 2",
+    "priority": "P0",
+    "id": "V25P-203",
+    "stream": "verification-adjudication",
+    "title": "Carry the same composite constitutional refs into promotion, refutation, rollback, and effect adjudication artifacts",
+    "depends_on": "V25P-201,V25P-202",
+    "acceptance": "Adjudication outputs can be traced to one policy decision and one effective constitutional answer.",
+    "proof": "verification-adjudication source + citation tests + schemas/examples.",
+    "primary": "verification-adjudication"
+  },
+  {
+    "phase": "Phase 3",
+    "priority": "P1",
+    "id": "V25P-301",
+    "stream": "remote-oracle-admission",
+    "title": "Attach local constitutional citations to remote admission, replay, and re-admission artifacts",
+    "depends_on": "V25P-101,V25P-102",
+    "acceptance": "Remote request/result/replay artifacts cite the local effective constitution that authorized disclosure, trust, and replay posture.",
+    "proof": "remote-oracle-admission source + example JSON + tests.",
+    "primary": "remote-oracle-admission"
+  },
+  {
+    "phase": "Phase 3",
+    "priority": "P1",
+    "id": "V25P-302",
+    "stream": "federated-settlement",
+    "title": "Preserve local constitutional citations in settlement, replay, divergence, and downgrade surfaces",
+    "depends_on": "V25P-101,V25P-102",
+    "acceptance": "Settlement artifacts preserve the local effective constitution and compiled obligations behind a shared disposition.",
+    "proof": "federated-settlement source + example JSON + tests.",
+    "primary": "federated-settlement"
+  },
+  {
+    "phase": "Phase 4",
+    "priority": "P0",
+    "id": "V25P-401",
+    "stream": "schema-publication",
+    "title": "Register the missing review/adjudication schemas and backfill examples for every externally visible consumer artifact",
+    "depends_on": "V25P-101..V25P-302",
+    "acceptance": "All end-state consumer artifacts have contract-schema-gen registrations, schema JSON, example JSON, and roundtrip tests.",
+    "proof": "contract-schema-gen source + schemas/ + examples/ + tests.",
+    "primary": "contract-schema-gen + schemas + examples"
+  },
+  {
+    "phase": "Phase 4",
+    "priority": "P1",
+    "id": "V25P-402",
+    "stream": "conformance",
+    "title": "Expand the v25 fixture corpus to cover consumer citation flow, remote admission, and federated settlement",
+    "depends_on": "V25P-401",
+    "acceptance": "Fixture bundles and the v25 manifest cover the new consumer citation paths.",
+    "proof": "contracts/fixtures/v25 + conformance/v25 manifest/readme updates.",
+    "primary": "contracts/fixtures/v25 + conformance/v25"
+  },
+  {
+    "phase": "Phase 5",
+    "priority": "P0",
+    "id": "V25P-501",
+    "stream": "gates",
+    "title": "Add pack-truth, no-local-recomposition, and final production-closure checks",
+    "depends_on": "V25P-001",
+    "acceptance": "The repo ships scripts that validate the pack now and the end-state later; Makefile targets exist for both.",
+    "proof": "scripts/ + Makefile + docs.",
+    "primary": "scripts + Makefile"
+  },
+  {
+    "phase": "Phase 5",
+    "priority": "P0",
+    "id": "V25P-502",
+    "stream": "ci",
+    "title": "Wire the v25 production closure checks into CI after code lands",
+    "depends_on": "V25P-401,V25P-402,V25P-501",
+    "acceptance": "CI runs repo-truth, JSON-surface, no-local-recomposition, and final production-closure checks before the workspace lane.",
+    "proof": ".github/workflows/ci.yml + successful CI run.",
+    "primary": ".github/workflows/ci.yml"
+  },
+  {
+    "phase": "Phase 5",
+    "priority": "P0",
+    "id": "V25P-503",
+    "stream": "release",
+    "title": "Run schema regeneration, cargo tests, mirror sync, and release-proof commands",
+    "depends_on": "V25P-502",
+    "acceptance": "All commands in the acceptance doc pass and the release bar is satisfied without caveats.",
+    "proof": "terminal output / CI logs / synced mirror / updated status docs.",
+    "primary": "apply/v25 + scripts + mirror"
+  }
+]

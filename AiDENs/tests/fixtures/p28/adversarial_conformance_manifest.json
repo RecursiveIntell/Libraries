@@ -1,0 +1,84 @@
+{
+  "schema_version": "P28AdversarialConformanceManifestV1",
+  "run": "P28",
+  "fixtures": [
+    {
+      "id": "duplicate-json-keys",
+      "surface": "boundary-compiler",
+      "input": "{\"path\":\"a\",\"path\":\"b\"}",
+      "expected_semantics": "rejected; duplicate-json-object-key"
+    },
+    {
+      "id": "schema-mismatch",
+      "surface": "boundary-compiler",
+      "input": "{\"path\":7}",
+      "expected_semantics": "rejected; schema-validation-failed"
+    },
+    {
+      "id": "parser-repair-treatment-change",
+      "surface": "boundary-compiler",
+      "input": "prefix {\"treatment\":\"variant\"} suffix",
+      "expected_semantics": "rejected when treatment integrity is hard-fail"
+    },
+    {
+      "id": "symlink-escape",
+      "surface": "tool-sandbox",
+      "input": "repo-read symlink pointing outside sandbox",
+      "expected_semantics": "blocked; no outside read"
+    },
+    {
+      "id": "patch-write-failed-dirty-dir",
+      "surface": "patch-apply",
+      "input": "diff targeting missing parent directory",
+      "expected_semantics": "blocked; parent directory is not created"
+    },
+    {
+      "id": "timeout-partial-output",
+      "surface": "tool-receipt",
+      "input": "timed-out tool call receipt",
+      "expected_semantics": "partial_output=true"
+    },
+    {
+      "id": "retry-degraded-aggregate",
+      "surface": "release-readiness",
+      "input": "degraded subcheck",
+      "expected_semantics": "ready=false; release blocked"
+    },
+    {
+      "id": "stale-projection-current-query",
+      "surface": "temporal-reference",
+      "input": "stale projection fixture",
+      "expected_semantics": "degraded; disclosure required"
+    },
+    {
+      "id": "proof-waiver-treated-as-proof",
+      "surface": "proof-economy",
+      "input": "waived obligation without proof",
+      "expected_semantics": "promotion blocked"
+    },
+    {
+      "id": "degraded-release-surface",
+      "surface": "release-readiness",
+      "input": "degraded package replay surface",
+      "expected_semantics": "release blocked unless lawful waiver"
+    },
+    {
+      "id": "storage-graph-used-as-inference-graph",
+      "surface": "reserved-v11b",
+      "input": "compiled inference graph sourced from storage graph",
+      "expected_semantics": "reserved/advisory; no active v11B runtime claim"
+    },
+    {
+      "id": "subtraction-removes-support-core",
+      "surface": "reserved-v11b",
+      "input": "support-core extraction of accepted claim",
+      "expected_semantics": "blocked and advisory-only"
+    },
+    {
+      "id": "personalized-advice-without-disclosure",
+      "surface": "agency-risk",
+      "input": "memory-personalized recommendation",
+      "expected_semantics": "classified; memory influence trace required"
+    }
+  ]
+}

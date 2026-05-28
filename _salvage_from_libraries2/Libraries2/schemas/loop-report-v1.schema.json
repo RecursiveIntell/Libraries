@@ -1,0 +1,2973 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ActionFamily": {
+      "enum": [
+        "Oracle",
+        "PairedPatch",
+        "AdvisoryOnly"
+      ],
+      "type": "string"
+    },
+    "AdjudicationResult": {
+      "properties": {
+        "case_id": {
+          "type": "string"
+        },
+        "disposition": {
+          "$ref": "#/definitions/VerificationDisposition"
+        },
+        "promotion_decision": {
+          "$ref": "#/definitions/PromotionDecision"
+        },
+        "refutation_decision": {
+          "$ref": "#/definitions/RefutationDecision"
+        },
+        "rollback_plan": {
+          "$ref": "#/definitions/RollbackPlan"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "terminal_disposition": {
+          "$ref": "#/definitions/TerminalDisposition"
+        }
+      },
+      "required": [
+        "case_id",
+        "disposition",
+        "promotion_decision",
+        "refutation_decision",
+        "rollback_plan",
+        "schema_version",
+        "terminal_disposition"
+      ],
+      "type": "object"
+    },
+    "ApprovalRecord": {
+      "properties": {
+        "approval_record_id": {
+          "type": "string"
+        },
+        "approved_at": {
+          "type": "string"
+        },
+        "approver": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "reviewed_artifact_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/definitions/ApprovalScope"
+        }
+      },
+      "required": [
+        "approval_record_id",
+        "approved_at",
+        "approver",
+        "policy_version",
+        "rationale",
+        "schema_version",
+        "scope"
+      ],
+      "type": "object"
+    },
+    "ApprovalScope": {
+      "properties": {
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CheckMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "promotion_class": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PromotionClass"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reusable": {
+          "type": "boolean"
+        },
+        "target_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace",
+        "reusable"
+      ],
+      "type": "object"
+    },
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "BlockedStepRecord": {
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "step_kind": {
+          "$ref": "#/definitions/LawfulStepKind"
+        }
+      },
+      "required": [
+        "reason",
+        "step_kind"
+      ],
+      "type": "object"
+    },
+    "BootstrapRichness": {
+      "enum": [
+        "thin",
+        "chunked",
+        "symbolized"
+      ],
+      "type": "string"
+    },
+    "BoundaryArtifactKind": {
+      "enum": [
+        "loop_report",
+        "loop_iteration_report",
+        "control_receipt"
+      ],
+      "type": "string"
+    },
+    "BoundaryRepairRecord": {
+      "properties": {
+        "artifact_kind": {
+          "$ref": "#/definitions/BoundaryArtifactKind"
+        },
+        "artifact_schema_version": {
+          "type": "string"
+        },
+        "field_path": {
+          "type": "string"
+        },
+        "original_value": true,
+        "rationale": {
+          "type": "string"
+        },
+        "repair_kind": {
+          "type": "string"
+        },
+        "repair_record_id": {
+          "type": "string"
+        },
+        "repaired_value": true,
+        "schema_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_schema_version",
+        "field_path",
+        "rationale",
+        "repair_kind",
+        "repair_record_id",
+        "repaired_value",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "BudgetClass": {
+      "enum": [
+        "micro",
+        "standard",
+        "expensive"
+      ],
+      "type": "string"
+    },
+    "BudgetLineage": {
+      "properties": {
+        "budget_family": {
+          "type": "string"
+        },
+        "exhausted": {
+          "type": "boolean"
+        },
+        "max_cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_time_budget_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "queue_hop_count": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "remaining_cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "remaining_time_budget_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "retry_family": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "budget_family",
+        "exhausted",
+        "queue_hop_count",
+        "retry_family"
+      ],
+      "type": "object"
+    },
+    "CalibrationSnapshot": {
+      "properties": {
+        "abstention_threshold_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "comparability_available": {
+          "type": "boolean"
+        },
+        "drift_markers": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "forces_advisory_only": {
+          "type": "boolean"
+        },
+        "observed_risk_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "oracle_calibrated": {
+          "type": "boolean"
+        },
+        "recorded_at": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "abstention_threshold_micros",
+        "case_id",
+        "comparability_available",
+        "forces_advisory_only",
+        "observed_risk_micros",
+        "oracle_calibrated",
+        "recorded_at",
+        "schema_version",
+        "snapshot_id"
+      ],
+      "type": "object"
+    },
+    "CanonicalCaseClass": {
+      "enum": [
+        "contradiction_investigation",
+        "promotion_candidate",
+        "thin_export_gap",
+        "supersession_verification",
+        "comparability_drift",
+        "calibration_caveat",
+        "scope_freshness"
+      ],
+      "type": "string"
+    },
+    "CaseRegion": {
+      "properties": {
+        "as_of_recorded_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "claim_version_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "region_digest_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "region_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope_key": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ScopeKey"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "target_key"
+      ],
+      "type": "object"
+    },
+    "CheapCheckKindV1": {
+      "enum": [
+        "schema_validation",
+        "provenance_audit",
+        "replay_preflight",
+        "oracle_preflight",
+        "refutation_preflight"
+      ],
+      "type": "string"
+    },
+    "CheapCheckStatusV1": {
+      "properties": {
+        "check": {
+          "$ref": "#/definitions/CheapCheckKindV1"
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "satisfied": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "check",
+        "satisfied"
+      ],
+      "type": "object"
+    },
+    "CheckMethod": {
+      "enum": [
+        "exact_bounded_oracle",
+        "conservative_oracle",
+        "delta_parity_oracle",
+        "temporal_replay_oracle",
+        "causal_refuter",
+        "minimal_perturbation_oracle",
+        "paired_patch",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "CheckPlan": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "cheap_check_ladder": {
+          "items": {
+            "$ref": "#/definitions/CheapCheckStatusV1"
+          },
+          "type": "array"
+        },
+        "cheapest_adequate": {
+          "type": "boolean"
+        },
+        "check_names": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "evidence_admissibility": {
+          "$ref": "#/definitions/EvidenceAdmissibilityV1"
+        },
+        "input": true,
+        "method": {
+          "$ref": "#/definitions/CheckMethod"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "planner_family": {
+          "type": "string"
+        },
+        "promotable_if_completed": {
+          "type": "boolean"
+        },
+        "promotion_class": {
+          "$ref": "#/definitions/PromotionClass"
+        },
+        "proof_obligations_remaining": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "proof_profile": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ProofProfileV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "reversibility_class": {
+          "$ref": "#/definitions/ReversibilityClass"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "target_exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        }
+      },
+      "required": [
+        "advisory_only",
+        "case_id",
+        "cheapest_adequate",
+        "degraded",
+        "evidence_admissibility",
+        "input",
+        "method",
+        "plan_id",
+        "planner_family",
+        "promotable_if_completed",
+        "promotion_class",
+        "rationale",
+        "reversibility_class",
+        "schema_version",
+        "target_exactness"
+      ],
+      "type": "object"
+    },
+    "ConstitutionalContextStatus": {
+      "enum": [
+        "missing",
+        "partial",
+        "complete"
+      ],
+      "type": "string"
+    },
+    "ControlActionKind": {
+      "enum": [
+        "tool_execution",
+        "orchestration_loop",
+        "verification_execution"
+      ],
+      "type": "string"
+    },
+    "ControlReceipt": {
+      "properties": {
+        "action_kind": {
+          "$ref": "#/definitions/ControlActionKind"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "applicability_context_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "blocking_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "budget_context": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ReceiptBudgetContext"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "case_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "citation_status": {
+          "$ref": "#/definitions/ConstitutionalContextStatus"
+        },
+        "compiled_obligation_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_conflict_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "details": true,
+        "effective_constitution_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "finished_at": {
+          "type": "string"
+        },
+        "monitoring_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "non_authoritative": {
+          "type": "boolean"
+        },
+        "obligation_refs_status": {
+          "$ref": "#/definitions/ConstitutionalContextStatus"
+        },
+        "parent_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "planner_stage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "profile_exception_bundle_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profile_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "promotable": {
+          "type": "boolean"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "replay_parent_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "required_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry_owner": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ControlRetryOwnerV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "source_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_receipt_kind": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": "string"
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workload_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "action_kind",
+        "actor",
+        "advisory_only",
+        "attempt_id",
+        "citation_status",
+        "degraded",
+        "details",
+        "finished_at",
+        "non_authoritative",
+        "obligation_refs_status",
+        "promotable",
+        "receipt_id",
+        "schema_version",
+        "source_receipt_kind",
+        "started_at",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "ControlRetryOwnerV1": {
+      "enum": [
+        "llm_pipeline",
+        "agent_graph",
+        "job_queue",
+        "ai_batch_queue",
+        "forge_orchestration",
+        "external"
+      ],
+      "type": "string"
+    },
+    "DecisionAudit": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "blocked_steps": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/BlockedStepRecord"
+          },
+          "type": "array"
+        },
+        "budget_class": {
+          "$ref": "#/definitions/BudgetClass"
+        },
+        "canonical_case_class": {
+          "$ref": "#/definitions/CanonicalCaseClass"
+        },
+        "cheap_check_ladder": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/CheapCheckStatusV1"
+          },
+          "type": "array"
+        },
+        "cheapest_admissible": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LawfulStepKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fallback_steps": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/PlannedStep"
+          },
+          "type": "array"
+        },
+        "stable_target_key": {
+          "type": "string"
+        },
+        "target_exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        }
+      },
+      "required": [
+        "advisory_only",
+        "budget_class",
+        "canonical_case_class",
+        "stable_target_key",
+        "target_exactness"
+      ],
+      "type": "object"
+    },
+    "DegradationKindV1": {
+      "enum": [
+        "thin_export",
+        "missing_proof",
+        "missing_replay",
+        "scope_withheld",
+        "evidence_unavailable",
+        "oracle_unavailable",
+        "budget_exceeded",
+        "exactness_downgraded",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "DegradationMarker": {
+      "properties": {
+        "blocks_promotion": {
+          "type": "boolean"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "blocks_promotion",
+        "kind",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "DispatchOutcomeV1": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "degraded",
+        "cancelled",
+        "exhausted"
+      ],
+      "type": "string"
+    },
+    "EvidenceAdmissibilityV1": {
+      "enum": [
+        "admissible",
+        "restricted",
+        "inadmissible",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "ExactnessBudgetV1": {
+      "properties": {
+        "achieved_exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        },
+        "budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "degradation": {
+          "items": {
+            "$ref": "#/definitions/DegradationKindV1"
+          },
+          "type": "array"
+        },
+        "escalation_rules": {
+          "items": {
+            "$ref": "#/definitions/ExactnessEscalationRuleV1"
+          },
+          "type": "array"
+        },
+        "exactness_budget_id": {
+          "type": "string"
+        },
+        "failure_artifact_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "requested_exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "semantics_profile_id": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "units_consumed": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "achieved_exactness",
+        "budget_units",
+        "exactness_budget_id",
+        "requested_exactness",
+        "schema_version",
+        "semantics_profile_id",
+        "subject",
+        "units_consumed"
+      ],
+      "type": "object"
+    },
+    "ExactnessEscalationRuleV1": {
+      "properties": {
+        "block_action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "escalate_to": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        },
+        "when_degraded": {
+          "$ref": "#/definitions/DegradationKindV1"
+        }
+      },
+      "required": [
+        "escalate_to",
+        "when_degraded"
+      ],
+      "type": "object"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "ExecutionContextV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancellation_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degradation_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dispatch_outcome": {
+          "$ref": "#/definitions/DispatchOutcomeV1"
+        },
+        "environment_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_route": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "queue_hops": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workload_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "dispatch_outcome",
+        "schema_version",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "ExecutionLineageReceipt": {
+      "properties": {
+        "attempt_id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "consumed_artifact_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "degradation_markers": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "execution_context_ref": {
+          "type": "string"
+        },
+        "outcome_summary": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "produced_artifact_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "target_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "attempt_id",
+        "case_id",
+        "execution_context_ref",
+        "outcome_summary",
+        "plan_id",
+        "target_key"
+      ],
+      "type": "object"
+    },
+    "ExportActionTraceV1": {
+      "properties": {
+        "action_family": {
+          "type": "string"
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "bridge_roundtrip_completed": {
+          "type": "boolean"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "import_completed": {
+          "type": "boolean"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "produced_artifact_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "action_family",
+        "attempt_id",
+        "bridge_roundtrip_completed",
+        "case_id",
+        "import_completed",
+        "plan_id"
+      ],
+      "type": "object"
+    },
+    "HaltReason": {
+      "enum": [
+        "MaxIterationsReached",
+        "TimeBudgetExhausted",
+        "NothingWorthInvestigating",
+        "ImportRequired",
+        "NamespaceMismatch",
+        "StorageUnavailable",
+        "StorageCorrupt",
+        "AllTargetsExhausted",
+        "MissingKernelPayload",
+        "ThinExportBlockedExecution",
+        "ExternalHalt",
+        "RetryCapExceeded",
+        "AdvisoryOnlyFallback"
+      ],
+      "type": "string"
+    },
+    "ImportRecordDisposition": {
+      "enum": [
+        "found",
+        "never_imported",
+        "namespace_mismatch",
+        "storage_unavailable",
+        "storage_corrupt"
+      ],
+      "type": "string"
+    },
+    "InvalidationRadiusV1": {
+      "enum": [
+        "none",
+        "local",
+        "claim_lineage"
+      ],
+      "type": "string"
+    },
+    "LawfulStepKind": {
+      "enum": [
+        "contract_schema_check",
+        "provenance_receipt_audit",
+        "temporal_consistency_check",
+        "exact_replay",
+        "paired_comparative_check",
+        "exact_oracle_slice",
+        "conservative_oracle_slice",
+        "minimal_perturbation_refuter",
+        "nuisance_comparability_audit",
+        "human_review_request",
+        "canonical_export_request",
+        "canonical_import_request"
+      ],
+      "type": "string"
+    },
+    "LoopBudgetReceipt": {
+      "properties": {
+        "cooldown_secs": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_iterations": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_retries_per_target": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "time_budget_secs": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "workload_class": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cooldown_secs",
+        "max_iterations",
+        "max_retries_per_target",
+        "time_budget_secs",
+        "workload_class"
+      ],
+      "type": "object"
+    },
+    "LoopIterationReport": {
+      "properties": {
+        "action_family": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ActionFamily"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "adjudication": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/AdjudicationResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "approval_records": {
+          "items": {
+            "$ref": "#/definitions/ApprovalRecord"
+          },
+          "type": "array"
+        },
+        "boundary_repairs": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/BoundaryRepairRecord"
+          },
+          "type": "array"
+        },
+        "calibration_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CalibrationSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "check_plan": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CheckPlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "control_receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ControlReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_audit": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DecisionAudit"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "export_completed": {
+          "type": "boolean"
+        },
+        "export_trace": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ExportActionTraceV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "import_completed": {
+          "type": "boolean"
+        },
+        "iteration": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "lineage_receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ExecutionLineageReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome_signature": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "policy_decision": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PolicyDecision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "repair_records": {
+          "items": {
+            "$ref": "#/definitions/RepairRecordV1"
+          },
+          "type": "array"
+        },
+        "rollback_invalidation_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "scheduler_decision": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SchedulerDecision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "selected_target_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stop_rule_evaluation": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/StopRuleEvaluation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target_normalization": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TargetNormalization"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_attempt": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/VerificationAttempt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_case": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/VerificationCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_plan_artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/VerificationPlanArtifact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "advisory_only",
+        "approval_records",
+        "degraded",
+        "export_completed",
+        "import_completed",
+        "iteration",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "LoopReceipt": {
+      "properties": {
+        "actions_executed": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "budget": {
+          "$ref": "#/definitions/LoopBudgetReceipt"
+        },
+        "consumer_only_truth_access": {
+          "default": false,
+          "type": "boolean"
+        },
+        "degraded_iterations": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "elapsed_seconds": {
+          "format": "double",
+          "type": "number"
+        },
+        "exports_completed": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "finished_at": {
+          "type": "string"
+        },
+        "halt_reason": {
+          "$ref": "#/definitions/HaltReason"
+        },
+        "imports_completed": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "iterations_completed": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "non_authoritative": {
+          "type": "boolean"
+        },
+        "observation_paths": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ObservationPaths"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observation_status": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ObservationStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": "string"
+        },
+        "targets_investigated": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        "workspace_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "actions_executed",
+        "advisory_only",
+        "attempt_id",
+        "budget",
+        "degraded_iterations",
+        "elapsed_seconds",
+        "exports_completed",
+        "finished_at",
+        "halt_reason",
+        "imports_completed",
+        "iterations_completed",
+        "namespace",
+        "non_authoritative",
+        "receipt_id",
+        "schema_version",
+        "started_at",
+        "targets_investigated",
+        "trace_ctx",
+        "workspace_path"
+      ],
+      "type": "object"
+    },
+    "ObservationDisposition": {
+      "enum": [
+        "ready",
+        "empty_workspace",
+        "import_required",
+        "namespace_mismatch",
+        "storage_unavailable",
+        "storage_corrupt"
+      ],
+      "type": "string"
+    },
+    "ObservationPaths": {
+      "properties": {
+        "forge_db_path": {
+          "type": "string"
+        },
+        "forge_db_state": {
+          "$ref": "#/definitions/PathAvailability"
+        },
+        "memory_dir": {
+          "type": "string"
+        },
+        "memory_dir_state": {
+          "$ref": "#/definitions/PathAvailability"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "workspace_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "forge_db_path",
+        "forge_db_state",
+        "memory_dir",
+        "memory_dir_state",
+        "namespace",
+        "workspace_path"
+      ],
+      "type": "object"
+    },
+    "ObservationStatus": {
+      "properties": {
+        "available_forge_bundle_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "bootstrap_richness": {
+          "$ref": "#/definitions/BootstrapRichness"
+        },
+        "disposition": {
+          "$ref": "#/definitions/ObservationDisposition"
+        },
+        "exact_next_step": {
+          "type": "string"
+        },
+        "import_record_disposition": {
+          "$ref": "#/definitions/ImportRecordDisposition"
+        },
+        "import_records_found": {
+          "type": "boolean"
+        },
+        "imported_chunk_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "imported_file_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "imported_symbol_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "namespace_queried": {
+          "type": "string"
+        },
+        "other_import_namespaces": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "resolved_workspace_path": {
+          "type": "string"
+        },
+        "supported_file_count": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "available_forge_bundle_count",
+        "bootstrap_richness",
+        "disposition",
+        "exact_next_step",
+        "import_record_disposition",
+        "import_records_found",
+        "imported_chunk_count",
+        "imported_file_count",
+        "imported_symbol_count",
+        "namespace_queried",
+        "resolved_workspace_path",
+        "supported_file_count"
+      ],
+      "type": "object"
+    },
+    "PathAvailability": {
+      "enum": [
+        "present",
+        "missing",
+        "invalid"
+      ],
+      "type": "string"
+    },
+    "PlannedStep": {
+      "properties": {
+        "cost_rank": {
+          "format": "uint8",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "required_artifact_families": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "step_kind": {
+          "$ref": "#/definitions/LawfulStepKind"
+        }
+      },
+      "required": [
+        "cost_rank",
+        "step_kind"
+      ],
+      "type": "object"
+    },
+    "PolicyDecision": {
+      "properties": {
+        "applicability_context_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approval_required": {
+          "type": "boolean"
+        },
+        "approval_satisfied": {
+          "type": "boolean"
+        },
+        "autonomy_allowed": {
+          "type": "boolean"
+        },
+        "blocking_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "citation_status": {
+          "$ref": "#/definitions/ConstitutionalContextStatus"
+        },
+        "compiled_obligation_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_conflict_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "effective_constitution_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evaluated_at": {
+          "type": "string"
+        },
+        "method_allowed": {
+          "type": "boolean"
+        },
+        "monitoring_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "obligation_refs_status": {
+          "$ref": "#/definitions/ConstitutionalContextStatus"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "policy_version": {
+          "type": "string"
+        },
+        "profile_exception_bundle_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profile_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "promotion_allowed": {
+          "type": "boolean"
+        },
+        "reasons": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required_obligation_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "schema_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_required",
+        "approval_satisfied",
+        "autonomy_allowed",
+        "case_id",
+        "citation_status",
+        "decision_id",
+        "evaluated_at",
+        "method_allowed",
+        "obligation_refs_status",
+        "plan_id",
+        "policy_version",
+        "promotion_allowed",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "PromotionClass": {
+      "enum": [
+        "p0",
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "type": "string"
+    },
+    "PromotionDecision": {
+      "properties": {
+        "applicability_context_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approval_basis": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "compiled_obligation_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_conflict_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "control_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "disposition": {
+          "$ref": "#/definitions/VerificationDisposition"
+        },
+        "effective_constitution_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence_sufficiency_summary": {
+          "type": "string"
+        },
+        "policy_decision_id": {
+          "type": "string"
+        },
+        "profile_exception_bundle_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profile_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "promotable": {
+          "type": "boolean"
+        },
+        "promotion_class": {
+          "$ref": "#/definitions/PromotionClass"
+        },
+        "reasons": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reversibility_class": {
+          "$ref": "#/definitions/ReversibilityClass"
+        },
+        "rollback_scope": {
+          "$ref": "#/definitions/RollbackScopeV1"
+        },
+        "schema_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_basis",
+        "case_id",
+        "decision_id",
+        "disposition",
+        "evidence_sufficiency_summary",
+        "policy_decision_id",
+        "promotable",
+        "promotion_class",
+        "reversibility_class",
+        "rollback_scope",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "ProofProfileV1": {
+      "properties": {
+        "admissible_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "cheap_checks": {
+          "items": {
+            "$ref": "#/definitions/CheapCheckStatusV1"
+          },
+          "type": "array"
+        },
+        "evidence_admissibility": {
+          "$ref": "#/definitions/EvidenceAdmissibilityV1"
+        },
+        "profile_name": {
+          "type": "string"
+        },
+        "proof_obligations_remaining": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_admissibility",
+        "profile_name"
+      ],
+      "type": "object"
+    },
+    "QueueHop": {
+      "properties": {
+        "dequeued_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enqueued_at": {
+          "type": "string"
+        },
+        "from_queue": {
+          "type": "string"
+        },
+        "hop_index": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "to_queue": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enqueued_at",
+        "from_queue",
+        "hop_index",
+        "to_queue"
+      ],
+      "type": "object"
+    },
+    "ReceiptBudgetContext": {
+      "properties": {
+        "budget_kind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_steps": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "time_budget_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "RefutationClassV1": {
+      "enum": [
+        "none",
+        "causal_refuted"
+      ],
+      "type": "string"
+    },
+    "RefutationDecision": {
+      "properties": {
+        "applicability_context_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "compiled_obligation_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_conflict_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "disposition": {
+          "$ref": "#/definitions/VerificationDisposition"
+        },
+        "effective_constitution_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "follow_up_required": {
+          "type": "boolean"
+        },
+        "policy_decision_id": {
+          "type": "string"
+        },
+        "profile_exception_bundle_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profile_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "refutation_class": {
+          "$ref": "#/definitions/RefutationClassV1"
+        },
+        "refuted": {
+          "type": "boolean"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "violated_constraints": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "witness_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "case_id",
+        "decision_id",
+        "disposition",
+        "follow_up_required",
+        "policy_decision_id",
+        "reason",
+        "refutation_class",
+        "refuted",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "RepairClassV1": {
+      "enum": [
+        "identity_repair",
+        "temporal_repair",
+        "supersession_repair",
+        "rollback_repair",
+        "bundle_import_repair",
+        "scope_widening_repair",
+        "verification_state_repair"
+      ],
+      "type": "string"
+    },
+    "RepairRecordV1": {
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "affected_identities": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "blast_radius": {
+          "type": "string"
+        },
+        "execution_context": {
+          "$ref": "#/definitions/ExecutionContextV1"
+        },
+        "opened_at": {
+          "type": "string"
+        },
+        "repair_class": {
+          "$ref": "#/definitions/RepairClassV1"
+        },
+        "repair_record_id": {
+          "type": "string"
+        },
+        "resolved_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reversibility": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "trigger_artifacts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "unchanged_statement": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "blast_radius",
+        "execution_context",
+        "opened_at",
+        "repair_class",
+        "repair_record_id",
+        "reversibility",
+        "schema_version",
+        "unchanged_statement"
+      ],
+      "title": "RepairRecordV1",
+      "type": "object"
+    },
+    "ReversibilityClass": {
+      "enum": [
+        "reversible_local",
+        "reversible_scoped",
+        "requires_supersession",
+        "requires_authority_workflow"
+      ],
+      "type": "string"
+    },
+    "RollbackPlan": {
+      "properties": {
+        "affected_artifacts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "applicability_context_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "compiled_obligation_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completion_criteria": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "composition_conflict_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "composition_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effective_constitution_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "invalidation_radius": {
+          "$ref": "#/definitions/InvalidationRadiusV1"
+        },
+        "operator_actions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "policy_decision_id": {
+          "type": "string"
+        },
+        "profile_exception_bundle_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profile_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "quarantine_targets": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "recomputation_requirements": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "rollback_plan_id": {
+          "type": "string"
+        },
+        "rollback_scope": {
+          "$ref": "#/definitions/RollbackScopeV1"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "stale_surfaces": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "case_id",
+        "invalidation_radius",
+        "policy_decision_id",
+        "reason",
+        "required",
+        "rollback_plan_id",
+        "rollback_scope",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "RollbackScopeV1": {
+      "enum": [
+        "none",
+        "local_derived_only",
+        "projection_scope",
+        "authority_escalation_required"
+      ],
+      "type": "string"
+    },
+    "SchedulerDecision": {
+      "properties": {
+        "budget_lineage": {
+          "$ref": "#/definitions/BudgetLineage"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "cheapest_adequate": {
+          "type": "boolean"
+        },
+        "degradation_markers": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/DegradationMarker"
+          },
+          "type": "array"
+        },
+        "exactness_budget": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ExactnessBudgetV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "promotion_blocked": {
+          "type": "boolean"
+        },
+        "queue_hops": {
+          "items": {
+            "$ref": "#/definitions/QueueHop"
+          },
+          "type": "array"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "workload_class": {
+          "$ref": "#/definitions/VerificationWorkloadClass"
+        }
+      },
+      "required": [
+        "budget_lineage",
+        "case_id",
+        "cheapest_adequate",
+        "plan_id",
+        "promotion_blocked",
+        "queue_hops",
+        "schema_version",
+        "workload_class"
+      ],
+      "type": "object"
+    },
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    },
+    "StopRuleEvaluation": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "cooldown_applied": {
+          "type": "boolean"
+        },
+        "damping_applied": {
+          "type": "boolean"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "halt_reason": {
+          "type": "string"
+        },
+        "retry_cap_reached": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "advisory_only",
+        "cooldown_applied",
+        "damping_applied",
+        "degraded",
+        "halt_reason",
+        "retry_cap_reached"
+      ],
+      "type": "object"
+    },
+    "TargetNormalization": {
+      "properties": {
+        "bounded_region_digest": {
+          "type": "string"
+        },
+        "budget_class": {
+          "$ref": "#/definitions/BudgetClass"
+        },
+        "canonical_case_class": {
+          "$ref": "#/definitions/CanonicalCaseClass"
+        },
+        "comparability_required": {
+          "type": "boolean"
+        },
+        "missing_falsifier": {
+          "type": "boolean"
+        },
+        "nuisance_sensitive": {
+          "type": "boolean"
+        },
+        "required_artifact_families": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "stable_target_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bounded_region_digest",
+        "budget_class",
+        "canonical_case_class",
+        "comparability_required",
+        "missing_falsifier",
+        "nuisance_sensitive",
+        "stable_target_key"
+      ],
+      "type": "object"
+    },
+    "TerminalDisposition": {
+      "enum": [
+        "eligible_for_promotion",
+        "advisory_only",
+        "degraded_no_promotion",
+        "refuted",
+        "quarantined",
+        "rolled_back",
+        "exhausted",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "VerificationAttempt": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "finished_at": {
+          "type": "string"
+        },
+        "outcome_signature": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/definitions/VerificationAttemptState"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "advisory_only",
+        "attempt_id",
+        "case_id",
+        "degraded",
+        "finished_at",
+        "plan_id",
+        "schema_version",
+        "started_at",
+        "state"
+      ],
+      "type": "object"
+    },
+    "VerificationAttemptState": {
+      "enum": [
+        "scheduled",
+        "running",
+        "succeeded",
+        "failed",
+        "advisory_only",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "VerificationCase": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "class": {
+          "$ref": "#/definitions/VerificationCaseClass"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "lifecycle_state": {
+          "$ref": "#/definitions/VerificationCaseLifecycleState"
+        },
+        "non_authoritative": {
+          "type": "boolean"
+        },
+        "opened_at": {
+          "type": "string"
+        },
+        "region": {
+          "$ref": "#/definitions/CaseRegion"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "terminal_disposition": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TerminalDisposition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        }
+      },
+      "required": [
+        "advisory_only",
+        "attempt_id",
+        "case_id",
+        "class",
+        "degraded",
+        "lifecycle_state",
+        "non_authoritative",
+        "opened_at",
+        "region",
+        "schema_version",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "VerificationCaseClass": {
+      "enum": [
+        "active_syndrome",
+        "fragile_node",
+        "thin_export",
+        "unverified_claim_version",
+        "refutation_gap",
+        "supersession_verification",
+        "comparability_drift",
+        "calibration_caveat",
+        "scope_stale"
+      ],
+      "type": "string"
+    },
+    "VerificationCaseLifecycleState": {
+      "enum": [
+        "open",
+        "planned",
+        "executing",
+        "closed"
+      ],
+      "type": "string"
+    },
+    "VerificationDisposition": {
+      "enum": [
+        "eligible_for_promotion",
+        "advisory_only",
+        "blocked_by_policy",
+        "pending_approval",
+        "refuted",
+        "degraded_no_promotion",
+        "budget_exhausted",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "VerificationPlanArtifact": {
+      "properties": {
+        "admissible_evidence": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "blocked_checks": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "cheap_check_ladder": {
+          "default": [],
+          "items": {
+            "$ref": "#/definitions/CheapCheckStatusV1"
+          },
+          "type": "array"
+        },
+        "cheapest_checks": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "degradation_flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "policy_blockers": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "promotion_blocked_on_missing_proof": {
+          "type": "boolean"
+        },
+        "proof_obligations_remaining": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "proof_profile": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ProofProfileV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "refutation_suggestions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_preconditions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_recipe": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "target_exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        }
+      },
+      "required": [
+        "plan_id",
+        "promotion_blocked_on_missing_proof",
+        "schema_version",
+        "target_exactness"
+      ],
+      "title": "VerificationPlanArtifactV1",
+      "type": "object"
+    },
+    "VerificationWorkloadClass": {
+      "enum": [
+        "orchestration",
+        "oracle",
+        "patch",
+        "advisory"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "actions_executed": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "advisory_only_steps": {
+      "type": "boolean"
+    },
+    "degraded_iterations": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "elapsed_seconds": {
+      "format": "double",
+      "type": "number"
+    },
+    "exports_completed": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "halt_reason": {
+      "$ref": "#/definitions/HaltReason"
+    },
+    "imports_completed": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "iterations": {
+      "items": {
+        "$ref": "#/definitions/LoopIterationReport"
+      },
+      "type": "array"
+    },
+    "iterations_completed": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "receipt": {
+      "$ref": "#/definitions/LoopReceipt"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "targets_investigated": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "actions_executed",
+    "advisory_only_steps",
+    "degraded_iterations",
+    "elapsed_seconds",
+    "exports_completed",
+    "halt_reason",
+    "imports_completed",
+    "iterations",
+    "iterations_completed",
+    "receipt",
+    "schema_version",
+    "targets_investigated"
+  ],
+  "title": "LoopReport",
+  "type": "object"
+}

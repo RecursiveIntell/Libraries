@@ -1,0 +1,8 @@
+{
+  "schema_version": "audit_fixture_case_v1",
+  "case_id": "source_truth_drift",
+  "domain": "audit",
+  "proposed_action": "verify",
+  "requested_effect": "advisory_only",
+  "signals": ["source_truth_drift", "uncertain"]
+}

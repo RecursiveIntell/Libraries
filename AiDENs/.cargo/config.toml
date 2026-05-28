@@ -1,0 +1,5 @@
+[build]
+rustflags = []
+
+[alias]
+xtask = "run -p aidens-cli --"

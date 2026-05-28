@@ -1,0 +1,1 @@
+PASS: no exported local canonical digest law detected.

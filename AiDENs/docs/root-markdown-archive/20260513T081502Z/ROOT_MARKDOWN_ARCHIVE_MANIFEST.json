@@ -1,0 +1,280 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260513T081502Z",
+  "collisions": [],
+  "created_utc": "2026-05-13T08:15:02Z",
+  "current_run": "P31",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/01_P31A_MAIN_CODEX_PROMPT.md",
+      "bytes": 7661,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-13T13:04:20Z",
+      "original_path": "01_P31A_MAIN_CODEX_PROMPT.md",
+      "reason": "*PROMPT*.MD",
+      "sha256": "3f525c3c8b45272ef3be1842611dee7519cc571da60fc461df57e1d6e3dec6d6"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/02_P31A_PHASE_PLAN.md",
+      "bytes": 3889,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-13T13:04:20Z",
+      "original_path": "02_P31A_PHASE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "448b4a2729d4d7b273ebe8da3c9cac4cbca7565dc6039e4d336fa0742a48251b"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/02_SOURCE_BASIS_AND_AUDIT_NORMALIZATION.md",
+      "bytes": 2029,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T13:03:38Z",
+      "original_path": "02_SOURCE_BASIS_AND_AUDIT_NORMALIZATION.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "ca9d759fa86a008cff43c25cb553f2ed8f7fa6478d42d8570a17a62c15bdf82e"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/04_PHASE_PLAN.md",
+      "bytes": 12533,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T13:03:38Z",
+      "original_path": "04_PHASE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "8b7fe640b364cfe71b7826d7f2039e30ab1d89dd1e11850b00839f91de23c77e"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/06_CLAUDE_AUDIT_INTEGRATION.md",
+      "bytes": 4034,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T18:43:54Z",
+      "original_path": "06_CLAUDE_AUDIT_INTEGRATION.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "ab76592b4ef1fa1463fae50b756e50bbf7f3541ecc6c55027f25ff1665754ff9"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/07_P31A_AUDITOR_HANDOFF.md",
+      "bytes": 1360,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-13T13:04:20Z",
+      "original_path": "07_P31A_AUDITOR_HANDOFF.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "dd0eb22f0baf829d5e11801ccb9ca0fc731c7af6554558c5d2e8f0b1572c521a"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/09_FINAL_AUDITOR_HANDOFF_REQUIREMENTS.md",
+      "bytes": 1112,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T13:03:38Z",
+      "original_path": "09_FINAL_AUDITOR_HANDOFF_REQUIREMENTS.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "bef6045d531dfcea99671f67508c4ee930959334c1b00a40ab3b8476a03d14c2"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P27_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 2452,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "P27_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "*PROMPT*.MD",
+      "sha256": "29f4309af92a9b2e4e5457a7b8cecdc2c357352d48afd50fad5e9da4dd0b25b5"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P27_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 846,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "P27_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "efe4ecfefaaa628e5ee16cc130e83a58894a8b85808db3cda1375bc262790832"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P27_MASTER_PACKET.md",
+      "bytes": 2593,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "P27_MASTER_PACKET.md",
+      "reason": "*MASTER*.MD",
+      "sha256": "9694a26338ac8e536b75f470aa886e70eebfa16c641aee30d8f56e429ea729b4"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P27_PHASE_PLAN.md",
+      "bytes": 7454,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "P27_PHASE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "8b7c126dd82cfcb3b1252ff1491b872621a0f059e6d2ccdce55e2cb3cd262cff"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P27_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 776,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-05T03:28:00Z",
+      "original_path": "P27_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "96ea98f4eb34a428724b63eba051e36484f540767bf177fef835d885cdbba580"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P28_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 17655,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "P28_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "5f7dda589567f8c75a2123b52132892779b0ba4508cfc4d805c8894aee2ec49c"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P28_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 5789,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "P28_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "*PROMPT*.MD",
+      "sha256": "4d90dee5250c8a0139615b96752e1134a5e2659edccf62c66808ea42c12f778f"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P28_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 1194,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "P28_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "71b8a62fcc889419737d4312bea9cc21a458cec6489613f84f91bbc223ff1cba"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P28_MASTER_PACKET.md",
+      "bytes": 3384,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "P28_MASTER_PACKET.md",
+      "reason": "*MASTER*.MD",
+      "sha256": "cffb013e346b42fd9979e3ce772331b9eb8784bf3f91e9742c89559b22287033"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P28_PHASE_PLAN.md",
+      "bytes": 9737,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "P28_PHASE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "bff35c14920d7d14344de9bfef226c3908d4a0bf11f79a24d078ca46eb6d652a"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P28_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 1495,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-06T22:45:40Z",
+      "original_path": "P28_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "8a8ef98431265a4571b32005d96a912e8df2c0419106418283e17a6ece838cea"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P29_BUNDLE_INSTALL_PLAN.md",
+      "bytes": 422,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "P29_BUNDLE_INSTALL_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "b7318702a68f4e97fc35bca72a3371918fa2e05b1764f34048fc05f60474b0dc"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P29_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 1790,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "P29_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "fc13c4c4fa82100de49884b41d8e5889d90d907244bd8d6fe26c44f6f68dd1b3"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P29_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 1927,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "P29_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "*PROMPT*.MD",
+      "sha256": "2e3bf43166e01d0367aa6664e063a585bdf0c39287d33da617f410ac56eede18"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 324,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "5d38f3d9c209f836a3af5c03113a7621d2308fc94299b5c91369e515dc2004e0"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P29_MASTER_PACKET.md",
+      "bytes": 2664,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "P29_MASTER_PACKET.md",
+      "reason": "*MASTER*.MD",
+      "sha256": "366e7f8e5231dd72d3901c505c8fb4d47709ef00c0d863f1d8ef23da920b1cb8"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P29_PHASE_PLAN.md",
+      "bytes": 3133,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "P29_PHASE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "b5425a137cce22c820340d45a9663652dc13e9e58505419737070b633f941dc9"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+      "bytes": 1048,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "e85eebce42dcbb4e91490d8b9227d6297a2d79626089b53b592f8a02173c3737"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 932,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "5c89a30b47583c64aa356bafa5ba78e68b4c28252bc83954672f2e51f925561d"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P30_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 4695,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-10T23:59:32Z",
+      "original_path": "P30_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "*PROMPT*.MD",
+      "sha256": "21f0fae852ae35e00d0121dccb4f8c52f5317a04d5b8e75d769916cbac22137f"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P30_PHASE_PLAN.md",
+      "bytes": 3350,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-10T23:59:32Z",
+      "original_path": "P30_PHASE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "7106f68068a8ce1ee785b0b0a90d5c2fe2fc2a2ad8e3521284557520e5ea60bd"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260513T081502Z/files/P30_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 1037,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-10T23:55:56Z",
+      "original_path": "P30_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "db5cfd25cd2025486641a014fd432c42257351632cc0e5e8831b7ab5c69c92e8"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "root_markdown_archive_manifest_version": "RootMarkdownArchiveManifestV1",
+  "summary": {
+    "ambiguous_count": 159,
+    "candidate_count": 29,
+    "inspected_count": 193,
+    "protected_count": 5
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29"
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EscalationClockPolicyV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "escalation_clock_policy_id": {
+      "type": "string"
+    },
+    "severity_matrix_id": {
+      "type": "string"
+    },
+    "response_clock_minutes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "postmortem_clock_hours": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "pause_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exception_path": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "escalation_clock_policy_id",
+    "severity_matrix_id",
+    "response_clock_minutes",
+    "postmortem_clock_hours",
+    "pause_rules",
+    "exception_path"
+  ]
+}

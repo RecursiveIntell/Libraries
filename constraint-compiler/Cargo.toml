@@ -17,3 +17,7 @@ stack-ids = { path = "../stack-ids" }
 schemars = { workspace = true }
 
 [dev-dependencies]
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

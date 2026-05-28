@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ForensicFreezeSurfaceV1": {
+      "enum": [
+        "audit_log",
+        "effect_ledger",
+        "deployment_config"
+      ],
+      "type": "string"
+    },
+    "PolicySeverityV1": {
+      "enum": [
+        "sev1",
+        "sev2",
+        "sev3",
+        "sev4"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "continuity_exception_ttl_minutes": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "continuity_policy_profile_id": {
+      "type": "string"
+    },
+    "require_error_budget_linkage": {
+      "type": "boolean"
+    },
+    "required_forensic_freeze_surfaces": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/ForensicFreezeSurfaceV1"
+      },
+      "type": "array"
+    },
+    "requires_postmortem_for_severity": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/PolicySeverityV1"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "continuity_exception_ttl_minutes",
+    "continuity_policy_profile_id",
+    "require_error_budget_linkage",
+    "schema_version"
+  ],
+  "title": "ContinuityPolicyProfileV1",
+  "type": "object"
+}

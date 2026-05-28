@@ -1,0 +1,8 @@
+{
+  "schema_version": "audit_fixture_case_v1",
+  "case_id": "unknown_owner_mutation",
+  "domain": "audit",
+  "proposed_action": "mutate_artifact",
+  "requested_effect": "apply_patch",
+  "signals": ["unknown_owner_mutation", "high_hazard"]
+}

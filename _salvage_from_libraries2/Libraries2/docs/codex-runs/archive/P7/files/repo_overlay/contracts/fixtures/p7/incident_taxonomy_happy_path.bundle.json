@@ -1,0 +1,66 @@
+{
+  "fixture_name": "incident_taxonomy_happy_path",
+  "wave": "p7",
+  "artifacts": {
+    "IncidentTaxonomyV1": {
+      "schema_version": "IncidentTaxonomyV1",
+      "incident_taxonomy_id": "itx_001",
+      "incident_classes": [
+        {
+          "incident_class": "availability_degradation",
+          "default_severity": "sev2"
+        },
+        {
+          "incident_class": "cross_tenant_exposure",
+          "default_severity": "sev1"
+        }
+      ],
+      "default_routes": [
+        {
+          "incident_class": "availability_degradation",
+          "route": "reliability_primary"
+        },
+        {
+          "incident_class": "cross_tenant_exposure",
+          "route": "security_primary"
+        }
+      ],
+      "required_artifact_families": [
+        "IncidentCaseV1",
+        "ContainmentDecisionV1",
+        "PostmortemBundleV1"
+      ]
+    },
+    "SeverityMatrixV1": {
+      "schema_version": "SeverityMatrixV1",
+      "severity_matrix_id": "sm_001",
+      "severity_rules": [
+        {
+          "condition": "customer_data_exposure",
+          "severity": "sev1"
+        },
+        {
+          "condition": "regional_latency_above_slo",
+          "severity": "sev2"
+        }
+      ],
+      "customer_impact_rubric": "breadth_and_duration",
+      "internal_impact_rubric": "operational_blast_radius",
+      "override_rule": "commander_may_raise_but_not_lower_without_review"
+    },
+    "PagerRouteProfileV1": {
+      "schema_version": "PagerRouteProfileV1",
+      "pager_route_profile_id": "prp_001",
+      "rotation_refs": [
+        "rotation:reliability-primary",
+        "rotation:security-secondary"
+      ],
+      "handoff_rules": [
+        "handoff_requires_ack",
+        "sev1_requires_live_briefing"
+      ],
+      "ack_timeout_minutes": 10,
+      "max_levels": 4
+    }
+  }
+}

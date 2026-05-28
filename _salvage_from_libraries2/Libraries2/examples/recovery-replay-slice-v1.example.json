@@ -1,0 +1,13 @@
+{
+  "schema_version": "RecoveryReplaySliceV1",
+  "recovery_replay_slice_id": "rrs_001",
+  "incident_case_id": "inc_001",
+  "artifact_refs": [
+    "fxr_001",
+    "rrd_001",
+    "frz_001"
+  ],
+  "time_window": "2026-03-15T12:30:00Z/2026-03-15T13:00:00Z",
+  "replay_state": "complete",
+  "gaps": []
+}

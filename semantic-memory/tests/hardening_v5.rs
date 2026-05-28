@@ -1,4 +1,5 @@
 //! Tests for the v0.5.0 hardening pass:
+#![allow(clippy::expect_used)]
 //! - First-class episode_id identity with multi-episode support
 //! - Normalized causal edges via episode_causes table
 //! - Graph view uses episode_causes (no full-table JSON scan)

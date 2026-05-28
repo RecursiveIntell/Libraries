@@ -1,0 +1,56 @@
+{
+  "schema_version": "control_receipt_v1",
+  "receipt_id": "control-receipt-v25",
+  "action_kind": "tool_execution",
+  "case_id": "verification-case-v25",
+  "plan_id": "check-plan-v25",
+  "attempt_id": "attempt-v25",
+  "trial_id": "trial-v25",
+  "actor": "verification-orchestrator",
+  "planner_stage": "preflight",
+  "started_at": "2026-03-17T00:00:00Z",
+  "finished_at": "2026-03-17T00:00:01Z",
+  "trace_ctx": {
+    "trace_id": "trace-v25",
+    "parent_id": "parent-v25"
+  },
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "required_obligation_refs": [
+    "obligation:review:required"
+  ],
+  "blocking_obligation_refs": [
+    "obligation:blocking:policy"
+  ],
+  "monitoring_obligation_refs": [
+    "obligation:monitoring:continuous"
+  ],
+  "citation_status": "complete",
+  "obligation_refs_status": "complete",
+  "non_authoritative": true,
+  "advisory_only": false,
+  "degraded": false,
+  "promotable": true,
+  "source_receipt_kind": "tool",
+  "source_receipt_id": "tool-receipt-v25",
+  "deadline": "2026-03-17T00:00:15Z",
+  "workload_class": "verification",
+  "retry_owner": "forge_orchestration",
+  "budget_context": {
+    "budget_kind": "time",
+    "max_steps": 2,
+    "time_budget_ms": 120000,
+    "cost_budget_units": 640
+  },
+  "parent_receipt_id": "parent-receipt-v25",
+  "family_receipt_id": "family-receipt-v25",
+  "replay_parent_receipt_id": "replay-parent-receipt-v25",
+  "details": {
+    "tool": "v25-check",
+    "outcome": "ok"
+  }
+}

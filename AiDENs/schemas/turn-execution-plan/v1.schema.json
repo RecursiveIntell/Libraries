@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ProviderRouteKindV1": {
+      "enum": [
+        "mock",
+        "native-open-ai-responses",
+        "native-open-ai-chat",
+        "native-anthropic",
+        "native-ollama",
+        "ollama-chat",
+        "open-ai-compatible",
+        "parser-fallback",
+        "disabled",
+        "unavailable",
+        "degraded"
+      ],
+      "type": "string"
+    },
+    "ProviderRouteReportV1": {
+      "properties": {
+        "degraded": {
+          "default": false,
+          "type": "boolean"
+        },
+        "degraded_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "native_tool_loop": {
+          "type": "boolean"
+        },
+        "provider_kind": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "route": {
+          "$ref": "#/definitions/ProviderRouteKindV1"
+        },
+        "route_label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "native_tool_loop",
+        "provider_kind",
+        "route",
+        "route_label"
+      ],
+      "type": "object"
+    },
+    "TurnModeV1": {
+      "enum": [
+        "no-tools",
+        "native-tool-loop",
+        "parser-fallback",
+        "provider-unavailable",
+        "budget-exhausted"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "exposed_tool_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "max_retries": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "max_tool_calls": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "max_turn_millis": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "mode": {
+      "$ref": "#/definitions/TurnModeV1"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "provider_route": {
+      "$ref": "#/definitions/ProviderRouteReportV1"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tool_exposure_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "created_at",
+    "exposed_tool_ids",
+    "max_retries",
+    "max_tool_calls",
+    "max_turn_millis",
+    "mode",
+    "plan_id",
+    "provider_route",
+    "tool_exposure_id"
+  ],
+  "title": "TurnExecutionPlanV1",
+  "type": "object"
+}

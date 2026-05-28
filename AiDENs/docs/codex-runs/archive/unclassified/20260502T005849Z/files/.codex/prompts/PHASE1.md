@@ -1,0 +1,1 @@
+Implement Phase 1 only: provider-kit, tool-kit, security-kit, permit-kit, arbiter-kit, budget-kit, runner. Inspect Recall provider/tool/approval/arbiter files. Preserve concepts; do not port RecallSession wholesale. Add footgun tests.

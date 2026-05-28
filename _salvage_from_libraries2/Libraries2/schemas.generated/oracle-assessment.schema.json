@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "OracleMode": {
+      "enum": [
+        "exact_bounded",
+        "conservative_fallback"
+      ],
+      "type": "string"
+    },
+    "OracleSliceSelectionPolicy": {
+      "properties": {
+        "max_exact_nodes": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "policy_name": {
+          "type": "string"
+        },
+        "prefers_bounded_regions": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "max_exact_nodes",
+        "policy_name",
+        "prefers_bounded_regions"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "mode": {
+      "$ref": "#/definitions/OracleMode"
+    },
+    "satisfied_constraint_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "selected_region_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "selection_policy": {
+      "$ref": "#/definitions/OracleSliceSelectionPolicy"
+    },
+    "slice_id": {
+      "type": "string"
+    },
+    "supported": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "mode",
+    "satisfied_constraint_count",
+    "selected_region_ids",
+    "selection_policy",
+    "slice_id",
+    "supported"
+  ],
+  "title": "OracleAssessment",
+  "type": "object"
+}

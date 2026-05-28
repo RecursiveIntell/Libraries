@@ -1,0 +1,4 @@
+# Codex phase safety rules
+- Do not perform manual phase injections.
+- Keep `.codex/` required files present and deterministic.
+- Validate with automated tooling before claiming completion.

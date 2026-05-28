@@ -1,0 +1,72 @@
+{
+  "report_id": "release-readiness:p14-fixture",
+  "kind": "release-readiness-report",
+  "ready": true,
+  "surfaces": [
+    {
+      "surface_id": "cli:provider-check",
+      "state": "supported",
+      "reason": "provider readiness is executable-truth-based",
+      "command": "aidens provider-check --config examples/aidens.mock.toml"
+    },
+    {
+      "surface_id": "crate:aidens-kernel-kit",
+      "state": "deferred",
+      "reason": "P15 horizon surface; not documented as available"
+    }
+  ],
+  "example_manifest": {
+    "manifest_id": "example-app-manifest:p14-fixture",
+    "kind": "example-app-manifest",
+    "examples": [
+      {
+        "example_id": "example-app:chat",
+        "path": "examples/aidens.chat-only.toml",
+        "profile_id": "chat-only",
+        "provider_kind": "mock",
+        "memory_mode": "disabled",
+        "status": "supported",
+        "commands": [
+          "aidens provider-check --config examples/aidens.chat-only.toml"
+        ],
+        "reason_codes": [
+          "example-profile-declared"
+        ]
+      }
+    ],
+    "profiles_covered": [
+      "chat-only"
+    ],
+    "unsupported_advanced_features": [
+      "aidens-kernel-kit"
+    ],
+    "reason_codes": [
+      "examples-declare-supported-and-deferred-surfaces"
+    ],
+    "generated_at": "2026-04-27T00:00:00Z"
+  },
+  "install_smoke": {
+    "receipt_id": "install-smoke:p14-fixture",
+    "kind": "install-smoke-report",
+    "passed": true,
+    "steps": [
+      {
+        "step": "verify",
+        "command": "bash scripts/verify.sh",
+        "passed": true,
+        "output_digest": "blake3:0e55f9a66448e6a29a691e9a6dddf09364a73d865a52d4ffbd3ba9cd2f01f99b",
+        "reason_codes": [
+          "install-smoke-step-passed"
+        ]
+      }
+    ],
+    "reason_codes": [
+      "install-smoke-passed"
+    ],
+    "recorded_at": "2026-04-27T00:00:00Z"
+  },
+  "reason_codes": [
+    "release-readiness-passed"
+  ],
+  "generated_at": "2026-04-27T00:00:00Z"
+}

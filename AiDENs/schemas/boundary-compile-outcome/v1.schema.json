@@ -1,0 +1,366 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "CanonicalBackpointerV1": {
+      "description": "AiDENs-local wrapper pointer to a canonical owner artifact or owner type.\n\nThis does not make AiDENs authoritative for the pointed-to concept; it records where a display/report DTO must be reconciled for canonical truth.",
+      "properties": {
+        "artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "external_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_crate": {
+          "type": "string"
+        },
+        "owner_type": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_crate",
+        "owner_type",
+        "role"
+      ],
+      "type": "object"
+    },
+    "DisplayDigestV1": {
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "canonicalization": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "non_authoritative": {
+          "default": true,
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "canonicalization",
+        "digest"
+      ],
+      "type": "object"
+    },
+    "DuplicateKeyFindingV1": {
+      "properties": {
+        "duplicate_offset": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "first_offset": {
+          "format": "uint",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "finding_id",
+        "key",
+        "path"
+      ],
+      "type": "object"
+    },
+    "JsonBoundaryRepairDisplayReportV1": {
+      "properties": {
+        "after_display_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DisplayDigestV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "after_raw_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "before_display_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DisplayDigestV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_raw_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "canonical_backpointers": {
+          "items": {
+            "$ref": "#/definitions/CanonicalBackpointerV1"
+          },
+          "type": "array"
+        },
+        "canonical_repair_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "changed": {
+          "type": "boolean"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "hard_failed": {
+          "default": false,
+          "type": "boolean"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "repair_kind": {
+          "type": "string"
+        },
+        "treatment_critical_fields": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "treatment_integrity_warnings": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "changed",
+        "degraded",
+        "kind",
+        "receipt_id",
+        "repair_kind"
+      ],
+      "type": "object"
+    },
+    "SchemaValidationReportV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "canonical_backpointers": {
+          "items": {
+            "$ref": "#/definitions/CanonicalBackpointerV1"
+          },
+          "type": "array"
+        },
+        "canonical_control_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "checked_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_digest": {
+          "$ref": "#/definitions/DisplayDigestV1"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DisplayDigestV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tool_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "checked_at",
+        "input_digest",
+        "kind",
+        "receipt_id",
+        "valid"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "accepted": {
+      "type": "boolean"
+    },
+    "compiled_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "display_digest": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DisplayDigestV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "duplicate_key_findings": {
+      "items": {
+        "$ref": "#/definitions/DuplicateKeyFindingV1"
+      },
+      "type": "array"
+    },
+    "outcome_id": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "repair_receipt": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/JsonBoundaryRepairDisplayReportV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "schema_validation": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/SchemaValidationReportV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "value": true
+  },
+  "required": [
+    "accepted",
+    "compiled_at",
+    "degraded",
+    "outcome_id",
+    "request_id"
+  ],
+  "title": "BoundaryCompileOutcomeV1",
+  "type": "object"
+}

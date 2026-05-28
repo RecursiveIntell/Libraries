@@ -1,0 +1,17 @@
+{
+  "profile": "p5",
+  "title": "Sector Hazard Library, Monitor Catalog, and Mitigation Playbook",
+  "primary_owner": "assurance-runtime",
+  "schemas": [
+    "hazard-library-v1.schema.json",
+    "hazard-scenario-v1.schema.json",
+    "monitor-catalog-v1.schema.json",
+    "mitigation-playbook-v1.schema.json"
+  ],
+  "examples": [
+    "hazard-library-v1.example.json",
+    "hazard-scenario-v1.example.json",
+    "monitor-catalog-v1.example.json",
+    "mitigation-playbook-v1.example.json"
+  ]
+}

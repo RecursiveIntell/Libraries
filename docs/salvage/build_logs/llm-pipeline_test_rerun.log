@@ -1,0 +1,53 @@
+   Compiling llm-pipeline v0.2.0 (/home/sikmindz/Coding/Libraries/llm-pipeline)
+   Compiling forge-engine v0.2.0 (/home/sikmindz/Coding/Libraries/living-memory/living-memory)
+error[E0061]: this method takes 5 arguments but 4 arguments were supplied
+   --> src/llm_call_tests.rs:204:28
+    |
+204 |           let request = call.build_request(
+    |  ____________________________^^^^^^^^^^^^^-
+205 | |             "Tell me about Rust",
+206 | |             Some("You are helpful"),
+207 | |             Vec::new(),
+208 | |             false,
+209 | |         );
+    | |_________- argument #5 of type `std::time::Duration` is missing
+    |
+note: method defined here
+   --> src/llm_call.rs:275:8
+    |
+275 |     fn build_request(
+    |        ^^^^^^^^^^^^^
+...
+281 |         effective_timeout: Duration,
+    |         ---------------------------
+help: provide the argument
+    |
+204 |         let request = call.build_request(
+...
+208 |             false,
+209 ~             /* std::time::Duration */,
+210 ~         );
+    |
+
+error[E0061]: this method takes 5 arguments but 4 arguments were supplied
+   --> src/llm_call_tests.rs:231:28
+    |
+231 |         let request = call.build_request("Follow up", None, messages, false);
+    |                            ^^^^^^^^^^^^^------------------------------------ argument #5 of type `std::time::Duration` is missing
+    |
+note: method defined here
+   --> src/llm_call.rs:275:8
+    |
+275 |     fn build_request(
+    |        ^^^^^^^^^^^^^
+...
+281 |         effective_timeout: Duration,
+    |         ---------------------------
+help: provide the argument
+    |
+231 |         let request = call.build_request("Follow up", None, messages, false, /* std::time::Duration */);
+    |                                                                            +++++++++++++++++++++++++++
+
+For more information about this error, try `rustc --explain E0061`.
+error: could not compile `llm-pipeline` (lib test) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

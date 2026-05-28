@@ -1,0 +1,100 @@
+{
+  "schema_version": "EffectiveConstitutionV1",
+  "effective_constitution_id": "effective-constitution-001",
+  "applicability_context_ref": "applicability-context-001",
+  "profile_set_ref": "profile-set-001",
+  "composition_rule_set_ref": "composition-rule-set-001",
+  "base_law_refs": [
+    "v25_effective_constitution"
+  ],
+  "doctrine_refs": [
+    "profile-runtime/reference-evaluator/v1"
+  ],
+  "admitted_profile_refs": [
+    "aep_001",
+    "am_001",
+    "apm_001",
+    "cbt_001",
+    "ccc_001",
+    "continuity-policy-profile-001",
+    "delegation-policy-profile-001",
+    "dm_001",
+    "ecp_001",
+    "ecp_007",
+    "effect-policy-profile-001",
+    "hl_001",
+    "hs_001",
+    "itx_001",
+    "mc_001",
+    "mp_001",
+    "pager-route-profile-007",
+    "prp_001",
+    "rc_001",
+    "rcm_001",
+    "release-policy-profile-001",
+    "rgp_001",
+    "rpp_001",
+    "rrs_001",
+    "rs_001",
+    "sm_001",
+    "tbp_001",
+    "vca_001",
+    "vet_001",
+    "vrh_001",
+    "vtr_001"
+  ],
+  "admitted_exception_refs": [
+    "profile-exception-bundle-001"
+  ],
+  "current_mode_classification": "normal",
+  "hard_block_summary": [],
+  "active_warning_summary": [
+    "vendor_translation_lossy:field/customer_email"
+  ],
+  "approval_requirements": [
+    "prod_release:release-manager|service-owner",
+    "locality-review-board"
+  ],
+  "disclosure_obligations": [
+    "audit_redaction_rule_set:rrs_001",
+    "cross_boundary_disclosure_class:regulated_audit"
+  ],
+  "residency_obligations": [
+    "us-central",
+    "eu-west"
+  ],
+  "tenancy_obligations": [
+    "dedicated_keys",
+    "strict_isolation"
+  ],
+  "assurance_obligations": [
+    "hazard_summary",
+    "control_evidence",
+    "evidence_class:runbook"
+  ],
+  "monitoring_obligations": [
+    "error_budget",
+    "latency_p95",
+    "cross_region_replay_monitor"
+  ],
+  "continuity_obligations": [
+    "exception_ttl:60",
+    "forensic_freeze_required"
+  ],
+  "effect_obligations": [
+    "shadow",
+    "dry_run",
+    "live"
+  ],
+  "delegation_obligations": [
+    "typed_authority_chain",
+    "delegation_depth:2"
+  ],
+  "replay_obligations": [
+    "compaction_receipt_required",
+    "receipt_linkage_required"
+  ],
+  "valid_as_of": "2026-03-16T14:00:00Z",
+  "recorded_as_of": "2026-03-16T14:00:05Z",
+  "explanation_summary": "composed prod/payments constitution with one active locality exception and no unresolved conflicts"
+}

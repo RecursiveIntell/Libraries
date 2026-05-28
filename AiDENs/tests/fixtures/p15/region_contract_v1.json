@@ -1,0 +1,23 @@
+{
+  "contract_id": "region-contract:fixture",
+  "kind": "region-contract",
+  "graph_id": "compiled-region-graph:fixture",
+  "graph_kind": "inference",
+  "region_id": "region:fixture",
+  "node_ids": [
+    "region-node:claim-a",
+    "region-node:claim-b"
+  ],
+  "boundary_node_ids": [
+    "region-node:claim-a"
+  ],
+  "factor_ids": [
+    "region-factor:consistency"
+  ],
+  "max_nodes": 4,
+  "local_repair_allowed": true,
+  "reason_codes": [
+    "region-boundary-contract"
+  ],
+  "created_at": "2026-04-27T00:00:00Z"
+}

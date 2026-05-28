@@ -1,0 +1,13 @@
+error: failed to get `llm-output-parser` as a dependency of package `ollama-vision v0.2.0 (/home/sikmindz/Coding/Libraries/ollama-vision)`
+
+Caused by:
+  failed to load source for dependency `llm-output-parser`
+
+Caused by:
+  Unable to update /home/sikmindz/Coding/Libraries/.parser-lib
+
+Caused by:
+  failed to read `/home/sikmindz/Coding/Libraries/.parser-lib/Cargo.toml`
+
+Caused by:
+  No such file or directory (os error 2)

@@ -1,0 +1,101 @@
+   Compiling attestation-exchange v0.1.0 (/home/sikmindz/Coding/Libraries/attestation-exchange)
+   Compiling aidens-contracts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts)
+   Compiling aidens-boundary-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit)
+   Compiling aidens-permit-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit)
+   Compiling aidens-provider-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit)
+   Compiling aidens-config v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config)
+   Compiling aidens-schedule-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-schedule-kit)
+   Compiling aidens-queue-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-queue-kit)
+   Compiling aidens-wake-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-wake-kit)
+   Compiling aidens-capability-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-capability-kit)
+   Compiling aidens-profile-coding v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-coding)
+   Compiling aidens-delegation-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit)
+   Compiling aidens-tool-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit)
+   Compiling aidens-daemon-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-daemon-kit)
+   Compiling aidens-runner v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner)
+   Compiling aidens-app-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit)
+   Compiling aidens-cli v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-cli)
+   Compiling aidens v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens)
+   Compiling aidens-testkit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-testkit)
+   Compiling aidens-receipts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-receipts)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.64s
+     Running unittests src/lib.rs (target/debug/deps/aidens-40ec27dc0c4aae7e)
+     Running unittests src/lib.rs (target/debug/deps/aidens_app_kit-e504f54c74990586)
+     Running tests/next_app_plan_facade.rs (target/debug/deps/next_app_plan_facade-06e862be471b92af)
+     Running unittests src/lib.rs (target/debug/deps/aidens_arbiter_kit-e5ba2a7038da8fec)
+     Running unittests src/lib.rs (target/debug/deps/aidens_boundary_kit-fd12cc156b878333)
+     Running unittests src/lib.rs (target/debug/deps/aidens_budget_kit-6565930870b07946)
+     Running unittests src/lib.rs (target/debug/deps/aidens_capability_kit-449506cd7553e4ae)
+     Running unittests src/lib.rs (target/debug/deps/aidens_cli-bcdbda7f5d8162d8)
+     Running unittests src/main.rs (target/debug/deps/aidens_cli-9639802cec630924)
+     Running tests/next_cli_plan_doctor.rs (target/debug/deps/next_cli_plan_doctor-c24f8b56623def5c)
+     Running unittests src/lib.rs (target/debug/deps/aidens_config-bf659fb7c6054c21)
+     Running unittests src/lib.rs (target/debug/deps/aidens_contracts-84cb779435b96b8c)
+     Running unittests src/lib.rs (target/debug/deps/aidens_daemon_kit-c63ab84ef46c4a1d)
+     Running unittests src/lib.rs (target/debug/deps/aidens_delegation_kit-610a597b674bddfb)
+     Running unittests src/lib.rs (target/debug/deps/aidens_governance_kit-c4fc1cbd84743d22)
+     Running unittests src/lib.rs (target/debug/deps/aidens_kernel_kit-63b66b9533715197)
+     Running unittests src/lib.rs (target/debug/deps/aidens_memory_kit-d6461bcd3394cb29)
+     Running unittests src/lib.rs (target/debug/deps/aidens_permit_kit-24b927ba77922c31)
+     Running unittests src/lib.rs (target/debug/deps/aidens_plan_kit-e1b8bbe23b99be0c)
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_coding-27b20635ef3a324f)
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_daemon-292b354efd7358e9)
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_desktop-9c85465a96b65604)
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_memory-514b8d6b4cd5c913)
+     Running unittests src/lib.rs (target/debug/deps/aidens_profile_research-67b0b8ae11546983)
+     Running unittests src/lib.rs (target/debug/deps/aidens_provider_kit-19f1d871b673df3c)
+     Running unittests src/lib.rs (target/debug/deps/aidens_queue_kit-305118ad14c659d6)
+     Running unittests src/lib.rs (target/debug/deps/aidens_receipts-2e16bd6c679049c5)
+     Running unittests src/lib.rs (target/debug/deps/aidens_repair_kit-41365e21111809df)
+     Running unittests src/lib.rs (target/debug/deps/aidens_runner-3bd50b37ed316795)
+     Running tests/next_runner_provider_contract.rs (target/debug/deps/next_runner_provider_contract-65e67fe34bbf0353)
+     Running tests/next_turn_executor.rs (target/debug/deps/next_turn_executor-baf55a735a6df4a7)
+     Running unittests src/lib.rs (target/debug/deps/aidens_schedule_kit-044d62c3a5148f95)
+     Running unittests src/lib.rs (target/debug/deps/aidens_security_kit-9af5217840f9861c)
+     Running unittests src/lib.rs (target/debug/deps/aidens_testkit-be11e4442ff3abfb)
+     Running tests/next_no_fake_completion.rs (target/debug/deps/next_no_fake_completion-07d9636ee893de87)
+     Running tests/phase_00_source_truth.rs (target/debug/deps/phase_00_source_truth-1bb5ddbc70462614)
+     Running tests/phase_01_contract_collapse.rs (target/debug/deps/phase_01_contract_collapse-44c908c01360d5d7)
+     Running tests/phase_02_adapter_delegation.rs (target/debug/deps/phase_02_adapter_delegation-8707466eaff5e76c)
+     Running tests/phase_03_golden_vertical_slice.rs (target/debug/deps/phase_03_golden_vertical_slice-c0361ccdb34b9a99)
+     Running tests/phase_04_failure_honesty.rs (target/debug/deps/phase_04_failure_honesty-c138ba374636bc28)
+     Running tests/phase_05_memory_runtime_hardening.rs (target/debug/deps/phase_05_memory_runtime_hardening-97a5d67027654102)
+     Running tests/phase_06_governance_promotion.rs (target/debug/deps/phase_06_governance_promotion-456c82801c6e1d29)
+     Running tests/phase_07_daemon_queue_schedule_wake.rs (target/debug/deps/phase_07_daemon_queue_schedule_wake-52c149bea46fef85)
+     Running tests/phase_08_kernel_oracle_integration.rs (target/debug/deps/phase_08_kernel_oracle_integration-589da49d12622fe3)
+     Running tests/phase_09_release_audit.rs (target/debug/deps/phase_09_release_audit-80dcaa24bb065192)
+     Running tests/stack_import_smoke.rs (target/debug/deps/stack_import_smoke-c26078099e17980b)
+     Running unittests src/lib.rs (target/debug/deps/aidens_tool_kit-e71ab8971704433b)
+     Running tests/next_repo_read_dispatch.rs (target/debug/deps/next_repo_read_dispatch-07ad3f4ae1a4de47)
+     Running unittests src/lib.rs (target/debug/deps/aidens_wake_kit-fecf6e0697f51074)
+   Doc-tests aidens
+   Doc-tests aidens_app_kit
+   Doc-tests aidens_arbiter_kit
+   Doc-tests aidens_boundary_kit
+   Doc-tests aidens_budget_kit
+   Doc-tests aidens_capability_kit
+   Doc-tests aidens_cli
+   Doc-tests aidens_config
+   Doc-tests aidens_contracts
+   Doc-tests aidens_daemon_kit
+   Doc-tests aidens_delegation_kit
+   Doc-tests aidens_governance_kit
+   Doc-tests aidens_kernel_kit
+   Doc-tests aidens_memory_kit
+   Doc-tests aidens_permit_kit
+   Doc-tests aidens_plan_kit
+   Doc-tests aidens_profile_coding
+   Doc-tests aidens_profile_daemon
+   Doc-tests aidens_profile_desktop
+   Doc-tests aidens_profile_memory
+   Doc-tests aidens_profile_research
+   Doc-tests aidens_provider_kit
+   Doc-tests aidens_queue_kit
+   Doc-tests aidens_receipts
+   Doc-tests aidens_repair_kit
+   Doc-tests aidens_runner
+   Doc-tests aidens_schedule_kit
+   Doc-tests aidens_security_kit
+   Doc-tests aidens_testkit
+   Doc-tests aidens_tool_kit
+   Doc-tests aidens_wake_kit

@@ -1,0 +1,28 @@
+{
+  "receipt_id": "json-repair:fixture",
+  "kind": "boundary-repair",
+  "changed": true,
+  "repair_kind": "json-substring-extracted",
+  "degraded": true,
+  "before_raw_digest": "blake3:4171ebd6c211b30504b78c9057f743436a37dac97b5aac1c7c59af0e62602012",
+  "after_raw_digest": "blake3:e74601c36489aa2eb1837c89afe84dd892caaed36b33a9dfd63ec8445d4b9713",
+  "after_display_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:e74601c36489aa2eb1837c89afe84dd892caaed36b33a9dfd63ec8445d4b9713"
+  },
+  "treatment_critical_fields": [
+    "treatment"
+  ],
+  "treatment_integrity_warnings": [
+    "treatment-integrity-unverifiable:json-substring-extracted:treatment"
+  ],
+  "hard_failed": false,
+  "warnings": [
+    "extracted first JSON object or array before boundary parse"
+  ],
+  "reason_codes": [
+    "json-repair:json-substring-extracted",
+    "treatment-integrity-unverifiable"
+  ]
+}

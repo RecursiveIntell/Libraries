@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-14T02:27:39Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260514T022739Z/files/scripts/run_p31_completion_checks.sh",
+      "bytes": 1676,
+      "mtime_utc": "2026-05-14T02:27:34Z",
+      "original_path": "scripts/run_p31_completion_checks.sh",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "8ec6564597fe9727b2a81ccd4d3d467d6320927bdb2e33fc841dbe575e29328a"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+  "run_id": "P31",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "zip_source_certifier.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

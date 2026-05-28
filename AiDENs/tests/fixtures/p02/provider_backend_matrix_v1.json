@@ -1,0 +1,99 @@
+{
+  "matrix_id": "provider-backend-matrix:fixture",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "entries": [
+    {
+      "provider_kind": "disabled",
+      "status": "disabled",
+      "route_label": "disabled",
+      "api_key_required": false,
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "reason_codes": [
+        "provider-disabled"
+      ]
+    },
+    {
+      "provider_kind": "mock",
+      "status": "executable",
+      "route_label": "mock",
+      "api_key_required": false,
+      "chat_completion_executable": true,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": true,
+      "reason_codes": [
+        "mock-provider-executable"
+      ]
+    },
+    {
+      "provider_kind": "ollama",
+      "status": "executable",
+      "route_label": "ollama-chat",
+      "api_key_required": false,
+      "chat_completion_executable": true,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "reason_codes": [
+        "ollama-chat-boundary-implemented",
+        "ollama-local-service-required",
+        "ollama-native-tool-loop-unimplemented"
+      ]
+    },
+    {
+      "provider_kind": "openai-compatible",
+      "status": "unsupported",
+      "route_label": "unavailable",
+      "api_key_required": true,
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ]
+    },
+    {
+      "provider_kind": "openai",
+      "status": "unsupported",
+      "route_label": "unavailable",
+      "api_key_required": true,
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ]
+    },
+    {
+      "provider_kind": "openrouter",
+      "status": "unsupported",
+      "route_label": "unavailable",
+      "api_key_required": true,
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ]
+    },
+    {
+      "provider_kind": "anthropic",
+      "status": "unsupported",
+      "route_label": "unavailable",
+      "api_key_required": true,
+      "chat_completion_executable": false,
+      "native_tool_loop_executable": false,
+      "streaming_executable": false,
+      "structured_output_executable": false,
+      "reason_codes": [
+        "provider-boundary-unavailable"
+      ]
+    }
+  ]
+}

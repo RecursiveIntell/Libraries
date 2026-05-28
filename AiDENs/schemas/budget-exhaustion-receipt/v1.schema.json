@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "attempt_id": {
+      "type": "string"
+    },
+    "attempted_tool_calls": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "elapsed_millis": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "exhausted_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "max_retries": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "max_tool_calls": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "max_turn_millis": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "retries": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "run_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "attempt_id",
+    "attempted_tool_calls",
+    "elapsed_millis",
+    "exhausted_at",
+    "kind",
+    "max_retries",
+    "max_tool_calls",
+    "max_turn_millis",
+    "receipt_id",
+    "retries",
+    "run_id"
+  ],
+  "title": "BudgetExhaustionReportV1",
+  "type": "object"
+}

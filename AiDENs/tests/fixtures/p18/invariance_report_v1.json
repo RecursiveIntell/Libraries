@@ -1,0 +1,26 @@
+{
+  "report_id": "invariance-report:linear-response-v1",
+  "kind": "invariance-report",
+  "mechanism_id": "mechanism-report:linear-response-v1",
+  "theory_id": "theory-version:linear-response-v1",
+  "fit_run_receipt_id": "fit-run-report:linear-response-v1",
+  "environments": ["lab"],
+  "perturbations": ["x+1"],
+  "checks": [
+    {
+      "check_label": "intervention-shift",
+      "environment": "lab",
+      "perturbation": "x+1",
+      "metric_delta": 0.0,
+      "verdict": "invariant"
+    }
+  ],
+  "verdict": "invariant",
+  "observational_equivalence_only": true,
+  "causal_identification_claimed": false,
+  "reason_codes": [
+    "invariance-tested-as-refuter-evidence",
+    "observational-equivalence-is-not-causal-identification"
+  ],
+  "recorded_at": "2026-04-27T00:02:00Z"
+}

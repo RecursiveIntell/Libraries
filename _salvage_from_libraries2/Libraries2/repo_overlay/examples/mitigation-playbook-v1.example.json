@@ -1,0 +1,26 @@
+{
+  "schema_version": "MitigationPlaybookV1",
+  "mitigation_playbook_id": "mp_001",
+  "hazard_refs": [
+    "hs_001"
+  ],
+  "containment_steps": [
+    "freeze_release",
+    "revoke_vendor_export",
+    "enable_safe_mode"
+  ],
+  "recovery_steps": [
+    "verify monitors",
+    "restore traffic in canary",
+    "close incident"
+  ],
+  "approval_refs": [
+    "approval:incident-commander",
+    "approval:ops-manager"
+  ],
+  "success_criteria": [
+    "error_budget_stable",
+    "no_cross_tenant_events",
+    "compensation_backlog_cleared"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "approved_by": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "locality_exception_id": {
+      "type": "string"
+    },
+    "post_hoc_review_required": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "residency_policy_profile_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "expires_at",
+    "locality_exception_id",
+    "post_hoc_review_required",
+    "reason",
+    "residency_policy_profile_id",
+    "schema_version",
+    "scope"
+  ],
+  "title": "LocalityExceptionV1",
+  "type": "object"
+}

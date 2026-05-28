@@ -18,3 +18,7 @@ These crates provide focused building blocks used mainly by `forge-engine`:
 ## Status
 
 These are package-scoped support crates, not part of the root Tier 0 workspace. They are still active public API surfaces inside the repo, so their crate roots should explain purpose and authority even when they are not yet promoted as standalone top-tier packages.
+
+## Quality Policy
+
+Primitives are excluded from the default workspace and have different quality policies. They may contain `unwrap()` and `unsafe` code. They do not represent the workspace's quality standard.

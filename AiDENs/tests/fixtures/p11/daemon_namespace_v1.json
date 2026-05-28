@@ -1,0 +1,11 @@
+{
+  "namespace_id": "daemon-namespace:fixture",
+  "kind": "daemon-namespace",
+  "name": "p11-fixture",
+  "queue_root": "target/p11-fixture",
+  "daemon_owner": "daemon-a",
+  "safe_mode_enabled": false,
+  "max_lease_seconds": 300,
+  "idempotency_scope": "namespace-id-plus-idempotency-key-plus-payload-digest",
+  "created_at": "2026-04-27T00:00:00Z"
+}

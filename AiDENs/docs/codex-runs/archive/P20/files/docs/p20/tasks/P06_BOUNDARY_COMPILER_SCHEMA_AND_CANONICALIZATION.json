@@ -1,0 +1,31 @@
+{
+  "pass_id": "P06",
+  "title": "Boundary compiler, schema validation, repair provenance, and canonical digests",
+  "phase": "Contracted core",
+  "prompt_file": "prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md",
+  "pass_doc": "passes/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.md",
+  "crates": [
+    "aidens-boundary-kit",
+    "aidens-contracts",
+    "aidens-cli",
+    "aidens-testkit"
+  ],
+  "artifacts": [
+    "BoundaryCompileRequestV1",
+    "BoundaryCompileOutcomeV1",
+    "SchemaValidationReceiptV1",
+    "JsonRepairReceiptV2",
+    "CanonicalDigestV1",
+    "DuplicateKeyFindingV1"
+  ],
+  "acceptance": [
+    "Duplicate-key fixture is rejected with DuplicateKeyFindingV1.",
+    "Schema-invalid tool input is blocked before invocation and emits SchemaValidationReceiptV1.",
+    "Canonical digest is cryptographic, deterministic, and stable across whitespace/key-order changes.",
+    "Repair cannot change treatment-critical fields without a treatment-integrity warning or hard fail."
+  ],
+  "forbidden": [
+    "Do not use serde_json parse alone as the whole boundary law.",
+    "Do not silently extract substrings from model output without degraded repair receipt."
+  ]
+}

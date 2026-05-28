@@ -1,0 +1,59 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-03T22:58:12Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225812Z/files/docs/p24/P24_FINAL_AUDIT_REPORT.md",
+      "bytes": 2507,
+      "mtime_utc": "2026-05-03T03:39:08Z",
+      "original_path": "docs/p24/P24_FINAL_AUDIT_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P24",
+      "sha256": "72b91e2cf30f5fc324589354f425a471ce38866b2b41210cb02c5265acbc423e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225812Z/files/docs/p24/P24_KNOWN_LIMITATIONS.md",
+      "bytes": 1239,
+      "mtime_utc": "2026-05-03T03:39:08Z",
+      "original_path": "docs/p24/P24_KNOWN_LIMITATIONS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P24",
+      "sha256": "674874de93e1b72ff1cfead6b4bd5117b7cdcfe346106537d849462ecb23649f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225812Z/files/fixtures/p24/coding-agent-repo/README.md",
+      "bytes": 277,
+      "mtime_utc": "2026-05-03T03:42:07Z",
+      "original_path": "fixtures/p24/coding-agent-repo/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "8d2f2180e02150f469bcb99ecd173cb08dbdb050acc85da48116a2eb827e3a3c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225812Z/files/fixtures/p24/coding-agent-repo/src/lib.rs",
+      "bytes": 56,
+      "mtime_utc": "2026-05-03T03:42:07Z",
+      "original_path": "fixtures/p24/coding-agent-repo/src/lib.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "3437ef439110d3ff9c9684eddbaa5cda690a08e25b68b86de8c3a984ac3964c8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260503T225812Z/files/scripts/p24_verify.sh",
+      "bytes": 5519,
+      "mtime_utc": "2026-05-03T03:38:33Z",
+      "original_path": "scripts/p24_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P24",
+      "sha256": "edeb9486bea8f5ac9bf8c3e5b7ecba09d1648327c92b21ad633dc716a4041e96"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P24",
+  "skipped_existing": [],
+  "superseded_by": "P25",
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25",
+  "unclassified": []
+}

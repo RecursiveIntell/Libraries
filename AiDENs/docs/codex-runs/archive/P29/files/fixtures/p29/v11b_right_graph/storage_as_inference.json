@@ -1,0 +1,5 @@
+{
+  "graph_surface": "storage",
+  "attempted_use": "inference",
+  "expected": "reject-or-degrade"
+}

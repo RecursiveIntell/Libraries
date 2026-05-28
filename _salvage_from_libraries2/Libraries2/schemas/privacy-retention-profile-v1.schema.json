@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArchiveRestoreExpectationV1": {
+      "enum": [
+        "restore_before_audit_export"
+      ],
+      "type": "string"
+    },
+    "CrossBorderTransferDefaultV1": {
+      "enum": [
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "PrivacyRetentionClassV1": {
+      "enum": [
+        "customer_sensitive_365d"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "applicable_namespaces": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "archive_restore_expectation": {
+      "$ref": "#/definitions/ArchiveRestoreExpectationV1"
+    },
+    "compaction_requires_receipt": {
+      "type": "boolean"
+    },
+    "cross_border_transfer_default": {
+      "$ref": "#/definitions/CrossBorderTransferDefaultV1"
+    },
+    "default_redaction_rule_set_id": {
+      "type": "string"
+    },
+    "default_retention_class": {
+      "$ref": "#/definitions/PrivacyRetentionClassV1"
+    },
+    "privacy_retention_profile_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "archive_restore_expectation",
+    "compaction_requires_receipt",
+    "cross_border_transfer_default",
+    "default_redaction_rule_set_id",
+    "default_retention_class",
+    "privacy_retention_profile_id",
+    "schema_version"
+  ],
+  "title": "PrivacyRetentionProfileV1",
+  "type": "object"
+}

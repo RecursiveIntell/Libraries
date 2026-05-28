@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "audit_cycle_days": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "covered_products": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "mandatory_control_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "regime_name": {
+      "type": "string"
+    },
+    "regime_version": {
+      "type": "string"
+    },
+    "regulatory_regime_profile_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "audit_cycle_days",
+    "regime_name",
+    "regime_version",
+    "regulatory_regime_profile_id",
+    "schema_version"
+  ],
+  "title": "RegulatoryRegimeProfileV1",
+  "type": "object"
+}

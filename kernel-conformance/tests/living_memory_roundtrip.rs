@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use constraint_compiler::{compile_batch, CompilerPolicy};
 use forge_engine::experiment::{EffectKind, TypedLocatedEffect};
 use forge_engine::export::EpisodeExport;

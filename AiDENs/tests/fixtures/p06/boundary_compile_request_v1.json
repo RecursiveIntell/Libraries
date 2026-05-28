@@ -1,0 +1,21 @@
+{
+  "request_id": "boundary-compile-request:fixture",
+  "input": "{\"path\":7}",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "path"
+    ],
+    "properties": {
+      "path": {
+        "type": "string"
+      }
+    }
+  },
+  "schema_dialect": "json-schema-2020-12-subset",
+  "allow_markdown_fence_repair": true,
+  "allow_json_substring_extract": true,
+  "treatment_critical_fields": [],
+  "hard_fail_on_treatment_change": false
+}

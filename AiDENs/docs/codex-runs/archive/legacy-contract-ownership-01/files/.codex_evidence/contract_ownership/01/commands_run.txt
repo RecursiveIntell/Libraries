@@ -1,0 +1,113 @@
+COMMAND: python3 -m py_compile scripts/make_type_ownership_inventory.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T01:10:22-05:00
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T01:10:22-05:00
+STDOUT:
+STDERR:
+
+COMMAND: python3 scripts/make_type_ownership_inventory.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T01:10:23-05:00
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T01:10:23-05:00
+STDOUT:
+canonical_types=633
+aidens_contracts_types=199
+duplicate_findings=6
+P0: AttestationEnvelopeV1 local crates/aidens-contracts/src/lib.rs:2481 canonical attestation-exchange attestation-exchange/src/lib.rs:117
+P0: SharedDispositionV1 local crates/aidens-contracts/src/lib.rs:2843 canonical federated-settlement federated-settlement/src/lib.rs:95
+P0: SettlementCaseV1 local crates/aidens-contracts/src/lib.rs:2891 canonical federated-settlement federated-settlement/src/lib.rs:144
+P0: TheoryRefuterSuiteV1 local crates/aidens-contracts/src/lib.rs:3508 canonical mechanism-runtime mechanism-runtime/src/lib.rs:131
+P0: TheoryVersionV1 local crates/aidens-contracts/src/lib.rs:3603 canonical mechanism-runtime mechanism-runtime/src/lib.rs:61
+P0: HypothesisLibraryV1 local crates/aidens-contracts/src/lib.rs:3815 canonical mechanism-runtime mechanism-runtime/src/lib.rs:81
+STDERR:
+
+COMMAND: python3 scripts/assert_no_canonical_type_duplicates.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T01:10:23-05:00
+EXIT_STATUS: 1
+END_TIME: 2026-04-29T01:10:23-05:00
+STDOUT:
+canonical_types=633
+aidens_contracts_types=199
+duplicate_findings=6
+P0: AttestationEnvelopeV1 local crates/aidens-contracts/src/lib.rs:2481 canonical attestation-exchange attestation-exchange/src/lib.rs:117
+P0: SharedDispositionV1 local crates/aidens-contracts/src/lib.rs:2843 canonical federated-settlement federated-settlement/src/lib.rs:95
+P0: SettlementCaseV1 local crates/aidens-contracts/src/lib.rs:2891 canonical federated-settlement federated-settlement/src/lib.rs:144
+P0: TheoryRefuterSuiteV1 local crates/aidens-contracts/src/lib.rs:3508 canonical mechanism-runtime mechanism-runtime/src/lib.rs:131
+P0: TheoryVersionV1 local crates/aidens-contracts/src/lib.rs:3603 canonical mechanism-runtime mechanism-runtime/src/lib.rs:61
+P0: HypothesisLibraryV1 local crates/aidens-contracts/src/lib.rs:3815 canonical mechanism-runtime mechanism-runtime/src/lib.rs:81
+FAIL: local aidens-contracts public definitions duplicate canonical public type names.
+P0: AttestationEnvelopeV1 local crates/aidens-contracts/src/lib.rs:2481 duplicates attestation-exchange attestation-exchange/src/lib.rs:117
+P0: SharedDispositionV1 local crates/aidens-contracts/src/lib.rs:2843 duplicates federated-settlement federated-settlement/src/lib.rs:95
+P0: SettlementCaseV1 local crates/aidens-contracts/src/lib.rs:2891 duplicates federated-settlement federated-settlement/src/lib.rs:144
+P0: TheoryRefuterSuiteV1 local crates/aidens-contracts/src/lib.rs:3508 duplicates mechanism-runtime mechanism-runtime/src/lib.rs:131
+P0: TheoryVersionV1 local crates/aidens-contracts/src/lib.rs:3603 duplicates mechanism-runtime mechanism-runtime/src/lib.rs:61
+P0: HypothesisLibraryV1 local crates/aidens-contracts/src/lib.rs:3815 duplicates mechanism-runtime mechanism-runtime/src/lib.rs:81
+Fix by deleting the local definition or converting it to an explicit canonical pub use. Do not add compatibility shims.
+STDERR:
+
+COMMAND: python3 -c import csv, sys
+from pathlib import Path
+path=Path("docs/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv")
+expected={"AttestationEnvelopeV1","SharedDispositionV1","SettlementCaseV1","TheoryRefuterSuiteV1","TheoryVersionV1","HypothesisLibraryV1"}
+rows=list(csv.DictReader(path.open()))
+found={r["type_name"] for r in rows if r.get("severity")=="P0"}
+missing=sorted(expected-found)
+extra=sorted(found-expected)
+print(f"findings_path={path}")
+print(f"p0_found={len(found)}")
+for r in rows:
+    print(f"{r["severity"]}: {r["type_name"]} local {r["aidens_file"]}:{r["aidens_line"]} canonical {r["canonical_owner"]} {r["canonical_file"]}:{r["canonical_line"]}")
+if missing or extra:
+    print(f"missing={missing}")
+    print(f"extra={extra}")
+    sys.exit(1)
+print("PASS: all six expected P0 duplicates detected by generated findings.")
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T01:10:44-05:00
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T01:10:44-05:00
+STDOUT:
+findings_path=docs/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv
+p0_found=6
+P0: AttestationEnvelopeV1 local crates/aidens-contracts/src/lib.rs:2481 canonical attestation-exchange attestation-exchange/src/lib.rs:117
+P0: SharedDispositionV1 local crates/aidens-contracts/src/lib.rs:2843 canonical federated-settlement federated-settlement/src/lib.rs:95
+P0: SettlementCaseV1 local crates/aidens-contracts/src/lib.rs:2891 canonical federated-settlement federated-settlement/src/lib.rs:144
+P0: TheoryRefuterSuiteV1 local crates/aidens-contracts/src/lib.rs:3508 canonical mechanism-runtime mechanism-runtime/src/lib.rs:131
+P0: TheoryVersionV1 local crates/aidens-contracts/src/lib.rs:3603 canonical mechanism-runtime mechanism-runtime/src/lib.rs:61
+P0: HypothesisLibraryV1 local crates/aidens-contracts/src/lib.rs:3815 canonical mechanism-runtime mechanism-runtime/src/lib.rs:81
+PASS: all six expected P0 duplicates detected by generated findings.
+STDERR:
+
+COMMAND: bash scripts/phase_verify_contract_ownership.sh 01
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T01:10:55-05:00
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T01:10:55-05:00
+STDOUT:
+COMMAND: run_phase_01_expected_duplicates
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T01:10:55-05:00
+canonical_types=633
+aidens_contracts_types=199
+duplicate_findings=6
+P0: AttestationEnvelopeV1 local crates/aidens-contracts/src/lib.rs:2481 canonical attestation-exchange attestation-exchange/src/lib.rs:117
+P0: SharedDispositionV1 local crates/aidens-contracts/src/lib.rs:2843 canonical federated-settlement federated-settlement/src/lib.rs:95
+P0: SettlementCaseV1 local crates/aidens-contracts/src/lib.rs:2891 canonical federated-settlement federated-settlement/src/lib.rs:144
+P0: TheoryRefuterSuiteV1 local crates/aidens-contracts/src/lib.rs:3508 canonical mechanism-runtime mechanism-runtime/src/lib.rs:131
+P0: TheoryVersionV1 local crates/aidens-contracts/src/lib.rs:3603 canonical mechanism-runtime mechanism-runtime/src/lib.rs:61
+P0: HypothesisLibraryV1 local crates/aidens-contracts/src/lib.rs:3815 canonical mechanism-runtime mechanism-runtime/src/lib.rs:81
+PASS: generated ownership inventory detected all expected P0 duplicates.
+P0: AttestationEnvelopeV1 local crates/aidens-contracts/src/lib.rs:2481 duplicates attestation-exchange attestation-exchange/src/lib.rs:117
+P0: SharedDispositionV1 local crates/aidens-contracts/src/lib.rs:2843 duplicates federated-settlement federated-settlement/src/lib.rs:95
+P0: SettlementCaseV1 local crates/aidens-contracts/src/lib.rs:2891 duplicates federated-settlement federated-settlement/src/lib.rs:144
+P0: TheoryRefuterSuiteV1 local crates/aidens-contracts/src/lib.rs:3508 duplicates mechanism-runtime mechanism-runtime/src/lib.rs:131
+P0: TheoryVersionV1 local crates/aidens-contracts/src/lib.rs:3603 duplicates mechanism-runtime mechanism-runtime/src/lib.rs:61
+P0: HypothesisLibraryV1 local crates/aidens-contracts/src/lib.rs:3815 duplicates mechanism-runtime mechanism-runtime/src/lib.rs:81
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T01:10:55-05:00
+PASS: contract ownership verification passed. Evidence in /home/sikmindz/Coding/Libraries/AiDENs/.codex_evidence/contract_ownership/01
+STDERR:
+

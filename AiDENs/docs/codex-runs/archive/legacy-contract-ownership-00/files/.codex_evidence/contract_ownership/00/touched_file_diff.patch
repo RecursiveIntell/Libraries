@@ -1,0 +1,174 @@
+===== STATUS.md =====
+--- .codex_evidence/contract_ownership/00/pre_edit_files/STATUS.md.before	2026-04-28 23:58:27.869637566 -0500
++++ .codex_evidence/contract_ownership/00/post_edit_files/STATUS.md.after	2026-04-29 00:00:04.890072452 -0500
+@@ -1,4 +1,4 @@
+-# AiDENs Status - 2026-04-26 Source Basis Lock
++# AiDENs Status - 2026-04-28 Source Basis Lock
+ 
+ This file is the P00-P19 status ledger for the super-pass sequence. It records the current source basis and crate surface state without readiness adjectives.
+ 
+@@ -6,14 +6,17 @@
+ 
+ | Field | Value |
+ |---|---:|
+-| Snapshot date | 2026-04-26 |
+-| Source archive | `libraries-source-clean-20260426.zip` |
+-| Research archive | `Full Provenance+ Research 4/24/26.zip` |
+-| Extraction root | `/mnt/data/aidens_20260426` |
++| Snapshot date | 2026-04-28 |
++| Source archive | `AiDENs 4/28.zip` |
++| Canonical sibling archive | `libraries 4/28.zip` |
++| Supplemental reference archives | `libraries2 4/28.zip`, `recall 4/26.zip`, `recall-coding 4/25/26.zip` |
++| Research corpus | Full provenance research corpus through 2026-04-28 |
++| Target root | `/home/sikmindz/Coding/Libraries/AiDENs` |
++| Canonical root | `/home/sikmindz/Coding/Libraries` |
+ | Workspace crates | 31 |
+-| Rust files | 37 |
+-| Approximate Rust LOC | 5,126 |
+-| Scaffold-only Rust files | 15 in the source-basis snapshot; 5 crates remain scaffold-only after P17 |
++| Rust files | 49 |
++| Approximate Rust LOC | 29,617 |
++| Scaffold-only Rust files | Not recalculated in Phase 00 contract-ownership preflight |
+ | Research files extracted | 52 |
+ 
+ ## Verification Gate
+@@ -55,7 +58,7 @@
+ 
+ | Issue | State | Evidence |
+ |---|---|---|
+-| AIDENS-P00-01 | done | README and status docs use the 2026-04-26 source basis. |
++| AIDENS-P00-01 | done | README and status docs use the 2026-04-28 source basis for the contract-ownership collapse run. |
+ | AIDENS-P00-02 | done | `scripts/verify.sh` is the local gate. |
+ | AIDENS-P00-03 | done | `scripts/assert_no_scaffold_promoted.sh` checks marker ownership, status rows, README/STATUS promotion text, and doctor output. |
+ | AIDENS-P00-04 | done | This file lists every crate as implemented, partial, or scaffold-only. |
+===== scripts/phase_verify_contract_ownership.sh =====
+--- .codex_evidence/contract_ownership/00/pre_edit_files/phase_verify_contract_ownership.sh.before	2026-04-28 23:59:16.671353297 -0500
++++ .codex_evidence/contract_ownership/00/post_edit_files/phase_verify_contract_ownership.sh.after	2026-04-29 00:00:04.891072446 -0500
+@@ -23,19 +23,99 @@
+   } 2>&1 | tee "$EVIDENCE_DIR/${name}.txt"
+ }
+ 
++run_gate() {
++  local name="$1"
++  shift
++  run_capture "$name" "$@" || FAIL=1
++}
++
++run_phase_01_expected_duplicates() {
++  python3 scripts/make_type_ownership_inventory.py
++  python3 - <<'PY'
++import csv
++import sys
++from pathlib import Path
++
++path = Path("docs/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv")
++expected = {
++    "AttestationEnvelopeV1",
++    "SharedDispositionV1",
++    "SettlementCaseV1",
++    "TheoryRefuterSuiteV1",
++    "TheoryVersionV1",
++    "HypothesisLibraryV1",
++}
++
++if not path.exists():
++    print(f"FAIL: {path} missing")
++    sys.exit(1)
++
++rows = list(csv.DictReader(path.open()))
++found = {row["type_name"] for row in rows if row.get("severity") == "P0"}
++missing = sorted(expected - found)
++if missing:
++    print("FAIL: generated duplicate gate did not detect expected P0 duplicates:")
++    for name in missing:
++        print(f"- {name}")
++    sys.exit(1)
++
++print("PASS: generated ownership inventory detected all expected P0 duplicates.")
++for row in rows:
++    if row.get("type_name") in expected:
++        print(
++            f"{row['severity']}: {row['type_name']} local "
++            f"{row['aidens_file']}:{row['aidens_line']} duplicates "
++            f"{row['canonical_owner']} {row['canonical_file']}:{row['canonical_line']}"
++        )
++PY
++}
++
+ git status --short > "$EVIDENCE_DIR/git_status_before_gate.txt" || true
+ 
+ FAIL=0
+-run_capture assert_no_crate_split bash scripts/assert_no_crate_split.sh || FAIL=1
+-run_capture assert_docs_source_basis_current bash scripts/assert_docs_source_basis_current.sh || FAIL=1
+-run_capture make_type_ownership_inventory python3 scripts/make_type_ownership_inventory.py || FAIL=1
+-run_capture assert_no_canonical_type_duplicates python3 scripts/assert_no_canonical_type_duplicates.py || FAIL=1
+-run_capture assert_no_local_canonical_digest_law bash scripts/assert_no_local_canonical_digest_law.sh || FAIL=1
+-run_capture assert_schema_generation_scope python3 scripts/assert_schema_generation_scope.py || FAIL=1
+-run_capture assert_tool_runtime_delegation bash scripts/assert_tool_runtime_delegation.sh || FAIL=1
+-run_capture assert_wrapper_backpointers bash scripts/assert_wrapper_backpointers.sh || FAIL=1
+-run_capture assert_no_compatibility_ledgers bash scripts/assert_no_compatibility_ledgers.sh || FAIL=1
+-run_capture assert_no_local_substitute_dependencies bash scripts/assert_no_local_substitute_dependencies.sh || FAIL=1
++
++case "$PHASE" in
++  00)
++    run_gate assert_no_crate_split bash scripts/assert_no_crate_split.sh
++    run_gate assert_docs_source_basis_current bash scripts/assert_docs_source_basis_current.sh
++    ;;
++  01)
++    run_gate phase_01_expected_duplicates run_phase_01_expected_duplicates
++    ;;
++  02)
++    run_gate assert_no_canonical_type_duplicates python3 scripts/assert_no_canonical_type_duplicates.py
++    run_gate assert_no_compatibility_ledgers bash scripts/assert_no_compatibility_ledgers.sh
++    ;;
++  03)
++    run_gate assert_no_canonical_type_duplicates python3 scripts/assert_no_canonical_type_duplicates.py
++    run_gate assert_no_local_substitute_dependencies bash scripts/assert_no_local_substitute_dependencies.sh
++    ;;
++  04)
++    run_gate assert_no_local_canonical_digest_law bash scripts/assert_no_local_canonical_digest_law.sh
++    ;;
++  05)
++    run_gate assert_schema_generation_scope python3 scripts/assert_schema_generation_scope.py
++    ;;
++  06)
++    run_gate assert_tool_runtime_delegation bash scripts/assert_tool_runtime_delegation.sh
++    run_gate assert_wrapper_backpointers bash scripts/assert_wrapper_backpointers.sh
++    ;;
++  07|final|manual)
++    run_gate assert_no_crate_split bash scripts/assert_no_crate_split.sh
++    run_gate assert_docs_source_basis_current bash scripts/assert_docs_source_basis_current.sh
++    run_gate assert_no_canonical_type_duplicates python3 scripts/assert_no_canonical_type_duplicates.py
++    run_gate assert_no_local_canonical_digest_law bash scripts/assert_no_local_canonical_digest_law.sh
++    run_gate assert_schema_generation_scope python3 scripts/assert_schema_generation_scope.py
++    run_gate assert_tool_runtime_delegation bash scripts/assert_tool_runtime_delegation.sh
++    run_gate assert_wrapper_backpointers bash scripts/assert_wrapper_backpointers.sh
++    run_gate assert_no_compatibility_ledgers bash scripts/assert_no_compatibility_ledgers.sh
++    run_gate assert_no_local_substitute_dependencies bash scripts/assert_no_local_substitute_dependencies.sh
++    ;;
++  *)
++    echo "error: unknown contract ownership phase '$PHASE'" >&2
++    exit 2
++    ;;
++esac
+ 
+ git status --short > "$EVIDENCE_DIR/git_status_after_gate.txt" || true
+ git diff --stat > "$EVIDENCE_DIR/git_diff_stat.txt" || true
+===== docs/contract-ownership/COMPATIBILITY_LEDGER.md =====
+--- .codex_evidence/contract_ownership/00/pre_edit_files/COMPATIBILITY_LEDGER.md.before	2026-04-28 23:58:27.870910421 -0500
++++ .codex_evidence/contract_ownership/00/post_edit_files/COMPATIBILITY_LEDGER.md.after	2026-04-29 00:00:04.892072440 -0500
+@@ -1 +1,4 @@
+-MISSING BEFORE PHASE 00
++# Compatibility Ledger
++
++| Shim name | File path | Reason | Canonical replacement | Allowed lifetime | Removal criterion | Tests proving compatibility | Non-authoritative? |
++|---|---|---|---|---|---|---|---|
+===== docs/contract-ownership/FINAL_QUARANTINE_LEDGER.md =====
+--- .codex_evidence/contract_ownership/00/pre_edit_files/FINAL_QUARANTINE_LEDGER.md.before	2026-04-28 23:58:27.870910421 -0500
++++ .codex_evidence/contract_ownership/00/post_edit_files/FINAL_QUARANTINE_LEDGER.md.after	2026-04-29 00:00:04.893072435 -0500
+@@ -1 +1,4 @@
+-MISSING BEFORE PHASE 00
++# Final Quarantine Ledger
++
++| Item | Status | Discovered in phase | Quarantine record | Required human decision | Next safe action |
++|---|---|---|---|---|---|

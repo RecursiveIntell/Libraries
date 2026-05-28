@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "aggregation_rule": {
+      "type": "string"
+    },
+    "degradation_behavior": {
+      "type": "string"
+    },
+    "exactness_requirement": {
+      "type": "string"
+    },
+    "measurement_definition": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "outcome_schema_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "time_window": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "aggregation_rule",
+    "degradation_behavior",
+    "exactness_requirement",
+    "measurement_definition",
+    "name",
+    "outcome_schema_id",
+    "schema_version",
+    "time_window"
+  ],
+  "title": "OutcomeSchemaV1",
+  "type": "object"
+}

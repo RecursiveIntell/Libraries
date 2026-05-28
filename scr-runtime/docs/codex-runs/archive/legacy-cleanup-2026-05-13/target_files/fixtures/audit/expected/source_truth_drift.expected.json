@@ -1,0 +1,8 @@
+{
+  "case_id": "source_truth_drift",
+  "expected_minimum_action": "RequireVerification",
+  "required_reason_codes": [
+    "SOURCE_TRUTH_DRIFT"
+  ],
+  "notes": "Initial expected minimum. Codex should generate full golden receipts after evaluator exists. Updating generated golden receipts requires POLICY_CHANGE.md."
+}

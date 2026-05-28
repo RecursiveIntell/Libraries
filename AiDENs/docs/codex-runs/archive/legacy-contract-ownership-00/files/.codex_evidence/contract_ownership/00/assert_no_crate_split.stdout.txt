@@ -1,0 +1,1 @@
+PASS: no aidens-contracts split crates detected.

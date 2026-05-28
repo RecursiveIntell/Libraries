@@ -1,0 +1,12 @@
+app_id = "aidens-next-disabled"
+profile_id = "coding-agent"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "disabled"
+model = "none"
+
+[tools]
+sandbox_root = "."
+enabled_bundles = ["safe-coding"]

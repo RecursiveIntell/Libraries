@@ -1,0 +1,149 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/.codex/prompts/P20_1_CODE_PACKAGE_REPAIR.md",
+      "bytes": 2605,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": ".codex/prompts/P20_1_CODE_PACKAGE_REPAIR.md",
+      "reason": "stale-codex-control",
+      "run_id": "P20_1",
+      "sha256": "cb180009be7c0e187799a12f14e490570ff2f17b6b186f2f2caa610e2e7ffe17"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/.codex/tasks/p20_1_code_package_repair.json",
+      "bytes": 100,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": ".codex/tasks/p20_1_code_package_repair.json",
+      "reason": "stale-codex-control",
+      "run_id": "P20_1",
+      "sha256": "e6a4261fe065d0ece6c40b642b5fb7f50def62692623e5ebfa29272c94a45d9c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/docs/P20_1_ACCEPTANCE_GATES.md",
+      "bytes": 1753,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "docs/P20_1_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20_1",
+      "sha256": "8cd43095a5ad948c295b9d1c05c060eff03cb426b585bb266bb9f153d20f1566"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/docs/P20_1_FINAL_AUDITOR_CHECKLIST.md",
+      "bytes": 636,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "docs/P20_1_FINAL_AUDITOR_CHECKLIST.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20_1",
+      "sha256": "211c3994052d92fece5dfb714abd6e1909c5dcc202d046933dc36f7d8e9e01f5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/docs/P20_1_IMPLEMENTATION_PLAYBOOK.md",
+      "bytes": 1448,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "docs/P20_1_IMPLEMENTATION_PLAYBOOK.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20_1",
+      "sha256": "6c50d7e87f7fe56acaade86aa01cd31b50dd5ef6412a7e83018ff9ba94b7a7a9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/docs/P20_1_MASTER_ISSUE_MATRIX.md",
+      "bytes": 1603,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "docs/P20_1_MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20_1",
+      "sha256": "343f063d9839cd43503cbb1c023a880e4131fe7b0bff38e8a1d44f6063657946"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/docs/P20_1_PACKAGE_INTEGRITY_PLAN.md",
+      "bytes": 808,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "docs/P20_1_PACKAGE_INTEGRITY_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20_1",
+      "sha256": "0dd391242878c6f0b44235ff7c543aec5be9b194c68e171a47c983d4871859ad"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/docs/P20_1_TESTKIT_SPLIT_PLAN.md",
+      "bytes": 990,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "docs/P20_1_TESTKIT_SPLIT_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20_1",
+      "sha256": "dcea4c5d92fa872e84f82a2b1175a86704c999917cead36ab4c7db804768e9dd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/prompts/P20_1_CODEX_RUN_PROMPT.md",
+      "bytes": 2605,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "prompts/P20_1_CODEX_RUN_PROMPT.md",
+      "reason": "stale-codex-run-prompt",
+      "run_id": "P20_1",
+      "sha256": "cb180009be7c0e187799a12f14e490570ff2f17b6b186f2f2caa610e2e7ffe17"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/scripts/p20_1_generate_audit_bundle.sh",
+      "bytes": 1376,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "scripts/p20_1_generate_audit_bundle.sh",
+      "reason": "stale-run-script",
+      "run_id": "P20_1",
+      "sha256": "b59a2b36d6c67fb2bcfbcc4ffb5221cab8746c1108a7f8aa952912bda76024f9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/scripts/p20_1_hard_code_audit.py",
+      "bytes": 6923,
+      "mtime_utc": "2026-05-01T00:59:25Z",
+      "original_path": "scripts/p20_1_hard_code_audit.py",
+      "reason": "stale-run-script",
+      "run_id": "P20_1",
+      "sha256": "dfc7b20e1848ad613199e12a8d46ec1a630b424add920ff7030e04ef1b3494b8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/scripts/p20_1_validate_archive_manifest.py",
+      "bytes": 584,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "scripts/p20_1_validate_archive_manifest.py",
+      "reason": "stale-run-script",
+      "run_id": "P20_1",
+      "sha256": "0cfbe59a3cadd1df8ba32bd218031a57b40026b9550132f614277cb3393b9d94"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/scripts/p20_1_verify.sh",
+      "bytes": 740,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "scripts/p20_1_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P20_1",
+      "sha256": "07b7bea74adc330b7e205c22f5bca94993b26538ef857ecb4128490c3a6414d7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/scripts/p20_1_verify_release_zip.sh",
+      "bytes": 937,
+      "mtime_utc": "2026-05-01T00:59:25Z",
+      "original_path": "scripts/p20_1_verify_release_zip.sh",
+      "reason": "stale-run-script",
+      "run_id": "P20_1",
+      "sha256": "e4a03f8f2ba1c6dd1694d9b55d1b29258c9cb9b3689d775ce720c264c215acde"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20_1/files/tasks/P20_1_CODE_PACKAGE_REPAIR_TASKS.json",
+      "bytes": 798,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "tasks/P20_1_CODE_PACKAGE_REPAIR_TASKS.json",
+      "reason": "stale-run-task",
+      "run_id": "P20_1",
+      "sha256": "fca33d6e86d4f0044dc681f65cd9ec93c6f88c44f36d6572e29f3d8fcd312993"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P20_1",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

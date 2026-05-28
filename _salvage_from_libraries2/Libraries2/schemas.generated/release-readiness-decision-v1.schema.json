@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "blocking_gaps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "decision_state": {
+      "type": "string"
+    },
+    "deployment_profile_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "release_readiness_decision_id": {
+      "type": "string"
+    },
+    "required_monitors": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "blocking_gaps",
+    "decision_state",
+    "deployment_profile_id",
+    "generated_at",
+    "release_readiness_decision_id",
+    "required_monitors",
+    "schema_version"
+  ],
+  "title": "ReleaseReadinessDecisionV1",
+  "type": "object"
+}

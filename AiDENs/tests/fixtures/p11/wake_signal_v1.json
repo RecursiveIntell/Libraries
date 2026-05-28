@@ -1,0 +1,14 @@
+{
+  "signal_id": "wake-signal:fixture",
+  "kind": "wake-signal",
+  "namespace_id": "daemon-namespace:fixture",
+  "source": "filesystem",
+  "signal_key": "README.md:modified",
+  "idempotency_key": "wake:daemon-namespace:fixture:filesystem:README.md:modified:blake3:wake-payload-fixture",
+  "payload": {
+    "path": "README.md"
+  },
+  "payload_digest": "blake3:wake-payload-fixture",
+  "risk": "read_only",
+  "received_at": "2026-04-27T00:00:00Z"
+}

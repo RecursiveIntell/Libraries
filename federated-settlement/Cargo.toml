@@ -13,3 +13,7 @@ stack-ids = { path = "../stack-ids" }
 
 [dev-dependencies]
 serde_json = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

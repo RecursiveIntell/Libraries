@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-11T00:41:41Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P30_8/files/prompts/phases/P30-08_V11A_B_SEED_ARTIFACT_RUNTIME_OPERATOR_RECEIPTS_RIGHT_GRAPH_REGION_CONVERGENCE_HOOKS.md",
+      "bytes": 1138,
+      "mtime_utc": "2026-05-10T23:55:56Z",
+      "original_path": "prompts/phases/P30-08_V11A_B_SEED_ARTIFACT_RUNTIME_OPERATOR_RECEIPTS_RIGHT_GRAPH_REGION_CONVERGENCE_HOOKS.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P30_8",
+      "sha256": "c27b72a1ffb2db58d01ce73a4af2b971a40b2aa87864957ea2f3aa262da72c78"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P30_8",
+  "skipped_existing": [],
+  "superseded_by": "P29",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

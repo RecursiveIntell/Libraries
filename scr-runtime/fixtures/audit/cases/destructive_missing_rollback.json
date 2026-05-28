@@ -1,0 +1,8 @@
+{
+  "schema_version": "audit_fixture_case_v1",
+  "case_id": "destructive_missing_rollback",
+  "domain": "audit",
+  "proposed_action": "release",
+  "requested_effect": "generate_release_artifact",
+  "signals": ["destructive_missing_rollback", "high_hazard", "confirmed"]
+}

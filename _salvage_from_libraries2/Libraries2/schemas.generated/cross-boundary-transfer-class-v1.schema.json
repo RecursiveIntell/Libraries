@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allowed_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "cross_boundary_transfer_class_id": {
+      "type": "string"
+    },
+    "destination_class": {
+      "type": "string"
+    },
+    "downgrade_behavior": {
+      "type": "string"
+    },
+    "required_attestation": {
+      "type": "string"
+    },
+    "required_disclosure_policy_class": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_class": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cross_boundary_transfer_class_id",
+    "destination_class",
+    "downgrade_behavior",
+    "required_attestation",
+    "required_disclosure_policy_class",
+    "schema_version",
+    "source_class"
+  ],
+  "title": "CrossBoundaryTransferClassV1",
+  "type": "object"
+}

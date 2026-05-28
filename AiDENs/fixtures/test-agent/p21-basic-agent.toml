@@ -1,0 +1,17 @@
+[agent]
+name = "p21-basic-test-agent"
+profile = "coding-agent"
+
+[provider]
+kind = "mock"
+fixture = "fixtures/runner/p21_mock_test_agent_turns.json"
+
+[tools]
+sandbox_root = "target/p21/test-agent-repo"
+enabled_bundles = ["repo-read", "repo-list", "repo-search", "file-stat"]
+
+[receipts]
+store_root = "target/p21/test-agent-receipts"
+
+[agency]
+enabled = true

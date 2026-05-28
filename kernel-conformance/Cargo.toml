@@ -34,3 +34,7 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 forge-engine = { path = "../living-memory/living-memory" }
 forge-pilot = { path = "../forge-pilot" }
 proptest = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

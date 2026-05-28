@@ -1,11 +1,12 @@
 use crate::error::RuntimeError;
 use crate::ids::{EntityId, Scope, ScopeKey};
+use crate::obs::trace::{RuntimeQueryProvenanceV1, RuntimeView};
 use semantic_memory::{
-    MemoryStore, ProjectionClaimVersion, ProjectionEntityAlias, ProjectionEpisode,
+    ExplainedResult, MemoryStore, ProjectionClaimVersion, ProjectionEntityAlias, ProjectionEpisode,
     ProjectionEvidenceRef, ProjectionImportLogEntry, ProjectionQuery, ProjectionRelationVersion,
     SearchResult, SearchSource, SearchSourceType,
 };
-use stack_ids::{ClaimId, ClaimVersionId};
+use stack_ids::{ClaimId, ClaimVersionId, TraceCtx};
 
 /// Read-only adapter over a `semantic_memory::MemoryStore`.
 ///
@@ -15,6 +16,12 @@ use stack_ids::{ClaimId, ClaimVersionId};
 #[derive(Clone)]
 pub struct SemanticMemoryAdapter {
     store: MemoryStore,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExplainedSearchArtifacts {
+    pub explained_results: Vec<ExplainedResult>,
+    pub provenance: RuntimeQueryProvenanceV1,
 }
 
 impl SemanticMemoryAdapter {
@@ -33,10 +40,158 @@ impl SemanticMemoryAdapter {
     ) -> Result<Vec<SearchResult>, RuntimeError> {
         let ns = scope.namespace.as_str();
         let ns_slice: &[&str] = &[ns];
-        self.store
-            .search(query, limit, Some(ns_slice), source_types)
+        let scope_key = scope.key();
+        let filterable_scope =
+            scope.domain.is_some() || scope.workspace_id.is_some() || scope.repo_id.is_some();
+        let scoped_source_types = if filterable_scope {
+            Some(filterable_search_source_types(source_types))
+        } else {
+            source_types.map(|types| types.to_vec())
+        };
+        let requested_limit = limit.unwrap_or(10);
+        let candidate_limit = if filterable_scope {
+            Some(requested_limit.saturating_mul(3).max(requested_limit))
+        } else {
+            limit
+        };
+
+        let results = self
+            .store
+            .search(
+                query,
+                candidate_limit,
+                Some(ns_slice),
+                scoped_source_types.as_deref(),
+            )
             .await
-            .map_err(RuntimeError::Memory)
+            .map_err(RuntimeError::Memory)?;
+
+        if filterable_scope {
+            let filtered = self
+                .store
+                .filter_search_results_by_scope(results, &scope_key)
+                .await
+                .map_err(RuntimeError::Memory)?;
+            Ok(filtered.into_iter().take(requested_limit).collect())
+        } else {
+            Ok(results)
+        }
+    }
+
+    /// Hybrid search with explicit explained-score payloads and runtime-owned provenance.
+    pub async fn search_explained(
+        &self,
+        query: &str,
+        scope: &Scope,
+        limit: usize,
+        relevance_threshold: f64,
+    ) -> Result<ExplainedSearchArtifacts, RuntimeError> {
+        let ns = scope.namespace.as_str();
+        let ns_slice: &[&str] = &[ns];
+        let scope_key = scope.key();
+        let filterable_scope =
+            scope.domain.is_some() || scope.workspace_id.is_some() || scope.repo_id.is_some();
+        let candidate_limit = if filterable_scope {
+            limit.saturating_mul(3).max(limit)
+        } else {
+            limit
+        };
+
+        let explained_results = self
+            .store
+            .search_explained(query, Some(candidate_limit), Some(ns_slice), None)
+            .await
+            .map_err(RuntimeError::Memory)?;
+        let pre_filter_count = explained_results.len();
+
+        let scoped_results = if filterable_scope {
+            let filtered = self
+                .store
+                .filter_search_results_by_scope(
+                    explained_results
+                        .iter()
+                        .map(|item| item.result.clone())
+                        .collect(),
+                    &scope_key,
+                )
+                .await
+                .map_err(RuntimeError::Memory)?;
+            let allowed: std::collections::BTreeSet<String> =
+                filtered.iter().map(search_identity).collect();
+            explained_results
+                .into_iter()
+                .filter(|item| allowed.contains(&search_identity(&item.result)))
+                .collect::<Vec<_>>()
+        } else {
+            explained_results
+        };
+        let post_filter_count = scoped_results.len();
+
+        let filtered: Vec<_> = scoped_results
+            .iter()
+            .filter(|item| item.result.score >= relevance_threshold)
+            .take(limit)
+            .cloned()
+            .collect();
+
+        let mut adaptive_threshold_used = false;
+        let mut fallback_threshold_val = None;
+        let final_results = if filtered.len() < 2 {
+            let fallback_threshold = relevance_threshold / 2.0;
+            let fallback: Vec<_> = scoped_results
+                .iter()
+                .filter(|item| item.result.score >= fallback_threshold)
+                .take(limit)
+                .cloned()
+                .collect();
+            if fallback.len() > filtered.len() {
+                adaptive_threshold_used = true;
+                fallback_threshold_val = Some(fallback_threshold);
+                fallback
+            } else {
+                filtered
+            }
+        } else {
+            filtered
+        };
+
+        let kernel_degraded_reason = if adaptive_threshold_used {
+            Some(format!(
+                "adaptive_threshold: primary {:.3} fell back to {:.3}",
+                relevance_threshold,
+                fallback_threshold_val.unwrap_or(0.0)
+            ))
+        } else if final_results.is_empty() {
+            Some("zero_results: no relevant chunks found".into())
+        } else {
+            None
+        };
+
+        Ok(ExplainedSearchArtifacts {
+            explained_results: final_results,
+            provenance: RuntimeQueryProvenanceV1 {
+                schema_version: "runtime_query_provenance_v1".into(),
+                trace_ctx: TraceCtx::generate(),
+                scope: scope_key,
+                classification_mode: "search".into(),
+                classification_reason: None,
+                query: query.to_string(),
+                requested_views: vec![RuntimeView::Semantic],
+                executed_views: vec![RuntimeView::Semantic],
+                widenings: Vec::new(),
+                warnings: Vec::new(),
+                kernel_degraded_reason,
+                leg_strategies: vec!["semantic_memory.search_explained".into()],
+                leg_timings_ms: Vec::new(),
+                total_duration_ms: 0,
+                raw_result_count: pre_filter_count,
+                merged_result_count: post_filter_count,
+                duplicates_fused: 0,
+                valid_as_of: None,
+                recorded_as_of: None,
+                temporal_mode: None,
+            },
+        })
     }
 
     /// Query imported projection rows by free-text content.
@@ -333,6 +488,29 @@ impl SemanticMemoryAdapter {
     }
 }
 
+fn filterable_search_source_types(
+    source_types: Option<&[SearchSourceType]>,
+) -> Vec<SearchSourceType> {
+    let mut filtered = source_types
+        .map(|types| {
+            types
+                .iter()
+                .filter(|source_type| {
+                    matches!(
+                        source_type,
+                        SearchSourceType::Chunks | SearchSourceType::Episodes
+                    )
+                })
+                .cloned()
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_else(|| vec![SearchSourceType::Chunks, SearchSourceType::Episodes]);
+    if filtered.is_empty() {
+        filtered = vec![SearchSourceType::Chunks, SearchSourceType::Episodes];
+    }
+    filtered
+}
+
 fn merge_projection_results(
     claims: Vec<ProjectionClaimVersion>,
     relations: Vec<ProjectionRelationVersion>,
@@ -481,4 +659,8 @@ impl std::fmt::Debug for SemanticMemoryAdapter {
             .field("store", &"<MemoryStore>")
             .finish()
     }
+}
+
+fn search_identity(result: &SearchResult) -> String {
+    serde_json::to_string(&result.source).unwrap_or_else(|_| format!("{:?}", result.source))
 }

@@ -1,0 +1,79 @@
+{
+  "fixture_name": "conflict_recusal_blocked",
+  "wave": "p3",
+  "artifacts": {
+    "RoleCatalogV1": {
+      "schema_version": "RoleCatalogV1",
+      "role_catalog_id": "rc_001",
+      "role_definitions": [
+        {
+          "role": "release-manager",
+          "capabilities": [
+            "release_approve",
+            "rollback_authorize"
+          ]
+        },
+        {
+          "role": "incident-commander",
+          "capabilities": [
+            "containment_authorize",
+            "continuity_exception_request"
+          ]
+        }
+      ],
+      "default_autonomy_ceiling": "verification_only",
+      "scope_rule": "namespace_and_service_bounded",
+      "review_cycle_days": 90
+    },
+    "ConflictClassCatalogV1": {
+      "schema_version": "ConflictClassCatalogV1",
+      "conflict_class_catalog_id": "ccc_001",
+      "conflict_classes": [
+        {
+          "conflict_class": "self_approval",
+          "disallowed_roles": [
+            "requester",
+            "approver"
+          ]
+        },
+        {
+          "conflict_class": "same_team_dual_control",
+          "disallowed_roles": [
+            "approver_a",
+            "approver_b"
+          ]
+        }
+      ],
+      "default_recusal_behavior": "block_until_replaced",
+      "override_path": "ethics-and-risk-review",
+      "disclosure_required": true
+    },
+    "ApprovalMatrixV1": {
+      "schema_version": "ApprovalMatrixV1",
+      "approval_matrix_id": "am_001",
+      "approval_rules": [
+        {
+          "action_class": "prod_release",
+          "required_roles": [
+            "release-manager",
+            "service-owner"
+          ]
+        },
+        {
+          "action_class": "continuity_exception",
+          "required_roles": [
+            "incident-commander",
+            "ops-manager"
+          ]
+        }
+      ],
+      "default_quorum": "2_of_2",
+      "requires_independent_review_for": [
+        "cross_tenant_change",
+        "production_break_glass",
+        "customer_visible_release"
+      ],
+      "break_glass_post_hoc_review_hours": 24
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries2/docs/source-packages/archive/20260524T012948Z",
+  "collisions": [],
+  "created_utc": "2026-05-24T01:29:48Z",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.codex-archive.json",
+      "bytes": 522,
+      "mtime_utc": "2026-05-24T01:27:05Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "3e541f3e5321dcfd658710ad7be3cf44dd7cbeeea3a93929d5cc2b06ed28a5bf"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.excluded.json",
+      "bytes": 31453,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.excluded.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "7b45471dbac9ec29398fdadc22eda0b93e1ccbc2b659860314d660f526cfef52"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.findings.json",
+      "bytes": 7368,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.findings.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "683bf8f207fc4d713732902d0bcea9f835606987ac218cd1f4bbc540fbcb4dca"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.manifest.json",
+      "bytes": 760305,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.manifest.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "2b022cebfebb8fcf0754558417a56a13ec408a378632830fe9dd092f1992f27f"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.report.md",
+      "bytes": 9062,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.report.md",
+      "reason": "prior-generated-sidecar",
+      "sha256": "52cf1b52dac24b167345bc4dce67eef0b2a808d19568db333be0f07e3e9e27c6"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.zip",
+      "bytes": 1808727,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.zip",
+      "reason": "prior-context-archive",
+      "sha256": "d5097151bfd7e3eb1c792c82573d9401a27ed5663d4e77c0cc806cd48a3558d1"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.codex-archive.json",
+      "bytes": 522,
+      "mtime_utc": "2026-05-24T01:27:05Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "3e541f3e5321dcfd658710ad7be3cf44dd7cbeeea3a93929d5cc2b06ed28a5bf"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.excluded.json",
+      "bytes": 31453,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.excluded.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "7b45471dbac9ec29398fdadc22eda0b93e1ccbc2b659860314d660f526cfef52"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.findings.json",
+      "bytes": 7368,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.findings.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "683bf8f207fc4d713732902d0bcea9f835606987ac218cd1f4bbc540fbcb4dca"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.manifest.json",
+      "bytes": 760305,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.manifest.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "2b022cebfebb8fcf0754558417a56a13ec408a378632830fe9dd092f1992f27f"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.report.md",
+      "bytes": 9062,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.report.md",
+      "reason": "prior-generated-sidecar",
+      "sha256": "52cf1b52dac24b167345bc4dce67eef0b2a808d19568db333be0f07e3e9e27c6"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012948Z/files/Libraries2-generic-rust-next-codex-context-20260524T012704Z.zip",
+      "bytes": 1808727,
+      "mtime_utc": "2026-05-24T01:27:07Z",
+      "original_path": "Libraries2-generic-rust-next-codex-context-20260524T012704Z.zip",
+      "reason": "prior-context-archive",
+      "sha256": "d5097151bfd7e3eb1c792c82573d9401a27ed5663d4e77c0cc806cd48a3558d1"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries2",
+  "root_package_archive_manifest_version": "RootPackageArtifactArchiveManifestV1",
+  "summary": {
+    "candidate_count": 6,
+    "collision_count": 0,
+    "inspected_count": 20,
+    "moved_count": 6,
+    "planned_count": 6,
+    "protected_count": 4,
+    "skipped_existing_count": 0
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31"
+}

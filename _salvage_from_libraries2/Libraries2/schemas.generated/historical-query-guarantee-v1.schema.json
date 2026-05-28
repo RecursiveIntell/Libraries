@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "archive_manifest_id": {
+      "type": "string"
+    },
+    "guarantee_text": {
+      "type": "string"
+    },
+    "guaranteed_query_modes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "historical_query_guarantee_id": {
+      "type": "string"
+    },
+    "horizon_only": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "archive_manifest_id",
+    "guarantee_text",
+    "historical_query_guarantee_id",
+    "horizon_only",
+    "schema_version"
+  ],
+  "title": "HistoricalQueryGuaranteeV1",
+  "type": "object"
+}

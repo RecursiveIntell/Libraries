@@ -1,0 +1,9 @@
+{
+  "algorithm": "blake3",
+  "canonicalization": "stack-ids-json-c14n-v1-display-only",
+  "digest": "blake3:7d6441497d2a000b8143602a7817c90abe7db88e139f89c062a1c36cfe0ad9d6",
+  "non_authoritative": true,
+  "reason_codes": [
+    "display-only-not-artifact-identity"
+  ]
+}

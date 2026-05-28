@@ -1,4 +1,5 @@
 #![allow(deprecated)]
+#![allow(clippy::expect_used)]
 
 use forge_memory_bridge::PROJECTION_IMPORT_BATCH_V1_SCHEMA;
 use semantic_memory::{
@@ -426,8 +427,14 @@ async fn delete_namespace() {
         "namespaced session should exist before namespace deletion"
     );
 
-    let count = store.delete_namespace("deleteme").await.unwrap();
-    assert_eq!(count, 2);
+    let report = store.delete_namespace("deleteme").await.unwrap();
+    assert_eq!(report.facts, 2);
+    assert_eq!(report.documents, 1);
+    assert!(report.chunks > 0);
+    assert_eq!(report.sessions, 1);
+    assert_eq!(report.messages, 1);
+    assert_eq!(report.episodes, 1);
+    assert!(report.projection_rows > 0);
 
     let remaining = store.list_facts(ns, 100, 0).await.unwrap();
     assert!(remaining.is_empty());

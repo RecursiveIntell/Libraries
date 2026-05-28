@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 //! Tests for VG-12: ExperimentEvidenceBundle, Experiments, ForgeLimits (Phase 5)
 
 use forge_engine::lab::evaluate::ScoreVector;

@@ -1,0 +1,33 @@
+[package]
+name = "aidens-cli"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+aidens-app-kit = { path = "../aidens-app-kit" }
+aidens-budget-kit = { path = "../aidens-budget-kit" }
+aidens-boundary-kit = { path = "../aidens-boundary-kit" }
+aidens-capability-kit = { path = "../aidens-capability-kit" }
+aidens-config = { path = "../aidens-config" }
+aidens-contracts = { path = "../aidens-contracts" }
+aidens-daemon-kit = { path = "../aidens-daemon-kit" }
+aidens-memory-kit = { path = "../aidens-memory-kit" }
+aidens-permit-kit = { path = "../aidens-permit-kit" }
+aidens-plan-kit = { path = "../aidens-plan-kit" }
+aidens-provider-kit = { path = "../aidens-provider-kit" }
+aidens-receipts = { path = "../aidens-receipts" }
+aidens-runner = { path = "../aidens-runner" }
+aidens-tool-kit = { path = "../aidens-tool-kit" }
+anyhow.workspace = true
+chrono.workspace = true
+clap.workspace = true
+contract-schema-gen.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+toml.workspace = true

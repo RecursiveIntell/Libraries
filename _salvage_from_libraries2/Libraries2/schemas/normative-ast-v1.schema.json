@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "NormativeAstNodeV1": {
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "node_id": {
+          "type": "string"
+        },
+        "normative_text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "node_id",
+        "normative_text"
+      ],
+      "type": "object"
+    },
+    "SurfaceStatus": {
+      "description": "Shared publication-status primitive for thin governance/profile surfaces.\n\nDomain crates may only use the variants they need, but they should not redefine the status family locally because that creates schema drift bait.",
+      "enum": [
+        "advisory_only",
+        "non_admitted",
+        "degraded",
+        "horizon_only"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "nodes": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/NormativeAstNodeV1"
+      },
+      "type": "array"
+    },
+    "normative_ast_id": {
+      "type": "string"
+    },
+    "publication_status": {
+      "$ref": "#/definitions/SurfaceStatus"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "spec_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "normative_ast_id",
+    "publication_status",
+    "schema_version",
+    "spec_bundle_id"
+  ],
+  "title": "NormativeASTV1",
+  "type": "object"
+}

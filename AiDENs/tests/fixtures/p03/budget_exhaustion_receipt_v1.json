@@ -1,0 +1,16 @@
+{
+  "receipt_id": "budget-exhaustion:fixture",
+  "kind": "budget-exhaustion",
+  "run_id": "run:fixture",
+  "attempt_id": "attempt:fixture",
+  "max_tool_calls": 0,
+  "attempted_tool_calls": 1,
+  "max_retries": 0,
+  "retries": 0,
+  "max_turn_millis": 30000,
+  "elapsed_millis": 1,
+  "reason_codes": [
+    "max-tool-calls-exhausted"
+  ],
+  "exhausted_at": "2026-04-26T00:00:01Z"
+}

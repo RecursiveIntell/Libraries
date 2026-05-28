@@ -1,3 +1,5 @@
+#![cfg_attr(test, allow(clippy::expect_used))]
+
 use forge_memory_bridge::{ImportProjectionRecord, ProjectionImportBatchV3};
 use recursive_kernel_core::{constraint_compiler_operator, ConstraintUnit, OperatorMetadata};
 use schemars::JsonSchema;
@@ -267,7 +269,7 @@ pub fn compile_batch(batch: &ProjectionImportBatchV3, policy: &CompilerPolicy) -
         vec![]
     };
 
-    let graph_hash = ContentDigest::compute_json(&(
+    let graph_hash = match ContentDigest::compute_json(&(
         policy,
         &batch.scope_key,
         &geometry_manifest,
@@ -277,8 +279,12 @@ pub fn compile_batch(batch: &ProjectionImportBatchV3, policy: &CompilerPolicy) -
         &regions,
         &invalidation_cones,
         &degradations,
-    ))
-    .expect("graph hash serialization is infallible for known types");
+    )) {
+        Ok(digest) => digest,
+        Err(err) => ContentDigest::compute_str(&format!(
+            "constraint-compiler.graph-hash-serialization-error:{err}"
+        )),
+    };
 
     CompileOutput {
         graph_hash,
@@ -425,8 +431,12 @@ fn compile_regions(
         let hyperedge_ids = hyperedge_ids.into_iter().collect::<Vec<_>>();
         let constraint_ids = constraint_ids.into_iter().collect::<Vec<_>>();
         let region_digest =
-            ContentDigest::compute_json(&(&node_ids, &hyperedge_ids, &constraint_ids))
-                .expect("region digest serialization is infallible for known types");
+            match ContentDigest::compute_json(&(&node_ids, &hyperedge_ids, &constraint_ids)) {
+                Ok(digest) => digest,
+                Err(err) => ContentDigest::compute_str(&format!(
+                    "constraint-compiler.region-digest-serialization-error:{err}"
+                )),
+            };
         regions.push(CompiledRegion {
             region_id: RegionId::new(format!("region:{}", region_digest.hex())),
             region_digest_id: RegionDigestId::new(format!("region-digest:{}", region_digest.hex())),

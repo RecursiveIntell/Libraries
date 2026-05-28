@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "assurance_case_id": {
+      "type": "string"
+    },
+    "certification_bundle_id": {
+      "type": "string"
+    },
+    "deployment_profile_id": {
+      "type": "string"
+    },
+    "issued_at": {
+      "type": "string"
+    },
+    "issued_by": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "release_readiness_decision_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "assurance_case_id",
+    "certification_bundle_id",
+    "deployment_profile_id",
+    "issued_at",
+    "issued_by",
+    "release_readiness_decision_id",
+    "schema_version",
+    "status"
+  ],
+  "title": "CertificationBundleV1",
+  "type": "object"
+}

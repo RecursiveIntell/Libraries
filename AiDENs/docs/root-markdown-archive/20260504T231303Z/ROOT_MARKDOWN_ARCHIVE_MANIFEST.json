@@ -1,0 +1,109 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260504T231303Z",
+  "collisions": [],
+  "created_utc": "2026-05-04T23:13:03Z",
+  "current_run": "P27",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P25_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 1528,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-03T22:51:59Z",
+      "original_path": "P25_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "*AUDIT*.MD",
+      "sha256": "6e0499e2b0d637ed3295b7026e4e99f43be26ea6c27f0d178c5a785eb081d505"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P25_CODEX_RUN_PROMPT.md",
+      "bytes": 2727,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-04T00:22:08Z",
+      "original_path": "P25_CODEX_RUN_PROMPT.md",
+      "reason": "*PROMPT*.MD",
+      "sha256": "1e42a2e2a9a95f444ffd3d4ac3c2dc96e1d807147eb01c44a5acdf01f142812e"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P25_LARGE_FILE_CONTAINMENT_PLAN.md",
+      "bytes": 3129,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-04T00:57:24Z",
+      "original_path": "P25_LARGE_FILE_CONTAINMENT_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "d02d79f255f6751d7e56b824875014bb84b13f5907f9889c714e1b907832e7d6"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P25_MASTER_PACKET.md",
+      "bytes": 1840,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-03T22:51:59Z",
+      "original_path": "P25_MASTER_PACKET.md",
+      "reason": "*MASTER*.MD",
+      "sha256": "35d6fc66fbec1e70331883a9cb7dfaebf98773c525817451bc6064dc0a4ffe76"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P25_PHASE_PLAN.md",
+      "bytes": 2926,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-03T22:51:59Z",
+      "original_path": "P25_PHASE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "7cca36d77cbcc067dd1d535a169fb20144007afc3932ff02f637cc3fb36b1147"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P25_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 869,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-04T00:22:08Z",
+      "original_path": "P25_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "74635a56cbf7a2e3ba955c9a61501be9b8a3628876c113ea31846fa967153833"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P25_ROOT_MARKDOWN_ARCHIVE_TEST_PLAN.md",
+      "bytes": 1081,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-04T00:22:34Z",
+      "original_path": "P25_ROOT_MARKDOWN_ARCHIVE_TEST_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "e826127a29401644c45405bd808022645d65cc97cd635e35c5b3bac4ce187964"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P26_MASTER_PACKET.md",
+      "bytes": 1643,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "P26_MASTER_PACKET.md",
+      "reason": "*MASTER*.MD",
+      "sha256": "5f96022a77bf5d97188952a691fd3959951c495726a7604646f33e90413a5e4c"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P26_PHASE_PLAN.md",
+      "bytes": 3503,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "P26_PHASE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "022c07a0328c941043508766b8e7917b8004ed2ddf72bbe10d88ee01fbdea2f5"
+    },
+    {
+      "archived_path": "docs/root-markdown-archive/20260504T231303Z/files/P26_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 722,
+      "classification": "candidate-archive",
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "P26_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "*PLAN*.MD",
+      "sha256": "0ebc9d1f171c78fbe1448efd829081cd18611849615788ef172d64f5d6eaaf11"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "root_markdown_archive_manifest_version": "RootMarkdownArchiveManifestV1",
+  "summary": {
+    "ambiguous_count": 93,
+    "candidate_count": 10,
+    "inspected_count": 108,
+    "protected_count": 5
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25"
+}

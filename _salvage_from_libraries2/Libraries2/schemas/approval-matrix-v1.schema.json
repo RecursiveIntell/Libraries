@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ApprovalRuleV1": {
+      "properties": {
+        "action_class": {
+          "type": "string"
+        },
+        "required_roles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "action_class"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "approval_matrix_id": {
+      "type": "string"
+    },
+    "approval_rules": {
+      "items": {
+        "$ref": "#/definitions/ApprovalRuleV1"
+      },
+      "type": "array"
+    },
+    "break_glass_post_hoc_review_hours": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "default_quorum": {
+      "type": "string"
+    },
+    "requires_independent_review_for": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approval_matrix_id",
+    "break_glass_post_hoc_review_hours",
+    "default_quorum",
+    "schema_version"
+  ],
+  "title": "ApprovalMatrixV1",
+  "type": "object"
+}

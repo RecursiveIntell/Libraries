@@ -1,0 +1,15 @@
+app_id = "p25-flagship-coding-agent"
+profile_id = "coding-agent"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+mock_response = "run-coding-agent fixture response"
+
+[tools]
+sandbox_root = "../../fixtures/p25/coding-agent-repo"
+enabled_bundles = ["repo-read", "repo-list", "repo-search", "file-stat", "patch-propose", "patch-apply"]
+
+[receipts]
+store_root = "target/aidens-receipts/p25-flagship-coding-agent"

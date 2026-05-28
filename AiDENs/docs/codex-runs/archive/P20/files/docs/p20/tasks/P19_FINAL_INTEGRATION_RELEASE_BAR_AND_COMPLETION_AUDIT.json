@@ -1,0 +1,29 @@
+{
+  "pass_id": "P19",
+  "title": "Final integration, release bar, and completion audit",
+  "phase": "Release proof",
+  "prompt_file": "prompts/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT_PROMPT.md",
+  "pass_doc": "passes/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+  "crates": [
+    "workspace root",
+    "all crates",
+    "docs",
+    "CI"
+  ],
+  "artifacts": [
+    "CompletionAuditReportV1",
+    "ReleaseArtifactManifestV1",
+    "CrossPassTraceabilityMatrixV1",
+    "KnownLimitationsRegisterV1",
+    "RegressionDebtLedgerV1"
+  ],
+  "acceptance": [
+    "cargo fmt/check/test/clippy pass for workspace with all features.",
+    "All pass acceptance gates are satisfied or explicitly waived by governance artifact.",
+    "Completion report contains no unsubstantiated \u201chealthy\u201d claim for incomplete advanced surfaces."
+  ],
+  "forbidden": [
+    "Do not ship without a current limitations register.",
+    "Do not mark horizon features complete to close the plan."
+  ]
+}

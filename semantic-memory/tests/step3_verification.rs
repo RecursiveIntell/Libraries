@@ -1,4 +1,5 @@
 //! Step 3 verification tests: FTS, integrity, and limit enforcement.
+#![allow(clippy::expect_used)]
 
 use semantic_memory::{
     IntegrityReport, MemoryConfig, MemoryLimits, MemoryStore, MockEmbedder, ReconcileAction, Role,

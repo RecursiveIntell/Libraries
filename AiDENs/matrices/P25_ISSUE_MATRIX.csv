@@ -1,0 +1,13 @@
+id,priority,title,owner,phase,acceptance
+P25-001,P0,Root workspace Markdown context noise,z.py/package hygiene,01-02,Root direct Markdown files classified; archive candidates moved only by strict safe rules; protected docs preserved; manifest emitted.
+P25-002,P0,z.py scope creep risk,z.py/package hygiene,02,No runtime/agent/schema semantics added to z.py; code and docs state z.py is operator-local certifier tooling.
+P25-003,P0,Phase gates not enforced as blocking operator approvals,run protocol/verifier,03,P25 injection docs contain STOP/WAIT language; verifier fails stale IDs or missing gate language.
+P25-004,P0,Stale P22/P23/P24 active instruction residue,docs/codex-runs,04,"CURRENT_RUN.md, CODEX_RUN_INDEX.md, classification map, archival policy aligned to P25; no stale current-instruction entries."
+P25-005,P0,Verifier lacks complete release-hygiene checks,scripts/verify_current.sh,05,"Verifier runs package validation, phase-gate integrity, root-md archive dry-run, support-profile truth checks, stale-run scans, cargo gates where available."
+P25-006,P1,Need flagship supported-local agent demo,examples/flagship-local-coding-agent,06,Demo proves inspect→propose/abstain→permit→apply or dry-run→receipts→AiDENsRunBundleV2→replay.
+P25-007,P1,Support profile needs post-P25 truth convergence,docs/status/support,07,"README, STATUS, SUPPORT_PROFILE, known limitations distinguish supported-local, fixture-backed, deferred-cloud, deferred-autonomy."
+P25-008,P1,Large-file maintainability risk,architecture/debt,08,Containment plan emitted; no risky refactor unless needed for gates; split candidates and future tests specified.
+P25-009,P1,P25 evidence manifest missing,evidence/handoff,09,"P25_STATUS_EVIDENCE_MANIFEST.json includes commands, hashes, moved files, test results, support claims, unresolved risk."
+P25-010,P2,V10+ architecture must not contaminate P25 implementation,architecture/design track,all,V10+ remains design-only; no runtime geometry/federation/mechanism implementation in P25.
+P25-011,P2,Claude audit must be absorbed explicitly,audit/handoff,"00,09",Claude audit concerns mapped to P25 issue IDs and final report; unresolved items listed.
+P25-012,P2,Parent worktree ambiguity,operator/evidence,"00,09",Parent dirty state recorded as external limitation; AiDENs package claims bounded to package root and included siblings.

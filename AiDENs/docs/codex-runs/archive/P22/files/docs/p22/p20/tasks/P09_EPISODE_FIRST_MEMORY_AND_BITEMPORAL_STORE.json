@@ -1,0 +1,30 @@
+{
+  "pass_id": "P09",
+  "title": "Canonical memory adapter over Forge, bridge, semantic-memory, and runtime",
+  "phase": "Memory/runtime core",
+  "prompt_file": "prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md",
+  "pass_doc": "passes/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.md",
+  "crates": [
+    "aidens-memory-kit",
+    "aidens-contracts",
+    "aidens-receipts",
+    "aidens-boundary-kit",
+    "aidens-cli"
+  ],
+  "artifacts": [
+    "semantic_memory_forge::EpisodeBundleV1",
+    "semantic_memory_forge::ExportEnvelopeV3",
+    "forge_memory_bridge::ProjectionImportBatchV3",
+    "semantic_memory::MemoryStore",
+    "knowledge_runtime::KnowledgeRuntime"
+  ],
+  "acceptance": [
+    "Can insert a claim, supersede it retroactively, and answer both \u201cwhat was true at valid time V\u201d and \u201cwhat did we believe at recorded time R\u201d.",
+    "MemoryRequired app fails doctor/run if no memory store is configured.",
+    "No destructive update changes historical belief without supersession receipt."
+  ],
+  "forbidden": [
+    "Do not implement memory as unversioned key-value notes.",
+    "Do not collapse valid time and recorded time into one timestamp."
+  ]
+}

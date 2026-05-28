@@ -1,0 +1,10 @@
+{
+  "schema": "PoisonReceiptRecordV1",
+  "poison_id": "poison-receipt:...",
+  "source_path": "target/aidens-receipts/app/receipt-transactions.ndjson",
+  "line_number": 1,
+  "raw_digest": "sha256:...",
+  "raw_line": "unparseable line",
+  "reason_codes": [],
+  "recorded_at": "RFC3339"
+}

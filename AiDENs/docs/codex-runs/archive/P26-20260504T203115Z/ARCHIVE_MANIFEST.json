@@ -1,0 +1,266 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-04T20:31:15Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/P26_CODEX_RUN_PROMPT.md",
+      "bytes": 3062,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "P26_CODEX_RUN_PROMPT.md",
+      "reason": "stale-codex-run-prompt",
+      "run_id": "P26",
+      "sha256": "682beed64f4f9ef6667c9005c58b38af96bb0a52fdc32a54c833dc474355aaf0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/docs/p26/P26_FINAL_AUDIT_REPORT.md",
+      "bytes": 3977,
+      "mtime_utc": "2026-05-04T20:24:31Z",
+      "original_path": "docs/p26/P26_FINAL_AUDIT_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P26",
+      "sha256": "de93b566b79da0960bf5d9fccae99df9c0d37f7279a93b0aa7759a4b088b8e4d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/docs/p26/P26_KNOWN_LIMITATIONS.md",
+      "bytes": 988,
+      "mtime_utc": "2026-05-04T20:21:44Z",
+      "original_path": "docs/p26/P26_KNOWN_LIMITATIONS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P26",
+      "sha256": "8fe1d46dc135a970d2f4f868a474f5d07cffca238696c473493af8c8e65e02f1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/FINAL_AUDITOR_HANDOFF.md",
+      "bytes": 2725,
+      "mtime_utc": "2026-05-04T20:21:44Z",
+      "original_path": "handoffs/p26/FINAL_AUDITOR_HANDOFF.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "b6e8e9821c1a3913215b22f5de290178f40d123c5856264ef52516ed7f8a30d3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_01_GATE_REVALIDATION.md",
+      "bytes": 2296,
+      "mtime_utc": "2026-05-04T03:25:17Z",
+      "original_path": "handoffs/p26/PHASE_01_GATE_REVALIDATION.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "979f587f2e93aec44fd21a064bd0c66a07c78bba3ed6f2c08109f9ae277b9ca4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_01_REPORT.md",
+      "bytes": 2218,
+      "mtime_utc": "2026-05-04T03:20:45Z",
+      "original_path": "handoffs/p26/PHASE_01_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "c043c6e4d7645cb416853244ccd4013fb10abfb6602532e25b8854944fbbb08b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_02_REPORT.md",
+      "bytes": 3373,
+      "mtime_utc": "2026-05-04T03:45:12Z",
+      "original_path": "handoffs/p26/PHASE_02_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "8f524a6ea3adcbbb1b447e419be52ff877414910995af6a68b282c30fedb3f5b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_03_REPORT.md",
+      "bytes": 3149,
+      "mtime_utc": "2026-05-04T18:37:51Z",
+      "original_path": "handoffs/p26/PHASE_03_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "68d1b2e6ba0cb60944ebf71eaaaa70a0917a47b68f0e95a59703713003c4ab50"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_04_REPORT.md",
+      "bytes": 3431,
+      "mtime_utc": "2026-05-04T18:44:00Z",
+      "original_path": "handoffs/p26/PHASE_04_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "9742cd12c5a1e18a72a4db2846babe5c09ecd32bc150b7f901e76f1e3525277e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_05_REPORT.md",
+      "bytes": 2967,
+      "mtime_utc": "2026-05-04T18:46:24Z",
+      "original_path": "handoffs/p26/PHASE_05_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "08dcce8035ceea53754070240b1fddb698fb6176c77ec4f395bd76cc159b6270"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_06_REPORT.md",
+      "bytes": 2820,
+      "mtime_utc": "2026-05-04T18:48:56Z",
+      "original_path": "handoffs/p26/PHASE_06_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "4ba5f844fcf4819918082ed21d71a23de14a43d4621cbb47570d428b24cdb9ed"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_07_GATE_REVALIDATION.md",
+      "bytes": 927,
+      "mtime_utc": "2026-05-04T19:44:19Z",
+      "original_path": "handoffs/p26/PHASE_07_GATE_REVALIDATION.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "5e021b757854ddf5641247aad7df1e89581099fd022c699b13a8f3af3d27063c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_07_REPORT.md",
+      "bytes": 4346,
+      "mtime_utc": "2026-05-04T19:44:19Z",
+      "original_path": "handoffs/p26/PHASE_07_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "64477b157d040ce1bf82e52abf8b8bd4bbb8d9b12776fe3341467deda9f182d6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_08_REPORT.md",
+      "bytes": 2920,
+      "mtime_utc": "2026-05-04T19:49:17Z",
+      "original_path": "handoffs/p26/PHASE_08_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "b550e3ef3f752691d6f4673590cd4eec84a9c6df81ca88044dc46ad38b099b3d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_09_GATE_REVALIDATION.md",
+      "bytes": 4463,
+      "mtime_utc": "2026-05-04T20:18:59Z",
+      "original_path": "handoffs/p26/PHASE_09_GATE_REVALIDATION.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "5f9bc06912b591763d4662377beb71ba94838b497def6a3fc8689a0b6cec9de5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_09_REPORT.md",
+      "bytes": 4392,
+      "mtime_utc": "2026-05-04T20:14:21Z",
+      "original_path": "handoffs/p26/PHASE_09_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "5d8bb5f6935803900302f656158ca1d8c4b98f65015290af43c85e1c9803f860"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/handoffs/p26/PHASE_10_REPORT.md",
+      "bytes": 2043,
+      "mtime_utc": "2026-05-04T20:24:31Z",
+      "original_path": "handoffs/p26/PHASE_10_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P26",
+      "sha256": "ac69d4d1b6297b34d4a02b83919bc9e215679243940a0c6555c72fd5d4413c46"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/prompts/P26_OPERATOR_PASTE_FIRST.md",
+      "bytes": 859,
+      "mtime_utc": "2026-05-04T06:29:08Z",
+      "original_path": "prompts/P26_OPERATOR_PASTE_FIRST.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P26",
+      "sha256": "acd28ec8dc5c27dfa871f5236f8248422ef0f0836bc4145ba588ef6c409b8c8b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/assert_p26_abstention_repair_cases.py",
+      "bytes": 1115,
+      "mtime_utc": "2026-05-04T20:10:47Z",
+      "original_path": "scripts/assert_p26_abstention_repair_cases.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "67f27169dc92b988a0c89b0b1b485ab4558c14a0994b98e06baeea1cd57ae462"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/assert_p26_agent_spec_contract.py",
+      "bytes": 963,
+      "mtime_utc": "2026-05-04T19:37:57Z",
+      "original_path": "scripts/assert_p26_agent_spec_contract.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "3e385c0dedcc8f924c1b8a63197108923bf0b98185a09d417d1cd6ed14509340"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/assert_p26_coding_agent_v1_lane.py",
+      "bytes": 1066,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_coding_agent_v1_lane.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "d087934bb15ab15d20c39e61d51a1950a37392b22e8a704bdcbc188cda16b016"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/assert_p26_memory_grounded_agent_lane.py",
+      "bytes": 1256,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_memory_grounded_agent_lane.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "70143cfd5a19c2fa89fdcdfdf72a7d3a18465077463037b38e2758dbbf53ce2e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/assert_p26_plan_act_verify_receipts.py",
+      "bytes": 1114,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_plan_act_verify_receipts.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "2416120ea3fbb3c999493ca9be50db3b3155247651306defb85a3df8f62e51bb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/assert_p26_run_bundle_evidence.py",
+      "bytes": 839,
+      "mtime_utc": "2026-05-04T19:37:57Z",
+      "original_path": "scripts/assert_p26_run_bundle_evidence.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "733d3fa58a4e2d3339e7c43050925f6849c41292ddc9ed6a06c3b3cf9c927915"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/assert_p26_run_bundle_v3_replay.py",
+      "bytes": 1294,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_run_bundle_v3_replay.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "919aff910b19e58b71ff2284fe585b308916ff98a4499e294a14bf2cd11db67a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/assert_p26_support_truth.py",
+      "bytes": 619,
+      "mtime_utc": "2026-05-04T19:42:02Z",
+      "original_path": "scripts/assert_p26_support_truth.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "9ab99889a1d25aa1550cfd15c09bc6e5661b438dc7efc85dfd6f29c31e367237"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/p26_verify.py",
+      "bytes": 4991,
+      "mtime_utc": "2026-05-04T20:21:44Z",
+      "original_path": "scripts/p26_verify.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "1e5a39d866ed6b68b4d2817a86f7a0bfe57aebcad29b44a952615a189498c844"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260504T203115Z/files/scripts/p26_verify.sh",
+      "bytes": 103,
+      "mtime_utc": "2026-05-04T19:37:57Z",
+      "original_path": "scripts/p26_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "de37e46491f311bd63e08e330e1fba357fb39fc895e710d108ff3ddc899d86f9"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P26",
+  "skipped_existing": [],
+  "superseded_by": "P25",
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25",
+  "unclassified": []
+}

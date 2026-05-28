@@ -1,22 +1,18 @@
-# Source basis
+# Libraries Source Basis
 
-This repository is grounded in the following material:
+## Primary basis
+This packet is grounded in:
+- the snapshot matrix of the uploaded libraries source tree,
+- v6 and v9 constitutional/spec materials,
+- the temporal truth / tooling / contract / execution evidence research corpus,
+- and the end-state recursive/subtractive runtime synthesis.
 
-1. `libraries-source-clean-20260330.zip` — the working source snapshot.
-2. `STATUS_EVIDENCE_MANIFEST.json` dated 2026-03-30 — the active hardening proof ledger.
-3. `release/closeout_receipt_v1.json` — the machine-readable closeout receipt regenerated from the active docs and manifests.
+## Important constraint
+This packet is **source-structural and design-governance grounded**. It is **not build-certified** in this environment.
 
-## Canonical truth order
-
-1. `STATUS_EVIDENCE_MANIFEST.json`
-2. `release/closeout_receipt_v1.json`
-3. `SUPPORT_PROFILE.md`
-4. `STATUS_DASHBOARD.md`
-
-If an older matrix, scan, or prompt disagrees with the hardening receipt, the hardening receipt wins.
-
-## Scope discipline
-
-- The **supported closeout lane** is the 17-crate list in `SUPPORT_PROFILE.md`.
-- The broader workspace contains adjacent owner crates that are real and landed, but not the narrow release claim for the 2026-03-30 hardening receipt.
-- Horizon material remains valid as backlog, not as current gate law.
+## Drafting rule
+The libraries stack is already past the “missing architecture” stage.
+The task now is to:
+1. freeze what must be constitutional in v9,
+2. build conformance around those seams,
+3. and shape v10+ runtime geometry without poisoning the finish line.

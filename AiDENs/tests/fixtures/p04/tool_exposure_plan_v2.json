@@ -1,0 +1,81 @@
+{
+  "exposure_id": "tool-exposure:fixture",
+  "declared_tool_ids": [
+    "aidens:repo-read:1",
+    "aidens:file-write:1"
+  ],
+  "registered_tool_ids": [
+    "aidens:repo-read:1",
+    "aidens:file-write:1"
+  ],
+  "executable_tool_ids": [
+    "aidens:repo-read:1"
+  ],
+  "exposed_tool_ids": [
+    "aidens:repo-read:1"
+  ],
+  "hidden_tool_ids": [],
+  "blocked_tool_ids": [
+    "aidens:file-write:1"
+  ],
+  "decisions": [
+    {
+      "decision_id": "capability-gate:fixture",
+      "kind": "tool-exposure",
+      "capability_id": "aidens:file-write:1",
+      "outcome": "blocked",
+      "lifecycle": [
+        "declared",
+        "registered",
+        "blocked"
+      ],
+      "risk_class": "write",
+      "permit_required": true,
+      "executable_this_turn": false,
+      "sandbox_root": "/repo",
+      "approval_request": {
+        "request_id": "approval-request:fixture",
+        "tool_id": "aidens:file-write:1",
+        "risk_class": "write",
+        "scope": "tool=aidens:file-write:1;sandbox=/repo",
+        "sandbox_root": "/repo",
+        "run_id": null,
+        "attempt_id": null,
+        "reason": "side-effect tool requires explicit scoped permit",
+        "reason_codes": [
+          "approval-required"
+        ],
+        "requested_at": "2026-04-26T00:00:00Z"
+      },
+      "permit_grant_id": null,
+      "permit_use_receipt_id": null,
+      "reason_codes": [
+        "permit-required:write"
+      ]
+    }
+  ],
+  "approval_requests": [
+    {
+      "request_id": "approval-request:fixture",
+      "tool_id": "aidens:file-write:1",
+      "risk_class": "write",
+      "scope": "tool=aidens:file-write:1;sandbox=/repo",
+      "sandbox_root": "/repo",
+      "run_id": null,
+      "attempt_id": null,
+      "reason": "side-effect tool requires explicit scoped permit",
+      "reason_codes": [
+        "approval-required"
+      ],
+      "requested_at": "2026-04-26T00:00:00Z"
+    }
+  ],
+  "permit_use_receipts": [],
+  "provider_tool_schemas": [],
+  "sandbox_root": "/repo",
+  "degraded": false,
+  "reason_codes": [
+    "permit-required:write"
+  ],
+  "reason": "policy-filtered exposure"
+}

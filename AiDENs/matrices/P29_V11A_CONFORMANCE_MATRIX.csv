@@ -1,0 +1,9 @@
+Surface,Required P29 Evidence,Phase
+ArtifactEnvelopeV1,lifecycle and manifest tests,12
+ExecutionContextEnvelopeV1,fingerprint/retry/budget/degradation tests,11/12
+OperatorContractV1,material operation registry tests,12
+ToolCallReceiptV1,per-call timing/input/output digest tests,11/12
+BoundaryCompilerProfileV1,duplicate/malformed/repair tests,13
+ProofDebtLedgerV1,waiver is not proof tests,13
+SemanticState/ViewDisclosure,CLI/report support label tests,13/14
+Supported-local agent path,end-to-end receipt bundle replay,14

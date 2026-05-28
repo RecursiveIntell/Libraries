@@ -1,0 +1,242 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AgentMemoryModeV1": {
+      "enum": [
+        "fixture",
+        "canonical-seam"
+      ],
+      "type": "string"
+    },
+    "AgentPermitRuleV1": {
+      "enum": [
+        "operator-approved",
+        "forbidden"
+      ],
+      "type": "string"
+    },
+    "AgentProviderModeV1": {
+      "enum": [
+        "mock",
+        "local"
+      ],
+      "type": "string"
+    },
+    "AgentSpecBudgetPolicyV1": {
+      "properties": {
+        "deadline_seconds": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_tool_calls": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_turns": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "deadline_seconds",
+        "max_tool_calls",
+        "max_turns"
+      ],
+      "type": "object"
+    },
+    "AgentSpecEvidencePolicyV1": {
+      "properties": {
+        "emit_abstention_receipts": {
+          "type": "boolean"
+        },
+        "emit_permit_receipts": {
+          "type": "boolean"
+        },
+        "emit_run_bundle": {
+          "type": "boolean"
+        },
+        "emit_tool_receipts": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "emit_abstention_receipts",
+        "emit_permit_receipts",
+        "emit_run_bundle",
+        "emit_tool_receipts"
+      ],
+      "type": "object"
+    },
+    "AgentSpecMemoryPolicyV1": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "mode": {
+          "$ref": "#/definitions/AgentMemoryModeV1"
+        },
+        "requires_view_disclosure": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled",
+        "mode",
+        "requires_view_disclosure"
+      ],
+      "type": "object"
+    },
+    "AgentSpecPermitPolicyV1": {
+      "properties": {
+        "commands": {
+          "$ref": "#/definitions/AgentPermitRuleV1"
+        },
+        "network": {
+          "$ref": "#/definitions/AgentPermitRuleV1"
+        },
+        "writes": {
+          "$ref": "#/definitions/AgentPermitRuleV1"
+        }
+      },
+      "required": [
+        "commands",
+        "network",
+        "writes"
+      ],
+      "type": "object"
+    },
+    "AgentSpecProviderPolicyV1": {
+      "properties": {
+        "cloud_allowed": {
+          "type": "boolean"
+        },
+        "fallback_allowed": {
+          "type": "boolean"
+        },
+        "provider": {
+          "$ref": "#/definitions/AgentProviderModeV1"
+        }
+      },
+      "required": [
+        "cloud_allowed",
+        "fallback_allowed",
+        "provider"
+      ],
+      "type": "object"
+    },
+    "AgentSpecSupportLabelV1": {
+      "enum": [
+        "supported",
+        "supported-local",
+        "partial",
+        "deferred",
+        "unsupported",
+        "scaffold",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "AgentSpecToolPolicyV1": {
+      "properties": {
+        "allowed_tools": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "write_tools_require_permit": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "allowed_tools",
+        "write_tools_require_permit"
+      ],
+      "type": "object"
+    },
+    "AgentSpecVerificationPolicyV1": {
+      "properties": {
+        "fail_closed": {
+          "type": "boolean"
+        },
+        "required_checks": {
+          "items": {
+            "$ref": "#/definitions/AgentVerificationCheckV1"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "fail_closed",
+        "required_checks"
+      ],
+      "type": "object"
+    },
+    "AgentVerificationCheckV1": {
+      "enum": [
+        "schema",
+        "sandbox",
+        "digest",
+        "support-claim"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "budget_policy": {
+      "$ref": "#/definitions/AgentSpecBudgetPolicyV1"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "evidence_policy": {
+      "$ref": "#/definitions/AgentSpecEvidencePolicyV1"
+    },
+    "memory_policy": {
+      "$ref": "#/definitions/AgentSpecMemoryPolicyV1"
+    },
+    "permit_policy": {
+      "$ref": "#/definitions/AgentSpecPermitPolicyV1"
+    },
+    "profile": {
+      "type": "string"
+    },
+    "provider_policy": {
+      "$ref": "#/definitions/AgentSpecProviderPolicyV1"
+    },
+    "schema": {
+      "type": "string"
+    },
+    "support_label": {
+      "$ref": "#/definitions/AgentSpecSupportLabelV1"
+    },
+    "tool_policy": {
+      "$ref": "#/definitions/AgentSpecToolPolicyV1"
+    },
+    "verification_policy": {
+      "$ref": "#/definitions/AgentSpecVerificationPolicyV1"
+    }
+  },
+  "required": [
+    "agent_id",
+    "budget_policy",
+    "display_name",
+    "evidence_policy",
+    "memory_policy",
+    "permit_policy",
+    "profile",
+    "provider_policy",
+    "schema",
+    "support_label",
+    "tool_policy",
+    "verification_policy"
+  ],
+  "title": "AgentSpecV1",
+  "type": "object"
+}

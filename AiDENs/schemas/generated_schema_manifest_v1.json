@@ -1,0 +1,506 @@
+{
+  "manifest_id": "generated-schema-manifest:v1",
+  "manifest_version": 1,
+  "registry_digest": "blake3:3dde17cff9b6d324df3951e7e696f643600d288526e45582ba099ed3df9fb913",
+  "schemas": [
+    {
+      "family": "agent-spec",
+      "version": 1,
+      "schema_identity": "schema:agent-spec:v1:blake3:781956bc8b32a1c1f6f6776fad96cde78c4a5fe32c53438a1a36cd7f383806ba",
+      "rust_type": "AgentSpecV1",
+      "schema_path": "agent-spec/v1.schema.json",
+      "schema_digest": "blake3:781956bc8b32a1c1f6f6776fad96cde78c4a5fe32c53438a1a36cd7f383806ba"
+    },
+    {
+      "family": "aidens-run-bundle",
+      "version": 2,
+      "schema_identity": "schema:aidens-run-bundle:v2:blake3:9886b85650d221b12aaa84f88c1870f32b33efe8fe288b9a9d7e1837a9b82b80",
+      "rust_type": "AiDENsRunBundleV2",
+      "schema_path": "aidens-run-bundle/v2.schema.json",
+      "schema_digest": "blake3:9886b85650d221b12aaa84f88c1870f32b33efe8fe288b9a9d7e1837a9b82b80"
+    },
+    {
+      "family": "aidens-run-bundle",
+      "version": 3,
+      "schema_identity": "schema:aidens-run-bundle:v3:blake3:7e1c5866d3dea50ef3dcef06edb82943a7cf04a70dc222f6a6c8d64fe5984172",
+      "rust_type": "AiDENsRunBundleV3",
+      "schema_path": "aidens-run-bundle/v3.schema.json",
+      "schema_digest": "blake3:7e1c5866d3dea50ef3dcef06edb82943a7cf04a70dc222f6a6c8d64fe5984172"
+    },
+    {
+      "family": "api-honesty-receipt",
+      "version": 1,
+      "schema_identity": "schema:api-honesty-receipt:v1:blake3:3c7df0badb388bd9155ef0e92ebcdc20bb2c4ef1ef609e1cc2914302a9cebfcc",
+      "rust_type": "ApiHonestyReportV1",
+      "schema_path": "api-honesty-receipt/v1.schema.json",
+      "schema_digest": "blake3:3c7df0badb388bd9155ef0e92ebcdc20bb2c4ef1ef609e1cc2914302a9cebfcc"
+    },
+    {
+      "family": "approval-decision",
+      "version": 1,
+      "schema_identity": "schema:approval-decision:v1:blake3:d57e9115e27f912b3ad2abfa8c8e7331010a9d97bc8d1d3ad9d13ba834feb0c1",
+      "rust_type": "ApprovalDecisionV1",
+      "schema_path": "approval-decision/v1.schema.json",
+      "schema_digest": "blake3:d57e9115e27f912b3ad2abfa8c8e7331010a9d97bc8d1d3ad9d13ba834feb0c1"
+    },
+    {
+      "family": "approval-request",
+      "version": 1,
+      "schema_identity": "schema:approval-request:v1:blake3:8da5e82dee3822299fc8e1a0ceafc95c4260f3dd6e0d324b5e88602caa8a9854",
+      "rust_type": "ApprovalRequestV1",
+      "schema_path": "approval-request/v1.schema.json",
+      "schema_digest": "blake3:8da5e82dee3822299fc8e1a0ceafc95c4260f3dd6e0d324b5e88602caa8a9854"
+    },
+    {
+      "family": "artifact-envelope",
+      "version": 1,
+      "schema_identity": "schema:artifact-envelope:v1:blake3:55197ba79e04b1575a59acd458a8e3045bdf039d3459b7c50d41a86b3743ac09",
+      "rust_type": "ArtifactEnvelopeV1",
+      "schema_path": "artifact-envelope/v1.schema.json",
+      "schema_digest": "blake3:55197ba79e04b1575a59acd458a8e3045bdf039d3459b7c50d41a86b3743ac09"
+    },
+    {
+      "family": "artifact-family-registry",
+      "version": 1,
+      "schema_identity": "schema:artifact-family-registry:v1:blake3:c123269f96d75a9672d67a35b15ebb147011150db080d63663a04c823e387cf1",
+      "rust_type": "ArtifactFamilyRegistryV1",
+      "schema_path": "artifact-family-registry/v1.schema.json",
+      "schema_digest": "blake3:c123269f96d75a9672d67a35b15ebb147011150db080d63663a04c823e387cf1"
+    },
+    {
+      "family": "backfill-receipt",
+      "version": 1,
+      "schema_identity": "schema:backfill-receipt:v1:blake3:b6c04f0cc0e147953bcf828d8d5aa9c2594a7da1aa06fb7830583f02d74e5509",
+      "rust_type": "BackfillReportV1",
+      "schema_path": "backfill-receipt/v1.schema.json",
+      "schema_digest": "blake3:b6c04f0cc0e147953bcf828d8d5aa9c2594a7da1aa06fb7830583f02d74e5509"
+    },
+    {
+      "family": "boundary-compile-outcome",
+      "version": 1,
+      "schema_identity": "schema:boundary-compile-outcome:v1:blake3:2ea02487cf08827213da8c36d1d5cc2a84947ec84ec7705e6efe0f12dab25b7b",
+      "rust_type": "BoundaryCompileOutcomeV1",
+      "schema_path": "boundary-compile-outcome/v1.schema.json",
+      "schema_digest": "blake3:2ea02487cf08827213da8c36d1d5cc2a84947ec84ec7705e6efe0f12dab25b7b"
+    },
+    {
+      "family": "boundary-compile-request",
+      "version": 1,
+      "schema_identity": "schema:boundary-compile-request:v1:blake3:615b1168776ca44d588ea0004608460a1c2fc8402684843372c10588ec2aef57",
+      "rust_type": "BoundaryCompileRequestV1",
+      "schema_path": "boundary-compile-request/v1.schema.json",
+      "schema_digest": "blake3:615b1168776ca44d588ea0004608460a1c2fc8402684843372c10588ec2aef57"
+    },
+    {
+      "family": "budget-exhaustion-receipt",
+      "version": 1,
+      "schema_identity": "schema:budget-exhaustion-receipt:v1:blake3:f3208a515c48f354a4424284d7e2d55b241605647b22ac9d5a78095a3199006e",
+      "rust_type": "BudgetExhaustionReportV1",
+      "schema_path": "budget-exhaustion-receipt/v1.schema.json",
+      "schema_digest": "blake3:f3208a515c48f354a4424284d7e2d55b241605647b22ac9d5a78095a3199006e"
+    },
+    {
+      "family": "capability-gate-decision",
+      "version": 1,
+      "schema_identity": "schema:capability-gate-decision:v1:blake3:5b9197b367e82ac75cee8a9a8c89ae6d4b353a99a3e55bad80a7d277930ece69",
+      "rust_type": "CapabilityGateDecisionV1",
+      "schema_path": "capability-gate-decision/v1.schema.json",
+      "schema_digest": "blake3:5b9197b367e82ac75cee8a9a8c89ae6d4b353a99a3e55bad80a7d277930ece69"
+    },
+    {
+      "family": "codex-packet",
+      "version": 1,
+      "schema_identity": "schema:codex-packet:v1:blake3:df78b3eb0f6318c3e86ff3028e3b157db1f2f90dd134908da5b6df0660b48c00",
+      "rust_type": "CodexPacketV1",
+      "schema_path": "codex-packet/v1.schema.json",
+      "schema_digest": "blake3:df78b3eb0f6318c3e86ff3028e3b157db1f2f90dd134908da5b6df0660b48c00"
+    },
+    {
+      "family": "command-run-receipt",
+      "version": 1,
+      "schema_identity": "schema:command-run-receipt:v1:blake3:e9b2dd232027088af9fe9300ed0e2a4509836f89f8b19d77d7ede857d5e1ce7d",
+      "rust_type": "CommandRunReportV1",
+      "schema_path": "command-run-receipt/v1.schema.json",
+      "schema_digest": "blake3:e9b2dd232027088af9fe9300ed0e2a4509836f89f8b19d77d7ede857d5e1ce7d"
+    },
+    {
+      "family": "completion-audit-report",
+      "version": 1,
+      "schema_identity": "schema:completion-audit-report:v1:blake3:1d0036ae405f50c3c13ec8636da953abf92e908e0ab27ff84485a9681e9d520a",
+      "rust_type": "CompletionAuditReportV1",
+      "schema_path": "completion-audit-report/v1.schema.json",
+      "schema_digest": "blake3:1d0036ae405f50c3c13ec8636da953abf92e908e0ab27ff84485a9681e9d520a"
+    },
+    {
+      "family": "config-apply-receipt",
+      "version": 1,
+      "schema_identity": "schema:config-apply-receipt:v1:blake3:cbed60f9c37a2f1747278a473c7ee77a0b567da4244158cf6c6cc36ace3dc23c",
+      "rust_type": "ConfigApplyReportV1",
+      "schema_path": "config-apply-receipt/v1.schema.json",
+      "schema_digest": "blake3:cbed60f9c37a2f1747278a473c7ee77a0b567da4244158cf6c6cc36ace3dc23c"
+    },
+    {
+      "family": "cross-pass-traceability-matrix",
+      "version": 1,
+      "schema_identity": "schema:cross-pass-traceability-matrix:v1:blake3:2981399a55122398bb1c6664a81e7569a91ff0138cd09bd697a5aa4c9128ae9b",
+      "rust_type": "CrossPassTraceabilityMatrixV1",
+      "schema_path": "cross-pass-traceability-matrix/v1.schema.json",
+      "schema_digest": "blake3:2981399a55122398bb1c6664a81e7569a91ff0138cd09bd697a5aa4c9128ae9b"
+    },
+    {
+      "family": "daemon-namespace",
+      "version": 1,
+      "schema_identity": "schema:daemon-namespace:v1:blake3:023903b7983828b43dcfdca5284403b11b39fc652256f48825749aae23a62190",
+      "rust_type": "DaemonNamespaceV1",
+      "schema_path": "daemon-namespace/v1.schema.json",
+      "schema_digest": "blake3:023903b7983828b43dcfdca5284403b11b39fc652256f48825749aae23a62190"
+    },
+    {
+      "family": "display-digest",
+      "version": 1,
+      "schema_identity": "schema:display-digest:v1:blake3:5e44082f40988cba6562f6c895594d17ab3df8f9c65340a0fd09bf1dc911f0e3",
+      "rust_type": "DisplayDigestV1",
+      "schema_path": "display-digest/v1.schema.json",
+      "schema_digest": "blake3:5e44082f40988cba6562f6c895594d17ab3df8f9c65340a0fd09bf1dc911f0e3"
+    },
+    {
+      "family": "duplicate-key-finding",
+      "version": 1,
+      "schema_identity": "schema:duplicate-key-finding:v1:blake3:8c7e605e35a8324da04245470258f76ff5ecac7b1d5b931b4786984e3cf2000c",
+      "rust_type": "DuplicateKeyFindingV1",
+      "schema_path": "duplicate-key-finding/v1.schema.json",
+      "schema_digest": "blake3:8c7e605e35a8324da04245470258f76ff5ecac7b1d5b931b4786984e3cf2000c"
+    },
+    {
+      "family": "duplicate-suppression-receipt",
+      "version": 1,
+      "schema_identity": "schema:duplicate-suppression-receipt:v1:blake3:70f34668e47e919bd656f98951021727c0e5f35aaf91ef4a8d9d0b7c9a810d75",
+      "rust_type": "DuplicateSuppressionReportV1",
+      "schema_path": "duplicate-suppression-receipt/v1.schema.json",
+      "schema_digest": "blake3:70f34668e47e919bd656f98951021727c0e5f35aaf91ef4a8d9d0b7c9a810d75"
+    },
+    {
+      "family": "example-app-manifest",
+      "version": 1,
+      "schema_identity": "schema:example-app-manifest:v1:blake3:12d7df5995078af1f269d2713ea2f1e7e6ac9cd6e3e8e819c0c0e948f7d7404d",
+      "rust_type": "ExampleAppManifestV1",
+      "schema_path": "example-app-manifest/v1.schema.json",
+      "schema_digest": "blake3:12d7df5995078af1f269d2713ea2f1e7e6ac9cd6e3e8e819c0c0e948f7d7404d"
+    },
+    {
+      "family": "fake-ready-finding",
+      "version": 1,
+      "schema_identity": "schema:fake-ready-finding:v1:blake3:832e64d71c167f84f531dffb8d56b91ad4d4d0b4ec8bd598a9101fd41ded1cad",
+      "rust_type": "FakeReadyFindingV1",
+      "schema_path": "fake-ready-finding/v1.schema.json",
+      "schema_digest": "blake3:832e64d71c167f84f531dffb8d56b91ad4d4d0b4ec8bd598a9101fd41ded1cad"
+    },
+    {
+      "family": "generated-schema-manifest",
+      "version": 1,
+      "schema_identity": "schema:generated-schema-manifest:v1:blake3:4e7f611e736aa7d89f5a61df0caf433050cc3a0ac612428d1ceea77556fe44ec",
+      "rust_type": "GeneratedSchemaManifestV1",
+      "schema_path": "generated-schema-manifest/v1.schema.json",
+      "schema_digest": "blake3:4e7f611e736aa7d89f5a61df0caf433050cc3a0ac612428d1ceea77556fe44ec"
+    },
+    {
+      "family": "golden-fixture-manifest",
+      "version": 1,
+      "schema_identity": "schema:golden-fixture-manifest:v1:blake3:22614ffe0fd54cf533a39d0b583a9428828b9cdeaef19f83c7ce937f3862813c",
+      "rust_type": "GoldenFixtureManifestV1",
+      "schema_path": "golden-fixture-manifest/v1.schema.json",
+      "schema_digest": "blake3:22614ffe0fd54cf533a39d0b583a9428828b9cdeaef19f83c7ce937f3862813c"
+    },
+    {
+      "family": "install-smoke-report",
+      "version": 1,
+      "schema_identity": "schema:install-smoke-report:v1:blake3:f44c92baa361888d7c096d86a620fb832ffde257e56911ca5ab3b2c3ef51d7d7",
+      "rust_type": "InstallSmokeReportV1",
+      "schema_path": "install-smoke-report/v1.schema.json",
+      "schema_digest": "blake3:f44c92baa361888d7c096d86a620fb832ffde257e56911ca5ab3b2c3ef51d7d7"
+    },
+    {
+      "family": "job",
+      "version": 1,
+      "schema_identity": "schema:job:v1:blake3:843795f82e97333c219af7de0906a0faa1da70f367b085470661aecd6ab1805c",
+      "rust_type": "JobV1",
+      "schema_path": "job/v1.schema.json",
+      "schema_digest": "blake3:843795f82e97333c219af7de0906a0faa1da70f367b085470661aecd6ab1805c"
+    },
+    {
+      "family": "known-limitations-register",
+      "version": 1,
+      "schema_identity": "schema:known-limitations-register:v1:blake3:a7653ebf6e2ecada1e59dbbb22170a9c80c7aa49db5930441ac2d5e518d8b046",
+      "rust_type": "KnownLimitationsRegisterV1",
+      "schema_path": "known-limitations-register/v1.schema.json",
+      "schema_digest": "blake3:a7653ebf6e2ecada1e59dbbb22170a9c80c7aa49db5930441ac2d5e518d8b046"
+    },
+    {
+      "family": "migration-plan",
+      "version": 1,
+      "schema_identity": "schema:migration-plan:v1:blake3:0c2b9408735f821301d01de599601e0ae6ee803b000bf0d2d2466542b59bc38d",
+      "rust_type": "MigrationPlanV1",
+      "schema_path": "migration-plan/v1.schema.json",
+      "schema_digest": "blake3:0c2b9408735f821301d01de599601e0ae6ee803b000bf0d2d2466542b59bc38d"
+    },
+    {
+      "family": "operator-status-report",
+      "version": 1,
+      "schema_identity": "schema:operator-status-report:v1:blake3:0f9574330dfc53a145cc09b26277fac8118ece42c7a77f70f4c6211594406acc",
+      "rust_type": "OperatorStatusReportV1",
+      "schema_path": "operator-status-report/v1.schema.json",
+      "schema_digest": "blake3:0f9574330dfc53a145cc09b26277fac8118ece42c7a77f70f4c6211594406acc"
+    },
+    {
+      "family": "patch-apply-receipt",
+      "version": 1,
+      "schema_identity": "schema:patch-apply-receipt:v1:blake3:a9942a4a5d3fbf81abcfd549c2ace47b72a432e2dc0a659a70ff0abb6147ac08",
+      "rust_type": "PatchApplyReportV1",
+      "schema_path": "patch-apply-receipt/v1.schema.json",
+      "schema_digest": "blake3:a9942a4a5d3fbf81abcfd549c2ace47b72a432e2dc0a659a70ff0abb6147ac08"
+    },
+    {
+      "family": "patch-proposal",
+      "version": 1,
+      "schema_identity": "schema:patch-proposal:v1:blake3:d234aeff93c9069f6805929b787b94bb5171daa3d4013294e611cbb4c46379b2",
+      "rust_type": "PatchProposalV1",
+      "schema_path": "patch-proposal/v1.schema.json",
+      "schema_digest": "blake3:d234aeff93c9069f6805929b787b94bb5171daa3d4013294e611cbb4c46379b2"
+    },
+    {
+      "family": "permit-grant",
+      "version": 1,
+      "schema_identity": "schema:permit-grant:v1:blake3:c679a8e982248875b6629370cbbf4367f75a4bdd975d3ad2b9ea76175e4e5615",
+      "rust_type": "PermitGrantV1",
+      "schema_path": "permit-grant/v1.schema.json",
+      "schema_digest": "blake3:c679a8e982248875b6629370cbbf4367f75a4bdd975d3ad2b9ea76175e4e5615"
+    },
+    {
+      "family": "permit-use-receipt",
+      "version": 1,
+      "schema_identity": "schema:permit-use-receipt:v1:blake3:12ba33d4acaf0fbc027470fea13238c7ba15ef9896e2fe60b6724e671d947b0c",
+      "rust_type": "PermitUseReportV1",
+      "schema_path": "permit-use-receipt/v1.schema.json",
+      "schema_digest": "blake3:12ba33d4acaf0fbc027470fea13238c7ba15ef9896e2fe60b6724e671d947b0c"
+    },
+    {
+      "family": "plan-runtime-parity-report",
+      "version": 1,
+      "schema_identity": "schema:plan-runtime-parity-report:v1:blake3:cf981d08675e8a63851534368a2b4f2c956d34867350be654b0a7a24fa64e6c4",
+      "rust_type": "PlanRuntimeParityReportV1",
+      "schema_path": "plan-runtime-parity-report/v1.schema.json",
+      "schema_digest": "blake3:cf981d08675e8a63851534368a2b4f2c956d34867350be654b0a7a24fa64e6c4"
+    },
+    {
+      "family": "provider-backend-matrix",
+      "version": 1,
+      "schema_identity": "schema:provider-backend-matrix:v1:blake3:ac8cd89b3bd111c68145011e30e8c448412592528513764b9ebc282ec626df1b",
+      "rust_type": "ProviderBackendMatrixV1",
+      "schema_path": "provider-backend-matrix/v1.schema.json",
+      "schema_digest": "blake3:ac8cd89b3bd111c68145011e30e8c448412592528513764b9ebc282ec626df1b"
+    },
+    {
+      "family": "provider-certification-fixture",
+      "version": 1,
+      "schema_identity": "schema:provider-certification-fixture:v1:blake3:154881ccc8032c76a3dfaaea0a11a0ecc005e7623d96df965525fb2a31622f01",
+      "rust_type": "ProviderCertificationFixtureV1",
+      "schema_path": "provider-certification-fixture/v1.schema.json",
+      "schema_digest": "blake3:154881ccc8032c76a3dfaaea0a11a0ecc005e7623d96df965525fb2a31622f01"
+    },
+    {
+      "family": "provider-readiness-receipt",
+      "version": 1,
+      "schema_identity": "schema:provider-readiness-receipt:v1:blake3:e2531394eb4621bddce952d1863551290c484ccf653a125333ebdcaa11261caf",
+      "rust_type": "ProviderReadinessReportV1",
+      "schema_path": "provider-readiness-receipt/v1.schema.json",
+      "schema_digest": "blake3:e2531394eb4621bddce952d1863551290c484ccf653a125333ebdcaa11261caf"
+    },
+    {
+      "family": "provider-route-receipt",
+      "version": 2,
+      "schema_identity": "schema:provider-route-receipt:v2:blake3:02304cb97e3d90499f61bad8c2219eae7dad608b0f42288ddca6908da08fab0b",
+      "rust_type": "ProviderRouteReportV2",
+      "schema_path": "provider-route-receipt/v2.schema.json",
+      "schema_digest": "blake3:02304cb97e3d90499f61bad8c2219eae7dad608b0f42288ddca6908da08fab0b"
+    },
+    {
+      "family": "queue-hop-receipt",
+      "version": 1,
+      "schema_identity": "schema:queue-hop-receipt:v1:blake3:b724daeb78749ed0c022f5b8cb0a7ae7a2c201e3222917bb2160d72ba8859291",
+      "rust_type": "QueueHopReportV1",
+      "schema_path": "queue-hop-receipt/v1.schema.json",
+      "schema_digest": "blake3:b724daeb78749ed0c022f5b8cb0a7ae7a2c201e3222917bb2160d72ba8859291"
+    },
+    {
+      "family": "queue-lease",
+      "version": 1,
+      "schema_identity": "schema:queue-lease:v1:blake3:7302c7111c1712e15cb05ac52c0238e19c822e7f37f1078eff8c4deff4060921",
+      "rust_type": "QueueLeaseV1",
+      "schema_path": "queue-lease/v1.schema.json",
+      "schema_digest": "blake3:7302c7111c1712e15cb05ac52c0238e19c822e7f37f1078eff8c4deff4060921"
+    },
+    {
+      "family": "regression-debt-ledger",
+      "version": 1,
+      "schema_identity": "schema:regression-debt-ledger:v1:blake3:b178014081cb7604720dada278f6be5cadbab3a430d155978126f2d294dab5bc",
+      "rust_type": "RegressionDebtLedgerV1",
+      "schema_path": "regression-debt-ledger/v1.schema.json",
+      "schema_digest": "blake3:b178014081cb7604720dada278f6be5cadbab3a430d155978126f2d294dab5bc"
+    },
+    {
+      "family": "release-artifact-manifest",
+      "version": 1,
+      "schema_identity": "schema:release-artifact-manifest:v1:blake3:820feaf1448f2a435b857d767265315b03bc65b2edac94e0330433e1996ef08d",
+      "rust_type": "ReleaseArtifactManifestV1",
+      "schema_path": "release-artifact-manifest/v1.schema.json",
+      "schema_digest": "blake3:820feaf1448f2a435b857d767265315b03bc65b2edac94e0330433e1996ef08d"
+    },
+    {
+      "family": "release-readiness-report",
+      "version": 1,
+      "schema_identity": "schema:release-readiness-report:v1:blake3:bb0e21e7939223633461077af03c9cfcd037ae10d2a7c4500658cc7d14de0cd9",
+      "rust_type": "ReleaseReadinessReportV1",
+      "schema_path": "release-readiness-report/v1.schema.json",
+      "schema_digest": "blake3:bb0e21e7939223633461077af03c9cfcd037ae10d2a7c4500658cc7d14de0cd9"
+    },
+    {
+      "family": "repo-list-receipt",
+      "version": 1,
+      "schema_identity": "schema:repo-list-receipt:v1:blake3:ba1740435bc1c5f7bcd1f0e5585f05c82e7885b77e00635a0d8a406b24a5a924",
+      "rust_type": "RepoListReportV1",
+      "schema_path": "repo-list-receipt/v1.schema.json",
+      "schema_digest": "blake3:ba1740435bc1c5f7bcd1f0e5585f05c82e7885b77e00635a0d8a406b24a5a924"
+    },
+    {
+      "family": "repo-read-receipt",
+      "version": 1,
+      "schema_identity": "schema:repo-read-receipt:v1:blake3:53284b56b1dbd650be7327f172532fac584be2ba4cd7ba8596219eaea533d85a",
+      "rust_type": "RepoReadReportV1",
+      "schema_path": "repo-read-receipt/v1.schema.json",
+      "schema_digest": "blake3:53284b56b1dbd650be7327f172532fac584be2ba4cd7ba8596219eaea533d85a"
+    },
+    {
+      "family": "run-receipt",
+      "version": 1,
+      "schema_identity": "schema:run-receipt:v1:blake3:b1f9b2ca07d6d71d2e5e3a915e0a9fcbefebbfe4ba688eaaa0ef09a3897d3615",
+      "rust_type": "RunReportV1",
+      "schema_path": "run-receipt/v1.schema.json",
+      "schema_digest": "blake3:b1f9b2ca07d6d71d2e5e3a915e0a9fcbefebbfe4ba688eaaa0ef09a3897d3615"
+    },
+    {
+      "family": "safe-mode-receipt",
+      "version": 1,
+      "schema_identity": "schema:safe-mode-receipt:v1:blake3:2b867710d5584bd360613f5deefdc5c9da81c376cf9cfb49111be31810fccaa8",
+      "rust_type": "SafeModeReportV1",
+      "schema_path": "safe-mode-receipt/v1.schema.json",
+      "schema_digest": "blake3:2b867710d5584bd360613f5deefdc5c9da81c376cf9cfb49111be31810fccaa8"
+    },
+    {
+      "family": "sandbox-capability-truth",
+      "version": 1,
+      "schema_identity": "schema:sandbox-capability-truth:v1:blake3:43d9e547792b6eb7f23003ce67fbde0b16683056f496acabbaf110ac1de35eb1",
+      "rust_type": "SandboxCapabilityTruthV1",
+      "schema_path": "sandbox-capability-truth/v1.schema.json",
+      "schema_digest": "blake3:43d9e547792b6eb7f23003ce67fbde0b16683056f496acabbaf110ac1de35eb1"
+    },
+    {
+      "family": "scaffold-surface-report",
+      "version": 1,
+      "schema_identity": "schema:scaffold-surface-report:v1:blake3:5f5b11ba024f933e404d484ad21fb4a0f392877f829c1904e0e00f5e43ed8c2a",
+      "rust_type": "ScaffoldSurfaceReportV1",
+      "schema_path": "scaffold-surface-report/v1.schema.json",
+      "schema_digest": "blake3:5f5b11ba024f933e404d484ad21fb4a0f392877f829c1904e0e00f5e43ed8c2a"
+    },
+    {
+      "family": "schedule-occurrence",
+      "version": 1,
+      "schema_identity": "schema:schedule-occurrence:v1:blake3:be22538d5e756bec14a6b5311f6aefabd95863d3c3081b67c876b23a53beab5d",
+      "rust_type": "ScheduleOccurrenceV1",
+      "schema_path": "schedule-occurrence/v1.schema.json",
+      "schema_digest": "blake3:be22538d5e756bec14a6b5311f6aefabd95863d3c3081b67c876b23a53beab5d"
+    },
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "schema_identity": "schema:schema-compatibility-report:v1:blake3:8db21e7365570987be8f7a0f726c6a34ecfa0ba5ba4bd85701132eef2bb852a0",
+      "rust_type": "SchemaCompatibilityReportV1",
+      "schema_path": "schema-compatibility-report/v1.schema.json",
+      "schema_digest": "blake3:8db21e7365570987be8f7a0f726c6a34ecfa0ba5ba4bd85701132eef2bb852a0"
+    },
+    {
+      "family": "source-basis-lock",
+      "version": 1,
+      "schema_identity": "schema:source-basis-lock:v1:blake3:21e6337285477abe22e1fa950a9f4b61791d9c6eeabb00e6cd840838225a9a29",
+      "rust_type": "SourceBasisLockV1",
+      "schema_path": "source-basis-lock/v1.schema.json",
+      "schema_digest": "blake3:21e6337285477abe22e1fa950a9f4b61791d9c6eeabb00e6cd840838225a9a29"
+    },
+    {
+      "family": "super-pass-status",
+      "version": 1,
+      "schema_identity": "schema:super-pass-status:v1:blake3:c39246ed008c34293bb5f009d8cfad28b6a72cbc3ddd636694a8330ec19e5498",
+      "rust_type": "SuperPassStatusV1",
+      "schema_path": "super-pass-status/v1.schema.json",
+      "schema_digest": "blake3:c39246ed008c34293bb5f009d8cfad28b6a72cbc3ddd636694a8330ec19e5498"
+    },
+    {
+      "family": "tool-call-request",
+      "version": 1,
+      "schema_identity": "schema:tool-call-request:v1:blake3:ee517c28cfc8047d4fed9dce329070f1072331f86327c628e164b93468d08f89",
+      "rust_type": "ToolCallRequestV1",
+      "schema_path": "tool-call-request/v1.schema.json",
+      "schema_digest": "blake3:ee517c28cfc8047d4fed9dce329070f1072331f86327c628e164b93468d08f89"
+    },
+    {
+      "family": "tool-call-result",
+      "version": 1,
+      "schema_identity": "schema:tool-call-result:v1:blake3:f1c59fdfd1e2ce5040dfc9a5a10eefac07bc15d436849026e05349ac6e033a54",
+      "rust_type": "ToolCallResultV1",
+      "schema_path": "tool-call-result/v1.schema.json",
+      "schema_digest": "blake3:f1c59fdfd1e2ce5040dfc9a5a10eefac07bc15d436849026e05349ac6e033a54"
+    },
+    {
+      "family": "tool-exposure-plan",
+      "version": 2,
+      "schema_identity": "schema:tool-exposure-plan:v2:blake3:9a1c3be78976ae0110233bb9b6328f857737b6b5b792d141bb63dcaf4615b0ed",
+      "rust_type": "ToolExposurePlanV2",
+      "schema_path": "tool-exposure-plan/v2.schema.json",
+      "schema_digest": "blake3:9a1c3be78976ae0110233bb9b6328f857737b6b5b792d141bb63dcaf4615b0ed"
+    },
+    {
+      "family": "tool-invocation-receipt",
+      "version": 1,
+      "schema_identity": "schema:tool-invocation-receipt:v1:blake3:efb5444875bcd2a0f96fe572bdfd122abc595e6daf0e23ce19ed88296a30ac67",
+      "rust_type": "ToolInvocationReportV1",
+      "schema_path": "tool-invocation-receipt/v1.schema.json",
+      "schema_digest": "blake3:efb5444875bcd2a0f96fe572bdfd122abc595e6daf0e23ce19ed88296a30ac67"
+    },
+    {
+      "family": "turn-execution-plan",
+      "version": 1,
+      "schema_identity": "schema:turn-execution-plan:v1:blake3:8c0c72a394c63352c948b795cfd465eefa8bdf010b6e55f898715ab8bc9f6c2d",
+      "rust_type": "TurnExecutionPlanV1",
+      "schema_path": "turn-execution-plan/v1.schema.json",
+      "schema_digest": "blake3:8c0c72a394c63352c948b795cfd465eefa8bdf010b6e55f898715ab8bc9f6c2d"
+    },
+    {
+      "family": "turn-receipt",
+      "version": 1,
+      "schema_identity": "schema:turn-receipt:v1:blake3:ff74aed2963766fda6ab88f33fc87964aed99e13e5a06b23034457c1cb09828c",
+      "rust_type": "TurnReportV1",
+      "schema_path": "turn-receipt/v1.schema.json",
+      "schema_digest": "blake3:ff74aed2963766fda6ab88f33fc87964aed99e13e5a06b23034457c1cb09828c"
+    },
+    {
+      "family": "wake-signal",
+      "version": 1,
+      "schema_identity": "schema:wake-signal:v1:blake3:32f6e13d79a0a2d67e974a13d14ff9de8387baafb4565069950f4053a388b026",
+      "rust_type": "WakeSignalV1",
+      "schema_path": "wake-signal/v1.schema.json",
+      "schema_digest": "blake3:32f6e13d79a0a2d67e974a13d14ff9de8387baafb4565069950f4053a388b026"
+    }
+  ],
+  "reason_codes": [
+    "aidens-local-display-report-schemas-only"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-14T02:26:13Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/docs/P31_LIBRARIES2_CARGO_TOMLS.txt",
+      "bytes": 1255,
+      "mtime_utc": "2026-05-14T02:13:50Z",
+      "original_path": "docs/P31_LIBRARIES2_CARGO_TOMLS.txt",
+      "reason": "stale-run-doc",
+      "run_id": "P31",
+      "sha256": "e018b1e4dc9dd617ac69e1280469770cec86e86c3496a12ecd4eeddbb6b20097"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/docs/P31_LIBRARIES_CARGO_TOMLS.txt",
+      "bytes": 5942,
+      "mtime_utc": "2026-05-14T02:13:50Z",
+      "original_path": "docs/P31_LIBRARIES_CARGO_TOMLS.txt",
+      "reason": "stale-run-doc",
+      "run_id": "P31",
+      "sha256": "a8f7b1b8b3937d7c692d89a0c0cc860fc261d46146a05beec0bc9853f626772c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/docs/P31_SCR_CARGO_METADATA.json",
+      "bytes": 8129,
+      "mtime_utc": "2026-05-14T02:13:50Z",
+      "original_path": "docs/P31_SCR_CARGO_METADATA.json",
+      "reason": "stale-run-doc",
+      "run_id": "P31",
+      "sha256": "692436492a6bb6579ced1552115c9743ff75b7c136a6ede825cfa66635b714e2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/docs/P31_SOURCE_FILE_LIST.txt",
+      "bytes": 25631,
+      "mtime_utc": "2026-05-14T02:20:31Z",
+      "original_path": "docs/P31_SOURCE_FILE_LIST.txt",
+      "reason": "stale-run-doc",
+      "run_id": "P31",
+      "sha256": "59f678ed25d68414e9b0f81d406ec479b85e36f1e5dbcc9ab96e907a950d389f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/scripts/run_p31_completion_checks.sh",
+      "bytes": 1077,
+      "mtime_utc": "2026-05-14T02:25:55Z",
+      "original_path": "scripts/run_p31_completion_checks.sh",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "bc709d6637c44d05a40ac5aeba9a2c3a1e01db7b3127390ec0d8998cf190927f"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+  "run_id": "P31",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "zip_source_certifier.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

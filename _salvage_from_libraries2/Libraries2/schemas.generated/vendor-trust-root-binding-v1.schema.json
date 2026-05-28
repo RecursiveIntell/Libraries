@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "revocation_channel": {
+      "type": "string"
+    },
+    "rotation_channel": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "signer_classes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trust_root_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "vendor_certification_adapter_id": {
+      "type": "string"
+    },
+    "vendor_trust_root_binding_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "revocation_channel",
+    "rotation_channel",
+    "schema_version",
+    "vendor_certification_adapter_id",
+    "vendor_trust_root_binding_id"
+  ],
+  "title": "VendorTrustRootBindingV1",
+  "type": "object"
+}

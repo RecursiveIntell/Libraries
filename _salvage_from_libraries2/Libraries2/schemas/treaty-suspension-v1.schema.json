@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "blocked_runtime_names": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "resumption_requirements": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "shared_divergence_report_id": {
+      "type": "string"
+    },
+    "suspension_reason": {
+      "type": "string"
+    },
+    "suspension_scope": {
+      "type": "string"
+    },
+    "treaty_bundle_id": {
+      "type": "string"
+    },
+    "treaty_suspension_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "generated_at",
+    "schema_version",
+    "shared_divergence_report_id",
+    "suspension_reason",
+    "suspension_scope",
+    "treaty_bundle_id",
+    "treaty_suspension_id"
+  ],
+  "title": "TreatySuspensionV1",
+  "type": "object"
+}

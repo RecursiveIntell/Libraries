@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use verification_adjudication::{RollbackDecisionV1, RolloutDecisionV1};
 
 fn load_example<T: serde::de::DeserializeOwned>(stem: &str) -> T {

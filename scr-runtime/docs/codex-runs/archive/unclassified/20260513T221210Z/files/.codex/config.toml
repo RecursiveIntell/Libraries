@@ -1,0 +1,14 @@
+# ClaimLedger Codex completion profile
+# Keep this file small and repo-local.
+
+[project]
+name = "claimledger"
+run_id = "P0-completion-automated-phases"
+
+[execution]
+phase_manifest = ".codex/prompt_manifest.json"
+auto_phase_runner = ".codex/tools/auto_phase_runner.py"
+manual_injections_required = false
+
+[validation]
+completion_checks = "scripts/run_completion_checks.sh"

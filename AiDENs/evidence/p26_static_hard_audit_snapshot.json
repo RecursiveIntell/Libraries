@@ -1,0 +1,181 @@
+{
+  "created_utc": "2026-05-04T01:29:09Z",
+  "package_summary": {
+    "source_package": "AiDENs-aidens-next-codex-context-20260504.zip",
+    "created_utc": "2026-05-04T01:08:10Z",
+    "script_version": "2026.05.03-p25",
+    "current_run": "P25",
+    "included_files": 1283,
+    "rust_files": 483,
+    "markdown_files": 392,
+    "json_files": 199,
+    "strict_findings": 0,
+    "errors": 0,
+    "warnings": 0,
+    "codex_active_stale_after": 0,
+    "root_markdown_archive_enabled": false,
+    "root_markdown_inspected": 71,
+    "root_markdown_protected": 5,
+    "root_markdown_candidates": 1,
+    "root_markdown_ambiguous": 65,
+    "root_markdown_moved": 0,
+    "package_sha256_report": "3ae35b2b1685213ddabe903091e0602db1354809562b1cf72f233c7900ed8ba4",
+    "p25_internal_package_sha256": "885824c8dc913faf0fad64a33b2f0f13ec8c5f0197494b02edc8756c02c235ea"
+  },
+  "large_files": [
+    [
+      "crates/aidens-contracts/src/lib.rs",
+      371136,
+      10410,
+      "P1",
+      "contract megafile; split only behind API compatibility gates"
+    ],
+    [
+      "crates/aidens-cli/src/lib.rs",
+      235631,
+      6698,
+      "P1",
+      "CLI megafile; split command domains after capability pass or during phase if needed"
+    ],
+    [
+      "crates/aidens-tool-kit/src/lib.rs",
+      90164,
+      2454,
+      "P2",
+      "tool domain split candidate"
+    ],
+    [
+      "crates/aidens-runner/src/lib.rs",
+      75397,
+      1910,
+      "P2",
+      "runner split candidate"
+    ],
+    [
+      "crates/aidens-agency-kit/src/lib.rs",
+      67998,
+      1815,
+      "P2",
+      "agency policies and receipts split candidate"
+    ],
+    [
+      "crates/aidens-provider-kit/src/lib.rs",
+      49825,
+      1472,
+      "P3",
+      "provider route split candidate"
+    ],
+    [
+      "crates/aidens-boundary-kit/src/lib.rs",
+      34982,
+      1057,
+      "P3",
+      "boundary submodule split candidate"
+    ],
+    [
+      "crates/aidens-testkit/src/lib.rs",
+      36739,
+      1019,
+      "P3",
+      "testkit split candidate"
+    ]
+  ],
+  "issues": [
+    [
+      "P26-001",
+      "P0",
+      "Replay parity",
+      "Extracted package self-replay cargo gates failed in P25",
+      "Fix package self-replay or classify exact environment cause with executable reproduction",
+      "No final P26 success if replay failure is untriaged"
+    ],
+    [
+      "P26-002",
+      "P0",
+      "AgentSpecV1",
+      "AiDENs lacks one declarative agent contract tying profile/tools/memory/permits/evidence",
+      "Add AgentSpecV1 + schema + fixtures + CLI validation",
+      "Must not invent canonical sibling semantics"
+    ],
+    [
+      "P26-003",
+      "P0",
+      "Plan/Act/Verify loop",
+      "Current local demo proves pieces, not a reusable advanced loop",
+      "Implement reusable local PlanActVerify loop with bounded turns, receipts, verification ladder, abstention",
+      "No cloud, no unbounded autonomy"
+    ],
+    [
+      "P26-004",
+      "P0",
+      "Memory grounding",
+      "Memory seam fixture exists but is not yet an agent grounding primitive",
+      "Agent run can import/query/use memory seam evidence with view/widening disclosure",
+      "No local memory truth store"
+    ],
+    [
+      "P26-005",
+      "P0",
+      "Coding agent v1",
+      "Flagship demo is fixture-scoped",
+      "Generalize supported-local coding agent against sandbox roots with read/search/propose/apply/check/inspect",
+      "Permit-gated writes only"
+    ],
+    [
+      "P26-006",
+      "P0",
+      "RunBundleV3",
+      "P25 run evidence exists but advanced loop needs richer artifact shape",
+      "Add AiDENsRunBundleV3 or equivalent extension preserving V2 compatibility",
+      "Backpointers to canonical execution context required"
+    ],
+    [
+      "P26-007",
+      "P1",
+      "Repair/abstention",
+      "Failure honesty exists but not full agent loop behavior",
+      "Explicit AbstentionReceipt/RepairPlan display artifacts for blocked/ambiguous/failed tasks",
+      "No fake completion"
+    ],
+    [
+      "P26-008",
+      "P1",
+      "Verifier",
+      "P25 verifier is hygiene-focused",
+      "P26 verifier checks AgentSpec, loop receipts, memory grounding, coding agent, replay",
+      "All checks emit evidence"
+    ],
+    [
+      "P26-009",
+      "P1",
+      "CLI/UX",
+      "Existing commands are fragmented",
+      "Add/normalize agent commands: agent validate/run/inspect/doctor/new if safe",
+      "Avoid breaking old commands"
+    ],
+    [
+      "P26-010",
+      "P1",
+      "V10-ready seams",
+      "Need future graph/kernel interface without V10 implementation",
+      "Add design-only descriptors and tests proving no storage/retrieval/inference graph collapse",
+      "Do not implement V10 runtime"
+    ],
+    [
+      "P26-011",
+      "P2",
+      "Large-file containment",
+      "contracts and cli megafiles are large",
+      "Only split if required; otherwise update containment with precise module plan",
+      "No broad refactor momentum"
+    ],
+    [
+      "P26-012",
+      "P2",
+      "Root markdown archive",
+      "P25 feature is too conservative",
+      "Tighten classification only if necessary for package clarity",
+      "No broad z.py work"
+    ]
+  ]
+}

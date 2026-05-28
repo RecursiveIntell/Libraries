@@ -1,0 +1,8 @@
+{
+  "schema_version": "audit_fixture_case_v1",
+  "case_id": "high_hazard_confirmed_fixable",
+  "domain": "audit",
+  "proposed_action": "generate_repair_packet",
+  "requested_effect": "prepare_patch",
+  "signals": ["high_hazard", "confirmed", "fixable"]
+}

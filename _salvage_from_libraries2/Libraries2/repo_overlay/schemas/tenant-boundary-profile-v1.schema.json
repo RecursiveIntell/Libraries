@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TenantBoundaryProfileV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "tenant_boundary_profile_id": {
+      "type": "string"
+    },
+    "tenant_key_kind": {
+      "type": "string"
+    },
+    "isolation_class": {
+      "type": "string"
+    },
+    "shared_service_allowances": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cross_tenant_query_default": {
+      "type": "string"
+    },
+    "key_management_segregation": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "tenant_boundary_profile_id",
+    "tenant_key_kind",
+    "isolation_class",
+    "shared_service_allowances",
+    "cross_tenant_query_default",
+    "key_management_segregation"
+  ]
+}

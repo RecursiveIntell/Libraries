@@ -1,0 +1,174 @@
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.0
+   Compiling serde_core v1.0.228
+   Compiling zmij v1.0.21
+   Compiling thiserror v2.0.18
+   Compiling serde_json v1.0.150
+   Compiling serde v1.0.228
+   Compiling llm-output-parser v0.2.0 (/home/sikmindz/Coding/Libraries/llm-output-parser)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.23s
+     Running unittests src/lib.rs (llm-output-parser/target/debug/deps/llm_output_parser-f3425e30ec474460)
+
+running 141 tests
+test choice::tests::bold ... ok
+test choice::tests::case_insensitive ... ok
+test choice::tests::exact_match ... ok
+test choice::tests::no_match ... ok
+test choice::tests::no_substring ... ok
+test choice::tests::in_prose ... ok
+test choice::tests::first_wins ... ok
+test choice::tests::quoted ... ok
+test choice::tests::with_period ... ok
+test choice::tests::with_trace_records_strategy ... ok
+test choice::tests::with_trace_rejects_oversized_input ... ok
+test choice::tests::with_think ... ok
+test extract::tests::extract_bare_code_block ... ok
+test extract::tests::extract_code_block_for_json ... ok
+test extract::tests::extract_code_block_for_wrong_lang ... ok
+test extract::tests::extract_code_block_no_fence ... ok
+test extract::tests::extract_json_code_block ... ok
+test extract::tests::find_bracketed_json_array ... ok
+test extract::tests::find_bracketed_json_object ... ok
+test extract::tests::find_bracketed_limited_ok ... ok
+test extract::tests::find_bracketed_limited_exact_boundary ... ok
+test extract::tests::find_bracketed_limited_too_deep ... ok
+test extract::tests::find_bracketed_nested ... ok
+test extract::tests::find_bracketed_no_match ... ok
+test extract::tests::find_bracketed_prefers_later ... ok
+test extract::tests::find_bracketed_with_string_containing_brackets ... ok
+test extract::tests::preprocess_strips_and_trims ... ok
+test extract::tests::strip_mixed_think_and_thinking ... ok
+test extract::tests::strip_think_tags_complete ... ok
+test extract::tests::strip_think_tags_incomplete ... ok
+test extract::tests::strip_think_tags_multiple ... ok
+test extract::tests::strip_think_tags_no_tags ... ok
+test extract::tests::strip_thinking_tags_complete ... ok
+test extract::tests::strip_thinking_tags_incomplete ... ok
+test json::tests::bare_code_block ... ok
+test json::tests::code_block_json ... ok
+test json::tests::code_fences_option_disabled ... ok
+test json::tests::direct_json_array ... ok
+test json::tests::empty_response_fails ... ok
+test json::tests::json_in_prose ... ok
+test json::tests::direct_json_object ... ok
+test json::tests::json_with_surrounding_text ... ok
+test json::tests::nested_json ... ok
+test json::tests::parse_json_value_with_trace_direct ... ok
+test json::tests::parse_json_value_works ... ok
+test json::tests::parse_json_with_trace_code_block ... ok
+test json::tests::parse_json_with_trace_repair ... ok
+test json::tests::repaired_single_quotes ... ok
+test json::tests::strip_think_tags_option_disabled ... ok
+test json::tests::repaired_trailing_comma ... ok
+test json::tests::think_and_code_block ... ok
+test json::tests::think_then_json ... ok
+test json::tests::too_deep_exact_boundary ... ok
+test json::tests::too_deep_nesting ... ok
+test json::tests::too_large_exact_boundary ... ok
+test json::tests::too_large_input ... ok
+test list::tests::clean_tags_filters_empty ... ok
+test list::tests::json_object_with_items_key ... ok
+test list::tests::json_object_with_list_key ... ok
+test list::tests::json_object_with_results_key ... ok
+test list::tests::parse_cleans_whitespace_and_case ... ok
+test list::tests::parse_code_block_with_object ... ok
+test list::tests::parse_deduplicates ... ok
+test list::tests::parse_bulleted_list ... ok
+test list::tests::parse_empty_fails ... ok
+test list::tests::parse_comma_separated ... ok
+test list::tests::parse_filters_long_tags ... ok
+test list::tests::parse_json_array ... ok
+test list::tests::parse_markdown_code_block ... ok
+test list::tests::parse_mixed_text_and_json ... ok
+test list::tests::parse_object_with_tags_key ... ok
+test list::tests::parse_string_list_with_trace_direct ... ok
+test list::tests::parse_star_bulleted_list ... ok
+test list::tests::parse_string_list_with_trace_too_large ... ok
+test list::tests::parse_string_list_with_trace_repair ... ok
+test list::tests::parse_string_list_with_trace_strategies_recorded ... ok
+test list::tests::parse_numbered_list ... ok
+test list::tests::parse_think_then_code_block ... ok
+test list::tests::parse_with_incomplete_think_block ... ok
+test list::tests::parse_think_then_object ... ok
+test list::tests::parse_with_surrounding_text ... ok
+test list::tests::parse_with_think_blocks ... ok
+test list::tests::raw_preserves_case ... ok
+test list::tests::raw_preserves_length ... ok
+test list::tests::raw_comma_separated ... ok
+test list::tests::strip_think_tags_complete ... ok
+test list::tests::strip_think_tags_incomplete ... ok
+test list::tests::repaired_json_list ... ok
+test list::tests::strip_think_tags_multiple ... ok
+test list::tests::thinking_tag_variant ... ok
+test number::tests::float ... ok
+test number::tests::fraction ... ok
+test number::tests::in_prose ... ok
+test number::tests::in_range_with_trace_rejects_oversized_input ... ok
+test number::tests::integer ... ok
+test number::tests::labeled ... ok
+test number::tests::multiple_numbers_labeled ... ok
+test number::tests::negative ... ok
+test number::tests::no_number ... ok
+test number::tests::range_fail ... ok
+test number::tests::range_pass ... ok
+test number::tests::with_think ... ok
+test number::tests::with_trace_records_fraction_strategy ... ok
+test repair::tests::apostrophe_safety ... ok
+test repair::tests::block_comment ... ok
+test repair::tests::inline_comment ... ok
+test repair::tests::missing_close_brace ... ok
+test repair::tests::missing_close_bracket ... ok
+test repair::tests::no_repair_needed ... ok
+test repair::tests::nested_trailing_commas ... ok
+test repair::tests::mixed_errors ... ok
+test repair::tests::python_booleans ... ok
+test repair::tests::python_none ... ok
+test repair::tests::single_quoted_array ... ok
+test repair::tests::single_quotes ... ok
+test repair::tests::trailing_comma_array ... ok
+test repair::tests::trailing_comma_object ... ok
+test repair::tests::unrepairable ... ok
+test repair::tests::unquoted_keys ... ok
+test text::tests::already_clean ... ok
+test text::tests::clean_text ... ok
+test text::tests::empty_after_strip ... ok
+test text::tests::heres_prefix ... ok
+test text::tests::sure_prefix ... ok
+test text::tests::with_think ... ok
+test text::tests::with_trace_records_prefix_strategy ... ok
+test text::tests::with_trace_rejects_oversized_input ... ok
+test xml::tests::case_sensitive ... ok
+test xml::tests::missing_close ... ok
+test xml::tests::multiline_content ... ok
+test xml::tests::multiple_tags ... ok
+test xml::tests::nested_content ... ok
+test xml::tests::no_tags_found ... ok
+test xml::tests::partial_tags_found ... ok
+test xml::tests::simple_tag ... ok
+test xml::tests::tag_not_found ... ok
+test xml::tests::tag_with_trace_records_span ... ok
+test xml::tests::tags_with_trace_warn_on_missing_tag ... ok
+test xml::tests::think_then_tag ... ok
+test xml::tests::whitespace_trimming ... ok
+test xml::tests::with_trace_rejects_oversized_input ... ok
+
+test result: ok. 141 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests llm_output_parser
+
+running 12 tests
+test src/extract.rs - extract::extract_code_block (line 71) ... ok
+test src/extract.rs - extract::extract_code_block_for (line 114) ... ok
+test src/choice.rs - choice::parse_choice (line 26) ... ok
+test src/text.rs - text::parse_text (line 41) ... ok
+test src/error.rs - error::ParseOptions (line 10) ... ok
+test src/extract.rs - extract::strip_think_tags (line 35) ... ok
+test src/extract.rs - extract::find_bracketed (line 156) ... ok
+test src/xml.rs - xml::parse_xml_tags (line 79) ... ok
+test src/xml.rs - xml::parse_xml_tag (line 20) ... ok
+test src/number.rs - number::parse_number_in_range (line 102) ... ok
+test src/number.rs - number::parse_number (line 25) ... ok
+test src/json.rs - json::parse_json (line 38) ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+

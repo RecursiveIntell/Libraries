@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SchemaChangeClassV1": {
+      "enum": [
+        "exact",
+        "additive-minor",
+        "major-breaking",
+        "unknown-incompatible"
+      ],
+      "type": "string"
+    },
+    "SchemaCompatibilityCheckV1": {
+      "properties": {
+        "change_class": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/SchemaChangeClassV1"
+            }
+          ],
+          "default": "unknown-incompatible"
+        },
+        "compatible": {
+          "type": "boolean"
+        },
+        "family": {
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/definitions/SchemaCompatibilityModeV1"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "requires_major_bump": {
+          "default": false,
+          "type": "boolean"
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "compatible",
+        "family",
+        "mode",
+        "version"
+      ],
+      "type": "object"
+    },
+    "SchemaCompatibilityModeV1": {
+      "enum": [
+        "backward",
+        "forward",
+        "full",
+        "transitive"
+      ],
+      "type": "string"
+    },
+    "SchemaPathCollisionFindingV1": {
+      "properties": {
+        "colliding_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "finding_id": {
+          "type": "string"
+        },
+        "normalized_path": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "colliding_paths",
+        "finding_id",
+        "normalized_path"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "checked_schema_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/definitions/SchemaCompatibilityCheckV1"
+      },
+      "type": "array"
+    },
+    "compatible": {
+      "type": "boolean"
+    },
+    "incompatible_schema_paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "missing_schema_paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "path_collision_findings": {
+      "items": {
+        "$ref": "#/definitions/SchemaPathCollisionFindingV1"
+      },
+      "type": "array"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "registry_digest": {
+      "type": "string"
+    },
+    "report_id": {
+      "type": "string"
+    },
+    "unregistered_schema_paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "checked_schema_count",
+    "compatible",
+    "registry_digest",
+    "report_id"
+  ],
+  "title": "SchemaCompatibilityReportV1",
+  "type": "object"
+}

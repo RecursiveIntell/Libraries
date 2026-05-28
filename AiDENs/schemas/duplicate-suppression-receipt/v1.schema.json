@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "existing_job_id": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "namespace_id": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "suppressed_source_kind": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "existing_job_id",
+    "idempotency_key",
+    "kind",
+    "namespace_id",
+    "receipt_id",
+    "recorded_at",
+    "suppressed_source_kind"
+  ],
+  "title": "DuplicateSuppressionReportV1",
+  "type": "object"
+}

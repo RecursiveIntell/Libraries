@@ -1,0 +1,501 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-13T22:12:43Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_00_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_00_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4942924858ea6af87802226af54a879000a529c7f0e93c59f8dc7443849b1697"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_01_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_01_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "98153ee34c78f0a62fd3a7441bd4de877d3b772c725814b23475c16c91e519fc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_02_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_02_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "054418a7d31197585019571b04f59a96ae894ae2867f408c9f374329cc2a25e4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_03_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_03_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "bfffa9ac9272189f0175a71243d42832624d824f73ca41c2d34a32d44c92862e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_04_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_04_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "42c8b4942956c4e02804bcf74374891d8be567ca6920c7904693bf4a2e173e82"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_05_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_05_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "29301d7627e7f426e4a6c99e85a0198840a9e96825cb37ff0a4739fce5504664"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_06_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_06_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "5afbec273863aee2502a9cc616e2fef3728fe139129ed8dc0a75fc861c12e3fb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/config.toml",
+      "bytes": 73,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/config.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b2779791671116367b179ca544778fd6490969da2097713ddfb7f5fcd3c68c96"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/hooks.json",
+      "bytes": 69,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4b6aeea03a7ee5b859276e5f058805c7cf0a3fb674ca1670b5f36ee147badf23"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompt_manifest.json",
+      "bytes": 2691,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompt_manifest.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0f8d7818ee6bb801c10b932481f6cff73f097fda88088fc9b3e6f3796f8a7065"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "bytes": 2605,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "37bf7defd2d950ad575c3d8f69fa10371596b847d0f4602ccc2f7b2bbf30723e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "bytes": 769,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ec27f3e2fd2db96dfd8a51de90a53d54301ecb5cd229c103b20d4c2731a63e2e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "bytes": 1566,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_01_restore_active_codex_pack.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ec9813deac6309e9e7b7d6a9641f146c1379713a452316edece7f942e41c3813"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_02_auto_phase_runner.md",
+      "bytes": 899,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_02_auto_phase_runner.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4fd933838d6a7763c0e2ee4f548d0121811ac51b6bdef0018eec205232c54ab0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_03_packaging_policy.md",
+      "bytes": 1000,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_03_packaging_policy.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "a805513bcad911f9615639b0f81ca86a7bcb61ac66516b3366c320d3f4f2d64a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "bytes": 720,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_04_tests_and_release_gates.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f8b630e424b16f3c6e997491f61b0f2202a17ca637ecf3fdeb33eb5072d43e40"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "bytes": 499,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_05_fresh_unzip_certification.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c42fe96e7140783cb00c415e8203f4153a464dca23fcfb3a51efe330626df9ef"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "bytes": 535,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_06_hostile_audit_handoff.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4f5fe95a81c4c404b7a8ee1ed5247f94729b59cc4aa56beba8fa1410a19382a1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/rules/safety.rules",
+      "bytes": 190,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/rules/safety.rules",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "39faae27c50e0dadd3076b6c46e4b79ee384408952aa7243d9fff4e2a04c6159"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/codex-control-pack/SKILL.md",
+      "bytes": 743,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/codex-control-pack/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "51da818a5b156b3c4c9a985d4e063b1801927b69c8b1c9920f8cfdcee2681ce8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/hostile-audit/SKILL.md",
+      "bytes": 502,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/hostile-audit/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "5ae969466c7df1373090f9a00d55ae99ac7622ab668fd9f5516b1f11c105f03c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/phase-gate/SKILL.md",
+      "bytes": 521,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/phase-gate/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0ad30fb3a8f04a35528bff1a921119c17b4416a43fe0eca6d978ff36bc8bae72"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/run-certifier/SKILL.md",
+      "bytes": 513,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/run-certifier/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8ac4e4ae012115cb41e9ca89c0e74aabdfd32ffedd03bff80fe427f0e86076bf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/source-of-truth-map/SKILL.md",
+      "bytes": 570,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/source-of-truth-map/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7e6fe13e219b8a9a66e7d5e30742029c79182216918496ca542f32265f68d809"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/tools/auto_phase_runner.py",
+      "bytes": 7032,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/tools/auto_phase_runner.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "552f0656f10295b1bf347054a08702c3736ef9153c818c97890923c1c67a3692"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/tools/inspect_codex_setup.py",
+      "bytes": 300,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/tools/inspect_codex_setup.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7d539dd3b772004c4da2f9c2be98cc8acde5614145171d2be0613e4b17053951"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/tools/phase_prompt_builder.py",
+      "bytes": 1641,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/tools/phase_prompt_builder.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "92580f856f9f3f0bb47352fbb31c55eff861a4395b8bfa985922b51f0c7a3080"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+  "run_id": "unclassified",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": [
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_00_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_00_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4942924858ea6af87802226af54a879000a529c7f0e93c59f8dc7443849b1697"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_01_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_01_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "98153ee34c78f0a62fd3a7441bd4de877d3b772c725814b23475c16c91e519fc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_02_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_02_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "054418a7d31197585019571b04f59a96ae894ae2867f408c9f374329cc2a25e4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_03_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_03_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "bfffa9ac9272189f0175a71243d42832624d824f73ca41c2d34a32d44c92862e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_04_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_04_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "42c8b4942956c4e02804bcf74374891d8be567ca6920c7904693bf4a2e173e82"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_05_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_05_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "29301d7627e7f426e4a6c99e85a0198840a9e96825cb37ff0a4739fce5504664"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/auto_injections/phase_06_gate.md",
+      "bytes": 734,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/auto_injections/phase_06_gate.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "5afbec273863aee2502a9cc616e2fef3728fe139129ed8dc0a75fc861c12e3fb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/config.toml",
+      "bytes": 73,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/config.toml",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "b2779791671116367b179ca544778fd6490969da2097713ddfb7f5fcd3c68c96"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/hooks.json",
+      "bytes": 69,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/hooks.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4b6aeea03a7ee5b859276e5f058805c7cf0a3fb674ca1670b5f36ee147badf23"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompt_manifest.json",
+      "bytes": 2691,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompt_manifest.json",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0f8d7818ee6bb801c10b932481f6cff73f097fda88088fc9b3e6f3796f8a7065"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "bytes": 2605,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "37bf7defd2d950ad575c3d8f69fa10371596b847d0f4602ccc2f7b2bbf30723e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "bytes": 769,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ec27f3e2fd2db96dfd8a51de90a53d54301ecb5cd229c103b20d4c2731a63e2e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "bytes": 1566,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_01_restore_active_codex_pack.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "ec9813deac6309e9e7b7d6a9641f146c1379713a452316edece7f942e41c3813"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_02_auto_phase_runner.md",
+      "bytes": 899,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_02_auto_phase_runner.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4fd933838d6a7763c0e2ee4f548d0121811ac51b6bdef0018eec205232c54ab0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_03_packaging_policy.md",
+      "bytes": 1000,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_03_packaging_policy.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "a805513bcad911f9615639b0f81ca86a7bcb61ac66516b3366c320d3f4f2d64a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "bytes": 720,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_04_tests_and_release_gates.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "f8b630e424b16f3c6e997491f61b0f2202a17ca637ecf3fdeb33eb5072d43e40"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "bytes": 499,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_05_fresh_unzip_certification.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "c42fe96e7140783cb00c415e8203f4153a464dca23fcfb3a51efe330626df9ef"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "bytes": 535,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/prompts/phase_06_hostile_audit_handoff.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "4f5fe95a81c4c404b7a8ee1ed5247f94729b59cc4aa56beba8fa1410a19382a1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/rules/safety.rules",
+      "bytes": 190,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/rules/safety.rules",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "39faae27c50e0dadd3076b6c46e4b79ee384408952aa7243d9fff4e2a04c6159"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/codex-control-pack/SKILL.md",
+      "bytes": 743,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/codex-control-pack/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "51da818a5b156b3c4c9a985d4e063b1801927b69c8b1c9920f8cfdcee2681ce8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/hostile-audit/SKILL.md",
+      "bytes": 502,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/hostile-audit/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "5ae969466c7df1373090f9a00d55ae99ac7622ab668fd9f5516b1f11c105f03c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/phase-gate/SKILL.md",
+      "bytes": 521,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/phase-gate/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "0ad30fb3a8f04a35528bff1a921119c17b4416a43fe0eca6d978ff36bc8bae72"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/run-certifier/SKILL.md",
+      "bytes": 513,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/run-certifier/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "8ac4e4ae012115cb41e9ca89c0e74aabdfd32ffedd03bff80fe427f0e86076bf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/skills/source-of-truth-map/SKILL.md",
+      "bytes": 570,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/skills/source-of-truth-map/SKILL.md",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7e6fe13e219b8a9a66e7d5e30742029c79182216918496ca542f32265f68d809"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/tools/auto_phase_runner.py",
+      "bytes": 7032,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/tools/auto_phase_runner.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "552f0656f10295b1bf347054a08702c3736ef9153c818c97890923c1c67a3692"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/tools/inspect_codex_setup.py",
+      "bytes": 300,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/tools/inspect_codex_setup.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "7d539dd3b772004c4da2f9c2be98cc8acde5614145171d2be0613e4b17053951"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/unclassified/20260513T221243Z/files/.codex/tools/phase_prompt_builder.py",
+      "bytes": 1641,
+      "mtime_utc": "2026-05-13T22:12:40Z",
+      "original_path": ".codex/tools/phase_prompt_builder.py",
+      "reason": "stale-codex-control",
+      "run_id": "unclassified",
+      "sha256": "92580f856f9f3f0bb47352fbb31c55eff861a4395b8bfa985922b51f0c7a3080"
+    }
+  ]
+}

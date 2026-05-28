@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/fibquant_guard.py\" --repo \"$(git rev-parse --show-toplevel)\"",
+            "timeout": 30,
+            "statusMessage": "FibQuant preflight"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/fibquant_stop_guard.py\" --repo \"$(git rev-parse --show-toplevel)\"",
+            "timeout": 30,
+            "statusMessage": "FibQuant stop guard"
+          }
+        ]
+      }
+    ]
+  }
+}

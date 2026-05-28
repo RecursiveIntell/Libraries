@@ -1,0 +1,18 @@
+{
+  "syndrome_id": "syndrome:fixture",
+  "kind": "syndrome",
+  "syndrome_kind": "contradiction",
+  "graph_id": "compiled-region-graph:fixture",
+  "region_id": "region:fixture",
+  "contradiction_witness_id": "contradiction-witness:fixture",
+  "affected_claim_ids": [
+    "claim:a",
+    "claim:b"
+  ],
+  "canonical_repair_record_ids": [],
+  "global_recompute_required": true,
+  "reason_codes": [
+    "canonical-repair-required"
+  ],
+  "emitted_at": "2026-04-27T00:00:00Z"
+}

@@ -10,9 +10,7 @@ use crate::observe::{Observation, ObservationDisposition};
 use crate::targets::TargetKind;
 use crate::types::TargetNormalization;
 use std::cmp::Ordering;
-use std::collections::hash_map::DefaultHasher;
 use std::collections::BTreeSet;
-use std::hash::{Hash, Hasher};
 
 /// A scored verification target with its selected execution plan.
 #[derive(Debug, Clone)]
@@ -213,22 +211,21 @@ fn normalize_target(observation: &Observation, target: &TargetKind) -> TargetNor
     }
 }
 
+// LIB-LOW-001: replaced DefaultHasher with blake3 for deterministic digest
 fn bounded_region_digest(observation: &Observation, target: &TargetKind) -> String {
-    let mut hasher = DefaultHasher::new();
-    observation.scope_key.hash(&mut hasher);
-    target.stable_key().hash(&mut hasher);
-    observation
-        .import_log
-        .as_ref()
-        .map(|row| row.imported_at.as_str())
-        .hash(&mut hasher);
-    observation
-        .claim_versions
-        .iter()
-        .map(|claim| claim.claim_version_id.as_str())
-        .collect::<Vec<_>>()
-        .hash(&mut hasher);
-    format!("region:{:016x}", hasher.finish())
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(observation.scope_key.namespace.as_bytes());
+    if let Some(ref domain) = observation.scope_key.domain {
+        hasher.update(domain.as_bytes());
+    }
+    hasher.update(target.stable_key().as_bytes());
+    if let Some(ref row) = observation.import_log {
+        hasher.update(row.imported_at.as_bytes());
+    }
+    for claim in &observation.claim_versions {
+        hasher.update(claim.claim_version_id.as_str().as_bytes());
+    }
+    format!("region:{}", &hasher.finalize().to_hex()[..16])
 }
 
 fn dedupe_targets(targets: Vec<TargetKind>, _config: &LoopConfig) -> Vec<TargetKind> {

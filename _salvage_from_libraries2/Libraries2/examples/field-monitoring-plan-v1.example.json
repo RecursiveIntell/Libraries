@@ -1,0 +1,19 @@
+{
+  "schema_version": "FieldMonitoringPlanV1",
+  "field_monitoring_plan_id": "fmp_001",
+  "deployment_profile_id": "dpf_001",
+  "monitors": [
+    "error_budget",
+    "latency_p95",
+    "deploy_health"
+  ],
+  "sampling_window": "4h",
+  "alert_routes": [
+    "pagerduty:alpha",
+    "slack:#ops"
+  ],
+  "recertification_triggers": [
+    "slo_breach",
+    "material code drift"
+  ]
+}

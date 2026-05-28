@@ -1,0 +1,9 @@
+{
+  "case_id": "false_completion_missing_tests",
+  "expected_minimum_action": "GenerateRepairPacket",
+  "required_reason_codes": [
+    "FALSE_COMPLETION",
+    "MISSING_TESTS"
+  ],
+  "notes": "Initial expected minimum. Codex should generate full golden receipts after evaluator exists. Updating generated golden receipts requires POLICY_CHANGE.md."
+}

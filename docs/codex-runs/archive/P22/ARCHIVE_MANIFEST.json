@@ -1,0 +1,959 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T09:11:47Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/00_CODEX_START_HERE.md",
+      "bytes": 1185,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/00_CODEX_START_HERE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "91236a247b7c8e4b33c74de8134b419506b9517eb39b6869a147deb7cc5a163b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/01_SOURCE_AND_EXTRACTION_MAP.md",
+      "bytes": 3009,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/01_SOURCE_AND_EXTRACTION_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "e20674c505584a28f97a3a12cb1af55465f6ac46c6ea2d22b2eb20af127a49a1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/02_CRATE_BOUNDARY_MAP.md",
+      "bytes": 3056,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/02_CRATE_BOUNDARY_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "8ee86eba5b3ec4f482ed9a7b88243b5b81f70dcba08bbd40df88d03ac94ba4d9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/03_IMPLEMENTATION_PHASES.md",
+      "bytes": 2104,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/03_IMPLEMENTATION_PHASES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "613c893450528a134f23080ef90d8d3c5bc11187c912a5640f42377630734768"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/04_ACCEPTANCE_GATES.md",
+      "bytes": 1448,
+      "mtime_utc": "2026-05-02T03:49:29Z",
+      "original_path": "AiDENs/docs/p22/04_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "30f7e88cac85ea23347146c950caf716427848f42025903c1129210205f34c2f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/05_FOOTGUN_TEST_MATRIX.md",
+      "bytes": 2094,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/05_FOOTGUN_TEST_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "65f9d5cce27050f50dd4fb21bd036b881e427f059062398bb518beec4b97c8de"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/06_RECALL_SOURCE_TOUCH_MAP.md",
+      "bytes": 2401,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/06_RECALL_SOURCE_TOUCH_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "dd9c84038f709c764a573b4c5b1c37910b89549176941a82f18a295a7d44b46c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/07_API_TARGETS.md",
+      "bytes": 975,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/07_API_TARGETS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "53a300774cb5cccbc620e35ab169ddc2971ebdb43494076469d3f461715147c7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/08_CI_AND_COMMANDS.md",
+      "bytes": 1647,
+      "mtime_utc": "2026-05-02T03:49:29Z",
+      "original_path": "AiDENs/docs/p22/08_CI_AND_COMMANDS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "b34b5bcabe3dc6e21ad4a578d8f236d429177d32b1875e19a07407fef1694d42"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/09_CODEX_PHASE0_PROMPT.md",
+      "bytes": 649,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/09_CODEX_PHASE0_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "9621fb98ecd8ba4f546f87f0aba9a68665186664de6a5aeb6e67a766be0f038c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/10_CODEX_PHASE1_PROMPT.md",
+      "bytes": 649,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/10_CODEX_PHASE1_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "991e04a4c4a23dadc06b48cafba7fea9c789b184f40a8e1c18cc240695052c1b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/11_CODEX_PHASE2_PROMPT.md",
+      "bytes": 470,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/11_CODEX_PHASE2_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "ec2a2fd044e8e5faad16fe888bc1098274dff9250c00fc22ead48eb1a8156440"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/12_DEFERRED_ADVANCED_PROMPT.md",
+      "bytes": 342,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/12_DEFERRED_ADVANCED_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "531f2e6ad276dc352312adc66eb22a2744cf699125a3bc41f5622b7c516b4a1f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/13_DEPENDENCY_BOUNDARY_CHECKLIST.md",
+      "bytes": 612,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/13_DEPENDENCY_BOUNDARY_CHECKLIST.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "26a404008a26f08d94d81743dc24dd57718ba1f9b961ebc482a93e97d5dbb476"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/14_DESIGN_LAWS.md",
+      "bytes": 778,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/14_DESIGN_LAWS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "6ec2c772d3bac6ae66a530f0252e816cc123ff4d3834926c12b59d2e05c2b559"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/15_CURRENT_RECALL_AUDIT_SUMMARY.md",
+      "bytes": 1023,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/15_CURRENT_RECALL_AUDIT_SUMMARY.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "e0b132a1c7be66d1ab3cc7023f9d8e9f8553d29ec96a19f3cf6da87f05240a7b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/ACCEPTANCE_GATES.md",
+      "bytes": 953,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "ccf448791645eff67a62ba269b2627363c2f82b019462007b05347d2ebaadab6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/APP_PLAN_AND_DOCTOR_SPEC.md",
+      "bytes": 1473,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/APP_PLAN_AND_DOCTOR_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "ae87928d8599a47616502de84a37e5dee5715f8ae55e8522862a492218bd8f2b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/AUDITOR_HANDOFF.md",
+      "bytes": 1322,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/AUDITOR_HANDOFF.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "4aaba4da59fe905bcda87a32712fcd583e8ce5342c1b57de8e7c2c16d815b9c9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/CANONICAL_OWNER_MAP.md",
+      "bytes": 3731,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/CANONICAL_OWNER_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "83d570945ffa855b174928d27079f4964b59a05c5107596d32487996f4bce80d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/CURRENT_AIDENS_AUDIT.md",
+      "bytes": 2490,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/CURRENT_AIDENS_AUDIT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "9677504317b086a655c8a3b5a8958ec7d56315eb075957056b23619341d3b4a6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/DEPENDENCY_AND_PATH_GUIDE.md",
+      "bytes": 976,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/DEPENDENCY_AND_PATH_GUIDE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "7efaf5bee647e68d0d7ce27367f06493450f4e751267071ce830001fb82f8c70"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/EVIDENCE_REPORTING_REQUIREMENTS.md",
+      "bytes": 1364,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/EVIDENCE_REPORTING_REQUIREMENTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "fbcdc07c5d1ae388679c22c1aca66b54df820cffa7a90ad8214e42cb39788ce5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/FINAL_STATE_SPEC.md",
+      "bytes": 2173,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/FINAL_STATE_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "e73c39088175d40cc820a075f8af37573f786a3e44387d2eb9a9462bc7c96698"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/FORBIDDEN_PATTERNS.md",
+      "bytes": 835,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/FORBIDDEN_PATTERNS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "e21ac01f5abcfc15881b797c4ad7b289234af1d92c1c3e853826060981f6971a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/HUMAN_GUARDRAIL_PROMPTS.md",
+      "bytes": 4332,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/HUMAN_GUARDRAIL_PROMPTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "bdf8330cee68c33960a0ec23e9da9cceb7d614f1f432e8a858f22ed6f22f2688"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/IMPLEMENTATION_SEQUENCE.md",
+      "bytes": 1722,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/IMPLEMENTATION_SEQUENCE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "ed8b27f1f08ce8ee7a0e9461b188f0d22399288e0cc8a7daa2b56c065170847c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/MASTER_ISSUE_MATRIX.md",
+      "bytes": 1855,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "cb02dee352548be5fe69743db1a41cb88a8cb32945df72cd8775376de0bc00b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/NON_GOALS.md",
+      "bytes": 499,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/NON_GOALS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "ff740820d8a3e061249550c51de84d0d79ea8fb461b8aab307ec3d78f03029e3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/ODD_COMBINATION_MATRIX.md",
+      "bytes": 1199,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/ODD_COMBINATION_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "d16d516359a59e8e417994810413285b8059c51aede644a6c7731a511f2d7020"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/OPEN_AMBIGUITIES_AND_STOP_RULES.md",
+      "bytes": 1010,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/OPEN_AMBIGUITIES_AND_STOP_RULES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "e48324df3791390b39f2ff762b8fda49e7bdfad6d94e0df91cb870db71483cfb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/OPERATOR_QUICKSTART.md",
+      "bytes": 2217,
+      "mtime_utc": "2026-05-02T05:44:31Z",
+      "original_path": "AiDENs/docs/p22/OPERATOR_QUICKSTART.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "ef0ad09c997d35223cef918e9dad00de62e29ab31428447fb9dd0cd5517bb62b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md",
+      "bytes": 1813,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "e844eb328e66ed4082a32642be0d73ced8864dc30add87b1d1dcdb6f231941aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/PROVIDER_INTEGRATION_SPEC.md",
+      "bytes": 1811,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/PROVIDER_INTEGRATION_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "3c37ffc459e0f3bd574687a3c36b154bfb9bd04d41616a827f2376a6d5c9913b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/RESEARCH_CONSTRAINTS.md",
+      "bytes": 774,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/RESEARCH_CONSTRAINTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "d6ed7f11fa1034ef8aadef0167a92f8e3756fe9d36e540834b831a7089172a56"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/RE_RUN_AND_VERIFICATION.md",
+      "bytes": 1342,
+      "mtime_utc": "2026-05-02T03:49:29Z",
+      "original_path": "AiDENs/docs/p22/RE_RUN_AND_VERIFICATION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "9110f89e64b03e66fe8e585e6153ea6439331a7ffff50f4a69e87b91e95955b4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/RISK_REGISTER.md",
+      "bytes": 1123,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/RISK_REGISTER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "b1b0c92c718533674f0fb9872aabc5721569fdd06465a874e93adccaddbbfce4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 2424,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "9821522fb376e65a052ac5748efe11a3055aba2c40ba0917a351c433bc0f9d67"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "bytes": 3556,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "1d3035feca8d3bd13c24d99d30c287aa1835c3403fb039b5e711d8fc7cada2bb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/SOURCE_ROOTS_AND_TOUCH_MAP.md",
+      "bytes": 1984,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/SOURCE_ROOTS_AND_TOUCH_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "4b36275398c3485fb9626528718b63574b4d6d717fb39a1060dec49783513e5a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/TOOL_DISPATCH_SPEC.md",
+      "bytes": 1018,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/TOOL_DISPATCH_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "d44a4e3b95f6ef8319d8d3658242347b13462e2c477c795226a0f6f6f92e2d3f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv",
+      "bytes": 18948,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "5be25f6f6a65de2c6ced19053707626af16881491bfba9655d8819b633bcb0e7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv",
+      "bytes": 90,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "ce00e50439cb40ed5229f47664e3e57c400b52c13e81c5d0a820da43891a36de"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/CANONICAL_TYPE_INVENTORY.csv",
+      "bytes": 65187,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/CANONICAL_TYPE_INVENTORY.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "4591618fd6ae38f50b1a5cdd1b9a364f638b2270a846b4e7dd71e9b7f1ebc595"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/COMPATIBILITY_LEDGER.md",
+      "bytes": 207,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/COMPATIBILITY_LEDGER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "477023f0df19ffdbc354637080badc0c8065e6c983360b841e3653f8ea2f611b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "bytes": 5314,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "10685c81cdb8381bd075f7ea95e3f223453066f8f09b6809acb59d6dbaf3cdf1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md",
+      "bytes": 1191,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "1165767343dc5075b3cd38879256ba22bb9665856125447685ec9c0037e3839e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/FINAL_AUDITOR_HANDOFF.md",
+      "bytes": 3670,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/FINAL_AUDITOR_HANDOFF.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "1ac26fdb8856430f48e040601b47b7673107f7bb5e39d139b41dcadc51b73b5d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/FINAL_GATE_OUTPUTS.md",
+      "bytes": 2112,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/FINAL_GATE_OUTPUTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "aae24f8ac9583c2182fb2b3d2cdf57bf9e57a2569fd9125e26ca652a4c998b95"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md",
+      "bytes": 4354,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "65de2327f39aa17404b182e7dd0e7fdca0374a50979b6abe6c00554a4d760b05"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/FINAL_QUARANTINE_LEDGER.md",
+      "bytes": 1386,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/FINAL_QUARANTINE_LEDGER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "f343c005dc0a9677185a1ae76a81c309a590034e44f8de8ca2524963d07807d3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv",
+      "bytes": 83189,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "164a7d3737d19d5cd73f2bf2dbd34dd95951b2c0795964bef37485605c002864"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/FINAL_UNRESOLVED_RISKS.md",
+      "bytes": 1859,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/FINAL_UNRESOLVED_RISKS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "aef6da1e36aaa896b33bfd49580aa9a920d83832848043990d5bd801ae66092e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md",
+      "bytes": 1386,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "bcef0a3b836bf5a3f9de5dd48c0caba57bd56901538639f1eba1c63e467e2bc8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv",
+      "bytes": 84079,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "016f8b8c29664c5e9d9a603f6275263d9b544cd6ece2ec87876097ef4c948333"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/quarantine/delegation-kit-attestation-settlement.md",
+      "bytes": 2997,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/quarantine/delegation-kit-attestation-settlement.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "6ebde1908796a11f98ae030c4e1f3deaec0d8797949552e9aaad8ad5a7ed9e0f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/quarantine/phase05-schema-sketches.md",
+      "bytes": 2048,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/quarantine/phase05-schema-sketches.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "0141ff7d3c37664eeb9beb2dc6bae83547676c90010009261b9e052bc2ea00d0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "bytes": 2011,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "d43219f597309df08e573311042b1ae7864cbaf0d3591f513beb0dd090ca9372"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/matrices/P0_DUPLICATE_TYPES.csv",
+      "bytes": 779,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/matrices/P0_DUPLICATE_TYPES.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "2bead88445bf508aeec0920ef911ea180d4828d516aa2bd1efd97426cd86a697"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/matrices/SOURCE_OF_TRUTH_MATRIX.csv",
+      "bytes": 1175,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/matrices/SOURCE_OF_TRUTH_MATRIX.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "93d3cf8b263824edb19baeb53ca4c2c8f393720335b5743c1626f4f6a8136a06"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv",
+      "bytes": 222,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "0b427ab281932e69430f7e26ade5de732788bb035ba7a9418e3f378fe2fb86a7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "bytes": 4394,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "56f0382bfa0238753565b703aa87a7a92ac59d93c689cb1ea6e96a6317a5cdb5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "bytes": 5092,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "fafefbb08eb10006710daebac91f7734d6038078f5cd4312ae778261380e7b10"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md",
+      "bytes": 3788,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "8739ff094f221a06f82e7c1f39b183d1b65dd3b99bc1f1f504f6074b2e02d71d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/03_CRATE_BOUNDARY_MAP.md",
+      "bytes": 7091,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/03_CRATE_BOUNDARY_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "40aff76db60643f793d68d63704d4955659e6dbd58bb62fdd3b805d63a4ca580"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/04_EXTRACTION_PROCEDURE.md",
+      "bytes": 7775,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/04_EXTRACTION_PROCEDURE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "40d48900c9a629c69cc5fc293a447c3978d06d9f940cca50d0071ab0d2809295"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md",
+      "bytes": 7298,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "fd2997dc367c15a664e4dbc22d4e9f3fdc432cc557d9a952f0a8c3e1d6422e52"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md",
+      "bytes": 4295,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "7a1a86259c6719e668219b28b54441fea143b64c71314441fc37c9278a9333ec"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md",
+      "bytes": 3855,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "70c7208317abcc9c6de84bd389f1c9aef2347795883aef2b4af764508c10b44f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md",
+      "bytes": 3163,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "abe5fbf64e3257a489b3be3d238a2e8961764e10c90384387d1c56b27f55ce33"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md",
+      "bytes": 2848,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "891b34c84b3a383004168c9c225044f4325c340c3ae1bd040ead38adabdfba26"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md",
+      "bytes": 2944,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "daf5ad504c6c661771b163329a0804df1ba3d22b6eb8672d874796d943003e80"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md",
+      "bytes": 4055,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "34516d873aea91de0b390e68a30bcf335ca4a42884cefe4cdc55fc4d60f7fbb1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md",
+      "bytes": 4076,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "1a7cc2a257368b85df6d5595d5fa4e320b3bbe83b219601afa7dcf355ef55820"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md",
+      "bytes": 3614,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "31d5b9dcb0283b048261d598b25ced11db60268fbfddbdad2f402ea43e938d41"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/14_RISK_REGISTER.md",
+      "bytes": 3035,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/14_RISK_REGISTER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "f20e5f2e787bf3fd4c8e0308cde9d82bf13aa9054c17b32692b659dbd4ef6cc3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/15_API_SKETCHES.md",
+      "bytes": 2960,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/15_API_SKETCHES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "6f5f388bcd18c1044a709f0cec7279c537c5b2acccc4dd5fb22399b53d0d6f6d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/16_TRACEABILITY_MATRIX.md",
+      "bytes": 4488,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/16_TRACEABILITY_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "a3bc21d4441a90daa79d80e61c1ba0c13871338436dfcae567dcf330f5ebae64"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md",
+      "bytes": 4108,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "fabcd4374c642241c420ebbcdb5ba5e9185a5886ec232d609b85c53239b2be9d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md",
+      "bytes": 2710,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "1edaeebe5c4df8090ce12da651f4ed94ac5f6ddc9f31fadd9f8b6a7cacef71e2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/MANIFEST.json",
+      "bytes": 937,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/MANIFEST.json",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "b7fc1203418f16550c10f6f5b91f07cbb480b43e95cc98ca4f4167384586e7a1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/MANIFEST.txt",
+      "bytes": 632,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/MANIFEST.txt",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "3579f66a39d941e9736837787a3e86d1f12e36df3d1e0b9a698f2a6fe6413318"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/prior-design-packet/README.md",
+      "bytes": 3414,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/prior-design-packet/README.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "5352fb310079519dae8b3f82b242451c8a56bb9a83a69bf070cf9efba24672da"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 257,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "192c81feabfe065fb9d544096de21ab780bed0bcc8172adbdcdaf2557b7c3c7e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/templates/PHASE_REPORT_TEMPLATE.md",
+      "bytes": 659,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/templates/PHASE_REPORT_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "1567a152eb8131e638ba9d7b91eb4fea209bde888fcb96ad65ef31e81f8f7f6b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/docs/p22/templates/QUARANTINE_RECORD_TEMPLATE.md",
+      "bytes": 326,
+      "mtime_utc": "2026-05-02T00:37:45Z",
+      "original_path": "AiDENs/docs/p22/templates/QUARANTINE_RECORD_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P22",
+      "sha256": "9aed4dfb0f0eeae1f816ddb155f146f58fc8a0c9de0c61937571f7ad5ff6d9ac"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/FINAL_AUDIT_REPORT.md",
+      "bytes": 7004,
+      "mtime_utc": "2026-05-02T06:03:25Z",
+      "original_path": "AiDENs/handoffs/p22/FINAL_AUDIT_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "95211ac7b4545f078dfa457998478a944717b6dd34e7755c0618bc29b424861a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/KNOWN_LIMITATIONS.md",
+      "bytes": 1940,
+      "mtime_utc": "2026-05-02T06:01:44Z",
+      "original_path": "AiDENs/handoffs/p22/KNOWN_LIMITATIONS.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "5a56f1ff9b0a898d72c455cabce509f3a6e8a6b19c3b6cb147b4d99e16cca6fd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_00_REPORT.md",
+      "bytes": 189192,
+      "mtime_utc": "2026-05-02T00:48:35Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_00_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "6b34edca3b51e0a09fea5667fd887509406048cc0f6104898146d137a9c1fcb6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_01_REPORT.md",
+      "bytes": 9699,
+      "mtime_utc": "2026-05-02T01:03:41Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_01_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "2a27a96a58406ad927fcf309b32f8b2d09ec63255ff1831d317dc3cb8415dec6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_02_REPORT.md",
+      "bytes": 10872,
+      "mtime_utc": "2026-05-02T01:12:40Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_02_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "ba69f12ddcb17acd737afb0b134b303cbf223cbcd6f8ff2a5e06c467a3c704a8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_03_REPORT.md",
+      "bytes": 9538,
+      "mtime_utc": "2026-05-02T01:27:51Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_03_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "621715cf41828c82a9b8819041d7d5adf94cd417b9d261d0803ab2ee20dc3367"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_04_REPORT.md",
+      "bytes": 8386,
+      "mtime_utc": "2026-05-02T01:28:44Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_04_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "df99a376680c76ccd93b71e1455f13e9a38cce34435cc893418722cb888c5c37"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_05_REPORT.md",
+      "bytes": 9934,
+      "mtime_utc": "2026-05-02T03:48:29Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_05_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "5a760898187c8ecaffa38b40998b929b98c771f8f8fd745adf9601b969b9cf74"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_06_REPORT.md",
+      "bytes": 7432,
+      "mtime_utc": "2026-05-02T03:59:32Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_06_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "3dbea4de21e878721ed73c77842517537f1891b94f11b7a0517c7e872cf018a7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_07_REPORT.md",
+      "bytes": 8333,
+      "mtime_utc": "2026-05-02T05:55:41Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_07_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "00b8b3d62539f738cf9ede638069d69ecaf308aa2b4e39ec4685b28e2904c36b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/handoffs/p22/PHASE_08_REPORT.md",
+      "bytes": 6598,
+      "mtime_utc": "2026-05-02T06:03:21Z",
+      "original_path": "AiDENs/handoffs/p22/PHASE_08_REPORT.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P22",
+      "sha256": "fc952ced5fa5e1dc3ef91724f49661fdae58a06fa5cbf0685183b3b387928c95"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/scripts/assert_p22_codex_archival_hygiene.py",
+      "bytes": 2957,
+      "mtime_utc": "2026-05-02T01:22:30Z",
+      "original_path": "AiDENs/scripts/assert_p22_codex_archival_hygiene.py",
+      "reason": "stale-run-script",
+      "run_id": "P22",
+      "sha256": "41bc5e16a8f14f57c510819b3dd6a18ef7a7a0fb9454d6cd6215ead249018971"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/scripts/assert_p22_release_package_clean.py",
+      "bytes": 2747,
+      "mtime_utc": "2026-05-02T01:23:18Z",
+      "original_path": "AiDENs/scripts/assert_p22_release_package_clean.py",
+      "reason": "stale-run-script",
+      "run_id": "P22",
+      "sha256": "357e4bc337466721504901d70439c64202404110115d3303fe1e0da06bf14a01"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/scripts/assert_p22_zpy_archive_contract.py",
+      "bytes": 1638,
+      "mtime_utc": "2026-05-02T05:05:42Z",
+      "original_path": "AiDENs/scripts/assert_p22_zpy_archive_contract.py",
+      "reason": "stale-run-script",
+      "run_id": "P22",
+      "sha256": "40522f95ce159a8e54c1832b8aaa5f12b6ddea2c7f14b57658dcdbd909f7bc3c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/scripts/p22_collect_final_audit.sh",
+      "bytes": 588,
+      "mtime_utc": "2026-05-02T05:05:42Z",
+      "original_path": "AiDENs/scripts/p22_collect_final_audit.sh",
+      "reason": "stale-run-script",
+      "run_id": "P22",
+      "sha256": "e5d9495df18e021efe3ed3ff2fd3231cd3120c1e2be06e769b399ba891a51b67"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/scripts/p22_secret_scan_fixture_test.py",
+      "bytes": 2646,
+      "mtime_utc": "2026-05-02T03:31:01Z",
+      "original_path": "AiDENs/scripts/p22_secret_scan_fixture_test.py",
+      "reason": "stale-run-script",
+      "run_id": "P22",
+      "sha256": "e452ab873a0fea3926a83696416fec4088c230159273305e67a58c7743c51819"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/scripts/p22_verify.sh",
+      "bytes": 2608,
+      "mtime_utc": "2026-05-02T03:49:38Z",
+      "original_path": "AiDENs/scripts/p22_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P22",
+      "sha256": "16bec0a1dd8dca020188011511d99cbaf7b1688e3ac5fbb9d9f5ee844f974fc7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/scripts/p22_verify_release_archive.sh",
+      "bytes": 2004,
+      "mtime_utc": "2026-05-02T01:07:42Z",
+      "original_path": "AiDENs/scripts/p22_verify_release_archive.sh",
+      "reason": "stale-run-script",
+      "run_id": "P22",
+      "sha256": "e77ef722ec646467413a67a21f48657e5591d48506de4410c24887be9b16371c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P22/files/AiDENs/scripts/p22_zpy_archival_selftest.py",
+      "bytes": 2866,
+      "mtime_utc": "2026-05-02T05:05:42Z",
+      "original_path": "AiDENs/scripts/p22_zpy_archival_selftest.py",
+      "reason": "stale-run-script",
+      "run_id": "P22",
+      "sha256": "3f596e295aa471e5004902df8dd41923310104bd60fe9f422f40c89a896c696b"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P22",
+  "skipped_existing": [],
+  "superseded_by": "P23",
+  "tool": "z.py",
+  "tool_version": "2026.05.02-p23",
+  "unclassified": []
+}

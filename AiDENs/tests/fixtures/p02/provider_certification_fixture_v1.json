@@ -1,0 +1,16 @@
+{
+  "fixture_id": "provider-certification-fixture:openai-configured-boundary-unavailable",
+  "provider_kind": "openai",
+  "scenario": "configured-boundary-unavailable",
+  "input_config": {
+    "api_key": "configured",
+    "model": "gpt-test"
+  },
+  "expected_configured": true,
+  "expected_executable": false,
+  "expected_route_label": "unavailable",
+  "expected_native_tool_loop": false,
+  "expected_reason_codes": [
+    "provider-boundary-unavailable"
+  ]
+}

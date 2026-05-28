@@ -1,0 +1,24 @@
+{
+  "graph_id": "execution-lineage-graph:fixture",
+  "run_id": "run:fixture",
+  "nodes": [
+    {
+      "receipt_id": "receipt:fixture",
+      "kind": "run",
+      "content_digest": "blake3:762c2749580c286a68d4528d912a4afa02a17dc2025c6c65b17b0dfab8291408"
+    },
+    {
+      "receipt_id": "tool-invocation:fixture",
+      "kind": "tool-invocation",
+      "content_digest": "blake3:762c2749580c286a68d4528d912a4afa02a17dc2025c6c65b17b0dfab8291408"
+    }
+  ],
+  "edges": [
+    {
+      "parent_receipt_id": "receipt:fixture",
+      "child_receipt_id": "tool-invocation:fixture",
+      "relation": "parent-receipt"
+    }
+  ],
+  "generated_at": "2026-04-26T00:00:00Z"
+}

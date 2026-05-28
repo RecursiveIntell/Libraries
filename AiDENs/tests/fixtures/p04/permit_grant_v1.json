@@ -1,0 +1,15 @@
+{
+  "permit_id": "permit:fixture",
+  "risk_class": "write",
+  "tool_id": "aidens:file-write:1",
+  "sandbox_root": "/repo",
+  "scope": "tool=aidens:file-write:1;sandbox=/repo",
+  "granted_by": "operator",
+  "granted_at": "2026-04-26T00:00:00Z",
+  "expires_at": "2026-04-26T01:00:00Z",
+  "run_id": null,
+  "attempt_id": null,
+  "reason_codes": [
+    "operator-approved"
+  ]
+}

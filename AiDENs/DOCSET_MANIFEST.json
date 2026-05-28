@@ -1,0 +1,267 @@
+{
+  "name": "p26_aidens_capability_superpass_docset",
+  "created_utc": "2026-05-04T01:29:09Z",
+  "file_count": 52,
+  "files": [
+    {
+      "path": "P26_ACCEPTANCE_GATES.md",
+      "bytes": 2397,
+      "sha256": "35f15e1217bd994a2d7e39d56e97367878fe11395f32b17fae0b2d77de22e79a"
+    },
+    {
+      "path": "P26_ADVANCED_LOCAL_AGENT_RUNTIME_SPEC.md",
+      "bytes": 1094,
+      "sha256": "e45345ce12addaee4d33c25a768b3e4143229ee2a28069b2b9a234b2c264b1bb"
+    },
+    {
+      "path": "P26_AGENT_SPEC_V1.md",
+      "bytes": 1877,
+      "sha256": "c3cf86562b805677c6ff00a6c100c1d72406bf818331ee731b10cad371f5eb3c"
+    },
+    {
+      "path": "P26_CODEX_RUN_PROMPT.md",
+      "bytes": 3062,
+      "sha256": "682beed64f4f9ef6667c9005c58b38af96bb0a52fdc32a54c833dc474355aaf0"
+    },
+    {
+      "path": "P26_CODING_AGENT_V1_SPEC.md",
+      "bytes": 915,
+      "sha256": "6d5755fef1039f6de14f6e68567e26e4a01edbaab7fc184bba6d8c9db94897b1"
+    },
+    {
+      "path": "P26_COMMANDS.md",
+      "bytes": 903,
+      "sha256": "65c621e7064194a8f06e927b674351699b030dafd53c7dc9ee710db13fcd8203"
+    },
+    {
+      "path": "P26_EVIDENCE_AND_REPORTING.md",
+      "bytes": 676,
+      "sha256": "ba8f7f3b2a387d379db8245bdbc454e5595d55f9b7eafb607abb742a062c230f"
+    },
+    {
+      "path": "P26_EXPECTED_FINAL_STATE.md",
+      "bytes": 570,
+      "sha256": "8bb9f3b0e6ec2a4d7b60e7ab876d3d122a3c26c6a668a9cf81e5b20b7da31532"
+    },
+    {
+      "path": "P26_HARD_AUDIT.md",
+      "bytes": 2413,
+      "sha256": "f61c16eadd56df1c333324d3b23f37fc154f98d09f842aacc8fe104e0312c7ee"
+    },
+    {
+      "path": "P26_MASTER_PACKET.md",
+      "bytes": 1643,
+      "sha256": "5f96022a77bf5d97188952a691fd3959951c495726a7604646f33e90413a5e4c"
+    },
+    {
+      "path": "P26_MEMORY_GROUNDED_AGENT_SPEC.md",
+      "bytes": 892,
+      "sha256": "430fe65e13386bfdae4aaeae3cd9168ebabbb846fe217453a08c77c01cf8ebfe"
+    },
+    {
+      "path": "P26_NON_GOALS_AND_DEFERRED_WORK.md",
+      "bytes": 473,
+      "sha256": "77aaec862f25681926965b693ce6d6504154157fe4317aa6e5a64b384f013e0e"
+    },
+    {
+      "path": "P26_PHASE_GATE_PROTOCOL.md",
+      "bytes": 1029,
+      "sha256": "f9055f6082cbb6904a3e407e45300d3fcf60a20f555fc3531ee7f417e56b218c"
+    },
+    {
+      "path": "P26_PHASE_PLAN.md",
+      "bytes": 3503,
+      "sha256": "022c07a0328c941043508766b8e7917b8004ed2ddf72bbe10d88ee01fbdea2f5"
+    },
+    {
+      "path": "P26_REPAIR_ABSTENTION_SPEC.md",
+      "bytes": 845,
+      "sha256": "f8ccb361863319267eadfbef8961234e75dc96f8055d65db2962d283b20a18b2"
+    },
+    {
+      "path": "P26_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 722,
+      "sha256": "0ebc9d1f171c78fbe1448efd829081cd18611849615788ef172d64f5d6eaaf11"
+    },
+    {
+      "path": "P26_RUN_ORDER.md",
+      "bytes": 763,
+      "sha256": "f2c3ae84f725d161dcb901237ef545a2b5d46dac5b5400d11a6cf25afc2a85fe"
+    },
+    {
+      "path": "P26_SOURCE_BASIS.md",
+      "bytes": 2048,
+      "sha256": "e4a8bcddb529d6ad35fd240d8a2c76793e90655a0dee81c0c1dc710647530cd6"
+    },
+    {
+      "path": "P26_SUPPORT_PROFILE_TARGET.md",
+      "bytes": 956,
+      "sha256": "4e9b9a57db16412fdf5fa0b489e08757c6b579049c1cb57c9a7bcff72d989330"
+    },
+    {
+      "path": "P26_V10_READY_BOUNDARY_SPEC.md",
+      "bytes": 696,
+      "sha256": "2e3543b9aff93420084e044eff84b84f16c097fe5c90e91759eb438a7772a34a"
+    },
+    {
+      "path": "P26_VERIFIER_SPEC.md",
+      "bytes": 901,
+      "sha256": "731f9250dfae113d581e31ed97d1a35decdc2599c80b279a3f7ef1ff27d2a14f"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1626,
+      "sha256": "999028dd08e43f5c8f7c548c0dc7684cb118ff433e257f1a997c83c53b0575b7"
+    },
+    {
+      "path": "evidence/p26_existing_command_inventory.csv",
+      "bytes": 1071,
+      "sha256": "ee3486d9a86f9752c311043e954d256e7cb115c021300868c2ee7c4c6fcd8dc7"
+    },
+    {
+      "path": "evidence/p26_expected_artifacts.json",
+      "bytes": 357,
+      "sha256": "115e1eba6425bd6b4c5b99339eb18ec3637cd8a524c115089a26a6a932c4133a"
+    },
+    {
+      "path": "evidence/p26_large_file_risk.csv",
+      "bytes": 761,
+      "sha256": "993963162c6b4d1115ee906086a4638268e76952d176e67ff33eced1ed12f0ab"
+    },
+    {
+      "path": "evidence/p26_static_hard_audit_snapshot.json",
+      "bytes": 5166,
+      "sha256": "905d43f1c20c5f7048fef14a3646209cedb45583ea97142f387eadbeeb89b09c"
+    },
+    {
+      "path": "handoff/P26_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 657,
+      "sha256": "0c9e460ad720b2aaa63603f3a14d432d9593549f4b06c89245fe6eac1a43d2f7"
+    },
+    {
+      "path": "matrices/P26_CAPABILITY_MATRIX.csv",
+      "bytes": 644,
+      "sha256": "3374d941595a8280f65fff6c68ad4c49245fe50566c6e8266c62c83fb37c864d"
+    },
+    {
+      "path": "matrices/P26_ISSUE_MATRIX.csv",
+      "bytes": 2397,
+      "sha256": "713e7ce17794109f0e5f81f093f9aad4f27243926be735021750c2d01fce2967"
+    },
+    {
+      "path": "matrices/P26_ISSUE_MATRIX.json",
+      "bytes": 3733,
+      "sha256": "e988fc99ee8fcd3f48e4021dd1326e68d9cc20352af0f3607560a0a5c697957d"
+    },
+    {
+      "path": "matrices/P26_SOURCE_OF_TRUTH_MATRIX.csv",
+      "bytes": 827,
+      "sha256": "b1d91339f0aca80742e542828af17dcbfc79d6e31337e69b32ba32565037f310"
+    },
+    {
+      "path": "phase_injections/P26_GATE_AFTER_PHASE_01_BEFORE_PHASE_02.md",
+      "bytes": 514,
+      "sha256": "719bf547622b2648985d109e19b4ca7f490aa92a709bcb16294556c5ea8e0894"
+    },
+    {
+      "path": "phase_injections/P26_GATE_AFTER_PHASE_03_BEFORE_PHASE_04.md",
+      "bytes": 514,
+      "sha256": "e46b15724688e3d2ae83805ce2d94dfbd8121c7a9d5bd2a613f1d86dd8f7120d"
+    },
+    {
+      "path": "phase_injections/P26_GATE_AFTER_PHASE_05_BEFORE_PHASE_06.md",
+      "bytes": 514,
+      "sha256": "fddce0cd32e2787d30d1b9adda9298d95bd2e7189a8eb9df213359e388bd7316"
+    },
+    {
+      "path": "phase_injections/P26_GATE_AFTER_PHASE_07_BEFORE_PHASE_08.md",
+      "bytes": 514,
+      "sha256": "e1f26237a166d08243ce3de022bfa966645a9e3821ba619fd272fd004b0ad0ba"
+    },
+    {
+      "path": "phase_injections/P26_GATE_AFTER_PHASE_09_BEFORE_FINAL.md",
+      "bytes": 511,
+      "sha256": "9015d8b9c331647610112cbc4ba7ce5e00370df81f760f12c3625b0b16a537fe"
+    },
+    {
+      "path": "phase_injections/P26_GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "bytes": 500,
+      "sha256": "d1a89c9a5032f722e0863f3d0ae88587cc9673e1c69539b092453ab19edba493"
+    },
+    {
+      "path": "prompts/P26_OPERATOR_PASTE_FIRST.md",
+      "bytes": 859,
+      "sha256": "acd28ec8dc5c27dfa871f5236f8248422ef0f0836bc4145ba588ef6c409b8c8b"
+    },
+    {
+      "path": "prompts/phases/PHASE_00_PREFLIGHT_REPLAY_TRIAGE_AND_SCOPE_LOCK.md",
+      "bytes": 421,
+      "sha256": "d31b95f91ebe61e162b707e165cc54e7a77c2ada4dad6a2a5526ec9c495be474"
+    },
+    {
+      "path": "prompts/phases/PHASE_01_AGENT_SPEC_V1.md",
+      "bytes": 266,
+      "sha256": "40028332a849d26a42d5a2738908becebe470d08a180ff65a9d28583b991cac4"
+    },
+    {
+      "path": "prompts/phases/PHASE_02_PLAN_ACT_VERIFY_LOOP.md",
+      "bytes": 172,
+      "sha256": "e15073576db1f67a41d65a1410e9b81de1a05bc034c1ce28a2d370c742cb4354"
+    },
+    {
+      "path": "prompts/phases/PHASE_03_RUN_BUNDLE_V3_AND_EVIDENCE.md",
+      "bytes": 243,
+      "sha256": "e34d0c03d38bcd2038cd3295d01b936089f3ad04c615b9b56a2e57cf4d1bb855"
+    },
+    {
+      "path": "prompts/phases/PHASE_04_MEMORY_GROUNDED_AGENT.md",
+      "bytes": 158,
+      "sha256": "6c12756dfaef1eb2ce9409a1495cfa65b56f26a7df0c68e66d970ed08bd94692"
+    },
+    {
+      "path": "prompts/phases/PHASE_05_CODING_AGENT_V1.md",
+      "bytes": 225,
+      "sha256": "36a284f8c75522339ca94bea8362554dbc55f19ea7df1b1166e45ec278c521cd"
+    },
+    {
+      "path": "prompts/phases/PHASE_06_REPAIR_AND_ABSTENTION.md",
+      "bytes": 139,
+      "sha256": "33687302fc7769035a949603e1e72f892663009b013880de330b1bf33d2a0021"
+    },
+    {
+      "path": "prompts/phases/PHASE_07_CLI_EXAMPLES_AND_OPERATOR_UX.md",
+      "bytes": 192,
+      "sha256": "edfd9d394881fafd5e819692af1db34952b9a7b977cd2efc07f36d447c7d9639"
+    },
+    {
+      "path": "prompts/phases/PHASE_08_VERIFIER_AND_SUPPORT_CLAIMS.md",
+      "bytes": 138,
+      "sha256": "789e0d5c5af27522a3da6f98fe0594d2af67bcd9d203354a234ae70f9a496fc1"
+    },
+    {
+      "path": "prompts/phases/PHASE_09_INTEGRATION_HOSTILE_AUDIT.md",
+      "bytes": 196,
+      "sha256": "ced306643a8d4a3341d4c77219956e46cdc63fbc417d619ddaf3e360e1c1aec8"
+    },
+    {
+      "path": "prompts/phases/PHASE_10_FINAL_PACKAGE_AND_HANDOFF.md",
+      "bytes": 186,
+      "sha256": "03571fba2254d46df1b569afc6c3475afb27b49253abee629b59fc3d803b458c"
+    },
+    {
+      "path": "scripts/assert_p26_agent_spec_contract.py",
+      "bytes": 497,
+      "sha256": "e46c2259b22a4818f7764d942b24693421cc7d6a060ff39a03ec0089f457318d"
+    },
+    {
+      "path": "scripts/assert_p26_run_bundle_evidence.py",
+      "bytes": 635,
+      "sha256": "d541494589c1a2ffcbc702f1acb52e2cc4dd1d20ab65b84865b7be862d68bc5c"
+    },
+    {
+      "path": "scripts/assert_p26_support_truth.py",
+      "bytes": 644,
+      "sha256": "a842faeab3580e7e43b036843b24a44eac36f2b456a3753dd4ebe6ed9a7afeeb"
+    }
+  ]
+}

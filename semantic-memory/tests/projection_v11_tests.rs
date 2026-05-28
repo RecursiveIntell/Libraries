@@ -1,4 +1,5 @@
 //! Tests for V11 projection storage and import.
+#![allow(clippy::expect_used)]
 //!
 //! Covers:
 //! - Projection batch import (claim versions, relation versions, entity aliases, evidence refs)
@@ -479,11 +480,23 @@ async fn public_projection_queries_read_imported_rows() {
     assert_eq!(evidence.len(), 1);
     assert_eq!(claims[0].content, "claim one");
     assert_eq!(relations[0].predicate, "depends_on");
+    assert!(
+        relations[0].claim_id.is_none(),
+        "missing relation claim_id must remain absent, not become an empty identifier"
+    );
+    assert!(
+        relations[0].source_episode_id.is_none(),
+        "missing relation source_episode_id must remain absent, not become an empty identifier"
+    );
     assert_eq!(episodes[0].effect_type, "code_change");
     assert_eq!(aliases[0].alias_text, "Entity One");
     assert_eq!(
         evidence[0].fetch_handle,
         "forge://evidence/run-42/artifact-7"
+    );
+    assert!(
+        evidence[0].claim_version_id.is_none(),
+        "missing evidence claim_version_id must remain absent, not become an empty identifier"
     );
     assert_eq!(
         claims[0].source_exported_at.as_deref(),

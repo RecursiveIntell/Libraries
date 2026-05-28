@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-11T00:41:41Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P30_4/files/prompts/phases/P30-04_EXECUTION_EVIDENCE_DEFAULTS_DURABLE_FAILURE_RECEIPTS_RETRY_PROVIDER_TOOL_EVIDENCE.md",
+      "bytes": 1120,
+      "mtime_utc": "2026-05-10T23:55:56Z",
+      "original_path": "prompts/phases/P30-04_EXECUTION_EVIDENCE_DEFAULTS_DURABLE_FAILURE_RECEIPTS_RETRY_PROVIDER_TOOL_EVIDENCE.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P30_4",
+      "sha256": "8a910a5eccdeb27d3939f2200524565ce3863911b6498ecc692171b5c22dc18c"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P30_4",
+  "skipped_existing": [],
+  "superseded_by": "P29",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "VendorTranslationModeV1": {
+      "enum": [
+        "attested_and_lossiness_declared"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "covered_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "product_surface": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "support_window": {
+      "type": "string"
+    },
+    "translation_mode": {
+      "$ref": "#/definitions/VendorTranslationModeV1"
+    },
+    "vendor_certification_adapter_id": {
+      "type": "string"
+    },
+    "vendor_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "product_surface",
+    "schema_version",
+    "support_window",
+    "translation_mode",
+    "vendor_certification_adapter_id",
+    "vendor_name"
+  ],
+  "title": "VendorCertificationAdapterV1",
+  "type": "object"
+}

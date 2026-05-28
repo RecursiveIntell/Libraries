@@ -1,0 +1,1347 @@
+{
+  "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+  "archive_zip_byte_sha256": "8233ae3551af3825847d7673548b233a1b320cdabbf508297db512836c0f63d9",
+  "codex_archive": {
+    "active_stale_after": [],
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/scr-runtime/docs/codex-runs/archive",
+    "collisions": [],
+    "current_run": "P30",
+    "dry_run": false,
+    "enabled": true,
+    "errors": [],
+    "manifest_paths": [],
+    "moved": [],
+    "planned": [],
+    "report_path": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.codex-archive.json",
+    "skipped_existing": [],
+    "stale_active_before": [],
+    "unclassified": [],
+    "verify_only": false
+  },
+  "content_manifest_sha256": "5100b63a8c8af3a7f21c3547ebac641444288b26f078d41f24c654e6030a5d12",
+  "excluded": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.excluded.json",
+  "files": [
+    {
+      "bytes": 730,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:09Z",
+      "path": ".agents/skills/codex-control-pack/SKILL.md",
+      "sha256": "46f93ef95a52730c2e163ed0233bc7989fbc6aa11ea8fbd0d912baf65ff5f61c"
+    },
+    {
+      "bytes": 498,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:22Z",
+      "path": ".agents/skills/hostile-audit/SKILL.md",
+      "sha256": "b7b4a389134bbe5c88a54c9a26d7ea420e556d040a77a7c591d16af1def2309b"
+    },
+    {
+      "bytes": 508,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:11Z",
+      "path": ".agents/skills/phase-gate/SKILL.md",
+      "sha256": "edf65291d5f0a9718a540f87d9e624cd167a5c9c1d57bfb7a04180214edd6768"
+    },
+    {
+      "bytes": 498,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:17Z",
+      "path": ".agents/skills/run-certifier/SKILL.md",
+      "sha256": "c68f7a8a4e721eee74daba6525f0b395621e88df8dc675c8e12a8d894c84fbbe"
+    },
+    {
+      "bytes": 511,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:15Z",
+      "path": ".agents/skills/source-of-truth-map/SKILL.md",
+      "sha256": "05da5186899501b9174ebb501e1164203e6d2ca58edc63a55014afda9b7b1a39"
+    },
+    {
+      "bytes": 108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "path": ".codex/auto_gates/phase_00_gate.md",
+      "sha256": "c54c8c55addfd3abe219ecf897805e1ceb081a895cb61332b7a5061006eda6b9"
+    },
+    {
+      "bytes": 108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "path": ".codex/auto_gates/phase_01_gate.md",
+      "sha256": "71f7e9f9ad496b1fcb14454db7e8614b6dad64658d2a166418a899a65436a502"
+    },
+    {
+      "bytes": 108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "path": ".codex/auto_gates/phase_02_gate.md",
+      "sha256": "809207d94acff3d2f730b63ac24776d10a7504940bd93571aaef5ab5da04cd44"
+    },
+    {
+      "bytes": 108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "path": ".codex/auto_gates/phase_03_gate.md",
+      "sha256": "394620792e696bed91b4e0e1985ee676922416e1505204ec2b870959f3ee8fd0"
+    },
+    {
+      "bytes": 108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "path": ".codex/auto_gates/phase_04_gate.md",
+      "sha256": "8f400722558f88a4fbba8478bc50df5734755870eda1081830139de7189e35b3"
+    },
+    {
+      "bytes": 108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "path": ".codex/auto_gates/phase_05_gate.md",
+      "sha256": "ba470683353a2f402c7fd4f82acc4c43042533b0478973a9100201224ece80c7"
+    },
+    {
+      "bytes": 108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:19:59Z",
+      "path": ".codex/auto_gates/phase_06_gate.md",
+      "sha256": "b0a8f1729053bf29f00d6499f73c001f82d7914086c6b084dc4c12619cd3f380"
+    },
+    {
+      "bytes": 23,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:50Z",
+      "path": ".codex/config.toml",
+      "sha256": "fc2ccc8c22e42f8e77528102de602f7a60abb2397f8cd0fc3b000fc492953d88"
+    },
+    {
+      "bytes": 69,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "path": ".codex/hooks.json",
+      "sha256": "4b6aeea03a7ee5b859276e5f058805c7cf0a3fb674ca1670b5f36ee147badf23"
+    },
+    {
+      "bytes": 2386,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:05Z",
+      "path": ".codex/prompt_manifest.json",
+      "sha256": "866bc75ba0de3c62355f1a96e2326f55c31b2b493dba8b2fc0e963114b781cb6"
+    },
+    {
+      "bytes": 165,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": ".codex/prompts/MASTER_AUTOMATED_COMPLETION.md",
+      "sha256": "77c97a69ac02eebf39f0368d262b1aa8d88605ba8e72dcfd6ac00471ae975be2"
+    },
+    {
+      "bytes": 259,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "path": ".codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "sha256": "468e5a5631a10edb21a7484e0a9fcb0bf520426d188d7b11619aba9f163bdfd0"
+    },
+    {
+      "bytes": 235,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "path": ".codex/prompts/phase_01_restore_active_codex_pack.md",
+      "sha256": "cfaffd453e2e072ca4664b424a7601701d8fdfb87372e09847fd1eecbe36f723"
+    },
+    {
+      "bytes": 197,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "path": ".codex/prompts/phase_02_auto_phase_runner.md",
+      "sha256": "aaf681890a6b58f2e23edca4a4db37b66fe248b9b6f759c621a360c3cbff3890"
+    },
+    {
+      "bytes": 367,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": ".codex/prompts/phase_03_packaging_policy.md",
+      "sha256": "dabeca4a216aa0d9631409820be4b732a0f74747cb6506b2014f34af80322c3a"
+    },
+    {
+      "bytes": 331,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "path": ".codex/prompts/phase_04_tests_and_release_gates.md",
+      "sha256": "b68fac776b6716618cc7dfdb04f27441d701d0cf609a75a263a7f2f7e089eedc"
+    },
+    {
+      "bytes": 112,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "path": ".codex/prompts/phase_05_fresh_unzip_certification.md",
+      "sha256": "eaa71353e8e3b19d942123c2c15c4d3abec43936a898da11a4220bad716f8cfe"
+    },
+    {
+      "bytes": 99,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:25Z",
+      "path": ".codex/prompts/phase_06_hostile_audit_handoff.md",
+      "sha256": "8a56b755a0022589acccd5bf0b4644ed2576a009a44fbe9c7b163d321d02439d"
+    },
+    {
+      "bytes": 176,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:03:33Z",
+      "path": ".codex/rules/safety.rules",
+      "sha256": "d76fefd28fa3cd37f2b8050752e2dfd4c260acad7b74ef991155bc85a3dee99f"
+    },
+    {
+      "bytes": 730,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:07Z",
+      "path": ".codex/skills/codex-control-pack/SKILL.md",
+      "sha256": "46f93ef95a52730c2e163ed0233bc7989fbc6aa11ea8fbd0d912baf65ff5f61c"
+    },
+    {
+      "bytes": 524,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:53Z",
+      "path": ".codex/skills/hostile-audit/SKILL.md",
+      "sha256": "db7cbcde26869f5ab130ea6144bb9cd28ee57d7d370f8dc2180bf39eeb3c1a67"
+    },
+    {
+      "bytes": 508,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:10Z",
+      "path": ".codex/skills/phase-gate/SKILL.md",
+      "sha256": "edf65291d5f0a9718a540f87d9e624cd167a5c9c1d57bfb7a04180214edd6768"
+    },
+    {
+      "bytes": 498,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:16Z",
+      "path": ".codex/skills/run-certifier/SKILL.md",
+      "sha256": "c68f7a8a4e721eee74daba6525f0b395621e88df8dc675c8e12a8d894c84fbbe"
+    },
+    {
+      "bytes": 511,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:14Z",
+      "path": ".codex/skills/source-of-truth-map/SKILL.md",
+      "sha256": "05da5186899501b9174ebb501e1164203e6d2ca58edc63a55014afda9b7b1a39"
+    },
+    {
+      "bytes": 6551,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": ".codex/tools/auto_phase_runner.py",
+      "sha256": "a250d2edaf5256197e942b11720f0cce110a81c1c936f189dbd43d8e6de55e97"
+    },
+    {
+      "bytes": 173,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:55Z",
+      "path": ".codex/tools/inspect_codex_setup.py",
+      "sha256": "321061a4401137a767030a16197ac7b96a7909f326eb4d571cb544804b1eb7e3"
+    },
+    {
+      "bytes": 1627,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:12:57Z",
+      "path": ".codex/tools/phase_prompt_builder.py",
+      "sha256": "0acd9e479e01e98eaaa0124783c3688cc1f19715419e51cb1ab885a8a88c27e4"
+    },
+    {
+      "bytes": 7327,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:28:12Z",
+      "path": "AGENTS.md",
+      "sha256": "f181b846dbcb48b3476149443cde204d099bba871d4912d6af981dd0921431ef"
+    },
+    {
+      "bytes": 1041,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:46Z",
+      "path": "AGENTS_COMPLETION_APPEND.md",
+      "sha256": "f49f1db9082832e5734c155baac2755131a5f062eb689ae705e6647ba161136a"
+    },
+    {
+      "bytes": 8758,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:14:22Z",
+      "path": "Cargo.lock",
+      "sha256": "33fde5f321a4808407b8931e8fa55a8cbbd7624040efaecd0a6edb9185a30596"
+    },
+    {
+      "bytes": 474,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:11:55Z",
+      "path": "Cargo.toml",
+      "sha256": "3b03f52196b5f6b17cdea8e1dc60a1a0b717fadcf8cb64b0679494fc210a5878"
+    },
+    {
+      "bytes": 1709,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:52Z",
+      "path": "README.md",
+      "sha256": "803b37d9af13bd262aaf46ffeee1efa05cd7408341b662f8a653ab409ac7af7c"
+    },
+    {
+      "bytes": 282,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:14:07Z",
+      "path": "crates/scr-audit-adapter/Cargo.toml",
+      "sha256": "a598b9b6ec456cb3ff1db56fd67d47c0dba6851d4931f5f23f9545bb914e08f9"
+    },
+    {
+      "bytes": 3857,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:06:01Z",
+      "path": "crates/scr-audit-adapter/src/lib.rs",
+      "sha256": "be590358e36e9d2a8a506336d64bbd8079e31421916a6203ea8d16a5c58bf268"
+    },
+    {
+      "bytes": 464,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:14:07Z",
+      "path": "crates/scr-cli/Cargo.toml",
+      "sha256": "e998ad26b045358001a043b46e8f72b632398799c2aeb7cdf2f0dbf922b16f1a"
+    },
+    {
+      "bytes": 12537,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:24:39Z",
+      "path": "crates/scr-cli/src/main.rs",
+      "sha256": "722135baa71cf8ad67a29f63bb82d044227f15167ea270d7cd6a973ea88d82dc"
+    },
+    {
+      "bytes": 344,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:00:41Z",
+      "path": "crates/scr-kernel/Cargo.toml",
+      "sha256": "0e26b8d6fafb00645ba53e74b95ec8e538a17d620f318c8f84e6dcf1553cbd56"
+    },
+    {
+      "bytes": 22317,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:18:32Z",
+      "path": "crates/scr-kernel/src/lib.rs",
+      "sha256": "986ae7e9bfe7496329892bf1dbb838a5f0f067b50f7c896a4b986baaa7886699"
+    },
+    {
+      "bytes": 344,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:14:19Z",
+      "path": "crates/scr-reference/Cargo.toml",
+      "sha256": "96ec8c4c6711109727560d97acde9e6855581a344f773246ad4b6dc33e0e9dec"
+    },
+    {
+      "bytes": 22088,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:24:35Z",
+      "path": "crates/scr-reference/src/lib.rs",
+      "sha256": "66d537c288ad58480bdffb80e550dd0e45d3e8743e3462897684874aff52e204"
+    },
+    {
+      "bytes": 11429,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:24:47Z",
+      "path": "crates/scr-reference/src/policy.rs",
+      "sha256": "d026fe31b57a6b85a3de5907de6e5e0f875d9d1d004b50606b7a81e43957c26d"
+    },
+    {
+      "bytes": 1882,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:48Z",
+      "path": "docs/ACCEPTANCE_GATES.md",
+      "sha256": "a60e9c79ccb2722663d9acee9ddf59cafebc3e40fbed500c026bc1779d664b15"
+    },
+    {
+      "bytes": 544,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:44Z",
+      "path": "docs/ACTION_RESOLUTION.md",
+      "sha256": "bd8400c08afac527860e9f71f15df3fbecc55463ceeec431654f40d11102903d"
+    },
+    {
+      "bytes": 896,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:44Z",
+      "path": "docs/ARCHITECTURE.md",
+      "sha256": "c97813e98b15e399dfc6695e393114b3f9602215b95be86322e4c87ac16b5703"
+    },
+    {
+      "bytes": 451,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:44Z",
+      "path": "docs/AUDIT_ADAPTER.md",
+      "sha256": "811a5b1a2c62173709a3edb956805b88487fb8a633ddefe1dc9f62832bb97e62"
+    },
+    {
+      "bytes": 581,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:26Z",
+      "path": "docs/AUTOMATED_PHASE_EXECUTION.md",
+      "sha256": "1641ab0b215a88db1f43677f67f9ea691b130ce86bf5f3eecd534d6dcdd1de1b"
+    },
+    {
+      "bytes": 3169,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T07:40:39Z",
+      "path": "docs/CANONICAL_OWNERS.md",
+      "sha256": "81b108b12ec60a4f191fdb8d9540c09a07417bbbe56d95192a5d65a260f4b53e"
+    },
+    {
+      "bytes": 746,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:47Z",
+      "path": "docs/COMPLETION_RELEASE_BAR.md",
+      "sha256": "0a0ee88cfa4e6601fd2c7b6c11a41f60c34cedabfb6b69f09750f762769e106f"
+    },
+    {
+      "bytes": 549,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:44Z",
+      "path": "docs/DECISION_RECEIPTS.md",
+      "sha256": "18ea4540c6772e1ed3ac0fe837d03a1cd1d8e2787abd60a3900879c1485a333c"
+    },
+    {
+      "bytes": 663,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:44Z",
+      "path": "docs/EVALUATOR_REFERENCE.md",
+      "sha256": "40320de58e0280fd7ff14c273fa329bbc93d5c6217a303eb48ed4878433a32fb"
+    },
+    {
+      "bytes": 1694,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "docs/EXTERNAL_CRATE_BOUNDARY_MAP.md",
+      "sha256": "f031bca91f028c754238e7324fb729cf6a944023182ae47e8636ff83fef9184a"
+    },
+    {
+      "bytes": 1623,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:07Z",
+      "path": "docs/EXTERNAL_CRATE_BOUNDARY_SCAN.json",
+      "sha256": "0f411af7ad8ccbf4818362016debb82f2b9069d360414add994ecb0da8bc94a2"
+    },
+    {
+      "bytes": 898,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:44Z",
+      "path": "docs/FAILURE_MODES.md",
+      "sha256": "7fd4bd94641c53146db337d4d0b17d65211c3d63649d9673317a9c364a03e5fb"
+    },
+    {
+      "bytes": 1640,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:49Z",
+      "path": "docs/HOSTILE_AUDITOR_HANDOFF.md",
+      "sha256": "3466b670719bb5f4222a484986fbbd2632dc05056d578dd40d067617eb40f273"
+    },
+    {
+      "bytes": 664,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:44Z",
+      "path": "docs/INTEGRATION_SEQUENCE.md",
+      "sha256": "1154b0b5dcf3e3133cb2c1ac7c22b1e0ccc30464aae7a05e7ed6e6663546ac74"
+    },
+    {
+      "bytes": 3814,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:29:36Z",
+      "path": "docs/ISSUE_MATRIX.md",
+      "sha256": "6e58807617a73816c4454997249cac7e1bedb53a94ddfb419a1689dbf1b1d774"
+    },
+    {
+      "bytes": 1074,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T07:40:39Z",
+      "path": "docs/NON_GOALS.md",
+      "sha256": "f310120f2de0ee964d099129fa81180b8f85aa26aa87de675bbc9c18b5cd9ab4"
+    },
+    {
+      "bytes": 741,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:44Z",
+      "path": "docs/POLICY_MODEL.md",
+      "sha256": "d3907c2e9e7f691b2db992f6a9c92568a1ed903d1dc11405cdc98fe52b7be2bf"
+    },
+    {
+      "bytes": 696,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T07:40:39Z",
+      "path": "docs/QUARANTINED_TERMS.md",
+      "sha256": "35f42e816b893b7b1f54eaafd3445858a2fcc2c15a982a5c32f683ceb7d5823e"
+    },
+    {
+      "bytes": 8243,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:30Z",
+      "path": "docs/SOURCE_BASIS.md",
+      "sha256": "db406cd0646802717b75ee10224b8cc80560d6d3f407b0aa85e6232e1f42aed5"
+    },
+    {
+      "bytes": 4638,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:38Z",
+      "path": "docs/SourceTruthAmbiguityRecord.md",
+      "sha256": "ac2bb0c5832d9dc40104dd7a5125e6e43bc1b2a025a565cb4778846a1c0406d6"
+    },
+    {
+      "bytes": 422,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:27:39Z",
+      "path": "docs/codex-runs/ARCHIVAL_POLICY.md",
+      "sha256": "191240958fe23aaf0c5e64ed0f1ce7b84f3fd2f22dca2f0ca28cf8f11be38d66"
+    },
+    {
+      "bytes": 686,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:27:39Z",
+      "path": "docs/codex-runs/CODEX_RUN_INDEX.md",
+      "sha256": "7369f63198cfeda390a169da9c30a568835c884eb3d9971c5ed4bacdaa161c88"
+    },
+    {
+      "bytes": 168,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:27:39Z",
+      "path": "docs/codex-runs/CURRENT_RUN.md",
+      "sha256": "5ce68fa53edb25b9ce4282676144bcd2fdaf186cfe757e8f7720d2c28474655d"
+    },
+    {
+      "bytes": 272,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "fixtures/audit/cases/destructive_missing_rollback.json",
+      "sha256": "887c87767b1c88a5d066bd4d7b9102cd64f1897d367f9134942b67330140d997"
+    },
+    {
+      "bytes": 279,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "fixtures/audit/cases/false_completion_missing_tests.json",
+      "sha256": "4303a86aa22beb5fafd842e4c94eddea182ef3e5200b070801d56c0f8a794478"
+    },
+    {
+      "bytes": 237,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "fixtures/audit/cases/feut_contamination.json",
+      "sha256": "ff3a9ba38f5191598ee680765e1ee6cb614d0439495f76aaa1e1d0032f91faf7"
+    },
+    {
+      "bytes": 255,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "fixtures/audit/cases/high_hazard_confirmed_fixable.json",
+      "sha256": "55a4e6e621d64dce92fdeaae9797f666acaa28b1140bd7fb592b545a866d482a"
+    },
+    {
+      "bytes": 220,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "fixtures/audit/cases/high_hazard_uncertain.json",
+      "sha256": "07f0aed3e6a06b4c507517dd6165b294b87a9432a708eba7f2778259a604592a"
+    },
+    {
+      "bytes": 219,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "fixtures/audit/cases/low_hazard_confirmed.json",
+      "sha256": "f0fdf9d6c4c5fdcf3f7c8c8ee2b157f1f1aae05a8dbd1cac274a223d915b38d0"
+    },
+    {
+      "bytes": 224,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "fixtures/audit/cases/source_truth_drift.json",
+      "sha256": "5822f130b0bc5e394e3c8d5c466990905f4600343a456db38e9768533a62da8a"
+    },
+    {
+      "bytes": 241,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "fixtures/audit/cases/unknown_owner_mutation.json",
+      "sha256": "4fec0136416733c17e092c1c1f2bc8619c03b7ec0f6f6aea31ada8addef785d6"
+    },
+    {
+      "bytes": 3427,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:05Z",
+      "path": "fixtures/audit/expected/destructive_missing_rollback.json",
+      "sha256": "39ef6d61fe3602db9124895e07248e35ae0683bd175e4a2245c9e32b3f4806d9"
+    },
+    {
+      "bytes": 3288,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:05Z",
+      "path": "fixtures/audit/expected/false_completion_missing_tests.json",
+      "sha256": "6041bca3f44c654b10caf0f3b1d72ac214c7a8b4f8fffb37d6466b4c80a50b27"
+    },
+    {
+      "bytes": 3235,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:05Z",
+      "path": "fixtures/audit/expected/feut_contamination.json",
+      "sha256": "714fb1f3ac06fe1d567f0deb72da550c9e94d0d079df641a3a7c94b3dc342a5a"
+    },
+    {
+      "bytes": 3067,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:05Z",
+      "path": "fixtures/audit/expected/high_hazard_confirmed_fixable.json",
+      "sha256": "4e9fc9ee8f2942061f054929651b7324582ee55acea2cfa0c183413ab5879bbb"
+    },
+    {
+      "bytes": 2954,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:05Z",
+      "path": "fixtures/audit/expected/high_hazard_uncertain.json",
+      "sha256": "4f77ee94dbbac74af754e0c81c51076e8cafac8acc93214dccec34d26fe90901"
+    },
+    {
+      "bytes": 2967,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:05Z",
+      "path": "fixtures/audit/expected/low_hazard_confirmed.json",
+      "sha256": "0343b9aabf831fc9c49076a37948c4185cd3050a9f155a99a1a43b92d8992eda"
+    },
+    {
+      "bytes": 3091,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:05Z",
+      "path": "fixtures/audit/expected/source_truth_drift.json",
+      "sha256": "75e36c6457fea73c75b630ea3614492d8c8dfa993450c4c5ce4647f4850a0c2e"
+    },
+    {
+      "bytes": 3269,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:05Z",
+      "path": "fixtures/audit/expected/unknown_owner_mutation.json",
+      "sha256": "41da8422bdc39838c9491db678d30e42b6f8182e8f8b973e319d40741dbb4b37"
+    },
+    {
+      "bytes": 2433,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:15:40Z",
+      "path": "policies/audit_policy_v1.canonical.json",
+      "sha256": "fa1a869cbd0adca5372b6a843475c9bd861952b95dd4f4a7a484fb406e415f89"
+    },
+    {
+      "bytes": 1968,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:15:03Z",
+      "path": "policies/audit_policy_v1.toml",
+      "sha256": "edd6fa0f5963eae0edb8e7b31ef66987ce251d9f63f7ec472bca528f92bc8cd6"
+    },
+    {
+      "bytes": 4128,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:40Z",
+      "path": "prompts/00_MAIN_CODEX_PROMPT.md",
+      "sha256": "69a879c7702ea6cf670e38c777fae68306bd9db4de8ba51e2917d47e1a954f30"
+    },
+    {
+      "bytes": 5511,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "prompts/00_MASTER_PROMPT.md",
+      "sha256": "8c882550d271d78c5078fa184c2e127309304dc92016e7bc40c45ee636e13fad"
+    },
+    {
+      "bytes": 1296,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "prompts/01_PHASE_0_SOURCE_BASIS.md",
+      "sha256": "78e9ac53eaf93624ff105c645d4cace0e90c633b72f6ad8a62a76c3cda3e0d61"
+    },
+    {
+      "bytes": 1704,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:29:08Z",
+      "path": "prompts/01_PHASE_0_SOURCE_BASIS_AND_OWNER_SCAN.md",
+      "sha256": "7890b25307bb3d34d41630e7e60ceef73ae4cda44b0c34f03513b23a90713d27"
+    },
+    {
+      "bytes": 1409,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "prompts/02_PHASE_1_PACKAGE_TRUTH_AND_SURFACE_CLEANUP.md",
+      "sha256": "7910d5e73a1810ca0f3532af3882e68edb1793936052ca2c47b899e74d583ddb"
+    },
+    {
+      "bytes": 1013,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "prompts/02_PHASE_1_TYPE_LAW.md",
+      "sha256": "d63f4e48adf073a611faae0b69c34c1bf8c9b383a0a390095e1a6231d443515b"
+    },
+    {
+      "bytes": 1423,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "prompts/03_PHASE_2_POLICY_LAW.md",
+      "sha256": "243ed26b4ee3305e2f1280459f279da448a3792df2f925ebd87da5f3ea235e54"
+    },
+    {
+      "bytes": 1485,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:29:08Z",
+      "path": "prompts/03_PHASE_2_SCHEMA_AND_BOUNDARY_CONTRACTS.md",
+      "sha256": "c047de2365e4c6dc6e577c79342863f6973e04176741d7e7171bd0989cf7a7b4"
+    },
+    {
+      "bytes": 2187,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:29:08Z",
+      "path": "prompts/04_PHASE_3_POLICY_AND_EVALUATOR_CORRECTNESS.md",
+      "sha256": "7b80fe5a0d5a7d866879020289e327d1b593664ab8cab1f968df7b1ea4320d1d"
+    },
+    {
+      "bytes": 1245,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "prompts/04_PHASE_3_PRESSURE_SEMANTICS.md",
+      "sha256": "8dd1f3624ba0740372e49a8fff0e344a90dc8ca63129669608d3cdab411c7aca"
+    },
+    {
+      "bytes": 1105,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "prompts/05_PHASE_4_AUDIT_ADAPTER.md",
+      "sha256": "c83862e4c144140948ca0620b4708b3f6e5f925fc8b9c6a3230998688111150c"
+    },
+    {
+      "bytes": 1630,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:29:08Z",
+      "path": "prompts/05_PHASE_4_CLI_REPLAY_AND_FIXTURE_DISCIPLINE.md",
+      "sha256": "7e35f6436b2578f4159a5a92925fa14f64b04566745e4d70ebe6e4f8ac12acdd"
+    },
+    {
+      "bytes": 1398,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "prompts/06_PHASE_5_EXISTING_CRATE_ADAPTER_SEAMS.md",
+      "sha256": "7a5b7299be5b8d7e6bb521a19f0de436c17c9d035ace757bc62694afbc5afcfe"
+    },
+    {
+      "bytes": 835,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "prompts/06_PHASE_5_REPLAYABILITY.md",
+      "sha256": "fe2a6bef2f236346e3618442c0648d80db7f17dfc84ff727ff14386411bc5f6a"
+    },
+    {
+      "bytes": 1003,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "prompts/07_PHASE_6_HOSTILE_FINAL.md",
+      "sha256": "17b8d13e09933bfe6f9803c46116c1d33ca4ddc833873a785994a5679648bce4"
+    },
+    {
+      "bytes": 1729,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:29:08Z",
+      "path": "prompts/07_PHASE_6_TESTS_ASSERTIONS_AND_NEGATIVE_FIXTURES.md",
+      "sha256": "aa912de07af8a4abb866f8fcb68d49729a40a51a5a37b4bebe5a49836648e295"
+    },
+    {
+      "bytes": 1193,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:29:08Z",
+      "path": "prompts/08_PHASE_7_CERTIFIER_AND_FRESH_UNZIP_HARDENING.md",
+      "sha256": "3b0c2d5bc222d7101d99453ebe2db29457ccdc919e1eedf4fa7c5e929454b11a"
+    },
+    {
+      "bytes": 941,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T06:29:08Z",
+      "path": "prompts/09_PHASE_8_FINAL_REPORT_AND_HOSTILE_HANDOFF.md",
+      "sha256": "d2351d803ae715e439f107ab529b813b8dc9ae73f5af14b0bbca3842e7ee7a0c"
+    },
+    {
+      "bytes": 1688,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "prompts/99_HOSTILE_AUDITOR_HANDOFF.md",
+      "sha256": "45baa4f573dd85daa0669611ff40b14e7612108b255b7d16c957894f41c720cf"
+    },
+    {
+      "bytes": 3229,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:07Z",
+      "path": "schemas/generated/audit-fixture-case-v1.schema.json",
+      "sha256": "6e136f25d5d2b2cfe305db6229c6e3e7a96fd9b4be69277d1437cdc6a7a6b117"
+    },
+    {
+      "bytes": 7530,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:07Z",
+      "path": "schemas/generated/control-decision-receipt-v1.schema.json",
+      "sha256": "a6be93a39686c43a097da3ed0d7de60dfdf894462fcb1f66e0047311d755c7b0"
+    },
+    {
+      "bytes": 3727,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:26:07Z",
+      "path": "schemas/generated/control-evaluation-input-v1.schema.json",
+      "sha256": "40a1db073fff9f204167809cfb9c47746bfbd768061e8d0626ed7329c5730958"
+    },
+    {
+      "bytes": 1397,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "scripts/assert_archive_includes_codex.py",
+      "sha256": "6d86b9689f47b3815b46870ee208301e0fad73eea695c2033a49b22b2d4ac188"
+    },
+    {
+      "bytes": 2350,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-13T22:10:32Z",
+      "path": "scripts/assert_codex_active_pack.py",
+      "sha256": "7c86d2021abf952871e727a08b4c3c20852547e5375215028c118143f108c9ac"
+    },
+    {
+      "bytes": 3528,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T06:30:06Z",
+      "path": "scripts/assert_existing_crate_boundaries.py",
+      "sha256": "a6b0cdcc45d24aa9e61fa38d4c32ddad75750facf397b02c3048d6ae8aa904ee"
+    },
+    {
+      "bytes": 218,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:21Z",
+      "path": "scripts/assert_no_durable_float_scores.sh",
+      "sha256": "975fe9e7bfa25d27614c6031d2c6b107d9ec970a5e090461f9c7999ea369f2c8"
+    },
+    {
+      "bytes": 655,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:21Z",
+      "path": "scripts/assert_no_feut_contamination.sh",
+      "sha256": "5245c047a8a3c29b050645a79559c17f0a4dd0b90b018918cbb48b64a2b8a31a"
+    },
+    {
+      "bytes": 370,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:21Z",
+      "path": "scripts/assert_no_llm_or_network_calls.sh",
+      "sha256": "c9ce858062d19bd54899c985964d6d4918b584f75b8e57e0d17ed036a47cbff7"
+    },
+    {
+      "bytes": 348,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:17:49Z",
+      "path": "scripts/assert_no_naked_decision_booleans.sh",
+      "sha256": "6d2e9cd9e18562c31110074b2e5e877a5e563459bbbceaf2a351a53d1cc0b858"
+    },
+    {
+      "bytes": 1032,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T06:30:22Z",
+      "path": "scripts/assert_no_opaque_signal_scanning.sh",
+      "sha256": "ea604db27c6b32826cabb8e6dbc934ff890e6b58c47fbc2ad247b84556c4b2bd"
+    },
+    {
+      "bytes": 408,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:21Z",
+      "path": "scripts/assert_no_shadow_truth.sh",
+      "sha256": "ab17a0f2d436d608eadfde6edc0f3aa1bd453979985399dab4930c4da108beeb"
+    },
+    {
+      "bytes": 2575,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T02:25:20Z",
+      "path": "scripts/assert_no_stale_surfaces.py",
+      "sha256": "765273c352fcb2b830f4ac793803f087e8f18135799184f05bafdd9409d31305"
+    },
+    {
+      "bytes": 407,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:21Z",
+      "path": "scripts/assert_no_unexplained_golden_changes.sh",
+      "sha256": "c81c7c784538b353ed24b2a93d356acfd3319d5f74de5a7f5551c42bf418284a"
+    },
+    {
+      "bytes": 2503,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T02:27:32Z",
+      "path": "scripts/assert_required_archive_paths.py",
+      "sha256": "d89f15124994a0f6c5859fd043061d8a0ca1e5d0c84aaec1f8add7652cc17fa5"
+    },
+    {
+      "bytes": 806,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T02:23:27Z",
+      "path": "scripts/check_bundle_complete.py",
+      "sha256": "45cee8c87f2fd2fcadb49d19f8c71637cf0a58dc967f28d6b76a9717e856317d"
+    },
+    {
+      "bytes": 161,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:21Z",
+      "path": "scripts/generate_schemas.sh",
+      "sha256": "912ff71fcbcbab62490e2f3c9b0da5f392b8dd2efe45b739900678f8c71d1329"
+    },
+    {
+      "bytes": 615,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T22:10:31Z",
+      "path": "scripts/run_all_checks.sh",
+      "sha256": "489069c524990e49443551fd2ad94a325a186e62ff2366a4ad5c4613650f8163"
+    },
+    {
+      "bytes": 1259,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T02:09:09Z",
+      "path": "scripts/run_completion_checks.sh",
+      "sha256": "cd8f342571c4032f9fe71381b4b1599dd770a02590a892b5697fc1342bc883d0"
+    },
+    {
+      "bytes": 2066,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:11:52Z",
+      "path": "scripts/run_fresh_unzip_checks.sh",
+      "sha256": "3ae9b7878256149bbfc44c68efb6eb1ef68bee91cfa65756922d31f5019652fc"
+    },
+    {
+      "bytes": 1676,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T02:28:11Z",
+      "path": "scripts/run_p31_completion_checks.sh",
+      "sha256": "8ec6564597fe9727b2a81ccd4d3d467d6320927bdb2e33fc841dbe575e29328a"
+    },
+    {
+      "bytes": 5028,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:20:41Z",
+      "path": "scripts/validate_codex_pack.py",
+      "sha256": "e3199ace874ec2700e94b6c21f5db24699556b2024b7a4821d64b0c876df1040"
+    },
+    {
+      "bytes": 1247,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T08:16:21Z",
+      "path": "scripts/validate_schemas.py",
+      "sha256": "0e9689e4faf7e475c1e05b4d4b71483d5baef561652030c3a4c703128aef86dc"
+    },
+    {
+      "bytes": 4705,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:42Z",
+      "path": "scripts/validate_strict_schemas.py",
+      "sha256": "cd351359e7d0a88d087570bb343e8a5d9db610ecec22e3417ecc6983410ed8db"
+    },
+    {
+      "bytes": 3011,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-14T06:30:06Z",
+      "path": "scripts/verify_archive_manifest_parity.py",
+      "sha256": "8d62b5efb15ee099788bae60f63fcc962d9bfbcaad2e0f4a18b615008c6b215b"
+    },
+    {
+      "bytes": 348,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:24Z",
+      "path": "scripts/verify_golden_fixtures.sh",
+      "sha256": "875b285ff82fd570dc92ecadf2e66f00c899ff395f1ebe3281f1bf54e348dd8f"
+    },
+    {
+      "bytes": 125687,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:27:55Z",
+      "path": "scripts/zip_source_certifier.py",
+      "sha256": "abe4d861d1467e7523c648e695ebd46f5500e0868f0093da343c846dd3432461"
+    },
+    {
+      "bytes": 1547,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/ACCEPTANCE_GATES.md",
+      "sha256": "0a217a1a3e3e325c48ae3623c6cfc4d1635e97642193b4f343b92b952e117538"
+    },
+    {
+      "bytes": 1043,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/AUDIT_ADAPTER_SPEC.md",
+      "sha256": "c5d9df782643154def4dc4e71847e5ad2d147c50a8c3d25e9f00b9beee2d2427"
+    },
+    {
+      "bytes": 804,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/FAILURE_MODES.md",
+      "sha256": "bbf302c2fd71940259680368ffeae110be32db29cae96fb79d2aefeb56ab6cd9"
+    },
+    {
+      "bytes": 799,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/FIXTURE_MATRIX.md",
+      "sha256": "010b91345df9142fe641ade5d6a22bd19d26582d11a6ca8018bd05ba64b422d9"
+    },
+    {
+      "bytes": 505,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/INTEGRATION_SEQUENCE.md",
+      "sha256": "451f6ac2cc002d93009b6db65f67cc35fe204bf3e8418aa19d3209df788017bf"
+    },
+    {
+      "bytes": 835,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/POLICY_AND_ACTION_RESOLUTION.md",
+      "sha256": "3372ae0014c6e769a107a9a539214afd9003ab891e3dfa50d85e9794836a2640"
+    },
+    {
+      "bytes": 1790,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/SCR_P0A_SPEC.md",
+      "sha256": "b5238e400d4c0896ce7b42bada952ee7f263b3ecd4a672bbf594edb3e5004917"
+    },
+    {
+      "bytes": 807,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/TARGET_REPO_TREE.md",
+      "sha256": "171370aab8aded3b574d16b64954aaf5281e036ac1f91ecc3dd0bf47620f9c84"
+    },
+    {
+      "bytes": 736,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T12:34:54Z",
+      "path": "specs/TYPES_AND_SCHEMA_LAW.md",
+      "sha256": "00abf66a1789dfc9a7d3c2b5351cc28e48c5a37f48de8680c784e5d542220b48"
+    },
+    {
+      "bytes": 3995,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-14T02:23:26Z",
+      "path": "tests/test_auto_phase_pack.py",
+      "sha256": "527a29fdfadec1c70aa5f72b7ac5a0ede413522a6f5961a15ffdfa906e9fabcf"
+    }
+  ],
+  "findings": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.findings.json",
+  "manifest": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.manifest.json",
+  "package": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.zip",
+  "policy": {
+    "allow_secret_like_names": false,
+    "codex_artifact_classification": {},
+    "codex_current_run": "P30",
+    "follow_symlinks": false,
+    "include_codex_archive": false,
+    "include_codex_artifacts": true,
+    "include_doc_binaries": false,
+    "include_editor_config": false,
+    "include_external_path_deps": true,
+    "include_generated_schemas": false,
+    "include_images": false,
+    "include_logs": false,
+    "include_root_markdown_archive": false,
+    "max_file_size_bytes": 26214400,
+    "mode": "next-codex-context",
+    "package_role": "next-codex-context",
+    "profile": "generic-rust",
+    "root_markdown_archive_root": "/home/sikmindz/Coding/Libraries/scr-runtime/docs/root-markdown-archive",
+    "root_markdown_archive_root_rel": "docs/root-markdown-archive",
+    "secret_scan_max_bytes": 1048576
+  },
+  "report": {
+    "archive_root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+    "archive_sha256": "8233ae3551af3825847d7673548b233a1b320cdabbf508297db512836c0f63d9",
+    "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+    "archive_written": true,
+    "archive_zip_byte_sha256": "8233ae3551af3825847d7673548b233a1b320cdabbf508297db512836c0f63d9",
+    "codex_archive": {
+      "active_stale_after_count": 0,
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/scr-runtime/docs/codex-runs/archive",
+      "collision_count": 0,
+      "current_run": "P30",
+      "dry_run": false,
+      "enabled": true,
+      "errors": [],
+      "manifest_paths": [],
+      "moved_count": 0,
+      "planned_count": 0,
+      "report_path": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.codex-archive.json",
+      "skipped_existing_count": 0,
+      "stale_active_before_count": 0,
+      "unclassified_count": 0,
+      "verify_only": false
+    },
+    "content_manifest_sha256": "5100b63a8c8af3a7f21c3547ebac641444288b26f078d41f24c654e6030a5d12",
+    "created_utc": "2026-05-14T02:28:13Z",
+    "deterministic_zip_timestamps": true,
+    "dry_run": false,
+    "error_count": 0,
+    "excluded_file_count": 12,
+    "excluded_path": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.excluded.json",
+    "external_path_dep_roots": [],
+    "findings_count": 0,
+    "findings_path": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.findings.json",
+    "include_roots": [
+      "/home/sikmindz/Coding/Libraries/scr-runtime"
+    ],
+    "included_bytes": 402811,
+    "included_count": 143,
+    "manifest_path": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.manifest.json",
+    "mode": "next-codex-context",
+    "output": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.zip",
+    "package_role": "next-codex-context",
+    "profile_requested": "auto",
+    "profile_resolved": "generic-rust",
+    "pruned_dir_count": 6,
+    "report_path": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.report.md",
+    "root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+    "root_markdown_archive": {
+      "ambiguous_count": 3,
+      "ambiguous_paths": [
+        "AGENTS_COMPLETION_APPEND.md:ambiguous-stop: unknown-root-markdown",
+        "scr-runtime-generic-rust-next-codex-context-20260513.report.md:ambiguous-stop: unknown-root-markdown",
+        "scr-runtime-p31.report.md:ambiguous-stop: unknown-root-markdown"
+      ],
+      "archive_dir": "/home/sikmindz/Coding/Libraries/scr-runtime/docs/root-markdown-archive",
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/scr-runtime/docs/root-markdown-archive",
+      "candidate_count": 0,
+      "candidate_paths": [],
+      "collision_count": 0,
+      "current_run": "P30",
+      "dry_run": false,
+      "enabled": false,
+      "errors": [],
+      "inspected_count": 5,
+      "manifest_path": null,
+      "moved_count": 0,
+      "planned_count": 0,
+      "protected_count": 2,
+      "skipped_existing_count": 0,
+      "verify_only": false
+    },
+    "script": "zip_source_certifier.py",
+    "script_version": "2026.05.07-p29",
+    "strict": true,
+    "warning_count": 0
+  },
+  "root_markdown_archive": {
+    "ambiguous_count": 3,
+    "ambiguous_paths": [
+      "AGENTS_COMPLETION_APPEND.md:ambiguous-stop: unknown-root-markdown",
+      "scr-runtime-generic-rust-next-codex-context-20260513.report.md:ambiguous-stop: unknown-root-markdown",
+      "scr-runtime-p31.report.md:ambiguous-stop: unknown-root-markdown"
+    ],
+    "archive_dir": "/home/sikmindz/Coding/Libraries/scr-runtime/docs/root-markdown-archive",
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/scr-runtime/docs/root-markdown-archive",
+    "candidate_count": 0,
+    "candidate_paths": [],
+    "collision_count": 0,
+    "collisions": [],
+    "current_run": "P30",
+    "dry_run": false,
+    "enabled": false,
+    "errors": [],
+    "inspected_count": 5,
+    "manifest_path": null,
+    "manifest_written": false,
+    "moved_count": 0,
+    "planned_count": 0,
+    "protected_count": 2,
+    "protected_paths": [
+      "AGENTS.md",
+      "README.md"
+    ],
+    "skipped_existing_count": 0,
+    "verify_only": false
+  },
+  "sidecars": {
+    "codex_archive_report": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.codex-archive.json",
+    "excluded": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.excluded.json",
+    "findings": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.findings.json",
+    "manifest": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.manifest.json",
+    "package": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.zip",
+    "report": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-p31.report.md"
+  },
+  "summaries": {
+    "exclusion_reasons": {
+      "archive-file": 1,
+      "generated-output": 6,
+      "generated-sidecar": 5
+    },
+    "extensions": {
+      ".json": 23,
+      ".lock": 1,
+      ".md": 78,
+      ".py": 15,
+      ".rs": 5,
+      ".rules": 1,
+      ".sh": 13,
+      ".toml": 7
+    },
+    "top_level_dirs": {
+      ".agents": 5,
+      ".codex": 27,
+      "AGENTS.md": 1,
+      "AGENTS_COMPLETION_APPEND.md": 1,
+      "Cargo.lock": 1,
+      "Cargo.toml": 1,
+      "README.md": 1,
+      "crates": 9,
+      "docs": 23,
+      "fixtures": 16,
+      "policies": 2,
+      "prompts": 19,
+      "schemas": 3,
+      "scripts": 24,
+      "specs": 9,
+      "tests": 1
+    }
+  }
+}

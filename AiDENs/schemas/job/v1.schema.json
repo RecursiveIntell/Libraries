@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "JobStateV1": {
+      "enum": [
+        "queued",
+        "leased",
+        "running",
+        "completed",
+        "retrying",
+        "cancelled",
+        "poisoned"
+      ],
+      "type": "string"
+    },
+    "ToolSideEffectClass": {
+      "enum": [
+        "read_only",
+        "analysis",
+        "preview_write",
+        "write",
+        "admin"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "attempt_family_id": {
+      "type": "string"
+    },
+    "cancelled_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "lease_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "namespace_id": {
+      "type": "string"
+    },
+    "occurrence_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "payload": true,
+    "payload_digest": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "risk": {
+      "$ref": "#/definitions/ToolSideEffectClass"
+    },
+    "source_kind": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/definitions/JobStateV1"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "wake_signal_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "attempt_family_id",
+    "created_at",
+    "idempotency_key",
+    "job_id",
+    "kind",
+    "namespace_id",
+    "payload",
+    "payload_digest",
+    "risk",
+    "source_kind",
+    "state",
+    "updated_at"
+  ],
+  "title": "JobV1",
+  "type": "object"
+}

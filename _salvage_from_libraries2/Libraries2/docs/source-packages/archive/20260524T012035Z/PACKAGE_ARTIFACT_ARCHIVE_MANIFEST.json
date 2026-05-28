@@ -1,0 +1,55 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries2/docs/source-packages/archive/20260524T012035Z",
+  "collisions": [],
+  "created_utc": "2026-05-24T01:20:35Z",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012035Z/files/CLAUDE_CODE_PROMPT.md",
+      "bytes": 9457,
+      "mtime_utc": "2026-03-26T17:33:38Z",
+      "original_path": "CLAUDE_CODE_PROMPT.md",
+      "reason": "root-prompt-residue",
+      "sha256": "0206d3cce9278aee3f3e58a92f0a5ebe4955e54f4b767f792803f7cbd59b53bf"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012035Z/files/MASTER_ISSUE_MATRIX.md",
+      "bytes": 10353,
+      "mtime_utc": "2026-03-26T17:33:38Z",
+      "original_path": "MASTER_ISSUE_MATRIX.md",
+      "reason": "root-issue-matrix-residue",
+      "sha256": "0cbb0d6a0e560a0af69eeaf91dac60f59e0def731a4ef1940b85f0317da3a3fd"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012035Z/files/CLAUDE_CODE_PROMPT.md",
+      "bytes": 9457,
+      "mtime_utc": "2026-03-26T17:33:38Z",
+      "original_path": "CLAUDE_CODE_PROMPT.md",
+      "reason": "root-prompt-residue",
+      "sha256": "0206d3cce9278aee3f3e58a92f0a5ebe4955e54f4b767f792803f7cbd59b53bf"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260524T012035Z/files/MASTER_ISSUE_MATRIX.md",
+      "bytes": 10353,
+      "mtime_utc": "2026-03-26T17:33:38Z",
+      "original_path": "MASTER_ISSUE_MATRIX.md",
+      "reason": "root-issue-matrix-residue",
+      "sha256": "0cbb0d6a0e560a0af69eeaf91dac60f59e0def731a4ef1940b85f0317da3a3fd"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries2",
+  "root_package_archive_manifest_version": "RootPackageArtifactArchiveManifestV1",
+  "summary": {
+    "candidate_count": 2,
+    "collision_count": 0,
+    "inspected_count": 16,
+    "moved_count": 2,
+    "planned_count": 2,
+    "protected_count": 4,
+    "skipped_existing_count": 0
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31"
+}

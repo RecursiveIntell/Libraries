@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P12/files/handoffs/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md",
+      "bytes": 2830,
+      "mtime_utc": "2026-04-28T21:14:04Z",
+      "original_path": "handoffs/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P12",
+      "sha256": "c9d02f949849d841a5ac4367ba05a8410da0200ccf22bcf875200b52c34009d7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P12/files/prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md",
+      "bytes": 1396,
+      "mtime_utc": "2026-04-28T21:16:12Z",
+      "original_path": "prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P12",
+      "sha256": "5e6f8d65f236d31d8de6df7acc50070e5c7f67f4fc2b62e213f76271b1d31b7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P12/files/tasks/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.json",
+      "bytes": 1227,
+      "mtime_utc": "2026-04-28T21:16:12Z",
+      "original_path": "tasks/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.json",
+      "reason": "stale-run-task",
+      "run_id": "P12",
+      "sha256": "72af0fbf266e1568912610324314baa8946b5239855be07b2ad9075a149aa0d0"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P12",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

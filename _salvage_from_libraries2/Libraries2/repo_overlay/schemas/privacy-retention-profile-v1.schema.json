@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PrivacyRetentionProfileV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "privacy_retention_profile_id": {
+      "type": "string"
+    },
+    "applicable_namespaces": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "default_retention_class": {
+      "type": "string"
+    },
+    "archive_restore_expectation": {
+      "type": "string"
+    },
+    "cross_border_transfer_default": {
+      "type": "string"
+    },
+    "default_redaction_rule_set_id": {
+      "type": "string"
+    },
+    "compaction_requires_receipt": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "privacy_retention_profile_id",
+    "applicable_namespaces",
+    "default_retention_class",
+    "archive_restore_expectation",
+    "cross_border_transfer_default",
+    "default_redaction_rule_set_id",
+    "compaction_requires_receipt"
+  ]
+}

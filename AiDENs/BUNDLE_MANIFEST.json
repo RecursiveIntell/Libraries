@@ -1,0 +1,170 @@
+{
+  "bundle": "aidens_p31a_release_truth_pass_20260513",
+  "files": [
+    {
+      "path": "00_OPERATOR_PASTE_FIRST.md",
+      "bytes": 1260,
+      "sha256": "852dfc57b0efa268f8d15e2aa8244cbb648775164bab890a17966c9af87c47b4"
+    },
+    {
+      "path": "01_P31A_MAIN_CODEX_PROMPT.md",
+      "bytes": 7661,
+      "sha256": "3f525c3c8b45272ef3be1842611dee7519cc571da60fc461df57e1d6e3dec6d6"
+    },
+    {
+      "path": "02_P31A_PHASE_PLAN.md",
+      "bytes": 3889,
+      "sha256": "448b4a2729d4d7b273ebe8da3c9cac4cbca7565dc6039e4d336fa0742a48251b"
+    },
+    {
+      "path": "03_P31A_MANUAL_PHASE_INJECTIONS.md",
+      "bytes": 1987,
+      "sha256": "b78f6f6b386e279b0bf4e90e3c55c07a47513ce8d82dc50f43eb7fc1141bcd66"
+    },
+    {
+      "path": "04_P31A_ACCEPTANCE_GATES.md",
+      "bytes": 3092,
+      "sha256": "36f09d808c6271eaedffb22352aaa3846bb64106c6b77032e5f72d1457dddb6e"
+    },
+    {
+      "path": "05_P31A_SCRIPT_SPEC.md",
+      "bytes": 2163,
+      "sha256": "30fb11f16adaf6c813d515a6694b2d54f995834af9b036d1f223a393e8534cfc"
+    },
+    {
+      "path": "06_P31A_FINAL_REPORT_TEMPLATE.md",
+      "bytes": 1622,
+      "sha256": "e2170d0bbca13a929556a75a7ed90e8ecb8dd501665ab3510822ad10929b9f44"
+    },
+    {
+      "path": "07_P31A_AUDITOR_HANDOFF.md",
+      "bytes": 1360,
+      "sha256": "dd0eb22f0baf829d5e11801ccb9ca0fc731c7af6554558c5d2e8f0b1572c521a"
+    },
+    {
+      "path": "08_P31A_AGENTS_APPENDIX.md",
+      "bytes": 1258,
+      "sha256": "122e382c99519c10c4f86c6fe41d96c636a96107190b758c5af8a625831c19d2"
+    },
+    {
+      "path": "09_P31A_COMMANDS.md",
+      "bytes": 961,
+      "sha256": "bf8551d21603aa77bdec878f5e06cee101d21aa5e6cba3f66c4f457ffd1486f0"
+    },
+    {
+      "path": "MANIFEST.md",
+      "bytes": 1014,
+      "sha256": "ed87aa34862fd1a99ef09a36499cf29911716e7bbf478a048f3e44729b7b5711"
+    },
+    {
+      "path": "P31A_DEFERRED_RUNTIME_EVIDENCE_ISSUES_TEMPLATE.md",
+      "bytes": 1343,
+      "sha256": "035d64cdeb3ec0bc8392f1c4301fd9a209aa5a304b25be10b97255f9ac73067f"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2544,
+      "sha256": "93f4c70caaf2ab5f2b2984735c7b9cc387e7c7e5e948dfce821cff6ed1ce67c6"
+    },
+    {
+      "path": "phase_prompts/PHASE_00_INVENTORY_PROMPT.md",
+      "bytes": 633,
+      "sha256": "8c541bb355ad411d95d51004e7a68192ab4e502160039cc106aa8290aae48591"
+    },
+    {
+      "path": "phase_prompts/PHASE_01_LEDGER_AND_DOCS_PROMPT.md",
+      "bytes": 849,
+      "sha256": "a070bf097d583226df57c369067ceb39ecf5be1980ddacab42111607e4091cb3"
+    },
+    {
+      "path": "phase_prompts/PHASE_02_VERIFY_AND_CI_PROMPT.md",
+      "bytes": 448,
+      "sha256": "1c49b343c1aa4f3e874b42261ef70fe3e1c2cb35cb98e7d68a5a69bcd36f9f02"
+    },
+    {
+      "path": "phase_prompts/PHASE_03_ARCHIVE_CLASSIFICATION_PROMPT.md",
+      "bytes": 661,
+      "sha256": "af9e55177824f54293987468517740c02f1b853f116256745425a552baacfba5"
+    },
+    {
+      "path": "phase_prompts/PHASE_04_PACKAGE_REPLAY_PROMPT.md",
+      "bytes": 611,
+      "sha256": "ea8b95a2c8db2b610afcfe53cf28e2b1e1e0b8bd78f6b9b67a0f98c2adc52eba"
+    },
+    {
+      "path": "phase_prompts/PHASE_05_BROAD_WARNING_TRIAGE_PROMPT.md",
+      "bytes": 499,
+      "sha256": "4e4ce63bf5dddffcb63159100ff8f26cd2c6b53e684ec919c06a41882baa334f"
+    },
+    {
+      "path": "phase_prompts/PHASE_06_FINAL_REPORT_PROMPT.md",
+      "bytes": 719,
+      "sha256": "b95291cc13a2775209c2f321c432e3582a80fab872004f9f7ae5236e0d7006b8"
+    },
+    {
+      "path": "scripts/assert_codex_artifact_classification.py",
+      "bytes": 2969,
+      "sha256": "c2e2e823486ff1e4124354f8caf87fb05830bb0553abde899117c7b4448156a7"
+    },
+    {
+      "path": "scripts/assert_current_run_truth.py",
+      "bytes": 2283,
+      "sha256": "cf74248e9515a2a0da9fdc8eb633e4de9fad8b45ee0d0910499e01430b49e891"
+    },
+    {
+      "path": "scripts/assert_package_self_replay.py",
+      "bytes": 3891,
+      "sha256": "e0410c8be6554c2f51fe430c3b590c505ca22e481a7a6337f0bdd0e006840445"
+    },
+    {
+      "path": "scripts/assert_package_validation.py",
+      "bytes": 3615,
+      "sha256": "722d25ca474b0080b055b32a1a8826492e2444a5069571dd2ebe929970c9b4d9"
+    },
+    {
+      "path": "scripts/assert_release_ledger_schema.py",
+      "bytes": 4909,
+      "sha256": "e018ff9267ef74e963ac7477984a510ac6afc91ba3e7a8aa5732c70177ee54f9"
+    },
+    {
+      "path": "scripts/assert_release_truth_consistency.py",
+      "bytes": 2587,
+      "sha256": "144f2745ada78de30b2bb7f872ed4213e2c695817b5d2390080446fc303c1fa4"
+    },
+    {
+      "path": "scripts/assert_root_markdown_archive_policy.py",
+      "bytes": 2277,
+      "sha256": "97799d37e28621a259b82bfc5987be978c3864d6ca34517e824bfda2c5b1ea36"
+    },
+    {
+      "path": "scripts/assert_support_claims_have_evidence.py",
+      "bytes": 2370,
+      "sha256": "cd3176998a462cc6c5460bbeb77f15afff3ead34a5e3ba04d641f10b7841446a"
+    },
+    {
+      "path": "scripts/verify_current.sh",
+      "bytes": 2413,
+      "sha256": "347a45fcd146107c114855f4ff64922227c7a141bdaac6eecd0b3b3d593c3dd4"
+    },
+    {
+      "path": "templates/BUILD_SCOPE.template.md",
+      "bytes": 1984,
+      "sha256": "87860e8551a1c0b5e71f18603754dadbc1f9e391d6d1a9c06732da30a1337b6d"
+    },
+    {
+      "path": "templates/CODEX_ARTIFACT_CLASSIFICATION.template.json",
+      "bytes": 732,
+      "sha256": "f319a51ff2b9e090da9f1464d909c520f5b05aca05e8b891abebb0e5e95dddab"
+    },
+    {
+      "path": "templates/CURRENT_RUN.md.template",
+      "bytes": 539,
+      "sha256": "6e833182e86d280dcd18322070f5263f09638bb3dad102814df2cce204068b0b"
+    },
+    {
+      "path": "templates/CURRENT_RUN.template.json",
+      "bytes": 1002,
+      "sha256": "7c011dbaea5e910963fdc8d0fec8082ddb6ff0ad2a758fc03fe59e8ca95530a6"
+    }
+  ]
+}

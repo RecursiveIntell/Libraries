@@ -1,0 +1,321 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CompilationBoundary": {
+      "properties": {
+        "artifact_families": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "deterministic": {
+          "type": "boolean"
+        },
+        "from_surface": {
+          "$ref": "#/definitions/GraphSurfaceKind"
+        },
+        "to_surface": {
+          "$ref": "#/definitions/GraphSurfaceKind"
+        }
+      },
+      "required": [
+        "artifact_families",
+        "deterministic",
+        "from_surface",
+        "to_surface"
+      ],
+      "type": "object"
+    },
+    "CompiledRegion": {
+      "properties": {
+        "bounded_default_unit_of_work": {
+          "type": "boolean"
+        },
+        "constraint_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "hyperedge_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "region_digest_id": {
+          "type": "string"
+        },
+        "region_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bounded_default_unit_of_work",
+        "constraint_ids",
+        "hyperedge_ids",
+        "node_ids",
+        "region_digest_id",
+        "region_id"
+      ],
+      "type": "object"
+    },
+    "ConstraintUnit": {
+      "properties": {
+        "constraint_id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "operator_id": {
+          "type": "string"
+        },
+        "variable_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "kind",
+        "operator_id",
+        "variable_ids"
+      ],
+      "type": "object"
+    },
+    "DegradationMarker": {
+      "enum": [
+        "missing_claim_family",
+        "missing_assertion_group",
+        "missing_relation_group",
+        "thin_export"
+      ],
+      "type": "string"
+    },
+    "GraphGeometryManifest": {
+      "properties": {
+        "compilation_boundaries": {
+          "items": {
+            "$ref": "#/definitions/CompilationBoundary"
+          },
+          "type": "array"
+        },
+        "no_silent_collapse": {
+          "type": "boolean"
+        },
+        "surfaces": {
+          "items": {
+            "$ref": "#/definitions/GraphSurfaceKind"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "compilation_boundaries",
+        "no_silent_collapse",
+        "surfaces"
+      ],
+      "type": "object"
+    },
+    "GraphSurfaceKind": {
+      "enum": [
+        "storage",
+        "retrieval",
+        "inference",
+        "repair",
+        "control"
+      ],
+      "type": "string"
+    },
+    "InferenceHyperedge": {
+      "properties": {
+        "edge_id": {
+          "type": "string"
+        },
+        "member_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "edge_id",
+        "member_node_ids"
+      ],
+      "type": "object"
+    },
+    "InferenceNode": {
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "node_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "node_id"
+      ],
+      "type": "object"
+    },
+    "InvalidationCone": {
+      "properties": {
+        "affected_constraint_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "affected_hyperedge_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "affected_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "source_node_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "affected_constraint_ids",
+        "affected_hyperedge_ids",
+        "affected_node_ids",
+        "source_node_id"
+      ],
+      "type": "object"
+    },
+    "OracleSliceCandidate": {
+      "properties": {
+        "node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "oracle_slice_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "node_ids",
+        "oracle_slice_id"
+      ],
+      "type": "object"
+    },
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "constraints": {
+      "items": {
+        "$ref": "#/definitions/ConstraintUnit"
+      },
+      "type": "array"
+    },
+    "degradations": {
+      "items": {
+        "$ref": "#/definitions/DegradationMarker"
+      },
+      "type": "array"
+    },
+    "geometry_manifest": {
+      "$ref": "#/definitions/GraphGeometryManifest"
+    },
+    "graph_hash": {
+      "type": "string"
+    },
+    "hyperedges": {
+      "items": {
+        "$ref": "#/definitions/InferenceHyperedge"
+      },
+      "type": "array"
+    },
+    "invalidation_cones": {
+      "items": {
+        "$ref": "#/definitions/InvalidationCone"
+      },
+      "type": "array"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/definitions/InferenceNode"
+      },
+      "type": "array"
+    },
+    "oracle_candidates": {
+      "items": {
+        "$ref": "#/definitions/OracleSliceCandidate"
+      },
+      "type": "array"
+    },
+    "regions": {
+      "items": {
+        "$ref": "#/definitions/CompiledRegion"
+      },
+      "type": "array"
+    },
+    "scope_key": {
+      "$ref": "#/definitions/ScopeKey"
+    }
+  },
+  "required": [
+    "constraints",
+    "degradations",
+    "geometry_manifest",
+    "graph_hash",
+    "hyperedges",
+    "invalidation_cones",
+    "nodes",
+    "oracle_candidates",
+    "regions",
+    "scope_key"
+  ],
+  "title": "CompileOutput",
+  "type": "object"
+}

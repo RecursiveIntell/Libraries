@@ -1,0 +1,14 @@
+{
+  "semantic-memory": [
+    {
+      "path": "/home/sikmindz/Coding/Libraries/semantic-memory/Cargo.toml",
+      "rel": "semantic-memory/Cargo.toml",
+      "zone": "active"
+    },
+    {
+      "path": "/home/sikmindz/Coding/Libraries/turbo-semantic/Cargo.toml",
+      "rel": "turbo-semantic/Cargo.toml",
+      "zone": "active"
+    }
+  ]
+}

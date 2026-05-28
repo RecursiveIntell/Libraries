@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 //! Tests proving runtime invariants introduced by the invariant-enforcement phase.
 //!
 //! Covers:

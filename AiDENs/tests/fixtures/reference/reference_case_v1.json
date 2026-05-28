@@ -1,0 +1,31 @@
+{
+  "case_id": "reference-case:provider-mock",
+  "domain": "provider-route",
+  "title": "provider route semantics for mock",
+  "input": {
+    "kind": "mock",
+    "mock_response_configured": true
+  },
+  "expected": {
+    "configured": true,
+    "executable": true,
+    "route_label": "mock",
+    "native_tool_loop": false,
+    "reason_codes": [
+      "mock-response-configured"
+    ]
+  },
+  "covered_provider_kinds": [
+    "mock"
+  ],
+  "covered_risk_classes": [],
+  "covered_memory_modes": [],
+  "covered_receipt_levels": [],
+  "covered_tool_lifecycle_states": [],
+  "source_fixture_paths": [
+    "tests/fixtures/reference/reference_case_v1.json"
+  ],
+  "reason_codes": [
+    "reference-semantics-case"
+  ]
+}

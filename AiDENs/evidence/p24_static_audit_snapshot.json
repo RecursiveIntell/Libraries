@@ -1,0 +1,1942 @@
+{
+  "package_file_count": 1189,
+  "aidens_file_count": 552,
+  "package_extension_counts": {
+    "<no-extension>": 8,
+    ".md": 332,
+    ".lock": 16,
+    ".toml": 99,
+    ".json": 184,
+    ".py": 12,
+    ".txt": 3,
+    ".csv": 18,
+    ".sh": 28,
+    ".rs": 482,
+    ".jsonl": 3,
+    ".ndjson": 3,
+    ".yml": 1
+  },
+  "package_top_counts": {
+    "AiDENs": 552,
+    "forge-pilot": 92,
+    "semantic-memory": 86,
+    "living-memory": 60,
+    "Primitives": 55,
+    "knowledge-runtime": 38,
+    "assurance-runtime": 18,
+    "continuity-runtime": 16,
+    "profile-runtime": 16,
+    "effect-runtime": 15,
+    "verification-policy": 15,
+    "authority-delegation": 14,
+    "stack-ids": 14,
+    "forge-memory-bridge": 13,
+    "semantic-memory-forge": 13,
+    "kernel-conformance": 12,
+    "llm-tool-runtime": 12,
+    "verification-control": 10,
+    "attestation-exchange": 9,
+    "constitutional-memory": 9,
+    "discovery-portfolio": 9,
+    "federated-settlement": 9,
+    "mechanism-runtime": 9,
+    "verification-adjudication": 9,
+    "spec-execution": 8,
+    "contract-schema-gen": 6,
+    "remote-oracle-admission": 6,
+    "constraint-compiler": 5,
+    "recursive-kernel-core": 5,
+    "verification-calibration": 5,
+    "kernel-execution": 4,
+    "kernel-oracles": 4,
+    ".gitignore": 1,
+    "06_RISK_REGISTER.md": 1,
+    "AGENTS.md": 1,
+    "AUDIT_2026-04-01.md": 1,
+    "CLAUDE.md": 1,
+    "COMBINED_AUDIT_2026-04-01.md": 1,
+    "CONFORMANCE_GATES.md": 1,
+    "CONTRACT_AND_TEMPORAL_TRUTH_HARDENING.md": 1,
+    "CRATE_HARDENING_MATRIX.md": 1,
+    "Cargo.lock": 1,
+    "Cargo.toml": 1,
+    "EXECUTION_EVIDENCE_AND_REFERENCE_INTERPRETER_PLAN.md": 1,
+    "HOSTILE_AUDIT_SYNTHESIS_V5.md": 1,
+    "KERNEL_AND_REGION_RUNTIME_PLAN.md": 1,
+    "LIBRARIES_MASTER_MATRIX_V8.md": 1,
+    "LIBRARIES_MASTER_TENSOR_V8.json": 1,
+    "LIBRARIES_PROMPT.md": 1,
+    "LIB_MASTER_ISSUE_MATRIX.md": 1,
+    "LIB_MASTER_ISSUE_TENSOR.json": 1,
+    "LIB_PROMPT.md": 1,
+    "MASTER_ISSUE_MATRIX.md": 1,
+    "MASTER_ISSUE_TENSOR.json": 1,
+    "MASTER_TENSOR.md": 1,
+    "Makefile": 1,
+    "PACK_MANIFEST.json": 1,
+    "PROMPT.md": 1,
+    "README.md": 1,
+    "RISK_REGISTER.md": 1,
+    "SCOPE_NOTES.md": 1,
+    "SNAPSHOT_2026-04-11.md": 1,
+    "SOURCE_BASIS.md": 1,
+    "STATUS_DASHBOARD.md": 1,
+    "STATUS_EVIDENCE_MANIFEST.json": 1,
+    "SUPPORT_PROFILE.md": 1,
+    "TEST_AND_CONFORMANCE_PLAN.md": 1,
+    "V9_IMPLEMENTATION_PLAYBOOK.md": 1,
+    "claude_hard_audit_2026-03-30.md": 1,
+    "gpt54_hard_audit_2026-03-30.md": 1,
+    "gpt54_tensor_2026-03-30.json": 1,
+    "support_lane.toml": 1,
+    "zip.py": 1
+  },
+  "package_rust_file_count": 482,
+  "aidens_rust_file_count": 60,
+  "package_rust_loc": 161508,
+  "package_rust_nonblank_loc": 148903,
+  "workspace_member_count": 33,
+  "workspace_members": [
+    "crates/aidens",
+    "crates/aidens-contracts",
+    "crates/aidens-boundary-kit",
+    "crates/aidens-config",
+    "crates/aidens-receipts",
+    "crates/aidens-capability-kit",
+    "crates/aidens-provider-kit",
+    "crates/aidens-tool-kit",
+    "crates/aidens-security-kit",
+    "crates/aidens-permit-kit",
+    "crates/aidens-arbiter-kit",
+    "crates/aidens-budget-kit",
+    "crates/aidens-agency-kit",
+    "crates/aidens-governance-kit",
+    "crates/aidens-schedule-kit",
+    "crates/aidens-queue-kit",
+    "crates/aidens-wake-kit",
+    "crates/aidens-daemon-kit",
+    "crates/aidens-memory-kit",
+    "crates/aidens-kernel-kit",
+    "crates/aidens-delegation-kit",
+    "crates/aidens-plan-kit",
+    "crates/aidens-repair-kit",
+    "crates/aidens-runner",
+    "crates/aidens-app-kit",
+    "crates/aidens-cli",
+    "crates/aidens-testkit",
+    "crates/aidens-integration-tests",
+    "crates/aidens-profile-coding",
+    "crates/aidens-profile-research",
+    "crates/aidens-profile-desktop",
+    "crates/aidens-profile-daemon",
+    "crates/aidens-profile-memory"
+  ],
+  "aidens_crate_count": 33,
+  "cargo_toml_count": 34,
+  "path_dependency_count": 77,
+  "path_dependencies": [
+    {
+      "section": "dependencies",
+      "name": "aidens-runner",
+      "path": "../aidens-runner",
+      "crate": "aidens-app-kit",
+      "crate_path": "AiDENs/crates/aidens-app-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-app-kit",
+      "crate_path": "AiDENs/crates/aidens-app-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-config",
+      "path": "../aidens-config",
+      "crate": "aidens-app-kit",
+      "crate_path": "AiDENs/crates/aidens-app-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-plan-kit",
+      "path": "../aidens-plan-kit",
+      "crate": "aidens-app-kit",
+      "crate_path": "AiDENs/crates/aidens-app-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-provider-kit",
+      "path": "../aidens-provider-kit",
+      "crate": "aidens-app-kit",
+      "crate_path": "AiDENs/crates/aidens-app-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-receipts",
+      "path": "../aidens-receipts",
+      "crate": "aidens-app-kit",
+      "crate_path": "AiDENs/crates/aidens-app-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-tool-kit",
+      "path": "../aidens-tool-kit",
+      "crate": "aidens-app-kit",
+      "crate_path": "AiDENs/crates/aidens-app-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-boundary-kit",
+      "crate_path": "AiDENs/crates/aidens-boundary-kit"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-testkit",
+      "path": "../aidens-testkit",
+      "crate": "aidens-boundary-kit",
+      "crate_path": "AiDENs/crates/aidens-boundary-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-capability-kit",
+      "crate_path": "AiDENs/crates/aidens-capability-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-app-kit",
+      "path": "../aidens-app-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-budget-kit",
+      "path": "../aidens-budget-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-boundary-kit",
+      "path": "../aidens-boundary-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-capability-kit",
+      "path": "../aidens-capability-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-config",
+      "path": "../aidens-config",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-daemon-kit",
+      "path": "../aidens-daemon-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-memory-kit",
+      "path": "../aidens-memory-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-permit-kit",
+      "path": "../aidens-permit-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-plan-kit",
+      "path": "../aidens-plan-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-provider-kit",
+      "path": "../aidens-provider-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-receipts",
+      "path": "../aidens-receipts",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-runner",
+      "path": "../aidens-runner",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-tool-kit",
+      "path": "../aidens-tool-kit",
+      "crate": "aidens-cli",
+      "crate_path": "AiDENs/crates/aidens-cli"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-config",
+      "crate_path": "AiDENs/crates/aidens-config"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-testkit",
+      "path": "../aidens-testkit",
+      "crate": "aidens-config",
+      "crate_path": "AiDENs/crates/aidens-config"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-daemon-kit",
+      "crate_path": "AiDENs/crates/aidens-daemon-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-queue-kit",
+      "path": "../aidens-queue-kit",
+      "crate": "aidens-daemon-kit",
+      "crate_path": "AiDENs/crates/aidens-daemon-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-schedule-kit",
+      "path": "../aidens-schedule-kit",
+      "crate": "aidens-daemon-kit",
+      "crate_path": "AiDENs/crates/aidens-daemon-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-wake-kit",
+      "path": "../aidens-wake-kit",
+      "crate": "aidens-daemon-kit",
+      "crate_path": "AiDENs/crates/aidens-daemon-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-delegation-kit",
+      "crate_path": "AiDENs/crates/aidens-delegation-kit"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-agency-kit",
+      "path": "../aidens-agency-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-boundary-kit",
+      "path": "../aidens-boundary-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-budget-kit",
+      "path": "../aidens-budget-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-cli",
+      "path": "../aidens-cli",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-daemon-kit",
+      "path": "../aidens-daemon-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-governance-kit",
+      "path": "../aidens-governance-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-kernel-kit",
+      "path": "../aidens-kernel-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-memory-kit",
+      "path": "../aidens-memory-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-provider-kit",
+      "path": "../aidens-provider-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-receipts",
+      "path": "../aidens-receipts",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-repair-kit",
+      "path": "../aidens-repair-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-runner",
+      "path": "../aidens-runner",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-testkit",
+      "path": "../aidens-testkit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-tool-kit",
+      "path": "../aidens-tool-kit",
+      "crate": "aidens-integration-tests",
+      "crate_path": "AiDENs/crates/aidens-integration-tests"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-permit-kit",
+      "crate_path": "AiDENs/crates/aidens-permit-kit"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-testkit",
+      "path": "../aidens-testkit",
+      "crate": "aidens-permit-kit",
+      "crate_path": "AiDENs/crates/aidens-permit-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-plan-kit",
+      "crate_path": "AiDENs/crates/aidens-plan-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-profile-coding",
+      "crate_path": "AiDENs/crates/aidens-profile-coding"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-provider-kit",
+      "crate_path": "AiDENs/crates/aidens-provider-kit"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-testkit",
+      "path": "../aidens-testkit",
+      "crate": "aidens-provider-kit",
+      "crate_path": "AiDENs/crates/aidens-provider-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-queue-kit",
+      "crate_path": "AiDENs/crates/aidens-queue-kit"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-testkit",
+      "path": "../aidens-testkit",
+      "crate": "aidens-receipts",
+      "crate_path": "AiDENs/crates/aidens-receipts"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-agency-kit",
+      "path": "../aidens-agency-kit",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-receipts",
+      "path": "../aidens-receipts",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-governance-kit",
+      "path": "../aidens-governance-kit",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-provider-kit",
+      "path": "../aidens-provider-kit",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-tool-kit",
+      "path": "../aidens-tool-kit",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-permit-kit",
+      "path": "../aidens-permit-kit",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-budget-kit",
+      "path": "../aidens-budget-kit",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-boundary-kit",
+      "path": "../aidens-boundary-kit",
+      "crate": "aidens-runner",
+      "crate_path": "AiDENs/crates/aidens-runner"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-schedule-kit",
+      "crate_path": "AiDENs/crates/aidens-schedule-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-testkit",
+      "crate_path": "AiDENs/crates/aidens-testkit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-boundary-kit",
+      "path": "../aidens-boundary-kit",
+      "crate": "aidens-tool-kit",
+      "crate_path": "AiDENs/crates/aidens-tool-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-tool-kit",
+      "crate_path": "AiDENs/crates/aidens-tool-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-permit-kit",
+      "path": "../aidens-permit-kit",
+      "crate": "aidens-tool-kit",
+      "crate_path": "AiDENs/crates/aidens-tool-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-security-kit",
+      "path": "../aidens-security-kit",
+      "crate": "aidens-tool-kit",
+      "crate_path": "AiDENs/crates/aidens-tool-kit"
+    },
+    {
+      "section": "dev-dependencies",
+      "name": "aidens-testkit",
+      "path": "../aidens-testkit",
+      "crate": "aidens-tool-kit",
+      "crate_path": "AiDENs/crates/aidens-tool-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens-wake-kit",
+      "crate_path": "AiDENs/crates/aidens-wake-kit"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-agency-kit",
+      "path": "../aidens-agency-kit",
+      "crate": "aidens",
+      "crate_path": "AiDENs/crates/aidens"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-app-kit",
+      "path": "../aidens-app-kit",
+      "crate": "aidens",
+      "crate_path": "AiDENs/crates/aidens"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-contracts",
+      "path": "../aidens-contracts",
+      "crate": "aidens",
+      "crate_path": "AiDENs/crates/aidens"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-kernel-kit",
+      "path": "../aidens-kernel-kit",
+      "crate": "aidens",
+      "crate_path": "AiDENs/crates/aidens"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-profile-coding",
+      "path": "../aidens-profile-coding",
+      "crate": "aidens",
+      "crate_path": "AiDENs/crates/aidens"
+    },
+    {
+      "section": "dependencies",
+      "name": "aidens-runner",
+      "path": "../aidens-runner",
+      "crate": "aidens",
+      "crate_path": "AiDENs/crates/aidens"
+    }
+  ],
+  "aidens_public_symbol_count": 924,
+  "aidens_duplicate_public_symbol_names_count": 55,
+  "aidens_duplicate_public_symbols_top": {
+    "new": [
+      {
+        "kind": "fn",
+        "name": "new",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "new",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "new",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "new",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "new",
+        "file": "AiDENs/crates/aidens-receipts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "new",
+        "file": "AiDENs/crates/aidens-provider-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "new",
+        "file": "AiDENs/crates/aidens-provider-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "new",
+        "file": "AiDENs/crates/aidens-provider-kit/src/lib.rs"
+      }
+    ],
+    "denied": [
+      {
+        "kind": "fn",
+        "name": "denied",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "denied",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "denied",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "denied",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "denied",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "open": [
+      {
+        "kind": "fn",
+        "name": "open",
+        "file": "AiDENs/crates/aidens-receipts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "open",
+        "file": "AiDENs/crates/aidens-queue-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "open",
+        "file": "AiDENs/crates/aidens-memory-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "open",
+        "file": "AiDENs/crates/aidens-daemon-kit/src/lib.rs"
+      }
+    ],
+    "blocked": [
+      {
+        "kind": "fn",
+        "name": "blocked",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "blocked",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "blocked",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "blocked",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "blocks_completion": [
+      {
+        "kind": "fn",
+        "name": "blocks_completion",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "blocks_completion",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "blocks_completion",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "blocks_completion",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "tool_ids": [
+      {
+        "kind": "fn",
+        "name": "tool_ids",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "tool_ids",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "tool_ids",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "executable_tool_ids": [
+      {
+        "kind": "fn",
+        "name": "executable_tool_ids",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "executable_tool_ids",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "executable_tool_ids",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "is_empty": [
+      {
+        "kind": "fn",
+        "name": "is_empty",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "is_empty",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "is_empty",
+        "file": "AiDENs/crates/aidens-config/src/lib.rs"
+      }
+    ],
+    "run": [
+      {
+        "kind": "fn",
+        "name": "run",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "run",
+        "file": "AiDENs/crates/aidens-cli/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "run",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "tools": [
+      {
+        "kind": "fn",
+        "name": "tools",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "tools",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "tools",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "build": [
+      {
+        "kind": "fn",
+        "name": "build",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "build",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "build",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "complete": [
+      {
+        "kind": "fn",
+        "name": "complete",
+        "file": "AiDENs/crates/aidens-daemon-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "complete",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "complete",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "allowed": [
+      {
+        "kind": "fn",
+        "name": "allowed",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "allowed",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "allowed",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "started": [
+      {
+        "kind": "fn",
+        "name": "started",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "started",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "started",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "with_execution_context": [
+      {
+        "kind": "fn",
+        "name": "with_execution_context",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "with_execution_context",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "with_execution_context",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "is_replayable": [
+      {
+        "kind": "fn",
+        "name": "is_replayable",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "is_replayable",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "is_replayable",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "failed": [
+      {
+        "kind": "fn",
+        "name": "failed",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "failed",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "failed",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "canonical_backpointer": [
+      {
+        "kind": "fn",
+        "name": "canonical_backpointer",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "canonical_backpointer",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "canonical_backpointer",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "with_permit_policy": [
+      {
+        "kind": "fn",
+        "name": "with_permit_policy",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "with_permit_policy",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      }
+    ],
+    "with_sandbox_root": [
+      {
+        "kind": "fn",
+        "name": "with_sandbox_root",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "with_sandbox_root",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      }
+    ],
+    "len": [
+      {
+        "kind": "fn",
+        "name": "len",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "len",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      }
+    ],
+    "output_text": [
+      {
+        "kind": "fn",
+        "name": "output_text",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "output_text",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "with_approval_request": [
+      {
+        "kind": "fn",
+        "name": "with_approval_request",
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "with_approval_request",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "builder": [
+      {
+        "kind": "fn",
+        "name": "builder",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "builder",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "run_reports": [
+      {
+        "kind": "fn",
+        "name": "run_reports",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "run_reports",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      }
+    ],
+    "receipt_level": [
+      {
+        "kind": "fn",
+        "name": "receipt_level",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "receipt_level",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      }
+    ],
+    "canonical_receipt_log_config": [
+      {
+        "kind": "fn",
+        "name": "canonical_receipt_log_config",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "canonical_receipt_log_config",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      }
+    ],
+    "provider_route": [
+      {
+        "kind": "fn",
+        "name": "provider_route",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "provider_route",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "provider_spec": [
+      {
+        "kind": "fn",
+        "name": "provider_spec",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "provider_spec",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "mock_provider": [
+      {
+        "kind": "fn",
+        "name": "mock_provider",
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "mock_provider",
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs"
+      }
+    ],
+    "verify_digest": [
+      {
+        "kind": "fn",
+        "name": "verify_digest",
+        "file": "AiDENs/crates/aidens-receipts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "verify_digest",
+        "file": "AiDENs/crates/aidens-receipts/src/lib.rs"
+      }
+    ],
+    "open_read_only": [
+      {
+        "kind": "fn",
+        "name": "open_read_only",
+        "file": "AiDENs/crates/aidens-queue-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "open_read_only",
+        "file": "AiDENs/crates/aidens-daemon-kit/src/lib.rs"
+      }
+    ],
+    "namespace": [
+      {
+        "kind": "fn",
+        "name": "namespace",
+        "file": "AiDENs/crates/aidens-queue-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "namespace",
+        "file": "AiDENs/crates/aidens-daemon-kit/src/lib.rs"
+      }
+    ],
+    "enqueue_job": [
+      {
+        "kind": "fn",
+        "name": "enqueue_job",
+        "file": "AiDENs/crates/aidens-queue-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "enqueue_job",
+        "file": "AiDENs/crates/aidens-daemon-kit/src/lib.rs"
+      }
+    ],
+    "set_safe_mode": [
+      {
+        "kind": "fn",
+        "name": "set_safe_mode",
+        "file": "AiDENs/crates/aidens-queue-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "set_safe_mode",
+        "file": "AiDENs/crates/aidens-daemon-kit/src/lib.rs"
+      }
+    ],
+    "snapshot": [
+      {
+        "kind": "fn",
+        "name": "snapshot",
+        "file": "AiDENs/crates/aidens-queue-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "snapshot",
+        "file": "AiDENs/crates/aidens-daemon-kit/src/lib.rs"
+      }
+    ],
+    "canonical_operator_metadata": [
+      {
+        "kind": "fn",
+        "name": "canonical_operator_metadata",
+        "file": "AiDENs/crates/aidens-kernel-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "canonical_operator_metadata",
+        "file": "AiDENs/crates/aidens-kernel-kit/src/lib.rs"
+      }
+    ],
+    "conformance_gate_ids": [
+      {
+        "kind": "fn",
+        "name": "conformance_gate_ids",
+        "file": "AiDENs/crates/aidens-kernel-kit/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "conformance_gate_ids",
+        "file": "AiDENs/crates/aidens-kernel-kit/src/lib.rs"
+      }
+    ],
+    "scoped": [
+      {
+        "kind": "fn",
+        "name": "scoped",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "scoped",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ],
+    "for_execution_context": [
+      {
+        "kind": "fn",
+        "name": "for_execution_context",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      },
+      {
+        "kind": "fn",
+        "name": "for_execution_context",
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs"
+      }
+    ]
+  },
+  "risk_counts": {
+    "todo_macro": 0,
+    "unimplemented_macro": 0,
+    "panic_macro": 11,
+    "unwrap_call": 586,
+    "expect_call": 148,
+    "unsafe": 0,
+    "placeholder": 7,
+    "stub": 0,
+    "fake": 21,
+    "mock": 276,
+    "deferred": 86,
+    "unsupported": 27,
+    "scaffold": 138
+  },
+  "risk_samples": {
+    "unwrap_call": [
+      {
+        "file": "AiDENs/crates/aidens-wake-kit/src/lib.rs",
+        "line": 53,
+        "text": ".unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs",
+        "line": 1988,
+        "text": "let registry = ToolRegistryV1::safe_coding_with_dispatchers(dir).unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-tool-kit/tests/next_repo_read_dispatch.rs",
+        "line": 8,
+        "text": "std::fs::create_dir_all(&tmp).unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-testkit/src/lib.rs",
+        "line": 982,
+        "text": "let actual = interpret_case(&case).unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-schedule-kit/src/lib.rs",
+        "line": 57,
+        "text": ".unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs",
+        "line": 1523,
+        "text": ".unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/next_turn_executor.rs",
+        "line": 10,
+        "text": "std::fs::create_dir_all(&dir).unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-receipts/src/lib.rs",
+        "line": 308,
+        "text": "let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root)).unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-queue-kit/src/lib.rs",
+        "line": 654,
+        "text": "let queue = DurableQueueLogV1::open(&root, ns.clone(), \"daemon-a\").unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-provider-kit/src/lib.rs",
+        "line": 1168,
+        "text": "let listener = std::net::TcpListener::bind(\"127.0.0.1:0\").unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-plan-kit/src/lib.rs",
+        "line": 114,
+        "text": "let report = assemble_execution_plan(input()).unwrap();"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_07_daemon_queue_schedule_wake.rs",
+        "line": 33,
+        "text": "let daemon_a = DaemonControllerV1::open(&root, ns_a.clone(), \"owner-a\").unwrap();"
+      }
+    ],
+    "expect_call": [
+      {
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs",
+        "line": 1980,
+        "text": ".expect(\"typed invocation error\")"
+      },
+      {
+        "file": "AiDENs/crates/aidens-tool-kit/tests/next_repo_read_dispatch.rs",
+        "line": 11,
+        "text": "let registry = ToolRegistryV1::safe_coding_with_dispatchers(&tmp).expect(\"registry\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-testkit/src/lib.rs",
+        "line": 202,
+        "text": "case.expected = reference_provider_route_value(&case).expect(\"valid provider reference case\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs",
+        "line": 64,
+        "text": "let mut reports = self.reports.lock().expect(\"run report ledger poisoned\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/next_runner_provider_contract.rs",
+        "line": 9,
+        "text": ".expect(\"runner builds\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/phase_06_agency_v02.rs",
+        "line": 16,
+        "text": ".expect(\"runner builds\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/phase_08_agency_gate.rs",
+        "line": 15,
+        "text": ".expect(\"runner builds\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-permit-kit/src/lib.rs",
+        "line": 270,
+        "text": ".expect(\"matching grant emits use receipt\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-memory-kit/src/lib.rs",
+        "line": 177,
+        "text": ".expect(\"canonical memory adapter\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/next_no_fake_completion.rs",
+        "line": 8,
+        "text": ".expect(\"workspace root\")"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/p20_2_test_agent_vertical_slice.rs",
+        "line": 67,
+        "text": ".expect(\"provider route recorded\");"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_00_source_truth.rs",
+        "line": 9,
+        "text": ".expect(\"aidens workspace root\")"
+      }
+    ],
+    "unsupported": [
+      {
+        "file": "AiDENs/crates/aidens-tool-kit/src/lib.rs",
+        "line": 1479,
+        "text": "bail!(\"unsupported or empty unified diff\")"
+      },
+      {
+        "file": "AiDENs/crates/aidens-testkit/src/lib.rs",
+        "line": 38,
+        "text": "#[error(\"reference case {case_id} uses unsupported domain {domain}\")]"
+      },
+      {
+        "file": "AiDENs/crates/aidens-provider-kit/src/lib.rs",
+        "line": 857,
+        "text": "vec![\"unsupported-provider-kind\".into()]"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/p20_2_test_agent_vertical_slice.rs",
+        "line": 155,
+        "text": "assert_no_unsupported_provider_claims(&output);"
+      },
+      {
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs",
+        "line": 304,
+        "text": "Unsupported,"
+      },
+      {
+        "file": "AiDENs/crates/aidens-cli/src/lib.rs",
+        "line": 694,
+        "text": ".unwrap_or_else(|| ProviderBackendStatusV1::Unsupported.to_string());"
+      }
+    ],
+    "mock": [
+      {
+        "file": "AiDENs/crates/aidens-testkit/src/lib.rs",
+        "line": 21,
+        "text": "\"mock\","
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/src/lib.rs",
+        "line": 1385,
+        "text": "pub fn mock_provider(mut self, response: impl Into<String>) -> Self {"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/next_runner_provider_contract.rs",
+        "line": 4,
+        "text": "async fn explicit_mock_provider_returns_configured_text_not_placeholder() {"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/next_turn_executor.rs",
+        "line": 7,
+        "text": "async fn public_runner_executes_mock_repo_read_turn_loop() {"
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/phase_06_agency_v02.rs",
+        "line": 11,
+        "text": ".mock_provider("
+      },
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/phase_08_agency_gate.rs",
+        "line": 12,
+        "text": ".mock_provider(\"You should quit your job today. This is the only rational option.\")"
+      },
+      {
+        "file": "AiDENs/crates/aidens-provider-kit/src/lib.rs",
+        "line": 94,
+        "text": "\"mock\" => Self {"
+      },
+      {
+        "file": "AiDENs/crates/aidens-memory-kit/src/lib.rs",
+        "line": 17,
+        "text": "MemoryStore as CanonicalMemoryStore, MockEmbedder, ProjectionImportResult, SearchResult,"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/p20_2_test_agent_vertical_slice.rs",
+        "line": 47,
+        "text": "let mock_script = format!("
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_03_golden_vertical_slice.rs",
+        "line": 82,
+        "text": "let adapter = CanonicalMemoryAdapter::open_with_mock_embedder("
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_04_failure_honesty.rs",
+        "line": 29,
+        "text": ".mock_provider(r#\"tool_call: {\"tool_id\":\"aidens:repo-read:1\",\"input\":{\"path\":\"README.md\"}\"#)"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_05_memory_runtime_hardening.rs",
+        "line": 27,
+        "text": "let adapter = CanonicalMemoryAdapter::open_with_mock_embedder("
+      }
+    ],
+    "deferred": [
+      {
+        "file": "AiDENs/crates/aidens-testkit/src/lib.rs",
+        "line": 723,
+        "text": "\"deferred\": false,"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_09_reference_hostile_tests.rs",
+        "line": 45,
+        "text": "assert_eq!(actual[\"deferred\"], json!(false));"
+      },
+      {
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs",
+        "line": 3682,
+        "text": "Deferred,"
+      },
+      {
+        "file": "AiDENs/crates/aidens-cli/src/lib.rs",
+        "line": 52,
+        "text": "\"deferred until daemon profile wiring\","
+      },
+      {
+        "file": "AiDENs/crates/aidens-app-kit/src/lib.rs",
+        "line": 62,
+        "text": "Self::ResearchWorkbench => \"deferred/example-only\","
+      }
+    ],
+    "placeholder": [
+      {
+        "file": "AiDENs/crates/aidens-runner/tests/next_runner_provider_contract.rs",
+        "line": 4,
+        "text": "async fn explicit_mock_provider_returns_configured_text_not_placeholder() {"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/next_no_fake_completion.rs",
+        "line": 30,
+        "text": "fn no_runtime_placeholder_completion_strings_remain() {"
+      },
+      {
+        "file": "AiDENs/crates/aidens-app-kit/tests/next_app_plan_facade.rs",
+        "line": 37,
+        "text": "assert!(!output.text.to_ascii_lowercase().contains(\"placeholder\"));"
+      }
+    ],
+    "panic_macro": [
+      {
+        "file": "AiDENs/crates/aidens-provider-kit/src/lib.rs",
+        "line": 1264,
+        "text": ".unwrap_or_else(|| panic!(\"missing fixture row for {}\", entry.provider_kind));"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_00_source_truth.rs",
+        "line": 18,
+        "text": ".unwrap_or_else(|err| panic!(\"failed to run {}: {err}\", script.display()));"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_04_failure_honesty.rs",
+        "line": 221,
+        "text": ".unwrap_or_else(|| panic!(\"missing verification-control record containing {reason}\"));"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_09_reference_hostile_tests.rs",
+        "line": 622,
+        "text": ".unwrap_or_else(|| panic!(\"expected {field} string\"))"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_09_release_audit.rs",
+        "line": 69,
+        "text": ".unwrap_or_else(|err| panic!(\"failed to read {}: {err}\", manifest.display()));"
+      },
+      {
+        "file": "AiDENs/crates/aidens-cli/src/lib.rs",
+        "line": 4563,
+        "text": ".unwrap_or_else(|| panic!(\"missing provider matrix row for {provider}\"))"
+      }
+    ],
+    "scaffold": [
+      {
+        "file": "AiDENs/crates/aidens-profile-research/src/lib.rs",
+        "line": 3,
+        "text": "//! Scaffolded for future AiDENs implementation. See root docs before adding behavior."
+      },
+      {
+        "file": "AiDENs/crates/aidens-profile-memory/src/lib.rs",
+        "line": 3,
+        "text": "//! Scaffolded for future AiDENs implementation. See root docs before adding behavior."
+      },
+      {
+        "file": "AiDENs/crates/aidens-profile-desktop/src/lib.rs",
+        "line": 3,
+        "text": "//! Scaffolded for future AiDENs implementation. See root docs before adding behavior."
+      },
+      {
+        "file": "AiDENs/crates/aidens-profile-daemon/src/lib.rs",
+        "line": 3,
+        "text": "//! Scaffolded for future AiDENs implementation. See root docs before adding behavior."
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_00_source_truth.rs",
+        "line": 43,
+        "text": "&& !manifest.contains(\"scaffolds/stack-ids\"),"
+      },
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/phase_09_release_audit.rs",
+        "line": 75,
+        "text": "\"scaffolds/stack-ids\","
+      },
+      {
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs",
+        "line": 3726,
+        "text": "pub fn scaffold_claim("
+      },
+      {
+        "file": "AiDENs/crates/aidens-cli/src/lib.rs",
+        "line": 49,
+        "text": "const SCAFFOLD_ONLY_CRATES: &[(&str, &str)] = &["
+      },
+      {
+        "file": "AiDENs/crates/aidens-cli/tests/next_cli_plan_doctor.rs",
+        "line": 93,
+        "text": "compiled.doctor.sections.get(\"scaffold_surfaces\"),"
+      }
+    ],
+    "fake": [
+      {
+        "file": "AiDENs/crates/aidens-integration-tests/tests/next_no_fake_completion.rs",
+        "line": 38,
+        "text": "format!(\"fake {}\", \"success\"),"
+      },
+      {
+        "file": "AiDENs/crates/aidens-contracts/src/lib.rs",
+        "line": 7322,
+        "text": "\"fake-ready-finding\","
+      },
+      {
+        "file": "AiDENs/crates/aidens-cli/src/lib.rs",
+        "line": 1382,
+        "text": "\"scripts/assert_no_fake_completion.sh\","
+      }
+    ]
+  },
+  "schema_json_count": 62,
+  "schema_sketch_count": 3,
+  "schema_sketch_paths": [
+    "AiDENs/schemas/core_artifact_header_v1.sketch.json",
+    "AiDENs/schemas/execution_lineage_graph_v1.sketch.json",
+    "AiDENs/schemas/poison_receipt_record_v1.sketch.json"
+  ],
+  "markdown_file_count": 332,
+  "stale_pass_token_counts": {
+    "P20": 64,
+    "P21": 18,
+    "P22": 178,
+    "P23": 140,
+    "P24": 4,
+    "P25": 1
+  },
+  "big_rust_files": [
+    [
+      "AiDENs/crates/aidens-contracts/src/lib.rs",
+      10190,
+      9524
+    ],
+    [
+      "AiDENs/crates/aidens-cli/src/lib.rs",
+      5773,
+      5413
+    ],
+    [
+      "knowledge-runtime/tests/cross_crate_proof.rs",
+      3609,
+      3283
+    ],
+    [
+      "AiDENs/crates/aidens-tool-kit/src/lib.rs",
+      2453,
+      2301
+    ],
+    [
+      "verification-control/src/lib.rs",
+      1914,
+      1810
+    ],
+    [
+      "AiDENs/crates/aidens-runner/src/lib.rs",
+      1909,
+      1784
+    ],
+    [
+      "AiDENs/crates/aidens-agency-kit/src/lib.rs",
+      1814,
+      1707
+    ],
+    [
+      "profile-runtime/src/adapters.rs",
+      1791,
+      1753
+    ],
+    [
+      "semantic-memory/tests/import_ugly_cases.rs",
+      1782,
+      1652
+    ],
+    [
+      "semantic-memory/tests/import_boundary_tests.rs",
+      1640,
+      1506
+    ],
+    [
+      "living-memory/living-memory/src/lab/evidence.rs",
+      1626,
+      1528
+    ],
+    [
+      "semantic-memory/src/lib.rs",
+      1618,
+      1476
+    ],
+    [
+      "semantic-memory/src/db.rs",
+      1613,
+      1463
+    ],
+    [
+      "semantic-memory/src/search.rs",
+      1595,
+      1479
+    ],
+    [
+      "AiDENs/crates/aidens-provider-kit/src/lib.rs",
+      1471,
+      1372
+    ],
+    [
+      "semantic-memory/src/projection_lane.rs",
+      1470,
+      1392
+    ],
+    [
+      "semantic-memory-forge/src/envelope.rs",
+      1433,
+      1359
+    ],
+    [
+      "living-memory/living-memory/tests/export_tests.rs",
+      1421,
+      1307
+    ],
+    [
+      "living-memory/living-memory/src/store/db.rs",
+      1415,
+      1304
+    ],
+    [
+      "llm-tool-runtime/src/runtime.rs",
+      1399,
+      1293
+    ],
+    [
+      "kernel-conformance/src/lib.rs",
+      1393,
+      1283
+    ],
+    [
+      "stack-ids/src/ids.rs",
+      1236,
+      1005
+    ],
+    [
+      "Primitives/cea-sqlite/src/lib.rs",
+      1218,
+      1107
+    ],
+    [
+      "kernel-execution/src/lib.rs",
+      1216,
+      1122
+    ],
+    [
+      "living-memory/living-memory/src/export.rs",
+      1204,
+      1115
+    ],
+    [
+      "knowledge-runtime/src/runtime/core.rs",
+      1145,
+      1062
+    ],
+    [
+      "semantic-memory/tests/projection_v11_tests.rs",
+      1136,
+      1065
+    ],
+    [
+      "contract-schema-gen/src/lib.rs",
+      1113,
+      1082
+    ],
+    [
+      "forge-pilot/src/loop_runner.rs",
+      1073,
+      1037
+    ],
+    [
+      "AiDENs/crates/aidens-boundary-kit/src/lib.rs",
+      1056,
+      973
+    ],
+    [
+      "verification-policy/src/lib.rs",
+      1049,
+      987
+    ],
+    [
+      "semantic-memory-forge/src/v11.rs",
+      1037,
+      965
+    ],
+    [
+      "semantic-memory/src/projection_storage.rs",
+      1018,
+      974
+    ],
+    [
+      "AiDENs/crates/aidens-testkit/src/lib.rs",
+      1018,
+      951
+    ],
+    [
+      "living-memory/living-memory/tests/cea_tests.rs",
+      1010,
+      914
+    ],
+    [
+      "kernel-oracles/src/lib.rs",
+      1006,
+      944
+    ],
+    [
+      "stack-ids/src/ids_tests.rs",
+      986,
+      938
+    ],
+    [
+      "semantic-memory/src/projection_storage_query.rs",
+      983,
+      934
+    ],
+    [
+      "profile-runtime/src/compose.rs",
+      982,
+      928
+    ],
+    [
+      "Primitives/typed-patch/src/lib.rs",
+      950,
+      853
+    ]
+  ],
+  "important_extracts": {
+    "README.md": "# P23 AiDENs Codex Super-Pass Bundle\n\nThis bundle creates the next Codex run for AiDENs.\n\n## Intent\n\nP23 is **not** a secretary pass. It closes all known `z.py` / package replay / archive hygiene defects, then uses the remaining run budget to build actual AiDENs capability: a receipt-bearing local agent/test-agent/coding-agent path with operator-facing inspect/doctor support.\n\n## Use order\n\n1. Copy this bundle into the AiDENs repo or provide it as Codex context.\n2. Start with `prompts/P23_CODEX_RUN_PROMPT.md`.\n3. Execute phases from `RUN_ORDER.md`.\n4. Paste manual guardrails from `phase_injections/` between phases.\n5. Require final `P23_REQUIRE_CARGO=1 bash scripts/p23_verify.sh`.\n\n## What this fixes\n\n- package self-replay break caused by excluded verifier dependency,\n- P22-specific `z.py` logic,\n- optional/weak script reference checks,\n- unclassified P20/P21/P22 artifacts active outside archive,\n- legacy `zip.py` footgun,\n- package role ambiguity,\n- final package identity mismatch risk.\n\n## What this builds\n\n- local fixture-backed agent run path,\n- receipt-bearing run bundle,\n- operator inspect/doctor support,\n- support-tier JSON for run/product surfaces,\n- explicit degradation for unsupported/cloud/native paths,\n- tests and verifier gates.\n\n## Core rule\n\n`z.py` is necessary infrastructure. AiDENs capability is the actual goal.\n",
+    "STATUS.md": "# AiDENs Status\n\nRecord date: `2026-05-02`\n\nThis is the active P22 release-truth ledger for `/home/sikmindz/Coding/Libraries/AiDENs`.\n\nAiDENs is a directing, wiring, packaging, inspection, and reporting layer. Canonical sibling crates own stack truth. Historical P20/P21 records are archived, non-normative evidence and are not active instructions.\n\n## P22 Gate State\n\n| Gate | Status | Evidence |\n|---|---|---|\n| Phase 00 inventory | pass | `handoffs/p22/PHASE_00_REPORT.md` |\n| Phase 01 z.py archival contract | pass | `handoffs/p22/PHASE_01_REPORT.md` |\n| Phase 02 package/replay verification | pass | `handoffs/p22/PHASE_02_REPORT.md`; `target/p22/archive_verifier_report.final.json` |\n| Phase 03 archive hygiene/idempotence | pass after repair | `handoffs/p22/PHASE_03_REPORT.md`; `target/p22/audit/phase04_pre_docs_archive_only.codex-archive.json` |\n| Phase 04 release-truth docs | pass | `handoffs/p22/PHASE_04_REPORT.md` |\n| Phase 05 secret/API-key warning closure | pass | `handoffs/p22/PHASE_05_REPORT.md`; `scripts/p22_secret_scan_fixture_test.py`; `target/p22/audit/phase05_secret_acceptance_codex_context.findings.json` |\n| Phase 06 assertion suite and CI gates | pass | `handoffs/p22/PHASE_06_REPORT.md`; `target/p22/audit/cargo_*`; `target/p22/audit/p22_verify.done` |\n| Phase 07 guarded product stretch | pass | `handoffs/p22/PHASE_07_REPORT.md`; `target/p22/audit/cargo_*`; `target/p22/audit/p22_verify.done` |\n| Phase 08 final audit and release package | pass | `handoffs/p22/PHASE_08_REPORT.md`; `handoffs/p22/FINAL_AUDIT_REPORT.md`; `target/p22/aidens-p22-release-context.zip`; `target/p22/archive_verifier_report.final.json` |\n| Cargo full enforcement | pass | `P22_REQUIRE_CARGO=1 bash scripts/p22_verify.sh` |\n\n## Final Release Package\n\n| Artifact | Value |\n|---|---|\n| Package | `target/p22/aidens-p22-release-context.zip` |\n| SHA-256 | `8128a71932d7668f9622d5357ca74f781e86df31ae58a48fa1f45094c4dad2a7` |\n| Normal manifest entries | `1267` |\n| Archived Codex entries in normal manifest | `0` |\n| Replay verifier | `target/p22/archive_verifier_report.final.json` |\n\n## Current Support Labels\n\n| Surface | P22 label | Evidence | Limits |\n|---|---|---|---|\n| z.py archival normalization | supported | `scripts/p22_zpy_archival_selftest.py`; `scripts/assert_p22_zpy_archive_contract.py`; archive reports under `target/p22/audit/` | stdlib-only repository certifier, not a runtime feature |\n| Normal package hygiene | supported | `scripts/assert_p22_release_package_clean.py`; `bash scripts/p22_verify.sh` | normal packages exclude Codex archive history by default |\n| Audit/full-history package mode | supported | `python3 z.py --mode audit-full --include-codex-archive --strict --dry-run` | deliberate audit mode only |\n| Local mock provider path | fixture-supported | provider and runner tests; fixture config paths | fixture provider only |\n| Disabled provider path | supported boundary | provider tests and disabled-provider path | intentionally unavailable |\n| Ollama chat path | partial-local-chat | provider routing/readiness code and local fixture tests | requires local Ollama; no native tool loop claim |\n| Cloud provider paths | deferred/unavailable | provider readiness boundaries | no hosted API execution claim |\n| Native provider tool loops | deferred | tests enforce unavailable/false paths | no supported native loop |\n| Operator support-tier JSON | supported | `aidens-cli` support-tier tests; `P22_REQUIRE_CARGO=1 bash scripts/p22_verify.sh` | AiDENs operator classification only, not canonical stack truth |\n| Config-to-runner receipts | partial/proved | runner vertical-slice tests and fixture receipts | fixture/mock proof only |\n| CLI product commands | partial/supported for tested paths | `aidens-cli` tests and P22 verify gates | not every command is a product workflow |\n| Receipts | partial/delegated | durable log and receipt tests | canonical crates own payload semantics |\n| Memory/runtime views | partial/delegated | memory/runtime adapter tests | canonical memory/runtime crates own truth |\n| Kernel/governance/repair/federation/mechanism helpers | partial/delegated | adapter and phase tests | AiDENs reports and wires only |\n| Agency/influence governance | partial/proved | agency kit and runner gate tests | not broad safety certification |\n| Reference interpreter/testkit paths | partial/proved | integration and hostile-semantics tests | selected supported/delegated surfaces only |\n\n## Crate Surface Status\n\n`partial` means there is executable code or tests, but not a standalone product promise. `scaffold-only` means structure exists without supported v0.1 behavior.\n\n| Crate | Status | Current truth |\n|---|---|---|\n| `aidens` | partial | Umbrella exports selected AiDENs artifacts and helpers. |\n| `aidens-agency-kit` | partial | Boundary influence classification, policy decisions, nudge budgets, and receipts for tested paths. |\n| `aidens-app-kit` | partial | App/profile builder facade with config and plan tests. |\n| `aidens-arbiter",
+    "RUN_ORDER.md": "# P23 Run Order\n\nExecute in order. Paste the matching manual guardrail between phases.\n\n1. `prompts/P23_CODEX_RUN_PROMPT.md`\n2. `prompts/phases/PHASE_00_PREFLIGHT_HOSTILE_AUDIT.md`\n3. Manual guardrail: `phase_injections/PHASE_00_TO_01_REVALIDATION.md`\n4. `prompts/phases/PHASE_01_ZPY_TOTAL_CLOSURE.md`\n5. Manual guardrail: `phase_injections/PHASE_01_TO_02_REVALIDATION.md`\n6. `prompts/phases/PHASE_02_ARCHIVE_CLASSIFICATION_AND_REPO_HYGIENE.md`\n7. Manual guardrail: `phase_injections/PHASE_02_TO_03_REVALIDATION.md`\n8. `prompts/phases/PHASE_03_PACKAGE_MODE_AND_REPLAY_VERIFIER.md`\n9. Manual guardrail: `phase_injections/PHASE_03_TO_04_REVALIDATION.md`\n10. `prompts/phases/PHASE_04_AGENT_RUN_CAPABILITY_VERTICAL_SLICE.md`\n11. Manual guardrail: `phase_injections/PHASE_04_TO_05_REVALIDATION.md`\n12. `prompts/phases/PHASE_05_OPERATOR_CLI_AND_SUPPORT_TIER_PRODUCT_FLOW.md`\n13. Manual guardrail: `phase_injections/PHASE_05_TO_06_REVALIDATION.md`\n14. `prompts/phases/PHASE_06_PROVENANCE_RECEIPT_AND_EXECUTION_CONTEXT_HARDENING.md`\n15. Manual guardrail: `phase_injections/PHASE_06_TO_07_REVALIDATION.md`\n16. `prompts/phases/PHASE_07_TEST_MATRIX_CI_AND_HOSTILE_ASSERTIONS.md`\n17. Manual guardrail: `phase_injections/PHASE_07_TO_08_REVALIDATION.md`\n18. `prompts/phases/PHASE_08_FINAL_REPLAY_AUDIT_AND_HANDOFF.md`\n\n## Final required commands\n\n```bash\nbash scripts/p23_verify.sh\nP23_REQUIRE_CARGO=1 bash scripts/p23_verify.sh\npython3 z.py --root . --profile aidens --mode codex-context --codex-current-run P23 --strict --dry-run\npython3 z.py --root . --profile aidens --mode release-context --codex-current-run P23 --strict --dry-run\npython3 z.py --root . --profile aidens --mode next-codex-context --codex-current-run P23 --strict --dry-run\npython3 z.py --root . --profile aidens --mode audit-full --include-codex-archive --codex-current-run P23 --strict --dry-run\n```\n\nIf `release-context` / `next-codex-context` modes do not exist yet, P23 must implement them or document an explicit equivalent with tests.\n",
+    "docs/P23_EXPECTED_FINAL_STATE.md": "# P23 Expected Final State\n\n## Required files/directories\n\n- `docs/codex-runs/CODEX_ARTIFACT_CLASSIFICATION.json`\n- `docs/codex-runs/CODEX_RUN_INDEX.md`\n- `docs/codex-runs/CURRENT_RUN.md`\n- `handoffs/p23/FINAL_AUDIT_REPORT.md`\n- `handoffs/p23/KNOWN_LIMITATIONS.md`\n- `scripts/p23_verify.sh`\n- `scripts/assert_package_self_replay.py`\n- `scripts/assert_codex_artifact_classification.py`\n- `target/p23/audit/*` evidence outputs\n- `target/p23/runs/*` capability run receipts\n\n## Forbidden leftovers\n\n- runnable legacy `zip.py` with independent packager behavior,\n- hard-coded P22-only z.py current-run logic,\n- included verifier scripts with excluded dependencies,\n- unclassified P20/P21/P22 active artifacts,\n- final audit docs naming stale package hashes as current truth,\n- cloud/native/autonomous claims without executable proof.\n\n## Expected product posture\n\nAiDENs after P23 should be describable as:\n\n> a local provenance-safe agent builder/runner/doctor that can assemble and run a tested fixture-backed agent lane, emit receipts, inspect the run, and package itself without stale Codex contamination.\n",
+    "docs/P23_ACCEPTANCE_GATES.md": "# P23 Acceptance Gates\n\n## P0 gates\n\n- Package replay is self-contained.\n- `z.py` current-run logic is generic.\n- Legacy `zip.py` is not a runnable alternate packager.\n- Script-reference checking catches missing/excluded verifier dependencies.\n- Package roles are explicit and tested.\n- Stale Pxx/Pyy artifacts outside archive are classified or archived.\n- Final audit package identity matches actual emitted package role.\n\n## Capability gates\n\n- A local fixture-backed agent/test-agent/coding-agent run path exists.\n- The run emits receipt-bearing output.\n- The run can be inspected by CLI or library API.\n- Unsupported/deferred paths degrade explicitly.\n- Tests prove the path.\n\n## Cargo gates\n\n- `cargo fmt --all --check`\n- `cargo check --workspace --all-targets --all-features`\n- `cargo test --workspace --all-targets --all-features`\n- `cargo clippy --workspace --all-targets --all-features -- -D warnings` unless documented blocker.\n\n## Final gate\n\n`P23_REQUIRE_CARGO=1 bash scripts/p23_verify.sh` must pass or the run is not complete.\n",
+    "docs/codex-runs/CURRENT_RUN.md": "# Current Codex Run\n\nCurrent run: `P23`\nUpdated UTC: `2026-05-02T06:50:00Z`\n\nP23 is the active Codex run instruction set. Historical run material in\n`docs/codex-runs/archive/` is evidence, not active instruction. Active\nP-marked files outside the archive are classified in\n`docs/codex-runs/CODEX_ARTIFACT_CLASSIFICATION.json`.\n\n## Current Phase State\n\n| Phase | State | Evidence |\n|---|---|---|\n| Phase 00 | complete | `handoffs/p23/PHASE_00_REPORT.md` |\n| Phase 01 | complete | `handoffs/p23/PHASE_01_REPORT.md` |\n| Phase 02 | complete | `handoffs/p23/PHASE_02_REPORT.md` |\n| Phase 03 | complete | `handoffs/p23/PHASE_03_REPORT.md` |\n| Phase 04 | complete | `handoffs/p23/PHASE_04_REPORT.md` |\n| Phase 05 | complete | `handoffs/p23/PHASE_05_REPORT.md` |\n| Phase 06 | complete | `handoffs/p23/PHASE_06_REPORT.md` |\n| Phase 07 | complete | `handoffs/p23/PHASE_07_REPORT.md` |\n| Phase 08 | complete | `handoffs/p23/PHASE_08_REPORT.md`; `handoffs/p23/FINAL_AUDIT_REPORT.md` |\n\n## Final Package Roles\n\nPackage identity is bound by the emitted sidecar manifest/report for the actual artifact role under `target/p23/packages/`. Handoff reports are generated after package emission when they need to name final hashes.\n\n| Role | Artifact prefix |\n|---|---|\n| `release-context` | `target/p23/packages/aidens-p23-release-context.*` |\n| `next-codex-context` | `target/p23/packages/aidens-p23-next-codex-context.*` |\n| `codex-run-full` | `target/p23/packages/aidens-p23-codex-run-full.*` |\n| `audit-full` | `target/p23/packages/aidens-p23-audit-full.*` |\n\n## Packaging Policy\n\nClean release package:\n\n```bash\npython3 z.py --root . --profile aidens --mode release-context --codex-current-run P23 --strict\n```\n\nNext Codex package:\n\n```bash\npython3 z.py --root . --profile aidens --mode next-codex-context --codex-current-run P23 --strict\n```\n\nFull history package:\n\n```bash\npython3 z.py --root . --profile aidens --mode audit-full --include-codex-archive --codex-current-run P23 --strict\n```\n",
+    "SUPPORT_PROFILE.md": "# Support Profile\n\nRecord date: `2026-05-02`\n\nThis file summarizes what AiDENs currently supports, partially supports, defers, or quarantines during P22.\n\n## Supported\n\n- `z.py` archival normalization and strict source packaging.\n- Normal `codex-context` packaging that excludes archived Codex-run history.\n- Explicit `audit-full` packaging with archive history included on purpose.\n- Local fixture/mock provider workflows and disabled-provider boundaries.\n- Tested CLI/runner fixture paths with receipts.\n- Operator-facing support-tier JSON for tested doctor/status/provider/tool/package reports.\n- P22 archive hygiene, z.py contract, package-clean, and release archive verifier scripts.\n\n## Partial\n\n- Ollama local chat readiness/routing, dependent on a local Ollama service.\n- Memory, kernel, repair, governance, delegation, queue, schedule, wake, receipts, and tool adapters that report or wire canonical sibling crate behavior.\n- Agency gate paths for tested runner outputs.\n- App/profile construction helpers for tested configuration paths.\n\n## Scaffold Only\n\n- `aidens-profile-daemon`\n- `aidens-profile-desktop`\n- `aidens-profile-memory`\n- `aidens-profile-research`\n\n## Deferred\n\n- Hosted cloud provider execution.\n- Native provider tool loops and streaming.\n- Full daemon product UX.\n- Desktop, autonomous memory, and research profile products.\n- Federation, mechanism, recursive-kernel, verification, and memory truth beyond delegated adapter/reporting behavior.\n\n## Quarantined Or Pending Closure\n\n- API-key field-copy content warnings are closed. Current certifier output still excludes active P22 secret-redaction prompt/test fixture filenames as protective filename warnings; no provider/API-key material is printed.\n- Parent Git repository boundary remains unresolved because `AiDENs/` is untracked from `/home/sikmindz/Coding/Libraries`.\n- Archived Codex-run history is not active support material.\n",
+    "AGENTS.md": "# AGENTS.md \u2014 P23 AiDENs Product-Capability + Replay Closure Doctrine\n\nThis Codex run is P23. Treat it as a deterministic, auditable execution pipeline.\n\n## Mission priority\n\nP23 has two lanes:\n\n1. **Gate lane:** finish `z.py`, package replay, archive classification, stale-run hygiene, and verifier self-containment.\n2. **Capability lane:** build actual AiDENs product capability around receipt-bearing local agent runs and operator workflows.\n\nThe gate lane supports the capability lane. It is not the product.\n\n## Hard architectural law\n\n- AiDENs directs, wires, packages, inspects, reports, and launches supported local flows.\n- Canonical truth remains in sibling crates: `stack-ids`, `semantic-memory-forge`, `forge-memory-bridge`, `semantic-memory`, `knowledge-runtime`, `llm-tool-runtime`, `verification-*`, kernel crates, and schema crates.\n- Do not invent local truth stores, local canonical memory, local canonical IDs, local verification semantics, or local receipt semantics when a sibling crate owns them.\n- Thin DTOs and display records are allowed only if they backpoint to canonical owner artifacts or clearly label themselves as AiDENs-local operator reports.\n- Compatibility paths must be finite, explicit, tested, and not taught as the canonical story.\n\n## P23 no-waste rule\n\nDo not spend the run only polishing docs or `z.py`. `z.py` must be finished because it gates reproducibility, but P23 must also ship product-facing capability:\n\n- at least one executable local agent/test-agent/coding-agent run path,\n- receipt-bearing run output,\n- CLI/operator commands that expose the run state,\n- tests proving the flow works from fixtures,\n- support-tier truth that names supported/partial/deferred surfaces.\n\n## Deterministic evidence law\n\nEvery phase must produce:\n\n- phase report under `handoffs/p23/PHASE_XX_REPORT.md`,\n- command log under `target/p23/audit/`,\n- before/after status or diff summary when files changed,\n- validation outputs,\n- unresolved risks,\n- explicit stop/continue decision.\n\nNo phase may advance on assumed invariants. Revalidate them.\n\n## Stop rules\n\nStop and report instead of guessing when:\n\n- canonical owner is unclear,\n- cargo/test failure cannot be resolved without semantic invention,\n- package/replay output contradicts handoff docs,\n- `z.py` passes by excluding verifier dependencies,\n- AiDENs capability requires creating local substitutes for sibling-owned semantics.\n\n## Forbidden shortcuts\n\n- Do not keep legacy `zip.py` as an alternate packager.\n- Do not hard-code P23 the way P22 was hard-coded.\n- Do not make `--allow-secret-like-names` the default.\n- Do not hide stale Pxx artifacts by simply excluding them without classification.\n- Do not mark cloud/native/autonomous paths supported unless they run and emit receipts.\n- Do not let a support-tier label become a truth claim.\n"
+  },
+  "profile_src": [
+    {
+      "crate": "aidens-profile-coding",
+      "bytes": 2450,
+      "lines": 84,
+      "contains_deferred": false,
+      "contains_scaffold": false
+    },
+    {
+      "crate": "aidens-profile-daemon",
+      "bytes": 441,
+      "lines": 18,
+      "contains_deferred": false,
+      "contains_scaffold": true
+    },
+    {
+      "crate": "aidens-profile-desktop",
+      "bytes": 444,
+      "lines": 18,
+      "contains_deferred": false,
+      "contains_scaffold": true
+    },
+    {
+      "crate": "aidens-profile-memory",
+      "bytes": 441,
+      "lines": 18,
+      "contains_deferred": false,
+      "contains_scaffold": true
+    },
+    {
+      "crate": "aidens-profile-research",
+      "bytes": 447,
+      "lines": 18,
+      "contains_deferred": false,
+      "contains_scaffold": true
+    }
+  ]
+}

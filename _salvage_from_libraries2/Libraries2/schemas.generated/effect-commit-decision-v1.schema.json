@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EffectCommitDecisionV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "effect_commit_decision_id": {
+      "type": "string"
+    },
+    "effect_intent_id": {
+      "type": "string"
+    },
+    "effect_preflight_report_id": {
+      "type": "string"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile_exception_bundle_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "required_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "blocking_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "monitoring_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "decision_basis_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "approval_obligation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "decision_state": {
+      "type": "string",
+      "enum": [
+        "denied",
+        "advisory_only",
+        "authorized"
+      ]
+    },
+    "approver_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "execution_permit_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "approval_grant_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "refusal_reason": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "effect_commit_decision_id",
+    "effect_intent_id",
+    "effect_preflight_report_id",
+    "applicability_context_id",
+    "profile_set_id",
+    "composition_receipt_id",
+    "effective_constitution_id",
+    "compiled_obligation_set_id",
+    "decision_state",
+    "approver_refs",
+    "refusal_reason",
+    "generated_at"
+  ]
+}

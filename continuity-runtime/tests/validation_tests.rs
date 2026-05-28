@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use continuity_runtime::{
     ContinuityValidationError, EscalationClockPolicyV1, IncidentSeverityV1, IncidentStatusV1,
     IncidentTaxonomyV1, RecoveryReplaySliceV1, RecoveryReplayStateV1, ResilienceExerciseKindV1,

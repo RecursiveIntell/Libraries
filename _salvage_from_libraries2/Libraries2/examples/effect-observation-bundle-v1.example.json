@@ -1,0 +1,15 @@
+{
+  "schema_version": "EffectObservationBundleV1",
+  "effect_observation_bundle_id": "fxo_001",
+  "effect_execution_receipt_id": "fxr_001",
+  "observation_window": "2026-03-15T12:08:00Z/2026-03-15T13:08:00Z",
+  "observation_state": "complete",
+  "observed_outcome": "change applied without rollback",
+  "drift_summary": "no material drift observed",
+  "external_evidence_refs": [
+    "metric:latency_1h",
+    "log:event_991"
+  ],
+  "closure_recommendation": "close_successfully",
+  "generated_at": "2026-03-15T13:09:00Z"
+}

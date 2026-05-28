@@ -1,0 +1,31 @@
+{
+  "pass_id": "P16",
+  "title": "Lawful subtraction, compaction, and invariant-preserving reduction",
+  "phase": "Advanced runtime geometry",
+  "prompt_file": "prompts/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION_PROMPT.md",
+  "pass_doc": "passes/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.md",
+  "crates": [
+    "aidens-kernel-kit",
+    "aidens-memory-kit",
+    "aidens-repair-kit",
+    "aidens-contracts",
+    "aidens-receipts"
+  ],
+  "artifacts": [
+    "SubtractionPlanV1",
+    "SupportCoreV1",
+    "RemovalFrontierV1",
+    "InvariantBudgetV1",
+    "CompactionReceiptV1",
+    "HistoryPreservationReportV1"
+  ],
+  "acceptance": [
+    "Subtraction cannot delete support needed by accepted claim unless claim is superseded/quarantined first.",
+    "Compaction emits receipt and history preservation report with before/after digests.",
+    "As-of queries remain correct under declared history budget after compaction."
+  ],
+  "forbidden": [
+    "Do not call destructive deletion \u201csubtraction\u201d.",
+    "Do not compact receipts that are required for audit without explicit retention policy and approval."
+  ]
+}

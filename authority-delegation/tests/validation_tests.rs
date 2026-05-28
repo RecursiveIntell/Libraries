@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use authority_delegation::{
     ActingOnBehalfReceiptV1, AuthorityChainV1, AuthorityChainValidityStateV1,
     AuthorityValidationError, BreakGlassGrantV1, DualControlApprovalV1,

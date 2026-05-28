@@ -1,6 +1,7 @@
 #![allow(deprecated)]
 
 use crate::error::MemoryError;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use stack_ids::{
     ClaimId, ClaimVersionId, EntityId, EnvelopeId, EpisodeId, RelationVersionId, ScopeKey,
@@ -114,6 +115,525 @@ pub enum SearchSourceType {
     Messages,
     /// Result is from the episodes table.
     Episodes,
+}
+
+/// Controls whether search receipt metadata is produced.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ReceiptMode {
+    /// Do not produce receipt metadata.
+    #[default]
+    Disabled,
+    /// Produce receipt-ready metadata for explain/audit paths.
+    ExplainOnly,
+    /// Return receipt metadata to the caller.
+    ReturnReceipt,
+}
+
+/// Controls whether search should prefer exact reference scoring or allow approximate backends.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ExactnessProfile {
+    /// Use the configured default backend policy.
+    #[default]
+    Default,
+    /// Prefer exact brute-force f32 vector scoring over approximate sidecars.
+    PreferExact,
+    /// Permit approximate candidate generation, with exact rerank when configured.
+    AllowApproximate,
+}
+
+/// Explicit search execution context for deterministic replay and receipt generation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SearchContext {
+    /// Timestamp used for time-sensitive scoring such as recency.
+    pub evaluation_time: DateTime<Utc>,
+    /// Receipt metadata mode.
+    pub receipt_mode: ReceiptMode,
+    /// Exactness policy for vector candidate generation.
+    pub exactness_profile: ExactnessProfile,
+    /// Optional caller-provided request/receipt correlation ID.
+    pub request_id: Option<String>,
+    /// Optional distributed trace identifier supplied by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trace_id: Option<String>,
+    /// Optional family ID tying retries/attempts for the same logical request.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt_family_id: Option<String>,
+    /// Optional retry/attempt identifier supplied by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt_id: Option<String>,
+    /// Receipt ID this search is replaying, when applicable.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub replay_of: Option<String>,
+    /// Digest of raw query text when the caller provides one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub query_text_digest: Option<String>,
+    /// Digest of raw or structured query input when supplied by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub query_input_digest: Option<String>,
+    /// Digest of structured filters when the caller provides one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter_digest: Option<String>,
+    /// Redaction state label for explain/replay surfaces.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub redaction_state: Option<String>,
+    /// Optional budget identity associated with the search.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub budget_id: Option<String>,
+    /// Optional caller deadline associated with the search.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deadline_at: Option<DateTime<Utc>>,
+}
+
+impl SearchContext {
+    /// Build a context using the current wall clock at the API boundary.
+    pub fn default_now() -> Self {
+        Self {
+            evaluation_time: Utc::now(),
+            receipt_mode: ReceiptMode::Disabled,
+            exactness_profile: ExactnessProfile::Default,
+            request_id: None,
+            trace_id: None,
+            attempt_family_id: None,
+            attempt_id: None,
+            replay_of: None,
+            query_text_digest: None,
+            query_input_digest: None,
+            filter_digest: None,
+            redaction_state: None,
+            budget_id: None,
+            deadline_at: None,
+        }
+    }
+
+    /// Build a replay context with an explicit evaluation timestamp.
+    pub fn at(evaluation_time: DateTime<Utc>) -> Self {
+        Self {
+            evaluation_time,
+            ..Self::default_now()
+        }
+    }
+
+    /// Whether a receipt should be produced for this context.
+    pub fn receipts_enabled(&self) -> bool {
+        self.receipt_mode != ReceiptMode::Disabled
+    }
+}
+
+impl Default for SearchContext {
+    fn default() -> Self {
+        Self::default_now()
+    }
+}
+
+/// Receipt-ready vector/search execution metadata.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VectorSearchReceiptV1 {
+    /// Receipt schema version.
+    #[serde(default = "default_vector_search_receipt_schema")]
+    pub schema_version: String,
+    /// Digest of the canonical stored receipt payload, when persisted.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub receipt_digest: Option<String>,
+    /// Receipt or request correlation ID.
+    pub receipt_id: String,
+    /// Timestamp used for deterministic scoring.
+    pub evaluation_time: DateTime<Utc>,
+    /// Optional distributed trace identifier supplied by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trace_id: Option<String>,
+    /// Optional family ID tying retries/attempts for the same logical request.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt_family_id: Option<String>,
+    /// Optional retry/attempt identifier supplied by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attempt_id: Option<String>,
+    /// Receipt ID this receipt replays, when applicable.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub replay_of: Option<String>,
+    /// Stable BLAKE3 digest of the query embedding bytes, when available.
+    pub query_embedding_digest: Option<String>,
+    /// Digest of raw query text when supplied by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub query_text_digest: Option<String>,
+    /// Digest of raw or structured query input when supplied by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub query_input_digest: Option<String>,
+    /// Digest of structured filters when supplied by the caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter_digest: Option<String>,
+    /// Redaction state label for explain/replay surfaces.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub redaction_state: Option<String>,
+    /// Optional budget identity associated with the search.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub budget_id: Option<String>,
+    /// Optional caller deadline associated with the search.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deadline_at: Option<DateTime<Utc>>,
+    /// Human-readable search profile.
+    pub search_profile: String,
+    /// Candidate backend used for vector retrieval.
+    pub candidate_backend: String,
+    /// Codec family used for derived vector artifacts, when applicable.
+    pub codec_family: Option<String>,
+    /// Codec profile digest used for derived vector artifacts, when applicable.
+    pub codec_profile_digest: Option<String>,
+    /// Alias for derived artifact profile digest used by v11-compatible hooks.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub artifact_profile_digest: Option<String>,
+    /// Number of derived artifacts considered by the vector path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub artifact_count: Option<usize>,
+    /// Number of corrupt derived artifacts encountered by the vector path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub artifact_corruption_count: Option<usize>,
+    /// Number of missing derived artifacts encountered by the vector path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub artifact_missing_count: Option<usize>,
+    /// Manifest digest for the derived vector artifacts considered by the search.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vector_artifact_manifest_digest: Option<String>,
+    /// Active generation ID for derived vector artifacts, when used.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub artifact_generation_id: Option<String>,
+    /// Number of derived artifacts scanned by approximate candidate generation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub approximate_scanned_count: Option<usize>,
+    /// Number of approximate candidates returned for exact f32 reranking.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub approximate_returned_count: Option<usize>,
+    /// Number of authoritative raw f32 rows loaded during exact rerank.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub raw_rows_loaded_count: Option<usize>,
+    /// Filter strategy used by approximate candidate generation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter_strategy: Option<String>,
+    /// Number of derived vector artifacts considered by the vector path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vector_artifact_count: Option<usize>,
+    /// Number of missing derived vector artifacts encountered by the vector path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vector_artifact_missing_count: Option<usize>,
+    /// Number of stale derived vector artifacts encountered by the vector path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vector_artifact_stale_count: Option<usize>,
+    /// Number of candidates exact-reranked against authoritative f32 embeddings.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exact_rerank_count: Option<usize>,
+    /// Number of approximate candidates produced by the candidate backend.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub approximate_candidate_count: Option<usize>,
+    /// Explicit fallback reason, mirrored from fallback for evidence readers.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fallback_reason: Option<String>,
+    /// Whether approximate codec/index scoring contributed to candidate generation.
+    pub approximate: bool,
+    /// Number of vector candidates requested from the backend.
+    pub requested_candidates: usize,
+    /// Number of candidates returned by the backend before SQL post-filtering.
+    pub returned_candidates: usize,
+    /// Number of vector candidates remaining after SQL filters and exact rerank.
+    pub post_filter_candidates: usize,
+    /// Fallback path, if approximate retrieval degraded or was bypassed.
+    pub fallback: Option<String>,
+    /// Whether exact f32 rerank/reference scoring was used.
+    pub exact_rerank: bool,
+    /// Result IDs returned to the caller.
+    pub result_ids: Vec<String>,
+    /// Degradation notes visible to explain/audit paths.
+    pub degradations: Vec<String>,
+}
+
+/// Stable generation-level manifest for derived vector acceleration artifacts.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DerivedVectorArtifactGenerationV1 {
+    /// Stable schema marker.
+    pub schema_version: String,
+    /// Generation UUID.
+    pub generation_id: String,
+    /// Derived codec family.
+    pub codec_family: String,
+    /// Digest of the codec profile.
+    pub codec_profile_digest: String,
+    /// Digest over authoritative source rows used to build the generation.
+    pub source_snapshot_digest: String,
+    /// Number of authoritative source rows scanned.
+    pub source_row_count: usize,
+    /// Number of artifacts produced.
+    pub artifact_count: usize,
+    /// Authoritative source tables included in the build.
+    pub source_tables: Vec<String>,
+    /// Embedding dimension.
+    pub dim: usize,
+    /// Artifact wire encoding.
+    pub encoding: String,
+    /// Build timestamp.
+    pub created_at: DateTime<Utc>,
+    /// Optional build receipt ID.
+    pub build_receipt_id: Option<String>,
+    /// Digest of the artifact manifest for this generation.
+    pub artifact_manifest_digest: String,
+    /// Generation state.
+    pub status: String,
+    /// Structured or human-readable degradation markers.
+    pub degradations: Vec<String>,
+}
+
+/// Receipt-like summary for rebuilding derived vector acceleration artifacts.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VectorArtifactBuildReceiptV1 {
+    /// Stable schema marker.
+    pub schema_version: String,
+    /// Derived codec family.
+    pub codec_family: String,
+    /// Digest of the codec profile used for all artifacts in the build.
+    pub codec_profile_digest: String,
+    /// Number of authoritative embedding rows scanned.
+    pub source_row_count: usize,
+    /// Number of artifacts written.
+    pub artifact_count: usize,
+    /// Active generation ID produced by the rebuild.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generation_id: Option<String>,
+    /// Source snapshot digest used by the generation manifest.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_snapshot_digest: Option<String>,
+    /// Artifact manifest digest for this generation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub artifact_manifest_digest: Option<String>,
+    /// Number of rows skipped because authoritative embeddings were invalid.
+    pub skipped_row_count: usize,
+    /// Wall-clock build duration in milliseconds.
+    pub elapsed_ms: u128,
+    /// Build timestamp.
+    pub created_at: DateTime<Utc>,
+    /// Non-fatal build notes.
+    pub degradations: Vec<String>,
+}
+
+fn default_vector_search_receipt_schema() -> String {
+    "vector_search_receipt_v1".to_string()
+}
+
+/// Product-facing answers derived from a search receipt.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SearchReceiptAnswersV1 {
+    /// Receipt or request correlation ID.
+    pub receipt_id: String,
+    /// Stable ID to attach to replay/audit logs.
+    pub replay_receipt_id: String,
+    /// Timestamp used for deterministic scoring.
+    pub evaluation_time: DateTime<Utc>,
+    /// Human-readable search profile.
+    pub search_profile: String,
+    /// Candidate backend used for retrieval.
+    pub candidate_backend: String,
+    /// Codec family used for derived vector artifacts, when applicable.
+    pub codec_family: Option<String>,
+    /// Codec profile digest used for derived vector artifacts, when applicable.
+    pub codec_profile_digest: Option<String>,
+    /// Exactness label suitable for UI/API surfaces.
+    pub exactness: String,
+    /// Whether approximate codec/index scoring contributed to candidate generation.
+    pub approximate: bool,
+    /// Whether exact f32 rerank/reference scoring was used.
+    pub exact_rerank: bool,
+    /// Fallback path, if approximate retrieval degraded or was bypassed.
+    pub fallback: Option<String>,
+    /// Whether degradations or fallback occurred.
+    pub degraded: bool,
+    /// Whether the receipt carries enough deterministic context for replay with the original query.
+    pub replay_ready: bool,
+    /// Whether derived vector/index artifacts can be rebuilt from authoritative rows and profiles.
+    pub rebuild_ready: bool,
+    /// Result IDs returned to the caller.
+    pub result_ids: Vec<String>,
+    /// Number of returned results.
+    pub result_count: usize,
+    /// Degradation notes visible to explain/audit paths.
+    pub degradations: Vec<String>,
+    /// Plain-language reasons results appeared.
+    pub why_results_appeared: Vec<String>,
+}
+
+impl VectorSearchReceiptV1 {
+    /// Convert low-level receipt metadata into answers for explain/replay UX.
+    pub fn answers(&self) -> SearchReceiptAnswersV1 {
+        let exactness = match (self.approximate, self.exact_rerank) {
+            (true, true) => "approximate_candidate_generation_with_exact_rerank",
+            (true, false) => "approximate",
+            (false, true) => "exact_reference_with_rerank",
+            (false, false) => "exact_reference",
+        }
+        .to_string();
+
+        let mut why_results_appeared = Vec::new();
+        why_results_appeared.push(format!(
+            "retrieval used candidate backend '{}'",
+            self.candidate_backend
+        ));
+        if self.exact_rerank {
+            why_results_appeared.push("final vector ordering used exact f32 scoring".to_string());
+        }
+        if let Some(fallback) = &self.fallback {
+            why_results_appeared.push(format!("fallback path '{}' was used", fallback));
+        }
+        if let Some(codec_profile_digest) = &self.codec_profile_digest {
+            why_results_appeared.push(format!(
+                "derived vector artifacts used codec profile '{}'",
+                codec_profile_digest
+            ));
+        } else {
+            why_results_appeared.push("no derived codec profile was used".to_string());
+        }
+        if let Some(query_embedding_digest) = &self.query_embedding_digest {
+            why_results_appeared.push(format!(
+                "query embedding digest '{}' is recorded for replay checks",
+                query_embedding_digest
+            ));
+        }
+
+        SearchReceiptAnswersV1 {
+            receipt_id: self.receipt_id.clone(),
+            replay_receipt_id: self.receipt_id.clone(),
+            evaluation_time: self.evaluation_time,
+            search_profile: self.search_profile.clone(),
+            candidate_backend: self.candidate_backend.clone(),
+            codec_family: self.codec_family.clone(),
+            codec_profile_digest: self.codec_profile_digest.clone(),
+            exactness,
+            approximate: self.approximate,
+            exact_rerank: self.exact_rerank,
+            fallback: self.fallback.clone(),
+            degraded: self.fallback.is_some() || !self.degradations.is_empty(),
+            replay_ready: self.query_embedding_digest.is_some(),
+            rebuild_ready: self.query_embedding_digest.is_some()
+                && self.exact_rerank
+                && self.fallback.is_none()
+                && (self
+                    .vector_artifact_count
+                    .or(self.artifact_count)
+                    .is_some_and(|count| count > 0)
+                    || (self.codec_family.is_none()
+                        && self.candidate_backend.contains("brute_force_f32")
+                        && !self.result_ids.is_empty())),
+            result_ids: self.result_ids.clone(),
+            result_count: self.result_ids.len(),
+            degradations: self.degradations.clone(),
+            why_results_appeared,
+        }
+    }
+}
+
+/// Search response shape for context-aware APIs.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SearchResponse {
+    /// Search results.
+    pub results: Vec<SearchResult>,
+    /// Optional receipt metadata.
+    pub receipt: Option<VectorSearchReceiptV1>,
+}
+
+/// Caller-supplied chunk for manifest ingestion.
+///
+/// The external chunk ID is returned in the ingest mapping, but semantic-memory still
+/// owns the durable chunk primary key and generates its own `sm_chunk_id`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChunkManifestEntry {
+    /// Caller-owned chunk identifier.
+    pub external_chunk_id: String,
+    /// Already chunked content to embed and store.
+    pub content: String,
+    /// Optional caller-estimated token count.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub token_count_estimate: Option<usize>,
+    /// Optional caller-computed content digest for verification by adapters.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_digest: Option<String>,
+    /// Optional per-chunk metadata kept in the receipt mapping.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<serde_json::Value>,
+}
+
+/// Document-level options for chunk manifest ingestion.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChunkManifestIngestOptions {
+    /// Document title.
+    pub title: String,
+    /// Namespace/notebook scope.
+    pub namespace: String,
+    /// Optional file path, URL, or caller source identifier.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_path: Option<String>,
+    /// Optional document metadata stored with the semantic-memory document.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<serde_json::Value>,
+}
+
+/// Exact mapping returned for a single manifest chunk after a successful transaction.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChunkManifestChunkMapping {
+    /// Caller-owned chunk identifier supplied in the manifest.
+    pub external_chunk_id: String,
+    /// semantic-memory document id that owns the chunk.
+    pub sm_document_id: String,
+    /// semantic-memory chunk id generated and stored in `chunks.id`.
+    pub sm_chunk_id: String,
+    /// Position in the supplied manifest.
+    pub chunk_index: usize,
+    /// Stored chunk content digest, when supplied by caller.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_digest: Option<String>,
+    /// Optional caller metadata echoed for adapter receipt/audit use.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<serde_json::Value>,
+}
+
+/// Successful chunk-manifest ingest receipt.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChunkManifestIngestResult {
+    /// semantic-memory document id generated for this manifest.
+    pub sm_document_id: String,
+    /// Namespace/notebook scope used for ingest.
+    pub namespace: String,
+    /// Receipt/request correlation id for adapters.
+    pub receipt_id: String,
+    /// Ordered external chunk to semantic-memory chunk mappings.
+    pub chunks: Vec<ChunkManifestChunkMapping>,
+}
+
+/// Explained search response shape for context-aware APIs.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExplainedSearchResponse {
+    /// Search results with scoring breakdowns.
+    pub results: Vec<ExplainedResult>,
+    /// Optional receipt metadata.
+    pub receipt: Option<VectorSearchReceiptV1>,
+}
+
+/// Replay comparison for a durable search receipt.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SearchReplayReportV1 {
+    /// Durable receipt ID that was replayed.
+    pub receipt_id: String,
+    /// Newly generated receipt ID for the replay attempt.
+    pub replay_receipt_id: String,
+    /// Original durable receipt metadata.
+    pub original_receipt: VectorSearchReceiptV1,
+    /// Receipt produced by the replay attempt.
+    pub replay_receipt: VectorSearchReceiptV1,
+    /// Whether the caller-supplied query produced the same embedding digest.
+    pub query_embedding_digest_matches: bool,
+    /// Whether replay returned the same result IDs in the same order.
+    pub result_ids_match: bool,
+    /// Original result IDs missing from replay output.
+    pub missing_result_ids: Vec<String>,
+    /// Replay result IDs not present in the original receipt.
+    pub added_result_ids: Vec<String>,
+    /// Whether replay used the vector-only API family.
+    pub vector_only: bool,
 }
 
 /// Common filter surface for imported projection queries.
@@ -448,6 +968,41 @@ pub enum SearchSource {
     },
 }
 
+impl SearchSource {
+    /// Stable result ID used in receipts and replay logs.
+    pub fn result_id(&self) -> String {
+        match self {
+            Self::Fact { fact_id, .. } => format!("fact:{fact_id}"),
+            Self::Chunk { chunk_id, .. } => format!("chunk:{chunk_id}"),
+            Self::Message { message_id, .. } => format!("msg:{message_id}"),
+            Self::Episode { episode_id, .. } => format!("episode:{episode_id}"),
+            Self::Projection { projection_id, .. } => format!("projection:{projection_id}"),
+        }
+    }
+
+    /// Source family label used by explain/receipt surfaces.
+    pub fn source_kind(&self) -> &'static str {
+        match self {
+            Self::Fact { .. } => "fact",
+            Self::Chunk { .. } => "chunk",
+            Self::Message { .. } => "message",
+            Self::Episode { .. } => "episode",
+            Self::Projection { .. } => "projection",
+        }
+    }
+
+    /// Authoritative source row key without the receipt result prefix.
+    pub fn source_id(&self) -> String {
+        match self {
+            Self::Fact { fact_id, .. } => fact_id.clone(),
+            Self::Chunk { chunk_id, .. } => chunk_id.clone(),
+            Self::Message { message_id, .. } => message_id.to_string(),
+            Self::Episode { episode_id, .. } => episode_id.clone(),
+            Self::Projection { projection_id, .. } => projection_id.clone(),
+        }
+    }
+}
+
 // ─── Episode Types ─────────────────────────────────────────────
 
 /// Metadata for a causal episode (PRIMITIVES_CONTRACT §4).
@@ -578,6 +1133,67 @@ pub struct ExplainedResult {
     pub breakdown: ScoreBreakdown,
 }
 
+/// Product-facing answer for one explained result.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExplainedResultAnswerV1 {
+    /// Stable result ID used in receipts and replay logs.
+    pub result_id: String,
+    /// Source family label.
+    pub source_kind: String,
+    /// Authoritative source row key without the receipt result prefix.
+    pub source_id: String,
+    /// Plain-language reasons this result appeared.
+    pub why_this_result: Vec<String>,
+    /// Whether the result matched the text/BM25 lane.
+    pub text_match: bool,
+    /// Whether the result matched the vector lane.
+    pub vector_match: bool,
+    /// Whether recency contributed to the score.
+    pub recency_applied: bool,
+    /// Whether exact f32 rerank/reference scoring was used for the vector lane.
+    pub exact_vector_rerank: bool,
+    /// Final fused score.
+    pub final_score: f64,
+}
+
+impl ExplainedResult {
+    /// Convert a detailed score breakdown into a practical "why this result" answer.
+    pub fn answer(&self) -> ExplainedResultAnswerV1 {
+        let text_match = self.breakdown.bm25_rank.is_some();
+        let vector_match = self.breakdown.vector_rank.is_some();
+        let recency_applied = self.breakdown.recency_score.is_some();
+        let mut why_this_result = Vec::new();
+
+        if let Some(rank) = self.breakdown.bm25_rank {
+            why_this_result.push(format!("text match rank {rank} contributed to fusion"));
+        }
+        if let Some(rank) = self.breakdown.vector_rank {
+            why_this_result.push(format!("vector match rank {rank} contributed to fusion"));
+        }
+        if recency_applied {
+            why_this_result.push("recency contributed to the fused score".to_string());
+        }
+        if self.breakdown.vector_reranked_from_f32 {
+            why_this_result.push("vector score was checked with exact f32 rerank".to_string());
+        }
+        if why_this_result.is_empty() {
+            why_this_result.push("result survived filtering and deterministic ranking".to_string());
+        }
+
+        ExplainedResultAnswerV1 {
+            result_id: self.result.source.result_id(),
+            source_kind: self.result.source.source_kind().to_string(),
+            source_id: self.result.source.source_id(),
+            why_this_result,
+            text_match,
+            vector_match,
+            recency_applied,
+            exact_vector_rerank: self.breakdown.vector_reranked_from_f32,
+            final_score: self.result.score,
+        }
+    }
+}
+
 // ─── Graph Types (PRIMITIVES_CONTRACT §8) ──────────────────────
 
 /// Trait for querying the memory store as a graph.
@@ -685,4 +1301,25 @@ pub struct MemoryStats {
     pub embedding_model: Option<String>,
     /// Currently configured embedding dimensions.
     pub embedding_dimensions: Option<usize>,
+}
+
+/// Per-surface deletion counts for namespace removal.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct NamespaceDeleteReport {
+    /// Facts deleted from the namespace.
+    pub facts: usize,
+    /// Documents deleted from the namespace.
+    pub documents: usize,
+    /// Document chunks deleted from the namespace.
+    pub chunks: usize,
+    /// Messages deleted through namespaced sessions.
+    pub messages: usize,
+    /// Sessions deleted for the namespace.
+    pub sessions: usize,
+    /// Episodes deleted with namespaced documents.
+    pub episodes: usize,
+    /// Projection/import rows deleted or invalidated.
+    pub projection_rows: usize,
+    /// HNSW pending operations queued by the deletion.
+    pub hnsw_ops: usize,
 }

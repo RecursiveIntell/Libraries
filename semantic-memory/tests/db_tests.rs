@@ -1,5 +1,6 @@
-use semantic_memory::db::{bytes_to_embedding, embedding_to_bytes};
-use semantic_memory::embedder::parse_embedding_response;
+use semantic_memory::db::{bytes_to_embedding, decode_f32_le, embedding_to_bytes};
+use semantic_memory::embedder::{format_ollama_http_error, parse_embedding_response};
+use semantic_memory::StoragePaths;
 use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder};
 use tempfile::TempDir;
 
@@ -38,6 +39,20 @@ fn test_bytes_to_embedding_roundtrip_large() {
     }
 }
 
+#[test]
+fn test_decode_f32_le_rejects_wrong_dimension() {
+    let bytes = embedding_to_bytes(&[1.0, 2.0]);
+    let err = decode_f32_le(&bytes, 3).unwrap_err();
+    assert_eq!(err.kind(), "vector_blob_length_mismatch");
+}
+
+#[test]
+fn test_bytes_to_embedding_rejects_non_finite() {
+    let bytes = embedding_to_bytes(&[1.0, f32::INFINITY]);
+    let err = bytes_to_embedding(&bytes).unwrap_err();
+    assert_eq!(err.kind(), "non_finite_embedding_value");
+}
+
 // ─── embeddings_dirty default is false ──────────────────────
 
 #[tokio::test]
@@ -50,6 +65,51 @@ async fn test_fresh_db_not_dirty() {
     let embedder = Box::new(MockEmbedder::new(768));
     let store = MemoryStore::open_with_embedder(config, embedder).unwrap();
     assert!(!store.embeddings_are_dirty().await.unwrap());
+}
+
+#[tokio::test]
+async fn migration_creates_derived_vector_artifacts_table() {
+    let tmp = TempDir::new().unwrap();
+    let config = MemoryConfig {
+        base_dir: tmp.path().to_path_buf(),
+        ..Default::default()
+    };
+    let embedder = Box::new(MockEmbedder::new(768));
+    let _store = MemoryStore::open_with_embedder(config, embedder).unwrap();
+    let paths = StoragePaths::new(tmp.path());
+    let conn = rusqlite::Connection::open(paths.sqlite_path).unwrap();
+    let table_exists: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master
+             WHERE type = 'table' AND name = 'derived_vector_artifacts'",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(table_exists, 1);
+    let columns = conn
+        .prepare("PRAGMA table_info(derived_vector_artifacts)")
+        .unwrap()
+        .query_map([], |row| row.get::<_, String>(1))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    for required in [
+        "item_key",
+        "codec_family",
+        "codec_profile_digest",
+        "source_embedding_digest",
+        "encoded_digest",
+        "encoding",
+        "dim",
+        "encoded",
+        "status",
+    ] {
+        assert!(
+            columns.iter().any(|column| column == required),
+            "missing derived_vector_artifacts column {required}"
+        );
+    }
 }
 
 // ─── parse_embedding_response (Fix 3) ───────────────────────
@@ -98,6 +158,17 @@ fn test_parse_multiple_embeddings() {
     assert_eq!(embeddings.len(), 2);
     assert_eq!(embeddings[0], vec![1.0f32, 2.0]);
     assert_eq!(embeddings[1], vec![3.0f32, 4.0]);
+}
+
+#[test]
+fn test_ollama_http_error_preserves_body_read_failure() {
+    let err = format_ollama_http_error(
+        reqwest::StatusCode::INTERNAL_SERVER_ERROR,
+        Err("failed to read Ollama error body: connection reset".into()),
+    );
+    let msg = err.to_string();
+    assert!(msg.contains("HTTP 500"));
+    assert!(msg.contains("failed to read Ollama error body"));
 }
 
 // ─── Role trait impls (Fix 7) ───────────────────────────────

@@ -49,6 +49,12 @@ impl StoragePaths {
             .join(format!("{}.hnsw.data", self.hnsw_basename))
     }
 
+    /// Path to the HNSW sidecar manifest file.
+    pub fn hnsw_manifest_path(&self) -> PathBuf {
+        self.base_dir
+            .join(format!("{}.hnsw.manifest.json", self.hnsw_basename))
+    }
+
     /// Whether both HNSW sidecar files exist on disk.
     pub fn hnsw_files_exist(&self) -> bool {
         self.hnsw_graph_path().exists() && self.hnsw_data_path().exists()

@@ -1,0 +1,33 @@
+{
+  "schema_version": "promotion_decision_v1",
+  "decision_id": "promotion-decision-v25",
+  "case_id": "verification-case-v25",
+  "disposition": "eligible_for_promotion",
+  "promotion_class": "p2",
+  "reversibility_class": "reversible_scoped",
+  "policy_decision_id": "policy-decision-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "required_obligation_refs": [
+    "obligation:promotion:required"
+  ],
+  "blocking_obligation_refs": [
+    "obligation:promotion:blocking"
+  ],
+  "monitoring_obligation_refs": [
+    "obligation:promotion:monitoring"
+  ],
+  "promotable": true,
+  "evidence_sufficiency_summary": "all required obligations satisfied",
+  "approval_basis": "not required",
+  "rollback_scope": "projection_scope",
+  "reasons": [
+    "monitoring satisfied",
+    "policy gate clear"
+  ],
+  "control_receipt_id": "control-receipt-v25"
+}

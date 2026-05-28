@@ -1,0 +1,367 @@
+{
+  "issues": [
+    {
+      "phase": "P0",
+      "priority": "P0",
+      "id": "CLS-001",
+      "domain": "Closeout",
+      "title": "Freeze closeout scope against horizon creep",
+      "status": "remaining",
+      "why": "The repo already has the nouns. The next risk is widening instead of finishing.",
+      "depends_on": [],
+      "targets": [
+        "README.md",
+        "V16_V20_SURFACE_STATUS.md",
+        "AGENTS.md",
+        "CODEX_OPERATING_PROMPT.md"
+      ],
+      "acceptance": [
+        "Repo-level docs say this pass deepens bounded slices rather than 'implements v16-v20'."
+      ]
+    },
+    {
+      "phase": "P0",
+      "priority": "P0",
+      "id": "DOC-001",
+      "domain": "Ownership",
+      "title": "Add crate-local README and AGENTS files for each new horizon crate",
+      "status": "remaining",
+      "why": "The new crates own real artifact families but have no local operating docs.",
+      "depends_on": [
+        "CLS-001"
+      ],
+      "targets": [
+        "federated-settlement/README.md",
+        "federated-settlement/AGENTS.md",
+        "mechanism-runtime/README.md",
+        "mechanism-runtime/AGENTS.md",
+        "discovery-portfolio/README.md",
+        "discovery-portfolio/AGENTS.md",
+        "constitutional-memory/README.md",
+        "constitutional-memory/AGENTS.md",
+        "spec-execution/README.md",
+        "spec-execution/AGENTS.md"
+      ],
+      "acceptance": [
+        "Each new crate states owned artifacts, non-goals, and required test/fixture discipline."
+      ]
+    },
+    {
+      "phase": "P1",
+      "priority": "P0",
+      "id": "FED-101",
+      "domain": "v16",
+      "title": "Add shared replay artifact and bounded replay evaluator",
+      "status": "remaining",
+      "why": "The current v16 slice proves downgrade under missing replay, but replay is still implicit rather than first-class.",
+      "depends_on": [
+        "CLS-001"
+      ],
+      "targets": [
+        "stack-ids/src/ids.rs",
+        "federated-settlement/src/lib.rs",
+        "federated-settlement/tests/replay_publication_slice.rs",
+        "contracts/fixtures/v16/shared-replay-happy.json",
+        "contracts/fixtures/v16/shared-replay-downgrade.json",
+        "contract-schema-gen/src/lib.rs",
+        "contracts/schemas/v16/manifest.json"
+      ],
+      "acceptance": [
+        "`SharedReplaySliceV1` exists with schema, fixtures, and test coverage.",
+        "Missing replay still degrades explicitly rather than silently settling."
+      ]
+    },
+    {
+      "phase": "P1",
+      "priority": "P1",
+      "id": "FED-102",
+      "domain": "v16",
+      "title": "Add divergence and suspension artifacts",
+      "status": "remaining",
+      "why": "The v16 spec build order explicitly calls for divergence and suspension after replay.",
+      "depends_on": [
+        "FED-101"
+      ],
+      "targets": [
+        "stack-ids/src/ids.rs",
+        "federated-settlement/src/lib.rs",
+        "federated-settlement/tests/divergence_and_suspension_slice.rs",
+        "contracts/fixtures/v16/divergence-report.json",
+        "contracts/fixtures/v16/treaty-suspension.json",
+        "contract-schema-gen/src/lib.rs",
+        "contracts/schemas/v16/manifest.json",
+        "conformance/v16/README.md"
+      ],
+      "acceptance": [
+        "`SharedDivergenceReportV1` and `TreatySuspensionV1` exist.",
+        "A failing settlement family can emit suspension with explicit blast radius and resumption requirements."
+      ]
+    },
+    {
+      "phase": "P1",
+      "priority": "P1",
+      "id": "FED-103",
+      "domain": "v16",
+      "title": "Widen kernel-conformance for v16 replay and suspension",
+      "status": "remaining",
+      "why": "The current interpreter tests only cover settlement downgrade and local dissent preservation.",
+      "depends_on": [
+        "FED-101",
+        "FED-102"
+      ],
+      "targets": [
+        "kernel-conformance/src/reference_interpreters.rs",
+        "kernel-conformance/tests/v16_v20_reference_interpreters.rs"
+      ],
+      "acceptance": [
+        "Reference interpreters expose replay admissibility and suspension behavior for v16."
+      ]
+    },
+    {
+      "phase": "P2",
+      "priority": "P0",
+      "id": "THY-101",
+      "domain": "v17",
+      "title": "Upgrade fit evaluation to consume refuter suite and stability report",
+      "status": "remaining",
+      "why": "Current v17 fit logic is mostly a boolean gate. The richer artifacts exist but are not meaningfully consumed.",
+      "depends_on": [
+        "CLS-001"
+      ],
+      "targets": [
+        "mechanism-runtime/src/lib.rs",
+        "mechanism-runtime/tests/refuter_and_stability_slice.rs",
+        "contracts/fixtures/v17/refuter-gated-fit.json",
+        "contracts/fixtures/v17/stability-report-block.json"
+      ],
+      "acceptance": [
+        "Fit readiness uses `TheoryRefuterSuiteV1` and `RolloutStabilityReportV1`, not only `refuter_present: bool`."
+      ]
+    },
+    {
+      "phase": "P2",
+      "priority": "P1",
+      "id": "THY-102",
+      "domain": "v17",
+      "title": "Add v17 reference interpreter and manifest/schema sync for richer fit slices",
+      "status": "remaining",
+      "why": "The richer v17 evaluator needs conformance and schema proof, not just crate-local tests.",
+      "depends_on": [
+        "THY-101"
+      ],
+      "targets": [
+        "kernel-conformance/src/reference_interpreters.rs",
+        "kernel-conformance/tests/v16_v20_reference_interpreters.rs",
+        "contract-schema-gen/src/lib.rs",
+        "contracts/schemas/v17/manifest.json",
+        "conformance/v17/README.md"
+      ],
+      "acceptance": [
+        "v17 interpreter proves promotion blocking when refuters or stability are missing."
+      ]
+    },
+    {
+      "phase": "P3",
+      "priority": "P0",
+      "id": "POR-101",
+      "domain": "v18",
+      "title": "Make portfolio selection information-value aware",
+      "status": "remaining",
+      "why": "The current portfolio evaluator is mostly sequential budget subtraction.",
+      "depends_on": [
+        "CLS-001"
+      ],
+      "targets": [
+        "discovery-portfolio/src/lib.rs",
+        "discovery-portfolio/tests/value_aware_selection_slice.rs",
+        "contracts/fixtures/v18/value-aware-plan.json"
+      ],
+      "acceptance": [
+        "Selection/defer decisions mention information gain, review cost, and budget pressure explicitly."
+      ]
+    },
+    {
+      "phase": "P3",
+      "priority": "P1",
+      "id": "POR-102",
+      "domain": "v18",
+      "title": "Link ProgramHypothesisSet and add overload receipts",
+      "status": "remaining",
+      "why": "Program hypotheses exist as a type but are not yet part of the bounded selection story.",
+      "depends_on": [
+        "POR-101"
+      ],
+      "targets": [
+        "discovery-portfolio/src/lib.rs",
+        "discovery-portfolio/tests/budget_exhaustion_slice.rs",
+        "contracts/fixtures/v18/program-hypothesis-set.json",
+        "contracts/fixtures/v18/budget-overload.json",
+        "contract-schema-gen/src/lib.rs",
+        "contracts/schemas/v18/manifest.json",
+        "conformance/v18/README.md"
+      ],
+      "acceptance": [
+        "Budget exhaustion produces explicit pause/defer output with hypothesis/program linkage still visible."
+      ]
+    },
+    {
+      "phase": "P4",
+      "priority": "P0",
+      "id": "GOV-101",
+      "domain": "v19",
+      "title": "Bind amendment decisions to semantic diff and archive consequences",
+      "status": "remaining",
+      "why": "The current amendment evaluator blocks on rollback but does not yet bind the change to diff/archive artifacts.",
+      "depends_on": [
+        "CLS-001"
+      ],
+      "targets": [
+        "constitutional-memory/src/lib.rs",
+        "constitutional-memory/tests/archive_compaction_slice.rs",
+        "contracts/fixtures/v19/semantic-diff-linked-amendment.json",
+        "contracts/fixtures/v19/archive-compaction.json"
+      ],
+      "acceptance": [
+        "Amendment decisions can carry or strongly reference semantic diff and archive consequences."
+      ]
+    },
+    {
+      "phase": "P4",
+      "priority": "P1",
+      "id": "GOV-102",
+      "domain": "v19",
+      "title": "Add archive/compaction evaluator and historical-query guarantees to conformance",
+      "status": "remaining",
+      "why": "Archive and compaction are typed but not yet behaviorally proven in a closeout slice.",
+      "depends_on": [
+        "GOV-101"
+      ],
+      "targets": [
+        "constitutional-memory/src/lib.rs",
+        "kernel-conformance/src/reference_interpreters.rs",
+        "kernel-conformance/tests/v16_v20_reference_interpreters.rs",
+        "contract-schema-gen/src/lib.rs",
+        "contracts/schemas/v19/manifest.json",
+        "conformance/v19/README.md"
+      ],
+      "acceptance": [
+        "A compaction path preserves an explicit historical query guarantee and visible degradation note."
+      ]
+    },
+    {
+      "phase": "P5",
+      "priority": "P0",
+      "id": "SFX-101",
+      "domain": "v20",
+      "title": "Add SelfHostingBuildReceiptV1 end-to-end",
+      "status": "remaining",
+      "why": "The v20 build order names it, but the codebase currently has no ID, type, schema, or fixture for it.",
+      "depends_on": [
+        "CLS-001"
+      ],
+      "targets": [
+        "stack-ids/src/ids.rs",
+        "spec-execution/src/lib.rs",
+        "spec-execution/tests/generated_artifacts_and_veto_slice.rs",
+        "contracts/fixtures/v20/self-hosting-build.json",
+        "contract-schema-gen/src/lib.rs",
+        "contracts/schemas/v20/manifest.json"
+      ],
+      "acceptance": [
+        "`SelfHostingBuildReceiptV1` exists with ID, schema, fixture, and at least one test."
+      ]
+    },
+    {
+      "phase": "P5",
+      "priority": "P0",
+      "id": "SFX-102",
+      "domain": "v20",
+      "title": "Generate interpreter, conformance corpus, and migration companion bundles",
+      "status": "remaining",
+      "why": "Current generation only produces a schema bundle. The companion generated artifacts are still empty nouns.",
+      "depends_on": [
+        "SFX-101"
+      ],
+      "targets": [
+        "spec-execution/src/lib.rs",
+        "spec-execution/tests/generated_artifacts_and_veto_slice.rs",
+        "contracts/fixtures/v20/generated-companions.json"
+      ],
+      "acceptance": [
+        "One call path emits generated schema/interpreter/corpus/migration companion bundles with backpointers."
+      ]
+    },
+    {
+      "phase": "P5",
+      "priority": "P1",
+      "id": "SFX-103",
+      "domain": "v20",
+      "title": "Add veto, meta challenge, and rollback baseline",
+      "status": "remaining",
+      "why": "The current code defines `HumanVetoBundleV1` and `MetaChallengeBundleV1` as inert data only.",
+      "depends_on": [
+        "SFX-102"
+      ],
+      "targets": [
+        "spec-execution/src/lib.rs",
+        "spec-execution/tests/generated_artifacts_and_veto_slice.rs",
+        "contracts/fixtures/v20/human-veto-rollback.json",
+        "kernel-conformance/src/reference_interpreters.rs",
+        "kernel-conformance/tests/v16_v20_reference_interpreters.rs",
+        "conformance/v20/README.md"
+      ],
+      "acceptance": [
+        "Generated artifacts can be vetoed or challenged with explicit rollback-visible state."
+      ]
+    },
+    {
+      "phase": "P6",
+      "priority": "P0",
+      "id": "SCH-101",
+      "domain": "Schemas",
+      "title": "Keep schema generator, manifests, and fixtures in sync",
+      "status": "remaining",
+      "why": "Every new artifact family in this pass must be schema-owned and listed in the correct manifest.",
+      "depends_on": [
+        "FED-101",
+        "FED-102",
+        "POR-102",
+        "GOV-102",
+        "SFX-103"
+      ],
+      "targets": [
+        "contract-schema-gen/src/lib.rs",
+        "contracts/schemas/v16/manifest.json",
+        "contracts/schemas/v17/manifest.json",
+        "contracts/schemas/v18/manifest.json",
+        "contracts/schemas/v19/manifest.json",
+        "contracts/schemas/v20/manifest.json"
+      ],
+      "acceptance": [
+        "`cargo run -p contract-schema-gen -- --check schemas` passes after the new artifacts land."
+      ]
+    },
+    {
+      "phase": "P6",
+      "priority": "P1",
+      "id": "DOC-002",
+      "domain": "Docs",
+      "title": "Update repo-level status docs to match the finished bounded slices",
+      "status": "remaining",
+      "why": "The repo already contains many pack docs; they need one post-pass truth pass.",
+      "depends_on": [
+        "DOC-001",
+        "SCH-101"
+      ],
+      "targets": [
+        "README.md",
+        "EXECUTIVE_SUMMARY.md",
+        "V16_V20_SURFACE_STATUS.md",
+        "MANIFEST.txt"
+      ],
+      "acceptance": [
+        "Repo-level status docs name what is real in code and what remains scaffold/horizon."
+      ]
+    }
+  ]
+}

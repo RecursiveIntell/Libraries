@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use effect_runtime::error::EffectRuntimeValidationError;
 use effect_runtime::vocab::*;
 use effect_runtime::*;

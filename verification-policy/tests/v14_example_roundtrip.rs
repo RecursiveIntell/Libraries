@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use verification_policy::{
     ArtifactAdmissionPolicyV1, DisclosureBudgetV1, DisclosurePolicyV1, ExperimentBudgetV1,
     RefuterSuiteV1,

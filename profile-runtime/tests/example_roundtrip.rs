@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use profile_runtime::{
     ApplicabilityContextV1, CompiledObligationSetV1, CompositionConflictSetV1,
     CompositionReceiptV1, CompositionRuleSetV1, EffectiveConstitutionV1, PolicyImpactDiffV1,

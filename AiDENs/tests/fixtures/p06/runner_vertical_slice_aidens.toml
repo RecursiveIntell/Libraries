@@ -1,0 +1,18 @@
+app_id = "phase06-runner-slice"
+profile_id = "coding-agent"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+model = "mock-model"
+mock_response = '''{"tool_call":{"tool_id":"aidens:repo-read:1","input":{"path":"README.md"}}}
+---aidens-next-response---
+phase06 final response saw: {{last_tool_content}}'''
+
+[tools]
+sandbox_root = "__SANDBOX_ROOT__"
+enabled_bundles = ["safe-coding"]
+
+[receipts]
+store_root = "receipts"

@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-11T00:41:41Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P30_5/files/prompts/phases/P30-05_VERIFICATION_SEMANTICS_PROOF_DEBT_DEGRADATION_HONESTY_AND_NO_ADVISORY_PROMOTION.md",
+      "bytes": 1109,
+      "mtime_utc": "2026-05-10T23:55:56Z",
+      "original_path": "prompts/phases/P30-05_VERIFICATION_SEMANTICS_PROOF_DEBT_DEGRADATION_HONESTY_AND_NO_ADVISORY_PROMOTION.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P30_5",
+      "sha256": "f05a6c012370145421360f8dd62df880baa78f2e3fac4b18318a9934e07921fa"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P30_5",
+  "skipped_existing": [],
+  "superseded_by": "P29",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

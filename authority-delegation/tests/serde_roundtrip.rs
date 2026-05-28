@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use authority_delegation::{
     CapabilityBlastRadiusCeilingV1, CapabilityClassV1, CapabilityDisclosureCeilingV1,
 };

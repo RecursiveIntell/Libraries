@@ -1,0 +1,8 @@
+{
+  "schema_version": "audit_fixture_case_v1",
+  "case_id": "low_hazard_confirmed",
+  "domain": "audit",
+  "proposed_action": "analyze",
+  "requested_effect": "advisory_only",
+  "signals": ["low_hazard", "confirmed"]
+}

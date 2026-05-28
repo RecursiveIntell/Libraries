@@ -1,0 +1,47 @@
+COMMAND: bash -n scripts/phase_verify_contract_ownership.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-28T23:59:51-05:00
+EXIT_STATUS: 0
+END_TIME: 2026-04-28T23:59:51-05:00
+STDOUT:
+STDERR:
+
+COMMAND: bash scripts/assert_no_crate_split.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-28T23:59:51-05:00
+EXIT_STATUS: 0
+END_TIME: 2026-04-28T23:59:51-05:00
+STDOUT:
+PASS: no aidens-contracts split crates detected.
+STDERR:
+
+COMMAND: bash scripts/assert_docs_source_basis_current.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-28T23:59:51-05:00
+EXIT_STATUS: 0
+END_TIME: 2026-04-28T23:59:51-05:00
+STDOUT:
+PASS: no blocking stale source-basis docs detected.
+STDERR:
+
+COMMAND: bash scripts/phase_verify_contract_ownership.sh 00
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-28T23:59:51-05:00
+EXIT_STATUS: 0
+END_TIME: 2026-04-28T23:59:51-05:00
+STDOUT:
+COMMAND: bash scripts/assert_no_crate_split.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-28T23:59:51-05:00
+PASS: no aidens-contracts split crates detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-28T23:59:51-05:00
+COMMAND: bash scripts/assert_docs_source_basis_current.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-28T23:59:51-05:00
+PASS: no blocking stale source-basis docs detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-28T23:59:51-05:00
+PASS: contract ownership verification passed. Evidence in /home/sikmindz/Coding/Libraries/AiDENs/.codex_evidence/contract_ownership/00
+STDERR:
+

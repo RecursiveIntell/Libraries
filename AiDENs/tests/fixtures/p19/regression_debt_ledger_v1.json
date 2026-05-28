@@ -1,0 +1,25 @@
+{
+  "ledger_id": "regression-debt-ledger:p19-fixture",
+  "kind": "regression-debt-ledger",
+  "items": [
+    {
+      "debt_id": "regression-debt:docs-scaffold-promotion",
+      "surface_id": "release:docs",
+      "status": "guarded",
+      "description": "public docs can regress by claiming scaffold-only crates are complete",
+      "detection": "scripts/assert_no_scaffold_promoted.sh",
+      "guardrail_tests": [
+        "bash scripts/verify.sh"
+      ],
+      "owner": "release",
+      "reason_codes": [
+        "regression-debt-guarded"
+      ]
+    }
+  ],
+  "blocking_debt_ids": [],
+  "reason_codes": [
+    "regression-debt-ledger-non-blocking"
+  ],
+  "generated_at": "2026-04-27T00:00:00Z"
+}

@@ -1,0 +1,224 @@
+{
+  "created_at": "2026-04-26T18:34:45.219623+00:00",
+  "source_zip": "libraries-source-clean-20260426.zip",
+  "research_zip": "Full Provenance+ Research 4/24/26.zip",
+  "source_metrics": {
+    "crates": 31,
+    "rust_files": 37,
+    "rust_loc": 5126,
+    "scaffold_files": 15,
+    "research_files": 52
+  },
+  "passes": [
+    {
+      "id": "P00",
+      "slug": "source_basis_and_fake_ready_freeze",
+      "title": "Source-basis lock, fake-ready freeze, and repo hygiene gate",
+      "phase": "Foundation / honesty"
+    },
+    {
+      "id": "P01",
+      "slug": "public_api_honesty_and_noop_removal",
+      "title": "Public API honesty, no-op removal, and plan/runtime parity",
+      "phase": "Foundation / honesty"
+    },
+    {
+      "id": "P02",
+      "slug": "provider_runtime_truth_and_backend_matrix",
+      "title": "Provider runtime truth and executable backend matrix",
+      "phase": "Foundation / runtime"
+    },
+    {
+      "id": "P03",
+      "slug": "turn_executor_tool_loop_and_budget",
+      "title": "TurnExecutorV1, provider/tool loop, and budgeted dispatch",
+      "phase": "Foundation / runtime"
+    },
+    {
+      "id": "P04",
+      "slug": "capability_gate_permits_and_approval_spine",
+      "title": "Capability gate, permits, approvals, and side-effect denial law",
+      "phase": "Foundation / safety"
+    },
+    {
+      "id": "P05",
+      "slug": "durable_execution_evidence_ledger_and_outbox",
+      "title": "Durable execution evidence ledger, receipt store, and transactional outbox",
+      "phase": "Foundation / evidence"
+    },
+    {
+      "id": "P06",
+      "slug": "boundary_compiler_schema_and_canonicalization",
+      "title": "Boundary compiler, schema validation, repair provenance, and canonical digests",
+      "phase": "Contracted core"
+    },
+    {
+      "id": "P07",
+      "slug": "schema_generation_contract_registry_and_migration_law",
+      "title": "Schema generation, artifact registry, compatibility, and migration law",
+      "phase": "Contracted core"
+    },
+    {
+      "id": "P08",
+      "slug": "reference_interpreters_and_semantic_conformance",
+      "title": "Reference interpreters and semantic conformance harness",
+      "phase": "Contracted core"
+    },
+    {
+      "id": "P09",
+      "slug": "episode_first_memory_and_bitemporal_store",
+      "title": "Episode-first memory and bitemporal evidence store",
+      "phase": "Memory/runtime core"
+    },
+    {
+      "id": "P10",
+      "slug": "coding_agent_tooling_sandbox_and_codex_packets",
+      "title": "Coding-agent tool suite, sandbox discipline, and Codex packet generator",
+      "phase": "Product-grade coding spine"
+    },
+    {
+      "id": "P11",
+      "slug": "queue_schedule_wake_daemon_duplicate_storm_immunity",
+      "title": "Queue, schedule, wake, daemon, leases, and duplicate-storm immunity",
+      "phase": "Memory/runtime core"
+    },
+    {
+      "id": "P12",
+      "slug": "verification_plans_repair_records_and_governance",
+      "title": "Verification plans, repair records, contradiction law, and governance control",
+      "phase": "Governed runtime"
+    },
+    {
+      "id": "P13",
+      "slug": "multi_view_runtime_disclosure_and_query_policy",
+      "title": "Multi-view runtime, retrieval disclosure, and query widening law",
+      "phase": "Runtime/query core"
+    },
+    {
+      "id": "P14",
+      "slug": "release_product_surface_and_operator_ux",
+      "title": "Release-grade product surface, operator UX, and status truth",
+      "phase": "Product readiness"
+    },
+    {
+      "id": "P15",
+      "slug": "regional_decoder_kernel_and_local_repair_geometry",
+      "title": "Regional decoder kernel, right-graph law, and local repair geometry",
+      "phase": "Advanced runtime geometry"
+    },
+    {
+      "id": "P16",
+      "slug": "lawful_subtraction_compaction_and_invariant_preserving_reduction",
+      "title": "Lawful subtraction, compaction, and invariant-preserving reduction",
+      "phase": "Advanced runtime geometry"
+    },
+    {
+      "id": "P17",
+      "slug": "attested_exchange_federation_and_external_admission",
+      "title": "Attested exchange, trust roots, federation, and external artifact admission",
+      "phase": "Federated horizon"
+    },
+    {
+      "id": "P18",
+      "slug": "mechanism_theory_search_and_experiment_runtime",
+      "title": "Mechanism/theory search, experiment runtime, and falsifiable model library",
+      "phase": "Mechanism horizon"
+    },
+    {
+      "id": "P19",
+      "slug": "final_integration_release_bar_and_completion_audit",
+      "title": "Final integration, release bar, and completion audit",
+      "phase": "Release proof"
+    }
+  ],
+  "files": [
+    "ACCEPTANCE_GATES_AND_CI.md",
+    "AGENTS.md",
+    "ARTIFACT_SCHEMA_REGISTRY.md",
+    "BUILD_ORDER_DAG.md",
+    "CODEX_MASTER_PROMPT.md",
+    "CODEX_SUPER_PASS_ORCHESTRATION.md",
+    "COMPLETION_PASS_MAP.md",
+    "CRATE_OWNERSHIP_AND_BOUNDARIES.md",
+    "CURRENT_AIDENS_HARD_AUDIT_20260426.md",
+    "HANDOFF_TEMPLATE.md",
+    "MANIFEST.txt",
+    "MASTER_ISSUE_MATRIX.csv",
+    "MASTER_ISSUE_MATRIX.json",
+    "MASTER_ISSUE_MATRIX.md",
+    "README.md",
+    "RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md",
+    "RESEARCH_TO_PASS_TRACEABILITY.md",
+    "RISK_REGISTER.md",
+    "SOURCE_BASIS.md",
+    "SOURCE_TOUCH_MAP.md",
+    "STATUS_TEMPLATE.md",
+    "SUPER_PASS_EXECUTIVE_SUMMARY.md",
+    "TEST_CONFORMANCE_FUZZING_PLAN.md",
+    "pass_manifest.json",
+    "passes/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.md",
+    "passes/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.md",
+    "passes/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.md",
+    "passes/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.md",
+    "passes/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.md",
+    "passes/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.md",
+    "passes/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.md",
+    "passes/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.md",
+    "passes/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.md",
+    "passes/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.md",
+    "passes/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.md",
+    "passes/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.md",
+    "passes/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md",
+    "passes/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.md",
+    "passes/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.md",
+    "passes/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.md",
+    "passes/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.md",
+    "passes/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.md",
+    "passes/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.md",
+    "passes/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+    "prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md",
+    "prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md",
+    "prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md",
+    "prompts/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET_PROMPT.md",
+    "prompts/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE_PROMPT.md",
+    "prompts/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX_PROMPT.md",
+    "prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md",
+    "prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md",
+    "prompts/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE_PROMPT.md",
+    "prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md",
+    "prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md",
+    "prompts/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY_PROMPT.md",
+    "prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md",
+    "prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md",
+    "prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md",
+    "prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md",
+    "prompts/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION_PROMPT.md",
+    "prompts/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION_PROMPT.md",
+    "prompts/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME_PROMPT.md",
+    "prompts/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT_PROMPT.md",
+    "schemas/README.md",
+    "schemas/core_artifact_header_v1.sketch.json",
+    "scripts/assert_no_scaffold_promoted.sh",
+    "scripts/verify.sh",
+    "tasks/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.json",
+    "tasks/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.json",
+    "tasks/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.json",
+    "tasks/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.json",
+    "tasks/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.json",
+    "tasks/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.json",
+    "tasks/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.json",
+    "tasks/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.json",
+    "tasks/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.json",
+    "tasks/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.json",
+    "tasks/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.json",
+    "tasks/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.json",
+    "tasks/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.json",
+    "tasks/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.json",
+    "tasks/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.json",
+    "tasks/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.json",
+    "tasks/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.json",
+    "tasks/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.json",
+    "tasks/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.json",
+    "tasks/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.json"
+  ]
+}

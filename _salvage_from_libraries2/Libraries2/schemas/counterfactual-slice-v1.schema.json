@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "as_of_recorded_time": {
+      "type": "string"
+    },
+    "as_of_valid_time": {
+      "type": "string"
+    },
+    "baseline_treatment": {
+      "type": "string"
+    },
+    "cohort_contract_id": {
+      "type": "string"
+    },
+    "counterfactual_slice_id": {
+      "type": "string"
+    },
+    "exactness_target": {
+      "type": "string"
+    },
+    "expected_failure_modes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "intervention_id": {
+      "type": "string"
+    },
+    "modeling_assumptions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replayable_data_slice": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "as_of_recorded_time",
+    "as_of_valid_time",
+    "baseline_treatment",
+    "cohort_contract_id",
+    "counterfactual_slice_id",
+    "exactness_target",
+    "intervention_id",
+    "replayable_data_slice",
+    "schema_version"
+  ],
+  "title": "CounterfactualSliceV1",
+  "type": "object"
+}

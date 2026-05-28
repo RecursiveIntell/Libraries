@@ -1,0 +1,20 @@
+{
+  "report_id": "schema-compatibility-report:v1",
+  "registry_digest": "blake3:fixture-registry",
+  "compatible": true,
+  "checked_schema_count": 1,
+  "checks": [
+    {
+      "family": "schema-compatibility-report",
+      "version": 1,
+      "mode": "full",
+      "compatible": true,
+      "reason_codes": [
+        "schema-compatible-full"
+      ]
+    }
+  ],
+  "reason_codes": [
+    "schema-compatibility-passed"
+  ]
+}

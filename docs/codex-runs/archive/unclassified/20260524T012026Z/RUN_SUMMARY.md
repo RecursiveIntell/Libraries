@@ -1,0 +1,70 @@
+# Codex Run Archive Summary - unclassified
+
+Created UTC: `2026-05-24T01:20:26Z`
+Archived files: `63`
+
+| Original path | Reason | SHA-256 |
+|---|---|---|
+| `.codex/hooks.json` | `stale-codex-control` | `27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693` |
+| `.codex/hooks/fibquant_guard.py` | `stale-codex-control` | `8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137` |
+| `.codex/hooks/fibquant_stop_guard.py` | `stale-codex-control` | `7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d` |
+| `fib-quant/.codex/hooks/fibquant_guard.py` | `stale-codex-control` | `45d7506c86062442f0ffc8ee33c28fade9e9c550aa4f1a4a309390883bfe3d1e` |
+| `fib-quant/.codex/hooks/fibquant_kv_preflight.py` | `stale-codex-control` | `1909af8b76ac931dd291418ea6fa0d775f4460a03122fa8dc4693ea139991505` |
+| `fib-quant/.codex/hooks/fibquant_stop_guard.py` | `stale-codex-control` | `d579282ad97638f14cb079ccc19cb54d4d53c1783d2f23803f10f5687a1994c7` |
+| `fib-quant/overlays/.codex/hooks/fibquant_kv_preflight.py` | `stale-codex-control` | `1909af8b76ac931dd291418ea6fa0d775f4460a03122fa8dc4693ea139991505` |
+| `overlays/.codex/hooks.json` | `stale-codex-control` | `27499710094ab5999ddae7637ed4c86abf63e721ef62d46b71e16713ea405693` |
+| `overlays/.codex/hooks/fibquant_guard.py` | `stale-codex-control` | `8f220041f8be15f2ee9acde088b3fb633f80ca7148e2f127f9ea7c27d99a0137` |
+| `overlays/.codex/hooks/fibquant_stop_guard.py` | `stale-codex-control` | `7dcb400687c45fb27110df941f81fa1de6ea7556fbaed523697945fdcf64dd2d` |
+| `scr-runtime/.codex/agents/backend_runtime.md` | `stale-codex-control` | `e7a45d9ef251e71a04e2af68167739197402d3823e4d62bb1e7bf012dfd4d459` |
+| `scr-runtime/.codex/agents/backend_runtime.toml` | `stale-codex-control` | `8629f400ca227687ed47c6a59f3b9ef49deafaf3ea1c52d784e3506af5451a2d` |
+| `scr-runtime/.codex/agents/background_jobs.md` | `stale-codex-control` | `7c86100a3babcbf70f41edca7d33f7dfb50ea2e010ceed699ed3ff577b71e21e` |
+| `scr-runtime/.codex/agents/background_jobs.toml` | `stale-codex-control` | `21dc24e46250c4cf3ea5f1bed39dabba160340e2cddfdbf062b4575195c10baa` |
+| `scr-runtime/.codex/agents/frontend_state.md` | `stale-codex-control` | `5e0d42932f8bf64f389569700c587dddaf0305f5f6533d205bb56615d77bb056` |
+| `scr-runtime/.codex/agents/frontend_state.toml` | `stale-codex-control` | `029eb515bd25d129238ef3fbdb7965d6e65715f6db4666b94e85ed87932de875` |
+| `scr-runtime/.codex/agents/hostile_review.md` | `stale-codex-control` | `9f32acd0fee34c96e15eef3b2a902a4899188c89cf9ae4e440535d34f421a7fc` |
+| `scr-runtime/.codex/agents/hostile_review.toml` | `stale-codex-control` | `510b398698cfa827114d958e203c8b59dc7fb9d2308ab2b0fa6280bb3e5badfa` |
+| `scr-runtime/.codex/agents/ingestion_db.md` | `stale-codex-control` | `3c8a2ee12c8c96ab9c36077914a6b754b34739923e3da9d0ed4b3554d4c7c2e4` |
+| `scr-runtime/.codex/agents/ingestion_db.toml` | `stale-codex-control` | `3c467e0b9c3d437e362dd47647c2af07ad40184d89c75a38752229281cd7c8aa` |
+| `scr-runtime/.codex/agents/provider_truth.md` | `stale-codex-control` | `46dd5b4ef6d829a185fa201d8d3e1ecf7131718c90065ef0a0758cf56b9cac18` |
+| `scr-runtime/.codex/agents/provider_truth.toml` | `stale-codex-control` | `ef756d651e5cc4bc59f3095486f8bd93a6f45db723db65f72d76627da7667c11` |
+| `scr-runtime/.codex/auto_gates/phase_00_gate.md` | `stale-codex-control` | `c54c8c55addfd3abe219ecf897805e1ceb081a895cb61332b7a5061006eda6b9` |
+| `scr-runtime/.codex/auto_gates/phase_01_gate.md` | `stale-codex-control` | `71f7e9f9ad496b1fcb14454db7e8614b6dad64658d2a166418a899a65436a502` |
+| `scr-runtime/.codex/auto_gates/phase_02_gate.md` | `stale-codex-control` | `809207d94acff3d2f730b63ac24776d10a7504940bd93571aaef5ab5da04cd44` |
+| `scr-runtime/.codex/auto_gates/phase_03_gate.md` | `stale-codex-control` | `394620792e696bed91b4e0e1985ee676922416e1505204ec2b870959f3ee8fd0` |
+| `scr-runtime/.codex/auto_gates/phase_04_gate.md` | `stale-codex-control` | `8f400722558f88a4fbba8478bc50df5734755870eda1081830139de7189e35b3` |
+| `scr-runtime/.codex/auto_gates/phase_05_gate.md` | `stale-codex-control` | `ba470683353a2f402c7fd4f82acc4c43042533b0478973a9100201224ece80c7` |
+| `scr-runtime/.codex/auto_gates/phase_06_gate.md` | `stale-codex-control` | `b0a8f1729053bf29f00d6499f73c001f82d7914086c6b084dc4c12619cd3f380` |
+| `scr-runtime/.codex/config.toml` | `stale-codex-control` | `beb55dfe6b3c2bc6b1e23cb7e896288a0077dc84b4f1a437484a0c163913851d` |
+| `scr-runtime/.codex/hooks.json` | `stale-codex-control` | `510dedcd625273b4460eb478920f91d8e62940b5fa7b8f4314e41748891c5643` |
+| `scr-runtime/.codex/hooks/permission_request_policy.py` | `stale-codex-control` | `daffb2b74b30520b6053448cadd9bd7c3dadff4dfb56cf821c080324fa5d4f7f` |
+| `scr-runtime/.codex/hooks/post_tool_receipt.py` | `stale-codex-control` | `8de2b4707b0ddeb8e48d091db888acdfc60b03a504dfaa336a9add14d6063e86` |
+| `scr-runtime/.codex/hooks/pre_edit_policy.py` | `stale-codex-control` | `9b45205440e4007a1ba5b62e2658cf32d614ebc5ba59095f80868e4768e460e6` |
+| `scr-runtime/.codex/hooks/pre_tool_use_policy.py` | `stale-codex-control` | `631dbc5ed716753af6b2972cf1e94574d7938a22789f186c4e294cc06280e64e` |
+| `scr-runtime/.codex/hooks/stop_phase_guard.py` | `stale-codex-control` | `98049f3656208261be0c2e2e74bf59b8b6d567a2d9acb767b6cd1ea02aed7f30` |
+| `scr-runtime/.codex/hooks/user_prompt_contract.py` | `stale-codex-control` | `c8378f8bd405b1cb54b1977ce02193b010b5a348ff5cbd34df156c5355a568a2` |
+| `scr-runtime/.codex/prompt_manifest.json` | `stale-codex-control` | `866bc75ba0de3c62355f1a96e2326f55c31b2b493dba8b2fc0e963114b781cb6` |
+| `scr-runtime/.codex/prompts/MASTER_AUTOMATED_COMPLETION.md` | `stale-codex-control` | `77c97a69ac02eebf39f0368d262b1aa8d88605ba8e72dcfd6ac00471ae975be2` |
+| `scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md` | `stale-codex-control` | `468e5a5631a10edb21a7484e0a9fcb0bf520426d188d7b11619aba9f163bdfd0` |
+| `scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md` | `stale-codex-control` | `cfaffd453e2e072ca4664b424a7601701d8fdfb87372e09847fd1eecbe36f723` |
+| `scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md` | `stale-codex-control` | `aaf681890a6b58f2e23edca4a4db37b66fe248b9b6f759c621a360c3cbff3890` |
+| `scr-runtime/.codex/prompts/phase_03_packaging_policy.md` | `stale-codex-control` | `dabeca4a216aa0d9631409820be4b732a0f74747cb6506b2014f34af80322c3a` |
+| `scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md` | `stale-codex-control` | `b68fac776b6716618cc7dfdb04f27441d701d0cf609a75a263a7f2f7e089eedc` |
+| `scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md` | `stale-codex-control` | `eaa71353e8e3b19d942123c2c15c4d3abec43936a898da11a4220bad716f8cfe` |
+| `scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md` | `stale-codex-control` | `8a56b755a0022589acccd5bf0b4644ed2576a009a44fbe9c7b163d321d02439d` |
+| `scr-runtime/.codex/requirements.toml` | `stale-codex-control` | `c1428ecc5748c38bd95bacff4147b5cc36dad1a69678c0d1b7becf2bdd8e7e52` |
+| `scr-runtime/.codex/rules/safety.rules` | `stale-codex-control` | `d76fefd28fa3cd37f2b8050752e2dfd4c260acad7b74ef991155bc85a3dee99f` |
+| `scr-runtime/.codex/skills/codex-control-pack/SKILL.md` | `stale-codex-control` | `46f93ef95a52730c2e163ed0233bc7989fbc6aa11ea8fbd0d912baf65ff5f61c` |
+| `scr-runtime/.codex/skills/hostile-audit/SKILL.md` | `stale-codex-control` | `db7cbcde26869f5ab130ea6144bb9cd28ee57d7d370f8dc2180bf39eeb3c1a67` |
+| `scr-runtime/.codex/skills/phase-gate/SKILL.md` | `stale-codex-control` | `edf65291d5f0a9718a540f87d9e624cd167a5c9c1d57bfb7a04180214edd6768` |
+| `scr-runtime/.codex/skills/run-certifier/SKILL.md` | `stale-codex-control` | `c68f7a8a4e721eee74daba6525f0b395621e88df8dc675c8e12a8d894c84fbbe` |
+| `scr-runtime/.codex/skills/source-of-truth-map/SKILL.md` | `stale-codex-control` | `05da5186899501b9174ebb501e1164203e6d2ca58edc63a55014afda9b7b1a39` |
+| `scr-runtime/.codex/tools/auto_phase_runner.py` | `stale-codex-control` | `a250d2edaf5256197e942b11720f0cce110a81c1c936f189dbd43d8e6de55e97` |
+| `scr-runtime/.codex/tools/inspect_codex_setup.py` | `stale-codex-control` | `321061a4401137a767030a16197ac7b96a7909f326eb4d571cb544804b1eb7e3` |
+| `scr-runtime/.codex/tools/phase_prompt_builder.py` | `stale-codex-control` | `0acd9e479e01e98eaaa0124783c3688cc1f19715419e51cb1ab885a8a88c27e4` |
+| `scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks.json` | `stale-codex-control` | `4b5d19ce3588806a699f0711a157cbd48e71dd55d0d04738cc070168df78f771` |
+| `scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/post_tool_use_receipt.py` | `stale-codex-control` | `62cb54e0e8d70a21d032ed401e454afa39b336b0437ab5aa75112cc2066ce46c` |
+| `scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/pre_tool_use_policy.py` | `stale-codex-control` | `f651646caf61369443262f521823e4039de5f36791d407ca44b0afc78af1becc` |
+| `scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/stop_final_gate.py` | `stale-codex-control` | `8cb84d23942edbd62cb375e781c930d2755cfdd8698e127b34735f6946cc785d` |
+| `scr-runtime/tmp/scr-runtime-p32-bundle/codex_overlay/.codex/hooks/user_prompt_submit_blockers.py` | `stale-codex-control` | `a3d0f874507e98355ae73bb5b9031b5d9524753d14f817a1f1627505e8bddaf2` |
+| `turbo-quant/.codex/skills/turbo-quant-release/SKILL.md` | `stale-codex-control` | `d5d9222e628b8a65448876931546921567097fdbcf4c4bf43d20033197ab71e8` |
+| `turbo-quant/.codex/skills/turbo-quant-release/scripts/README.txt` | `stale-codex-control` | `4fb198bcfba292f79236e45cf44f4d8fe3fc629514275f7a1e96c6223d285c22` |

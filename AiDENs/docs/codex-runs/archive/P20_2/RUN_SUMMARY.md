@@ -1,0 +1,43 @@
+# Codex Run Archive Summary - P20_2
+
+Created UTC: `2026-05-02T00:58:49Z`
+Archived files: `36`
+
+| Original path | Reason | SHA-256 |
+|---|---|---|
+| `.codex/prompts/P20_2_CODEX_RUN_PROMPT.md` | `stale-codex-control` | `3ff0bff0e57c2f99ca2da22abf38ca67a3b3a8ae48bee9b5f41fc9a638ae1ab4` |
+| `.codex/tasks/P20_2_TASK_MATRIX.json` | `stale-codex-control` | `6f0baa593a38963dd69ccfdca9a204e454539bd16657c642a5442fbd12bb116d` |
+| `docs/P20_2_ACCEPTANCE_GATES.md` | `stale-run-doc` | `4c1e12d847d6919f6b82539070cccd9e125f2da693b1d75f412f0ee724166dea` |
+| `docs/P20_2_AGENCY_EVAL_EXPANSION.md` | `stale-run-doc` | `c4d8ededa74f00acff4c446bd75d9d49c688d565235cff2c89f54f7e296f78b8` |
+| `docs/P20_2_DELETION_QUARANTINE_RULES.md` | `stale-run-doc` | `f4bba7041e86b304de21455938ef2d0a7d3c59bc39a59aeb812baccda9bd935c` |
+| `docs/P20_2_EVIDENCE_REPORTING.md` | `stale-run-doc` | `8d88ed0b3576b96b00bdb3e0c48579eccdcd2dba023758de2be357dd604e5354` |
+| `docs/P20_2_EXPECTED_FINAL_STATE.md` | `stale-run-doc` | `25c7e9c5f1a34485bb29f4d14b3829f419439c97522e5ea47847525f93fe9b39` |
+| `docs/P20_2_IMPLEMENTATION_PLAYBOOK.md` | `stale-run-doc` | `84eff1b691763daacd1f8c522707c093a37e8c457209f193b700955feca37136` |
+| `docs/P20_2_MASTER_ISSUE_MATRIX.md` | `stale-run-doc` | `8cfac67e926461db4c651c7cb5f79c1bcb1edf9f1dfdbf7b6369ae3b418e7b6c` |
+| `docs/P20_2_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md` | `stale-run-doc` | `ea1e07f7ad1b7f6a05588b8f4e4ca766ae2b52dc9fda9a2f02e3de0728f7873f` |
+| `docs/P20_2_PACKAGE_INTEGRITY_PLAN.md` | `stale-run-doc` | `4036286e56f71d89a6e24416208e63e41eb32b923535aea6370edc4b552385c2` |
+| `docs/P20_2_PROVIDER_TOOL_RECEIPT_SPEC.md` | `stale-run-doc` | `9f9649782889e6b45cabf8bc792c587a6cff3261f045249d1c52a3b6f496b68c` |
+| `docs/P20_2_RISK_REGISTER.md` | `stale-run-doc` | `102535bcaf0c3a594a0915ec7d198e877a50cebaa2c506bb7ea70efc97f76c7d` |
+| `docs/P20_2_ROLLBACK_REPAIR_PLAN.md` | `stale-run-doc` | `56c971e3479b40fd17462843be4b0d1019c1147c59fcdcf6013351b8f152d205` |
+| `docs/P20_2_SCOPE.md` | `stale-run-doc` | `79784c5b86cb408be5ae4ecf4c12aa9ea5a04d6426ae53de7b4ad4ede3101e91` |
+| `docs/P20_2_TESTKIT_SPLIT_PLAN.md` | `stale-run-doc` | `c583339db7de0f0c0211b0db24bf6edeeb6164dde6fdc57cb59969291d408c2c` |
+| `docs/P20_2_TEST_AGENT_SPEC.md` | `stale-run-doc` | `b6f0d542c8f3dcd590f7d8a30fd50cf32bc55129f40b7eb258ab81ecd2723ffa` |
+| `handoffs/p20_2/FINAL_AUDIT_REPORT.md` | `stale-run-handoff` | `c55fdb56fbd7c480d1c717d19307649bca8d54fc04dcd71b974d81f96d8c6694` |
+| `prompts/P20_2_CODEX_RUN_PROMPT.md` | `stale-codex-run-prompt` | `3ff0bff0e57c2f99ca2da22abf38ca67a3b3a8ae48bee9b5f41fc9a638ae1ab4` |
+| `repo_overlay/scripts/p20_2_generate_audit_bundle.sh` | `stale-run-script` | `81c7681cef9ff073d666ea21382bc734e64285fc9598d0d5a0fd77fee37c1ea7` |
+| `repo_overlay/scripts/p20_2_phase_gate.py` | `stale-run-script` | `dd6fc4b4eddac573c61a0807def40a84d887ca794ba9cbf4b61032d083bf4b5f` |
+| `repo_overlay/scripts/p20_2_scan_package_integrity.py` | `stale-run-script` | `228fec6ce02ecb550a1221d9e412064998f5188f2ee6c194d3e74461fe90b892` |
+| `repo_overlay/scripts/p20_2_scan_testkit_purity.py` | `stale-run-script` | `821468e14789656987bc39170288ad00667ca7f47159fd64f96a4a648dd33a5c` |
+| `repo_overlay/scripts/p20_2_validate_agency_cases.py` | `stale-run-script` | `fda8dddb24ab94769981206e210510ca22c82b4d45c8b54d9383554a8a31831e` |
+| `repo_overlay/scripts/p20_2_verify.sh` | `stale-run-script` | `baa7f9ab97b0304d567a675367cfc7b6f0b2f1ba0c6066ead33765d9e7fbc3b7` |
+| `repo_overlay/scripts/p20_2_verify_release_zip.sh` | `stale-run-script` | `ea9d1d6a8c914d5b1f4a1b94227cf3795f2f27a566116a3984d458f323c598d8` |
+| `scripts/p20_2_generate_audit_bundle.sh` | `stale-run-script` | `81c7681cef9ff073d666ea21382bc734e64285fc9598d0d5a0fd77fee37c1ea7` |
+| `scripts/p20_2_phase_gate.py` | `stale-run-script` | `dd6fc4b4eddac573c61a0807def40a84d887ca794ba9cbf4b61032d083bf4b5f` |
+| `scripts/p20_2_run_test_agent.sh` | `stale-run-script` | `13f3c3e9190b49d8163e5cc966de2cd8d28018e418393bedb0057bbc8e1871b1` |
+| `scripts/p20_2_scan_package_integrity.py` | `stale-run-script` | `281ee731548d94014ef690c186e9a0be6100e611956530c62a1f54e34459ebc4` |
+| `scripts/p20_2_scan_testkit_purity.py` | `stale-run-script` | `a9ef678f2d8225ea3ae171cc8ceedc428e6c034dbbef24c43810ffa833d68c9d` |
+| `scripts/p20_2_scanner_selftest.py` | `stale-run-script` | `f4411690a26c5bf81a38a044822db6737819c184e6b823f9b986ec8cb6528eab` |
+| `scripts/p20_2_validate_agency_cases.py` | `stale-run-script` | `9b1a70a494a3ae703a35fc4eec1d2e510420de56415286b6afddfeb3fa36b40d` |
+| `scripts/p20_2_verify.sh` | `stale-run-script` | `f91292dd4462a47e71a1126fdee0db1cf6389c9034c3a5bac38bb7832d3fc361` |
+| `scripts/p20_2_verify_release_zip.sh` | `stale-run-script` | `7f0b16a640a3b295805e6c202244646d865f043472aba731628c4acd1558a9d7` |
+| `tasks/P20_2_TASK_MATRIX.json` | `stale-run-task` | `6f0baa593a38963dd69ccfdca9a204e454539bd16657c642a5442fbd12bb116d` |

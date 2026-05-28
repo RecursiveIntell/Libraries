@@ -1,0 +1,78 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/post_tool_receipt.py\"",
+            "statusMessage": "P32R3 writing tool receipt",
+            "timeout": 30,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash|Edit|Write|apply_patch"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/pre_tool_use_policy.py\"",
+            "statusMessage": "P32R3 checking Bash command",
+            "timeout": 30,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/pre_edit_policy.py\"",
+            "statusMessage": "P32R3 checking edit target",
+            "timeout": 30,
+            "type": "command"
+          }
+        ],
+        "matcher": "Edit|Write|apply_patch"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/stop_phase_guard.py\"",
+            "statusMessage": "P32R3 checking final receipt",
+            "timeout": 30,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/user_prompt_contract.py\"",
+            "statusMessage": "P32R3 checking prompt contract",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/permission_request_policy.py\"",
+            "timeout": 30,
+            "statusMessage": "P32R3 recording approval request"
+          }
+        ]
+      }
+    ]
+  }
+}

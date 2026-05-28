@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "MigrationPhaseV1": {
+      "enum": [
+        "expand",
+        "backfill",
+        "flip-read",
+        "contract"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifact_family": {
+      "type": "string"
+    },
+    "compatible_without_backfill": {
+      "type": "boolean"
+    },
+    "from_version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "phases": {
+      "items": {
+        "$ref": "#/definitions/MigrationPhaseV1"
+      },
+      "type": "array"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "requires_major_bump": {
+      "type": "boolean"
+    },
+    "to_version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "artifact_family",
+    "compatible_without_backfill",
+    "from_version",
+    "phases",
+    "plan_id",
+    "requires_major_bump",
+    "to_version"
+  ],
+  "title": "MigrationPlanV1",
+  "type": "object"
+}

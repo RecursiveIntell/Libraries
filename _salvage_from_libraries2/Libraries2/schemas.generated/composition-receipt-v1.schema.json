@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "applicability_context_ref": {
+      "type": "string"
+    },
+    "compiled_obligation_set_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "composition_rule_set_ref": {
+      "type": "string"
+    },
+    "degradation_markers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "effective_constitution_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "execution_context_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "normalized_input_digest": {
+      "type": "string"
+    },
+    "profile_set_ref": {
+      "type": "string"
+    },
+    "replay_handle": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicability_context_ref",
+    "composition_receipt_id",
+    "composition_rule_set_ref",
+    "generated_at",
+    "normalized_input_digest",
+    "profile_set_ref",
+    "replay_handle",
+    "schema_version"
+  ],
+  "title": "CompositionReceiptV1",
+  "type": "object"
+}

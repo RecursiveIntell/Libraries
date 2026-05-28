@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 //! Cross-crate end-to-end proof suite.
 //!
 //! Proves the canonical normal path:
@@ -66,6 +68,23 @@ fn test_runtime_config() -> RuntimeConfig {
         strict_temporal: false,
         strict_scope: false,
     }
+}
+
+async fn ingest_scoped_document(store: &MemoryStore, scope: &Scope, title: &str, content: &str) {
+    store
+        .ingest_document(
+            title,
+            content,
+            &scope.namespace,
+            None,
+            Some(serde_json::json!({
+                "scope_domain": scope.domain.clone(),
+                "scope_workspace_id": scope.workspace_id.clone(),
+                "scope_repo_id": scope.repo_id.clone(),
+            })),
+        )
+        .await
+        .unwrap();
 }
 
 fn make_claim_envelope(ns: &str) -> ExportEnvelopeV1 {
@@ -1738,26 +1757,36 @@ async fn scope_with_extra_dimensions_emits_warning() {
     let dir = TempDir::new().unwrap();
     let store = open_store(&dir);
 
-    store
-        .add_fact("test-ns", "test fact for scope", None, None)
-        .await
-        .unwrap();
+    let scope = Scope::new("test-ns")
+        .with_domain("code")
+        .with_workspace("ws-1");
+    ingest_scoped_document(
+        &store,
+        &scope,
+        "Scoped search doc",
+        "test fact for scope lives in code ws-1 document scope",
+    )
+    .await;
 
     let adapter =
         knowledge_runtime::adapters::semantic_memory::SemanticMemoryAdapter::new(store.clone());
     let config = test_runtime_config();
     let runtime = KnowledgeRuntime::new(config, adapter).unwrap();
 
-    // Query with scope that has dimensions beyond namespace
-    let scope = Scope::new("test-ns")
-        .with_domain("code")
-        .with_workspace("ws-1");
-    let (_results, trace) = runtime.query("test fact", Some(&scope)).await.unwrap();
+    let (results, trace) = runtime
+        .query("code ws-1 document scope", Some(&scope))
+        .await
+        .unwrap();
 
-    // Must emit ScopePartiallyEnforced warning
     assert!(
-        trace.has_scope_enforcement_warning(),
-        "scope with extra dimensions must emit ScopePartiallyEnforced warning"
+        !trace.has_scope_enforcement_warning(),
+        "scoped hybrid query with document scope evidence must not emit ScopePartiallyEnforced"
+    );
+    assert!(
+        results
+            .iter()
+            .any(|result| result.content.contains("code ws-1 document scope")),
+        "scoped hybrid query must return the matching scoped document"
     );
 }
 
@@ -2097,16 +2126,21 @@ async fn kr003_rebuild_driver_can_decline_projection() {
 // ── KR-005: Expanded cross-crate proof tests ─────────────────────
 
 #[tokio::test]
-async fn kr005_strict_scope_rejects_domain_in_cross_crate_path() {
-    // Prove that strict_scope mode produces a proper error when
-    // querying with domain/workspace scope through the full pipeline.
+async fn kr005_strict_scope_accepts_fully_enforced_domain_in_cross_crate_path() {
+    // Prove that strict_scope mode accepts domain/repo scope once the runtime
+    // can fully enforce scoped hybrid search against document metadata.
     let dir = TempDir::new().unwrap();
     let store = open_store(&dir);
-
-    store
-        .add_fact("test-ns", "fact for scope proof", None, None)
-        .await
-        .unwrap();
+    let scope = Scope::new("test-ns")
+        .with_domain("code")
+        .with_repo("repo-1");
+    ingest_scoped_document(
+        &store,
+        &scope,
+        "Strict scoped cross-crate doc",
+        "fact for scope proof in repo-1 code scope",
+    )
+    .await;
 
     let adapter =
         knowledge_runtime::adapters::semantic_memory::SemanticMemoryAdapter::new(store.clone());
@@ -2117,21 +2151,20 @@ async fn kr005_strict_scope_rejects_domain_in_cross_crate_path() {
         ..test_runtime_config()
     };
     let runtime = KnowledgeRuntime::new(config, adapter).unwrap();
-
-    let scope = Scope::new("test-ns")
-        .with_domain("code")
-        .with_repo("repo-1");
-    let result = runtime.query("fact", Some(&scope)).await;
-
-    match result {
-        Err(ref e) if e.kind() == "scope_not_fully_enforced" => {
-            let msg = format!("{e}");
-            assert!(msg.contains("domain"), "must list domain as unpushed");
-            assert!(msg.contains("repo_id"), "must list repo_id as unpushed");
-        }
-        Ok(_) => panic!("strict_scope must reject domain+repo_id scope"),
-        Err(e) => panic!("unexpected error: {e}"),
-    }
+    let (results, trace) = runtime
+        .query("repo-1 code scope proof", Some(&scope))
+        .await
+        .expect("strict_scope must accept fully enforceable scoped hybrid search");
+    assert!(
+        !trace.has_scope_enforcement_warning(),
+        "strict_scope must not warn when scope is fully enforced"
+    );
+    assert!(
+        results
+            .iter()
+            .any(|result| result.content.contains("repo-1 code scope")),
+        "strict scoped cross-crate query must return the matching document"
+    );
 }
 
 #[tokio::test]
@@ -3499,5 +3532,80 @@ async fn import_records_timestamp_for_staleness_check() {
     assert!(
         ts_after.is_some(),
         "import must record timestamp for freshness tracking"
+    );
+}
+
+// ── LIB-CRIT-001: Domain-scoped queries must fall back to hybrid search ────
+
+#[tokio::test]
+async fn lib_crit_001_domain_scoped_query_uses_hybrid_with_full_scope_filtering() {
+    // Regression test for LIB-CRIT-001: when scope has extra dimensions
+    // (domain, workspace, repo), scope_requires_pushdown is true. Before
+    // the fix, this caused the projection-only substring-matching path to
+    // be the ONLY retrieval path, suppressing the hybrid search fallback.
+    //
+    // This test imports a projection (so has_projection_imports = true),
+    // adds a fact to the semantic store (reachable via hybrid search),
+    // and queries with domain scope using content that WON'T substring-match
+    // the projection but WILL match via hybrid (FTS5/HNSW).
+
+    let dir = TempDir::new().unwrap();
+    let store = open_store(&dir);
+
+    // Step 1: Add a scoped document reachable via hybrid search (FTS5/HNSW).
+    let scope = Scope::new("test-ns").with_domain("code");
+    ingest_scoped_document(
+        &store,
+        &scope,
+        "JWT auth",
+        "the authentication service validates JWT tokens on every request",
+    )
+    .await;
+
+    // Step 2: Import a projection so has_projection_imports = true.
+    // The projection content is about something unrelated to our query.
+    let scope_key = stack_ids::ScopeKey {
+        namespace: "test-ns".into(),
+        domain: Some("code".into()),
+        workspace_id: None,
+        repo_id: None,
+    };
+    let envelope = make_claim_envelope_with_scope(
+        scope_key,
+        "env-crit-001",
+        "claim-crit-001",
+        "ent-crit-001",
+        "Entity ent-crit-001 is a database migration",
+        Some("2026-01-01T00:00:00Z".into()),
+        None,
+    );
+    let batch = canonical_batch_from_v1(&envelope);
+    store.import_projection_batch(&batch).await.unwrap();
+
+    // Step 3: Build runtime with non-strict scope (Recall's configuration).
+    let adapter =
+        knowledge_runtime::adapters::semantic_memory::SemanticMemoryAdapter::new(store.clone());
+    let config = RuntimeConfig {
+        default_scope: Scope::new("test-ns"),
+        strict_scope: false,
+        ..test_runtime_config()
+    };
+    let runtime = KnowledgeRuntime::new(config, adapter).unwrap();
+
+    // Step 4: Query with domain scope. The query is about "JWT authentication"
+    // which won't substring-match the projection (about "database migration"),
+    // but SHOULD be found via hybrid search while still honoring the domain filter.
+    let (results, _trace) = runtime
+        .query("JWT authentication token validation", Some(&scope))
+        .await
+        .unwrap();
+
+    // Before LIB-CRIT-001 fix: results would be empty because the projection
+    // substring-match returns nothing and hybrid fallback was suppressed.
+    // After fix: hybrid search fallback kicks in when projection results < limit.
+    assert!(
+        !results.is_empty(),
+        "LIB-CRIT-001: domain-scoped query must use hybrid search \
+         when projection results are insufficient"
     );
 }

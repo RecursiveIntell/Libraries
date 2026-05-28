@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "First-class bridge import failure artifact for replayability and audit.\n\nLIB-C005: Bridge failures must become replayable artifacts, not just logged errors. This artifact captures the envelope identity, error classification, and provenance required to diagnose and replay failed imports.",
+  "properties": {
+    "error_kind": {
+      "description": "Machine-readable error kind (matches `BridgeError::kind()`).",
+      "type": "string"
+    },
+    "error_message": {
+      "description": "Human-readable error description.",
+      "type": "string"
+    },
+    "failed_at": {
+      "description": "When the failure occurred.",
+      "type": "string"
+    },
+    "schema_version": {
+      "description": "Stable schema version for this artifact family.",
+      "type": "string"
+    },
+    "scope_namespace": {
+      "description": "Scope namespace of the attempted import.",
+      "type": "string"
+    },
+    "source_authority": {
+      "description": "Source authority (e.g. \"forge\").",
+      "type": "string"
+    },
+    "source_envelope_id": {
+      "description": "Source envelope ID that failed to import.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "error_kind",
+    "error_message",
+    "failed_at",
+    "schema_version",
+    "scope_namespace",
+    "source_authority",
+    "source_envelope_id"
+  ],
+  "title": "BridgeImportFailureArtifact",
+  "type": "object"
+}

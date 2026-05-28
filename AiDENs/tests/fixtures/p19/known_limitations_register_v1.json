@@ -1,0 +1,35 @@
+{
+  "register_id": "known-limitations-register:p19-fixture",
+  "kind": "known-limitations-register",
+  "current": true,
+  "limitations": [
+    {
+      "limitation_id": "known-limitation:profile-daemon",
+      "surface_id": "crate:aidens-profile-daemon",
+      "state": "deferred",
+      "description": "daemon profile wrapper remains scaffold-only",
+      "impact": "operators use the implemented queue and daemon CLI surfaces directly",
+      "workaround": "use aidens queue and aidens daemon commands",
+      "review_after_pass": "post-P19-roadmap",
+      "reason_codes": [
+        "limitation-deferred-not-hidden"
+      ]
+    },
+    {
+      "limitation_id": "known-limitation:http-providers",
+      "surface_id": "provider:http-api-boundaries",
+      "state": "partial",
+      "description": "OpenAI, OpenRouter, and Anthropic routes remain diagnostic unavailable boundaries",
+      "impact": "mock and local diagnostic routes are supported; HTTP API execution is not claimed",
+      "workaround": "use the mock provider for local release smoke",
+      "reason_codes": [
+        "limitation-partial-not-hidden"
+      ]
+    }
+  ],
+  "blocking_limitation_ids": [],
+  "reason_codes": [
+    "known-limitations-current"
+  ],
+  "generated_at": "2026-04-27T00:00:00Z"
+}

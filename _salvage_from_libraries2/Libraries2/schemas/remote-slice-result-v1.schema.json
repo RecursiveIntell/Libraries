@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "LocalAdmissionRecommendationV1": {
+      "enum": [
+        "eligible",
+        "admit_if_transparency_receipt_present",
+        "admit_with_disclosure_constraints"
+      ],
+      "type": "string"
+    },
+    "RemoteExactnessClassV1": {
+      "enum": [
+        "exact",
+        "bounded_exact"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "properties": {
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "attestation_envelope_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "disclosure_markers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "exactness_class": {
+      "$ref": "#/definitions/RemoteExactnessClassV1"
+    },
+    "local_admission_recommendation": {
+      "$ref": "#/definitions/LocalAdmissionRecommendationV1"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "remote_execution_evidence": {
+      "type": "string"
+    },
+    "remote_slice_request_id": {
+      "type": "string"
+    },
+    "remote_slice_result_id": {
+      "type": "string"
+    },
+    "replay_handle": {
+      "type": "string"
+    },
+    "returned_artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicability_context_id",
+    "attestation_envelope_id",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "effective_constitution_id",
+    "exactness_class",
+    "local_admission_recommendation",
+    "profile_set_id",
+    "remote_execution_evidence",
+    "remote_slice_request_id",
+    "remote_slice_result_id",
+    "replay_handle",
+    "schema_version"
+  ],
+  "title": "RemoteSliceResultV1",
+  "type": "object"
+}

@@ -1,0 +1,8 @@
+{
+  "finding_id": "fake-ready-finding:fixture",
+  "surface": "README.md",
+  "pattern": "scaffold promoted",
+  "reason": "P00 blocks fake-ready wording",
+  "blocked": true,
+  "found_at": "2026-04-26T00:00:00Z"
+}

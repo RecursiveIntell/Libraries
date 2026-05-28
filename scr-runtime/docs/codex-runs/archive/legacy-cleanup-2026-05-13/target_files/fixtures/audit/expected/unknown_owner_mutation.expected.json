@@ -1,0 +1,9 @@
+{
+  "case_id": "unknown_owner_mutation",
+  "expected_minimum_action": "RequireOwnerResolution",
+  "required_reason_codes": [
+    "UNKNOWN_OWNER",
+    "MUTATION_REQUESTED"
+  ],
+  "notes": "Initial expected minimum. Codex should generate full golden receipts after evaluator exists. Updating generated golden receipts requires POLICY_CHANGE.md."
+}

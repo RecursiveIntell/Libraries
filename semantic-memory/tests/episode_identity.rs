@@ -1,4 +1,5 @@
 //! Tests for multi-episode-per-document correctness and the episode identity seam.
+#![allow(clippy::expect_used)]
 //!
 //! These tests close the migration gap between legacy document-keyed episode behavior
 //! and canonical episode_id-first identity.

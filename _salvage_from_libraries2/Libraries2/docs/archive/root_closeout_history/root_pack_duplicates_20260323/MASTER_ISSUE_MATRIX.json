@@ -1,0 +1,220 @@
+[
+  {
+    "id": "FIX-001",
+    "priority": "P0",
+    "status": "open",
+    "phase": "Phase 0",
+    "area": "truth-reconciliation",
+    "title": "Replace stale SCAN_SUMMARY.json with accurate current-state summary",
+    "symptom": "SCAN_SUMMARY.json references forge-memory-bridge/src/transform_episode.rs and forge-pilot/src/loop_runner_helpers.rs as hotspot failures. Neither file exists. The actual large files are transform.rs (1474 lines) and main_support/mod.rs (1667 lines), both within their current hotspot budget limits. Any reader of SCAN_SUMMARY sees four gate failures that are not real in the current tree.",
+    "required_change": "Replace SCAN_SUMMARY.json with a current-state summary that accurately reflects: (1) the stale scan was run against a prior snapshot, (2) those four failures are closed per STATUS_EVIDENCE_MANIFEST.json dated 2026-03-22, (3) the current hotspot budget script check_hotspot_budgets.sh passes on the actual files present. Do not fabricate a new scan — write an honest supersession note.",
+    "acceptance": [
+      "SCAN_SUMMARY.json no longer references forge-memory-bridge/src/transform_episode.rs or forge-pilot/src/loop_runner_helpers.rs.",
+      "SCAN_SUMMARY.json explicitly states it supersedes the prior stale scan and routes readers to STATUS_EVIDENCE_MANIFEST.json as the authority.",
+      "bash scripts/check_doc_truth.sh passes."
+    ],
+    "proof": "grep check on SCAN_SUMMARY.json for missing file names returns empty; doc truth gate passes.",
+    "touch_files": [
+      "SCAN_SUMMARY.json"
+    ],
+    "depends_on": []
+  },
+  {
+    "id": "FIX-002",
+    "priority": "P0",
+    "status": "open",
+    "phase": "Phase 0",
+    "area": "truth-reconciliation",
+    "title": "Resolve MASTER_ISSUE_MATRIX.md vs STATUS_DASHBOARD.md contradiction on DEMO-001 and BENCH-001",
+    "symptom": "STATUS_DASHBOARD.md lists DEMO-001 and BENCH-001 under 'What is green now'. MASTER_ISSUE_MATRIX.md marks DEMO-001 status as 'open' and BENCH-001 status as 'open'. Both documents are in the active root pack. An agent or reviewer reading both will hit a direct contradiction with no resolution path.",
+    "required_change": "The artifacts for DEMO-001 exist: contracts/fixtures/demo/effect_authority_assurance_release.bundle.json, docs/demos/effect_authority_assurance_release.md, and verification-control/tests/e2e_effect_authority_assurance_release.rs are all present. Update MASTER_ISSUE_MATRIX.md to mark DEMO-001 as 'landed-by-evidence' with the proof artifacts named. BENCH-001 is partially landed (casebook and score sheet exist) but the score sheet is self-assessed — mark it 'partially-landed' with the self-assessment limitation explicitly stated.",
+    "acceptance": [
+      "MASTER_ISSUE_MATRIX.md marks DEMO-001 as 'landed-by-evidence' citing the three proof artifacts.",
+      "MASTER_ISSUE_MATRIX.md marks BENCH-001 as 'partially-landed' with an explicit note that verdicts are fixture-asserted, not execution-computed.",
+      "STATUS_DASHBOARD.md and MASTER_ISSUE_MATRIX.md no longer contradict each other on either issue.",
+      "bash scripts/check_doc_truth.sh passes."
+    ],
+    "proof": "STATUS_DASHBOARD.md and MASTER_ISSUE_MATRIX.md agree on status of DEMO-001 and BENCH-001.",
+    "touch_files": [
+      "MASTER_ISSUE_MATRIX.md",
+      "03_MASTER_ISSUE_MATRIX.md",
+      "STATUS_DASHBOARD.md"
+    ],
+    "depends_on": ["FIX-001"]
+  },
+  {
+    "id": "FIX-003",
+    "priority": "P0",
+    "status": "open",
+    "phase": "Phase 0",
+    "area": "benchmark-honesty",
+    "title": "Make forge-bench score sheet honest about self-assessment",
+    "symptom": "docs/benchmarks/score_sheet.json shows stack_score 5.0, baseline_score 1.0, advantage 4.0. All five casebook entries in contracts/fixtures/bench/forge_bench_casebook.json have hardcoded verdict fields — 'stack': {'verdict': 'pass'} and 'baseline': {'verdict': 'fail'} — authored by hand, not computed by running anything. docs/benchmarks/run_forge_bench.py reads those fields and tallies them. A DARPA reviewer examining this will immediately see a benchmark that grades its own homework.",
+    "required_change": "Either: (A) Add a 'assessment_mode' field to the casebook set to 'fixture-asserted' and add a prominent header to score_sheet.json stating 'verdicts are fixture-asserted against typed artifact signals, not computed from live model execution', or (B) implement live execution. Option A is honest and shippable today; option B is the real goal. Do option A now, create a follow-on issue for option B.",
+    "acceptance": [
+      "score_sheet.json contains a top-level 'assessment_mode' field with value 'fixture-asserted'.",
+      "score_sheet.json contains a 'limitation' field stating verdicts reflect typed artifact signal checks against fixture data, not live model comparison.",
+      "forge_bench_casebook.json contains a matching 'assessment_mode' field.",
+      "docs/benchmarks/README.md explains the limitation and the path to live execution.",
+      "No document in the root or docs/ claims the benchmark proves live superiority."
+    ],
+    "proof": "grep on score_sheet.json for 'fixture-asserted' returns hit; no root doc overclaims benchmark result.",
+    "touch_files": [
+      "docs/benchmarks/score_sheet.json",
+      "contracts/fixtures/bench/forge_bench_casebook.json",
+      "docs/benchmarks/README.md",
+      "CLAUDE_AUDIT_RECONCILIATION.md"
+    ],
+    "depends_on": ["FIX-002"]
+  },
+  {
+    "id": "FIX-004",
+    "priority": "P0",
+    "status": "open",
+    "phase": "Phase 0",
+    "area": "archive-truth",
+    "title": "Fix archive manifest physically_archived_groups mismatch",
+    "symptom": "docs/archive/root_closeout_history/manifest.json lists 'physically_archived_groups' as an empty array [] even though the legacy_prompts_and_apply_plans directory contains 27 files and legacy_root_residue contains 40+ files. The closeout receipt reads this manifest and its SHA. Any script that checks archived_count will see 0 despite physical content existing. This is a structural lie in the manifest.",
+    "required_change": "Update docs/archive/root_closeout_history/manifest.json to populate 'physically_archived_groups' with the two groups that are physically present, their directories, and accurate file counts. Verify counts against actual directory contents.",
+    "acceptance": [
+      "manifest.json 'physically_archived_groups' is non-empty and names both legacy_prompts_and_apply_plans and legacy_root_residue with accurate file counts.",
+      "python3 scripts/check_root_archive_manifest.py passes.",
+      "release/closeout_receipt_v1.json can be regenerated without drift from the corrected manifest."
+    ],
+    "proof": "python3 scripts/check_root_archive_manifest.py exits 0; manifest physically_archived_groups length > 0.",
+    "touch_files": [
+      "docs/archive/root_closeout_history/manifest.json"
+    ],
+    "depends_on": []
+  },
+  {
+    "id": "FIX-005",
+    "priority": "P0",
+    "status": "open",
+    "phase": "Phase 0",
+    "area": "archive-truth",
+    "title": "Resolve ARCH-001 residual debt in closeout receipt",
+    "symptom": "release/closeout_receipt_v1.json records residual_debt as ['physical root reduction is not fully closed.']. The archive directories ARE physically populated (legacy_prompts_and_apply_plans has 27 files, legacy_root_residue has 40+ files). The debt note is stale. This causes misleading output when check_closeout_receipt.py runs and anyone reads the receipt.",
+    "required_change": "After FIX-004 corrects the archive manifest, regenerate release/closeout_receipt_v1.json with python3 scripts/generate_closeout_receipt.py. Verify that residual_debt no longer lists physical root reduction. If generate_closeout_receipt.py does not read the archive manifest, update it to do so before regenerating.",
+    "acceptance": [
+      "release/closeout_receipt_v1.json residual_debt is empty or no longer contains 'physical root reduction'.",
+      "python3 scripts/check_closeout_receipt.py passes.",
+      "python3 scripts/generate_closeout_receipt.py produces a reproducible output from the corrected manifest."
+    ],
+    "proof": "python3 scripts/check_closeout_receipt.py exits 0; receipt residual_debt does not mention root reduction.",
+    "touch_files": [
+      "release/closeout_receipt_v1.json",
+      "scripts/generate_closeout_receipt.py"
+    ],
+    "depends_on": ["FIX-004"]
+  },
+  {
+    "id": "FIX-006",
+    "priority": "P0",
+    "status": "open",
+    "phase": "Phase 0",
+    "area": "support-scope",
+    "title": "Reconcile SUPPORT_PROFILE.md crate count with closeout receipt",
+    "symptom": "release/closeout_receipt_v1.json records supported_closeout_lane.crate_count as 17 with a SHA derived from SUPPORT_PROFILE.md. SUPPORT_PROFILE.md currently lists 25 crates (the 17-crate hardening lane plus 8 adjacent artifact-owner crates). The receipt SHA was computed from a 17-crate SUPPORT_PROFILE. Either the SHA is stale or the profile was extended after receipt generation. Both cannot be simultaneously true.",
+    "required_change": "Either (A) restore SUPPORT_PROFILE.md to exactly the 17 crates the receipt was generated from and document the adjacent crates separately, or (B) regenerate the receipt from the current 25-crate profile and update the receipt SHA. Option A is safer — it keeps the receipt's claims narrow and matches the build-certified lane. Document the adjacent artifact-owner crates in SCOPE_NOTES.md instead.",
+    "acceptance": [
+      "SUPPORT_PROFILE.md crate count matches receipt crate_count exactly.",
+      "python3 scripts/generate_closeout_receipt.py produces a receipt whose SHA matches the stored SHA, or the stored SHA is updated to match.",
+      "No front-door doc claims the adjacent crates were build-certified by the hardening receipt."
+    ],
+    "proof": "python3 scripts/generate_closeout_receipt.py output SHA matches release/closeout_receipt_v1.json supported_closeout_lane.sha256.",
+    "touch_files": [
+      "SUPPORT_PROFILE.md",
+      "release/closeout_receipt_v1.json",
+      "SCOPE_NOTES.md"
+    ],
+    "depends_on": ["FIX-005"]
+  },
+  {
+    "id": "FIX-007",
+    "priority": "P1",
+    "status": "open",
+    "phase": "Phase 0",
+    "area": "root-surface",
+    "title": "Reconcile numbered root files against active_root_closeout_pack",
+    "symptom": "docs/archive/root_closeout_history/manifest.json defines active_root_closeout_pack as 15 specific files. The actual root contains 10 additional numbered files (00_START_HERE.md, 02_SOURCE_BASIS.md, 02_HOSTILE_AUDIT_RECONCILED.md, 04_IMPLEMENTATION_SEQUENCE.md, 07_GATES_AND_ACCEPTANCE.md, 08_EXACT_FILE_TOUCH_MAP.md, 09_CRATE_BOUNDARY_MAP.md, 09_RISK_REGISTER.md, 11_BENCHMARK_PLAN.md, CONFORMANCE_GATES.md, IMPLEMENTATION_PLAYBOOK.md, PHASED_EXECUTION_PLAN.md, RISKS_AND_FORBIDDEN_SHORTCUTS.md) that are neither listed as active nor listed in superseded_root_groups. These are ghost files from this pack generation cycle.",
+    "required_change": "Either add these files to active_root_closeout_pack in the archive manifest (if they should be present), or move them to docs/archive/root_closeout_history/legacy_root_residue (if superseded). Based on content: 07_GATES_AND_ACCEPTANCE.md, 09_RISK_REGISTER.md, and 11_BENCHMARK_PLAN.md should be in active pack. The others are superseded by the current MASTER_ISSUE_MATRIX.md and AGENTS.md.",
+    "acceptance": [
+      "Every root .md file is either in active_root_closeout_pack or in a superseded_root_groups entry.",
+      "python3 scripts/check_root_archive_manifest.py passes.",
+      "bash scripts/check_repo_surface.sh passes."
+    ],
+    "proof": "No ungrouped root .md files; archive manifest covers all present files.",
+    "touch_files": [
+      "docs/archive/root_closeout_history/manifest.json",
+      "docs/archive/root_closeout_history/legacy_root_residue/"
+    ],
+    "depends_on": ["FIX-004"]
+  },
+  {
+    "id": "FIX-008",
+    "priority": "P1",
+    "status": "open",
+    "phase": "Phase 1",
+    "area": "benchmark-execution",
+    "title": "Implement live forge-bench execution against at least one real model call",
+    "symptom": "The forge-bench design is sound but the runner only reads pre-authored fixture verdicts. To be credible externally — especially for CLARA — the benchmark must show at least one dimension where an actual model call was made against the stack and compared to a baseline. Currently 0 of 5 casebook cases involve any real execution.",
+    "required_change": "Extend run_forge_bench.py to support an 'execution' mode that: (1) loads the demo bundle, (2) asks a model the temporal_correctness question against the typed artifact chain, (3) asks the same question against a naive text summary baseline, (4) compares outputs using the typed signal checks already defined. Record which cases are 'fixture-asserted' vs 'execution-verified' in the score sheet.",
+    "acceptance": [
+      "At least one casebook case in score_sheet.json has assessment_mode 'execution-verified'.",
+      "run_forge_bench.py --mode execution runs without crashing.",
+      "The executed case produces a different score sheet from the fixture-asserted mode when the baseline is actually run.",
+      "docs/benchmarks/README.md documents both modes."
+    ],
+    "proof": "score_sheet.json with at least one execution-verified entry; run command in README is reproducible.",
+    "touch_files": [
+      "docs/benchmarks/run_forge_bench.py",
+      "docs/benchmarks/score_sheet.json",
+      "docs/benchmarks/README.md"
+    ],
+    "depends_on": ["FIX-003"]
+  },
+  {
+    "id": "FIX-009",
+    "priority": "P1",
+    "status": "open",
+    "phase": "Phase 1",
+    "area": "system-prompt-path",
+    "title": "Fix hardcoded local absolute path in prompts/system.md (Rivet pack)",
+    "symptom": "prompts/system.md line 50 contains: 'treat [prompts/README.md](/run/media/sikmindz/Rust_Lib/Rivot/prompts/README.md) as the canonical contract reference.' This is a hardcoded absolute path to your local machine. Any agent running from a different working directory or any other machine will get a broken reference. This was flagged in the hostile Rivet audit and was not fixed.",
+    "required_change": "Replace the absolute path with a repo-relative reference: 'treat prompts/README.md as the canonical contract reference.' No markdown link needed — plain text is sufficient and safe.",
+    "acceptance": [
+      "prompts/system.md contains no references to /run/media/ or any absolute filesystem path.",
+      "The reference to prompts/README.md is either a relative markdown link [prompts/README.md](prompts/README.md) or plain text."
+    ],
+    "proof": "grep -r '/run/media' prompts/ returns empty.",
+    "touch_files": [
+      "prompts/system.md"
+    ],
+    "depends_on": [],
+    "note": "This is in the Rivet spec pack, not the main library repo. Apply when using the Rivet pack."
+  },
+  {
+    "id": "FIX-010",
+    "priority": "P2",
+    "status": "open",
+    "phase": "Phase 2",
+    "area": "archive-cleanup",
+    "title": "Complete ARCH-001 physical root reduction — move remaining ghost numbered files",
+    "symptom": "After FIX-007 determines which numbered root files should be archived, they need to be physically moved. The archive manifest declares 24 files in legacy_root_residue but the directory contains more. Root cleanup is still described as open debt in the receipt.",
+    "required_change": "Move the files identified in FIX-007 as superseded to docs/archive/root_closeout_history/legacy_root_residue/. Update the archive manifest to reflect accurate file counts. Regenerate the receipt.",
+    "acceptance": [
+      "Root contains only files listed in active_root_closeout_pack.",
+      "docs/archive/root_closeout_history/legacy_root_residue/ accurate file count matches manifest.",
+      "release/closeout_receipt_v1.json residual_debt is empty.",
+      "python3 scripts/check_root_archive_manifest.py passes."
+    ],
+    "proof": "receipt residual_debt empty; root file count matches active_root_closeout_pack length.",
+    "touch_files": [
+      "docs/archive/root_closeout_history/legacy_root_residue/",
+      "docs/archive/root_closeout_history/manifest.json",
+      "release/closeout_receipt_v1.json"
+    ],
+    "depends_on": ["FIX-007", "FIX-005"]
+  }
+]

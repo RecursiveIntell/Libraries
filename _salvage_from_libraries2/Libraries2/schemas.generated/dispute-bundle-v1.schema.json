@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "basis_of_challenge": {
+      "type": "string"
+    },
+    "challenged_artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "counterevidence_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "current_disposition": {
+      "type": "string"
+    },
+    "dispute_bundle_id": {
+      "type": "string"
+    },
+    "escalation_target": {
+      "type": "string"
+    },
+    "replay_or_recheck_request": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "basis_of_challenge",
+    "current_disposition",
+    "dispute_bundle_id",
+    "escalation_target",
+    "replay_or_recheck_request",
+    "schema_version"
+  ],
+  "title": "DisputeBundleV1",
+  "type": "object"
+}

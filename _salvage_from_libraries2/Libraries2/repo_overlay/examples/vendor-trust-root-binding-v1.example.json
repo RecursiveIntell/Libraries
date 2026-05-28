@@ -1,0 +1,14 @@
+{
+  "schema_version": "VendorTrustRootBindingV1",
+  "vendor_trust_root_binding_id": "vtb_001",
+  "vendor_certification_adapter_id": "vca_001",
+  "trust_root_refs": [
+    "trust-root:acme-2026"
+  ],
+  "signer_classes": [
+    "vendor_auditor",
+    "service_attestor"
+  ],
+  "rotation_channel": "published_keyset",
+  "revocation_channel": "signed_revocation_feed"
+}

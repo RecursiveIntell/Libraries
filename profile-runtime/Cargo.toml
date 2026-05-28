@@ -21,4 +21,9 @@ tracing = { workspace = true }
 verification-policy = { path = "../verification-policy" }
 
 [dev-dependencies]
+proptest = { workspace = true }
 serde_json = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

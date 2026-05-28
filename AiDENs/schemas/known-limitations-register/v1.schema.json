@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "KnownLimitationV1": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "impact": {
+          "type": "string"
+        },
+        "limitation_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "review_after_pass": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "$ref": "#/definitions/ReleaseSurfaceStateV1"
+        },
+        "surface_id": {
+          "type": "string"
+        },
+        "workaround": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "description",
+        "impact",
+        "limitation_id",
+        "state",
+        "surface_id"
+      ],
+      "type": "object"
+    },
+    "ReleaseSurfaceStateV1": {
+      "enum": [
+        "supported",
+        "partial",
+        "deferred",
+        "degraded",
+        "blocked"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "blocking_limitation_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "current": {
+      "type": "boolean"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "limitations": {
+      "items": {
+        "$ref": "#/definitions/KnownLimitationV1"
+      },
+      "type": "array"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "register_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "current",
+    "generated_at",
+    "kind",
+    "limitations",
+    "register_id"
+  ],
+  "title": "KnownLimitationsRegisterV1",
+  "type": "object"
+}

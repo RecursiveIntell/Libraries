@@ -1,0 +1,28 @@
+# ClaimLedger P0 Phase 00 — Current State
+
+- Repository inspected on: 2026-05-13
+- Working root: `/home/sikmindz/Coding/Libraries/scr-runtime`
+- Required `.codex` control files discovered after repair:
+  - `.codex/config.toml`
+  - `.codex/hooks.json`
+  - `.codex/prompt_manifest.json`
+  - `.codex/prompts/MASTER_AUTOMATED_COMPLETION.md`
+  - `.codex/prompts/phase_00_current_state_and_failure_proof.md`
+  - `.codex/prompts/phase_01_restore_active_codex_pack.md`
+  - `.codex/prompts/phase_02_auto_phase_runner.md`
+  - `.codex/prompts/phase_03_packaging_policy.md`
+  - `.codex/prompts/phase_04_tests_and_release_gates.md`
+  - `.codex/prompts/phase_05_fresh_unzip_certification.md`
+  - `.codex/prompts/phase_06_hostile_audit_handoff.md`
+  - `.codex/tools/auto_phase_runner.py`
+  - `.codex/tools/phase_prompt_builder.py`
+  - `.codex/rules/safety.rules`
+  - `.codex/skills/*/SKILL.md`
+- Baseline commands executed:
+  - `pwd`
+  - `git status --short`
+  - `find .codex -maxdepth 3 -type f`
+  - `python -m pytest -q || true`
+  - `bash scripts/run_all_checks.sh || true`
+  - `python scripts/validate_codex_pack.py || true`
+  - `python scripts/assert_codex_active_pack.py || true`

@@ -1,0 +1,21 @@
+{
+  "policy_id": "retrieval-policy:p13-fixture",
+  "kind": "retrieval-policy",
+  "view_mode": "temporal",
+  "time_scope": {
+    "mode": "as-of",
+    "valid_at": "2026-04-27T00:00:00Z",
+    "recorded_at": "2026-04-27T01:00:00Z"
+  },
+  "identity_expansion": "alias-expansion-allowed",
+  "allow_query_widening": true,
+  "allow_timeless_fallback": false,
+  "scopes": [
+    "memory.claims"
+  ],
+  "reason_codes": [
+    "time-scoped-query-no-silent-timeless-fallback",
+    "alias-expansion-requires-receipt"
+  ],
+  "created_at": "2026-04-27T01:00:00Z"
+}

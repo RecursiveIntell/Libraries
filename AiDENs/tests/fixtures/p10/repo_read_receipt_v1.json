@@ -1,0 +1,19 @@
+{
+  "receipt_id": "repo-read:fixture",
+  "kind": "repo-read",
+  "tool_id": "aidens:repo-read:1",
+  "sandbox_root": "/repo",
+  "requested_path": "README.md",
+  "resolved_path": "README.md",
+  "bytes": 5,
+  "content_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-utf8-text-v1-display-only",
+    "digest": "blake3:2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+  },
+  "allowed": true,
+  "reason_codes": [
+    "sandbox-read-allowed"
+  ],
+  "read_at": "2026-04-26T00:00:00Z"
+}

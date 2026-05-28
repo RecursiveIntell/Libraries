@@ -93,10 +93,12 @@ pub mod storage;
 mod store_support;
 pub mod tokenizer;
 pub mod types;
+pub mod vector_codec;
 
 // Re-export primary public types.
 pub use config::{
-    ChunkingConfig, EmbeddingConfig, MemoryConfig, MemoryLimits, PoolConfig, SearchConfig,
+    ChunkingConfig, DerivedVectorBackendPolicy, EmbeddingConfig, MemoryConfig, MemoryLimits,
+    PoolConfig, SearchConfig,
 };
 pub use db::{IntegrityReport, ReconcileAction, VerifyMode};
 pub use embedder::{Embedder, MockEmbedder, OllamaEmbedder};
@@ -111,19 +113,167 @@ pub use quantize::{pack_quantized, unpack_quantized, QuantizedVector, Quantizer}
 pub use storage::StoragePaths;
 pub use tokenizer::{EstimateTokenCounter, TokenCounter};
 pub use types::{
-    Document, EmbeddingDisplacement, EpisodeMeta, EpisodeOutcome, ExplainedResult, Fact,
+    ChunkManifestChunkMapping, ChunkManifestEntry, ChunkManifestIngestOptions,
+    ChunkManifestIngestResult, Document, EmbeddingDisplacement, EpisodeMeta, EpisodeOutcome,
+    ExactnessProfile, ExplainedResult, ExplainedResultAnswerV1, ExplainedSearchResponse, Fact,
     GraphDirection, GraphEdge, GraphEdgeType, GraphView, MemoryStats, Message,
-    ProjectionClaimVersion, ProjectionEntityAlias, ProjectionEpisode, ProjectionEvidenceRef,
-    ProjectionQuery, ProjectionRelationVersion, Role, ScoreBreakdown, SearchResult, SearchSource,
-    SearchSourceType, Session, TextChunk, VerificationStatus,
+    NamespaceDeleteReport, ProjectionClaimVersion, ProjectionEntityAlias, ProjectionEpisode,
+    ProjectionEvidenceRef, ProjectionQuery, ProjectionRelationVersion, ReceiptMode, Role,
+    ScoreBreakdown, SearchContext, SearchReceiptAnswersV1, SearchReplayReportV1, SearchResponse,
+    SearchResult, SearchSource, SearchSourceType, Session, TextChunk, VectorArtifactBuildReceiptV1,
+    VectorSearchReceiptV1, VerificationStatus,
+};
+#[cfg(feature = "turbo-quant-codec")]
+pub use vector_codec::TurboQuantCodec;
+pub use vector_codec::{
+    RawF32Codec, Sq8Codec, VectorArtifactV1, VectorCodec, VectorCodecProfileV1,
 };
 
 use std::sync::Arc;
+
+const MAX_TOP_K: usize = 1_000;
+#[cfg(feature = "hnsw")]
+const MAX_HNSW_CANDIDATES: usize = 10_000;
 
 pub(crate) use store_support::{
     as_str_slice, build_episode_search_text, merge_trace_ctx, to_owned_string_vec,
     verification_status_for_outcome,
 };
+
+#[cfg(feature = "hnsw")]
+fn verify_hnsw_key_level_integrity(
+    conn: &rusqlite::Connection,
+    dimensions: usize,
+    node_vectors: &std::collections::HashMap<usize, Vec<f32>>,
+    sidecar_files_exist: bool,
+) -> Result<Vec<String>, MemoryError> {
+    let mut issues = Vec::new();
+    let mut live_rows: std::collections::HashMap<String, Vec<f32>> =
+        std::collections::HashMap::new();
+
+    let mut live_stmt = conn.prepare(
+        "SELECT 'fact:' || id, embedding FROM facts WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'chunk:' || id, embedding FROM chunks WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'msg:' || id, embedding FROM messages WHERE embedding IS NOT NULL
+         UNION ALL
+         SELECT 'episode:' || episode_id, embedding FROM episodes WHERE embedding IS NOT NULL",
+    )?;
+    let live_iter = live_stmt.query_map([], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
+    })?;
+    for row in live_iter {
+        let (key, blob) = row?;
+        match db::decode_f32_le(&blob, dimensions) {
+            Ok(vector) => {
+                live_rows.insert(key, vector);
+            }
+            Err(err) => issues.push(format!(
+                "HNSW live embedding row {key} has invalid vector: {err}"
+            )),
+        }
+    }
+
+    if !live_rows.is_empty() && !sidecar_files_exist {
+        issues.push(format!(
+            "HNSW sidecar files are missing while {} embedded rows exist in SQLite",
+            live_rows.len()
+        ));
+    }
+
+    let keymap_exists: bool = conn
+        .query_row(
+            "SELECT COUNT(*) > 0 FROM sqlite_master WHERE type='table' AND name='hnsw_keymap'",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
+    if !keymap_exists {
+        if !live_rows.is_empty() {
+            issues.push("HNSW keymap table missing while embedded SQLite rows exist".to_string());
+        }
+        return Ok(issues);
+    }
+
+    let mut active_keymap: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
+    let mut keymap_stmt =
+        conn.prepare("SELECT node_id, item_key FROM hnsw_keymap WHERE deleted = 0")?;
+    let keymap_iter = keymap_stmt.query_map([], |row| {
+        Ok((row.get::<_, i64>(0)?, row.get::<_, String>(1)?))
+    })?;
+    for row in keymap_iter {
+        let (node_id_raw, key) = row?;
+        let Some((domain, raw_id)) = key.split_once(':') else {
+            issues.push(format!("HNSW keymap entry has malformed key: {key}"));
+            continue;
+        };
+        if !matches!(domain, "fact" | "chunk" | "msg" | "episode") || raw_id.is_empty() {
+            issues.push(format!(
+                "HNSW keymap entry has unsupported key domain: {key}"
+            ));
+            continue;
+        }
+        if domain == "msg" && raw_id.parse::<i64>().is_err() {
+            issues.push(format!("HNSW message key has non-integer row id: {key}"));
+            continue;
+        }
+        let node_id = match usize::try_from(node_id_raw) {
+            Ok(node_id) => node_id,
+            Err(err) => {
+                issues.push(format!(
+                    "HNSW keymap node_id {node_id_raw} is invalid: {err}"
+                ));
+                continue;
+            }
+        };
+        active_keymap.insert(key, node_id);
+    }
+
+    for key in live_rows.keys() {
+        if !active_keymap.contains_key(key) {
+            issues.push(format!(
+                "HNSW keymap missing live embedded SQLite row: {key}"
+            ));
+        }
+    }
+
+    for (key, node_id) in &active_keymap {
+        let Some(live_vector) = live_rows.get(key) else {
+            issues.push(format!(
+                "HNSW keymap has stale active entry without live embedded SQLite row: {key}"
+            ));
+            continue;
+        };
+        let Some(index_vector) = node_vectors.get(node_id) else {
+            issues.push(format!(
+                "HNSW keymap entry {key} points to missing in-memory node vector {node_id}"
+            ));
+            continue;
+        };
+        if index_vector.len() != live_vector.len()
+            || index_vector
+                .iter()
+                .zip(live_vector)
+                .any(|(left, right)| left.to_bits() != right.to_bits())
+        {
+            issues.push(format!(
+                "HNSW keymap entry {key} points to node {node_id} whose vector does not match the authoritative SQLite embedding"
+            ));
+        }
+    }
+
+    if active_keymap.len() != live_rows.len() {
+        issues.push(format!(
+            "HNSW keymap drift: {} active keymap rows vs {} embedded SQLite rows",
+            active_keymap.len(),
+            live_rows.len()
+        ));
+    }
+
+    Ok(issues)
+}
 
 /// Compatibility-only public access to retained legacy surfaces.
 #[doc(hidden)]
@@ -255,6 +405,15 @@ impl MemoryStore {
         })
         .await
         .map_err(|e| MemoryError::Other(format!("Blocking task panicked: {}", e)))?
+    }
+
+    async fn persist_search_receipt(
+        &self,
+        receipt: &VectorSearchReceiptV1,
+    ) -> Result<(), MemoryError> {
+        let receipt = receipt.clone();
+        self.with_write_conn(move |conn| db::store_search_receipt(conn, &receipt))
+            .await
     }
 
     /// Run HNSW search on a blocking thread to avoid holding std::sync::RwLock
@@ -401,16 +560,14 @@ impl MemoryStore {
                         // flushing HNSW, or keys were lost.
                         let hnsw_count = index.len();
                         let sqlite_count: i64 = pool.with_read_conn(|conn| {
-                            Ok(conn
-                                .query_row(
+                            Ok(conn.query_row(
                                     "SELECT (SELECT COUNT(*) FROM facts WHERE embedding IS NOT NULL) +
                                         (SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL) +
                                         (SELECT COUNT(*) FROM messages WHERE embedding IS NOT NULL) +
                                         (SELECT COUNT(*) FROM episodes WHERE embedding IS NOT NULL)",
                                     [],
                                     |row| row.get(0),
-                                )
-                                .unwrap_or(0))
+                                )?)
                         })?;
 
                         let drift = (sqlite_count - hnsw_count as i64).abs();
@@ -441,10 +598,10 @@ impl MemoryStore {
                     }
                     Err(e) => {
                         tracing::warn!(
-                            "Failed to load HNSW index: {}. Creating new empty index.",
+                            "Failed to load HNSW index: {}. Rebuilding sidecar from authoritative SQLite rows.",
                             e
                         );
-                        HnswIndex::new(hnsw_config)?
+                        hnsw_ops::recover_hnsw_sidecar_sync(&pool, &paths, &hnsw_config)?
                     }
                 }
             } else {
@@ -453,16 +610,14 @@ impl MemoryStore {
                 // partially copied, app crashed before first flush, or HNSW was
                 // added after data already existed.
                 let orphan_count: i64 = pool.with_read_conn(|conn| {
-                    Ok(conn
-                        .query_row(
-                            "SELECT (SELECT COUNT(*) FROM facts WHERE embedding IS NOT NULL) +
+                    Ok(conn.query_row(
+                        "SELECT (SELECT COUNT(*) FROM facts WHERE embedding IS NOT NULL) +
                                 (SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL) +
                                 (SELECT COUNT(*) FROM messages WHERE embedding IS NOT NULL) +
                                 (SELECT COUNT(*) FROM episodes WHERE embedding IS NOT NULL)",
-                            [],
-                            |row| row.get(0),
-                        )
-                        .unwrap_or(0))
+                        [],
+                        |row| row.get(0),
+                    )?)
                 })?;
 
                 if orphan_count > 0 {
@@ -525,23 +680,25 @@ impl MemoryStore {
 
     async fn embed_text_internal(&self, text: &str) -> Result<Vec<f32>, MemoryError> {
         let _permit = self.with_embedding_permit().await?;
-        self.inner.embedder.embed(text).await
+        let embedding = self.inner.embedder.embed(text).await?;
+        db::validate_embedding(&embedding, self.inner.config.embedding.dimensions)?;
+        Ok(embedding)
     }
 
     async fn embed_batch_internal(&self, texts: Vec<String>) -> Result<Vec<Vec<f32>>, MemoryError> {
+        let requested = texts.len();
         let _permit = self.with_embedding_permit().await?;
-        self.inner.embedder.embed_batch(texts).await
+        let embeddings = self.inner.embedder.embed_batch(texts).await?;
+        db::validate_embedding_batch(
+            &embeddings,
+            requested,
+            self.inner.config.embedding.dimensions,
+        )?;
+        Ok(embeddings)
     }
 
     fn validate_embedding_dimensions(&self, embedding: &[f32]) -> Result<(), MemoryError> {
-        let expected = self.inner.config.embedding.dimensions;
-        if embedding.len() != expected {
-            return Err(MemoryError::DimensionMismatch {
-                expected,
-                actual: embedding.len(),
-            });
-        }
-        Ok(())
+        db::validate_embedding(embedding, self.inner.config.embedding.dimensions)
     }
 
     fn validate_content(&self, field: &'static str, content: &str) -> Result<(), MemoryError> {
@@ -574,6 +731,25 @@ impl MemoryStore {
     }
 
     // ─── HNSW Management ───────────────────────────────────────
+
+    /// Rebuild feature-gated TurboQuant artifacts from authoritative SQLite f32 embeddings.
+    #[cfg(feature = "turbo-quant-codec")]
+    pub async fn rebuild_vector_artifacts(
+        &self,
+    ) -> Result<VectorArtifactBuildReceiptV1, MemoryError> {
+        let dim = self.inner.config.embedding.dimensions;
+        let search = self.inner.config.search.clone();
+        self.with_write_conn(move |conn| {
+            db::rebuild_turbo_quant_artifacts(
+                conn,
+                dim,
+                search.turbo_quant_bits,
+                search.turbo_quant_projections,
+                search.turbo_quant_seed,
+            )
+        })
+        .await
+    }
 
     /// Rebuild the HNSW index from SQLite f32 embeddings.
     ///
@@ -666,20 +842,20 @@ impl MemoryStore {
             return Ok(());
         }
 
-        let guard = self
+        let index = self
             .inner
             .hnsw_index
-            .read()
+            .write()
             .unwrap_or_else(|e| e.into_inner());
         hnsw_ops::save_hnsw_sidecar(
-            &guard,
+            &index,
             &self.inner.paths.hnsw_dir,
             &self.inner.paths.hnsw_basename,
         )?;
 
         // Flush key mappings to SQLite
         self.inner.pool.with_write_conn(|conn| {
-            guard.flush_keymap(conn)?;
+            index.flush_keymap(conn)?;
             db::clear_all_pending_index_ops(conn)?;
             db::set_sidecar_dirty(conn, false)?;
             Ok(())
@@ -726,69 +902,39 @@ impl MemoryStore {
 
         #[cfg(feature = "hnsw")]
         {
-            let embedding_count: i64 = if use_writer {
-                self.with_write_conn(|conn| {
-                    Ok(conn.query_row(
-                        "SELECT (SELECT COUNT(*) FROM facts WHERE embedding IS NOT NULL) +
-                            (SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL) +
-                            (SELECT COUNT(*) FROM messages WHERE embedding IS NOT NULL) +
-                            (SELECT COUNT(*) FROM episodes WHERE embedding IS NOT NULL)",
-                        [],
-                        |row| row.get(0),
-                    )?)
+            let hnsw_vectors = self
+                .inner
+                .hnsw_index
+                .read()
+                .unwrap_or_else(|e| e.into_inner())
+                .vector_snapshot();
+            let hnsw_dims = self.inner.config.embedding.dimensions;
+            let hnsw_files_exist = self.inner.paths.hnsw_files_exist();
+
+            let hnsw_issues = if use_writer {
+                let hnsw_vectors = hnsw_vectors.clone();
+                self.with_write_conn(move |conn| {
+                    verify_hnsw_key_level_integrity(
+                        conn,
+                        hnsw_dims,
+                        &hnsw_vectors,
+                        hnsw_files_exist,
+                    )
                 })
                 .await?
             } else {
-                self.with_read_conn(|conn| {
-                    Ok(conn.query_row(
-                        "SELECT (SELECT COUNT(*) FROM facts WHERE embedding IS NOT NULL) +
-                            (SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL) +
-                            (SELECT COUNT(*) FROM messages WHERE embedding IS NOT NULL) +
-                            (SELECT COUNT(*) FROM episodes WHERE embedding IS NOT NULL)",
-                        [],
-                        |row| row.get(0),
-                    )?)
+                let hnsw_vectors = hnsw_vectors.clone();
+                self.with_read_conn(move |conn| {
+                    verify_hnsw_key_level_integrity(
+                        conn,
+                        hnsw_dims,
+                        &hnsw_vectors,
+                        hnsw_files_exist,
+                    )
                 })
                 .await?
             };
-
-            if embedding_count > 0 && !self.inner.paths.hnsw_files_exist() {
-                report.issues.push(format!(
-                    "HNSW sidecar files are missing while {} embedded rows exist in SQLite",
-                    embedding_count
-                ));
-            }
-
-            let keymap_count: i64 = if use_writer {
-                self.with_write_conn(|conn| {
-                    Ok(conn
-                        .query_row(
-                            "SELECT COUNT(*) FROM hnsw_keymap WHERE deleted = 0",
-                            [],
-                            |row| row.get(0),
-                        )
-                        .unwrap_or(0))
-                })
-                .await?
-            } else {
-                self.with_read_conn(|conn| {
-                    Ok(conn
-                        .query_row(
-                            "SELECT COUNT(*) FROM hnsw_keymap WHERE deleted = 0",
-                            [],
-                            |row| row.get(0),
-                        )
-                        .unwrap_or(0))
-                })
-                .await?
-            };
-
-            if keymap_count != embedding_count {
-                report.issues.push(format!(
-                    "HNSW keymap drift: {} active keymap rows vs {} embedded SQLite rows",
-                    keymap_count, embedding_count
-                ));
-            }
+            report.issues.extend(hnsw_issues);
         }
 
         report.ok = report.issues.is_empty();
@@ -841,13 +987,46 @@ impl MemoryStore {
         namespaces: Option<&[&str]>,
         source_types: Option<&[SearchSourceType]>,
     ) -> Result<Vec<SearchResult>, MemoryError> {
-        let k = top_k.unwrap_or(self.inner.config.search.default_top_k);
+        Ok(self
+            .search_with_context(
+                query,
+                top_k,
+                namespaces,
+                source_types,
+                SearchContext::default_now(),
+            )
+            .await?
+            .results)
+    }
+
+    /// Hybrid search with an explicit deterministic context and optional receipt.
+    pub async fn search_with_context(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+        namespaces: Option<&[&str]>,
+        source_types: Option<&[SearchSourceType]>,
+        context: SearchContext,
+    ) -> Result<SearchResponse, MemoryError> {
+        let k = top_k
+            .unwrap_or(self.inner.config.search.default_top_k)
+            .min(MAX_TOP_K);
 
         let query_embedding = self.embed_text_internal(query).await?;
 
         #[cfg(feature = "hnsw")]
-        let hnsw_hits = {
-            let candidates = self.inner.config.search.candidate_pool_size.max(k * 3);
+        let hnsw_hits = if context.exactness_profile == ExactnessProfile::PreferExact
+            || self.inner.config.search.uses_turbo_quant_backend()
+        {
+            Vec::new()
+        } else {
+            let candidates = self
+                .inner
+                .config
+                .search
+                .candidate_pool_size
+                .max(k.saturating_mul(3))
+                .min(MAX_HNSW_CANDIDATES);
             self.hnsw_search_blocking(query_embedding.clone(), candidates)
                 .await
         };
@@ -856,63 +1035,95 @@ impl MemoryStore {
         let config = self.inner.config.search.clone();
         let ns_owned = to_owned_string_vec(namespaces);
         let st_owned: Option<Vec<SearchSourceType>> = source_types.map(|s| s.to_vec());
+        let context_owned = context.clone();
 
         #[cfg(feature = "hnsw")]
         let hnsw_hits_owned = hnsw_hits;
 
-        self.with_read_conn(move |conn| {
-            if db::is_embeddings_dirty(conn)? {
-                tracing::warn!(
-                    "Embeddings are stale after model change — search quality is degraded. \
+        let response = self
+            .with_read_conn(move |conn| {
+                if db::is_embeddings_dirty(conn)? {
+                    tracing::warn!(
+                        "Embeddings are stale after model change — search quality is degraded. \
                      Call reembed_all() to regenerate embeddings."
-                );
-            }
-            let ns_refs = as_str_slice(&ns_owned);
-            let ns_slice: Option<&[&str]> = ns_refs.as_deref();
-            let st_slice: Option<&[SearchSourceType]> = st_owned.as_deref();
-
-            #[cfg(feature = "hnsw")]
-            {
-                if hnsw_hits_owned.is_empty() {
-                    search::hybrid_search(
-                        conn,
-                        &q,
-                        &query_embedding,
-                        &config,
-                        k,
-                        ns_slice,
-                        st_slice,
-                        None,
-                    )
-                } else {
-                    search::hybrid_search_with_hnsw(
-                        conn,
-                        &q,
-                        &query_embedding,
-                        &config,
-                        k,
-                        ns_slice,
-                        st_slice,
-                        None,
-                        &hnsw_hits_owned,
-                    )
+                    );
                 }
-            }
-            #[cfg(not(feature = "hnsw"))]
-            {
-                search::hybrid_search(
-                    conn,
-                    &q,
-                    &query_embedding,
-                    &config,
-                    k,
-                    ns_slice,
-                    st_slice,
-                    None,
-                )
-            }
-        })
-        .await
+                let ns_refs = as_str_slice(&ns_owned);
+                let ns_slice: Option<&[&str]> = ns_refs.as_deref();
+                let st_slice: Option<&[SearchSourceType]> = st_owned.as_deref();
+
+                #[cfg(feature = "hnsw")]
+                {
+                    let mut execution = if hnsw_hits_owned.is_empty() {
+                        search::hybrid_search_detailed_with_context(
+                            conn,
+                            &q,
+                            &query_embedding,
+                            &config,
+                            &context_owned,
+                            k,
+                            ns_slice,
+                            st_slice,
+                            None,
+                        )
+                    } else {
+                        search::hybrid_search_with_hnsw_detailed_with_context(
+                            conn,
+                            &q,
+                            &query_embedding,
+                            &config,
+                            &context_owned,
+                            k,
+                            ns_slice,
+                            st_slice,
+                            None,
+                            &hnsw_hits_owned,
+                        )
+                    }?;
+                    if context_owned.receipts_enabled()
+                        && context_owned.exactness_profile == ExactnessProfile::PreferExact
+                    {
+                        if let Some(receipt) = execution.receipt.as_mut() {
+                            receipt.search_profile = "hybrid_prefer_exact".to_string();
+                        }
+                    }
+                    Ok(SearchResponse {
+                        results: execution
+                            .results
+                            .into_iter()
+                            .map(|result| result.result)
+                            .collect(),
+                        receipt: execution.receipt,
+                    })
+                }
+                #[cfg(not(feature = "hnsw"))]
+                {
+                    let execution = search::hybrid_search_detailed_with_context(
+                        conn,
+                        &q,
+                        &query_embedding,
+                        &config,
+                        &context_owned,
+                        k,
+                        ns_slice,
+                        st_slice,
+                        None,
+                    )?;
+                    Ok(SearchResponse {
+                        results: execution
+                            .results
+                            .into_iter()
+                            .map(|result| result.result)
+                            .collect(),
+                        receipt: execution.receipt,
+                    })
+                }
+            })
+            .await?;
+        if let Some(receipt) = &response.receipt {
+            self.persist_search_receipt(receipt).await?;
+        }
+        Ok(response)
     }
 
     /// Full-text search only (no embeddings needed).
@@ -923,7 +1134,9 @@ impl MemoryStore {
         namespaces: Option<&[&str]>,
         source_types: Option<&[SearchSourceType]>,
     ) -> Result<Vec<SearchResult>, MemoryError> {
-        let k = top_k.unwrap_or(self.inner.config.search.default_top_k);
+        let k = top_k
+            .unwrap_or(self.inner.config.search.default_top_k)
+            .min(MAX_TOP_K);
         let q = query.to_string();
         let config = self.inner.config.search.clone();
         let ns_owned = to_owned_string_vec(namespaces);
@@ -945,12 +1158,45 @@ impl MemoryStore {
         namespaces: Option<&[&str]>,
         source_types: Option<&[SearchSourceType]>,
     ) -> Result<Vec<SearchResult>, MemoryError> {
-        let k = top_k.unwrap_or(self.inner.config.search.default_top_k);
+        Ok(self
+            .search_vector_only_with_context(
+                query,
+                top_k,
+                namespaces,
+                source_types,
+                SearchContext::default_now(),
+            )
+            .await?
+            .results)
+    }
+
+    /// Vector similarity search with an explicit deterministic context and optional receipt.
+    pub async fn search_vector_only_with_context(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+        namespaces: Option<&[&str]>,
+        source_types: Option<&[SearchSourceType]>,
+        context: SearchContext,
+    ) -> Result<SearchResponse, MemoryError> {
+        let k = top_k
+            .unwrap_or(self.inner.config.search.default_top_k)
+            .min(MAX_TOP_K);
         let query_embedding = self.embed_text_internal(query).await?;
 
         #[cfg(feature = "hnsw")]
-        let hnsw_hits = {
-            let candidates = self.inner.config.search.candidate_pool_size.max(k * 3);
+        let hnsw_hits = if context.exactness_profile == ExactnessProfile::PreferExact
+            || self.inner.config.search.uses_turbo_quant_backend()
+        {
+            Vec::new()
+        } else {
+            let candidates = self
+                .inner
+                .config
+                .search
+                .candidate_pool_size
+                .max(k.saturating_mul(3))
+                .min(MAX_HNSW_CANDIDATES);
             self.hnsw_search_blocking(query_embedding.clone(), candidates)
                 .await
         };
@@ -958,60 +1204,92 @@ impl MemoryStore {
         let config = self.inner.config.search.clone();
         let ns_owned = to_owned_string_vec(namespaces);
         let st_owned: Option<Vec<SearchSourceType>> = source_types.map(|s| s.to_vec());
+        let context_owned = context.clone();
 
         #[cfg(feature = "hnsw")]
         let hnsw_hits_owned = hnsw_hits;
 
-        self.with_read_conn(move |conn| {
-            if db::is_embeddings_dirty(conn)? {
-                tracing::warn!(
-                    "Embeddings are stale after model change — search quality is degraded. \
+        let response = self
+            .with_read_conn(move |conn| {
+                if db::is_embeddings_dirty(conn)? {
+                    tracing::warn!(
+                        "Embeddings are stale after model change — search quality is degraded. \
                      Call reembed_all() to regenerate embeddings."
-                );
-            }
-            let ns_refs = as_str_slice(&ns_owned);
-            let ns_slice: Option<&[&str]> = ns_refs.as_deref();
-            let st_slice: Option<&[SearchSourceType]> = st_owned.as_deref();
-
-            #[cfg(feature = "hnsw")]
-            {
-                if hnsw_hits_owned.is_empty() {
-                    search::vector_only_search(
-                        conn,
-                        &query_embedding,
-                        &config,
-                        k,
-                        ns_slice,
-                        st_slice,
-                        None,
-                    )
-                } else {
-                    search::vector_only_search_with_hnsw(
-                        conn,
-                        &query_embedding,
-                        &config,
-                        k,
-                        ns_slice,
-                        st_slice,
-                        None,
-                        &hnsw_hits_owned,
-                    )
+                    );
                 }
-            }
-            #[cfg(not(feature = "hnsw"))]
-            {
-                search::vector_only_search(
-                    conn,
-                    &query_embedding,
-                    &config,
-                    k,
-                    ns_slice,
-                    st_slice,
-                    None,
-                )
-            }
-        })
-        .await
+                let ns_refs = as_str_slice(&ns_owned);
+                let ns_slice: Option<&[&str]> = ns_refs.as_deref();
+                let st_slice: Option<&[SearchSourceType]> = st_owned.as_deref();
+
+                #[cfg(feature = "hnsw")]
+                {
+                    let mut execution = if hnsw_hits_owned.is_empty() {
+                        search::vector_only_search_detailed_with_context(
+                            conn,
+                            &query_embedding,
+                            &config,
+                            &context_owned,
+                            k,
+                            ns_slice,
+                            st_slice,
+                            None,
+                        )
+                    } else {
+                        search::vector_only_search_with_hnsw_detailed_with_context(
+                            conn,
+                            &query_embedding,
+                            &config,
+                            &context_owned,
+                            k,
+                            ns_slice,
+                            st_slice,
+                            None,
+                            &hnsw_hits_owned,
+                        )
+                    }?;
+                    if context_owned.receipts_enabled()
+                        && context_owned.exactness_profile == ExactnessProfile::PreferExact
+                    {
+                        if let Some(receipt) = execution.receipt.as_mut() {
+                            receipt.search_profile = "vector_only_prefer_exact".to_string();
+                        }
+                    }
+                    Ok(SearchResponse {
+                        results: execution
+                            .results
+                            .into_iter()
+                            .map(|result| result.result)
+                            .collect(),
+                        receipt: execution.receipt,
+                    })
+                }
+                #[cfg(not(feature = "hnsw"))]
+                {
+                    let execution = search::vector_only_search_detailed_with_context(
+                        conn,
+                        &query_embedding,
+                        &config,
+                        &context_owned,
+                        k,
+                        ns_slice,
+                        st_slice,
+                        None,
+                    )?;
+                    Ok(SearchResponse {
+                        results: execution
+                            .results
+                            .into_iter()
+                            .map(|result| result.result)
+                            .collect(),
+                        receipt: execution.receipt,
+                    })
+                }
+            })
+            .await?;
+        if let Some(receipt) = &response.receipt {
+            self.persist_search_receipt(receipt).await?;
+        }
+        Ok(response)
     }
 
     // ─── Explainable Search ───────────────────────────────────
@@ -1024,12 +1302,43 @@ impl MemoryStore {
         namespaces: Option<&[&str]>,
         source_types: Option<&[SearchSourceType]>,
     ) -> Result<Vec<types::ExplainedResult>, MemoryError> {
-        let k = top_k.unwrap_or(self.inner.config.search.default_top_k);
+        Ok(self
+            .search_explained_with_context(
+                query,
+                top_k,
+                namespaces,
+                source_types,
+                SearchContext::default_now(),
+            )
+            .await?
+            .results)
+    }
+
+    /// Search with full score breakdown under an explicit deterministic context.
+    pub async fn search_explained_with_context(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+        namespaces: Option<&[&str]>,
+        source_types: Option<&[SearchSourceType]>,
+        context: SearchContext,
+    ) -> Result<types::ExplainedSearchResponse, MemoryError> {
+        let k = top_k
+            .unwrap_or(self.inner.config.search.default_top_k)
+            .min(MAX_TOP_K);
         let query_embedding = self.embed_text_internal(query).await?;
 
         #[cfg(feature = "hnsw")]
-        let hnsw_hits = {
-            let candidates = self.inner.config.search.candidate_pool_size.max(k * 3);
+        let hnsw_hits = if context.exactness_profile == ExactnessProfile::PreferExact {
+            Vec::new()
+        } else {
+            let candidates = self
+                .inner
+                .config
+                .search
+                .candidate_pool_size
+                .max(k.saturating_mul(3))
+                .min(MAX_HNSW_CANDIDATES);
             self.hnsw_search_blocking(query_embedding.clone(), candidates)
                 .await
         };
@@ -1038,57 +1347,180 @@ impl MemoryStore {
         let config = self.inner.config.search.clone();
         let ns_owned = to_owned_string_vec(namespaces);
         let st_owned: Option<Vec<SearchSourceType>> = source_types.map(|value| value.to_vec());
+        let context_owned = context.clone();
 
         #[cfg(feature = "hnsw")]
         let hnsw_hits_owned = hnsw_hits;
 
-        self.with_read_conn(move |conn| {
-            let ns_refs = as_str_slice(&ns_owned);
-            let ns_slice: Option<&[&str]> = ns_refs.as_deref();
-            let st_slice: Option<&[SearchSourceType]> = st_owned.as_deref();
+        let response = self
+            .with_read_conn(move |conn| {
+                let ns_refs = as_str_slice(&ns_owned);
+                let ns_slice: Option<&[&str]> = ns_refs.as_deref();
+                let st_slice: Option<&[SearchSourceType]> = st_owned.as_deref();
 
-            #[cfg(feature = "hnsw")]
-            {
-                if hnsw_hits_owned.is_empty() {
-                    search::hybrid_search_detailed(
-                        conn,
-                        &q,
-                        &query_embedding,
-                        &config,
-                        k,
-                        ns_slice,
-                        st_slice,
-                        None,
-                    )
-                } else {
-                    search::hybrid_search_with_hnsw_detailed(
-                        conn,
-                        &q,
-                        &query_embedding,
-                        &config,
-                        k,
-                        ns_slice,
-                        st_slice,
-                        None,
-                        &hnsw_hits_owned,
-                    )
+                #[cfg(feature = "hnsw")]
+                {
+                    let mut execution = if hnsw_hits_owned.is_empty() {
+                        search::hybrid_search_detailed_with_context(
+                            conn,
+                            &q,
+                            &query_embedding,
+                            &config,
+                            &context_owned,
+                            k,
+                            ns_slice,
+                            st_slice,
+                            None,
+                        )
+                    } else {
+                        search::hybrid_search_with_hnsw_detailed_with_context(
+                            conn,
+                            &q,
+                            &query_embedding,
+                            &config,
+                            &context_owned,
+                            k,
+                            ns_slice,
+                            st_slice,
+                            None,
+                            &hnsw_hits_owned,
+                        )
+                    }?;
+                    if context_owned.receipts_enabled()
+                        && context_owned.exactness_profile == ExactnessProfile::PreferExact
+                    {
+                        if let Some(receipt) = execution.receipt.as_mut() {
+                            receipt.search_profile = "hybrid_prefer_exact".to_string();
+                        }
+                    }
+                    Ok(types::ExplainedSearchResponse {
+                        results: execution.results,
+                        receipt: execution.receipt,
+                    })
                 }
+                #[cfg(not(feature = "hnsw"))]
+                {
+                    let execution = search::hybrid_search_detailed_with_context(
+                        conn,
+                        &q,
+                        &query_embedding,
+                        &config,
+                        &context_owned,
+                        k,
+                        ns_slice,
+                        st_slice,
+                        None,
+                    )?;
+                    Ok(types::ExplainedSearchResponse {
+                        results: execution.results,
+                        receipt: execution.receipt,
+                    })
+                }
+            })
+            .await?;
+        if let Some(receipt) = &response.receipt {
+            self.persist_search_receipt(receipt).await?;
+        }
+        Ok(response)
+    }
+
+    /// Load a durable search receipt by receipt/request ID.
+    pub async fn get_search_receipt(
+        &self,
+        receipt_id: &str,
+    ) -> Result<Option<VectorSearchReceiptV1>, MemoryError> {
+        let receipt_id = receipt_id.to_string();
+        self.with_read_conn(move |conn| db::get_search_receipt(conn, &receipt_id))
+            .await
+    }
+
+    /// Replay a durable search receipt with caller-supplied query text and filters.
+    ///
+    /// Receipts intentionally do not store query text or filter values. The
+    /// caller supplies those inputs, and the stored receipt supplies the
+    /// deterministic evaluation time and retrieval family for comparison.
+    pub async fn replay_search_receipt(
+        &self,
+        receipt_id: &str,
+        query: &str,
+        top_k: Option<usize>,
+        namespaces: Option<&[&str]>,
+        source_types: Option<&[SearchSourceType]>,
+    ) -> Result<SearchReplayReportV1, MemoryError> {
+        let original_receipt = self.get_search_receipt(receipt_id).await?.ok_or_else(|| {
+            MemoryError::SearchReceiptNotFound {
+                receipt_id: receipt_id.to_string(),
             }
-            #[cfg(not(feature = "hnsw"))]
-            {
-                search::hybrid_search_detailed(
-                    conn,
-                    &q,
-                    &query_embedding,
-                    &config,
-                    k,
-                    ns_slice,
-                    st_slice,
-                    None,
-                )
-            }
+        })?;
+
+        let vector_only = original_receipt.search_profile.starts_with("vector_only");
+        let replay_top_k = top_k.or_else(|| Some(original_receipt.result_ids.len().max(1)));
+        let replay_receipt_id = format!("{receipt_id}:replay:{}", uuid::Uuid::new_v4());
+        let mut context = SearchContext::at(original_receipt.evaluation_time);
+        context.receipt_mode = ReceiptMode::ReturnReceipt;
+        context.request_id = Some(replay_receipt_id.clone());
+        context.trace_id = original_receipt.trace_id.clone();
+        context.attempt_family_id = original_receipt
+            .attempt_family_id
+            .clone()
+            .or_else(|| Some(original_receipt.receipt_id.clone()));
+        context.attempt_id = Some(replay_receipt_id.clone());
+        context.replay_of = Some(original_receipt.receipt_id.clone());
+        context.query_text_digest = original_receipt.query_text_digest.clone();
+        context.query_input_digest = original_receipt.query_input_digest.clone();
+        context.filter_digest = original_receipt.filter_digest.clone();
+        context.redaction_state = original_receipt.redaction_state.clone();
+        context.budget_id = original_receipt.budget_id.clone();
+        context.exactness_profile = if original_receipt.approximate {
+            ExactnessProfile::AllowApproximate
+        } else {
+            ExactnessProfile::PreferExact
+        };
+
+        let replay_response = if vector_only {
+            self.search_vector_only_with_context(
+                query,
+                replay_top_k,
+                namespaces,
+                source_types,
+                context,
+            )
+            .await?
+        } else {
+            self.search_with_context(query, replay_top_k, namespaces, source_types, context)
+                .await?
+        };
+        let replay_receipt = replay_response
+            .receipt
+            .ok_or_else(|| MemoryError::Other("replay did not produce a receipt".to_string()))?;
+
+        let query_embedding_digest_matches =
+            original_receipt.query_embedding_digest == replay_receipt.query_embedding_digest;
+        let result_ids_match = original_receipt.result_ids == replay_receipt.result_ids;
+        let missing_result_ids = original_receipt
+            .result_ids
+            .iter()
+            .filter(|id| !replay_receipt.result_ids.contains(*id))
+            .cloned()
+            .collect();
+        let added_result_ids = replay_receipt
+            .result_ids
+            .iter()
+            .filter(|id| !original_receipt.result_ids.contains(*id))
+            .cloned()
+            .collect();
+
+        Ok(SearchReplayReportV1 {
+            receipt_id: original_receipt.receipt_id.clone(),
+            replay_receipt_id,
+            original_receipt,
+            replay_receipt,
+            query_embedding_digest_matches,
+            result_ids_match,
+            missing_result_ids,
+            added_result_ids,
+            vector_only,
         })
-        .await
     }
 
     // ─── Embedding Displacement ───────────────────────────────
@@ -1115,7 +1547,7 @@ impl MemoryStore {
                 actual: b.len(),
             });
         }
-        let cosine_sim = search::cosine_similarity(a, b);
+        let cosine_sim = search::cosine_similarity(a, b)?;
 
         let euclidean_dist: f32 = a
             .iter()
@@ -1196,6 +1628,27 @@ impl MemoryStore {
         .await
     }
 
+    /// Return distinct scope_domain values stored in document metadata.
+    ///
+    /// Queries `json_extract(metadata, '$.scope_domain')` across all documents
+    /// and returns the unique non-null values. Used by the Recall app to populate
+    /// the scope picker dynamically instead of relying on a hardcoded list.
+    pub async fn list_scope_domains(&self) -> Result<Vec<String>, MemoryError> {
+        self.with_read_conn(|conn| {
+            let mut stmt = conn.prepare(
+                "SELECT DISTINCT json_extract(metadata, '$.scope_domain') \
+                 FROM documents \
+                 WHERE json_extract(metadata, '$.scope_domain') IS NOT NULL",
+            )?;
+            let domains: Vec<String> = stmt
+                .query_map([], |row| row.get::<_, String>(0))?
+                .filter_map(|r| r.ok())
+                .collect();
+            Ok(domains)
+        })
+        .await
+    }
+
     /// Check if embeddings need re-generation after a model change.
     pub async fn embeddings_are_dirty(&self) -> Result<bool, MemoryError> {
         self.with_read_conn(db::is_embeddings_dirty).await
@@ -1247,6 +1700,14 @@ impl MemoryStore {
                             "UPDATE facts SET embedding = ?1, embedding_q8 = ?2, updated_at = datetime('now') WHERE id = ?3",
                             rusqlite::params![bytes, q8.as_deref(), fid],
                         )?;
+                        #[cfg(feature = "hnsw")]
+                        db::queue_pending_index_op(
+                            tx,
+                            &format!("fact:{fid}"),
+                            "fact",
+                            db::IndexOpKind::Upsert,
+                        )?;
+                        db::invalidate_derived_vector_artifact(tx, &format!("fact:{fid}"))?;
                     }
                     Ok(())
                 })
@@ -1255,7 +1716,7 @@ impl MemoryStore {
 
             fact_count += batch.len();
             count += batch.len();
-            if fact_count % 100 < batch_size {
+            if fact_count % 100 == 0 || fact_count == count {
                 tracing::info!(fact_count, "Re-embedded {} facts so far", fact_count);
             }
         }
@@ -1300,6 +1761,14 @@ impl MemoryStore {
                             "UPDATE chunks SET embedding = ?1, embedding_q8 = ?2 WHERE id = ?3",
                             rusqlite::params![bytes, q8.as_deref(), cid],
                         )?;
+                        #[cfg(feature = "hnsw")]
+                        db::queue_pending_index_op(
+                            tx,
+                            &format!("chunk:{cid}"),
+                            "chunk",
+                            db::IndexOpKind::Upsert,
+                        )?;
+                        db::invalidate_derived_vector_artifact(tx, &format!("chunk:{cid}"))?;
                     }
                     Ok(())
                 })
@@ -1308,7 +1777,7 @@ impl MemoryStore {
 
             chunk_count += batch.len();
             count += batch.len();
-            if chunk_count % 100 < batch_size {
+            if chunk_count % 100 == 0 {
                 tracing::info!(chunk_count, "Re-embedded {} chunks so far", chunk_count);
             }
         }
@@ -1316,8 +1785,7 @@ impl MemoryStore {
         // ─── Messages ───────────────────────────────────────────────
         let message_data: Vec<(i64, String)> = self
             .with_read_conn(|conn| {
-                let mut stmt =
-                    conn.prepare("SELECT id, content FROM messages WHERE embedding IS NOT NULL")?;
+                let mut stmt = conn.prepare("SELECT id, content FROM messages")?;
                 let result = stmt
                     .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
                     .collect::<Result<Vec<_>, _>>()?;
@@ -1354,6 +1822,14 @@ impl MemoryStore {
                             "UPDATE messages SET embedding = ?1, embedding_q8 = ?2 WHERE id = ?3",
                             rusqlite::params![bytes, q8.as_deref(), mid],
                         )?;
+                        #[cfg(feature = "hnsw")]
+                        db::queue_pending_index_op(
+                            tx,
+                            &format!("msg:{mid}"),
+                            "message",
+                            db::IndexOpKind::Upsert,
+                        )?;
+                        db::invalidate_derived_vector_artifact(tx, &format!("msg:{mid}"))?;
                     }
                     Ok(())
                 })
@@ -1362,7 +1838,7 @@ impl MemoryStore {
 
             msg_count += batch.len();
             count += batch.len();
-            if msg_count % 100 < batch_size {
+            if msg_count % 100 == 0 {
                 tracing::info!(msg_count, "Re-embedded {} messages so far", msg_count);
             }
         }
@@ -1418,6 +1894,10 @@ impl MemoryStore {
                             "episode",
                             db::IndexOpKind::Upsert,
                         )?;
+                        db::invalidate_derived_vector_artifact(
+                            tx,
+                            &episodes::episode_item_key(episode_id),
+                        )?;
                     }
                     Ok(())
                 })
@@ -1426,7 +1906,7 @@ impl MemoryStore {
 
             episode_count += batch.len();
             count += batch.len();
-            if episode_count % 100 < batch_size {
+            if episode_count % 100 == 0 {
                 tracing::info!(
                     episode_count,
                     "Re-embedded {} episodes so far",

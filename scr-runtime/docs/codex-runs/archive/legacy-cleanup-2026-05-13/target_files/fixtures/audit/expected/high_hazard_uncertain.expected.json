@@ -1,0 +1,9 @@
+{
+  "case_id": "high_hazard_uncertain",
+  "expected_minimum_action": "RequireVerification",
+  "required_reason_codes": [
+    "HIGH_HAZARD",
+    "HIGH_UNCERTAINTY"
+  ],
+  "notes": "Initial expected minimum. Codex should generate full golden receipts after evaluator exists. Updating generated golden receipts requires POLICY_CHANGE.md."
+}

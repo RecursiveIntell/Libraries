@@ -1,0 +1,33 @@
+{
+  "report_id": "convergence-report:fixture",
+  "kind": "convergence-report",
+  "graph_id": "compiled-region-graph:fixture",
+  "graph_kind": "inference",
+  "converged": true,
+  "degraded": false,
+  "stop_state": "fixed_point",
+  "iteration_count": 3,
+  "max_iterations": 8,
+  "residual_threshold": 0.05,
+  "damping": 0.5,
+  "final_residual": 0.01,
+  "residual_ids": [
+    "residual:fixture"
+  ],
+  "stop_rule_evidence": {
+    "stop_state": "fixed_point",
+    "iteration": 3,
+    "max_iterations": 8,
+    "residual_threshold": 0.05,
+    "damping": 0.5,
+    "observed_residual": 0.01,
+    "reason_codes": [
+      "kernel-stop-rule-evidence"
+    ]
+  },
+  "oscillation_detected": false,
+  "reason_codes": [
+    "kernel-converged-with-stop-rule"
+  ],
+  "recorded_at": "2026-04-27T00:00:00Z"
+}

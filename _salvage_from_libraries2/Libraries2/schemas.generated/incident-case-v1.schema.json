@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "commander_ref": {
+      "type": "string"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "opened_at": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "service_level_profile_id": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "commander_ref",
+    "incident_case_id",
+    "opened_at",
+    "schema_version",
+    "service_level_profile_id",
+    "severity",
+    "status",
+    "summary"
+  ],
+  "title": "IncidentCaseV1",
+  "type": "object"
+}

@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {"type": "command", "command": "python scripts/assert_codex_active_pack.py --quiet || true"}
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {"type": "command", "command": "python .codex/tools/inspect_codex_setup.py --quiet || true"}
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {"type": "command", "command": "python .codex/tools/auto_phase_runner.py --dry-run --receipt .codex/runs/P0-completion/hook_stop_receipt.json || true"}
+        ]
+      }
+    ]
+  }
+}

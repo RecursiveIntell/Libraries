@@ -1,0 +1,17 @@
+{
+  "run_id": "P25",
+  "created_utc": "<fill>",
+  "package_sha256": "<fill>",
+  "commands": [],
+  "changed_files": [],
+  "phase_gates": [],
+  "root_markdown_archive": {
+    "manifest_path": null,
+    "moved_count": 0,
+    "ambiguous_count": 0
+  },
+  "validation_results": [],
+  "support_claims": [],
+  "known_limitations": [],
+  "unresolved_risks": []
+}

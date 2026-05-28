@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SupportExprV1": {
+      "oneOf": [
+        {
+          "properties": {
+            "op": {
+              "enum": [
+                "token"
+              ],
+              "type": "string"
+            },
+            "token_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "token_id"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "children": {
+              "items": {
+                "$ref": "#/definitions/SupportExprV1"
+              },
+              "type": "array"
+            },
+            "op": {
+              "enum": [
+                "any_of"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "children",
+            "op"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "children": {
+              "items": {
+                "$ref": "#/definitions/SupportExprV1"
+              },
+              "type": "array"
+            },
+            "op": {
+              "enum": [
+                "all_of"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "children",
+            "op"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "SupportPolarityV1": {
+      "enum": [
+        "supports",
+        "refutes"
+      ],
+      "type": "string"
+    },
+    "SupportProvenanceKindV1": {
+      "enum": [
+        "evidence_ref",
+        "claim_version",
+        "relation_version",
+        "episode",
+        "receipt",
+        "external"
+      ],
+      "type": "string"
+    },
+    "SupportTokenV1": {
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/SupportProvenanceKindV1"
+        },
+        "polarity": {
+          "$ref": "#/definitions/SupportPolarityV1"
+        },
+        "reference": {
+          "type": "string"
+        },
+        "token_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "polarity",
+        "reference",
+        "token_id"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "claim_id": {
+      "type": "string"
+    },
+    "content_digest": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "support_expr": {
+      "$ref": "#/definitions/SupportExprV1"
+    },
+    "support_set_id": {
+      "type": "string"
+    },
+    "support_tokens": {
+      "items": {
+        "$ref": "#/definitions/SupportTokenV1"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "claim_id",
+    "content_digest",
+    "schema_version",
+    "semantics_profile_id",
+    "support_expr",
+    "support_set_id",
+    "support_tokens"
+  ],
+  "title": "SupportSetV1",
+  "type": "object"
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "daemon_owner": {
+      "type": "string"
+    },
+    "idempotency_scope": {
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "max_lease_seconds": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "namespace_id": {
+      "type": "string"
+    },
+    "queue_root": {
+      "type": "string"
+    },
+    "safe_mode_enabled": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "created_at",
+    "daemon_owner",
+    "idempotency_scope",
+    "kind",
+    "max_lease_seconds",
+    "name",
+    "namespace_id",
+    "queue_root",
+    "safe_mode_enabled"
+  ],
+  "title": "DaemonNamespaceV1",
+  "type": "object"
+}

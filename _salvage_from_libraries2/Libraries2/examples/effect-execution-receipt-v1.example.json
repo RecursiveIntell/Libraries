@@ -1,0 +1,19 @@
+{
+  "schema_version": "EffectExecutionReceiptV1",
+  "effect_execution_receipt_id": "fxr_001",
+  "effect_commit_decision_id": "fxc_001",
+  "provider_route": [
+    "forge-pilot",
+    "llm-tool-runtime",
+    "ticketing/api"
+  ],
+  "execution_state": "completed",
+  "partial_execution": false,
+  "cancellation_reason": "",
+  "timeout_exhausted": false,
+  "generated_effect_refs": [
+    "ticket:chg-881"
+  ],
+  "observed_external_handle": "ext_8821",
+  "generated_at": "2026-03-15T12:08:00Z"
+}

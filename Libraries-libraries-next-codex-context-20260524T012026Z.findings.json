@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-05-24T01:20:33Z",
+  "error_count": 0,
+  "findings": [
+    {
+      "code": "script-ref-missing",
+      "detail": "Possible script reference not found: .codex/tools/auto_phase_runner.py",
+      "path": "scr-runtime/scripts/run_completion_checks.sh",
+      "severity": "warning"
+    },
+    {
+      "code": "git-metadata-excluded",
+      "detail": "Git metadata detected and intentionally excluded from transferable package contents.",
+      "path": ".git/",
+      "severity": "info"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries",
+  "warning_count": 1
+}

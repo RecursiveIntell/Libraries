@@ -1,0 +1,25 @@
+{
+  "receipt_id": "remote-oracle-report:fixture",
+  "kind": "remote-oracle-report",
+  "envelope_id": "attestation-envelope:fixture",
+  "admission_decision_id": "admission-decision:fixture",
+  "subject_artifact_id": "claim:remote-fixture",
+  "subject_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "advisory_only": true,
+  "imported": true,
+  "locally_promoted": false,
+  "oracle_payload": {
+    "subject": "repo",
+    "predicate": "status",
+    "object": "ready"
+  },
+  "reason_codes": [
+    "external-artifact-imported-through-admission-decision",
+    "remote-oracle-import-is-advisory"
+  ],
+  "recorded_at": "2026-04-27T00:00:02Z"
+}

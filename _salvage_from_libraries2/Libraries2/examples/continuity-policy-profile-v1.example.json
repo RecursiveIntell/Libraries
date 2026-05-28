@@ -1,0 +1,15 @@
+{
+  "schema_version": "continuity_policy_profile_v1",
+  "continuity_policy_profile_id": "continuity-policy-profile-001",
+  "required_forensic_freeze_surfaces": [
+    "audit_log",
+    "effect_ledger",
+    "deployment_config"
+  ],
+  "continuity_exception_ttl_minutes": 60,
+  "requires_postmortem_for_severity": [
+    "sev1",
+    "sev2"
+  ],
+  "require_error_budget_linkage": true
+}

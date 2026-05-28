@@ -1,0 +1,1660 @@
+{
+  "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+  "archive_zip_byte_sha256": "1c6061ad4a3b510e892eb90a6a68c9198b69bbbe05ebce281c88a591a1f814b4",
+  "codex_archive": {
+    "active_stale_after": [],
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory/docs/codex-runs/archive",
+    "collisions": [],
+    "current_run": "P29",
+    "dry_run": false,
+    "enabled": true,
+    "errors": [],
+    "manifest_paths": [],
+    "moved": [],
+    "planned": [],
+    "report_path": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.codex-archive.json",
+    "skipped_existing": [],
+    "stale_active_before": [],
+    "unclassified": [],
+    "verify_only": false
+  },
+  "content_manifest_sha256": "4e69b8dab21f9a325c83992b62b47327a4728e29cd2c2ad5ecd4afae4dd02850",
+  "excluded": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.excluded.json",
+  "files": [
+    {
+      "bytes": 42,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T20:33:39Z",
+      "path": ".gitignore",
+      "sha256": "0263bf840fa0560a0680bcf49e738116e5543d33449471e0c761a7eb8e692825"
+    },
+    {
+      "bytes": 2813,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T01:25:18Z",
+      "path": "06_RISK_REGISTER.md",
+      "sha256": "20b5bf3e5db076536786ed8dbdd61996cd338e769e814ab3659f6da969384eb9"
+    },
+    {
+      "bytes": 1705,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T01:27:48Z",
+      "path": "AGENTS.md",
+      "sha256": "34b76097eb031a350429b432fdf14d61d22572279bc69adab8006af82739cb4c"
+    },
+    {
+      "bytes": 15256,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-04-01T18:14:16Z",
+      "path": "AUDIT_2026-04-01.md",
+      "sha256": "c4bdaa277bf6e1744ab5adde85de687d8c6dfda9b68a9209327dc85fc0018ea9"
+    },
+    {
+      "bytes": 1398,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "CLAUDE.md",
+      "sha256": "ad33625357ff0bdbfc43088417d23b48e79ef6aa321efe9c6c1fcd324058cb46"
+    },
+    {
+      "bytes": 16017,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-04-01T18:14:16Z",
+      "path": "COMBINED_AUDIT_2026-04-01.md",
+      "sha256": "6be4d80f089997b6503b8b71068c74d74716da2f6f077b5becab987cff43c5a7"
+    },
+    {
+      "bytes": 1033,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-23T23:13:04Z",
+      "path": "CONFORMANCE_GATES.md",
+      "sha256": "333facacdbc77a0375574c0390e3ea857455df4c6a949852c4f5f78f9ec7a326"
+    },
+    {
+      "bytes": 1089,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "CONTRACT_AND_TEMPORAL_TRUTH_HARDENING.md",
+      "sha256": "2ce43d9fbe534a843d5789634b225255256bb01a8ab020c62201e114d7aeabfa"
+    },
+    {
+      "bytes": 3428,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T03:33:29Z",
+      "path": "CRATE_HARDENING_MATRIX.md",
+      "sha256": "1a8966abc7693cfe138925920e18cf4bcd5054c265822e15bb0fba9ada4ce3aa"
+    },
+    {
+      "bytes": 77918,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-04-28T21:03:01Z",
+      "path": "Cargo.lock",
+      "sha256": "56c4b284ceb8c7b2841410495129541e1a439bffc055f3b16613e51d8cc38670"
+    },
+    {
+      "bytes": 2673,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-31T03:30:58Z",
+      "path": "Cargo.toml",
+      "sha256": "572d68c81db91277c517f955b5e7411c6088fa48999ba4f6fd085bb6b06e2c20"
+    },
+    {
+      "bytes": 1082,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "EXECUTION_EVIDENCE_AND_REFERENCE_INTERPRETER_PLAN.md",
+      "sha256": "1a3a14de8c4f32f1768b3859309550fea2e516f1ca210815eb1d76363e8712a9"
+    },
+    {
+      "bytes": 4067,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T07:16:40Z",
+      "path": "HOSTILE_AUDIT_SYNTHESIS_V5.md",
+      "sha256": "168ac09acbceda651dc8f1fa5100f804cf250b391fb6c9151a572545f8ead738"
+    },
+    {
+      "bytes": 849,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "KERNEL_AND_REGION_RUNTIME_PLAN.md",
+      "sha256": "7124681ac49624b64d26fa3318a40349b193f3ee991b46a87e21bdbb44e85c2f"
+    },
+    {
+      "bytes": 2233,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-02T23:16:52Z",
+      "path": "LIBRARIES_MASTER_MATRIX_V8.md",
+      "sha256": "b26ee8525099885687ab14b07486b7c95cb9f744237c23e00df9fa6516fedb1e"
+    },
+    {
+      "bytes": 4648,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-02T23:16:52Z",
+      "path": "LIBRARIES_MASTER_TENSOR_V8.json",
+      "sha256": "a756989d246b6b2832fdd8d252adf6bb8ecac75f6b0c0d300e92471bfcc07776"
+    },
+    {
+      "bytes": 2428,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-02T23:16:52Z",
+      "path": "LIBRARIES_PROMPT.md",
+      "sha256": "de408a7226f5307c5547bf526a4d8a55e50a43e54c473697f6d428c535b775ff"
+    },
+    {
+      "bytes": 7547,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-04-01T18:14:16Z",
+      "path": "LIB_MASTER_ISSUE_MATRIX.md",
+      "sha256": "dfb077fe351157efd6b9dc7dfcd0f505ad853eabfd46afc8e6c7206b0e593cb8"
+    },
+    {
+      "bytes": 8457,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-04-01T18:14:16Z",
+      "path": "LIB_MASTER_ISSUE_TENSOR.json",
+      "sha256": "9203b11b9b32c178e75bfaac6c5ab20cee974bae692b6c539a02f7c35ddfabcb"
+    },
+    {
+      "bytes": 3878,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-04-01T18:14:16Z",
+      "path": "LIB_PROMPT.md",
+      "sha256": "7e4f391562a404cd699a54dba64d2e6656e75d711e53f5cd1dc5c2c42f56412b"
+    },
+    {
+      "bytes": 121776,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-02T09:11:50Z",
+      "path": "Libraries-libraries-next-codex-context-20260502.codex-archive.json",
+      "sha256": "d090041920187469012d71b7139652c68c046c58d5da302cc0d1645eab0b530b"
+    },
+    {
+      "bytes": 7567,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "MASTER_ISSUE_MATRIX.md",
+      "sha256": "e5ae8ebe4287ba872f62c17edd0cb97bb6b08ecfb4b851fcff28e53e292af018"
+    },
+    {
+      "bytes": 12092,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T04:06:44Z",
+      "path": "MASTER_ISSUE_TENSOR.json",
+      "sha256": "b71473f63509e1bf555d75c020c5d108cc9c130474be3b50199ccb5585d11b28"
+    },
+    {
+      "bytes": 2915,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "MASTER_TENSOR.md",
+      "sha256": "244b4ca38d2cc6a09dcbce2a9f6630fd7ed67560beb555827e561431c4a9c4ef"
+    },
+    {
+      "bytes": 2112,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-04-02T20:37:18Z",
+      "path": "Makefile",
+      "sha256": "b342b6db3108ac9c85757f159348e535ca18e013efffd74972ca4fdb8f30b72f"
+    },
+    {
+      "bytes": 851,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T20:34:47Z",
+      "path": "PACK_MANIFEST.json",
+      "sha256": "efa1c07f28b19487c1838686926390f6f0903adf28de6908cb28047d827649d1"
+    },
+    {
+      "bytes": 1898,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T07:17:48Z",
+      "path": "PROMPT.md",
+      "sha256": "4ed7b69f0be51464cddb6cabef6bb11795fe16b9e5e6d1d18a88b38b44d734e0"
+    },
+    {
+      "bytes": 1276,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "README.md",
+      "sha256": "0960959e49d94b2ee8eedd45c72e3fa6c7aad817498b517364722680ce00ddbd"
+    },
+    {
+      "bytes": 1108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "RISK_REGISTER.md",
+      "sha256": "d9732b821d58c2a6e9728ee99c6f998484d2eb3c175717917db2b2d9f2699feb"
+    },
+    {
+      "bytes": 2651,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T21:09:23Z",
+      "path": "SCOPE_NOTES.md",
+      "sha256": "0a38a09fab347b4c1d7c0f17b5ea9335a0b86fd59290a9b1460bd5f568f58b5d"
+    },
+    {
+      "bytes": 18893,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-11T19:37:38Z",
+      "path": "SNAPSHOT_2026-04-11.md",
+      "sha256": "01140a6fa08660b97c77e6bcd47c7c59b479235e07f57f156f4b6e9e4b24704d"
+    },
+    {
+      "bytes": 729,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "SOURCE_BASIS.md",
+      "sha256": "859081241c25d08d29f25b981788d40b6a34fa5c07e45679dc4c28828803aae3"
+    },
+    {
+      "bytes": 5478,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T21:07:10Z",
+      "path": "STATUS_DASHBOARD.md",
+      "sha256": "4d5f06a26dda8ffdd4628261c36ed72df53ffce90148a537c1c7cf77063a64d9"
+    },
+    {
+      "bytes": 3404,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T21:58:03Z",
+      "path": "STATUS_EVIDENCE_MANIFEST.json",
+      "sha256": "d8c8d0ca4442873281245c4772e3d87d5b7e233ddc33ead76a1f2ec1d108d2ab"
+    },
+    {
+      "bytes": 1336,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T18:09:25Z",
+      "path": "SUPPORT_PROFILE.md",
+      "sha256": "72afa619f20ba8fee6438bed88d5161b88f1027043d5d18e015ea65136270d2e"
+    },
+    {
+      "bytes": 1342,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "TEST_AND_CONFORMANCE_PLAN.md",
+      "sha256": "daeddf0094cdcfa1f506f1fd185c6748a98f3a80d32d986260707e52397acca5"
+    },
+    {
+      "bytes": 932,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-04-04T03:56:10Z",
+      "path": "V9_IMPLEMENTATION_PLAYBOOK.md",
+      "sha256": "30747227eeac18d90f4cc4ee9dda639874187cd8110857ecb08bf887bd790f27"
+    },
+    {
+      "bytes": 11725,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T07:12:42Z",
+      "path": "claude_hard_audit_2026-03-30.md",
+      "sha256": "5e2aec01bf8dfb6bd2a8c51815adf831612fb6c3bd90d7c320b93cc95453ce3f"
+    },
+    {
+      "bytes": 8,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-25T18:39:28Z",
+      "path": "forge-memory-bridge/.gitignore",
+      "sha256": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb"
+    },
+    {
+      "bytes": 1500,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-11T11:22:06Z",
+      "path": "forge-memory-bridge/AGENTS.md",
+      "sha256": "5d47b6814ccab2993bbe2f901cb9eb3b772a3680ecb65f8f60b4af022b584b03"
+    },
+    {
+      "bytes": 106,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-26T13:13:19Z",
+      "path": "forge-memory-bridge/CHANGELOG.md",
+      "sha256": "5029ce4b07dbc3be024f40fb3b11f0afe89e117bf42bcd2e351cd900d2680759"
+    },
+    {
+      "bytes": 17308,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-08T13:29:34Z",
+      "path": "forge-memory-bridge/Cargo.lock",
+      "sha256": "b4b6cd03ba61ddb5b1636c2611c2a170a7d97142ad75e046f47b4bf7d0ca8430"
+    },
+    {
+      "bytes": 722,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-31T03:31:16Z",
+      "path": "forge-memory-bridge/Cargo.toml",
+      "sha256": "d090719a2b521828d00784799f5487dd6557e04e56c35ed9b5aee6e286918339"
+    },
+    {
+      "bytes": 1467,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-26T13:16:31Z",
+      "path": "forge-memory-bridge/README.md",
+      "sha256": "ecb6e6f8528bb7b007bdd2018ff00d2b479b92c913260cb41d84937a112e7090"
+    },
+    {
+      "bytes": 24896,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:05:50Z",
+      "path": "forge-memory-bridge/src/batch.rs",
+      "sha256": "a9eaefab20b250014c7ef49f605a9f2a1ddc470e8b01c925799b30c226c4cf16"
+    },
+    {
+      "bytes": 4554,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-04-03T23:24:38Z",
+      "path": "forge-memory-bridge/src/error.rs",
+      "sha256": "6786a9f5124f24ddfcd0ac3be098e8d272a818565f22a15e0b9f428a0901022a"
+    },
+    {
+      "bytes": 11017,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T18:28:15Z",
+      "path": "forge-memory-bridge/src/legacy.rs",
+      "sha256": "c13e99d4aa82cacaa76ad8fea9936afdea14680627133bbfe1f15d8c978e3d0d"
+    },
+    {
+      "bytes": 3480,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-04-03T23:24:45Z",
+      "path": "forge-memory-bridge/src/lib.rs",
+      "sha256": "6f30b399799d38d207920b9e2d871d3160b8f7b81e62a523b3a0efa5b418d6a2"
+    },
+    {
+      "bytes": 30361,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-03-30T21:47:12Z",
+      "path": "forge-memory-bridge/src/transform.rs",
+      "sha256": "6526d7f2945b63f223f05531e0e7860ffaea998c208e1e564b8be1e5f3a3b2d3"
+    },
+    {
+      "bytes": 28422,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-03-24T00:19:27Z",
+      "path": "forge-memory-bridge/src/transform_tests.rs",
+      "sha256": "6cf80ff9f37726c017241de8844a964252c70cae93243de386941b65d2fa17ad"
+    },
+    {
+      "bytes": 34945,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T18:28:34Z",
+      "path": "forge-memory-bridge/tests/forge_bridge_memory_proof.rs",
+      "sha256": "12eeda2bd26d1522d1a175a70c5a84e837c1fbb5c6cd6d88895ff2a10ff6b267"
+    },
+    {
+      "bytes": 9451,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T07:18:30Z",
+      "path": "gpt54_hard_audit_2026-03-30.md",
+      "sha256": "9266e7c6264c9f8cecafb08ff595aca24c06391bfca6d884b4967afde2133fd2"
+    },
+    {
+      "bytes": 4078,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T07:18:30Z",
+      "path": "gpt54_tensor_2026-03-30.json",
+      "sha256": "a8d529489e60601254e9d46437666d3da92d14e60529e4165c922ebcfab4e4e5"
+    },
+    {
+      "bytes": 209,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-26T13:13:17Z",
+      "path": "semantic-memory-forge/CHANGELOG.md",
+      "sha256": "0dd45b6a880e3170e0eb2c4f62b4ab34e1e0b22e6f1182246869510871fefac5"
+    },
+    {
+      "bytes": 701,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-31T03:31:16Z",
+      "path": "semantic-memory-forge/Cargo.toml",
+      "sha256": "73e3e656eceefa11ef9959ee3fceef87fb797a2ca13b8d2f79ca4b80fac0cd89"
+    },
+    {
+      "bytes": 1427,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-26T13:18:36Z",
+      "path": "semantic-memory-forge/README.md",
+      "sha256": "8c48ab951007ede3b5c9c00c768ccff00185003b3cc194a6685e9087b3a5b895"
+    },
+    {
+      "bytes": 24604,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T20:55:25Z",
+      "path": "semantic-memory-forge/src/bundle.rs",
+      "sha256": "7100e73bd42f4ed6ca11b7ef785be31b6e4f0f07f68bf316ae3fc0919d3c671b"
+    },
+    {
+      "bytes": 56863,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-03-31T03:32:33Z",
+      "path": "semantic-memory-forge/src/envelope.rs",
+      "sha256": "5ab56fc7e030ca2748fa06521532337faab4cfa262d94f86ff169600d9adc4d1"
+    },
+    {
+      "bytes": 29283,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-03-30T21:20:43Z",
+      "path": "semantic-memory-forge/src/envelope_tests.rs",
+      "sha256": "78030958e36f89fe2f22fa4a635aa8c037a8364d2bbc3bc9979dd3cf7dc92f9e"
+    },
+    {
+      "bytes": 5775,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T20:55:28Z",
+      "path": "semantic-memory-forge/src/estimator.rs",
+      "sha256": "f04f14de64a330e13fb2190c8ef5f6b05ec582fe3fb81909f85f8d0573268484"
+    },
+    {
+      "bytes": 3751,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-14T23:40:54Z",
+      "path": "semantic-memory-forge/src/lib.rs",
+      "sha256": "f65e9f2f68d8703cd0237687bbd0b5798b988970a0ac1d7f4a334fe4964d234c"
+    },
+    {
+      "bytes": 3367,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T06:25:38Z",
+      "path": "semantic-memory-forge/src/tool_receipt.rs",
+      "sha256": "67f7de2d07a8e5a82ad8e6174088bab5b39e50ba9773ece42f66574ad69f65ac"
+    },
+    {
+      "bytes": 42738,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-22T10:12:05Z",
+      "path": "semantic-memory-forge/src/v11.rs",
+      "sha256": "a518d546decbebc3c24a664557786828f0144497a82ee02077c1a75e81279c32"
+    },
+    {
+      "bytes": 11753,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-22T10:12:05Z",
+      "path": "semantic-memory-forge/src/v13.rs",
+      "sha256": "d076c6bf5e1149296ff9960323345601d18729613be770e2331e001b54146cdb"
+    },
+    {
+      "bytes": 3101,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-14T15:30:40Z",
+      "path": "semantic-memory-forge/src/v14.rs",
+      "sha256": "e286fc377706070e145d3f52a335be61e1026d6328480ec248194ed7ee142eaa"
+    },
+    {
+      "bytes": 4984,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T18:12:41Z",
+      "path": "semantic-memory-forge/src/v9.rs",
+      "sha256": "15418a958541ad601d81ccb3e2f718144175dfbd268c664904789b57053cede3"
+    },
+    {
+      "bytes": 898,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-28T10:18:30Z",
+      "path": "semantic-memory/.gitignore",
+      "sha256": "e70191fae15f4a9eb674160dd8760f466bbf83fb68ad3b30fbf433c0f767ccee"
+    },
+    {
+      "bytes": 12860,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-11T11:22:06Z",
+      "path": "semantic-memory/AGENTS.md",
+      "sha256": "0ca4c2141a40ed4788f2a6adb41f8d33b2a83091747efd91993825dd8822fe6b"
+    },
+    {
+      "bytes": 167,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-26T13:13:20Z",
+      "path": "semantic-memory/CHANGELOG.md",
+      "sha256": "f279bc396b709aa9c6cef57e91583fdd61fec02693af64b3969f6741b367ebaf"
+    },
+    {
+      "bytes": 5319,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T17:46:22Z",
+      "path": "semantic-memory/CLAUDE_CODE_PROMPT.md",
+      "sha256": "b8f004dd74ef4528629458661cb17c9b18b7c93e5d196a25c57f6ff6c0b9c064"
+    },
+    {
+      "bytes": 65168,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-08T13:31:50Z",
+      "path": "semantic-memory/Cargo.lock",
+      "sha256": "2057436becbc51b6fe499d01a63accc6bdb869327042d5a799cf31bc292353ab"
+    },
+    {
+      "bytes": 1574,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-31T03:31:16Z",
+      "path": "semantic-memory/Cargo.toml",
+      "sha256": "32e77a03035160e7aae8f232337e7c27ac30ca40712fc156b185750328efafa9"
+    },
+    {
+      "bytes": 5096,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T11:45:06Z",
+      "path": "semantic-memory/HNSWLIB_RS_REFERENCE.md",
+      "sha256": "1b1aff02ca0020c3bb8fa176ac907db9a1bfb09a9f3bf07e3394bd1a0920ba5c"
+    },
+    {
+      "bytes": 9520,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T19:12:12Z",
+      "path": "semantic-memory/IMPLEMENTATION_PROMPT.md",
+      "sha256": "78a3a0dd8693cb693433b1bfa72a7a1971980eb5b76473fd1b4a1b68b947a287"
+    },
+    {
+      "bytes": 1072,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-24T11:06:11Z",
+      "path": "semantic-memory/LICENSE",
+      "sha256": "172dcf4434230c1f741fb764d7a9ec5ad00fbcf965ca5b477ab728d2f6ed1447"
+    },
+    {
+      "bytes": 13506,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T15:13:30Z",
+      "path": "semantic-memory/PATCH_PROMPT.md",
+      "sha256": "d265c128a3d430ca3c2a446283a5cd4c452ca57f4f0841eeed801c68ee4d2181"
+    },
+    {
+      "bytes": 7491,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-26T13:18:20Z",
+      "path": "semantic-memory/README.md",
+      "sha256": "569316dca2f7f8bd62715671f0a171373e59c5641960ef05681ba13311fe409a"
+    },
+    {
+      "bytes": 52953,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T17:37:08Z",
+      "path": "semantic-memory/SPEC.md",
+      "sha256": "47534f8adc9442949f6262828f5f1e82a5811a5042be0085ee34bc56ae00ed5c"
+    },
+    {
+      "bytes": 7715,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T19:12:12Z",
+      "path": "semantic-memory/TESTING.md",
+      "sha256": "95cca1606c721b1c3dc7b77804bec1de2616ee87654e8b9b2caaff8f893d8873"
+    },
+    {
+      "bytes": 58944,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T11:45:06Z",
+      "path": "semantic-memory/UPGRADE_SPEC.md",
+      "sha256": "fa683646e4d4d8405f4ae65c717738e89ce01c31d1d1472f076e18a4f3abba01"
+    },
+    {
+      "bytes": 7803,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T21:12:56Z",
+      "path": "semantic-memory/V1_1_AGENTS_ADDENDUM.md",
+      "sha256": "776417dc46e2c0de401b621f23d77bf9329451d8a4c2277974e99768fa6e7dbb"
+    },
+    {
+      "bytes": 9178,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T21:12:56Z",
+      "path": "semantic-memory/V1_1_SPEC_ADDENDUM.md",
+      "sha256": "5a3e0ecc2258a0548fee719cf08c615456051338a23545be587ed576d18a1cbe"
+    },
+    {
+      "bytes": 4996,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T21:12:56Z",
+      "path": "semantic-memory/V1_1_TESTING_ADDENDUM.md",
+      "sha256": "0ce0d4f7c7eabec197b75916c32785a3613e3db5339e07ba8681667269f6ed21"
+    },
+    {
+      "bytes": 20206,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T04:22:22Z",
+      "path": "semantic-memory/V2_AGENTS_ADDENDUM.md",
+      "sha256": "7677238deace814a912ec178d8ff3ba6b270a6968d81538a12fb6e575857c427"
+    },
+    {
+      "bytes": 18551,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T04:22:22Z",
+      "path": "semantic-memory/V2_PATCH_PROMPT.md",
+      "sha256": "0c40265777cbb46e532f119de00040ac3af95ee3d10f112e081993fca7aad8d9"
+    },
+    {
+      "bytes": 8600,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T04:22:22Z",
+      "path": "semantic-memory/V2_SPEC_ADDENDUM.md",
+      "sha256": "3f2219d76081f370a34136a230895f5acc4e6e6581c18312d599cb1e013a86d3"
+    },
+    {
+      "bytes": 10406,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T04:22:22Z",
+      "path": "semantic-memory/V2_TESTING_ADDENDUM.md",
+      "sha256": "502c7179206a6d9f5808b0fb9ef9a1317785438e067c44acee7a7cfbd0f52265"
+    },
+    {
+      "bytes": 3434,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T17:46:22Z",
+      "path": "semantic-memory/V3_AGENTS_ADDENDUM.md",
+      "sha256": "23fdadfb2fa55fb3ce994e1ce72afb71bd3bb7572baa9d76e5faf7e35712d864"
+    },
+    {
+      "bytes": 7311,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T17:46:22Z",
+      "path": "semantic-memory/V3_CHANGE_MAP.md",
+      "sha256": "95cba72511e19951afa99a89ba46684d25f4aa9e5ad0bb7e5c892dfd2db7b2c5"
+    },
+    {
+      "bytes": 19224,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T17:46:22Z",
+      "path": "semantic-memory/V3_SPEC.md",
+      "sha256": "8cc2eb032d8c93fb478e73c1928148aa367e073a7af0b1c65cd4f594b728ee1d"
+    },
+    {
+      "bytes": 7753,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T17:46:22Z",
+      "path": "semantic-memory/V3_TESTING.md",
+      "sha256": "8a1b7e575f710e048633e6fdacd59241f77741d8b348139fd97634125dcd2f0f"
+    },
+    {
+      "bytes": 395,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-07T00:07:35Z",
+      "path": "semantic-memory/docs/codex-runs/ARCHIVAL_POLICY.md",
+      "sha256": "f1e9546ca27f5d3c141db2d95b4e484ed29ce71b2257acbde7437ebe8563705e"
+    },
+    {
+      "bytes": 154,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-07T00:07:35Z",
+      "path": "semantic-memory/docs/codex-runs/CODEX_RUN_INDEX.md",
+      "sha256": "10e964570233123637ec009a16fde5021e5ddc7124403ef9538698ad5552f509"
+    },
+    {
+      "bytes": 168,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-07T00:07:35Z",
+      "path": "semantic-memory/docs/codex-runs/CURRENT_RUN.md",
+      "sha256": "fce941d47d580b99ea6ed5d679fe95b2cc3f382d9c157cb07e4397dc84ff825d"
+    },
+    {
+      "bytes": 3840,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-07T07:27:48Z",
+      "path": "semantic-memory/examples/basic_search.rs",
+      "sha256": "153d8e8081d5c55cf1c78016bf4ee766166c4aea9bc83ec6f6fbdb26f6d57c0c"
+    },
+    {
+      "bytes": 3709,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-07T07:27:56Z",
+      "path": "semantic-memory/examples/conversation_memory.rs",
+      "sha256": "72bb45fc3536252c689a785560da855c348c850c39e9a5cf9931bd44a1311a05"
+    },
+    {
+      "bytes": 17605,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T13:12:04Z",
+      "path": "semantic-memory/reference/chunk.rs",
+      "sha256": "8eb16ed54e0ff6aac80a190aaeca76c1a76f9ddb3954a87cf907b7b4ca53c2a7"
+    },
+    {
+      "bytes": 5247,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T13:12:04Z",
+      "path": "semantic-memory/reference/hybrid_search.rs",
+      "sha256": "1686fdd016c79ba75b32f8c596b078aa39dc67fc9a376d1dfe09e14dffc288d1"
+    },
+    {
+      "bytes": 51793,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-24T19:12:12Z",
+      "path": "semantic-memory/semantic-memory-spec.md",
+      "sha256": "fb2b90f2532421aceb871e8499941ba3ca3c1985e677f7b7241b7055603b3932"
+    },
+    {
+      "bytes": 6018,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T04:41:50Z",
+      "path": "semantic-memory/src/chunker.rs",
+      "sha256": "bb0990c823a382d63b40b4dc714df41875fe780ced060bd7db783c984b5c4a83"
+    },
+    {
+      "bytes": 16118,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T11:29:48Z",
+      "path": "semantic-memory/src/config.rs",
+      "sha256": "af416a9acdcc714aa1c8ddb768a8d862957a632c504dcee00f45221cbd116e60"
+    },
+    {
+      "bytes": 24259,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:08:07Z",
+      "path": "semantic-memory/src/conversation.rs",
+      "sha256": "72a809cd775e2234f963520546869b3d3df4d42096055398435c0e0542c9e90a"
+    },
+    {
+      "bytes": 51686,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:47:12Z",
+      "path": "semantic-memory/src/db.rs",
+      "sha256": "2de5a637063a369b301b5bf6135a2b67e78e409a8a7b90173dcea2edf03eb0c5"
+    },
+    {
+      "bytes": 14451,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-04-12T07:24:51Z",
+      "path": "semantic-memory/src/documents.rs",
+      "sha256": "087e1f4748064c8bd6a277d346de4690b283c07ff5716eba681d02dcaf18289e"
+    },
+    {
+      "bytes": 8907,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-29T02:01:16Z",
+      "path": "semantic-memory/src/embedder.rs",
+      "sha256": "0a1b35508e80c8574f09a3468e44f05b33a181b5b7f748e433bc65b35a491e8a"
+    },
+    {
+      "bytes": 31751,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:07:05Z",
+      "path": "semantic-memory/src/episodes.rs",
+      "sha256": "a61fe5b80f053b90636303e1cedb259e8b974d04aaa15a5b961fc7db85774985"
+    },
+    {
+      "bytes": 7772,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-11T16:40:06Z",
+      "path": "semantic-memory/src/error.rs",
+      "sha256": "2e5614b2d277f49a4b7e8aae5465d3e73e410e9a9bd496ee3effa86d6b3d9908"
+    },
+    {
+      "bytes": 27709,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:08:02Z",
+      "path": "semantic-memory/src/graph.rs",
+      "sha256": "b6739990612c4cbd77b7b8cfa1ca2e1ac7fb789800cf7ba77b7e4bf096fdc722"
+    },
+    {
+      "bytes": 16590,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-04-01T13:24:05Z",
+      "path": "semantic-memory/src/hnsw.rs",
+      "sha256": "27a390fc2d25e5cc39c92b36bd8174d498442ad1543feab8e11e0937bd0c3d25"
+    },
+    {
+      "bytes": 7182,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-29T15:10:08Z",
+      "path": "semantic-memory/src/hnsw_ops.rs",
+      "sha256": "1f563443dc68efbfdd712d10e787336f1c49fc351638989c829011524e475020"
+    },
+    {
+      "bytes": 14039,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-13T09:17:38Z",
+      "path": "semantic-memory/src/json_compat_import.rs",
+      "sha256": "ce6e7a35c8d66de64929a2759e8fd18775e6801b8c721274fe1cdab2e86b6e8f"
+    },
+    {
+      "bytes": 30186,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:07:17Z",
+      "path": "semantic-memory/src/knowledge.rs",
+      "sha256": "c89467d47cbbd9fc62547a2370ac47bdaa93394420bf7390c6f74d9d06aa2b30"
+    },
+    {
+      "bytes": 62756,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-04-03T03:54:18Z",
+      "path": "semantic-memory/src/lib.rs",
+      "sha256": "ef4abd9bd118919de85499f8aa18d6da2cefa309bb980cf16607a3412e654707"
+    },
+    {
+      "bytes": 8342,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T04:56:08Z",
+      "path": "semantic-memory/src/pool.rs",
+      "sha256": "5aa8cb57265ef6f5953b32c7d894519ff7d8baa5bd7c7550c56e2adf0922163b"
+    },
+    {
+      "bytes": 5739,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-13T09:14:56Z",
+      "path": "semantic-memory/src/projection_batch.rs",
+      "sha256": "a7b1590c7a35a11f24721c67b9aa91838a5db75fad0408561b26aae7d6b5d742"
+    },
+    {
+      "bytes": 12175,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T09:59:26Z",
+      "path": "semantic-memory/src/projection_derivation.rs",
+      "sha256": "517e0677674b8f820bd6f280209f2b06d5d780dedc10680f3426e54fcc81ce57"
+    },
+    {
+      "bytes": 16043,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:08:17Z",
+      "path": "semantic-memory/src/projection_import.rs",
+      "sha256": "6f1d342c61c92ed5ae2dcec422f994c4523c8cbf1c2883881bd8ad8cda4886c0"
+    },
+    {
+      "bytes": 61912,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-13T09:22:44Z",
+      "path": "semantic-memory/src/projection_lane.rs",
+      "sha256": "312bed8c05f7b3dd5f181bd25ef97d056a67a2790e003098c2709c1b499080da"
+    },
+    {
+      "bytes": 12666,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-13T09:22:44Z",
+      "path": "semantic-memory/src/projection_legacy_compat.rs",
+      "sha256": "ef274bd73de8dfd71b3831e4ab845ec20bae540e2ac05088cd4a8978629d8e5c"
+    },
+    {
+      "bytes": 41555,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T18:47:37Z",
+      "path": "semantic-memory/src/projection_storage.rs",
+      "sha256": "9d9ffcc0af4252df2cd9fc1ca528b977fd6d7f3bad8b282eb9498fd64af27f42"
+    },
+    {
+      "bytes": 38515,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-29T15:31:18Z",
+      "path": "semantic-memory/src/projection_storage_query.rs",
+      "sha256": "6151ec7baae29d534ff5820df60e3209a0e2dbf4b1cd91525d9318ee39d0d321"
+    },
+    {
+      "bytes": 4386,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-29T15:29:42Z",
+      "path": "semantic-memory/src/quantize.rs",
+      "sha256": "86d96228fe4de4601d9132ecde671a89f6813c3af956abed085a017ae306d5c0"
+    },
+    {
+      "bytes": 50214,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:06:31Z",
+      "path": "semantic-memory/src/search.rs",
+      "sha256": "3d1ca843a506e1f6a4f33250e0cffa4b76e47cc4c335de6ee1ddee65f4004888"
+    },
+    {
+      "bytes": 2023,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T11:54:16Z",
+      "path": "semantic-memory/src/storage.rs",
+      "sha256": "e6b88f99bfc4bfcbd7ffd00bfa3c7946c8d39d660fa9d499ed8801e21a84809e"
+    },
+    {
+      "bytes": 3608,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T09:56:50Z",
+      "path": "semantic-memory/src/store_support.rs",
+      "sha256": "253bb54830eb2957676b917a9edb3b70c52af6d27793abe626a50557204efab1"
+    },
+    {
+      "bytes": 1469,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-02-25T04:29:30Z",
+      "path": "semantic-memory/src/tokenizer.rs",
+      "sha256": "16f6129a884e66654792d15c6bee361cad97ec769cd555e67bd8c19af0cf0e8b"
+    },
+    {
+      "bytes": 22093,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T20:55:24Z",
+      "path": "semantic-memory/src/types.rs",
+      "sha256": "380b65e87c2284d09cf60e579022c8a6d46054c3246ef90818ec04ae47b0987c"
+    },
+    {
+      "bytes": 4063,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/brute_force_parity.rs",
+      "sha256": "069f20f52d129e2931c4ce1f83ef69c78dbeec62ec7b0fa15c8b94ea8be4e1ac"
+    },
+    {
+      "bytes": 5034,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/chunker_tests.rs",
+      "sha256": "5eaddb5482622b91252dee5c38ac7bcf77f02d8340af51ab42fd57b082434b78"
+    },
+    {
+      "bytes": 4564,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/compaction.rs",
+      "sha256": "2948fdde470a4b0b8b166ddf4a36777a7d331745439eabc623ca11ca55873e86"
+    },
+    {
+      "bytes": 3528,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/concurrent_access.rs",
+      "sha256": "a9cb1a1a4031191f83baa41b83390e5f220cbc386f8a715c1aeacb08cde425ee"
+    },
+    {
+      "bytes": 6584,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/conversation_search_tests.rs",
+      "sha256": "4dfe5c9302eebd2a91237e9895b3341eaa00bbe69c532766f05ac90fa752c851"
+    },
+    {
+      "bytes": 6493,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/conversation_tests.rs",
+      "sha256": "d88ea5f5fc12278f8a6f933d106e9117b1257f95a2241d2b2e28a9b4361b1c82"
+    },
+    {
+      "bytes": 3984,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/db_tests.rs",
+      "sha256": "8f124b9b14ffd95e8f5ece9f770026840711d0fc6e228b549c52c266ce64e10b"
+    },
+    {
+      "bytes": 25354,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T11:14:34Z",
+      "path": "semantic-memory/tests/episode_identity.rs",
+      "sha256": "eda3bd9fd46509640066e9c6742cf95e2c988760458b3d22858718973cfb5c45"
+    },
+    {
+      "bytes": 7836,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/hardening_semantics.rs",
+      "sha256": "8199028be0a89f7827af010ce2ff9a8f534fade2e464c8f9a69e3fcba466444d"
+    },
+    {
+      "bytes": 17872,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T11:30:38Z",
+      "path": "semantic-memory/tests/hardening_v5.rs",
+      "sha256": "97edc3ee06298aeea8b803446a87a832937b42d08ef00dbb619e3d48c3f39f08"
+    },
+    {
+      "bytes": 2553,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/hnsw_hotswap.rs",
+      "sha256": "36b31d6f1d4727b59afebee0dba15bba7ed5a9eb47a52dd0e4e691ae44d5254d"
+    },
+    {
+      "bytes": 8756,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-04-12T07:24:51Z",
+      "path": "semantic-memory/tests/hnsw_integration.rs",
+      "sha256": "6ee839e5f270394b34383b5a219933128874dc0115dd3758e924d8dacdee3bbd"
+    },
+    {
+      "bytes": 9781,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/hnsw_persistence.rs",
+      "sha256": "08282be20844540ffcee7f1a9101b1d2480ee581de632ba5f92452c8887af307"
+    },
+    {
+      "bytes": 60779,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T18:21:55Z",
+      "path": "semantic-memory/tests/import_boundary_tests.rs",
+      "sha256": "faa4147b4455ab1132c531c027d37c53f29cf8b7d16818684d1191df23810d8a"
+    },
+    {
+      "bytes": 61103,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-10T13:27:06Z",
+      "path": "semantic-memory/tests/import_ugly_cases.rs",
+      "sha256": "4a9c9f1b13873093ec4ee90272cad35643e6125fb0333607e6fb13e4bc6674e5"
+    },
+    {
+      "bytes": 12101,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/integration_tests.rs",
+      "sha256": "75acd8fb11f484a1c3f81003f11f1377f94c34b17b50a1acab08d01e05b8d4de"
+    },
+    {
+      "bytes": 17105,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T04:56:34Z",
+      "path": "semantic-memory/tests/knowledge_tests.rs",
+      "sha256": "a3ad69bde55ff8d62fac006a58addc88ff7f6e0359f55b498f048f09365630ef"
+    },
+    {
+      "bytes": 2609,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/migration_v5.rs",
+      "sha256": "2a5f8318f1b24d471b5f7fd38dd8c948653811eb5972256c178fcbcb5c097dff"
+    },
+    {
+      "bytes": 39092,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T04:56:34Z",
+      "path": "semantic-memory/tests/projection_v11_tests.rs",
+      "sha256": "5c9169db20a3a731ce4b60347aa4c3e998c27efe5a3600fe8d9825a17070e10e"
+    },
+    {
+      "bytes": 11930,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/quantization.rs",
+      "sha256": "79e7b032c21ebbaa341f36f985ac1e0d94ee30f7c0b33cea588b8ddf79de5f7c"
+    },
+    {
+      "bytes": 2823,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/quantization_pipeline.rs",
+      "sha256": "e48e7a7d39fe7ba9467142f38a069531ea823427cf47e496108591df0d76b6fd"
+    },
+    {
+      "bytes": 22128,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:47:12Z",
+      "path": "semantic-memory/tests/search_tests.rs",
+      "sha256": "52c3b61cea51442ee187c13dcbf0041421b5f784de99922cf1f4f2700fce579a"
+    },
+    {
+      "bytes": 9619,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/step3_verification.rs",
+      "sha256": "57f730c60ffd1cf0b07051d17ae1bbd40463b3a9fd9b97bf5fce1ce4e5422cdd"
+    },
+    {
+      "bytes": 7395,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/step4_verification.rs",
+      "sha256": "2ba66257e1a74f8536110e1c057ffe665670486b8e8acaefb47adb990afe448b"
+    },
+    {
+      "bytes": 5032,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/storage_lifecycle.rs",
+      "sha256": "be9dd6f6a018863ad4de32624baa0f92f16b7d561824d9f84ed9859d8d345dab"
+    },
+    {
+      "bytes": 3661,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:54:52Z",
+      "path": "semantic-memory/tests/tokenizer_tests.rs",
+      "sha256": "60cf1d0cffbbe7a550fd64b91f085309824391e854bd020ceeb9aa9917bf87a4"
+    },
+    {
+      "bytes": 2997,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T10:55:26Z",
+      "path": "semantic-memory/tests/trace_id_write_seam.rs",
+      "sha256": "b413e681d1db5c9158a32a16a414bd920abd215b4f3cee495629f04823619eca"
+    },
+    {
+      "bytes": 5405,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-09T13:53:52Z",
+      "path": "semantic-memory/tests/vector_only_hnsw.rs",
+      "sha256": "024fe961c9fc2fa682d86630fc44c11d177b73ac1bbc1a957fd9a462328d40a5"
+    },
+    {
+      "bytes": 118945,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-07T00:04:05Z",
+      "path": "semantic-memory/z.py",
+      "sha256": "25c76a3e2470ab19cd50e00a2193e302fb5b87ba302594b0d125e11fa9d454b8"
+    },
+    {
+      "bytes": 19,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-25T20:15:29Z",
+      "path": "stack-ids/.gitignore",
+      "sha256": "2ebe6cb6f5289849dce5a8a6cdd77e06b1385302c862982f8e181c4782d19214"
+    },
+    {
+      "bytes": 1626,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T08:27:14Z",
+      "path": "stack-ids/AGENTS.md",
+      "sha256": "61adf85b84e9378161870b396673b8f981186be9e0c9b021b3f696a42604fc4a"
+    },
+    {
+      "bytes": 223,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-26T13:13:10Z",
+      "path": "stack-ids/CHANGELOG.md",
+      "sha256": "8876f0f59fb44f858f35cbe2907a054e3d6674a94230754f1c82e5a92a194982"
+    },
+    {
+      "bytes": 16672,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-08T13:25:04Z",
+      "path": "stack-ids/Cargo.lock",
+      "sha256": "b54b9fbc65e296aa1b44415effbf08b71df0b9443a052787b547cba634882d38"
+    },
+    {
+      "bytes": 567,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-31T03:31:16Z",
+      "path": "stack-ids/Cargo.toml",
+      "sha256": "683c2e61c130993755a9ec5c4361f039d71f57c9b3c9e75c803532e66af2b5dd"
+    },
+    {
+      "bytes": 7010,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-26T13:18:59Z",
+      "path": "stack-ids/README.md",
+      "sha256": "e654db24fb02144b459cb62ac66b1f06c8a5d804b8165afe43a58c25c8e91af0"
+    },
+    {
+      "bytes": 11196,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-26T05:36:37Z",
+      "path": "stack-ids/src/digest.rs",
+      "sha256": "fc8fe9a41431b0dc62dc73ccd7d7c51d1e4e18646c0e99344065f65247fbbae9"
+    },
+    {
+      "bytes": 28096,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-03-24T13:13:41Z",
+      "path": "stack-ids/src/ids.rs",
+      "sha256": "0ecc6760b11f74d8c28d928e36e0948453f66ae18fbbca41b6aea11f3c8917c7"
+    },
+    {
+      "bytes": 51970,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-03-24T04:12:02Z",
+      "path": "stack-ids/src/ids_tests.rs",
+      "sha256": "722381e35bc9ba0b2db2c553694fb323033bc996ad6e38db958b53bf7f1d185a"
+    },
+    {
+      "bytes": 1332,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-24T04:06:28Z",
+      "path": "stack-ids/src/lib.rs",
+      "sha256": "536b099ac3aa357e9bce6ecffa0e19a88493c5e525d1ad31b42e5356a27fbbae"
+    },
+    {
+      "bytes": 8333,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T03:08:52Z",
+      "path": "stack-ids/src/scope.rs",
+      "sha256": "14312f89a1178dab172821f9ba0feb0834861febfd2f306468b0f45f42eb2f74"
+    },
+    {
+      "bytes": 510,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-23T23:37:47Z",
+      "path": "stack-ids/src/status.rs",
+      "sha256": "c8297120e449ef5bf63b4ed207ce45c0da2291855ae55b2c58e6933f9e2693ba"
+    },
+    {
+      "bytes": 14458,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-26T05:36:39Z",
+      "path": "stack-ids/src/trace.rs",
+      "sha256": "08e32923c99b88446ff6d638d2a8664272c1aad501d014de7ed98dc55845fd90"
+    },
+    {
+      "bytes": 2348,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-24T04:06:28Z",
+      "path": "stack-ids/src/v25.rs",
+      "sha256": "c7c89d185be223bb4e1fdd549ea2c1948fd14454950f3549c6c136f22d857fae"
+    },
+    {
+      "bytes": 1439,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-29T02:03:38Z",
+      "path": "support_lane.toml",
+      "sha256": "9bb4f1a56c9d9fefba3d172702733122372367da75fbb991e6234975922b6e6f"
+    },
+    {
+      "bytes": 93840,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-02T06:52:29Z",
+      "path": "z.py",
+      "sha256": "dd7016647366e541ab810b9e8dda32fdf4c453db2c76149bbd1d808a52ae675b"
+    },
+    {
+      "bytes": 3298,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:04:42Z",
+      "path": "zip.py",
+      "sha256": "f628d7ec22d2e886828a5550d6473681905bb7b7d794c33c0cdc42dfc5d05347"
+    }
+  ],
+  "findings": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.findings.json",
+  "manifest": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.manifest.json",
+  "package": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.zip",
+  "policy": {
+    "allow_secret_like_names": false,
+    "codex_artifact_classification": {},
+    "codex_current_run": "P29",
+    "follow_symlinks": false,
+    "include_codex_archive": false,
+    "include_codex_artifacts": false,
+    "include_doc_binaries": false,
+    "include_editor_config": false,
+    "include_external_path_deps": true,
+    "include_generated_schemas": true,
+    "include_images": false,
+    "include_logs": false,
+    "include_root_markdown_archive": false,
+    "max_file_size_bytes": 26214400,
+    "mode": "next-codex-context",
+    "package_role": "next-codex-context",
+    "profile": "generic-rust",
+    "root_markdown_archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory/docs/root-markdown-archive",
+    "root_markdown_archive_root_rel": "docs/root-markdown-archive",
+    "secret_scan_max_bytes": 1048576
+  },
+  "report": {
+    "archive_root": "/home/sikmindz/Coding/Libraries",
+    "archive_sha256": "1c6061ad4a3b510e892eb90a6a68c9198b69bbbe05ebce281c88a591a1f814b4",
+    "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+    "archive_written": true,
+    "archive_zip_byte_sha256": "1c6061ad4a3b510e892eb90a6a68c9198b69bbbe05ebce281c88a591a1f814b4",
+    "codex_archive": {
+      "active_stale_after_count": 0,
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory/docs/codex-runs/archive",
+      "collision_count": 0,
+      "current_run": "P29",
+      "dry_run": false,
+      "enabled": true,
+      "errors": [],
+      "manifest_paths": [],
+      "moved_count": 0,
+      "planned_count": 0,
+      "report_path": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.codex-archive.json",
+      "skipped_existing_count": 0,
+      "stale_active_before_count": 0,
+      "unclassified_count": 0,
+      "verify_only": false
+    },
+    "content_manifest_sha256": "4e69b8dab21f9a325c83992b62b47327a4728e29cd2c2ad5ecd4afae4dd02850",
+    "created_utc": "2026-05-07T00:07:36Z",
+    "deterministic_zip_timestamps": true,
+    "dry_run": false,
+    "error_count": 0,
+    "excluded_file_count": 22,
+    "excluded_path": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.excluded.json",
+    "external_path_dep_roots": [
+      "/home/sikmindz/Coding/Libraries/forge-memory-bridge",
+      "/home/sikmindz/Coding/Libraries/semantic-memory-forge",
+      "/home/sikmindz/Coding/Libraries/stack-ids"
+    ],
+    "findings_count": 0,
+    "findings_path": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.findings.json",
+    "include_roots": [
+      "/home/sikmindz/Coding/Libraries/forge-memory-bridge",
+      "/home/sikmindz/Coding/Libraries/semantic-memory",
+      "/home/sikmindz/Coding/Libraries/semantic-memory-forge",
+      "/home/sikmindz/Coding/Libraries/stack-ids"
+    ],
+    "included_bytes": 2492400,
+    "included_count": 173,
+    "manifest_path": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.manifest.json",
+    "mode": "next-codex-context",
+    "output": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.zip",
+    "package_role": "next-codex-context",
+    "profile_requested": "auto",
+    "profile_resolved": "generic-rust",
+    "pruned_dir_count": 4,
+    "report_path": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.report.md",
+    "root": "/home/sikmindz/Coding/Libraries/semantic-memory",
+    "root_markdown_archive": {
+      "ambiguous_count": 15,
+      "ambiguous_paths": [
+        "HNSWLIB_RS_REFERENCE.md:ambiguous-stop: unknown-root-markdown",
+        "SPEC.md:ambiguous-stop: unknown-root-markdown",
+        "TESTING.md:ambiguous-stop: unknown-root-markdown",
+        "UPGRADE_SPEC.md:ambiguous-stop: unknown-root-markdown",
+        "V1_1_AGENTS_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+        "V1_1_SPEC_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+        "V1_1_TESTING_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+        "V2_AGENTS_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+        "V2_SPEC_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+        "V2_TESTING_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+        "V3_AGENTS_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+        "V3_CHANGE_MAP.md:ambiguous-stop: unknown-root-markdown",
+        "V3_SPEC.md:ambiguous-stop: unknown-root-markdown",
+        "V3_TESTING.md:ambiguous-stop: unknown-root-markdown",
+        "semantic-memory-spec.md:ambiguous-stop: unknown-root-markdown"
+      ],
+      "archive_dir": "/home/sikmindz/Coding/Libraries/semantic-memory/docs/root-markdown-archive",
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory/docs/root-markdown-archive",
+      "candidate_count": 4,
+      "candidate_paths": [
+        "CLAUDE_CODE_PROMPT.md",
+        "IMPLEMENTATION_PROMPT.md",
+        "PATCH_PROMPT.md",
+        "V2_PATCH_PROMPT.md"
+      ],
+      "collision_count": 0,
+      "current_run": "P29",
+      "dry_run": false,
+      "enabled": false,
+      "errors": [],
+      "inspected_count": 22,
+      "manifest_path": null,
+      "moved_count": 0,
+      "planned_count": 4,
+      "protected_count": 3,
+      "skipped_existing_count": 0,
+      "verify_only": false
+    },
+    "script": "z.py",
+    "script_version": "2026.05.07-p29",
+    "strict": true,
+    "warning_count": 0
+  },
+  "root_markdown_archive": {
+    "ambiguous_count": 15,
+    "ambiguous_paths": [
+      "HNSWLIB_RS_REFERENCE.md:ambiguous-stop: unknown-root-markdown",
+      "SPEC.md:ambiguous-stop: unknown-root-markdown",
+      "TESTING.md:ambiguous-stop: unknown-root-markdown",
+      "UPGRADE_SPEC.md:ambiguous-stop: unknown-root-markdown",
+      "V1_1_AGENTS_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+      "V1_1_SPEC_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+      "V1_1_TESTING_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+      "V2_AGENTS_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+      "V2_SPEC_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+      "V2_TESTING_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+      "V3_AGENTS_ADDENDUM.md:ambiguous-stop: unknown-root-markdown",
+      "V3_CHANGE_MAP.md:ambiguous-stop: unknown-root-markdown",
+      "V3_SPEC.md:ambiguous-stop: unknown-root-markdown",
+      "V3_TESTING.md:ambiguous-stop: unknown-root-markdown",
+      "semantic-memory-spec.md:ambiguous-stop: unknown-root-markdown"
+    ],
+    "archive_dir": "/home/sikmindz/Coding/Libraries/semantic-memory/docs/root-markdown-archive",
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory/docs/root-markdown-archive",
+    "candidate_count": 4,
+    "candidate_paths": [
+      "CLAUDE_CODE_PROMPT.md",
+      "IMPLEMENTATION_PROMPT.md",
+      "PATCH_PROMPT.md",
+      "V2_PATCH_PROMPT.md"
+    ],
+    "collision_count": 0,
+    "collisions": [],
+    "current_run": "P29",
+    "dry_run": false,
+    "enabled": false,
+    "errors": [],
+    "inspected_count": 22,
+    "manifest_path": null,
+    "manifest_written": false,
+    "moved_count": 0,
+    "planned_count": 4,
+    "protected_count": 3,
+    "protected_paths": [
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "README.md"
+    ],
+    "skipped_existing_count": 0,
+    "verify_only": false
+  },
+  "sidecars": {
+    "codex_archive_report": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.codex-archive.json",
+    "excluded": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.excluded.json",
+    "findings": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.findings.json",
+    "manifest": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.manifest.json",
+    "package": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.zip",
+    "report": "/home/sikmindz/Coding/Libraries/semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.report.md"
+  },
+  "summaries": {
+    "exclusion_reasons": {
+      "archive-file": 15,
+      "doc-binary-disabled": 2,
+      "generated-output": 1,
+      "generated-sidecar": 4
+    },
+    "extensions": {
+      ".json": 7,
+      ".lock": 4,
+      ".md": 62,
+      ".py": 3,
+      ".rs": 85,
+      ".toml": 6,
+      "<no-extension>": 6
+    },
+    "top_level_dirs": {
+      ".gitignore": 1,
+      "06_RISK_REGISTER.md": 1,
+      "AGENTS.md": 1,
+      "AUDIT_2026-04-01.md": 1,
+      "CLAUDE.md": 1,
+      "COMBINED_AUDIT_2026-04-01.md": 1,
+      "CONFORMANCE_GATES.md": 1,
+      "CONTRACT_AND_TEMPORAL_TRUTH_HARDENING.md": 1,
+      "CRATE_HARDENING_MATRIX.md": 1,
+      "Cargo.lock": 1,
+      "Cargo.toml": 1,
+      "EXECUTION_EVIDENCE_AND_REFERENCE_INTERPRETER_PLAN.md": 1,
+      "HOSTILE_AUDIT_SYNTHESIS_V5.md": 1,
+      "KERNEL_AND_REGION_RUNTIME_PLAN.md": 1,
+      "LIBRARIES_MASTER_MATRIX_V8.md": 1,
+      "LIBRARIES_MASTER_TENSOR_V8.json": 1,
+      "LIBRARIES_PROMPT.md": 1,
+      "LIB_MASTER_ISSUE_MATRIX.md": 1,
+      "LIB_MASTER_ISSUE_TENSOR.json": 1,
+      "LIB_PROMPT.md": 1,
+      "Libraries-libraries-next-codex-context-20260502.codex-archive.json": 1,
+      "MASTER_ISSUE_MATRIX.md": 1,
+      "MASTER_ISSUE_TENSOR.json": 1,
+      "MASTER_TENSOR.md": 1,
+      "Makefile": 1,
+      "PACK_MANIFEST.json": 1,
+      "PROMPT.md": 1,
+      "README.md": 1,
+      "RISK_REGISTER.md": 1,
+      "SCOPE_NOTES.md": 1,
+      "SNAPSHOT_2026-04-11.md": 1,
+      "SOURCE_BASIS.md": 1,
+      "STATUS_DASHBOARD.md": 1,
+      "STATUS_EVIDENCE_MANIFEST.json": 1,
+      "SUPPORT_PROFILE.md": 1,
+      "TEST_AND_CONFORMANCE_PLAN.md": 1,
+      "V9_IMPLEMENTATION_PLAYBOOK.md": 1,
+      "claude_hard_audit_2026-03-30.md": 1,
+      "forge-memory-bridge": 13,
+      "gpt54_hard_audit_2026-03-30.md": 1,
+      "gpt54_tensor_2026-03-30.json": 1,
+      "semantic-memory": 90,
+      "semantic-memory-forge": 13,
+      "stack-ids": 14,
+      "support_lane.toml": 1,
+      "z.py": 1,
+      "zip.py": 1
+    }
+  }
+}

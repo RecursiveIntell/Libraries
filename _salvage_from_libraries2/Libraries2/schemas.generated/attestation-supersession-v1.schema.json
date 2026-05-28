@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "attestation_supersession_id": {
+      "type": "string"
+    },
+    "effective_time": {
+      "type": "string"
+    },
+    "prior_ref": {
+      "type": "string"
+    },
+    "replacement_ref": {
+      "type": "string"
+    },
+    "replay_impact": {
+      "type": "string"
+    },
+    "requires_re_admission": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantic_delta_summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "attestation_supersession_id",
+    "effective_time",
+    "prior_ref",
+    "replacement_ref",
+    "replay_impact",
+    "requires_re_admission",
+    "schema_version",
+    "semantic_delta_summary"
+  ],
+  "title": "AttestationSupersessionV1",
+  "type": "object"
+}

@@ -1,0 +1,8 @@
+{
+  "schema_version": "disclosure_budget_v1",
+  "disclosure_budget_id": "disclosure-budget-core-remote",
+  "allowed_reveal_class": "structured-redacted",
+  "current_spend": "40%",
+  "redaction_ceiling": "no raw customer payloads",
+  "escalation_path": "verification-policy -> human-approval"
+}

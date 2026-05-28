@@ -1,0 +1,23 @@
+2026-04-29T14:45:52-0500 read Phase 06 prompt and gate scripts; captured baseline evidence
+2026-04-29T14:45:53-0500 initial Phase 06 gates
+2026-04-29T14:53:37-05:00 edited Phase 06 wrapper backpointer fields and llm-tool-runtime validation bridge
+2026-04-29T14:53:45-05:00 cargo check -p aidens-contracts -p aidens-boundary-kit -p aidens-tool-kit
+2026-04-29T14:54:46-05:00 tightened Phase 06 gates and reran targeted checks
+2026-04-29T14:55:01-05:00 cargo run -p aidens-cli -- schemas generate --out schemas
+2026-04-29T14:55:24-05:00 cargo run -p aidens-cli -- schemas check --root schemas
+2026-04-29T14:55:28-05:00 bash scripts/phase_verify_contract_ownership.sh 06
+2026-04-29T14:55:34-05:00 cargo check --workspace
+2026-04-29T14:55:47-05:00 cargo test --workspace
+2026-04-29T14:56:23-05:00 cargo check --workspace > .codex_evidence/contract_ownership/06/cargo_check_workspace.txt
+2026-04-29T14:56:23-05:00 cargo run -p aidens-cli -- schemas check --root schemas > .codex_evidence/contract_ownership/06/schema_check_output.txt
+2026-04-29T14:56:29-05:00 cargo test --workspace > .codex_evidence/contract_ownership/06/cargo_test_workspace.txt
+2026-04-29T14:56:29-05:00 cargo run -p aidens-cli -- schemas generate --out schemas > .codex_evidence/contract_ownership/06/schema_generate_output.txt
+2026-04-29T14:56:45-05:00 standing gates: duplicate, digest, schema scope
+2026-04-29T14:56:58-05:00 standing gates: no crate split, no compatibility ledger, no local substitute dependencies
+2026-04-29T14:57:21-05:00 captured Phase 06 post-edit snapshots and git status/diff evidence
+2026-04-29T14:57:32-05:00 wrote touched_file_diff.patch and files_changed.txt
+2026-04-29T14:57:51-05:00 captured wrapper_backpointer_inventory and tool_runtime_delegation_inventory
+2026-04-29T14:59:00-05:00 wrote phase_report.md
+2026-04-29T14:59:05-05:00 refreshed final git status/diff evidence
+2026-04-29T15:00:17-05:00 GUARDRAIL_06_TO_07 reran tool/runtime/wrapper proof scans and gates
+2026-04-29T15:00:50-05:00 wrote GUARDRAIL_06_TO_07 wrapper discipline proof

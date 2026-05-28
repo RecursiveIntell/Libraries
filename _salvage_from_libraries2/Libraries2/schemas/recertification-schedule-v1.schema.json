@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "blocked_state_on_expiry": {
+      "type": "string"
+    },
+    "grace_window_days": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "recertification_schedule_id": {
+      "type": "string"
+    },
+    "regulatory_regime_profile_id": {
+      "type": "string"
+    },
+    "review_interval_days": {
+      "format": "int64",
+      "type": "integer"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "trigger_classes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "blocked_state_on_expiry",
+    "grace_window_days",
+    "recertification_schedule_id",
+    "regulatory_regime_profile_id",
+    "review_interval_days",
+    "schema_version"
+  ],
+  "title": "RecertificationScheduleV1",
+  "type": "object"
+}

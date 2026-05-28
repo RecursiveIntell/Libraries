@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use knowledge_runtime::{
     CompiledObligationRuntimeViewV1, CompositionConflictRuntimeViewV1, EffectiveConstitutionViewV1,
     PolicyImpactDiffRuntimeViewV1,

@@ -1,0 +1,548 @@
+{
+  "package_report": {
+    "strict": true,
+    "included_files": 1523,
+    "included_bytes": 10472970,
+    "findings": 0,
+    "warnings": 0,
+    "errors": 0,
+    "root_markdown_ambiguous": 128,
+    "root_markdown_moved": 0
+  },
+  "local_scan": {
+    "unwrap": {
+      "count": 210,
+      "top": [
+        [
+          "crates/aidens-tool-kit/src/lib.rs",
+          80
+        ],
+        [
+          "crates/aidens-queue-kit/src/lib.rs",
+          28
+        ],
+        [
+          "crates/aidens-provider-kit/src/lib.rs",
+          23
+        ],
+        [
+          "crates/aidens-receipts/src/lib.rs",
+          20
+        ],
+        [
+          "crates/aidens-daemon-kit/src/lib.rs",
+          18
+        ],
+        [
+          "crates/aidens-app-kit/src/lib.rs",
+          16
+        ],
+        [
+          "crates/aidens-testkit/src/lib.rs",
+          11
+        ],
+        [
+          "crates/aidens-config/src/lib.rs",
+          6
+        ],
+        [
+          "crates/aidens-boundary-kit/src/lib.rs",
+          2
+        ],
+        [
+          "crates/aidens-agency-kit/src/lib.rs",
+          2
+        ]
+      ]
+    },
+    "expect": {
+      "count": 49,
+      "top": [
+        [
+          "crates/aidens-tool-kit/src/lib.rs",
+          13
+        ],
+        [
+          "crates/aidens-boundary-kit/src/lib.rs",
+          11
+        ],
+        [
+          "crates/aidens-testkit/src/lib.rs",
+          10
+        ],
+        [
+          "crates/aidens-runner/src/lib.rs",
+          4
+        ],
+        [
+          "crates/aidens-agency-kit/src/lib.rs",
+          3
+        ],
+        [
+          "crates/aidens-permit-kit/src/lib.rs",
+          2
+        ],
+        [
+          "crates/aidens-cli/src/lib.rs",
+          2
+        ],
+        [
+          "crates/aidens-app-kit/src/lib.rs",
+          2
+        ],
+        [
+          "crates/aidens-memory-kit/src/lib.rs",
+          1
+        ],
+        [
+          "crates/aidens-contracts/src/lib.rs",
+          1
+        ]
+      ]
+    },
+    "panic": {
+      "count": 3,
+      "top": [
+        [
+          "crates/aidens-provider-kit/src/lib.rs",
+          3
+        ]
+      ]
+    },
+    "fs_write": {
+      "count": 46,
+      "top": [
+        [
+          "crates/aidens-cli/src/lib.rs",
+          20
+        ],
+        [
+          "crates/aidens-tool-kit/src/lib.rs",
+          15
+        ],
+        [
+          "crates/aidens-cli/src/agent.rs",
+          5
+        ],
+        [
+          "crates/aidens-app-kit/src/lib.rs",
+          3
+        ],
+        [
+          "crates/aidens-receipts/src/lib.rs",
+          2
+        ],
+        [
+          "crates/aidens-config/src/lib.rs",
+          1
+        ]
+      ]
+    },
+    "file_create": {
+      "count": 6,
+      "top": [
+        [
+          "crates/aidens-receipts/src/lib.rs",
+          4
+        ],
+        [
+          "crates/aidens-queue-kit/src/lib.rs",
+          2
+        ]
+      ]
+    },
+    "command_new": {
+      "count": 3,
+      "top": [
+        [
+          "crates/aidens-tool-kit/src/lib.rs",
+          1
+        ],
+        [
+          "crates/aidens-cli/src/lib.rs",
+          1
+        ],
+        [
+          "crates/aidens-cli/src/package.rs",
+          1
+        ]
+      ]
+    },
+    "canonicalize": {
+      "count": 16,
+      "top": [
+        [
+          "crates/aidens-tool-kit/src/lib.rs",
+          10
+        ],
+        [
+          "crates/aidens-contracts/src/boundary.rs",
+          3
+        ],
+        [
+          "crates/aidens-contracts/src/tool_artifacts.rs",
+          1
+        ],
+        [
+          "crates/aidens-cli/src/agent.rs",
+          1
+        ],
+        [
+          "crates/aidens-cli/src/lib.rs",
+          1
+        ]
+      ]
+    },
+    "unwrap_or_default": {
+      "count": 56,
+      "top": [
+        [
+          "crates/aidens-agency-kit/src/lib.rs",
+          23
+        ],
+        [
+          "crates/aidens-cli/src/agent.rs",
+          7
+        ],
+        [
+          "crates/aidens-tool-kit/src/lib.rs",
+          5
+        ],
+        [
+          "crates/aidens-provider-kit/src/lib.rs",
+          4
+        ],
+        [
+          "crates/aidens-cli/src/lib.rs",
+          3
+        ],
+        [
+          "crates/aidens-testkit/src/lib.rs",
+          2
+        ],
+        [
+          "crates/aidens-runner/src/receipts.rs",
+          2
+        ],
+        [
+          "crates/aidens-contracts/src/schema_catalog.rs",
+          2
+        ],
+        [
+          "crates/aidens-cli/src/package.rs",
+          2
+        ],
+        [
+          "crates/aidens-boundary-kit/src/lib.rs",
+          2
+        ]
+      ]
+    },
+    "todo_marker": {
+      "count": 909,
+      "top": [
+        [
+          "crates/aidens-cli/src/lib.rs",
+          166
+        ],
+        [
+          "crates/aidens-provider-kit/src/lib.rs",
+          155
+        ],
+        [
+          "crates/aidens-testkit/src/lib.rs",
+          111
+        ],
+        [
+          "crates/aidens-contracts/src/schema_catalog.rs",
+          105
+        ],
+        [
+          "crates/aidens-contracts/src/reserved_v11.rs",
+          46
+        ],
+        [
+          "crates/aidens-runner/src/lib.rs",
+          43
+        ],
+        [
+          "crates/aidens-cli/src/agent.rs",
+          30
+        ],
+        [
+          "crates/aidens-contracts/src/provider.rs",
+          27
+        ],
+        [
+          "crates/aidens-receipts/src/lib.rs",
+          23
+        ],
+        [
+          "crates/aidens-contracts/src/release_completion.rs",
+          23
+        ]
+      ]
+    },
+    "top_rust_files": [
+      [
+        "crates/aidens-cli/src/lib.rs",
+        4804
+      ],
+      [
+        "crates/aidens-tool-kit/src/lib.rs",
+        2965
+      ],
+      [
+        "crates/aidens-contracts/src/tests.rs",
+        2861
+      ],
+      [
+        "crates/aidens-runner/src/lib.rs",
+        1846
+      ],
+      [
+        "crates/aidens-cli/src/tests.rs",
+        1846
+      ],
+      [
+        "crates/aidens-agency-kit/src/lib.rs",
+        1828
+      ],
+      [
+        "crates/aidens-contracts/src/reserved_v11.rs",
+        1677
+      ],
+      [
+        "crates/aidens-contracts/src/schema_catalog.rs",
+        1617
+      ],
+      [
+        "crates/aidens-provider-kit/src/lib.rs",
+        1471
+      ],
+      [
+        "crates/aidens-testkit/src/lib.rs",
+        1291
+      ],
+      [
+        "crates/aidens-cli/src/agent.rs",
+        1125
+      ],
+      [
+        "crates/aidens-runner/src/tests.rs",
+        1105
+      ],
+      [
+        "crates/aidens-contracts/src/capability_turn.rs",
+        1102
+      ],
+      [
+        "crates/aidens-boundary-kit/src/lib.rs",
+        1100
+      ],
+      [
+        "crates/aidens-contracts/src/release_completion.rs",
+        1085
+      ],
+      [
+        "crates/aidens-cli/src/package.rs",
+        821
+      ],
+      [
+        "crates/aidens-receipts/src/lib.rs",
+        808
+      ],
+      [
+        "crates/aidens-queue-kit/src/lib.rs",
+        789
+      ],
+      [
+        "crates/aidens-app-kit/src/lib.rs",
+        779
+      ],
+      [
+        "crates/aidens-integration-tests/tests/phase_09_reference_hostile_tests.rs",
+        678
+      ],
+      [
+        "crates/aidens-contracts/src/mechanism_display.rs",
+        617
+      ],
+      [
+        "crates/aidens-contracts/src/tool_artifacts.rs",
+        550
+      ],
+      [
+        "crates/aidens-contracts/src/app_status.rs",
+        542
+      ],
+      [
+        "crates/aidens-integration-tests/tests/phase_07_canonical_adapter_proof.rs",
+        538
+      ],
+      [
+        "crates/aidens-contracts/src/agent_bundle.rs",
+        510
+      ]
+    ],
+    "rust_files": 90,
+    "rust_loc": 45194,
+    "assert_scripts": {
+      "count": 46,
+      "marker_like": 9,
+      "top": [
+        [
+          "scripts/assert_adapter_delegation.sh",
+          false,
+          30
+        ],
+        [
+          "scripts/assert_aidens_capability_contract.py",
+          false,
+          18
+        ],
+        [
+          "scripts/assert_codex_artifact_classification.py",
+          false,
+          42
+        ],
+        [
+          "scripts/assert_compat_is_finite.sh",
+          false,
+          30
+        ],
+        [
+          "scripts/assert_current_run_truth.py",
+          false,
+          46
+        ],
+        [
+          "scripts/assert_docs_match_cargo.sh",
+          false,
+          17
+        ],
+        [
+          "scripts/assert_docs_source_basis_current.sh",
+          false,
+          22
+        ],
+        [
+          "scripts/assert_no_canonical_type_duplicates.py",
+          false,
+          32
+        ],
+        [
+          "scripts/assert_no_compatibility_ledgers.sh",
+          false,
+          27
+        ],
+        [
+          "scripts/assert_no_crate_split.sh",
+          false,
+          9
+        ],
+        [
+          "scripts/assert_no_fake_completion.sh",
+          false,
+          22
+        ],
+        [
+          "scripts/assert_no_legacy_zip.py",
+          true,
+          16
+        ],
+        [
+          "scripts/assert_no_local_canonical_digest_law.sh",
+          false,
+          37
+        ],
+        [
+          "scripts/assert_no_local_substitute_dependencies.sh",
+          false,
+          18
+        ],
+        [
+          "scripts/assert_no_scaffold_promoted.sh",
+          false,
+          94
+        ],
+        [
+          "scripts/assert_no_shadow_truth.sh",
+          false,
+          68
+        ],
+        [
+          "scripts/assert_p29_audit_matrix_closure.py",
+          false,
+          16
+        ],
+        [
+          "scripts/assert_p29_boundary_profiles.py",
+          true,
+          11
+        ],
+        [
+          "scripts/assert_p29_cli_megafile_containment.py",
+          false,
+          54
+        ],
+        [
+          "scripts/assert_p29_contracts_megafile_containment.py",
+          false,
+          60
+        ]
+      ]
+    },
+    "schema_files": 65,
+    "p29_matrix": {
+      "rows": 207,
+      "statuses": {
+        "open": 207
+      },
+      "severities": {
+        "P0": 5,
+        "P1": 2,
+        "Critical": 10,
+        "High": 90,
+        "Medium": 50,
+        "Low": 30,
+        "UnauditedHighRisk": 20
+      }
+    }
+  },
+  "issue_counts": {
+    "total": 1000,
+    "by_category": {
+      "Security & sandbox boundary": 70,
+      "Tool exposure & permit policy": 45,
+      "Patch transactionality & treatment integrity": 70,
+      "Command execution & environment control": 45,
+      "Provider route & local/mocking honesty": 55,
+      "Receipts, event logs, durability & replay": 75,
+      "Queue, scheduler, daemon & concurrency": 70,
+      "Boundary compiler, JSON, schema & repair": 80,
+      "Bitemporal, proof, view & semantic state": 85,
+      "v11B graph, region, convergence, subtraction & causal runtime": 90,
+      "Schema, contract governance & generated artifacts": 50,
+      "Artifact lifecycle & operator effect system": 55,
+      "Code modularity, crate ownership & maintainability": 50,
+      "Testing quality, marker assertions & hostile fixtures": 60,
+      "Docs, evidence, source-basis & run hygiene": 40,
+      "Config, environment, secrets & redaction": 35,
+      "App/scaffold/profile readiness": 25
+    },
+    "by_severity": {
+      "P0": 25,
+      "Critical": 185,
+      "Medium": 324,
+      "High": 445,
+      "Low": 21
+    },
+    "by_confidence": {
+      "Conformance/test gap": 483,
+      "High-confidence hardening risk": 332,
+      "Confirmed source pattern": 185
+    }
+  },
+  "audit_scope": "Static audit of unzipped AiDENs P29 package plus normalization of prior ~400 findings. Cargo build/test was not reproduced in this container."
+}

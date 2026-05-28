@@ -169,7 +169,7 @@
         "sha256": "03a47d6e6c55d00692ce4753a3fd94b5de9eee1aaf02e69f5b79760b81cebd00"
       }
     ],
-    "canonical_schema_dir_sha256": "18c18fe472fce37400f8a55b69998637d7040f2c181648060d1ee70bee3addba"
+    "canonical_schema_dir_sha256": "27f1de9745fce203af3be4fc605d0c0eaf8c80d9e293bd993096438627777b25"
   },
   "evidence_manifest": {
     "path": "STATUS_EVIDENCE_MANIFEST.json",

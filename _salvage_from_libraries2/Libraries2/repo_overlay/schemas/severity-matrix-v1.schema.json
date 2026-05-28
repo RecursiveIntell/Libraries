@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SeverityMatrixV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "severity_matrix_id": {
+      "type": "string"
+    },
+    "severity_rules": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "customer_impact_rubric": {
+      "type": "string"
+    },
+    "internal_impact_rubric": {
+      "type": "string"
+    },
+    "override_rule": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "severity_matrix_id",
+    "severity_rules",
+    "customer_impact_rubric",
+    "internal_impact_rubric",
+    "override_rule"
+  ]
+}

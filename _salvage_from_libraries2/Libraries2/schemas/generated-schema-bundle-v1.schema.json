@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "GeneratedAdmissionState": {
+      "enum": [
+        "advisory_only",
+        "non_admitted",
+        "human_vetoed"
+      ],
+      "type": "string"
+    },
+    "GeneratedSchemaFileV1": {
+      "properties": {
+        "digest": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "source_node_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "digest",
+        "path"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "admission_state": {
+      "$ref": "#/definitions/GeneratedAdmissionState"
+    },
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "generated_files": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/GeneratedSchemaFileV1"
+      },
+      "type": "array"
+    },
+    "generated_schema_bundle_id": {
+      "type": "string"
+    },
+    "normative_ast_id": {
+      "type": "string"
+    },
+    "proof_obligation_set_id": {
+      "type": "string"
+    },
+    "schema_family": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "spec_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "admission_state",
+    "advisory_only",
+    "generated_at",
+    "generated_schema_bundle_id",
+    "normative_ast_id",
+    "proof_obligation_set_id",
+    "schema_family",
+    "schema_version",
+    "spec_bundle_id"
+  ],
+  "title": "GeneratedSchemaBundleV1",
+  "type": "object"
+}

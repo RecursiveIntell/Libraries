@@ -1,0 +1,52 @@
+{
+  "mock": {
+    "status": "fixture-supported-not-cloud",
+    "chat_completion": true,
+    "native_tool_calling": false,
+    "cloud_support": false,
+    "requires_test": true
+  },
+  "ollama": {
+    "status": "partial-local-chat",
+    "chat_completion": true,
+    "native_tool_calling": false,
+    "cloud_support": false,
+    "requires_test": true
+  },
+  "local": {
+    "status": "unavailable_unless_implemented_and_tested",
+    "chat_completion": false,
+    "native_tool_calling": false,
+    "cloud_support": false
+  },
+  "compatible": {
+    "status": "unavailable_unless_implemented_and_tested",
+    "chat_completion": false,
+    "native_tool_calling": false,
+    "cloud_support": false
+  },
+  "openai-compatible": {
+    "status": "unavailable_unless_implemented_and_tested",
+    "chat_completion": false,
+    "native_tool_calling": false,
+    "cloud_support": false
+  },
+  "openai": {
+    "status": "unavailable_unless_implemented_and_tested",
+    "chat_completion": false,
+    "native_tool_calling": false,
+    "cloud_support": false
+  },
+  "openrouter": {
+    "status": "unavailable_unless_implemented_and_tested",
+    "chat_completion": false,
+    "native_tool_calling": false,
+    "cloud_support": false
+  },
+  "anthropic": {
+    "status": "unavailable_unless_implemented_and_tested",
+    "chat_completion": false,
+    "native_tool_calling": false,
+    "cloud_support": false
+  }
+}

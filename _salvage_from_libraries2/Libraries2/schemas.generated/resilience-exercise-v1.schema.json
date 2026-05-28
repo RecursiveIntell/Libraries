@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "completed_at": {
+      "type": "string"
+    },
+    "exercise_kind": {
+      "type": "string"
+    },
+    "follow_up_actions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "resilience_exercise_id": {
+      "type": "string"
+    },
+    "scenario": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "service_level_profile_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "completed_at",
+    "exercise_kind",
+    "follow_up_actions",
+    "resilience_exercise_id",
+    "scenario",
+    "schema_version",
+    "service_level_profile_id"
+  ],
+  "title": "ResilienceExerciseV1",
+  "type": "object"
+}

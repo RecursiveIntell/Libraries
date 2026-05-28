@@ -1,0 +1,9 @@
+COMMAND: python3 scripts/assert_no_canonical_type_duplicates.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T23:04:21-05:00
+canonical_types=633
+aidens_contracts_types=185
+duplicate_findings=0
+PASS: no local aidens-contracts public type definitions duplicate canonical public type names.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T23:04:21-05:00

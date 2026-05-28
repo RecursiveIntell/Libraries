@@ -1,0 +1,26 @@
+You are landing the final general-purpose v21–v24 closeout pass in the libraries workspace.
+
+Read in order:
+1. 00_START_HERE.md
+2. plans/libraries-v21-v24-final.execplan.md
+3. docs/closeout_v21_v24/README.md
+4. docs/closeout_v21_v24/MASTER_ISSUE_MATRIX_CLOSEOUT.md
+5. docs/closeout_v21_v24/EXACT_FILE_TOUCH_MAP.md
+6. docs/closeout_v21_v24/PER_CRATE_CLOSEOUT_PLAN.md
+7. docs/closeout_v21_v24/RELEASE_BAR_AND_ACCEPTANCE.md
+
+Work only against files that exist in this checkout plus additive files named by the pack.
+
+Do not invent a v25.
+Do not collapse effect, delegation, assurance, or continuity into generic events.
+Do not let generated code or scores outrank typed artifacts.
+Do not silently widen authority, release, or emergency semantics.
+
+Preferred order:
+- workspace member additions
+- new owner crates
+- schema/example publication
+- fixture corpus
+- integration snippets in existing crates
+- conformance/readme truth
+- release-bar closeout

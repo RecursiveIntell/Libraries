@@ -1,0 +1,82 @@
+{
+  "run": "P23",
+  "tasks": [
+    {
+      "id": "P23-ZPY-001",
+      "priority": "P0",
+      "title": "Package self-replay closure",
+      "phase": "01/03",
+      "acceptance": "Fresh extracted package passes included verifier or declares verifier excluded by role."
+    },
+    {
+      "id": "P23-ZPY-002",
+      "priority": "P0",
+      "title": "Generic current-run logic",
+      "phase": "01",
+      "acceptance": "No P22-specific current-run allowlist remains; P23/P24 works by argument."
+    },
+    {
+      "id": "P23-ZPY-003",
+      "priority": "P0",
+      "title": "Script ref strictness",
+      "phase": "01/03",
+      "acceptance": "Included scripts cannot reference excluded/missing local verifier dependencies."
+    },
+    {
+      "id": "P23-ZPY-004",
+      "priority": "P0",
+      "title": "Legacy zip.py footgun removal",
+      "phase": "01",
+      "acceptance": "zip.py absent, archived, or hard-failing wrapper."
+    },
+    {
+      "id": "P23-ZPY-005",
+      "priority": "P1",
+      "title": "Package role separation",
+      "phase": "03",
+      "acceptance": "release-context, next-codex-context/codex-run-full, audit-full roles tested or equivalent documented."
+    },
+    {
+      "id": "P23-HYG-001",
+      "priority": "P0",
+      "title": "Pxx artifact classification registry",
+      "phase": "02",
+      "acceptance": "All P20/P21/P22 active artifacts classified or archived."
+    },
+    {
+      "id": "P23-CAP-001",
+      "priority": "P0",
+      "title": "Receipt-bearing local agent run",
+      "phase": "04",
+      "acceptance": "Fixture-backed run produces run manifest and receipts."
+    },
+    {
+      "id": "P23-CAP-002",
+      "priority": "P1",
+      "title": "Operator run inspect command",
+      "phase": "05",
+      "acceptance": "CLI or API inspects run directory and emits support-tier JSON."
+    },
+    {
+      "id": "P23-CAP-003",
+      "priority": "P1",
+      "title": "Explicit degraded/unsupported provider behavior",
+      "phase": "04/05",
+      "acceptance": "Unsupported/cloud paths fail honestly with receipts/degradation fields."
+    },
+    {
+      "id": "P23-EVID-001",
+      "priority": "P0",
+      "title": "Execution context in run reports",
+      "phase": "06",
+      "acceptance": "Run outputs include provider/tool route, budget, permits, replay command, support tier."
+    },
+    {
+      "id": "P23-CI-001",
+      "priority": "P0",
+      "title": "P23 verifier and CI gates",
+      "phase": "07",
+      "acceptance": "scripts/p23_verify.sh passes with P23_REQUIRE_CARGO=1."
+    }
+  ]
+}

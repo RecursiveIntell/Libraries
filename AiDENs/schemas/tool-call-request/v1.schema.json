@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CanonicalBackpointerV1": {
+      "description": "AiDENs-local wrapper pointer to a canonical owner artifact or owner type.\n\nThis does not make AiDENs authoritative for the pointed-to concept; it records where a display/report DTO must be reconciled for canonical truth.",
+      "properties": {
+        "artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "external_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_crate": {
+          "type": "string"
+        },
+        "owner_type": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_crate",
+        "owner_type",
+        "role"
+      ],
+      "type": "object"
+    },
+    "ToolCallSourceV1": {
+      "enum": [
+        "native-provider",
+        "parser-fallback"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "call_id": {
+      "type": "string"
+    },
+    "canonical_backpointers": {
+      "items": {
+        "$ref": "#/definitions/CanonicalBackpointerV1"
+      },
+      "type": "array"
+    },
+    "degraded": {
+      "default": false,
+      "type": "boolean"
+    },
+    "input": true,
+    "input_digest": {
+      "type": "string"
+    },
+    "raw_provider_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "requested_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/definitions/ToolCallSourceV1"
+    },
+    "tool_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "call_id",
+    "input",
+    "input_digest",
+    "requested_at",
+    "source",
+    "tool_id"
+  ],
+  "title": "ToolCallRequestV1",
+  "type": "object"
+}

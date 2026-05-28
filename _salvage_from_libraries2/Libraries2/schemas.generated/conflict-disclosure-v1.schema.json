@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "conflict_disclosure_id": {
+      "type": "string"
+    },
+    "declared_at": {
+      "type": "string"
+    },
+    "declared_conflict": {
+      "type": "string"
+    },
+    "mitigation": {
+      "type": "string"
+    },
+    "principal_ref": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "conflict_disclosure_id",
+    "declared_at",
+    "declared_conflict",
+    "mitigation",
+    "principal_ref",
+    "schema_version"
+  ],
+  "title": "ConflictDisclosureV1",
+  "type": "object"
+}

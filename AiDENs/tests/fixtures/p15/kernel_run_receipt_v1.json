@@ -1,0 +1,39 @@
+{
+  "receipt_id": "kernel-run-report:fixture",
+  "kind": "kernel-run-report",
+  "graph_id": "compiled-region-graph:fixture",
+  "graph_kind": "inference",
+  "region_ids": [
+    "region:fixture"
+  ],
+  "converged": true,
+  "degraded": false,
+  "convergence_report_id": "convergence-report:fixture",
+  "syndrome_ids": [
+    "syndrome:fixture"
+  ],
+  "residual_ids": [
+    "residual:fixture"
+  ],
+  "oracle_request_ids": [
+    "oracle-slice-request:fixture"
+  ],
+  "canonical_repair_record_ids": [],
+  "stop_rule_evidence": {
+    "stop_state": "fixed_point",
+    "iteration": 3,
+    "max_iterations": 8,
+    "residual_threshold": 0.05,
+    "damping": 0.5,
+    "observed_residual": 0.01,
+    "reason_codes": [
+      "kernel-stop-rule-evidence"
+    ]
+  },
+  "used_global_recompute": true,
+  "reason_codes": [
+    "kernel-run-converged",
+    "kernel-run-has-syndrome-evidence"
+  ],
+  "recorded_at": "2026-04-27T00:00:00Z"
+}

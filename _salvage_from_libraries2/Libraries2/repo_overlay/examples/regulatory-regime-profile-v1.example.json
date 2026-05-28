@@ -1,0 +1,16 @@
+{
+  "schema_version": "RegulatoryRegimeProfileV1",
+  "regulatory_regime_profile_id": "rrp_001",
+  "regime_name": "internal-safety-tier-1",
+  "regime_version": "2026.1",
+  "covered_products": [
+    "alpha-service",
+    "beta-api"
+  ],
+  "mandatory_control_families": [
+    "change-management",
+    "incident-response",
+    "evidence-retention"
+  ],
+  "audit_cycle_days": 180
+}

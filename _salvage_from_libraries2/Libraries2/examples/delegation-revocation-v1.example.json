@@ -1,0 +1,9 @@
+{
+  "schema_version": "DelegationRevocationV1",
+  "delegation_revocation_id": "drv_001",
+  "authority_lease_id": "aul_001",
+  "revoked_by": "person:alice",
+  "revocation_reason": "incident_opened",
+  "effective_at": "2026-03-15T12:30:00Z",
+  "supersedes_authority_chain_id": "auc_001"
+}

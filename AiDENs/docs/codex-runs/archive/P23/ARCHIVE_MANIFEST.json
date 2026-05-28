@@ -1,0 +1,113 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-03T03:20:19Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/docs/P23_ACCEPTANCE_GATES.md",
+      "bytes": 1041,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "docs/P23_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P23",
+      "sha256": "2b960e255195c1658591605d34db65e238595e38cdf5392f08993e891603c630"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/docs/P23_CAPABILITY_BUILD_SPEC.md",
+      "bytes": 1673,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "docs/P23_CAPABILITY_BUILD_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P23",
+      "sha256": "1768862bc1b2d5a21cbb213a24bd2c185ac83247282bd4fb59df3dc1a8a96ee1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/docs/P23_EVIDENCE_AND_REPORTING.md",
+      "bytes": 558,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "docs/P23_EVIDENCE_AND_REPORTING.md",
+      "reason": "stale-run-doc",
+      "run_id": "P23",
+      "sha256": "2e759026cfe2d37ce3c65bb3dbccb6d29e54ddf3a795387f29c94f25fdd26f32"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/docs/P23_EXPECTED_FINAL_STATE.md",
+      "bytes": 1106,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "docs/P23_EXPECTED_FINAL_STATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P23",
+      "sha256": "c622a95756d0b093ea56499ab368baf8c2bc6cdf32107097dac36dd9cd6e33d8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/docs/P23_ISSUE_MATRIX.md",
+      "bytes": 1548,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "docs/P23_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P23",
+      "sha256": "877cdd6f16877e2c2cbfe7065d8d0f05547a6c2c52dcc3e79ee0253bea1befb9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/docs/P23_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 943,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "docs/P23_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P23",
+      "sha256": "6e2ff21fa88ff65f8e7908b4b557c2e7d02883890847bef591efbcd504eaf968"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/docs/P23_SOURCE_BASIS.md",
+      "bytes": 3390,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "docs/P23_SOURCE_BASIS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P23",
+      "sha256": "a8cc8fce562c56736f1e3c22f5b655961cf93ed111c8fb93ff266eee70086bee"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/docs/P23_ZPY_TOTAL_OWNERSHIP_SPEC.md",
+      "bytes": 1800,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "docs/P23_ZPY_TOTAL_OWNERSHIP_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P23",
+      "sha256": "ae0b95044abeb092fa4bbd71675abbc0b732fd366f15d2460a0e0ff79e5fa314"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/scripts/p23_verify.sh",
+      "bytes": 2483,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "scripts/p23_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P23",
+      "sha256": "8ccb462f99e3ecc74ecb5e1dc6b03eb7493029e88167bff7b05ef0557c3246ee"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/tasks/P23_TASK_MATRIX.csv",
+      "bytes": 1379,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "tasks/P23_TASK_MATRIX.csv",
+      "reason": "stale-run-task",
+      "run_id": "P23",
+      "sha256": "8f1a3fd1c49ff6243abe515f7fe6dd84350da71f9acfda8111a0c6facf953bdb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P23/files/tasks/P23_TASK_MATRIX.json",
+      "bytes": 2538,
+      "mtime_utc": "2026-05-02T11:25:46Z",
+      "original_path": "tasks/P23_TASK_MATRIX.json",
+      "reason": "stale-run-task",
+      "run_id": "P23",
+      "sha256": "fc892f9ccb3c00fa0da62934c9416b753ac9fa8f3f1f40c8719c6509e87b3de7"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P23",
+  "skipped_existing": [],
+  "superseded_by": "P24",
+  "tool": "z.py",
+  "tool_version": "2026.05.02-p23",
+  "unclassified": []
+}

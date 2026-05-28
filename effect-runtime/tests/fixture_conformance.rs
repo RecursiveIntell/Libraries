@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use effect_runtime::{
     CompensationExecutionReceiptV1, CompensationPlanV1, EffectCommitDecisionV1,
     EffectExecutionReceiptV1, EffectIntentV1, EffectObservationBundleV1, EffectPreflightReportV1,

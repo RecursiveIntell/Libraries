@@ -1,0 +1,27 @@
+{
+  "schema_version": "compiled_obligation_runtime_view_v1",
+  "compiled_obligation_set_id": "compiled-obligation-set-001",
+  "effective_constitution_id": "effective-constitution-001",
+  "required_approvals": [
+    "prod_release:release-manager|service-owner",
+    "locality-review-board"
+  ],
+  "required_checks": [
+    "integrity",
+    "admission",
+    "reachability"
+  ],
+  "required_monitors": [
+    "error_budget",
+    "latency_p95",
+    "cross_region_replay_monitor"
+  ],
+  "required_disclosure_obligations": [
+    "audit_redaction_rule_set:rrs_001"
+  ],
+  "required_post_hoc_review_obligations": [
+    "locality_exception_post_review"
+  ],
+  "unresolved_dependency_refs": [],
+  "effect_eligibility_summary": "eligible_with_approvals"
+}

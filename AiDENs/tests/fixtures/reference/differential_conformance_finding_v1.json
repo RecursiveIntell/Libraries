@@ -1,0 +1,13 @@
+{
+  "finding_id": "differential-conformance-finding:fixture",
+  "case_id": "reference-case:permit-file-write",
+  "domain": "permit",
+  "production_subject": "aidens-permit-kit",
+  "path": "$.decision",
+  "expected": "requires-approval",
+  "actual": "allow",
+  "human_diff": "file-write permit default mismatch at $.decision: expected requires-approval, actual allow",
+  "reason_codes": [
+    "reference-production-mismatch"
+  ]
+}

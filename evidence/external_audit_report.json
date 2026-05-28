@@ -1,0 +1,13 @@
+{
+  "harness": "external_audit_harness.sh",
+  "issue_ref": "LIB-007",
+  "captured_at": "2026-04-01T12:00:05Z",
+  "cargo_version": "cargo 1.93.0 (083ac5135 2025-12-15) (Fedora 1.93.0-1.fc43)",
+  "summary": {
+    "pass": 7,
+    "fail": 0,
+    "skip": 0,
+    "total": 7
+  },
+  "results": [{"gate":"cargo_check_workspace","status":"pass","detail":""},{"gate":"cargo_test_workspace","status":"pass","detail":""},{"gate":"no_prod_panics","status":"pass","detail":""},{"gate":"schema_uniqueness","status":"pass","detail":""},{"gate":"manifest_truth","status":"pass","detail":""},{"gate":"public_type_drift","status":"pass","detail":""},{"gate":"closeout_receipt","status":"pass","detail":""}]
+}

@@ -1,0 +1,47 @@
+{
+  "manifest_id": "example-app-manifest:p14-fixture",
+  "kind": "example-app-manifest",
+  "examples": [
+    {
+      "example_id": "example-app:chat",
+      "path": "examples/aidens.chat-only.toml",
+      "profile_id": "chat-only",
+      "provider_kind": "mock",
+      "memory_mode": "disabled",
+      "status": "supported",
+      "commands": [
+        "aidens provider-check --config examples/aidens.chat-only.toml",
+        "aidens run --config examples/aidens.chat-only.toml hello"
+      ],
+      "reason_codes": [
+        "example-profile-declared"
+      ]
+    },
+    {
+      "example_id": "example-app:coding",
+      "path": "examples/aidens.mock.toml",
+      "profile_id": "coding-agent",
+      "provider_kind": "mock",
+      "memory_mode": "disabled",
+      "status": "supported",
+      "commands": [
+        "aidens inspect-tools --config examples/aidens.mock.toml"
+      ],
+      "reason_codes": [
+        "example-profile-declared"
+      ]
+    }
+  ],
+  "profiles_covered": [
+    "chat-only",
+    "coding-agent"
+  ],
+  "unsupported_advanced_features": [
+    "aidens-delegation-kit",
+    "aidens-kernel-kit"
+  ],
+  "reason_codes": [
+    "examples-declare-supported-and-deferred-surfaces"
+  ],
+  "generated_at": "2026-04-27T00:00:00Z"
+}

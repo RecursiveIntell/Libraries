@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DowngradeReason": {
+      "enum": [
+        "missing_required_replay",
+        "non_admitted_surface"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "detail": {
+      "type": "string"
+    },
+    "preserves_local_dissent": {
+      "type": "boolean"
+    },
+    "reason": {
+      "$ref": "#/definitions/DowngradeReason"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "shared_view_downgrade_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "detail",
+    "preserves_local_dissent",
+    "reason",
+    "schema_version",
+    "shared_view_downgrade_id"
+  ],
+  "title": "SharedViewDowngradeV1",
+  "type": "object"
+}

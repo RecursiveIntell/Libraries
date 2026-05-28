@@ -1,0 +1,65 @@
+[
+  {
+    "name": "llm-output-parser",
+    "kind": "rust",
+    "check_log": "docs/salvage/build_logs/llm-output-parser_check.log",
+    "test_log": "docs/salvage/build_logs/llm-output-parser_test.log",
+    "final_status": "pass"
+  },
+  {
+    "name": "job-queue",
+    "kind": "rust",
+    "check_log": "docs/salvage/build_logs/job-queue_check.log",
+    "test_log": "docs/salvage/build_logs/job-queue_test.log",
+    "final_status": "pass"
+  },
+  {
+    "name": "agent-graph",
+    "kind": "rust",
+    "check_log": "docs/salvage/build_logs/agent-graph_check.log",
+    "test_log": "docs/salvage/build_logs/agent-graph_test.log",
+    "final_status": "pass"
+  },
+  {
+    "name": "comfyui-rs",
+    "kind": "rust",
+    "check_log": "docs/salvage/build_logs/comfyui-rs_check.log",
+    "test_log": "docs/salvage/build_logs/comfyui-rs_test.log",
+    "final_status": "pass"
+  },
+  {
+    "name": "ollama-vision",
+    "kind": "rust",
+    "check_log": "docs/salvage/build_logs/ollama-vision_check_rerun.log",
+    "test_log": "docs/salvage/build_logs/ollama-vision_test_rerun.log",
+    "final_status": "pass"
+  },
+  {
+    "name": "ai-batch-queue",
+    "kind": "rust",
+    "check_log": "docs/salvage/build_logs/ai-batch-queue_check.log",
+    "test_log": "docs/salvage/build_logs/ai-batch-queue_test.log",
+    "final_status": "pass"
+  },
+  {
+    "name": "tauri-queue",
+    "kind": "rust",
+    "check_log": "docs/salvage/build_logs/tauri-queue_check.log",
+    "test_log": "docs/salvage/build_logs/tauri-queue_test.log",
+    "final_status": "pass"
+  },
+  {
+    "name": "llm-pipeline",
+    "kind": "rust",
+    "check_log": "docs/salvage/build_logs/llm-pipeline_check_rerun.log",
+    "test_log": "docs/salvage/build_logs/llm-pipeline_test_final.log",
+    "final_status": "pass"
+  },
+  {
+    "name": "tauri-react-hooks",
+    "kind": "typescript",
+    "check_log": "docs/salvage/build_logs/tauri-react-hooks_typecheck.log",
+    "test_log": "docs/salvage/build_logs/tauri-react-hooks_build.log",
+    "final_status": "pass"
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "receipt_id": "patch-apply:fixture",
+  "kind": "patch-apply",
+  "tool_id": "aidens:patch-apply:1",
+  "sandbox_root": "/repo",
+  "proposal_id": "patch-proposal:fixture",
+  "permit_grant_id": "permit:fixture",
+  "permit_use_receipt_id": "permit-use:fixture",
+  "touched_paths": [
+    "README.md"
+  ],
+  "input_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:fixture"
+  },
+  "before_digests": {
+    "README.md": {
+      "algorithm": "blake3",
+      "canonicalization": "stack-ids-utf8-text-v1-display-only",
+      "digest": "blake3:before"
+    }
+  },
+  "after_digests": {
+    "README.md": {
+      "algorithm": "blake3",
+      "canonicalization": "stack-ids-utf8-text-v1-display-only",
+      "digest": "blake3:after"
+    }
+  },
+  "applied": true,
+  "reason_codes": [
+    "patch-applied-with-explicit-permit"
+  ],
+  "applied_at": "2026-04-26T00:00:00Z"
+}

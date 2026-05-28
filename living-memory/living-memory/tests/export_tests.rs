@@ -1,3 +1,4 @@
+#![allow(clippy::expect_used)]
 #![allow(deprecated)]
 
 //! Tests for the Forge export seam: deterministic keys, receipts, and canonical envelopes.

@@ -1,0 +1,21 @@
+{
+  "plan_id": "subtraction-plan:p16-fixture",
+  "kind": "subtraction-plan",
+  "operator": "compact",
+  "support_core_id": "support-core:p16-fixture",
+  "removal_frontier_id": "removal-frontier:p16-fixture",
+  "invariant_budget_id": "invariant-budget:p16-fixture",
+  "target_claim_ids": [
+    "claim:p16-accepted"
+  ],
+  "target_evidence_ids": [],
+  "target_receipt_ids": [],
+  "dry_run": true,
+  "approved_for_mutation": false,
+  "destructive_deletion": false,
+  "blocked": false,
+  "reason_codes": [
+    "subtraction-plan-dry-run-before-mutation"
+  ],
+  "planned_at": "2026-04-27T00:00:03Z"
+}

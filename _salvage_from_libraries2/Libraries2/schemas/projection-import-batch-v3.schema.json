@@ -1,0 +1,2986 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "BilatticeTruthV1": {
+      "enum": [
+        "unknown",
+        "true_only",
+        "false_only",
+        "both"
+      ],
+      "type": "string"
+    },
+    "CausalQuestion": {
+      "description": "The causal question being investigated.",
+      "properties": {
+        "description": {
+          "description": "Natural language description of the causal question.",
+          "type": "string"
+        },
+        "unit_definition": {
+          "description": "The unit of analysis (e.g., \"code patch\", \"configuration change\").",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "unit_definition"
+      ],
+      "type": "object"
+    },
+    "CausalRoleHint": {
+      "enum": [
+        "treatment",
+        "outcome",
+        "confounder",
+        "instrument",
+        "effect_modifier",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "ClaimState": {
+      "description": "Lifecycle state of a claim.",
+      "oneOf": [
+        {
+          "description": "Active and current.",
+          "enum": [
+            "active"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Superseded by a newer version.",
+          "enum": [
+            "superseded"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Retracted (found to be incorrect).",
+          "enum": [
+            "retracted"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Archived (no longer relevant but preserved).",
+          "enum": [
+            "archived"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Pending review.",
+          "enum": [
+            "pending_review"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Disputed (contradicted but not resolved).",
+          "enum": [
+            "disputed"
+          ],
+          "type": "string"
+        }
+      ]
+    },
+    "ClaimStateV13": {
+      "properties": {
+        "bilattice_truth": {
+          "$ref": "#/definitions/BilatticeTruthV1"
+        },
+        "claim_id": {
+          "type": "string"
+        },
+        "claim_state_id": {
+          "type": "string"
+        },
+        "claim_version_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contradiction_witness_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence_admissibility": {
+          "$ref": "#/definitions/EvidenceAdmissibilityV1"
+        },
+        "policy_action_allowed": {
+          "type": "boolean"
+        },
+        "proof_obligations_remaining": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "quality_vector": {
+          "$ref": "#/definitions/QualityVectorV1"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "semantics_profile_id": {
+          "type": "string"
+        },
+        "support_set_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "support_set_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tx_from": {
+          "type": "string"
+        },
+        "tx_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "view": {
+          "$ref": "#/definitions/SemanticViewV1"
+        }
+      },
+      "required": [
+        "bilattice_truth",
+        "claim_id",
+        "claim_state_id",
+        "evidence_admissibility",
+        "policy_action_allowed",
+        "quality_vector",
+        "schema_version",
+        "semantics_profile_id",
+        "tx_from",
+        "view"
+      ],
+      "type": "object"
+    },
+    "ComparabilitySnapshot": {
+      "description": "Immutable comparability snapshot for a paired experiment family.",
+      "properties": {
+        "backend_family": {
+          "description": "Backend family used for execution.",
+          "type": "string"
+        },
+        "comparable": {
+          "description": "Explicit verdict when known; `None` preserves absence rather than inference.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "config_flags": {
+          "description": "Sorted execution-affecting flags.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "selected_checks": {
+          "description": "Ordered list of checks run for the pair.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "timeout_class": {
+          "description": "Effective timeout class.",
+          "type": "string"
+        },
+        "violations": {
+          "default": [],
+          "description": "Violations recorded during comparability checking.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "workload_id": {
+          "description": "Which workload was exercised.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "backend_family",
+        "config_flags",
+        "selected_checks",
+        "timeout_class",
+        "workload_id"
+      ],
+      "type": "object"
+    },
+    "ConstraintSeedKind": {
+      "enum": [
+        "hyperedge",
+        "mutual_exclusion",
+        "temporal_coherence",
+        "causal_refutation",
+        "nuisance_disclosure"
+      ],
+      "type": "string"
+    },
+    "ContradictionStatus": {
+      "description": "Contradiction status for claims and relations.",
+      "oneOf": [
+        {
+          "description": "No contradictions known.",
+          "enum": [
+            "none"
+          ],
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Possible contradiction detected (structural check only).",
+          "properties": {
+            "possible_contradiction": {
+              "properties": {
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "description"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "possible_contradiction"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Confirmed contradiction.",
+          "properties": {
+            "confirmed": {
+              "properties": {
+                "contradicted_by": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "contradicted_by"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "confirmed"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Resolved (e.g. one claim retracted).",
+          "properties": {
+            "resolved": {
+              "properties": {
+                "resolution": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "resolution"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "resolved"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ContradictionWitnessV1": {
+      "properties": {
+        "claim_id": {
+          "type": "string"
+        },
+        "conflicting_token_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contradiction_witness_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "claim_id",
+        "contradiction_witness_id",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "DegradationKindV1": {
+      "enum": [
+        "thin_export",
+        "missing_proof",
+        "missing_replay",
+        "scope_withheld",
+        "evidence_unavailable",
+        "oracle_unavailable",
+        "budget_exceeded",
+        "exactness_downgraded",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "DispatchOutcomeV1": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "degraded",
+        "cancelled",
+        "exhausted"
+      ],
+      "type": "string"
+    },
+    "EnvironmentFingerprint": {
+      "description": "Fingerprint of the execution environment.\n\nUsed to detect environment drift that could affect reproducibility.",
+      "properties": {
+        "env_hash": {
+          "description": "Hash of the full environment specification (e.g., pip freeze hash).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package_versions": {
+          "description": "Key package versions (e.g., {\"dowhy\": \"0.11\", \"numpy\": \"1.26\"})."
+        },
+        "platform": {
+          "description": "OS / platform identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "python_version": {
+          "description": "Python version (if sidecar).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "package_versions"
+      ],
+      "type": "object"
+    },
+    "EpisodeBundleV1": {
+      "properties": {
+        "bundle_id": {
+          "type": "string"
+        },
+        "claim_version_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "content_digest": {
+          "type": "string"
+        },
+        "control_plane_refs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "episode_id": {
+          "type": "string"
+        },
+        "evidence_bundle_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "execution_context": {
+          "$ref": "#/definitions/ExecutionContextV1"
+        },
+        "exported_at": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "primary_document_id": {
+          "type": "string"
+        },
+        "recorded_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "refutation_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "relation_version_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "scope_key": {
+          "$ref": "#/definitions/ScopeKey"
+        },
+        "source_envelope_id": {
+          "type": "string"
+        },
+        "source_evidence_pointers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "source_receipt_digests": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "supersedes_bundle_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "thin_export": {
+          "type": "boolean"
+        },
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verification_summary": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/VerificationSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "bundle_id",
+        "content_digest",
+        "episode_id",
+        "execution_context",
+        "exported_at",
+        "namespace",
+        "primary_document_id",
+        "schema_version",
+        "scope_key",
+        "source_envelope_id",
+        "thin_export"
+      ],
+      "type": "object"
+    },
+    "EstimatorKind": {
+      "description": "Kind of estimator used.",
+      "oneOf": [
+        {
+          "description": "Difference-in-differences.",
+          "enum": [
+            "DiffInDiff"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Propensity score matching.",
+          "enum": [
+            "PropensityScore"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Instrumental variables.",
+          "enum": [
+            "InstrumentalVariables"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Ordinary least squares.",
+          "enum": [
+            "OLS"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Bayesian estimation.",
+          "enum": [
+            "Bayesian"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Simple before/after comparison.",
+          "enum": [
+            "BeforeAfter"
+          ],
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Custom estimator.",
+          "properties": {
+            "Custom": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "Custom"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "EstimatorMeta": {
+      "description": "Metadata about an estimator or refuter invocation.\n\nCaptures everything needed to reproduce or audit the estimation.",
+      "properties": {
+        "environment": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/EnvironmentFingerprint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Environment fingerprint for the execution."
+        },
+        "failure_mode": {
+          "description": "How the estimator failed, if it did.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/EstimatorKind"
+            }
+          ],
+          "description": "The kind of estimator."
+        },
+        "parameters": {
+          "description": "Parameters passed to the estimator."
+        },
+        "random_seed": {
+          "description": "Random seed, if applicable for reproducibility.",
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "request_schema_version": {
+          "description": "Versioned request schema identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "response_schema_version": {
+          "description": "Versioned response schema identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeout_secs": {
+          "description": "Timeout applied to the execution.",
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "version": {
+          "description": "Version of the estimator (semver or commit hash).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "parameters",
+        "version"
+      ],
+      "type": "object"
+    },
+    "EvidenceAdmissibilityV1": {
+      "enum": [
+        "admissible",
+        "restricted",
+        "inadmissible",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "EvidenceBundle": {
+      "description": "An evidence bundle capturing the full methodological chain.\n\nThis is the minimal but real evidence-bundle substrate required by the canonical verification pipeline. Every field maps to a requirement in the master delta spec.",
+      "properties": {
+        "attempt_id": {
+          "description": "Attempt ID for retry lineage.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "claim_ids": {
+          "description": "Claim IDs this bundle provides evidence for.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "comparability_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ComparabilitySnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Immutable comparability snapshot for the paired family, when known."
+        },
+        "comparability_snapshot_version": {
+          "description": "Comparability snapshot version (immutable once set).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "description": "Confidence in the estimate (0.0 - 1.0).",
+          "format": "float",
+          "type": "number"
+        },
+        "covariates": {
+          "description": "Covariates and confounders recorded.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "created_at": {
+          "description": "When the bundle was created.",
+          "type": "string"
+        },
+        "estimate": {
+          "description": "The causal estimate (effect size).",
+          "format": "double",
+          "type": "number"
+        },
+        "estimate_uncertainty": {
+          "description": "Standard error or uncertainty measure.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "estimator_kind": {
+          "description": "Estimator kind (e.g., \"diff_in_diff\", \"propensity_score\", \"iv\").",
+          "type": "string"
+        },
+        "estimator_meta": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/EstimatorMeta"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Structured estimator metadata for replay/audit."
+        },
+        "estimator_version": {
+          "description": "Estimator version (semantic versioning or commit hash).",
+          "type": "string"
+        },
+        "id": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/EvidenceBundleId"
+            }
+          ],
+          "description": "Unique bundle identifier."
+        },
+        "identification_rationale": {
+          "description": "Identification rationale (why we believe the causal identification is valid).",
+          "type": "string"
+        },
+        "metadata": {
+          "description": "Additional metadata."
+        },
+        "outcome": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/OutcomeSpec"
+            }
+          ],
+          "description": "Outcome specification."
+        },
+        "question": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/CausalQuestion"
+            }
+          ],
+          "description": "The causal question being investigated."
+        },
+        "raw_receipt_handle": {
+          "description": "Raw receipt handle (opaque reference to the underlying raw data).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "refutation_artifacts": {
+          "default": [],
+          "description": "First-class refutation artifacts with stable identities and lineage.",
+          "items": {
+            "$ref": "#/definitions/RefutationArtifactRecord"
+          },
+          "type": "array"
+        },
+        "refutations": {
+          "description": "Refutation attempts and their results.",
+          "items": {
+            "$ref": "#/definitions/RefutationAttempt"
+          },
+          "type": "array"
+        },
+        "replay_handle": {
+          "description": "Replay handle (linkage to original execution for replay).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_envelope_id": {
+          "description": "Source envelope ID if this bundle originated from an export.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_ctx": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TraceCtx"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Trace context for correlation."
+        },
+        "treatment": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/TreatmentSpec"
+            }
+          ],
+          "description": "Treatment specification."
+        },
+        "trial_count": {
+          "description": "Number of trials / observations.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "trial_id": {
+          "description": "Trial ID for the specific execution.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "variance_aware": {
+          "description": "Whether variance-aware repeated trials were used.",
+          "type": "boolean"
+        },
+        "verification_summary": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/VerificationSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Compact verification/promotion summary for projection consumers."
+        },
+        "verification_trials": {
+          "default": [],
+          "description": "Explicit paired verification-trial family.",
+          "items": {
+            "$ref": "#/definitions/VerificationTrialRecord"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_ids",
+        "confidence",
+        "covariates",
+        "created_at",
+        "estimate",
+        "estimator_kind",
+        "estimator_version",
+        "id",
+        "identification_rationale",
+        "outcome",
+        "question",
+        "refutations",
+        "treatment",
+        "trial_count",
+        "variance_aware"
+      ],
+      "type": "object"
+    },
+    "EvidenceBundleId": {
+      "description": "Opaque identifier for an evidence bundle.",
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "ExecutionContextV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancellation_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degradation_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dispatch_outcome": {
+          "$ref": "#/definitions/DispatchOutcomeV1"
+        },
+        "environment_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_route": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "queue_hops": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workload_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "dispatch_outcome",
+        "schema_version",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "ExportAuthority": {
+      "description": "Authority marker for Forge-produced exports.",
+      "oneOf": [
+        {
+          "description": "Standard Forge verification pipeline.",
+          "enum": [
+            "Forge"
+          ],
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "External authority (e.g., manual import, third-party tool).",
+          "properties": {
+            "External": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "External"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ExportConfidenceClass": {
+      "enum": [
+        "verified",
+        "reviewed",
+        "heuristic",
+        "thin_export"
+      ],
+      "type": "string"
+    },
+    "ExportRecordSemanticsV3": {
+      "properties": {
+        "assertion_group_id": {
+          "description": "Canonical assertion/hyperedge grouping for claim-version style records.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "claim_family_id": {
+          "description": "Canonical claim lineage group when the exporter knows the claim family.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "comparability_snapshot_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confounder_hint": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CausalRoleHint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "constraint_seed_kind": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ConstraintSeedKind"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional because thin claim exports may group via assertion/family IDs without emitting an explicit kernel seed kind."
+        },
+        "contradiction_candidate_group_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "derivation_seed_ids": {
+          "description": "Exporter-supplied lineage only. Bridge/runtime/kernel must not invent it.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "effect_modifier_hint": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CausalRoleHint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "export_confidence_class": {
+          "$ref": "#/definitions/ExportConfidenceClass"
+        },
+        "instrument_hint": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CausalRoleHint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "joint_evidence_group_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mutual_exclusion_group_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nuisance_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NuisanceSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome_hint": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CausalRoleHint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "projection_visibility_class": {
+          "$ref": "#/definitions/ProjectionVisibilityClass"
+        },
+        "relation_group_id": {
+          "description": "Canonical relation grouping for relation-version style records.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review_priority_hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "treatment_hint": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CausalRoleHint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "export_confidence_class",
+        "projection_visibility_class"
+      ],
+      "type": "object"
+    },
+    "ForgeExportMeta": {
+      "description": "Metadata about a Forge export operation.",
+      "properties": {
+        "authority": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/ExportAuthority"
+            }
+          ],
+          "description": "Authority that produced the export."
+        },
+        "comparability_snapshot_version": {
+          "description": "Comparability snapshot version at time of export.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "direct_write": {
+          "description": "Whether direct-write was used (exceptional, auditable, disabled by default).",
+          "type": "boolean"
+        },
+        "exported_at": {
+          "description": "When the export was produced.",
+          "type": "string"
+        },
+        "run_id": {
+          "description": "Verification run identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "authority",
+        "direct_write",
+        "exported_at"
+      ],
+      "type": "object"
+    },
+    "ImportProjectionRecord": {
+      "description": "A single record in a projection import batch.",
+      "oneOf": [
+        {
+          "description": "A claim projection version to import.",
+          "properties": {
+            "claim_id": {
+              "description": "Claim identity (stable across versions).",
+              "type": "string"
+            },
+            "claim_state": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ClaimState"
+                }
+              ],
+              "description": "Current state of this claim version."
+            },
+            "claim_version_id": {
+              "description": "Version identity (unique per mutation).",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Source confidence.",
+              "format": "float",
+              "type": "number"
+            },
+            "content": {
+              "description": "The content text for embedding/search.",
+              "type": "string"
+            },
+            "contradiction_status": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ContradictionStatus"
+                }
+              ],
+              "description": "Contradiction status."
+            },
+            "freshness": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ProjectionFreshness"
+                }
+              ],
+              "description": "Freshness status."
+            },
+            "kind": {
+              "enum": [
+                "claim_version"
+              ],
+              "type": "string"
+            },
+            "metadata": {
+              "description": "Additional metadata."
+            },
+            "object_anchor": {
+              "description": "The object anchor."
+            },
+            "predicate": {
+              "description": "The predicate.",
+              "type": "string"
+            },
+            "preferred_open": {
+              "description": "Whether this is the preferred open version for its logical key.",
+              "type": "boolean"
+            },
+            "projection_family": {
+              "description": "Projection family (e.g. \"forge_verification\").",
+              "type": "string"
+            },
+            "scope_key": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ScopeKey"
+                }
+              ],
+              "description": "Target scope."
+            },
+            "source_authority": {
+              "description": "Source authority.",
+              "type": "string"
+            },
+            "source_envelope_id": {
+              "description": "Source envelope provenance.",
+              "type": "string"
+            },
+            "subject_entity_id": {
+              "description": "The entity this claim is about.",
+              "type": "string"
+            },
+            "supersedes_claim_version_id": {
+              "description": "Which previous version this supersedes, if any.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "trace_ctx": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/TraceCtx"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Trace context."
+            },
+            "valid_from": {
+              "description": "Validity start (ISO 8601).",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "valid_to": {
+              "description": "Validity end (ISO 8601). None = open-ended.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "claim_id",
+            "claim_state",
+            "claim_version_id",
+            "confidence",
+            "content",
+            "contradiction_status",
+            "freshness",
+            "kind",
+            "object_anchor",
+            "predicate",
+            "preferred_open",
+            "projection_family",
+            "scope_key",
+            "source_authority",
+            "source_envelope_id",
+            "subject_entity_id"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A relation version to import.",
+          "properties": {
+            "claim_id": {
+              "description": "Linked claim or episode.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "contradiction_status": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ContradictionStatus"
+                }
+              ],
+              "description": "Contradiction status."
+            },
+            "freshness": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ProjectionFreshness"
+                }
+              ],
+              "description": "Freshness."
+            },
+            "kind": {
+              "enum": [
+                "relation_version"
+              ],
+              "type": "string"
+            },
+            "metadata": {
+              "description": "Additional metadata."
+            },
+            "object_anchor": {
+              "description": "The object anchor."
+            },
+            "predicate": {
+              "description": "The relation predicate.",
+              "type": "string"
+            },
+            "preferred_open": {
+              "description": "Preferred open flag.",
+              "type": "boolean"
+            },
+            "projection_family": {
+              "description": "Projection family.",
+              "type": "string"
+            },
+            "relation_version_id": {
+              "description": "Relation version identity.",
+              "type": "string"
+            },
+            "scope_key": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ScopeKey"
+                }
+              ],
+              "description": "Target scope."
+            },
+            "source_authority": {
+              "description": "Source authority.",
+              "type": "string"
+            },
+            "source_confidence": {
+              "description": "Source confidence.",
+              "format": "float",
+              "type": "number"
+            },
+            "source_envelope_id": {
+              "description": "Source envelope provenance.",
+              "type": "string"
+            },
+            "source_episode_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "subject_entity_id": {
+              "description": "The subject entity.",
+              "type": "string"
+            },
+            "supersedes_relation_version_id": {
+              "description": "Which previous version this supersedes.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "trace_ctx": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/TraceCtx"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Trace context."
+            },
+            "valid_from": {
+              "description": "Validity times.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "valid_to": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "contradiction_status",
+            "freshness",
+            "kind",
+            "object_anchor",
+            "predicate",
+            "preferred_open",
+            "projection_family",
+            "relation_version_id",
+            "scope_key",
+            "source_authority",
+            "source_confidence",
+            "source_envelope_id",
+            "subject_entity_id"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "An episode to import.",
+          "properties": {
+            "cause_ids": {
+              "description": "Cause IDs.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "confidence": {
+              "description": "Confidence.",
+              "format": "float",
+              "type": "number"
+            },
+            "document_id": {
+              "description": "Linked document.",
+              "type": "string"
+            },
+            "effect_type": {
+              "description": "Effect type.",
+              "type": "string"
+            },
+            "episode_id": {
+              "description": "Episode identity.",
+              "type": "string"
+            },
+            "experiment_id": {
+              "description": "Experiment ID.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "enum": [
+                "episode"
+              ],
+              "type": "string"
+            },
+            "metadata": {
+              "description": "Additional metadata."
+            },
+            "outcome": {
+              "description": "Outcome.",
+              "type": "string"
+            },
+            "source_authority": {
+              "description": "Source authority.",
+              "type": "string"
+            },
+            "source_envelope_id": {
+              "description": "Source envelope provenance.",
+              "type": "string"
+            },
+            "trace_ctx": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/TraceCtx"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Trace context."
+            }
+          },
+          "required": [
+            "cause_ids",
+            "confidence",
+            "document_id",
+            "effect_type",
+            "episode_id",
+            "kind",
+            "outcome",
+            "source_authority",
+            "source_envelope_id"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "An entity alias to import.",
+          "properties": {
+            "alias_source": {
+              "description": "Source of the alias.",
+              "type": "string"
+            },
+            "alias_text": {
+              "description": "Alias text.",
+              "type": "string"
+            },
+            "canonical_entity_id": {
+              "description": "The canonical entity.",
+              "type": "string"
+            },
+            "confidence": {
+              "description": "Confidence.",
+              "format": "float",
+              "type": "number"
+            },
+            "is_human_confirmed": {
+              "description": "Whether this has been human-confirmed.",
+              "type": "boolean"
+            },
+            "is_human_confirmed_final": {
+              "description": "Whether this is final (only set by human review or audited migration).",
+              "type": "boolean"
+            },
+            "kind": {
+              "enum": [
+                "entity_alias"
+              ],
+              "type": "string"
+            },
+            "match_evidence": {
+              "description": "Match evidence blob (opaque)."
+            },
+            "merge_decision": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MergeDecision"
+                }
+              ],
+              "description": "Merge decision provenance."
+            },
+            "review_state": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ReviewState"
+                }
+              ],
+              "description": "Review state."
+            },
+            "scope": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ScopeKey"
+                }
+              ],
+              "description": "Explicit scope for this alias."
+            },
+            "source_envelope_id": {
+              "description": "Source envelope provenance.",
+              "type": "string"
+            },
+            "split_from_entity_id": {
+              "description": "Split history pointer.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "superseded_by_entity_id": {
+              "description": "If this entity was superseded by a merge.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "alias_source",
+            "alias_text",
+            "canonical_entity_id",
+            "confidence",
+            "is_human_confirmed",
+            "is_human_confirmed_final",
+            "kind",
+            "merge_decision",
+            "review_state",
+            "scope",
+            "source_envelope_id"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "An evidence reference to import.",
+          "properties": {
+            "claim_id": {
+              "description": "The claim this evidence supports.",
+              "type": "string"
+            },
+            "claim_version_id": {
+              "description": "Version-local linkage.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fetch_handle": {
+              "description": "Canonical raw-evidence fetch handle.",
+              "type": "string"
+            },
+            "kind": {
+              "enum": [
+                "evidence_ref"
+              ],
+              "type": "string"
+            },
+            "metadata": {
+              "description": "Additional audit metadata."
+            },
+            "source_authority": {
+              "description": "Source authority.",
+              "type": "string"
+            },
+            "source_envelope_id": {
+              "description": "Source envelope provenance.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "claim_id",
+            "fetch_handle",
+            "kind",
+            "source_authority",
+            "source_envelope_id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ImportProjectionRecordV3": {
+      "properties": {
+        "record": {
+          "$ref": "#/definitions/ImportProjectionRecord"
+        },
+        "semantics": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ExportRecordSemanticsV3"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "record"
+      ],
+      "type": "object"
+    },
+    "MergeDecision": {
+      "description": "Merge decision provenance for entity aliases.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Automated merge (must not set human_confirmed_final).",
+          "properties": {
+            "automated": {
+              "properties": {
+                "algorithm": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "algorithm"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "automated"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Human-reviewed merge.",
+          "properties": {
+            "human_reviewed": {
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "reviewer": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "reviewer"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "human_reviewed"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Pending human review.",
+          "enum": [
+            "pending_review"
+          ],
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Rejected (not a merge).",
+          "properties": {
+            "rejected": {
+              "properties": {
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "rejected"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "NuisanceSnapshot": {
+      "properties": {
+        "dependency_set_hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "environment_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "measurement_notes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "scope_mismatch_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "selection_bias_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "toolchain_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "OutcomeSpec": {
+      "description": "Outcome specification.",
+      "properties": {
+        "description": {
+          "description": "What outcome is being measured.",
+          "type": "string"
+        },
+        "measurement_method": {
+          "description": "Measurement method.",
+          "type": "string"
+        },
+        "outcome_type": {
+          "description": "Whether outcome is binary, continuous, ordinal, etc.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "measurement_method",
+        "outcome_type"
+      ],
+      "type": "object"
+    },
+    "ProjectionFreshness": {
+      "description": "Projection freshness status.\n\nExtended from the original enum per spec requirements.",
+      "oneOf": [
+        {
+          "description": "Projection was recently imported and is current.",
+          "enum": [
+            "current"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Projection exists but is older than the staleness threshold.",
+          "enum": [
+            "stale"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A newer version has superseded this projection's data.",
+          "enum": [
+            "superseded"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "The last import attempt failed.",
+          "enum": [
+            "import_failed"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "No import has ever been recorded.",
+          "enum": [
+            "never_imported"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Import is lagging behind the source.",
+          "enum": [
+            "import_lagging"
+          ],
+          "type": "string"
+        }
+      ]
+    },
+    "ProjectionVisibilityClass": {
+      "enum": [
+        "standard",
+        "restricted",
+        "audit_only"
+      ],
+      "type": "string"
+    },
+    "PromotionState": {
+      "description": "Promotion state for the claim represented by this bundle.",
+      "oneOf": [
+        {
+          "properties": {
+            "state": {
+              "enum": [
+                "not_promoted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "state": {
+              "enum": [
+                "eligible"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "blocked"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason",
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "promoted_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "state": {
+              "enum": [
+                "promoted"
+              ],
+              "type": "string"
+            },
+            "version_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "QualityVectorV1": {
+      "properties": {
+        "degradation": {
+          "items": {
+            "$ref": "#/definitions/DegradationKindV1"
+          },
+          "type": "array"
+        },
+        "exactness": {
+          "$ref": "#/definitions/ExactnessLevelV1"
+        },
+        "execution_contaminated": {
+          "type": "boolean"
+        },
+        "freshness": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "replay_limited": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "exactness",
+        "execution_contaminated",
+        "replay_limited"
+      ],
+      "type": "object"
+    },
+    "RefutationArtifactRecord": {
+      "description": "First-class refutation artifact preserved in canonical raw truth.",
+      "properties": {
+        "artifact_id": {
+          "description": "Artifact identifier.",
+          "type": "string"
+        },
+        "artifact_type": {
+          "description": "Artifact type / family name.",
+          "type": "string"
+        },
+        "attempt_id": {
+          "description": "Attempt that emitted the artifact, when available.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
+          "description": "Structured debug/detail payload when available.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "estimate_delta": {
+          "description": "Effect delta / estimate change when available.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "result": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/RefutationResult"
+            }
+          ],
+          "description": "Artifact outcome."
+        },
+        "trial_id": {
+          "description": "Trial that emitted the artifact, when available.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "result"
+      ],
+      "type": "object"
+    },
+    "RefutationAttempt": {
+      "description": "A refutation attempt and its result.",
+      "properties": {
+        "estimator_kind": {
+          "description": "Estimator used for the refutation.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "description": "Refutation method (e.g., \"placebo_treatment\", \"random_cause\", \"subset_data\").",
+          "type": "string"
+        },
+        "parameters": {
+          "description": "Parameters for the refutation."
+        },
+        "result": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/RefutationResult"
+            }
+          ],
+          "description": "Result of the refutation attempt."
+        }
+      },
+      "required": [
+        "method",
+        "result"
+      ],
+      "type": "object"
+    },
+    "RefutationResult": {
+      "description": "Result of a refutation attempt.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Refutation did not invalidate the original estimate.",
+          "properties": {
+            "Passed": {
+              "properties": {
+                "estimate_change": {
+                  "description": "How much the estimate changed under the refutation test.",
+                  "format": "double",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "Passed"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Refutation invalidated the original estimate.",
+          "properties": {
+            "Failed": {
+              "properties": {
+                "estimate_change": {
+                  "description": "How much the estimate changed.",
+                  "format": "double",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "description": "Description of how/why the refutation succeeded.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "Failed"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Refutation could not be completed.",
+          "properties": {
+            "Inconclusive": {
+              "properties": {
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "Inconclusive"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Refutation was not attempted (e.g., not applicable).",
+          "properties": {
+            "Skipped": {
+              "properties": {
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "Skipped"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "RetractionRecordV1": {
+      "properties": {
+        "cascade_required": {
+          "type": "boolean"
+        },
+        "claim_id": {
+          "type": "string"
+        },
+        "delta_summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effective_recorded_at": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "retracted_claim_version_id": {
+          "type": "string"
+        },
+        "retraction_record_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "superseded_by_claim_version_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "cascade_required",
+        "claim_id",
+        "effective_recorded_at",
+        "reason",
+        "retracted_claim_version_id",
+        "retraction_record_id",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "ReviewState": {
+      "description": "Durable review state for alias/merge decisions.\n\nMust survive restart and be queryable (MASTER_SUPPORTING_DELTA §5.4).",
+      "oneOf": [
+        {
+          "description": "Not yet reviewed.",
+          "enum": [
+            "unreviewed"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Awaiting human review.",
+          "enum": [
+            "pending_review"
+          ],
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Reviewed and approved.",
+          "properties": {
+            "approved": {
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "by": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "by"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "approved"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Reviewed and rejected.",
+          "properties": {
+            "rejected": {
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "by": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "at",
+                "by",
+                "reason"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "rejected"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    },
+    "SemanticViewV1": {
+      "enum": [
+        "canonical",
+        "projection",
+        "runtime",
+        "causal_advisory",
+        "operator"
+      ],
+      "type": "string"
+    },
+    "SupportExprV1": {
+      "oneOf": [
+        {
+          "properties": {
+            "op": {
+              "enum": [
+                "token"
+              ],
+              "type": "string"
+            },
+            "token_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "token_id"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "children": {
+              "items": {
+                "$ref": "#/definitions/SupportExprV1"
+              },
+              "type": "array"
+            },
+            "op": {
+              "enum": [
+                "any_of"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "children",
+            "op"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "children": {
+              "items": {
+                "$ref": "#/definitions/SupportExprV1"
+              },
+              "type": "array"
+            },
+            "op": {
+              "enum": [
+                "all_of"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "children",
+            "op"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "SupportPolarityV1": {
+      "enum": [
+        "supports",
+        "refutes"
+      ],
+      "type": "string"
+    },
+    "SupportProvenanceKindV1": {
+      "enum": [
+        "evidence_ref",
+        "claim_version",
+        "relation_version",
+        "episode",
+        "receipt",
+        "external"
+      ],
+      "type": "string"
+    },
+    "SupportSetV1": {
+      "properties": {
+        "claim_id": {
+          "type": "string"
+        },
+        "content_digest": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "semantics_profile_id": {
+          "type": "string"
+        },
+        "support_expr": {
+          "$ref": "#/definitions/SupportExprV1"
+        },
+        "support_set_id": {
+          "type": "string"
+        },
+        "support_tokens": {
+          "items": {
+            "$ref": "#/definitions/SupportTokenV1"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_id",
+        "content_digest",
+        "schema_version",
+        "semantics_profile_id",
+        "support_expr",
+        "support_set_id",
+        "support_tokens"
+      ],
+      "type": "object"
+    },
+    "SupportTokenV1": {
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/SupportProvenanceKindV1"
+        },
+        "polarity": {
+          "$ref": "#/definitions/SupportPolarityV1"
+        },
+        "reference": {
+          "type": "string"
+        },
+        "token_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "polarity",
+        "reference",
+        "token_id"
+      ],
+      "type": "object"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "TreatmentSpec": {
+      "description": "Treatment specification.",
+      "properties": {
+        "baseline_description": {
+          "description": "Baseline condition description.",
+          "type": "string"
+        },
+        "description": {
+          "description": "What intervention is being tested.",
+          "type": "string"
+        },
+        "paired_trials": {
+          "description": "Whether paired baseline-vs-patched trials were used.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "baseline_description",
+        "description",
+        "paired_trials"
+      ],
+      "type": "object"
+    },
+    "VerificationLifecycleState": {
+      "description": "Compact lifecycle state that can be projected into memory-visible truth.",
+      "enum": [
+        "unverified",
+        "verified",
+        "contradicted",
+        "superseded"
+      ],
+      "type": "string"
+    },
+    "VerificationSummary": {
+      "description": "Compact verification summary designed for projection/import visibility.",
+      "properties": {
+        "comparability_snapshot_version": {
+          "description": "Immutable comparability snapshot version when carried by the source.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_trial_count": {
+          "description": "Number of completed trials contributing to the summary.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "failed_refutation_count": {
+          "description": "Number of failed refutation artifacts.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "lifecycle_state": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/VerificationLifecycleState"
+            }
+          ],
+          "description": "Verification lifecycle."
+        },
+        "notes": {
+          "default": [],
+          "description": "Human-readable, source-authored notes.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "passed_refutation_count": {
+          "description": "Number of passed refutation artifacts.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "promotion_state": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/PromotionState"
+            }
+          ],
+          "description": "Promotion state."
+        }
+      },
+      "required": [
+        "completed_trial_count",
+        "failed_refutation_count",
+        "lifecycle_state",
+        "passed_refutation_count",
+        "promotion_state"
+      ],
+      "type": "object"
+    },
+    "VerificationTrialRecord": {
+      "description": "First-class verification trial record preserved in canonical raw truth.",
+      "properties": {
+        "attempt_id": {
+          "description": "Retry lineage / attempt family.",
+          "type": "string"
+        },
+        "completed": {
+          "description": "Whether the trial completed.",
+          "type": "boolean"
+        },
+        "receipt_handles": {
+          "default": [],
+          "description": "Opaque receipt handles tied to this trial.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "side": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/VerificationTrialSide"
+            }
+          ],
+          "description": "Which side of the paired family this trial belongs to."
+        },
+        "trial_id": {
+          "description": "Trial identifier.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "attempt_id",
+        "completed",
+        "side",
+        "trial_id"
+      ],
+      "type": "object"
+    },
+    "VerificationTrialSide": {
+      "description": "Baseline-vs-patched side for a verification trial.",
+      "enum": [
+        "baseline",
+        "patched"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifact_admission_policies_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "attestation_envelopes_v15": {
+      "description": "Additive v15 exchange and remote-admission artifacts preserved verbatim.",
+      "items": true,
+      "type": "array"
+    },
+    "attestation_revocations_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "attestation_supersessions_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "claim_states_v13": {
+      "description": "Additive v13 claim-state artifacts preserved verbatim from Forge.",
+      "items": {
+        "$ref": "#/definitions/ClaimStateV13"
+      },
+      "type": "array"
+    },
+    "cohort_contracts_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "comparability_matrices_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "content_digest": {
+      "description": "Content digest carried through from the source envelope.",
+      "type": "string"
+    },
+    "contradiction_witnesses": {
+      "description": "Additive v13 contradiction witnesses preserved verbatim from Forge.",
+      "items": {
+        "$ref": "#/definitions/ContradictionWitnessV1"
+      },
+      "type": "array"
+    },
+    "counterfactual_slices_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "cross_runtime_replay_tickets_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "decision_traces_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "disclosure_budgets_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "disclosure_policies_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "dispute_bundles_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "episode_bundle": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/EpisodeBundleV1"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Canonical v9 episode bundle proof surface."
+    },
+    "evidence_bundle": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/EvidenceBundle"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Optional canonical evidence bundle from the source envelope."
+    },
+    "execution_context": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ExecutionContextV1"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Canonical v9 execution context artifact."
+    },
+    "experiment_budgets_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "experiment_cases_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "export_meta": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ForgeExportMeta"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Optional export metadata from the source envelope."
+    },
+    "export_schema_version": {
+      "default": null,
+      "description": "The original export-side schema version from the source envelope.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "intervention_bundles_v14": {
+      "description": "Additive v14 intervention and control artifacts preserved verbatim from Forge.",
+      "items": true,
+      "type": "array"
+    },
+    "outcome_schemas_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "records": {
+      "description": "Rich import records preserving export-time semantics for kernel compilation.",
+      "items": {
+        "$ref": "#/definitions/ImportProjectionRecordV3"
+      },
+      "type": "array"
+    },
+    "refuter_results_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "refuter_suites_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "remote_oracle_leases_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "remote_slice_requests_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "remote_slice_results_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "retraction_records": {
+      "description": "Additive v13 retraction lineage artifacts preserved verbatim from Forge.",
+      "items": {
+        "$ref": "#/definitions/RetractionRecordV1"
+      },
+      "type": "array"
+    },
+    "rollback_decisions_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "rollout_decisions_v14": {
+      "items": true,
+      "type": "array"
+    },
+    "schema_version": {
+      "description": "Import-side schema version this batch conforms to.",
+      "type": "string"
+    },
+    "scope_key": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ScopeKey"
+        }
+      ],
+      "description": "Target scope."
+    },
+    "source_authority": {
+      "description": "Source authority (e.g. \"forge\").",
+      "type": "string"
+    },
+    "source_envelope_id": {
+      "description": "Source envelope ID (for provenance).",
+      "type": "string"
+    },
+    "source_exported_at": {
+      "description": "When the source envelope was exported.",
+      "type": "string"
+    },
+    "support_sets": {
+      "description": "Additive v13 support algebra artifacts preserved verbatim from Forge.",
+      "items": {
+        "$ref": "#/definitions/SupportSetV1"
+      },
+      "type": "array"
+    },
+    "trace_ctx": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Trace context carried through from the source."
+    },
+    "transformed_at": {
+      "description": "When this batch was produced by the bridge.",
+      "type": "string"
+    },
+    "transparency_receipts_v15": {
+      "items": true,
+      "type": "array"
+    },
+    "trust_root_sets_v15": {
+      "items": true,
+      "type": "array"
+    }
+  },
+  "required": [
+    "content_digest",
+    "records",
+    "schema_version",
+    "scope_key",
+    "source_authority",
+    "source_envelope_id",
+    "source_exported_at",
+    "transformed_at"
+  ],
+  "title": "ProjectionImportBatchV3",
+  "type": "object"
+}

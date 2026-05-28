@@ -1,0 +1,10 @@
+PHASE 00 SOURCE-BASIS EVIDENCE
+PWD: /home/sikmindz/Coding/Libraries/AiDENs
+TARGET_ROOT_EXPECTED: /home/sikmindz/Coding/Libraries/AiDENs
+CANONICAL_ROOT_EXPECTED: /home/sikmindz/Coding/Libraries
+GIT_TOPLEVEL: /home/sikmindz/Coding/Libraries
+WORKSPACE_CRATES: 31
+RUST_FILES: 49
+RUST_LOC: 29617
+STALE_SOURCE_BASIS_SEARCH:
+NO_STALE_MATCHES_FOUND

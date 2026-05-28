@@ -1,0 +1,2129 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/.codex/prompts/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.md",
+      "bytes": 2420,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": ".codex/prompts/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.md",
+      "reason": "stale-codex-control",
+      "run_id": "P20",
+      "sha256": "03e5d3225866cd4f87153700c09a3252ae3708ac6817aa6f86ef1336c16f3d82"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/.codex/tasks/p20_truthful_finish_and_release_hardening.json",
+      "bytes": 198,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": ".codex/tasks/p20_truthful_finish_and_release_hardening.json",
+      "reason": "stale-codex-control",
+      "run_id": "P20",
+      "sha256": "33825742cf742433db88628649e8122076cb160688989744d7a2a73a51753919"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_ACCEPTANCE_GATES.md",
+      "bytes": 1684,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "941e5e80eb8739242bd5683c953c3a4c1b9aa58b17839fc428e81c0e44bc54e7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_AGENCY_EVAL_PLAN.md",
+      "bytes": 1519,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/P20_AGENCY_EVAL_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "76a56b7243f64e14601731e6915b8d007808430cfb62d89e403ec60fd0b850c5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_AGENCY_GOVERNANCE_SPEC.md",
+      "bytes": 2352,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_AGENCY_GOVERNANCE_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "aef7bf6438503b173b793f3640dd8263c5eca0066db68214aa338232966bba8b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_AGENTS_ADDENDUM.md",
+      "bytes": 2107,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/P20_AGENTS_ADDENDUM.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "83eaca38eb7ef21acaf6e8f0195a4f0715fef1903489d18dca3e5415bd93c696"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_CONTRACT_OWNERSHIP_INVENTORY_TEMPLATE.md",
+      "bytes": 1553,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/P20_CONTRACT_OWNERSHIP_INVENTORY_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5c28d8802b4efa9cd79c07e2baa9196cd88c8dd0a758a0a28ed3135654983eea"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_CONTROL_PLANE_EXECUTION_EVIDENCE_SPEC.md",
+      "bytes": 1290,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_CONTROL_PLANE_EXECUTION_EVIDENCE_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "cdcec0de135e5fa3001a42782e90d2c438bc6c624821d2895fd4347eabf75209"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_DELETION_QUARANTINE_RULES.md",
+      "bytes": 929,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_DELETION_QUARANTINE_RULES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b63a4d9d30869c8422b13fc5bcf6d89a88cd453d239b47dda8bb0ccea9e13f3a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md",
+      "bytes": 1119,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7a537927638d0a692dd6ce7273982a50e55bbbafb81223307ed65b30d0ca4a79"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_DOCS_TRUTH_REWRITE_GUIDE.md",
+      "bytes": 749,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_DOCS_TRUTH_REWRITE_GUIDE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7a600167a41806e2a9ea1435e71e9ff5742ed751b422d66e067b0d0215d1f3f0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_EXPECTED_FINAL_REPOSITORY_STATE.md",
+      "bytes": 1174,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_EXPECTED_FINAL_REPOSITORY_STATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "182dc983414db5e380ac31d7c38949892173ad5b123688fced9f0701f0613d1a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_FINISHLINE_SCOPE.md",
+      "bytes": 1656,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_FINISHLINE_SCOPE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "f00e96e36c94d2a79b5bfb45f21266738f5fadfdb281e74f6989547c859c8d5b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_IMPLEMENTATION_PLAYBOOK.md",
+      "bytes": 2691,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/P20_IMPLEMENTATION_PLAYBOOK.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "57c7960aad666963d9426ae91de5f1a48dd60a96feeb531efcbdad72e1ef9a47"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_INVARIANT_CHECKLISTS.md",
+      "bytes": 2041,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_INVARIANT_CHECKLISTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "c901befccfef5f7e12d2a2e27c52d984d68b8565a9a46787733410a590ec0d7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_MASTER_ISSUE_MATRIX.md",
+      "bytes": 4119,
+      "mtime_utc": "2026-05-01T00:57:17Z",
+      "original_path": "docs/P20_MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1225ce0099641f88843d7419b3ee2e58f72ff1875b424931d8c3d606ea3b3a96"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md",
+      "bytes": 2022,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b012908c9da7d4ac37d9a79562658eb33b0b4cf46da9a3a637719cce4518d258"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_PHASE_ORDER_AND_OPERATOR_PROTOCOL.md",
+      "bytes": 1557,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_PHASE_ORDER_AND_OPERATOR_PROTOCOL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "84c14cbaa349219b9487544ed8e17e1f346cb5ba9fa4ffee24a82f80475fb5cc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_PROVIDER_CAPABILITY_MATRIX_TEMPLATE.md",
+      "bytes": 1771,
+      "mtime_utc": "2026-04-30T04:27:43Z",
+      "original_path": "docs/P20_PROVIDER_CAPABILITY_MATRIX_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "8bfc543da508b32768b2340d82e62100ab85e2372bbe36465c03ccd4c378d3c2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_PROVIDER_CAPABILITY_POLICY.md",
+      "bytes": 927,
+      "mtime_utc": "2026-04-30T04:27:38Z",
+      "original_path": "docs/P20_PROVIDER_CAPABILITY_POLICY.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "a1553af433241207024049af446ec964ea2b427e7384a2ca8379c3bdab8d0c44"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_REFERENCE_INTERPRETER_CLOSEOUT.md",
+      "bytes": 1201,
+      "mtime_utc": "2026-05-01T00:57:17Z",
+      "original_path": "docs/P20_REFERENCE_INTERPRETER_CLOSEOUT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "452914e6d63337685fc002034f93c22544a14b6635d76c402dae3476d4d5f137"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_REFERENCE_INTERPRETER_CONFORMANCE_PLAN.md",
+      "bytes": 761,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_REFERENCE_INTERPRETER_CONFORMANCE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "85e3a786c183bd1ca029298633760695b2f346fc84f899bb9a56bfb9e86e63e3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_RELEASE_AUDIT_REQUIREMENTS.md",
+      "bytes": 571,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_RELEASE_AUDIT_REQUIREMENTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "df92b61f3e7361c038545f976f566819a6ee8a5d00b9e30aec94ea452dec161b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_RISK_REGISTER.md",
+      "bytes": 1046,
+      "mtime_utc": "2026-04-30T05:30:58Z",
+      "original_path": "docs/P20_RISK_REGISTER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5cbdd897de098f53e620da3e55658f006f8c3825b610f5b5cbd513603b81336f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_ROLLBACK_REPAIR_QUARANTINE_PLAN.md",
+      "bytes": 1271,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/P20_ROLLBACK_REPAIR_QUARANTINE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d330df9418de1a402a4bd2f888957cb30e535704aeb0b63c6a5d8d1cc59bfd1b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_SOURCE_BASIS.md",
+      "bytes": 2007,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/P20_SOURCE_BASIS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "a539ca962e6d9c801060288788a723aa901e9b48d8352279d1e8c1a8e40b5b69"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/P20_VERIFICATION_COMMANDS.md",
+      "bytes": 709,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/P20_VERIFICATION_COMMANDS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "cc2855764603d9e7eab7743b3fcfce63c0af6c7ba5a070e16e46ad2d7c6f09b6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/00_CODEX_START_HERE.md",
+      "bytes": 1185,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/00_CODEX_START_HERE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "91236a247b7c8e4b33c74de8134b419506b9517eb39b6869a147deb7cc5a163b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/01_SOURCE_AND_EXTRACTION_MAP.md",
+      "bytes": 3009,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/01_SOURCE_AND_EXTRACTION_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "e20674c505584a28f97a3a12cb1af55465f6ac46c6ea2d22b2eb20af127a49a1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/02_CRATE_BOUNDARY_MAP.md",
+      "bytes": 3056,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/02_CRATE_BOUNDARY_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "8ee86eba5b3ec4f482ed9a7b88243b5b81f70dcba08bbd40df88d03ac94ba4d9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/03_IMPLEMENTATION_PHASES.md",
+      "bytes": 2104,
+      "mtime_utc": "2026-04-28T23:15:22Z",
+      "original_path": "docs/p20/03_IMPLEMENTATION_PHASES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "613c893450528a134f23080ef90d8d3c5bc11187c912a5640f42377630734768"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/04_ACCEPTANCE_GATES.md",
+      "bytes": 1458,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/04_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ea634951ab688ec81854e4a399a353aac80bed63d79d2ee04a6ff77cf9b8d58b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/05_FOOTGUN_TEST_MATRIX.md",
+      "bytes": 2094,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/05_FOOTGUN_TEST_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "65f9d5cce27050f50dd4fb21bd036b881e427f059062398bb518beec4b97c8de"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/06_RECALL_SOURCE_TOUCH_MAP.md",
+      "bytes": 2401,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/06_RECALL_SOURCE_TOUCH_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "dd9c84038f709c764a573b4c5b1c37910b89549176941a82f18a295a7d44b46c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/07_API_TARGETS.md",
+      "bytes": 975,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/07_API_TARGETS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "53a300774cb5cccbc620e35ab169ddc2971ebdb43494076469d3f461715147c7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/08_CI_AND_COMMANDS.md",
+      "bytes": 1048,
+      "mtime_utc": "2026-04-27T03:12:41Z",
+      "original_path": "docs/p20/08_CI_AND_COMMANDS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "0b240a3524be45c62968df3601d1bc93d229d68ee5e508096ecc0a0f22d073e0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/09_CODEX_PHASE0_PROMPT.md",
+      "bytes": 649,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/09_CODEX_PHASE0_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "9621fb98ecd8ba4f546f87f0aba9a68665186664de6a5aeb6e67a766be0f038c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/10_CODEX_PHASE1_PROMPT.md",
+      "bytes": 649,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/10_CODEX_PHASE1_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "991e04a4c4a23dadc06b48cafba7fea9c789b184f40a8e1c18cc240695052c1b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/11_CODEX_PHASE2_PROMPT.md",
+      "bytes": 470,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/11_CODEX_PHASE2_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ec2a2fd044e8e5faad16fe888bc1098274dff9250c00fc22ead48eb1a8156440"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/12_DEFERRED_ADVANCED_PROMPT.md",
+      "bytes": 342,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/12_DEFERRED_ADVANCED_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "531f2e6ad276dc352312adc66eb22a2744cf699125a3bc41f5622b7c516b4a1f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/13_DEPENDENCY_BOUNDARY_CHECKLIST.md",
+      "bytes": 612,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/13_DEPENDENCY_BOUNDARY_CHECKLIST.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "26a404008a26f08d94d81743dc24dd57718ba1f9b961ebc482a93e97d5dbb476"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/14_DESIGN_LAWS.md",
+      "bytes": 778,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/14_DESIGN_LAWS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "6ec2c772d3bac6ae66a530f0252e816cc123ff4d3834926c12b59d2e05c2b559"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/15_CURRENT_RECALL_AUDIT_SUMMARY.md",
+      "bytes": 1023,
+      "mtime_utc": "2026-04-25T08:37:10Z",
+      "original_path": "docs/p20/15_CURRENT_RECALL_AUDIT_SUMMARY.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "e0b132a1c7be66d1ab3cc7023f9d8e9f8553d29ec96a19f3cf6da87f05240a7b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/ACCEPTANCE_GATES.md",
+      "bytes": 953,
+      "mtime_utc": "2026-04-26T04:03:12Z",
+      "original_path": "docs/p20/ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ccf448791645eff67a62ba269b2627363c2f82b019462007b05347d2ebaadab6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/APP_PLAN_AND_DOCTOR_SPEC.md",
+      "bytes": 1473,
+      "mtime_utc": "2026-04-26T04:03:12Z",
+      "original_path": "docs/p20/APP_PLAN_AND_DOCTOR_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ae87928d8599a47616502de84a37e5dee5715f8ae55e8522862a492218bd8f2b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/AUDITOR_HANDOFF.md",
+      "bytes": 1322,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/AUDITOR_HANDOFF.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "4aaba4da59fe905bcda87a32712fcd583e8ce5342c1b57de8e7c2c16d815b9c9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "bytes": 3731,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/CANONICAL_OWNER_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "83d570945ffa855b174928d27079f4964b59a05c5107596d32487996f4bce80d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json",
+      "bytes": 156759,
+      "mtime_utc": "2026-04-30T04:03:34Z",
+      "original_path": "docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ff8cddc8c23b713ece01464317ad088ee79d83b31e4e7d8c14b8e07cac2baa03"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md",
+      "bytes": 89791,
+      "mtime_utc": "2026-04-30T04:03:34Z",
+      "original_path": "docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "622095106cd139f1841180b1d1be528f9ff3a1d8b76de46a1f49b57c2c9c8ce7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/CURRENT_AIDENS_AUDIT.md",
+      "bytes": 926,
+      "mtime_utc": "2026-04-30T05:30:05Z",
+      "original_path": "docs/p20/CURRENT_AIDENS_AUDIT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5b06cc0df9a82964658489ec2747d371fa523a955394d180219ac1435e5df399"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/DEPENDENCY_AND_PATH_GUIDE.md",
+      "bytes": 976,
+      "mtime_utc": "2026-04-26T04:04:54Z",
+      "original_path": "docs/p20/DEPENDENCY_AND_PATH_GUIDE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7efaf5bee647e68d0d7ce27367f06493450f4e751267071ce830001fb82f8c70"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/DOCS_CODE_TRUTH_REPORT.md",
+      "bytes": 8752,
+      "mtime_utc": "2026-05-01T04:19:28Z",
+      "original_path": "docs/p20/DOCS_CODE_TRUTH_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1459918e8248acc6dc57a4012bf901d78f989462dd250882781c6ba2481b7200"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/EVIDENCE_REPORTING_REQUIREMENTS.md",
+      "bytes": 1364,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/EVIDENCE_REPORTING_REQUIREMENTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "fbcdc07c5d1ae388679c22c1aca66b54df820cffa7a90ad8214e42cb39788ce5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/FINAL_STATE_SPEC.md",
+      "bytes": 2173,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/FINAL_STATE_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "e73c39088175d40cc820a075f8af37573f786a3e44387d2eb9a9462bc7c96698"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/FORBIDDEN_PATTERNS.md",
+      "bytes": 835,
+      "mtime_utc": "2026-04-26T04:03:12Z",
+      "original_path": "docs/p20/FORBIDDEN_PATTERNS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "e21ac01f5abcfc15881b797c4ad7b289234af1d92c1c3e853826060981f6971a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/HUMAN_GUARDRAIL_PROMPTS.md",
+      "bytes": 4332,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/HUMAN_GUARDRAIL_PROMPTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "bdf8330cee68c33960a0ec23e9da9cceb7d614f1f432e8a858f22ed6f22f2688"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/IMPLEMENTATION_SEQUENCE.md",
+      "bytes": 1722,
+      "mtime_utc": "2026-04-26T04:03:12Z",
+      "original_path": "docs/p20/IMPLEMENTATION_SEQUENCE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ed8b27f1f08ce8ee7a0e9461b188f0d22399288e0cc8a7daa2b56c065170847c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/MASTER_ISSUE_MATRIX.md",
+      "bytes": 1218,
+      "mtime_utc": "2026-04-26T04:04:54Z",
+      "original_path": "docs/p20/MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "470507eceaeca77074a326a6cb9114c94be4e2f08d11328c323d96d11533cd0f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/NON_GOALS.md",
+      "bytes": 499,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/NON_GOALS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ff740820d8a3e061249550c51de84d0d79ea8fb461b8aab307ec3d78f03029e3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/ODD_COMBINATION_MATRIX.md",
+      "bytes": 1199,
+      "mtime_utc": "2026-04-26T04:03:12Z",
+      "original_path": "docs/p20/ODD_COMBINATION_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d16d516359a59e8e417994810413285b8059c51aede644a6c7731a511f2d7020"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/OPEN_AMBIGUITIES_AND_STOP_RULES.md",
+      "bytes": 1010,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/OPEN_AMBIGUITIES_AND_STOP_RULES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "e48324df3791390b39f2ff762b8fda49e7bdfad6d94e0df91cb870db71483cfb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/OPERATOR_QUICKSTART.md",
+      "bytes": 1839,
+      "mtime_utc": "2026-05-01T03:10:24Z",
+      "original_path": "docs/p20/OPERATOR_QUICKSTART.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b475d4e711bd12b73273a5c2998a9ed6783727a9bd9ec52f88be33999ea96604"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md",
+      "bytes": 1813,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "e844eb328e66ed4082a32642be0d73ced8864dc30add87b1d1dcdb6f231941aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_ACCEPTANCE_GATES.md",
+      "bytes": 1684,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "941e5e80eb8739242bd5683c953c3a4c1b9aa58b17839fc428e81c0e44bc54e7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_AGENCY_EVAL_PLAN.md",
+      "bytes": 1519,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/p20/P20_AGENCY_EVAL_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "76a56b7243f64e14601731e6915b8d007808430cfb62d89e403ec60fd0b850c5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_AGENCY_GOVERNANCE_SPEC.md",
+      "bytes": 2352,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_AGENCY_GOVERNANCE_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "aef7bf6438503b173b793f3640dd8263c5eca0066db68214aa338232966bba8b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_AGENTS_ADDENDUM.md",
+      "bytes": 2107,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/p20/P20_AGENTS_ADDENDUM.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "83eaca38eb7ef21acaf6e8f0195a4f0715fef1903489d18dca3e5415bd93c696"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_CONTRACT_OWNERSHIP_INVENTORY_TEMPLATE.md",
+      "bytes": 1553,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/p20/P20_CONTRACT_OWNERSHIP_INVENTORY_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5c28d8802b4efa9cd79c07e2baa9196cd88c8dd0a758a0a28ed3135654983eea"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_CONTROL_PLANE_EXECUTION_EVIDENCE_SPEC.md",
+      "bytes": 1290,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_CONTROL_PLANE_EXECUTION_EVIDENCE_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "cdcec0de135e5fa3001a42782e90d2c438bc6c624821d2895fd4347eabf75209"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_DELETION_QUARANTINE_RULES.md",
+      "bytes": 929,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_DELETION_QUARANTINE_RULES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b63a4d9d30869c8422b13fc5bcf6d89a88cd453d239b47dda8bb0ccea9e13f3a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md",
+      "bytes": 1119,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7a537927638d0a692dd6ce7273982a50e55bbbafb81223307ed65b30d0ca4a79"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_DOCS_TRUTH_REWRITE_GUIDE.md",
+      "bytes": 749,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_DOCS_TRUTH_REWRITE_GUIDE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7a600167a41806e2a9ea1435e71e9ff5742ed751b422d66e067b0d0215d1f3f0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_EXPECTED_FINAL_REPOSITORY_STATE.md",
+      "bytes": 1174,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_EXPECTED_FINAL_REPOSITORY_STATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "182dc983414db5e380ac31d7c38949892173ad5b123688fced9f0701f0613d1a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_FINISHLINE_SCOPE.md",
+      "bytes": 1656,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_FINISHLINE_SCOPE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "f00e96e36c94d2a79b5bfb45f21266738f5fadfdb281e74f6989547c859c8d5b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_IMPLEMENTATION_PLAYBOOK.md",
+      "bytes": 2691,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/p20/P20_IMPLEMENTATION_PLAYBOOK.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "57c7960aad666963d9426ae91de5f1a48dd60a96feeb531efcbdad72e1ef9a47"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_INVARIANT_CHECKLISTS.md",
+      "bytes": 2041,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_INVARIANT_CHECKLISTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "c901befccfef5f7e12d2a2e27c52d984d68b8565a9a46787733410a590ec0d7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_MASTER_ISSUE_MATRIX.md",
+      "bytes": 4119,
+      "mtime_utc": "2026-05-01T00:57:17Z",
+      "original_path": "docs/p20/P20_MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1225ce0099641f88843d7419b3ee2e58f72ff1875b424931d8c3d606ea3b3a96"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md",
+      "bytes": 2022,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b012908c9da7d4ac37d9a79562658eb33b0b4cf46da9a3a637719cce4518d258"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_PHASE_ORDER_AND_OPERATOR_PROTOCOL.md",
+      "bytes": 1557,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_PHASE_ORDER_AND_OPERATOR_PROTOCOL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "84c14cbaa349219b9487544ed8e17e1f346cb5ba9fa4ffee24a82f80475fb5cc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_PROVIDER_CAPABILITY_MATRIX_TEMPLATE.md",
+      "bytes": 1771,
+      "mtime_utc": "2026-04-30T04:27:26Z",
+      "original_path": "docs/p20/P20_PROVIDER_CAPABILITY_MATRIX_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "8bfc543da508b32768b2340d82e62100ab85e2372bbe36465c03ccd4c378d3c2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_PROVIDER_CAPABILITY_POLICY.md",
+      "bytes": 927,
+      "mtime_utc": "2026-04-30T04:27:21Z",
+      "original_path": "docs/p20/P20_PROVIDER_CAPABILITY_POLICY.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "a1553af433241207024049af446ec964ea2b427e7384a2ca8379c3bdab8d0c44"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_REFERENCE_INTERPRETER_CLOSEOUT.md",
+      "bytes": 1201,
+      "mtime_utc": "2026-05-01T00:57:17Z",
+      "original_path": "docs/p20/P20_REFERENCE_INTERPRETER_CLOSEOUT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "452914e6d63337685fc002034f93c22544a14b6635d76c402dae3476d4d5f137"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_REFERENCE_INTERPRETER_CONFORMANCE_PLAN.md",
+      "bytes": 761,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_REFERENCE_INTERPRETER_CONFORMANCE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "85e3a786c183bd1ca029298633760695b2f346fc84f899bb9a56bfb9e86e63e3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_RELEASE_AUDIT_REQUIREMENTS.md",
+      "bytes": 571,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_RELEASE_AUDIT_REQUIREMENTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "df92b61f3e7361c038545f976f566819a6ee8a5d00b9e30aec94ea452dec161b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_RISK_REGISTER.md",
+      "bytes": 1046,
+      "mtime_utc": "2026-04-30T05:30:58Z",
+      "original_path": "docs/p20/P20_RISK_REGISTER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5cbdd897de098f53e620da3e55658f006f8c3825b610f5b5cbd513603b81336f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_ROLLBACK_REPAIR_QUARANTINE_PLAN.md",
+      "bytes": 1271,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/P20_ROLLBACK_REPAIR_QUARANTINE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d330df9418de1a402a4bd2f888957cb30e535704aeb0b63c6a5d8d1cc59bfd1b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_SOURCE_BASIS.md",
+      "bytes": 2007,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/p20/P20_SOURCE_BASIS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "a539ca962e6d9c801060288788a723aa901e9b48d8352279d1e8c1a8e40b5b69"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P20_VERIFICATION_COMMANDS.md",
+      "bytes": 709,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/p20/P20_VERIFICATION_COMMANDS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "cc2855764603d9e7eab7743b3fcfce63c0af6c7ba5a070e16e46ad2d7c6f09b6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/P21_PROVIDER_EXPANSION_PLAN.md",
+      "bytes": 2449,
+      "mtime_utc": "2026-05-01T03:10:14Z",
+      "original_path": "docs/p20/P21_PROVIDER_EXPANSION_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "378e9b341077b3a62d5cd0ab0cd46a208b3932cb537338d8b1bdc5f3a864cb45"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/PROVIDER_CAPABILITY_MATRIX.json",
+      "bytes": 7096,
+      "mtime_utc": "2026-04-30T04:26:35Z",
+      "original_path": "docs/p20/PROVIDER_CAPABILITY_MATRIX.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "cfb006f6605c380727d0a5a1f3722a2824da44adcd057817260a349879934044"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/PROVIDER_CAPABILITY_MATRIX.md",
+      "bytes": 2951,
+      "mtime_utc": "2026-04-30T04:26:08Z",
+      "original_path": "docs/p20/PROVIDER_CAPABILITY_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "55f38e50e2d8cb9d74b825ec70f0cc6489448afb909f701a9dd39d4201f42aba"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/PROVIDER_INTEGRATION_SPEC.md",
+      "bytes": 1811,
+      "mtime_utc": "2026-04-30T04:28:07Z",
+      "original_path": "docs/p20/PROVIDER_INTEGRATION_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "3c37ffc459e0f3bd574687a3c36b154bfb9bd04d41616a827f2376a6d5c9913b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/RESEARCH_CONSTRAINTS.md",
+      "bytes": 774,
+      "mtime_utc": "2026-04-26T04:03:12Z",
+      "original_path": "docs/p20/RESEARCH_CONSTRAINTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d6ed7f11fa1034ef8aadef0167a92f8e3756fe9d36e540834b831a7089172a56"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/RE_RUN_AND_VERIFICATION.md",
+      "bytes": 1008,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/RE_RUN_AND_VERIFICATION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ab033874af12e3bfffce9a79e386f78506c293a395b9b2da65db2f92ccfd5007"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/RISK_REGISTER.md",
+      "bytes": 1123,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/RISK_REGISTER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b1b0c92c718533674f0fb9872aabc5721569fdd06465a874e93adccaddbbfce4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 2424,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "9821522fb376e65a052ac5748efe11a3055aba2c40ba0917a351c433bc0f9d67"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "bytes": 3556,
+      "mtime_utc": "2026-04-30T04:04:05Z",
+      "original_path": "docs/p20/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1d3035feca8d3bd13c24d99d30c287aa1835c3403fb039b5e711d8fc7cada2bb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/SOURCE_ROOTS_AND_TOUCH_MAP.md",
+      "bytes": 1984,
+      "mtime_utc": "2026-04-26T04:03:12Z",
+      "original_path": "docs/p20/SOURCE_ROOTS_AND_TOUCH_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "4b36275398c3485fb9626528718b63574b4d6d717fb39a1060dec49783513e5a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/TOOL_DISPATCH_SPEC.md",
+      "bytes": 1018,
+      "mtime_utc": "2026-04-26T04:03:12Z",
+      "original_path": "docs/p20/TOOL_DISPATCH_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d44a4e3b95f6ef8319d8d3658242347b13462e2c477c795226a0f6f6f92e2d3f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv",
+      "bytes": 18948,
+      "mtime_utc": "2026-04-30T04:04:21Z",
+      "original_path": "docs/p20/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b00e3ee2f4755b573a70f041bf7832ec9e020c4ad64a7e7729ce2f549072b96b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv",
+      "bytes": 90,
+      "mtime_utc": "2026-04-30T04:04:21Z",
+      "original_path": "docs/p20/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ce00e50439cb40ed5229f47664e3e57c400b52c13e81c5d0a820da43891a36de"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/CANONICAL_TYPE_INVENTORY.csv",
+      "bytes": 65187,
+      "mtime_utc": "2026-04-30T04:04:21Z",
+      "original_path": "docs/p20/contract-ownership/CANONICAL_TYPE_INVENTORY.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "4591618fd6ae38f50b1a5cdd1b9a364f638b2270a846b4e7dd71e9b7f1ebc595"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/COMPATIBILITY_LEDGER.md",
+      "bytes": 207,
+      "mtime_utc": "2026-04-29T04:58:38Z",
+      "original_path": "docs/p20/contract-ownership/COMPATIBILITY_LEDGER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "477023f0df19ffdbc354637080badc0c8065e6c983360b841e3653f8ea2f611b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "bytes": 5314,
+      "mtime_utc": "2026-04-29T19:54:27Z",
+      "original_path": "docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "10685c81cdb8381bd075f7ea95e3f223453066f8f09b6809acb59d6dbaf3cdf1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md",
+      "bytes": 1191,
+      "mtime_utc": "2026-04-29T09:08:28Z",
+      "original_path": "docs/p20/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1165767343dc5075b3cd38879256ba22bb9665856125447685ec9c0037e3839e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/FINAL_AUDITOR_HANDOFF.md",
+      "bytes": 3670,
+      "mtime_utc": "2026-04-29T20:03:31Z",
+      "original_path": "docs/p20/contract-ownership/FINAL_AUDITOR_HANDOFF.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1ac26fdb8856430f48e040601b47b7673107f7bb5e39d139b41dcadc51b73b5d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/FINAL_GATE_OUTPUTS.md",
+      "bytes": 2112,
+      "mtime_utc": "2026-04-29T20:03:31Z",
+      "original_path": "docs/p20/contract-ownership/FINAL_GATE_OUTPUTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "aae24f8ac9583c2182fb2b3d2cdf57bf9e57a2569fd9125e26ca652a4c998b95"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md",
+      "bytes": 4354,
+      "mtime_utc": "2026-04-29T20:03:31Z",
+      "original_path": "docs/p20/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "65de2327f39aa17404b182e7dd0e7fdca0374a50979b6abe6c00554a4d760b05"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/FINAL_QUARANTINE_LEDGER.md",
+      "bytes": 1386,
+      "mtime_utc": "2026-04-29T19:54:40Z",
+      "original_path": "docs/p20/contract-ownership/FINAL_QUARANTINE_LEDGER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "f343c005dc0a9677185a1ae76a81c309a590034e44f8de8ca2524963d07807d3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv",
+      "bytes": 83189,
+      "mtime_utc": "2026-04-30T04:04:21Z",
+      "original_path": "docs/p20/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "772e2fc0d081671ff8c28e4267d117bcd46e03fbae95cf4f6909de2e054a1a91"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/FINAL_UNRESOLVED_RISKS.md",
+      "bytes": 1859,
+      "mtime_utc": "2026-04-29T20:03:31Z",
+      "original_path": "docs/p20/contract-ownership/FINAL_UNRESOLVED_RISKS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "aef6da1e36aaa896b33bfd49580aa9a920d83832848043990d5bd801ae66092e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md",
+      "bytes": 1386,
+      "mtime_utc": "2026-04-29T19:07:26Z",
+      "original_path": "docs/p20/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "bcef0a3b836bf5a3f9de5dd48c0caba57bd56901538639f1eba1c63e467e2bc8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv",
+      "bytes": 84079,
+      "mtime_utc": "2026-04-30T04:04:21Z",
+      "original_path": "docs/p20/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5d6cf2848b46561cfe2f3ec24a9dcc9fdef386d24437bf111164ebefde6bb7dc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/quarantine/delegation-kit-attestation-settlement.md",
+      "bytes": 2997,
+      "mtime_utc": "2026-04-29T07:30:16Z",
+      "original_path": "docs/p20/contract-ownership/quarantine/delegation-kit-attestation-settlement.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "6ebde1908796a11f98ae030c4e1f3deaec0d8797949552e9aaad8ad5a7ed9e0f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/quarantine/phase05-schema-sketches.md",
+      "bytes": 2048,
+      "mtime_utc": "2026-04-29T19:09:44Z",
+      "original_path": "docs/p20/contract-ownership/quarantine/phase05-schema-sketches.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "0141ff7d3c37664eeb9beb2dc6bae83547676c90010009261b9e052bc2ea00d0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "bytes": 2011,
+      "mtime_utc": "2026-04-29T19:54:34Z",
+      "original_path": "docs/p20/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d43219f597309df08e573311042b1ae7864cbaf0d3591f513beb0dd090ca9372"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/matrices/P0_DUPLICATE_TYPES.csv",
+      "bytes": 779,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/matrices/P0_DUPLICATE_TYPES.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "2bead88445bf508aeec0920ef911ea180d4828d516aa2bd1efd97426cd86a697"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/matrices/SOURCE_OF_TRUTH_MATRIX.csv",
+      "bytes": 1175,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/matrices/SOURCE_OF_TRUTH_MATRIX.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "93d3cf8b263824edb19baeb53ca4c2c8f393720335b5743c1626f4f6a8136a06"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv",
+      "bytes": 222,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "0b427ab281932e69430f7e26ade5de732788bb035ba7a9418e3f378fe2fb86a7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "bytes": 4394,
+      "mtime_utc": "2026-04-25T08:31:24Z",
+      "original_path": "docs/p20/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "56f0382bfa0238753565b703aa87a7a92ac59d93c689cb1ea6e96a6317a5cdb5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "bytes": 5092,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "docs/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "fafefbb08eb10006710daebac91f7734d6038078f5cd4312ae778261380e7b10"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md",
+      "bytes": 3788,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "docs/p20/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "8739ff094f221a06f82e7c1f39b183d1b65dd3b99bc1f1f504f6074b2e02d71d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/03_CRATE_BOUNDARY_MAP.md",
+      "bytes": 7091,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "docs/p20/prior-design-packet/03_CRATE_BOUNDARY_MAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "40aff76db60643f793d68d63704d4955659e6dbd58bb62fdd3b805d63a4ca580"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/04_EXTRACTION_PROCEDURE.md",
+      "bytes": 7775,
+      "mtime_utc": "2026-04-25T08:31:24Z",
+      "original_path": "docs/p20/prior-design-packet/04_EXTRACTION_PROCEDURE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "40d48900c9a629c69cc5fc293a447c3978d06d9f940cca50d0071ab0d2809295"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md",
+      "bytes": 7298,
+      "mtime_utc": "2026-04-25T08:31:24Z",
+      "original_path": "docs/p20/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "fd2997dc367c15a664e4dbc22d4e9f3fdc432cc557d9a952f0a8c3e1d6422e52"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md",
+      "bytes": 4295,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "docs/p20/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7a1a86259c6719e668219b28b54441fea143b64c71314441fc37c9278a9333ec"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md",
+      "bytes": 3855,
+      "mtime_utc": "2026-04-25T07:58:46Z",
+      "original_path": "docs/p20/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "70c7208317abcc9c6de84bd389f1c9aef2347795883aef2b4af764508c10b44f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md",
+      "bytes": 3163,
+      "mtime_utc": "2026-04-25T07:58:46Z",
+      "original_path": "docs/p20/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "abe5fbf64e3257a489b3be3d238a2e8961764e10c90384387d1c56b27f55ce33"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md",
+      "bytes": 2848,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "docs/p20/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "891b34c84b3a383004168c9c225044f4325c340c3ae1bd040ead38adabdfba26"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md",
+      "bytes": 2944,
+      "mtime_utc": "2026-04-25T07:58:46Z",
+      "original_path": "docs/p20/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "daf5ad504c6c661771b163329a0804df1ba3d22b6eb8672d874796d943003e80"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md",
+      "bytes": 4055,
+      "mtime_utc": "2026-04-25T07:58:46Z",
+      "original_path": "docs/p20/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "34516d873aea91de0b390e68a30bcf335ca4a42884cefe4cdc55fc4d60f7fbb1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md",
+      "bytes": 4076,
+      "mtime_utc": "2026-04-25T08:31:24Z",
+      "original_path": "docs/p20/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1a7cc2a257368b85df6d5595d5fa4e320b3bbe83b219601afa7dcf355ef55820"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md",
+      "bytes": 3614,
+      "mtime_utc": "2026-04-28T23:18:20Z",
+      "original_path": "docs/p20/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "31d5b9dcb0283b048261d598b25ced11db60268fbfddbdad2f402ea43e938d41"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/14_RISK_REGISTER.md",
+      "bytes": 3035,
+      "mtime_utc": "2026-04-25T07:58:46Z",
+      "original_path": "docs/p20/prior-design-packet/14_RISK_REGISTER.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "f20e5f2e787bf3fd4c8e0308cde9d82bf13aa9054c17b32692b659dbd4ef6cc3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/15_API_SKETCHES.md",
+      "bytes": 2960,
+      "mtime_utc": "2026-04-25T07:58:46Z",
+      "original_path": "docs/p20/prior-design-packet/15_API_SKETCHES.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "6f5f388bcd18c1044a709f0cec7279c537c5b2acccc4dd5fb22399b53d0d6f6d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/16_TRACEABILITY_MATRIX.md",
+      "bytes": 4488,
+      "mtime_utc": "2026-04-25T07:58:46Z",
+      "original_path": "docs/p20/prior-design-packet/16_TRACEABILITY_MATRIX.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "a3bc21d4441a90daa79d80e61c1ba0c13871338436dfcae567dcf330f5ebae64"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md",
+      "bytes": 4108,
+      "mtime_utc": "2026-04-25T08:01:42Z",
+      "original_path": "docs/p20/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "fabcd4374c642241c420ebbcdb5ba5e9185a5886ec232d609b85c53239b2be9d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md",
+      "bytes": 2710,
+      "mtime_utc": "2026-04-25T08:01:42Z",
+      "original_path": "docs/p20/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1edaeebe5c4df8090ce12da651f4ed94ac5f6ddc9f31fadd9f8b6a7cacef71e2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/MANIFEST.json",
+      "bytes": 937,
+      "mtime_utc": "2026-04-25T08:01:42Z",
+      "original_path": "docs/p20/prior-design-packet/MANIFEST.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b7fc1203418f16550c10f6f5b91f07cbb480b43e95cc98ca4f4167384586e7a1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/MANIFEST.txt",
+      "bytes": 632,
+      "mtime_utc": "2026-04-25T08:01:42Z",
+      "original_path": "docs/p20/prior-design-packet/MANIFEST.txt",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "3579f66a39d941e9736837787a3e86d1f12e36df3d1e0b9a698f2a6fe6413318"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/README.md",
+      "bytes": 3414,
+      "mtime_utc": "2026-04-25T08:31:24Z",
+      "original_path": "docs/p20/prior-design-packet/README.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5352fb310079519dae8b3f82b242451c8a56bb9a83a69bf070cf9efba24672da"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md",
+      "bytes": 1226,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "8d7822b3b740581265d3a87e6b51500b1e9e9e4c24e5aff036831c493ed9e6e7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md",
+      "bytes": 1236,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "00b2257ce4bcef54654574450436fc132b4ff7db6d0e1b7421d8132738cc6e61"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md",
+      "bytes": 1273,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "11748de496dfa1b41aa74f3df1ecc007501d6dbeb7c1d004aa8e6e2b628aac13"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET_PROMPT.md",
+      "bytes": 1388,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "8613232a773366282e81c1d2c52fb27c88d91336eed9f0273e8f03cd5456e316"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE_PROMPT.md",
+      "bytes": 1284,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "278bae0a5dfa7304d0f74a0b58488804b31544d032f51ad23866cb6eaba060be"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX_PROMPT.md",
+      "bytes": 1222,
+      "mtime_utc": "2026-04-28T21:15:06Z",
+      "original_path": "docs/p20/prompts/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "4b6538051decc1799f845c04586193d095821b8133833bb43f7d76528bb21c80"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md",
+      "bytes": 1341,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d62dfead5fac950de8faf36faad3a65596de5357a8884e55c7272d863f623929"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md",
+      "bytes": 1177,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1ea3a68e1b0df8b34b5ecae54826e7794c32a76901fe0e61341757265a1ae36d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE_PROMPT.md",
+      "bytes": 1310,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "74f3139e05def4c391c4ea8d0570e932b52bac44a682294fdabdb23fcb5674d2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md",
+      "bytes": 1311,
+      "mtime_utc": "2026-04-28T21:20:37Z",
+      "original_path": "docs/p20/prompts/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "653c73bad112eeda92417dfd2b84057bc2648ad9b8b79a881f0f703d925af6e8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md",
+      "bytes": 1306,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "docs/p20/prompts/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "e5d92ba6bd6e238c12f7e5b22b493880043f1718308d5bf535f9e98fc8e6f424"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY_PROMPT.md",
+      "bytes": 1240,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "c3e7d58fbb8d0c71bcc313771487f9ac14dbae70b8d3c2f765ba1f9303ee17ba"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md",
+      "bytes": 1396,
+      "mtime_utc": "2026-04-28T21:16:12Z",
+      "original_path": "docs/p20/prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5e6f8d65f236d31d8de6df7acc50070e5c7f67f4fc2b62e213f76271b1d31b7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md",
+      "bytes": 1219,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "437871314527c18a83c6b5304a09a96b0aa94eefe216f4e464912d50c2bac886"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md",
+      "bytes": 1127,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "4cbb424e708cb27ed6319d4840b86359a87f2c671b6a47af3a37ffc899dc5ada"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md",
+      "bytes": 1268,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "docs/p20/prompts/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "52432de7fc94f5615573e0ff177c5d057755e1f4f74106b44a8cc2192a409a50"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION_PROMPT.md",
+      "bytes": 1316,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ea5946a1236f619fc8a26eb7ba13b28a63e19639f3b1ffa60941a22e60c2920f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION_PROMPT.md",
+      "bytes": 1251,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "28770fe5596b419c9e3a7e9fc8014a6654b22bfe87a1eb2deb322d0e57116d5c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME_PROMPT.md",
+      "bytes": 1300,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "docs/p20/prompts/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "9286dded6e9c827349cd5af57a85dcc3285fb894b332d830774a74301eea2e1b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT_PROMPT.md",
+      "bytes": 1205,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/prompts/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT_PROMPT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1237dbc2bf5470da2ec6f7c5bc230ca4f75d08f0bb5a63bf1e367a3cfe07451c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/P20_CODEX_RUN_PROMPT.md",
+      "bytes": 2420,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/P20_CODEX_RUN_PROMPT.md",
+      "reason": "stale-codex-run-prompt",
+      "run_id": "P20",
+      "sha256": "03e5d3225866cd4f87153700c09a3252ae3708ac6817aa6f86ef1336c16f3d82"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "bytes": 1667,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "891bb28008b6c01f9c98c8588bc2f5845861e41c4e7b70a32f7d40f67043ced1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_00_START_INJECTION.md",
+      "bytes": 405,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_00_START_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "80d89af87a3515ba22abea7b17bf4490c9b88433143d0034857074d24f9db0b2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md",
+      "bytes": 484,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_01_BUILD_BASELINE_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "22bfb2f5341350e5f7d47740754e8fd0df26903b141340a5128a9dc917179a97"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md",
+      "bytes": 552,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_02_DOCS_TRUTH_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d82cdf2b13bfcc9bee16fb29a11d7784dcc190ef0f52fef2fdd8b9e2bcb55f08"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md",
+      "bytes": 662,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_03_CONTRACT_OWNERSHIP_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ae379784fbd5d1f8698efb19272379dd56a38dacde8685f4a142c6f6726d17ae"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md",
+      "bytes": 410,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_04_SCANNER_VERIFY_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "e31603081d6328ff6c008e86f4f37a3ad0c484b3312e067cd8d1a778b958aacf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md",
+      "bytes": 388,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_05_PROVIDER_TRUTH_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "64e23ce98421ce3042f80dbf269f87c84d4c378eef97fb21ba6a87aad2705b70"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md",
+      "bytes": 485,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_06_RUNNER_SLICE_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "f0e4abf7ffad0d3cadfba2b1e1aad896ac0325ff3002fe7ce439be0e5cfe46d4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md",
+      "bytes": 423,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_07_CANONICAL_ADAPTERS_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "082a4caac32ec50e1b86164a4b40552d3d7ffb7f8dc66e83a28d12206fd2af5a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md",
+      "bytes": 703,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_08_AGENCY_GOVERNANCE_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "237941c616a742d536b55072f199a23ed793adc44c081ddc814759f8916c511b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md",
+      "bytes": 502,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_09_REFERENCE_HOSTILE_TESTS_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "a30efe7019760aa07d003240064e56668bbacb84ce83b33daede31983942acb8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md",
+      "bytes": 414,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/PHASE_10_FINAL_AUDIT_INJECTION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "9efc2c968295d84e62acdaae2ed99f2f3c142707b85c5a36430f3c6c7b1184a2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phase_injections/README.md",
+      "bytes": 969,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phase_injections/README.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "a2654e3cc5ada70576e691e0433415e31241601b8de24c86234395375d407040"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md",
+      "bytes": 681,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "291c2d39c7a889543754861e77f49aee5e96e8b20b2bac3d269c04c2a39d1e21"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_01_BUILD_CERTIFICATION.md",
+      "bytes": 949,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_01_BUILD_CERTIFICATION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5e24a0ae837eec5ecff2e59201d0415b5924e800e651a5e8a25bd5da4a5e7bff"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md",
+      "bytes": 471,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "153d5889cfe1510c0ed8c5e509bcff743419c732cd204df549e4c80a4405257b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md",
+      "bytes": 505,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5f8470ea95b94b8d6edd41a918a8f5ec78d7e10674cd2f3d3fe95435b3d60b1f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md",
+      "bytes": 544,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "43ddfc144a10cf7805a514e7cba5ab7198dac10853f3e218f97d5bfb72007925"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md",
+      "bytes": 453,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b1b433e9942641248a300ad091c1c7dcd0d00eb74e678dd70d212e418fba479b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md",
+      "bytes": 438,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5d68746129010f0e4e10ce61d746009d739127dc0ee57cc97a0e43c2f6db0078"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md",
+      "bytes": 502,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "761a1d78b19e67ce7d7ab907c89439ebd2ac67264db52fb101103ea2f72568a3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md",
+      "bytes": 465,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7fc49ef68aa126009ee0e4532a462480277099505a488e0f7d428762f8636af6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md",
+      "bytes": 480,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "239461e40a28e52b84413c7391b9c9b7c7caecb3f249cf262865438cc156e393"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md",
+      "bytes": 380,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7cd4ae23ee20aee61f0df1996abbea3d844955afc0a35376b7cefa30710f7019"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_00_REPORT.md",
+      "bytes": 15187,
+      "mtime_utc": "2026-04-29T21:56:41Z",
+      "original_path": "docs/p20/reports/PHASE_00_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "98f6b0828b630f316bc0b741b04fd173a85b6610c7656709193512a802213a37"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_01_REPORT.md",
+      "bytes": 7477,
+      "mtime_utc": "2026-04-29T23:00:38Z",
+      "original_path": "docs/p20/reports/PHASE_01_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "59a8d818f7332177451edc0896755ca843650019170c5f0529fce3ed05104282"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_02_REPORT.md",
+      "bytes": 6459,
+      "mtime_utc": "2026-04-30T03:53:04Z",
+      "original_path": "docs/p20/reports/PHASE_02_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "34928323d6c41ca6e36738be6862cb2e6e3f3b67f858246ce75be0b32dadd0ec"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_03_REPORT.md",
+      "bytes": 7802,
+      "mtime_utc": "2026-04-30T04:07:19Z",
+      "original_path": "docs/p20/reports/PHASE_03_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "835727d8e944cdb7e08db9310079e19ce7a3e99e79fcb41c32312a3d578586a7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_04_REPORT.md",
+      "bytes": 7095,
+      "mtime_utc": "2026-04-30T04:18:49Z",
+      "original_path": "docs/p20/reports/PHASE_04_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "2ffbbdc9ee9652599aeb59d20a80b205b79970093d5fb5a29342ae3ba5e99910"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_05_REPORT.md",
+      "bytes": 8520,
+      "mtime_utc": "2026-04-30T04:36:48Z",
+      "original_path": "docs/p20/reports/PHASE_05_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "6ef9cc34d583aad12a02f4a1768435f9f8672430fd24e91db355051967768b43"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_06_REPORT.md",
+      "bytes": 6164,
+      "mtime_utc": "2026-04-30T04:49:33Z",
+      "original_path": "docs/p20/reports/PHASE_06_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "c09f771496b32193a64c8fb19e62ed6b9f9ac4d78311a8bda4a00c62b62bbeea"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_07_REPORT.md",
+      "bytes": 6755,
+      "mtime_utc": "2026-05-01T00:57:17Z",
+      "original_path": "docs/p20/reports/PHASE_07_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "0e4ac7cf35302180c84ff6431f9d7625fcc65dc0fc377ec8b9b41b3818a05eff"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_08_REPORT.md",
+      "bytes": 7299,
+      "mtime_utc": "2026-04-30T05:16:47Z",
+      "original_path": "docs/p20/reports/PHASE_08_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1c0e4fe35b5f60a2cb3bdc03940baa128a7abffdb0e97d91b3b22128373d10f1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_09_REPORT.md",
+      "bytes": 7776,
+      "mtime_utc": "2026-05-01T00:57:17Z",
+      "original_path": "docs/p20/reports/PHASE_09_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "cb1f95ce3969d4952e7c54f732beedb9398aa91aa832359587adfcd1e2ae59b2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_10_REPORT.md",
+      "bytes": 3638,
+      "mtime_utc": "2026-04-30T05:54:07Z",
+      "original_path": "docs/p20/reports/PHASE_10_REPORT.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "eb23f9700749c68c23c4cb5854906195a4e9f3b05c4ee2baa48a89a9948f36f6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/supporting/matrices/forbidden_leftovers.csv",
+      "bytes": 299,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/supporting/matrices/forbidden_leftovers.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "43e3b9ee3f6eda3f4ac689808b9856d8a6c9ef80a0bc144ec6d0b143c9398b75"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/supporting/matrices/phase_acceptance_gates.csv",
+      "bytes": 483,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/supporting/matrices/phase_acceptance_gates.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1489cef0b49259b5acfc3cf387ac052ebf6ec249cbee2aa1fd3727a47caf487f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/supporting/matrices/source_of_truth_matrix.csv",
+      "bytes": 605,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/supporting/matrices/source_of_truth_matrix.csv",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "8ca978725268a6573549d7d69d066a02ad7fec762af34164eeaf56b7fed7c884"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.json",
+      "bytes": 1050,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "90b9e986f6364ddd0b576aa666173bbaef77c49ccb0aa07bf9ef79ad4370f47d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.json",
+      "bytes": 1037,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "d28276571d93ca7ba03e3fbf3b75f79958f1277d88ab941090f9cca3ee4b4fa6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.json",
+      "bytes": 1099,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "c7079b9175b0708f73773233b5673ccc44e70676eaf32cfc419a8034cdc11e6c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.json",
+      "bytes": 1160,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "103a14effd5e08b06798cae3a8c1a4b221fb1fc1035b43cb229c4fcaf5896016"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.json",
+      "bytes": 1111,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "9446ea4785d79e0052a8a6b9b183e57f1b6151389f6f9501fb33377ee54fc2b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.json",
+      "bytes": 1072,
+      "mtime_utc": "2026-04-28T21:15:06Z",
+      "original_path": "docs/p20/tasks/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "f80f2f18daeca01129e93867a5c302464ac995f76b448a541d26006ce25d1cfd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.json",
+      "bytes": 1201,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "55562c5855fac8233b1fd52c426c9f244314e2b6484970f2f4e102d34ae02dac"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.json",
+      "bytes": 1031,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "5f783ff5025732284e1b3beab48127f1e96fcd0a0a2f3b1b4a59585a6cf10ddf"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.json",
+      "bytes": 1106,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "b0e29edf36632f8d49303d1e17a23b2f44ce66b1ef63a425f83e6d599bccc231"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.json",
+      "bytes": 1191,
+      "mtime_utc": "2026-04-28T21:20:37Z",
+      "original_path": "docs/p20/tasks/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "624aafb26875e161e19e70039441d19f9d69da8743bfc5b6143a9186d0ad9dcb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.json",
+      "bytes": 1125,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "docs/p20/tasks/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "afd72e40be330db3fb5af7642eb820c3714a10f60c7a65f778a3f4061d658166"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.json",
+      "bytes": 1105,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "ef5ebb2a3be8797483064806845ad16ed468b365c5800d22cade05f3dcc1f3de"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.json",
+      "bytes": 1227,
+      "mtime_utc": "2026-04-28T21:16:12Z",
+      "original_path": "docs/p20/tasks/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "72af0fbf266e1568912610324314baa8946b5239855be07b2ad9075a149aa0d0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.json",
+      "bytes": 1053,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "7c303e7e7ba0b313161b5ce9476f2030bd2964c1677ed908ceb8279ac68242b6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.json",
+      "bytes": 957,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "531deba5407942286f3b973ef085a835dec6a69a7433cbb5d1ec6589412f332b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.json",
+      "bytes": 1123,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "docs/p20/tasks/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "3bab12170ac880982405d9e696583249c020de2796897783fb51b40c835cab8a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.json",
+      "bytes": 1167,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1ed52703f34217c2444ea68408c3725040a035e80ceafe495ccb513649613c98"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.json",
+      "bytes": 1093,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "91cdd0d9ceedb67f79f267a08bcbeba9637991ba2c046cf470748be239308863"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.json",
+      "bytes": 1139,
+      "mtime_utc": "2026-04-28T23:18:02Z",
+      "original_path": "docs/p20/tasks/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "8c2178baa9bd51d78781de2f783581a5ef15667b7f1fd52caa6463868d501f6f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.json",
+      "bytes": 1002,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "docs/p20/tasks/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "67dba4a04b00c18a848729e8c893f412273587076671d1b63c23b915cd8d0be3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P20_PHASE_GATES.json",
+      "bytes": 1631,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/tasks/P20_PHASE_GATES.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "fe9cbcc118fb3ef82c3d45718348a67af2741e227bd1a22adb48b274526f5b7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P20_TASK_MATRIX.json",
+      "bytes": 1917,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "docs/p20/tasks/P20_TASK_MATRIX.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "0da6aec593b8339eb79d07eb2bf70524c4582b317e551688dbae26e936b62e7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/tasks/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.json",
+      "bytes": 7218,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "docs/p20/tasks/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.json",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "63da9b73aa65203b45f2c660cefdee3acdb5f2327ad783bda1203980ef1c4a7d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 257,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "192c81feabfe065fb9d544096de21ab780bed0bcc8172adbdcdaf2557b7c3c7e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/templates/PHASE_REPORT_TEMPLATE.md",
+      "bytes": 659,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/templates/PHASE_REPORT_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "1567a152eb8131e638ba9d7b91eb4fea209bde888fcb96ad65ef31e81f8f7f6b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/docs/p20/templates/QUARANTINE_RECORD_TEMPLATE.md",
+      "bytes": 326,
+      "mtime_utc": "2026-04-29T09:44:54Z",
+      "original_path": "docs/p20/templates/QUARANTINE_RECORD_TEMPLATE.md",
+      "reason": "stale-run-doc",
+      "run_id": "P20",
+      "sha256": "9aed4dfb0f0eeae1f816ddb155f146f58fc8a0c9de0c61937571f7ad5ff6d9ac"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/prompts/P20_CODEX_RUN_PROMPT.md",
+      "bytes": 2420,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "prompts/P20_CODEX_RUN_PROMPT.md",
+      "reason": "stale-codex-run-prompt",
+      "run_id": "P20",
+      "sha256": "03e5d3225866cd4f87153700c09a3252ae3708ac6817aa6f86ef1336c16f3d82"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/scripts/p20_generate_audit_bundle.sh",
+      "bytes": 7491,
+      "mtime_utc": "2026-05-01T04:19:20Z",
+      "original_path": "scripts/p20_generate_audit_bundle.sh",
+      "reason": "stale-run-script",
+      "run_id": "P20",
+      "sha256": "956362900af7fdb20b7cd0ab6e1de501760d6a7847e90cfea6fc6b1579a7a54f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/scripts/p20_phase_gate.py",
+      "bytes": 759,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "scripts/p20_phase_gate.py",
+      "reason": "stale-run-script",
+      "run_id": "P20",
+      "sha256": "d93aee86b9662a3cdd9fcce18598032d6b1696676aa668a4d60e11ea04ea372c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/scripts/p20_scan_aidens.py",
+      "bytes": 34529,
+      "mtime_utc": "2026-05-01T04:19:09Z",
+      "original_path": "scripts/p20_scan_aidens.py",
+      "reason": "stale-run-script",
+      "run_id": "P20",
+      "sha256": "5ee0cef0d2f147894adecad2403aca578bba582dd590997e8a099a2e637c34f9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/scripts/p20_validate_agency_cases.py",
+      "bytes": 4337,
+      "mtime_utc": "2026-05-01T00:53:58Z",
+      "original_path": "scripts/p20_validate_agency_cases.py",
+      "reason": "stale-run-script",
+      "run_id": "P20",
+      "sha256": "67b6ab23ce54172c487b54aeec8bf814735db215ceddac8081e4c5e6d0b7b60c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/scripts/p20_verify.sh",
+      "bytes": 182,
+      "mtime_utc": "2026-04-30T12:26:52Z",
+      "original_path": "scripts/p20_verify.sh",
+      "reason": "stale-run-script",
+      "run_id": "P20",
+      "sha256": "0e2786862d4725714a26723ce442b14a96af56d9cbd37e072c555d3086cfef4c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/tasks/P20_PHASE_GATES.json",
+      "bytes": 1631,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "tasks/P20_PHASE_GATES.json",
+      "reason": "stale-run-task",
+      "run_id": "P20",
+      "sha256": "fe9cbcc118fb3ef82c3d45718348a67af2741e227bd1a22adb48b274526f5b7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/tasks/P20_TASK_MATRIX.json",
+      "bytes": 1917,
+      "mtime_utc": "2026-04-30T02:46:54Z",
+      "original_path": "tasks/P20_TASK_MATRIX.json",
+      "reason": "stale-run-task",
+      "run_id": "P20",
+      "sha256": "0da6aec593b8339eb79d07eb2bf70524c4582b317e551688dbae26e936b62e7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P20/files/tasks/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.json",
+      "bytes": 7218,
+      "mtime_utc": "2026-04-30T02:16:54Z",
+      "original_path": "tasks/P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING.json",
+      "reason": "stale-run-task",
+      "run_id": "P20",
+      "sha256": "63da9b73aa65203b45f2c660cefdee3acdb5f2327ad783bda1203980ef1c4a7d"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P20",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

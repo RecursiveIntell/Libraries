@@ -1,0 +1,47 @@
+{
+  "receipt_id": "view-disclosure:p13-fixture",
+  "kind": "view-disclosure",
+  "request_id": "runtime-view-request:p13-fixture",
+  "view_mode": "temporal",
+  "policy_id": "retrieval-policy:p13-fixture",
+  "projection_digest": {
+    "projection_id": "projection-digest:p13-fixture",
+    "kind": "projection-digest",
+    "view_mode": "temporal",
+    "policy_id": "retrieval-policy:p13-fixture",
+    "source_episode_ids": [
+      "episode:p13"
+    ],
+    "source_claim_ids": [
+      "claim:p13"
+    ],
+    "source_evidence_ids": [
+      "evidence:p13"
+    ],
+    "digest": {
+      "algorithm": "blake3",
+      "canonicalization": "stack-ids-json-c14n-v1-display-only",
+      "digest": "blake3:2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    "rebuilt_from_authoritative_memory": true,
+    "reason_codes": [
+      "projection-rebuild-from-authoritative-memory"
+    ],
+    "created_at": "2026-04-27T01:00:04Z"
+  },
+  "matched_claim_ids": [
+    "claim:p13"
+  ],
+  "query_widening_receipt_ids": [
+    "query-widening:p13-fixture"
+  ],
+  "degradation_event_ids": [
+    "degradation-event:p13-fixture"
+  ],
+  "authoritative_source": "append-only-memory-and-receipts",
+  "separates_execution_from_domain_truth": true,
+  "reason_codes": [
+    "view-disclosure-emitted-before-results"
+  ],
+  "recorded_at": "2026-04-27T01:00:05Z"
+}

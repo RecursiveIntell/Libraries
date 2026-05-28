@@ -1,0 +1,87 @@
+{
+  "schema": "fibquant_test_matrix_v1",
+  "small_ci_cases": [
+    {
+      "d": 8,
+      "k": 2,
+      "N": 8,
+      "seed": 11,
+      "training_samples": 256,
+      "restarts": 2,
+      "lloyd_iterations": 3
+    },
+    {
+      "d": 12,
+      "k": 3,
+      "N": 12,
+      "seed": 12,
+      "training_samples": 256,
+      "restarts": 2,
+      "lloyd_iterations": 3
+    },
+    {
+      "d": 16,
+      "k": 4,
+      "N": 16,
+      "seed": 13,
+      "training_samples": 384,
+      "restarts": 2,
+      "lloyd_iterations": 3
+    },
+    {
+      "d": 32,
+      "k": 8,
+      "N": 32,
+      "seed": 14,
+      "training_samples": 512,
+      "restarts": 2,
+      "lloyd_iterations": 3
+    }
+  ],
+  "negative_cases": [
+    {
+      "d": 0,
+      "k": 2,
+      "N": 8,
+      "expect": "ZeroDimension"
+    },
+    {
+      "d": 8,
+      "k": 0,
+      "N": 8,
+      "expect": "InvalidBlockDim"
+    },
+    {
+      "d": 10,
+      "k": 4,
+      "N": 8,
+      "expect": "DimensionNotDivisible"
+    },
+    {
+      "d": 8,
+      "k": 2,
+      "N": 1,
+      "expect": "InvalidCodebookSize"
+    }
+  ],
+  "rate_cases": [
+    {
+      "k": 2,
+      "N": 3,
+      "paper_rate": "log2(3)/2",
+      "wire_index_bits": 2
+    },
+    {
+      "k": 4,
+      "N": 16,
+      "paper_rate": 1.0,
+      "wire_index_bits": 4
+    },
+    {
+      "k": 8,
+      "N": 32,
+      "paper_rate": 0.625,
+      "wire_index_bits": 5
+    }
+  ]
+}

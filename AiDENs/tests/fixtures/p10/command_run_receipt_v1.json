@@ -1,0 +1,34 @@
+{
+  "receipt_id": "command-run:fixture",
+  "kind": "command-run",
+  "tool_id": "aidens:run-checks:1",
+  "sandbox_root": "/repo",
+  "command": [
+    "cargo",
+    "check",
+    "--workspace"
+  ],
+  "permit_grant_id": "permit:fixture",
+  "permit_use_receipt_id": "permit-use:fixture",
+  "allowed_by_policy": true,
+  "exit_code": 0,
+  "stdout_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-utf8-text-v1-display-only",
+    "digest": "blake3:fixture-stdout"
+  },
+  "stderr_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-utf8-text-v1-display-only",
+    "digest": "blake3:fixture-stderr"
+  },
+  "stdout_bytes": 2,
+  "stderr_bytes": 0,
+  "timed_out": false,
+  "succeeded": true,
+  "reason_codes": [
+    "allowed-check-command-succeeded"
+  ],
+  "started_at": "2026-04-26T00:00:00Z",
+  "completed_at": "2026-04-26T00:00:01Z"
+}

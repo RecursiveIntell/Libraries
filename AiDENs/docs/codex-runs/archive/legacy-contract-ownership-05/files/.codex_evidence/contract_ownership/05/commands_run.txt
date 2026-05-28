@@ -1,0 +1,20 @@
+2026-04-29T14:03:25-0500 read Phase 05 prompt and schema scope gate; captured baseline evidence
+2026-04-29T14:03:25-0500 initial python3 scripts/assert_schema_generation_scope.py
+2026-04-29T14:06:13-0500 saved schema files and registrations before Phase 05 edits
+2026-04-29T14:06:32-0500 mechanically removed canonical schema_document registrations from aidens-contracts
+2026-04-29T14:07:34-0500 python3 scripts/assert_schema_generation_scope.py after source edits before schema regeneration
+2026-04-29T14:08:10-0500 cargo run -p aidens-cli -- schemas generate --out schemas
+2026-04-29T14:08:15-0500 failed cargo run -p aidens-cli -- schemas generate schemas due wrong positional out argument; retried with --out schemas
+2026-04-29T14:09:12-0500 regenerated schemas after ArtifactKindV1 schema demotion
+2026-04-29T14:09:49-0500 cargo fmt --all
+2026-04-29T14:09:57-0500 final python3 scripts/assert_schema_generation_scope.py
+2026-04-29T14:09:57-0500 cargo run -p aidens-cli -- schemas check --root schemas
+2026-04-29T14:09:57-0500 bash scripts/phase_verify_contract_ownership.sh 05
+2026-04-29T14:10:11-0500 cargo check --workspace
+2026-04-29T14:10:38-0500 cargo test --workspace
+2026-04-29T14:10:47-0500 standing checks after Phase 05 edits
+2026-04-29T14:11:04-0500 generated schema_authority_audit.txt
+2026-04-29T14:11:11-0500 copied Phase 05 post-edit snapshots
+2026-04-29T14:11:19-0500 generated Phase 05 touched file diff and schema file delta lists
+2026-04-29T14:11:30-0500 generated final Phase 05 status, diff, skipped, and quarantine evidence
+2026-04-29T14:12:06-0500 wrote phase_report.md

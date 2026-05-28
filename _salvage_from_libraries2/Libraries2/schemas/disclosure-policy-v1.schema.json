@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DisclosureReplayVisibilityV1": {
+      "enum": [
+        "ticket_required"
+      ],
+      "type": "string"
+    },
+    "PolicyDowngradeBehaviorV1": {
+      "enum": [
+        "advisory_only_if_replay_missing",
+        "advisory_only_if_exact_material_cannot_be_shared"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "allowed_consumers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "disclosure_policy_id": {
+      "type": "string"
+    },
+    "downgrade_behavior": {
+      "$ref": "#/definitions/PolicyDowngradeBehaviorV1"
+    },
+    "redaction_rules": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_visibility": {
+      "$ref": "#/definitions/DisclosureReplayVisibilityV1"
+    },
+    "retention_window": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "disclosure_policy_id",
+    "downgrade_behavior",
+    "replay_visibility",
+    "retention_window",
+    "schema_version"
+  ],
+  "title": "DisclosurePolicyV1",
+  "type": "object"
+}

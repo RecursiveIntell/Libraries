@@ -1,0 +1,3 @@
+canonical_types=633
+aidens_contracts_types=193
+duplicate_findings=0

@@ -1,0 +1,86 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-24T01:20:26Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_BUNDLE_INSTALL_PLAN.md",
+      "bytes": 422,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_BUNDLE_INSTALL_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "b7318702a68f4e97fc35bca72a3371918fa2e05b1764f34048fc05f60474b0dc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CLAUDE_AUDIT_ABSORPTION.md",
+      "bytes": 1790,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CLAUDE_AUDIT_ABSORPTION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "fc13c4c4fa82100de49884b41d8e5889d90d907244bd8d6fe26c44f6f68dd1b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 1927,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "2e3bf43166e01d0367aa6664e063a585bdf0c39287d33da617f410ac56eede18"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 324,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5d38f3d9c209f836a3af5c03113a7621d2308fc94299b5c91369e515dc2004e0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_MASTER_PACKET.md",
+      "bytes": 2664,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_MASTER_PACKET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "366e7f8e5231dd72d3901c505c8fb4d47709ef00c0d863f1d8ef23da920b1cb8"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_PHASE_PLAN.md",
+      "bytes": 3133,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_PHASE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "b5425a137cce22c820340d45a9663652dc13e9e58505419737070b633f941dc9"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+      "bytes": 1048,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_RE_RUN_AND_AUDIT_INSTRUCTIONS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "e85eebce42dcbb4e91490d8b9227d6297a2d79626089b53b592f8a02173c3737"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29/files/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 932,
+      "mtime_utc": "2026-05-07T04:50:52Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/20260513T081502Z/files/P29_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5c89a30b47583c64aa356bafa5ba78e68b4c28252bc83954672f2e51f925561d"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P29",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

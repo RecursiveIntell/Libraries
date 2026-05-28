@@ -1,0 +1,8 @@
+{
+  "schema_version": "audit_fixture_case_v1",
+  "case_id": "false_completion_missing_tests",
+  "domain": "audit",
+  "proposed_action": "generate_repair_packet",
+  "requested_effect": "prepare_patch",
+  "signals": ["false_completion_missing_tests", "high_hazard", "confirmed"]
+}

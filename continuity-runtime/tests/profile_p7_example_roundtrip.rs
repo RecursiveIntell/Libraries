@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use continuity_runtime::{
     EscalationClockPolicyV1, IncidentTaxonomyV1, PagerRouteProfileV1, SeverityMatrixV1,
 };

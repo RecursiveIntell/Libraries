@@ -1,0 +1,24 @@
+{
+  "decision_id": "admission-decision:fixture",
+  "kind": "admission-decision",
+  "envelope_id": "attestation-envelope:fixture",
+  "subject_artifact_id": "claim:remote-fixture",
+  "subject_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "producer_id": "remote-fixture",
+  "trust_root_id": "trust-root:fixture",
+  "disposition": "accept",
+  "import_allowed": true,
+  "advisory_only": false,
+  "local_promotion_required": true,
+  "required_witnesses": [],
+  "decided_by": "fixture-policy",
+  "reason_codes": [
+    "admission-decision-required-before-import",
+    "verified-trust-root"
+  ],
+  "decided_at": "2026-04-27T00:00:01Z"
+}

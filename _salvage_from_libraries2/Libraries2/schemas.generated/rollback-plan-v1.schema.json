@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "affected_artifacts": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "case_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "completion_criteria": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "invalidation_radius": {
+      "type": "string"
+    },
+    "operator_actions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "policy_decision_id": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quarantine_targets": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "recomputation_requirements": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required": {
+      "type": "boolean"
+    },
+    "rollback_plan_id": {
+      "type": "string"
+    },
+    "rollback_scope": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "stale_surfaces": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "case_id",
+    "invalidation_radius",
+    "policy_decision_id",
+    "reason",
+    "required",
+    "rollback_plan_id",
+    "rollback_scope",
+    "schema_version"
+  ],
+  "title": "RollbackPlan",
+  "type": "object"
+}

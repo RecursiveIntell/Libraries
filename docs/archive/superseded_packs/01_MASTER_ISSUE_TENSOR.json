@@ -1,0 +1,313 @@
+{
+  "metadata": {
+    "pack_name": "V29 Unified Hostile Audit Remediation Pack",
+    "effective_date": "2026-03-30",
+    "source_basis": "libraries-source-clean-20260330.zip",
+    "auditors": ["Claude (10-angle hostile)", "GPT (10-lens hostile)"],
+    "deadline": "2026-04-10",
+    "target": "DARPA CLARA submission readiness"
+  },
+  "severity_scale": {
+    "P0": "Blocks submission or causes runtime failure",
+    "P1": "Materially weakens submission credibility or creates latent data corruption risk",
+    "P2": "Convention drift or maintainability drag that compounds over time",
+    "P3": "Cosmetic or low-risk items addressable post-submission"
+  },
+  "issues": [
+    {
+      "id": "TRUTH-001",
+      "title": "Repo tells four different snapshot dates",
+      "priority": "P0",
+      "sources": ["Claude-L10", "GPT-L1", "GPT-L10"],
+      "description": "README.md references 20260323, PACK_MANIFEST.json references 20260324, 00_START_HERE.md references 20260328, STATUS_DASHBOARD.md references 2026-03-23-hardening-closeout. A DARPA reviewer opening the repo sees conflicting provenance.",
+      "evidence": [
+        "README.md line 3: 'finish_pack_2026-03-24'",
+        "PACK_MANIFEST.json line 2: 'generated_at: 2026-03-24'",
+        "00_START_HERE.md line 3: 'Effective date: 2026-03-30'",
+        "STATUS_DASHBOARD.md line 5: '2026-03-23-hardening-closeout'",
+        "SOURCE_BASIS.md line 3: 'libraries-source-clean-20260323.zip'"
+      ],
+      "fix": "Rewrite README.md, PACK_MANIFEST.json, SOURCE_BASIS.md, STATUS_DASHBOARD.md to reference the current snapshot date and archive name. Archive all superseded versions.",
+      "files_touched": ["README.md", "PACK_MANIFEST.json", "SOURCE_BASIS.md", "STATUS_DASHBOARD.md"],
+      "acceptance": "All four files reference the same snapshot identifier and date. No stale snapshot references in any active document."
+    },
+    {
+      "id": "TRUTH-002",
+      "title": "78 root-level control documents create archaeological confusion",
+      "priority": "P1",
+      "sources": ["Claude-L10", "GPT-L1", "GPT-L9"],
+      "description": "The repo root contains 78 markdown/JSON control documents including multiple numbered issue matrices (01_ through 17_), multiple playbooks, multiple source basis docs, and multiple status dashboards from different audit generations. A new maintainer or reviewer cannot identify which documents are authoritative.",
+      "evidence": [
+        "ls *.md *.json | wc -l = 78",
+        "Multiple 0X_ prefixed docs spanning at least 17 generations",
+        "CANONICAL_STACK_SPEC exists in V6, V7, V25, V26 variants"
+      ],
+      "fix": "Move all superseded numbered docs and old canonical specs to docs/archive/. Keep exactly one active set: 00_START_HERE.md, README.md, CLAUDE.md, AGENTS.md, PROMPT.md, Makefile, Cargo.toml, and the canonical spec. Create docs/archive/SUPERSESSION_INDEX.md listing what was archived and why.",
+      "files_touched": ["docs/archive/", "README.md"],
+      "acceptance": "Root directory contains <20 active control documents. Every archived doc is listed in the supersession index."
+    },
+    {
+      "id": "TRUTH-003",
+      "title": "Missing archive manifest artifact",
+      "priority": "P1",
+      "sources": ["Claude-L10", "GPT-L1"],
+      "description": "STATUS_EVIDENCE_MANIFEST.json references docs/archive/root_closeout_history/manifest.json but this file does not exist. The check_root_archive_manifest.py gate fails.",
+      "evidence": ["ls docs/archive/root_closeout_history/manifest.json -> MISSING"],
+      "fix": "Generate the archive manifest from current state or update STATUS_EVIDENCE_MANIFEST.json to remove the stale reference.",
+      "files_touched": ["docs/archive/root_closeout_history/manifest.json", "STATUS_EVIDENCE_MANIFEST.json"],
+      "acceptance": "check_root_archive_manifest.py passes."
+    },
+    {
+      "id": "TRUTH-004",
+      "title": "6 target-* directories pollute the archive",
+      "priority": "P2",
+      "sources": ["Claude-L10", "GPT-L1"],
+      "description": "target-closeout-check, target-closeout-verify, target-full, target-serial, target-serial2, target-vc are build/test artifact directories that should not be in the source archive.",
+      "evidence": ["ls -d target-* shows 6 directories"],
+      "fix": "Add target-* to .gitignore and exclude from archive generation script (zip.py).",
+      "files_touched": [".gitignore", "zip.py"],
+      "acceptance": "No target-* directories in the clean archive."
+    },
+    {
+      "id": "GATE-001",
+      "title": "check_commit_permit_paths.py expects wrong permit type",
+      "priority": "P0",
+      "sources": ["Claude-L6", "GPT-L5"],
+      "description": "The gate script expects ExecutionPermit in llm-tool-runtime signatures but the actual type is ToolExecutionPermit. The regex pattern in the script does not match the code.",
+      "evidence": [
+        "scripts/check_commit_permit_paths.py line 38: regex expects 'ExecutionPermit'",
+        "llm-tool-runtime/src/runtime.rs line 274: actual type is 'ToolExecutionPermit'",
+        "llm-tool-runtime/src/contracts.rs: 'pub struct ToolExecutionPermit'"
+      ],
+      "fix": "Update the regex patterns in check_commit_permit_paths.py to match ToolExecutionPermit. Verify all pattern assertions against current code.",
+      "files_touched": ["scripts/check_commit_permit_paths.py"],
+      "acceptance": "python3 scripts/check_commit_permit_paths.py passes."
+    },
+    {
+      "id": "GATE-002",
+      "title": "check_hotspot_budgets.sh has contradictory limits for same file",
+      "priority": "P1",
+      "sources": ["Claude-L6"],
+      "description": "forge-pilot/src/main_support/mod.rs is checked twice: once at 1900 (line 57) and once at 1600 via check_documented_exception (line 62). The file is 1588 lines, so it passes the 1900 check but the 1600 documented-exception check may fail depending on whether the exception doc exists. knowledge-runtime/src/runtime/core.rs is similarly checked at 1400 and 1250.",
+      "evidence": [
+        "check_hotspot_budgets.sh: check_file_budget main_support/mod.rs 1900",
+        "check_hotspot_budgets.sh: check_documented_exception main_support/mod.rs 1600",
+        "main_support/mod.rs: 1588 lines (passes 1900, fails 1600 without exception doc)"
+      ],
+      "fix": "Deduplicate entries. Use a single budget per file with the documented-exception mechanism for any file above 1000 lines.",
+      "files_touched": ["scripts/check_hotspot_budgets.sh", "docs/module_budget_exceptions.md"],
+      "acceptance": "bash scripts/check_hotspot_budgets.sh passes. No file is checked at two different limits."
+    },
+    {
+      "id": "GATE-003",
+      "title": "12 stale versioned gate scripts",
+      "priority": "P2",
+      "sources": ["Claude-L6", "GPT-L5"],
+      "description": "Scripts referencing old pack versions (v9, v10, v11, v15, v16-v20, v21-v24) remain in scripts/ and create confusion about which gates are active.",
+      "evidence": [
+        "check_v9_closeout_pack.sh, check_v10_pack_truth.sh, check_v11_release_readiness.sh",
+        "check_v15_pack_truth.sh, check_v21_v24_final_pack_truth.sh",
+        "run_v16_v20_closeout_checks.sh"
+      ],
+      "fix": "Move stale versioned scripts to scripts/archive/. Ensure release_gate_set.py only references current scripts.",
+      "files_touched": ["scripts/archive/", "scripts/release_gate_set.py"],
+      "acceptance": "No check_v{N}_* scripts in active scripts/ directory. release_gate_set.py references only current gates."
+    },
+    {
+      "id": "WIRE-001",
+      "title": "56 serializable enums missing rename_all",
+      "priority": "P1",
+      "sources": ["Claude-L1"],
+      "description": "56 enums with Serialize derive lack #[serde(rename_all = \"snake_case\")]. These serialize variants in PascalCase. If any data has been persisted, adding rename_all later will break deserialization. This must be decided NOW before CLARA submission creates persisted data.",
+      "evidence": [
+        "Full list includes: ActionFamily, HaltReason, TargetKind, TargetPriority (forge-pilot)",
+        "QueryMode, QueryWarning, MatchQuality, RetrievalStrategy (knowledge-runtime)",
+        "SearchSource, GraphEdgeType (semantic-memory)",
+        "ExperimentMode, EffectKind, TrialSide, FailureClass, 13 evidence.rs enums (living-memory)",
+        "VerificationDisposition, RefutationClassV1 (verification-adjudication)",
+        "EffectBlockReasonV1, ReleaseGateFinalStateV1 (verification-control)",
+        "EstimatorKind, RefutationResult, ExportAuthority (semantic-memory-forge)",
+        "IncidentSeverityV1 (continuity-runtime)",
+        "6 enums in attestation-exchange, 3 in verification-policy, 2 in remote-oracle-admission"
+      ],
+      "fix": "Add #[serde(rename_all = \"snake_case\")] to all 56 enums. Since no production data has been persisted yet (pre-CLARA), this is safe. Document the convention enforcement in CLAUDE.md.",
+      "files_touched": [
+        "forge-pilot/src/act.rs", "forge-pilot/src/loop_runner_report.rs", "forge-pilot/src/targets.rs",
+        "knowledge-runtime/src/entity/registry.rs", "knowledge-runtime/src/obs/trace.rs",
+        "knowledge-runtime/src/query/classify.rs", "knowledge-runtime/src/query/merge.rs",
+        "knowledge-runtime/src/query/route.rs", "knowledge-runtime/src/temporal/claims.rs",
+        "semantic-memory/src/types.rs", "semantic-memory-forge/src/bundle.rs",
+        "semantic-memory-forge/src/envelope.rs", "semantic-memory-forge/src/estimator.rs",
+        "living-memory/living-memory/src/experiment.rs", "living-memory/living-memory/src/baseline.rs",
+        "living-memory/living-memory/src/failure.rs", "living-memory/living-memory/src/scoring.rs",
+        "living-memory/living-memory/src/lab/evidence.rs",
+        "living-memory/living-memory/src/lab/evidence_analysis.rs",
+        "verification-adjudication/src/lib.rs", "verification-control/src/lib.rs",
+        "verification-policy/src/lib.rs", "verification-policy/src/v14.rs",
+        "verification-policy/src/profile_p1_privacy.rs",
+        "attestation-exchange/src/lib.rs", "attestation-exchange/src/profile_p6_vendor.rs",
+        "continuity-runtime/src/vocab.rs", "remote-oracle-admission/src/lib.rs"
+      ],
+      "acceptance": "grep scan finds 0 serializable enums without rename_all in workspace members."
+    },
+    {
+      "id": "WIRE-002",
+      "title": "Error-swallowing .ok() calls in semantic-memory production paths",
+      "priority": "P2",
+      "sources": ["Claude-L2"],
+      "description": "25 .ok() calls in production code silently discard Results. Most are defensible (quantization fallback), but ~8 in db.rs, episodes.rs, knowledge.rs discard SQLite operation results that could mask data corruption.",
+      "evidence": [
+        "semantic-memory/src/db.rs:765, 1052 — SQLite operations .ok()'d",
+        "semantic-memory/src/episodes.rs:166, 639, 697, 775, 838 — episode operations .ok()'d",
+        "semantic-memory/src/knowledge.rs:691, 765, 814 — knowledge operations .ok()'d",
+        "semantic-memory/src/lib.rs:1237, 1289, 1342, 1394 — store operations .ok()'d"
+      ],
+      "fix": "Audit each .ok() call. For SQLite write operations, replace with tracing::warn! on error. For quantization fallback and feature-gated suppression, document with // INTENTIONAL: reason comment.",
+      "files_touched": [
+        "semantic-memory/src/db.rs", "semantic-memory/src/episodes.rs",
+        "semantic-memory/src/knowledge.rs", "semantic-memory/src/lib.rs",
+        "semantic-memory/src/documents.rs", "semantic-memory/src/graph.rs",
+        "semantic-memory/src/conversation.rs", "semantic-memory/src/projection_import.rs"
+      ],
+      "acceptance": "Every .ok() in production code has either been replaced with error logging or has an INTENTIONAL comment."
+    },
+    {
+      "id": "DOC-001",
+      "title": "Doc comment coverage below DARPA review threshold",
+      "priority": "P1",
+      "sources": ["Claude-L5", "GPT-L9"],
+      "description": "Average doc comment coverage across workspace crates is ~45%. DARPA-facing crates are worse: forge-pilot 38%, effect-runtime 34%, forge-memory-bridge 14%. cargo doc output will show a wall of undocumented types.",
+      "evidence": [
+        "forge-pilot: 63/166 pub items documented (38%)",
+        "effect-runtime: 27/80 (34%)",
+        "forge-memory-bridge: 4/29 (14%)",
+        "living-memory: 103/260 (40%)",
+        "verification-control: 36/94 (38%)"
+      ],
+      "fix": "Add /// doc comments to all pub struct, pub enum, and pub trait declarations in the 17 supported-lane crates. Focus on types that cross crate boundaries first. Module-level //! docs on all lib.rs files.",
+      "files_touched": ["All src/lib.rs files", "All files with undocumented pub types"],
+      "acceptance": "Doc coverage exceeds 80% on pub struct/enum/trait across supported-lane crates."
+    },
+    {
+      "id": "DOC-002",
+      "title": "README.md is a stale pack description, not a project README",
+      "priority": "P0",
+      "sources": ["Claude-L10", "GPT-L10"],
+      "description": "README.md describes a remediation pack ('finish_pack_2026-03-24') rather than the RecursiveIntell library stack. A DARPA reviewer landing on this repo sees pack internals rather than a project description.",
+      "evidence": ["README.md line 3: '# finish_pack_2026-03-24'"],
+      "fix": "Rewrite README.md as a proper project README: what RecursiveIntell is, what the stack does, crate architecture overview, build instructions, and a link to the canonical spec.",
+      "files_touched": ["README.md"],
+      "acceptance": "README.md describes the project, not a remediation pack. Contains build instructions and architecture summary."
+    },
+    {
+      "id": "CONV-001",
+      "title": "33 HashMap references in production code violate BTreeMap convention",
+      "priority": "P2",
+      "sources": ["Claude-L4"],
+      "description": "Project convention is BTreeMap everywhere for deterministic ordering. 33 HashMap references remain in production code across semantic-memory (HNSW, search, graph), knowledge-runtime (registry, lifecycle), and discovery-portfolio.",
+      "evidence": [
+        "semantic-memory/src/hnsw.rs: 5 HashMap refs (key_to_id, id_to_key)",
+        "semantic-memory/src/search.rs: 8 HashMap refs",
+        "knowledge-runtime/src/entity/registry.rs: 6 HashMap refs",
+        "knowledge-runtime/src/projection/lifecycle.rs: 3 HashMap refs"
+      ],
+      "fix": "HNSW HashMap usage is architecturally justified (O(1) lookup, no ordering needed) — document with // CONVENTION EXCEPTION: reason. Convert remaining HashMaps in knowledge-runtime and discovery-portfolio to BTreeMap.",
+      "files_touched": [
+        "semantic-memory/src/hnsw.rs", "semantic-memory/src/search.rs",
+        "semantic-memory/src/graph.rs", "knowledge-runtime/src/entity/registry.rs",
+        "knowledge-runtime/src/projection/lifecycle.rs", "discovery-portfolio/src/lib.rs"
+      ],
+      "acceptance": "All HashMap usage is either converted to BTreeMap or documented with a CONVENTION EXCEPTION comment."
+    },
+    {
+      "id": "GOV-001",
+      "title": "Governance observation pipeline is thin relative to governance surface area",
+      "priority": "P2",
+      "sources": ["Claude-L3"],
+      "description": "governance_gate.rs observes 6 predicates (effect_preflight, assurance_ready, authority_delegation_valid, continuity_incident_active, constitutional_amendment_pending, mechanism_fit). But the governance crates define dozens of additional types (AttestationEnvelopeV1, MechanismBundleV1, AssuranceCaseV1, etc.) that are never observed. The pipeline is wired but the observation window is narrow.",
+      "evidence": [
+        "governance_gate.rs: 6 predicates observed",
+        "attestation-exchange: 7 pub types, 0 observed",
+        "mechanism-runtime: 9 pub types, only mechanism_fit observed",
+        "assurance-runtime: types exist but not individually observed"
+      ],
+      "fix": "Document the current observation scope in governance_gate.rs module docs. Add TODO comments for future expansion. This is NOT a P0 — the 6 predicates cover the decision-relevant surfaces. Document the intentional narrowing.",
+      "files_touched": ["forge-pilot/src/governance_gate.rs"],
+      "acceptance": "Module docs explicitly state which governance surfaces are observed and which are deferred."
+    },
+    {
+      "id": "GOV-002",
+      "title": "attestation-exchange is optional and completely unconsumed",
+      "priority": "P3",
+      "sources": ["Claude-L8"],
+      "description": "attestation-exchange is an optional dependency in forge-pilot but no code imports or references any of its types. The trust-root validation story exists as types but has zero integration path.",
+      "evidence": [
+        "forge-pilot/Cargo.toml: attestation-exchange = { optional = true }",
+        "grep -rn attestation forge-pilot/src/ -> no results"
+      ],
+      "fix": "Document in SCOPE_NOTES.md that attestation-exchange is a forward-declared surface not yet integrated into the observation pipeline. This is acceptable for CLARA V1.",
+      "files_touched": ["SCOPE_NOTES.md"],
+      "acceptance": "SCOPE_NOTES.md explicitly acknowledges the attestation-exchange integration gap."
+    },
+    {
+      "id": "PERF-001",
+      "title": "No canonical performance evidence artifact",
+      "priority": "P2",
+      "sources": ["GPT-L7"],
+      "description": "The stack has performance benchmarking machinery (scripts/collect_canonical_perf_baseline.sh, kernel-conformance/examples/canonical_perf_snapshot.rs) but no current, committed performance evidence artifact.",
+      "evidence": [
+        "scripts/collect_canonical_perf_baseline.sh exists",
+        "No perf_baseline.json or equivalent in the repo"
+      ],
+      "fix": "Run the canonical perf baseline and commit the result as evidence/perf_baseline_20260330.json.",
+      "files_touched": ["evidence/perf_baseline_20260330.json"],
+      "acceptance": "A dated performance baseline artifact exists and is referenced from STATUS_DASHBOARD.md."
+    },
+    {
+      "id": "SAFE-001",
+      "title": "check_no_prod_panics.sh allowlist is empty but panic audit may have false edges",
+      "priority": "P2",
+      "sources": ["GPT-L4"],
+      "description": "The panic checker uses an awk-based #[cfg(test)] skipper which is good, but the checker also excludes only files named tests.rs/lib_tests.rs/*_tests.rs. Files with inline test modules at the bottom get the awk treatment, but the awk parser counts braces which can be confused by string literals containing braces.",
+      "evidence": [
+        "check_no_prod_panics.sh: awk parser for #[cfg(test)] skipping",
+        "prod_panic_allowlist.json: empty array"
+      ],
+      "fix": "Verify the awk parser handles all current source files correctly by running the check. If false positives emerge, add to allowlist with justification comments in the JSON.",
+      "files_touched": ["scripts/check_no_prod_panics.sh"],
+      "acceptance": "bash scripts/check_no_prod_panics.sh passes with 0 or documented allowlisted items."
+    }
+  ],
+  "tensor": {
+    "axes": {
+      "Truth": "repo truth / source-basis consistency",
+      "Code": "structural / code-shape risk",
+      "Ops": "release / gate / operator risk",
+      "Scale": "performance / hotspot growth risk",
+      "Sec": "security / capability risk",
+      "Human": "maintainer / onboarding / DARPA reviewer pain"
+    },
+    "claude_current_severity": [
+      {"lens": "Wire-format integrity auditor", "Truth": 4, "Code": 3, "Ops": 2, "Scale": 1, "Sec": 1, "Human": 2},
+      {"lens": "Error-handling sadist", "Truth": 1, "Code": 3, "Ops": 2, "Scale": 2, "Sec": 2, "Human": 2},
+      {"lens": "Governance completeness reviewer", "Truth": 2, "Code": 2, "Ops": 2, "Scale": 1, "Sec": 1, "Human": 2},
+      {"lens": "Convention enforcement auditor", "Truth": 2, "Code": 2, "Ops": 1, "Scale": 1, "Sec": 1, "Human": 3},
+      {"lens": "Documentation coverage analyst", "Truth": 3, "Code": 1, "Ops": 2, "Scale": 1, "Sec": 1, "Human": 5},
+      {"lens": "Gate/script integrity tester", "Truth": 4, "Code": 1, "Ops": 5, "Scale": 1, "Sec": 2, "Human": 4},
+      {"lens": "Hotspot concentration analyst", "Truth": 1, "Code": 4, "Ops": 2, "Scale": 4, "Sec": 1, "Human": 4},
+      {"lens": "Trust-chain completeness reviewer", "Truth": 2, "Code": 2, "Ops": 1, "Scale": 1, "Sec": 2, "Human": 2},
+      {"lens": "Schema versioning auditor", "Truth": 2, "Code": 2, "Ops": 2, "Scale": 1, "Sec": 1, "Human": 2},
+      {"lens": "DARPA submission readiness reviewer", "Truth": 5, "Code": 2, "Ops": 5, "Scale": 2, "Sec": 1, "Human": 5}
+    ],
+    "combined_mean_current": 2.17,
+    "gpt_mean_current": 2.95,
+    "delta_interpretation": "Claude audit finds lower code/architecture risk than GPT (confirming the GOV-001/GOV-002 fixes landed), but agrees on ops/truth severity. The combined picture: architecture is strong, meta-layer is the bottleneck."
+  },
+  "priority_summary": {
+    "P0": 3,
+    "P1": 5,
+    "P2": 7,
+    "P3": 1,
+    "total": 16
+  }
+}

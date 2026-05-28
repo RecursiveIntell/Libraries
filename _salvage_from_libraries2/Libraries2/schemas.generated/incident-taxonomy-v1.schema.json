@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "IncidentClassRuleV1": {
+      "properties": {
+        "default_severity": {
+          "type": "string"
+        },
+        "incident_class": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "default_severity",
+        "incident_class"
+      ],
+      "type": "object"
+    },
+    "IncidentRouteRuleV1": {
+      "properties": {
+        "incident_class": {
+          "type": "string"
+        },
+        "route": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "incident_class",
+        "route"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "default_routes": {
+      "items": {
+        "$ref": "#/definitions/IncidentRouteRuleV1"
+      },
+      "type": "array"
+    },
+    "incident_classes": {
+      "items": {
+        "$ref": "#/definitions/IncidentClassRuleV1"
+      },
+      "type": "array"
+    },
+    "incident_taxonomy_id": {
+      "type": "string"
+    },
+    "required_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "incident_taxonomy_id",
+    "schema_version"
+  ],
+  "title": "IncidentTaxonomyV1",
+  "type": "object"
+}

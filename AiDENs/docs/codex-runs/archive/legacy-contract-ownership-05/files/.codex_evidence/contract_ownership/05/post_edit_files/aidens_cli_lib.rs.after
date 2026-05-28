@@ -1,0 +1,3918 @@
+use aidens_app_kit::{AiDENsApp, AiDENsProfile};
+use aidens_boundary_kit::compile_json_boundary;
+use aidens_capability_kit::truth;
+use aidens_config::{load_config_file, AiDENsConfigV1, ProviderConfigV1};
+use aidens_contracts::{
+    current_artifact_family_registry, generated_schema_documents, generated_schema_manifest,
+    generated_schema_manifest_pretty_json, non_authoritative_text_display_digest, AiDENsAppPlanV1,
+    AiDENsCompiledPlanV1, AiDENsDoctorReportV1, ApprovalDecisionV1, ApprovalRequestV1, ArtifactId,
+    BoundaryCompileRequestV1, CanonicalToolSideEffectClass, CapabilityStateV1, CodexPacketInputV1,
+    CodexPacketV1, CommandRunReportV1, CompletionAuditReportV1, ConfigApplyReportDraftV1,
+    ConfigApplyReportV1, CrossPassTraceabilityMatrixV1, CrossPassTraceabilityRowV1,
+    ExampleAppEntryV1, ExampleAppManifestV1, GateCommandResultV1, InstallSmokeReportV1,
+    InstallSmokeStepV1, KnownLimitationV1, KnownLimitationsRegisterV1, MemoryModeV1,
+    OperatorStatusReportV1, PassCompletionStateV1, PermitGrantV1, PermitUseReportV1,
+    PlanRuntimeParityCheckKindV1, PlanRuntimeParityCheckV1, PlanRuntimeParityReportV1,
+    ProviderRouteKindV1, ProviderRouteReportV1, PublicDocFindingV1, RegressionDebtItemV1,
+    RegressionDebtLedgerV1, ReleaseArtifactEntryV1, ReleaseArtifactKindV1,
+    ReleaseArtifactManifestV1, ReleaseReadinessReportV1, ReleaseSurfaceStateV1, ReleaseSurfaceV1,
+    ReportLevelV1, RuntimeCapabilityTruthV1, SandboxCapabilityTruthV1, SchemaCompatibilityCheckV1,
+    SchemaCompatibilityModeV1, SchemaCompatibilityReportV1, ToolExposureSetV1,
+};
+use aidens_daemon_kit::DaemonControllerV1;
+use aidens_memory_kit::{
+    memory_config_for_root, runtime_config_for_namespace, CanonicalMemoryAdapter,
+};
+use aidens_permit_kit::PermitPolicyV1;
+use aidens_provider_kit::{provider_readiness_for_spec, route_receipt_for_spec, ProviderSpecV1};
+use aidens_receipts::{CanonicalEventLog, CanonicalEventLogConfig};
+use aidens_tool_kit::{
+    registry_from_enabled_bundles, safe_coding_registry_for_current_dir,
+    safe_coding_tool_declarations, ToolDispatcher, ToolExposurePolicyV1, ToolRegistryV1,
+};
+use anyhow::{bail, Context, Result};
+use chrono::{DateTime, SecondsFormat, Utc};
+use clap::{Parser, Subcommand};
+use std::collections::{BTreeMap, BTreeSet};
+use std::path::{Path, PathBuf};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+const SCAFFOLD_ONLY_CRATES: &[(&str, &str)] = &[
+    (
+        "aidens-plan-kit",
+        "deferred until plan crate behavior is assigned",
+    ),
+    (
+        "aidens-profile-daemon",
+        "deferred until daemon profile wiring",
+    ),
+    (
+        "aidens-profile-desktop",
+        "deferred until product surface work",
+    ),
+    (
+        "aidens-profile-memory",
+        "deferred until memory profile wiring",
+    ),
+    (
+        "aidens-profile-research",
+        "deferred until research profile wiring",
+    ),
+];
+
+#[derive(Debug, Parser)]
+#[command(name = "aidens")]
+#[command(about = "AiDENs app-construction CLI")]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Command,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum Command {
+    Profile {
+        #[command(subcommand)]
+        command: ProfileCommand,
+    },
+    Plan {
+        #[command(subcommand)]
+        command: PlanCommand,
+    },
+    Doctor {
+        #[arg(long)]
+        config: Option<String>,
+    },
+    Status {
+        #[arg(long)]
+        config: Option<String>,
+    },
+    CheckConfig {
+        file: Option<String>,
+    },
+    ListTools,
+    InspectTools {
+        #[arg(long)]
+        config: Option<String>,
+    },
+    Tools {
+        #[command(subcommand)]
+        command: ToolsCommand,
+    },
+    Permit {
+        #[command(subcommand)]
+        command: PermitCommand,
+    },
+    Permits {
+        #[command(subcommand)]
+        command: PermitCommand,
+    },
+    Receipts {
+        #[command(subcommand)]
+        command: EventLogCommand,
+    },
+    Memory {
+        #[command(subcommand)]
+        command: MemoryCommand,
+    },
+    Boundary {
+        #[command(subcommand)]
+        command: BoundaryCommand,
+    },
+    View {
+        #[command(subcommand)]
+        command: ViewCommand,
+    },
+    Schemas {
+        #[command(subcommand)]
+        command: SchemasCommand,
+    },
+    Coding {
+        #[command(subcommand)]
+        command: CodingCommand,
+    },
+    Daemon {
+        #[command(subcommand)]
+        command: DaemonCommand,
+    },
+    Queue {
+        #[command(subcommand)]
+        command: DaemonCommand,
+    },
+    Package {
+        #[command(subcommand)]
+        command: PackageCommand,
+    },
+    ListCapabilities,
+    ProviderCheck {
+        #[arg(long)]
+        config: Option<String>,
+        file: Option<String>,
+    },
+    Run {
+        #[arg(long)]
+        config: Option<String>,
+        prompt: Vec<String>,
+    },
+    New {
+        profile: String,
+        destination: String,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ProfileCommand {
+    List,
+    Explain { profile: String },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum PlanCommand {
+    Validate {
+        #[arg(long)]
+        config: String,
+    },
+    Compile {
+        #[arg(long)]
+        config: String,
+        #[arg(long)]
+        out: String,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ToolsCommand {
+    List,
+    Inspect {
+        #[arg(long)]
+        config: Option<String>,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum PermitCommand {
+    Inspect,
+    Request {
+        #[arg(long)]
+        tool_id: String,
+        #[arg(long)]
+        risk: String,
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+    },
+    Approve {
+        #[arg(long)]
+        request_id: String,
+        #[arg(long)]
+        tool_id: String,
+        #[arg(long)]
+        risk: String,
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+        #[arg(long, default_value = "operator")]
+        decided_by: String,
+    },
+    Deny {
+        #[arg(long)]
+        request_id: String,
+        #[arg(long, default_value = "operator")]
+        decided_by: String,
+        #[arg(long, default_value = "operator-denied")]
+        reason: String,
+    },
+    Revoke {
+        #[arg(long)]
+        permit_id: String,
+        #[arg(long)]
+        tool_id: String,
+        #[arg(long)]
+        risk: String,
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+        #[arg(long, default_value = "operator-revoked")]
+        reason: String,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum MemoryCommand {
+    Status {
+        #[arg(long)]
+        config: Option<String>,
+        #[arg(long)]
+        store: Option<String>,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum EventLogCommand {
+    List {
+        #[arg(long)]
+        store: Option<String>,
+        #[arg(long)]
+        config: Option<String>,
+    },
+    Inspect {
+        #[arg(long)]
+        store: Option<String>,
+        #[arg(long)]
+        config: Option<String>,
+        #[arg(long)]
+        receipt_id: String,
+    },
+    Export {
+        #[arg(long)]
+        store: Option<String>,
+        #[arg(long)]
+        config: Option<String>,
+    },
+    VerifyDigest {
+        #[arg(long)]
+        store: Option<String>,
+        #[arg(long)]
+        config: Option<String>,
+        #[arg(long)]
+        receipt_id: String,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum BoundaryCommand {
+    Compile {
+        #[arg(long)]
+        input: String,
+        #[arg(long)]
+        schema: Option<String>,
+        #[arg(long = "treatment-field")]
+        treatment_fields: Vec<String>,
+        #[arg(long)]
+        hard_fail_treatment_change: bool,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ViewCommand {
+    Query {
+        #[arg(long)]
+        memory_store: String,
+        #[arg(long, default_value = "temporal")]
+        view_mode: String,
+        #[arg(long)]
+        query: String,
+        #[arg(long)]
+        subject: Option<String>,
+        #[arg(long)]
+        predicate: Option<String>,
+        #[arg(long)]
+        valid_at: Option<DateTime<Utc>>,
+        #[arg(long)]
+        recorded_at: Option<DateTime<Utc>>,
+        #[arg(long = "alias")]
+        aliases: Vec<String>,
+        #[arg(long)]
+        allow_alias_expansion: bool,
+        #[arg(long)]
+        allow_timeless_fallback: bool,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum SchemasCommand {
+    Generate {
+        #[arg(long, default_value = "schemas")]
+        out: String,
+    },
+    Check {
+        #[arg(long, default_value = "schemas")]
+        root: String,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum CodingCommand {
+    RepoRead {
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+        #[arg(long)]
+        path: String,
+    },
+    RepoList {
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+        #[arg(long, default_value = ".")]
+        path: String,
+    },
+    RepoSearch {
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+        #[arg(long)]
+        query: String,
+        #[arg(long, default_value = ".")]
+        path: String,
+    },
+    PatchPropose {
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+        #[arg(long)]
+        summary: String,
+        #[arg(long)]
+        diff: String,
+    },
+    PatchApply {
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+        #[arg(long)]
+        diff: String,
+        #[arg(long)]
+        permit_json: String,
+    },
+    RunChecks {
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+        #[arg(long)]
+        command: String,
+        #[arg(long)]
+        permit_json: String,
+    },
+    SandboxTruth {
+        #[arg(long, default_value = ".")]
+        sandbox_root: String,
+    },
+    CodexPacket {
+        #[arg(long, default_value = "P10")]
+        current_pass: String,
+        #[arg(long, default_value = "P11")]
+        next_pass: String,
+        #[arg(long)]
+        issue: String,
+        #[arg(long = "source")]
+        source_map: Vec<String>,
+        #[arg(long = "changed")]
+        changed_files: Vec<String>,
+        #[arg(long = "command-receipt")]
+        command_receipts: Vec<String>,
+        #[arg(long = "receipt-id")]
+        receipt_ids: Vec<String>,
+        #[arg(long = "blocker")]
+        blockers: Vec<String>,
+        #[arg(long = "note")]
+        notes: Vec<String>,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum DaemonCommand {
+    Namespace {
+        #[arg(long)]
+        root: String,
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long, default_value = "daemon")]
+        owner: String,
+    },
+    Schedule {
+        #[arg(long)]
+        root: String,
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long, default_value = "daemon")]
+        owner: String,
+        #[arg(long)]
+        schedule_id: String,
+        #[arg(long)]
+        occurrence_key: String,
+        #[arg(long)]
+        due_at: DateTime<Utc>,
+        #[arg(long)]
+        payload: String,
+        #[arg(long, default_value = "read-only")]
+        risk: String,
+    },
+    Wake {
+        #[arg(long)]
+        root: String,
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long, default_value = "daemon")]
+        owner: String,
+        #[arg(long)]
+        source: String,
+        #[arg(long)]
+        signal_key: String,
+        #[arg(long)]
+        payload: String,
+        #[arg(long, default_value = "read-only")]
+        risk: String,
+    },
+    List {
+        #[arg(long)]
+        root: String,
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long, default_value = "daemon")]
+        owner: String,
+    },
+    Lease {
+        #[arg(long)]
+        root: String,
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long, default_value = "daemon")]
+        owner: String,
+        #[arg(long, default_value_t = 300)]
+        ttl_seconds: i64,
+    },
+    Cancel {
+        #[arg(long)]
+        root: String,
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long, default_value = "daemon")]
+        owner: String,
+        #[arg(long)]
+        job_id: String,
+        #[arg(long, default_value = "operator-cancelled")]
+        reason: String,
+    },
+    SafeMode {
+        #[arg(long)]
+        root: String,
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long, default_value = "daemon")]
+        owner: String,
+        #[arg(long)]
+        enabled: bool,
+        #[arg(long, default_value = "operator-safe-mode")]
+        reason: String,
+    },
+    Drain {
+        #[arg(long)]
+        root: String,
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long, default_value = "daemon")]
+        owner: String,
+        #[arg(long, default_value = "operator-drain")]
+        reason: String,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum PackageCommand {
+    Examples {
+        #[arg(long, default_value = ".")]
+        root: String,
+    },
+    InstallSmoke {
+        #[arg(long, default_value = ".")]
+        root: String,
+        #[arg(long, default_value = "examples/aidens.mock.toml")]
+        config: String,
+        #[arg(long)]
+        include_verify: bool,
+    },
+    Readiness {
+        #[arg(long, default_value = ".")]
+        root: String,
+        #[arg(long, default_value = "examples/aidens.mock.toml")]
+        config: String,
+        #[arg(long)]
+        include_verify: bool,
+    },
+    CompletionAudit {
+        #[arg(long, default_value = ".")]
+        root: String,
+        #[arg(long, default_value = "examples/aidens.mock.toml")]
+        config: String,
+        #[arg(long = "gate-result")]
+        gate_results: Vec<String>,
+    },
+}
+
+pub fn run(cli: Cli) -> Result<String> {
+    match cli.command {
+        Command::Profile { command } => match command {
+            ProfileCommand::List => profile_list(),
+            ProfileCommand::Explain { profile } => profile_explain(&profile),
+        },
+        Command::Plan { command } => match command {
+            PlanCommand::Validate { config } => plan_validate(&config),
+            PlanCommand::Compile { config, out } => plan_compile(&config, &out),
+        },
+        Command::Doctor { config } => doctor(config),
+        Command::Status { config } => status(config),
+        Command::CheckConfig { file } => check_config(file),
+        Command::ListTools => list_tools(),
+        Command::InspectTools { config } => inspect_tools(config),
+        Command::Tools { command } => tools_command(command),
+        Command::Permit { command } => permit_command(command),
+        Command::Permits { command } => permit_command(command),
+        Command::Receipts { command } => receipts_command(command),
+        Command::Memory { command } => memory_command(command),
+        Command::Boundary { command } => boundary_command(command),
+        Command::View { command } => view_command(command),
+        Command::Schemas { command } => schemas_command(command),
+        Command::Coding { command } => coding_command(command),
+        Command::Daemon { command } => daemon_command(command),
+        Command::Queue { command } => daemon_command(command),
+        Command::Package { command } => package_command(command),
+        Command::ListCapabilities => list_capabilities(),
+        Command::ProviderCheck { config, file } => provider_check(config.or(file)),
+        Command::Run { config, prompt } => run_once_command(config, prompt),
+        Command::New {
+            profile,
+            destination,
+        } => new_app(&profile, &destination),
+    }
+}
+
+pub fn profile_list() -> Result<String> {
+    Ok(AiDENsProfile::all()
+        .into_iter()
+        .map(|profile| format!("{}\t{}", profile.id(), profile.product_surface_status()))
+        .collect::<Vec<_>>()
+        .join("\n"))
+}
+
+pub fn profile_explain(profile: &str) -> Result<String> {
+    let profile = parse_profile(profile)?;
+    let plan = profile.expand(profile.id());
+    Ok(format!(
+        "{}\n{}\nEnabled tool bundles: {:?}\nDisabled by default: {:?}",
+        plan.human_summary(),
+        plan.risk_summary(),
+        plan.enabled_tool_bundles,
+        plan.disabled_tool_bundles
+    ))
+}
+
+pub fn plan_validate(config: &str) -> Result<String> {
+    let loaded = load_config_file(config)?;
+    let plan = plan_from_config(&loaded.config);
+    plan.validate().map_err(anyhow::Error::msg)?;
+    validate_plan_runtime_contract(&plan, &loaded.config)?;
+    Ok(format!(
+        "valid: {} profile={} provider={}",
+        plan.app_id, plan.profile_id, loaded.config.provider.kind
+    ))
+}
+
+pub fn plan_compile(config: &str, out: &str) -> Result<String> {
+    let loaded = load_config_file(config)?;
+    let compiled = compile_config_plan("loaded", &loaded.config)?;
+    if let Some(parent) = Path::new(out).parent() {
+        if !parent.as_os_str().is_empty() {
+            std::fs::create_dir_all(parent)
+                .with_context(|| format!("failed to create {}", parent.display()))?;
+        }
+    }
+    std::fs::write(out, serde_json::to_string_pretty(&compiled)?)
+        .with_context(|| format!("failed to write {out}"))?;
+    Ok(format!(
+        "compiled: {} -> {}",
+        compiled.plan.app_id,
+        Path::new(out).display()
+    ))
+}
+
+pub fn doctor(config: Option<String>) -> Result<String> {
+    let path = config.unwrap_or_else(|| "aidens.toml".into());
+    let (config_status, cfg) = load_or_default_config(&path)?;
+    ensure_memory_store_policy(&cfg)?;
+    let report = doctor_report_for_config(&config_status, &cfg);
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
+pub fn status(config: Option<String>) -> Result<String> {
+    let path = config.unwrap_or_else(|| "aidens.toml".into());
+    let (config_status, cfg) = load_or_default_config(&path)?;
+    let doctor = doctor_report_for_config(&config_status, &cfg);
+    let route = route_for_config(&cfg);
+    let receipt_store_configured = receipt_store_root_for_config(&cfg, Path::new(&path)).is_some();
+    let report = OperatorStatusReportV1::new(
+        cfg.app_id.clone(),
+        config_status,
+        route.route_label,
+        cfg.memory_mode.clone(),
+        receipt_store_configured,
+        doctor,
+    );
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
+pub fn check_config(file: Option<String>) -> Result<String> {
+    let path = file.unwrap_or_else(|| "aidens.toml".into());
+    let loaded = load_config_file(&path)?;
+    let redacted = loaded.config.redacted_json()?;
+    Ok(format!(
+        "AiDENs check-config: {}\n{}",
+        loaded.path.display(),
+        serde_json::to_string_pretty(&redacted)?
+    ))
+}
+
+pub fn provider_check(config: Option<String>) -> Result<String> {
+    let path = config.unwrap_or_else(|| "aidens.toml".into());
+    let (config_status, cfg) = load_or_default_config(&path)?;
+    let spec = provider_spec_from_config(&cfg.provider);
+    let readiness = provider_readiness_for_spec(&spec);
+    let route = route_for_config(&cfg);
+
+    Ok(format!(
+        "AiDENs provider-check\nconfig: {config_status}\nprovider: {}\nmodel: {}\nconfigured: {}\nexecutable: {}\nroute: {}\nnative_tool_loop: {}\ndegraded: {}\nreason_codes: {:?}",
+        cfg.provider.kind,
+        cfg.provider.model.as_deref().unwrap_or("<none>"),
+        readiness.configured,
+        readiness.executable,
+        route.route_label,
+        route.native_tool_loop,
+        route.degraded,
+        merged_reason_codes(readiness.reason_codes, route.reason_codes)
+    ))
+}
+
+pub fn list_tools() -> Result<String> {
+    let registry = safe_coding_registry_for_current_dir();
+    let declarations = safe_coding_tool_declarations();
+    let exposure = registry.plan_exposure_with_declarations(
+        &ToolExposurePolicyV1::coding_agent_default(),
+        declarations.clone(),
+    );
+    Ok(format!(
+        "AiDENs list-tools\ndeclared: {:?}\nregistered: {:?}\nexecutable: {:?}\nexposed_this_turn: {:?}\nhidden_this_turn: {:?}\nblocked_this_turn: {:?}\ndeclared_but_not_registered: {:?}\nprovider_schema_tool_ids: {:?}",
+        exposure.declared_tool_ids,
+        exposure.registered_tool_ids,
+        exposure.executable_tool_ids,
+        exposure.exposed_tool_ids,
+        exposure.hidden_tool_ids,
+        exposure.blocked_tool_ids,
+        registry.declared_not_registered_tool_ids(&declarations),
+        exposure
+            .provider_tool_schemas
+            .iter()
+            .map(|schema| schema.tool_id.clone())
+            .collect::<Vec<_>>()
+    ))
+}
+
+pub fn inspect_tools(config: Option<String>) -> Result<String> {
+    let (config_status, cfg) = match config {
+        Some(path) => load_or_default_config(&path)?,
+        None => ("safe current-directory defaults".into(), {
+            let mut cfg = AiDENsConfigV1::safe_default("aidens-cli");
+            cfg.tools.sandbox_root = Some(".".into());
+            cfg.tools.enabled_bundles = vec!["safe-coding".into()];
+            cfg
+        }),
+    };
+    let registry = tool_registry_for_config(&cfg);
+    let exposure = tool_exposure_for_config(&cfg);
+    let declarations = safe_coding_tool_declarations();
+
+    Ok(serde_json::to_string_pretty(&serde_json::json!({
+        "config": config_status,
+        "declared": exposure.declared_tool_ids,
+        "registered": exposure.registered_tool_ids,
+        "executable": exposure.executable_tool_ids,
+        "exposed_this_turn": exposure.exposed_tool_ids,
+        "hidden_this_turn": exposure.hidden_tool_ids,
+        "blocked_this_turn": exposure.blocked_tool_ids,
+        "declared_but_not_registered": registry.declared_not_registered_tool_ids(&declarations),
+        "exposure": exposure,
+    }))?)
+}
+
+pub fn tools_command(command: ToolsCommand) -> Result<String> {
+    match command {
+        ToolsCommand::List => list_tools(),
+        ToolsCommand::Inspect { config } => inspect_tools(config),
+    }
+}
+
+pub fn permit_command(command: PermitCommand) -> Result<String> {
+    match command {
+        PermitCommand::Inspect => Ok(serde_json::to_string_pretty(&serde_json::json!({
+            "ledger": "stateless-cli-command",
+            "active_permits": [],
+            "reason_codes": ["persisted permit-use evidence is emitted through run receipts"]
+        }))?),
+        PermitCommand::Request {
+            tool_id,
+            risk,
+            sandbox_root,
+        } => {
+            let request = ApprovalRequestV1::scoped(
+                tool_id,
+                parse_risk_class(&risk)?,
+                sandbox_root,
+                "side-effect tool requires explicit scoped permit",
+            );
+            Ok(serde_json::to_string_pretty(&request)?)
+        }
+        PermitCommand::Approve {
+            request_id,
+            tool_id,
+            risk,
+            sandbox_root,
+            decided_by,
+        } => {
+            let risk = parse_risk_class(&risk)?;
+            let grant = PermitGrantV1::scoped(risk, tool_id, sandbox_root, decided_by.clone());
+            let decision = ApprovalDecisionV1::approved(ArtifactId(request_id), grant, decided_by);
+            Ok(serde_json::to_string_pretty(&decision)?)
+        }
+        PermitCommand::Deny {
+            request_id,
+            decided_by,
+            reason,
+        } => {
+            let decision = ApprovalDecisionV1::denied(ArtifactId(request_id), decided_by, reason);
+            Ok(serde_json::to_string_pretty(&decision)?)
+        }
+        PermitCommand::Revoke {
+            permit_id,
+            tool_id,
+            risk,
+            sandbox_root,
+            reason,
+        } => {
+            let receipt = PermitUseReportV1::denied(
+                ArtifactId(permit_id),
+                tool_id,
+                parse_risk_class(&risk)?,
+                sandbox_root,
+                format!("permit-revoked:{reason}"),
+            );
+            Ok(serde_json::to_string_pretty(&receipt)?)
+        }
+    }
+}
+
+pub fn receipts_command(command: EventLogCommand) -> Result<String> {
+    match command {
+        EventLogCommand::List { store, config } => {
+            let store = CanonicalEventLog::open(receipt_store_config_from_options(store, config)?)?;
+            let records = store.list_records()?;
+            Ok(serde_json::to_string_pretty(&serde_json::json!({
+                "store": store.config(),
+                "records": records
+                    .iter()
+                    .map(|record| serde_json::json!({
+                        "receipt_id": record.receipt_id.clone(),
+                        "owner_crate": record.owner_crate.clone(),
+                        "schema_name": record.schema_name.clone(),
+                        "content_digest": record.content_digest.clone(),
+                        "recorded_at": record.recorded_at.clone(),
+                    }))
+                    .collect::<Vec<_>>(),
+            }))?)
+        }
+        EventLogCommand::Inspect {
+            store,
+            config,
+            receipt_id,
+        } => {
+            let store = CanonicalEventLog::open(receipt_store_config_from_options(store, config)?)?;
+            Ok(serde_json::to_string_pretty(&store.inspect(&receipt_id)?)?)
+        }
+        EventLogCommand::Export { store, config } => {
+            let store = CanonicalEventLog::open(receipt_store_config_from_options(store, config)?)?;
+            Ok(serde_json::to_string_pretty(&store.list_records()?)?)
+        }
+        EventLogCommand::VerifyDigest {
+            store,
+            config,
+            receipt_id,
+        } => {
+            let store = CanonicalEventLog::open(receipt_store_config_from_options(store, config)?)?;
+            Ok(serde_json::to_string_pretty(&serde_json::json!({
+                "receipt_id": receipt_id,
+                "verified": store.verify_digest(&receipt_id)?,
+            }))?)
+        }
+    }
+}
+
+pub fn memory_command(command: MemoryCommand) -> Result<String> {
+    match command {
+        MemoryCommand::Status { config, store } => {
+            let (config_status, cfg, config_path) = match config {
+                Some(path) => {
+                    let loaded = load_config_file(&path)?;
+                    (
+                        format!("loaded {}", loaded.path.display()),
+                        loaded.config,
+                        loaded.path,
+                    )
+                }
+                None => (
+                    "safe current-directory defaults".into(),
+                    AiDENsConfigV1::safe_default("aidens-cli"),
+                    PathBuf::from("aidens.toml"),
+                ),
+            };
+            let store_root = store.or_else(|| memory_store_root_for_config(&cfg, &config_path));
+            Ok(serde_json::to_string_pretty(&serde_json::json!({
+                "kind": "memory-status",
+                "config": config_status,
+                "memory_mode": cfg.memory_mode,
+                "store_root": store_root,
+                "canonical_owner": "semantic-memory",
+                "runtime_owner": "knowledge-runtime",
+                "truth": memory_truth_for_config(&cfg),
+            }))?)
+        }
+    }
+}
+
+pub fn boundary_command(command: BoundaryCommand) -> Result<String> {
+    match command {
+        BoundaryCommand::Compile {
+            input,
+            schema,
+            treatment_fields,
+            hard_fail_treatment_change,
+        } => {
+            let mut request = BoundaryCompileRequestV1::new(input)
+                .with_treatment_critical_fields(treatment_fields)
+                .with_hard_fail_on_treatment_change(hard_fail_treatment_change);
+            if let Some(schema) = schema {
+                request =
+                    request.with_schema(serde_json::from_str(&schema).with_context(|| {
+                        "boundary compile --schema must be a JSON Schema object literal"
+                    })?);
+            }
+            Ok(serde_json::to_string_pretty(&compile_json_boundary(
+                request,
+            ))?)
+        }
+    }
+}
+
+pub fn view_command(command: ViewCommand) -> Result<String> {
+    match command {
+        ViewCommand::Query {
+            memory_store,
+            view_mode,
+            query,
+            subject,
+            predicate,
+            valid_at,
+            recorded_at,
+            aliases,
+            allow_alias_expansion,
+            allow_timeless_fallback,
+        } => {
+            if subject.is_some()
+                || predicate.is_some()
+                || !aliases.is_empty()
+                || allow_alias_expansion
+                || allow_timeless_fallback
+            {
+                bail!(
+                    "legacy AiDENs memory view filters were removed; query through the canonical semantic-memory/knowledge-runtime path"
+                );
+            }
+
+            let adapter = CanonicalMemoryAdapter::open_with_mock_embedder(
+                memory_config_for_root(memory_store),
+                runtime_config_for_namespace("aidens"),
+            )?;
+            let runtime = tokio::runtime::Runtime::new()?;
+            let (results, trace) = match (valid_at, recorded_at) {
+                (Some(valid_at), Some(recorded_at)) => {
+                    let valid_at = valid_at.to_rfc3339_opts(SecondsFormat::Secs, true);
+                    let recorded_at = recorded_at.to_rfc3339_opts(SecondsFormat::Secs, true);
+                    runtime.block_on(adapter.query_temporal(
+                        &query,
+                        None,
+                        &valid_at,
+                        &recorded_at,
+                    ))?
+                }
+                (None, None) => runtime.block_on(adapter.query(&query, None))?,
+                _ => bail!(
+                    "canonical bitemporal view queries require both --valid-at and --recorded-at"
+                ),
+            };
+            Ok(serde_json::to_string_pretty(&serde_json::json!({
+                "kind": "canonical-runtime-view",
+                "view_mode": view_mode,
+                "canonical_owner": "knowledge-runtime",
+                "memory_owner": "semantic-memory",
+                "result_count": results.len(),
+                "results": results,
+                "trace": trace,
+            }))?)
+        }
+    }
+}
+
+pub fn schemas_command(command: SchemasCommand) -> Result<String> {
+    match command {
+        SchemasCommand::Generate { out } => schemas_generate(&out),
+        SchemasCommand::Check { root } => schemas_check(&root),
+    }
+}
+
+pub fn coding_command(command: CodingCommand) -> Result<String> {
+    match command {
+        CodingCommand::RepoRead { sandbox_root, path } => invoke_coding_tool(
+            &sandbox_root,
+            PermitPolicyV1::default(),
+            "aidens:repo-read:1",
+            serde_json::json!({ "path": path }),
+        ),
+        CodingCommand::RepoList { sandbox_root, path } => invoke_coding_tool(
+            &sandbox_root,
+            PermitPolicyV1::default(),
+            "aidens:repo-list:1",
+            serde_json::json!({ "path": path }),
+        ),
+        CodingCommand::RepoSearch {
+            sandbox_root,
+            query,
+            path,
+        } => invoke_coding_tool(
+            &sandbox_root,
+            PermitPolicyV1::default(),
+            "aidens:repo-search:1",
+            serde_json::json!({ "query": query, "path": path }),
+        ),
+        CodingCommand::PatchPropose {
+            sandbox_root,
+            summary,
+            diff,
+        } => invoke_coding_tool(
+            &sandbox_root,
+            PermitPolicyV1::default(),
+            "aidens:patch-propose:1",
+            serde_json::json!({ "summary": summary, "diff": diff }),
+        ),
+        CodingCommand::PatchApply {
+            sandbox_root,
+            diff,
+            permit_json,
+        } => {
+            let permit = permit_policy_from_json(&permit_json)?;
+            invoke_coding_tool(
+                &sandbox_root,
+                permit,
+                "aidens:patch-apply:1",
+                serde_json::json!({ "diff": diff }),
+            )
+        }
+        CodingCommand::RunChecks {
+            sandbox_root,
+            command,
+            permit_json,
+        } => {
+            let permit = permit_policy_from_json(&permit_json)?;
+            invoke_coding_tool(
+                &sandbox_root,
+                permit,
+                "aidens:run-checks:1",
+                serde_json::json!({ "command": command }),
+            )
+        }
+        CodingCommand::SandboxTruth { sandbox_root } => Ok(serde_json::to_string_pretty(
+            &SandboxCapabilityTruthV1::coding_default(sandbox_root),
+        )?),
+        CodingCommand::CodexPacket {
+            current_pass,
+            next_pass,
+            issue,
+            source_map,
+            changed_files,
+            command_receipts,
+            receipt_ids,
+            blockers,
+            notes,
+        } => {
+            let commands_run = command_receipts
+                .iter()
+                .map(|receipt| command_run_receipt_from_arg(receipt))
+                .collect::<Result<Vec<_>>>()?;
+            let packet = CodexPacketV1::new(CodexPacketInputV1 {
+                current_pass,
+                next_pass,
+                issue,
+                source_map,
+                changed_files,
+                commands_run,
+                receipt_ids: receipt_ids.into_iter().map(ArtifactId).collect(),
+                blockers,
+                notes,
+            });
+            Ok(serde_json::to_string_pretty(&packet)?)
+        }
+    }
+}
+
+pub fn daemon_command(command: DaemonCommand) -> Result<String> {
+    match command {
+        DaemonCommand::Namespace { root, name, owner } => {
+            let namespace = DaemonControllerV1::namespace(&root, name, owner);
+            Ok(serde_json::to_string_pretty(&namespace)?)
+        }
+        DaemonCommand::Schedule {
+            root,
+            name,
+            owner,
+            schedule_id,
+            occurrence_key,
+            due_at,
+            payload,
+            risk,
+        } => {
+            let daemon = daemon_controller(&root, &name, &owner)?;
+            let outcome = daemon.enqueue_schedule_occurrence(
+                schedule_id,
+                occurrence_key,
+                due_at,
+                json_arg(&payload)?,
+                parse_risk_class(&risk)?,
+            )?;
+            Ok(serde_json::to_string_pretty(&outcome)?)
+        }
+        DaemonCommand::Wake {
+            root,
+            name,
+            owner,
+            source,
+            signal_key,
+            payload,
+            risk,
+        } => {
+            let daemon = daemon_controller(&root, &name, &owner)?;
+            let outcome = daemon.enqueue_wake_signal(
+                source,
+                signal_key,
+                json_arg(&payload)?,
+                parse_risk_class(&risk)?,
+            )?;
+            Ok(serde_json::to_string_pretty(&outcome)?)
+        }
+        DaemonCommand::List { root, name, owner } => {
+            let namespace = DaemonControllerV1::namespace(&root, name, owner);
+            let daemon = DaemonControllerV1::open_read_only(&root, namespace)?;
+            Ok(serde_json::to_string_pretty(&daemon.snapshot()?)?)
+        }
+        DaemonCommand::Lease {
+            root,
+            name,
+            owner,
+            ttl_seconds,
+        } => {
+            let daemon = daemon_controller(&root, &name, &owner)?;
+            Ok(serde_json::to_string_pretty(
+                &daemon.acquire_next(owner, ttl_seconds)?,
+            )?)
+        }
+        DaemonCommand::Cancel {
+            root,
+            name,
+            owner,
+            job_id,
+            reason,
+        } => {
+            let daemon = daemon_controller(&root, &name, &owner)?;
+            Ok(serde_json::to_string_pretty(
+                &daemon.cancel(&ArtifactId(job_id), reason)?,
+            )?)
+        }
+        DaemonCommand::SafeMode {
+            root,
+            name,
+            owner,
+            enabled,
+            reason,
+        } => {
+            let daemon = daemon_controller(&root, &name, &owner)?;
+            Ok(serde_json::to_string_pretty(
+                &daemon.set_safe_mode(enabled, reason)?,
+            )?)
+        }
+        DaemonCommand::Drain {
+            root,
+            name,
+            owner,
+            reason,
+        } => {
+            let daemon = daemon_controller(&root, &name, &owner)?;
+            Ok(serde_json::to_string_pretty(&daemon.drain(reason)?)?)
+        }
+    }
+}
+
+pub fn package_command(command: PackageCommand) -> Result<String> {
+    match command {
+        PackageCommand::Examples { root } => {
+            let manifest = example_app_manifest(Path::new(&root))?;
+            Ok(serde_json::to_string_pretty(&manifest)?)
+        }
+        PackageCommand::InstallSmoke {
+            root,
+            config,
+            include_verify,
+        } => {
+            let receipt = install_smoke_receipt(Path::new(&root), &config, include_verify)?;
+            Ok(serde_json::to_string_pretty(&receipt)?)
+        }
+        PackageCommand::Readiness {
+            root,
+            config,
+            include_verify,
+        } => {
+            let report = release_readiness_report(Path::new(&root), &config, include_verify)?;
+            let encoded = serde_json::to_string_pretty(&report)?;
+            if report.blocks_release() {
+                bail!("{encoded}");
+            }
+            Ok(encoded)
+        }
+        PackageCommand::CompletionAudit {
+            root,
+            config,
+            gate_results,
+        } => {
+            let report = completion_audit_report(Path::new(&root), &config, gate_results)?;
+            Ok(serde_json::to_string_pretty(&report)?)
+        }
+    }
+}
+
+pub fn release_readiness_report(
+    root: &Path,
+    config: &str,
+    include_verify: bool,
+) -> Result<ReleaseReadinessReportV1> {
+    let manifest = example_app_manifest(root)?;
+    let smoke = install_smoke_receipt(root, config, include_verify)?;
+    let findings = scan_public_docs_for_scaffold_claims(root)?;
+    Ok(ReleaseReadinessReportV1::new(
+        release_surfaces(),
+        findings,
+        manifest,
+        smoke,
+    ))
+}
+
+const P19_REQUIRED_GATE_COMMANDS: &[&str] = &[
+    "cargo fmt --all --check",
+    "cargo check --workspace",
+    "cargo test --workspace",
+    "cargo clippy --workspace --all-targets --all-features -- -D warnings",
+    "bash scripts/verify.sh",
+];
+
+pub fn completion_audit_report(
+    root: &Path,
+    config: &str,
+    gate_results: Vec<String>,
+) -> Result<CompletionAuditReportV1> {
+    let release_readiness = release_readiness_report(root, config, false)?;
+    let traceability_matrix = cross_pass_traceability_matrix(root)?;
+    let release_artifact_manifest = release_artifact_manifest(root)?;
+    let known_limitations = known_limitations_register();
+    let regression_debt = regression_debt_ledger();
+    Ok(CompletionAuditReportV1::new(
+        "libraries-source-clean-20260426.zip",
+        parse_gate_results(gate_results)?,
+        release_readiness,
+        traceability_matrix,
+        release_artifact_manifest,
+        known_limitations,
+        regression_debt,
+    ))
+}
+
+fn parse_gate_results(gate_results: Vec<String>) -> Result<Vec<GateCommandResultV1>> {
+    let mut parsed = BTreeMap::new();
+    for raw in gate_results {
+        let (command, status) = raw
+            .split_once('=')
+            .or_else(|| raw.split_once('|'))
+            .with_context(|| {
+                format!("gate result must be '<command>=passed|failed|waived|not-run': {raw}")
+            })?;
+        let command = command.trim();
+        let status = status.trim();
+        let result = match status {
+            "passed" => GateCommandResultV1::passed(command, "cli:gate-result"),
+            "failed" => GateCommandResultV1::failed(
+                command,
+                1,
+                "external gate result reported failure",
+                "gate-command-failed",
+            ),
+            "waived" => GateCommandResultV1::waived(command, "governance-waiver:external"),
+            "not-run" => GateCommandResultV1::not_run(command, "gate-command-not-run"),
+            _ => bail!("unknown gate result status for {command}: {status}"),
+        };
+        parsed.insert(command.to_string(), result);
+    }
+    let mut results = Vec::new();
+    for command in P19_REQUIRED_GATE_COMMANDS {
+        results.push(
+            parsed.remove(*command).unwrap_or_else(|| {
+                GateCommandResultV1::not_run(*command, "gate-result-not-supplied")
+            }),
+        );
+    }
+    results.extend(parsed.into_values());
+    Ok(results)
+}
+
+fn release_artifact_manifest(root: &Path) -> Result<ReleaseArtifactManifestV1> {
+    let required = [
+        ("AGENTS.md", ReleaseArtifactKindV1::Document),
+        ("SOURCE_BASIS.md", ReleaseArtifactKindV1::Document),
+        ("BUILD_ORDER_DAG.md", ReleaseArtifactKindV1::Document),
+        ("README.md", ReleaseArtifactKindV1::Document),
+        ("STATUS.md", ReleaseArtifactKindV1::Document),
+        (
+            "ARTIFACT_SCHEMA_REGISTRY.md",
+            ReleaseArtifactKindV1::Document,
+        ),
+        ("pass_manifest.json", ReleaseArtifactKindV1::Manifest),
+        ("scripts/verify.sh", ReleaseArtifactKindV1::Script),
+        (
+            "scripts/assert_no_fake_completion.sh",
+            ReleaseArtifactKindV1::Script,
+        ),
+        (
+            "scripts/assert_no_scaffold_promoted.sh",
+            ReleaseArtifactKindV1::Script,
+        ),
+        (".github/workflows/ci.yml", ReleaseArtifactKindV1::Ci),
+        (
+            "schemas/generated_schema_manifest_v1.json",
+            ReleaseArtifactKindV1::Manifest,
+        ),
+        ("schemas", ReleaseArtifactKindV1::Schema),
+        ("tests/fixtures", ReleaseArtifactKindV1::Fixture),
+        ("examples", ReleaseArtifactKindV1::Example),
+        ("passes", ReleaseArtifactKindV1::Document),
+        ("docs", ReleaseArtifactKindV1::Document),
+        ("handoffs", ReleaseArtifactKindV1::Handoff),
+    ];
+    let mut artifacts = Vec::new();
+    for (path, kind) in required {
+        artifacts.push(release_artifact_entry(root, path, kind, true)?);
+    }
+    Ok(ReleaseArtifactManifestV1::new(
+        "aidens-p19-release",
+        "libraries-source-clean-20260426.zip",
+        artifacts,
+    ))
+}
+
+fn release_artifact_entry(
+    root: &Path,
+    relative: &str,
+    kind: ReleaseArtifactKindV1,
+    required: bool,
+) -> Result<ReleaseArtifactEntryV1> {
+    let path = root.join(relative);
+    if !path.exists() {
+        return Ok(ReleaseArtifactEntryV1::missing(relative, kind, required));
+    }
+    let (digest, byte_len) = if path.is_dir() {
+        digest_directory(root, &path)?
+    } else {
+        let bytes =
+            std::fs::read(&path).with_context(|| format!("failed to read {}", path.display()))?;
+        (
+            non_authoritative_text_display_digest(&String::from_utf8_lossy(&bytes)),
+            bytes.len() as u64,
+        )
+    };
+    Ok(ReleaseArtifactEntryV1::present(
+        relative, kind, required, digest, byte_len,
+    ))
+}
+
+fn digest_directory(root: &Path, dir: &Path) -> Result<(String, u64)> {
+    let mut files = Vec::new();
+    collect_files_recursive(dir, &mut files)?;
+    files.sort();
+    let mut material = String::new();
+    let mut bytes_total = 0_u64;
+    for path in files {
+        let bytes =
+            std::fs::read(&path).with_context(|| format!("failed to read {}", path.display()))?;
+        bytes_total += bytes.len() as u64;
+        let relative = relative_path(root, &path)?;
+        material.push_str(&relative);
+        material.push('\0');
+        material.push_str(&non_authoritative_text_display_digest(
+            &String::from_utf8_lossy(&bytes),
+        ));
+        material.push('\n');
+    }
+    Ok((
+        non_authoritative_text_display_digest(&material),
+        bytes_total,
+    ))
+}
+
+fn collect_files_recursive(root: &Path, files: &mut Vec<PathBuf>) -> Result<()> {
+    if !root.exists() {
+        return Ok(());
+    }
+    for entry in
+        std::fs::read_dir(root).with_context(|| format!("failed to read {}", root.display()))?
+    {
+        let path = entry?.path();
+        if path.is_dir() {
+            collect_files_recursive(&path, files)?;
+        } else {
+            files.push(path);
+        }
+    }
+    Ok(())
+}
+
+fn cross_pass_traceability_matrix(root: &Path) -> Result<CrossPassTraceabilityMatrixV1> {
+    let tasks_root = root.join("tasks");
+    let mut rows = Vec::new();
+    for task_path in sorted_json_files(&tasks_root)? {
+        let value: serde_json::Value = serde_json::from_slice(&std::fs::read(&task_path)?)?;
+        let pass_id = value
+            .get("pass_id")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or("unknown");
+        let title = value
+            .get("title")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or("pass acceptance");
+        let crates = string_array(&value, "crates");
+        let artifacts = string_array(&value, "artifacts");
+        let acceptance = string_array(&value, "acceptance");
+        let pass_doc = value
+            .get("pass_doc")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or("passes")
+            .to_string();
+        let prompt_file = value
+            .get("prompt_file")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or("prompts")
+            .to_string();
+        let handoff = handoff_for_pass(root, pass_id);
+        let mut docs = vec![pass_doc, prompt_file, "STATUS.md".into()];
+        let mut evidence_refs = vec!["STATUS.md".into()];
+        if let Some(handoff) = handoff {
+            docs.push(handoff.clone());
+            evidence_refs.push(handoff);
+        }
+        let state = if pass_id == "P19"
+            || evidence_refs
+                .iter()
+                .any(|path| path.starts_with("handoffs/"))
+        {
+            PassCompletionStateV1::Done
+        } else {
+            PassCompletionStateV1::Deferred
+        };
+        rows.push(
+            CrossPassTraceabilityRowV1::new(format!("{pass_id}:acceptance"), pass_id, title, state)
+                .with_crates(crates)
+                .with_artifacts(artifacts)
+                .with_tests(vec![
+                    "cargo test --workspace".into(),
+                    "bash scripts/verify.sh".into(),
+                ])
+                .with_docs(docs)
+                .with_acceptance_gates(acceptance)
+                .with_evidence(evidence_refs),
+        );
+    }
+    Ok(CrossPassTraceabilityMatrixV1::new(rows))
+}
+
+fn sorted_json_files(root: &Path) -> Result<Vec<PathBuf>> {
+    if !root.exists() {
+        return Ok(Vec::new());
+    }
+    let mut paths = Vec::new();
+    for entry in
+        std::fs::read_dir(root).with_context(|| format!("failed to read {}", root.display()))?
+    {
+        let path = entry?.path();
+        if path.extension().and_then(|extension| extension.to_str()) == Some("json") {
+            paths.push(path);
+        }
+    }
+    paths.sort();
+    Ok(paths)
+}
+
+fn string_array(value: &serde_json::Value, key: &str) -> Vec<String> {
+    value
+        .get(key)
+        .and_then(serde_json::Value::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(serde_json::Value::as_str)
+                .map(ToOwned::to_owned)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn handoff_for_pass(root: &Path, pass_id: &str) -> Option<String> {
+    let handoff_root = root.join("handoffs");
+    let entries = std::fs::read_dir(handoff_root).ok()?;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let file_name = path.file_name()?.to_string_lossy();
+        if file_name.starts_with(pass_id) && file_name.ends_with(".md") {
+            return Some(format!("handoffs/{file_name}"));
+        }
+    }
+    None
+}
+
+fn known_limitations_register() -> KnownLimitationsRegisterV1 {
+    let mut limitations = SCAFFOLD_ONLY_CRATES
+        .iter()
+        .map(|(crate_name, note)| {
+            KnownLimitationV1::deferred(
+                format!("crate:{crate_name}"),
+                format!("{crate_name} remains scaffold-only"),
+                format!("operators must treat this crate as deferred; {note}"),
+            )
+            .with_review_after_pass("post-P19-roadmap")
+        })
+        .collect::<Vec<_>>();
+    limitations.push(
+        KnownLimitationV1::partial(
+            "provider:http-api-boundaries",
+            "OpenAI, OpenRouter, and Anthropic provider routes are diagnostic unavailable boundaries",
+            "mock and local diagnostic routes are supported; HTTP API execution is not claimed",
+        )
+        .with_workaround("use examples/aidens.mock.toml for release smoke"),
+    );
+    limitations.push(
+        KnownLimitationV1::partial(
+            "release:binary-packaging",
+            "P19 produces release manifests and audit artifacts, not signed binary installers",
+            "operators can audit the source package but installer publication remains an external release operation",
+        )
+        .with_workaround("ship the source tree plus generated schemas and fixtures listed in the release artifact manifest"),
+    );
+    KnownLimitationsRegisterV1::new(limitations)
+}
+
+fn regression_debt_ledger() -> RegressionDebtLedgerV1 {
+    RegressionDebtLedgerV1::new(vec![
+        RegressionDebtItemV1::guarded(
+            "release:docs",
+            "public docs must not claim scaffold-only crates are complete",
+            "scripts/assert_no_scaffold_promoted.sh",
+            vec!["bash scripts/verify.sh".into()],
+        ),
+        RegressionDebtItemV1::guarded(
+            "schemas:registry",
+            "schema files can drift from Rust-owned artifact types",
+            "aidens schemas check",
+            vec!["cargo test -p aidens-cli schemas".into()],
+        ),
+        RegressionDebtItemV1::guarded(
+            "provider:routes",
+            "provider labels can regress into native-tool claims without executable proof",
+            "provider route/readiness tests",
+            vec!["cargo test -p aidens-provider-kit".into()],
+        ),
+        RegressionDebtItemV1::guarded(
+            "memory:required-mode",
+            "MemoryRequired paths can regress into running without a durable store",
+            "doctor/run memory-required tests",
+            vec!["cargo test -p aidens-cli memory_required".into()],
+        ),
+    ])
+}
+
+pub fn example_app_manifest(root: &Path) -> Result<ExampleAppManifestV1> {
+    let examples_root = root.join("examples");
+    let mut examples = Vec::new();
+    for path in example_config_paths(&examples_root)? {
+        let loaded = load_config_file(&path)?;
+        let relative = relative_path(root, &path)?;
+        let profile_id = loaded
+            .config
+            .profile_id
+            .clone()
+            .unwrap_or_else(|| "chat-only".into());
+        let mut entry = ExampleAppEntryV1::new(
+            relative.clone(),
+            profile_id.clone(),
+            loaded.config.provider.kind.clone(),
+            loaded.config.memory_mode.clone(),
+            example_status(&loaded.config, &profile_id),
+        )
+        .with_command(format!("aidens provider-check --config {relative}"));
+        if loaded.config.provider.kind == "mock" {
+            entry = entry.with_command(format!("aidens run --config {relative} hello"));
+        }
+        if profile_id == "coding-agent" {
+            entry = entry.with_command(format!("aidens inspect-tools --config {relative}"));
+        }
+        for reason in example_reason_codes(&loaded.config, &profile_id) {
+            entry = entry.with_reason(reason);
+        }
+        examples.push(entry);
+    }
+    Ok(ExampleAppManifestV1::new(
+        examples,
+        SCAFFOLD_ONLY_CRATES
+            .iter()
+            .map(|(crate_name, note)| format!("{crate_name}: {note}"))
+            .collect(),
+    ))
+}
+
+fn install_smoke_receipt(
+    root: &Path,
+    config: &str,
+    include_verify: bool,
+) -> Result<InstallSmokeReportV1> {
+    let smoke_root = root
+        .join("target")
+        .join("p14-install-smoke")
+        .join(unique_smoke_segment());
+    std::fs::create_dir_all(&smoke_root)
+        .with_context(|| format!("failed to create {}", smoke_root.display()))?;
+    let mut steps = Vec::new();
+
+    let app_dir = smoke_root.join("new-user-app");
+    match scaffold_project_at(AiDENsProfile::CodingAgent, &app_dir) {
+        Ok(summary) => steps.push(InstallSmokeStepV1::passed(
+            "new-app",
+            format!("aidens new coding-agent {}", app_dir.display()),
+            &format!("created {}", summary.app_dir.display()),
+        )),
+        Err(error) => steps.push(InstallSmokeStepV1::failed(
+            "new-app",
+            format!("aidens new coding-agent {}", app_dir.display()),
+            &error.to_string(),
+            "new-app-failed",
+        )),
+    }
+
+    let config_path = root.join(config);
+    let config_arg = config_path.display().to_string();
+    steps.push(smoke_step(
+        "provider-check",
+        format!("aidens provider-check --config {config}"),
+        || provider_check(Some(config_arg.clone())),
+    ));
+    steps.push(smoke_step(
+        "inspect-tools",
+        format!("aidens inspect-tools --config {config}"),
+        || inspect_tools(Some(config_arg.clone())),
+    ));
+    steps.push(smoke_step(
+        "mock-turn",
+        format!("aidens run --config {config} hello"),
+        || run_once_command(Some(config_arg.clone()), vec!["hello".into()]),
+    ));
+    steps.push(smoke_step(
+        "receipts-list",
+        format!("aidens receipts list --config {config}"),
+        || {
+            receipts_command(EventLogCommand::List {
+                store: None,
+                config: Some(config_arg.clone()),
+            })
+        },
+    ));
+    if include_verify {
+        steps.push(smoke_step("verify", "bash scripts/verify.sh", || {
+            run_shell_command(root, "bash", &["scripts/verify.sh"])
+        }));
+    } else {
+        steps.push(InstallSmokeStepV1::passed(
+            "verify-script-present",
+            "test -f scripts/verify.sh",
+            &root.join("scripts").join("verify.sh").exists().to_string(),
+        ));
+    }
+
+    Ok(InstallSmokeReportV1::new(steps))
+}
+
+fn smoke_step(
+    step: impl Into<String>,
+    command: impl Into<String>,
+    run: impl FnOnce() -> Result<String>,
+) -> InstallSmokeStepV1 {
+    let step = step.into();
+    let command = command.into();
+    match run() {
+        Ok(output) => InstallSmokeStepV1::passed(step, command, &output),
+        Err(error) => {
+            InstallSmokeStepV1::failed(step, command, &error.to_string(), "smoke-step-failed")
+        }
+    }
+}
+
+fn run_shell_command(root: &Path, program: &str, args: &[&str]) -> Result<String> {
+    let output = std::process::Command::new(program)
+        .args(args)
+        .current_dir(root)
+        .output()
+        .with_context(|| format!("failed to run {program} {}", args.join(" ")))?;
+    let mut combined = String::new();
+    combined.push_str(&String::from_utf8_lossy(&output.stdout));
+    combined.push_str(&String::from_utf8_lossy(&output.stderr));
+    if !output.status.success() {
+        bail!("{program} {} failed: {combined}", args.join(" "));
+    }
+    Ok(combined)
+}
+
+fn example_config_paths(examples_root: &Path) -> Result<Vec<PathBuf>> {
+    if !examples_root.exists() {
+        return Ok(Vec::new());
+    }
+    let mut paths = Vec::new();
+    for entry in std::fs::read_dir(examples_root).with_context(|| {
+        format!(
+            "failed to read examples directory {}",
+            examples_root.display()
+        )
+    })? {
+        let path = entry?.path();
+        if path.extension().and_then(|extension| extension.to_str()) == Some("toml") {
+            paths.push(path);
+        }
+    }
+    paths.sort();
+    Ok(paths)
+}
+
+fn example_status(cfg: &AiDENsConfigV1, profile_id: &str) -> ReleaseSurfaceStateV1 {
+    if provider_readiness_for_spec(&provider_spec_from_config(&cfg.provider)).executable {
+        if matches!(
+            profile_id,
+            "memory-agent" | "autonomous-daemon" | "research-workbench"
+        ) {
+            ReleaseSurfaceStateV1::Partial
+        } else {
+            ReleaseSurfaceStateV1::Supported
+        }
+    } else if is_disabled_provider(&cfg.provider.kind) {
+        ReleaseSurfaceStateV1::Deferred
+    } else {
+        ReleaseSurfaceStateV1::Degraded
+    }
+}
+
+fn example_reason_codes(cfg: &AiDENsConfigV1, profile_id: &str) -> Vec<String> {
+    let mut reasons = Vec::new();
+    if matches!(
+        profile_id,
+        "memory-agent" | "autonomous-daemon" | "research-workbench"
+    ) {
+        reasons.push(format!("profile-surface-partial:{profile_id}"));
+    }
+    if !provider_readiness_for_spec(&provider_spec_from_config(&cfg.provider)).executable {
+        reasons.push("provider-not-executable-in-local-smoke".into());
+    }
+    if cfg.memory_mode == MemoryModeV1::Required && cfg.memory.store_root.is_none() {
+        reasons.push("memory-required-without-store".into());
+    }
+    reasons
+}
+
+fn release_surfaces() -> Vec<ReleaseSurfaceV1> {
+    let mut surfaces = vec![
+        ReleaseSurfaceV1::new(
+            "cli:status",
+            ReleaseSurfaceStateV1::Supported,
+            "operator status reports provider, memory, receipts, degraded, and blocked modes",
+        )
+        .with_command("aidens status --config examples/aidens.mock.toml"),
+        ReleaseSurfaceV1::new(
+            "cli:provider-check",
+            ReleaseSurfaceStateV1::Supported,
+            "provider-check uses executable backend truth",
+        )
+        .with_command("aidens provider-check --config examples/aidens.mock.toml"),
+        ReleaseSurfaceV1::new(
+            "cli:tools",
+            ReleaseSurfaceStateV1::Supported,
+            "tool listing distinguishes declared, registered, executable, hidden, and blocked tools",
+        )
+        .with_command("aidens tools inspect --config examples/aidens.mock.toml"),
+        ReleaseSurfaceV1::new(
+            "cli:receipts",
+            ReleaseSurfaceStateV1::Supported,
+            "receipt commands inspect durable NDJSON evidence",
+        )
+        .with_command("aidens receipts list --config examples/aidens.mock.toml"),
+        ReleaseSurfaceV1::new(
+            "cli:schemas",
+            ReleaseSurfaceStateV1::Supported,
+            "schema generation and compatibility checks are Rust-owned",
+        )
+        .with_command("aidens schemas check"),
+        ReleaseSurfaceV1::new(
+            "cli:memory",
+            ReleaseSurfaceStateV1::Partial,
+            "memory status and runtime views exist; profile wiring remains explicit",
+        )
+        .with_command("aidens memory status --config examples/aidens.memory.toml"),
+        ReleaseSurfaceV1::new(
+            "cli:queue",
+            ReleaseSurfaceStateV1::Partial,
+            "queue/daemon substrate exists; daemon profile packaging is deferred",
+        )
+        .with_command("aidens queue list --root target/aidens-daemon --name default"),
+        ReleaseSurfaceV1::new(
+            "cli:package",
+            ReleaseSurfaceStateV1::Supported,
+            "package readiness blocks on false scaffold claims and failed smoke steps",
+        )
+        .with_command("aidens package readiness"),
+    ];
+    surfaces.extend(SCAFFOLD_ONLY_CRATES.iter().map(|(crate_name, note)| {
+        ReleaseSurfaceV1::new(
+            format!("crate:{crate_name}"),
+            ReleaseSurfaceStateV1::Deferred,
+            format!("scaffold-only; {note}"),
+        )
+    }));
+    surfaces
+}
+
+fn scan_public_docs_for_scaffold_claims(root: &Path) -> Result<Vec<PublicDocFindingV1>> {
+    let mut paths = vec![
+        root.join("README.md"),
+        root.join("STATUS.md"),
+        root.join("STATUS_TEMPLATE.md"),
+        root.join("ARTIFACT_SCHEMA_REGISTRY.md"),
+    ];
+    collect_markdown_paths(&root.join("docs"), &mut paths)?;
+    paths.sort();
+    paths.dedup();
+
+    let mut findings = Vec::new();
+    for path in paths.into_iter().filter(|path| path.exists()) {
+        let contents = std::fs::read_to_string(&path)
+            .with_context(|| format!("failed to read public doc {}", path.display()))?;
+        for (index, line) in contents.lines().enumerate() {
+            let lower = line.to_ascii_lowercase();
+            for (crate_name, _) in SCAFFOLD_ONLY_CRATES {
+                if public_doc_line_promotes_scaffold(&lower, crate_name) {
+                    findings.push(PublicDocFindingV1::scaffold_claim(
+                        relative_path(root, &path)?,
+                        (index + 1) as u32,
+                        format!("crate:{crate_name}"),
+                        line.trim().chars().take(240).collect::<String>(),
+                    ));
+                }
+            }
+        }
+    }
+    Ok(findings)
+}
+
+fn collect_markdown_paths(root: &Path, paths: &mut Vec<PathBuf>) -> Result<()> {
+    if !root.exists() {
+        return Ok(());
+    }
+    for entry in std::fs::read_dir(root)
+        .with_context(|| format!("failed to read docs directory {}", root.display()))?
+    {
+        let path = entry?.path();
+        if path.is_dir() {
+            collect_markdown_paths(&path, paths)?;
+        } else if path.extension().and_then(|extension| extension.to_str()) == Some("md") {
+            paths.push(path);
+        }
+    }
+    Ok(())
+}
+
+fn public_doc_line_promotes_scaffold(line: &str, crate_name: &str) -> bool {
+    line.contains(crate_name)
+        && [
+            "complete",
+            "ready",
+            "production",
+            "healthy",
+            "implemented",
+            "available",
+        ]
+        .iter()
+        .any(|word| line.contains(word))
+        && ![
+            "scaffold",
+            "deferred",
+            "horizon",
+            "unsupported",
+            "not available",
+            "not implemented",
+        ]
+        .iter()
+        .any(|word| line.contains(word))
+}
+
+fn unique_smoke_segment() -> String {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_nanos())
+        .unwrap_or_default();
+    format!("{}-{nanos}", std::process::id())
+}
+
+fn daemon_controller(root: &str, name: &str, owner: &str) -> Result<DaemonControllerV1> {
+    let namespace = DaemonControllerV1::namespace(root, name, owner);
+    Ok(DaemonControllerV1::open(
+        root,
+        namespace,
+        owner.to_string(),
+    )?)
+}
+
+fn json_arg(input: &str) -> Result<serde_json::Value> {
+    serde_json::from_str(input)
+        .with_context(|| "expected JSON object/array/string/number for payload argument")
+}
+
+fn invoke_coding_tool(
+    sandbox_root: &str,
+    permit_policy: PermitPolicyV1,
+    tool_id: &str,
+    input: serde_json::Value,
+) -> Result<String> {
+    let registry = ToolRegistryV1::safe_coding_with_dispatchers(sandbox_root)?;
+    let dispatcher = ToolDispatcher::new(registry).with_permit_policy(permit_policy);
+    let runtime = tokio::runtime::Runtime::new()?;
+    let output = runtime.block_on(async { dispatcher.invoke(tool_id, input).await })?;
+    Ok(serde_json::to_string_pretty(&serde_json::json!({
+        "output": output.output,
+        "tool_invocation_receipt": output.receipt,
+        "permit_use_receipt": output.permit_use_receipt,
+    }))?)
+}
+
+fn permit_policy_from_json(input: &str) -> Result<PermitPolicyV1> {
+    if let Ok(grant) = serde_json::from_str::<PermitGrantV1>(input) {
+        return Ok(PermitPolicyV1::default().with_grant(grant));
+    }
+    if let Ok(decision) = serde_json::from_str::<ApprovalDecisionV1>(input) {
+        if let Some(grant) = decision.permit_grant {
+            return Ok(PermitPolicyV1::default().with_grant(grant));
+        }
+        bail!("approval decision does not contain an approved permit grant");
+    }
+    bail!("--permit-json must be PermitGrantV1 or approved ApprovalDecisionV1 JSON")
+}
+
+fn command_run_receipt_from_arg(input: &str) -> Result<CommandRunReportV1> {
+    if let Ok(receipt) = serde_json::from_str::<CommandRunReportV1>(input) {
+        return Ok(receipt);
+    }
+    let raw = std::fs::read_to_string(input).with_context(|| {
+        format!(
+            "--command-receipt must be CommandRunReportV1 JSON or a readable file path: {input}"
+        )
+    })?;
+    serde_json::from_str::<CommandRunReportV1>(&raw)
+        .with_context(|| format!("failed to parse CommandRunReportV1 from {input}"))
+}
+
+pub fn schemas_generate(out: &str) -> Result<String> {
+    let root = Path::new(out);
+    std::fs::create_dir_all(root)
+        .with_context(|| format!("failed to create schema root {}", root.display()))?;
+    let documents = generated_schema_documents();
+    for document in &documents {
+        let path = root.join(&document.registration.schema_path);
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).with_context(|| {
+                format!("failed to create schema directory {}", parent.display())
+            })?;
+        }
+        std::fs::write(&path, document.pretty_json())
+            .with_context(|| format!("failed to write schema {}", path.display()))?;
+    }
+    let manifest_path = root.join("generated_schema_manifest_v1.json");
+    std::fs::write(&manifest_path, generated_schema_manifest_pretty_json())
+        .with_context(|| format!("failed to write manifest {}", manifest_path.display()))?;
+    Ok(format!(
+        "generated {} schema files into {}",
+        documents.len(),
+        root.display()
+    ))
+}
+
+pub fn schemas_check(root: &str) -> Result<String> {
+    let report = schema_check_report(root)?;
+    let encoded = serde_json::to_string_pretty(&report)?;
+    if !report.compatible {
+        bail!("{encoded}");
+    }
+    Ok(encoded)
+}
+
+pub fn schema_check_report(root: &str) -> Result<SchemaCompatibilityReportV1> {
+    let root = Path::new(root);
+    let registry = current_artifact_family_registry();
+    let documents = generated_schema_documents();
+    let expected_paths = documents
+        .iter()
+        .map(|document| document.registration.schema_path.clone())
+        .collect::<BTreeSet<_>>();
+    let actual_paths = collect_schema_paths(root)?;
+    let mut checks = Vec::new();
+    let mut missing_schema_paths = Vec::new();
+    let mut incompatible_schema_paths = Vec::new();
+
+    for document in &documents {
+        let relative = document.registration.schema_path.clone();
+        let path = root.join(&relative);
+        let mut failure_reason_codes = Vec::new();
+        let compatible = if !path.exists() {
+            missing_schema_paths.push(relative.clone());
+            failure_reason_codes.push("registered-schema-missing".into());
+            false
+        } else {
+            let actual = std::fs::read_to_string(&path)
+                .with_context(|| format!("failed to read schema {}", path.display()))?;
+            match serde_json::from_str::<serde_json::Value>(&actual) {
+                Ok(actual_schema) if actual_schema == document.schema => true,
+                Ok(_) => {
+                    incompatible_schema_paths.push(relative.clone());
+                    failure_reason_codes.push("schema-content-drift-without-major-bump".into());
+                    false
+                }
+                Err(_) => {
+                    incompatible_schema_paths.push(relative.clone());
+                    failure_reason_codes.push("schema-json-invalid".into());
+                    false
+                }
+            }
+        };
+        for mode in [
+            SchemaCompatibilityModeV1::Backward,
+            SchemaCompatibilityModeV1::Forward,
+            SchemaCompatibilityModeV1::Full,
+            SchemaCompatibilityModeV1::Transitive,
+        ] {
+            checks.push(SchemaCompatibilityCheckV1 {
+                family: document.registration.family.clone(),
+                version: document.registration.version,
+                mode,
+                compatible,
+                reason_codes: if compatible {
+                    vec![format!("schema-compatible-{mode}")]
+                } else {
+                    failure_reason_codes.clone()
+                },
+            });
+        }
+    }
+
+    let unregistered_schema_paths = actual_paths
+        .difference(&expected_paths)
+        .cloned()
+        .collect::<Vec<_>>();
+
+    let manifest_path = root.join("generated_schema_manifest_v1.json");
+    if !manifest_path.exists() {
+        missing_schema_paths.push("generated_schema_manifest_v1.json".into());
+    } else {
+        let actual = std::fs::read_to_string(&manifest_path)
+            .with_context(|| format!("failed to read manifest {}", manifest_path.display()))?;
+        match serde_json::from_str::<serde_json::Value>(&actual) {
+            Ok(actual_manifest)
+                if actual_manifest
+                    == serde_json::to_value(generated_schema_manifest())
+                        .unwrap_or(serde_json::Value::Null) => {}
+            Ok(_) => incompatible_schema_paths.push("generated_schema_manifest_v1.json".into()),
+            Err(_) => incompatible_schema_paths.push("generated_schema_manifest_v1.json".into()),
+        }
+    }
+
+    Ok(SchemaCompatibilityReportV1::new(
+        &registry,
+        documents.len(),
+        checks,
+        missing_schema_paths,
+        unregistered_schema_paths,
+        incompatible_schema_paths,
+    ))
+}
+
+fn collect_schema_paths(root: &Path) -> Result<BTreeSet<String>> {
+    let mut paths = BTreeSet::new();
+    if !root.exists() {
+        return Ok(paths);
+    }
+    collect_schema_paths_inner(root, root, &mut paths)?;
+    Ok(paths)
+}
+
+fn collect_schema_paths_inner(
+    root: &Path,
+    current: &Path,
+    paths: &mut BTreeSet<String>,
+) -> Result<()> {
+    for entry in std::fs::read_dir(current)
+        .with_context(|| format!("failed to read schema directory {}", current.display()))?
+    {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_schema_paths_inner(root, &path, paths)?;
+        } else if path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.ends_with(".schema.json"))
+        {
+            paths.insert(relative_path(root, &path)?);
+        }
+    }
+    Ok(())
+}
+
+fn relative_path(root: &Path, path: &Path) -> Result<String> {
+    Ok(path
+        .strip_prefix(root)
+        .with_context(|| format!("failed to relativize {}", path.display()))?
+        .components()
+        .map(|component| component.as_os_str().to_string_lossy())
+        .collect::<Vec<_>>()
+        .join("/"))
+}
+
+pub fn list_capabilities() -> Result<String> {
+    let cfg = AiDENsConfigV1::safe_default("aidens-cli");
+    let report = doctor_report_for_config("safe default", &cfg);
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
+pub fn run_once_command(config: Option<String>, prompt: Vec<String>) -> Result<String> {
+    let prompt = prompt.join(" ");
+    if prompt.trim().is_empty() {
+        bail!("run requires a prompt")
+    }
+    let path = config.unwrap_or_else(|| "aidens.toml".into());
+    let runtime = tokio::runtime::Runtime::new()?;
+    let output = runtime.block_on(async {
+        let app = AiDENsApp::from_config(path).build().await?;
+        app.run_once(prompt).await
+    })?;
+    Ok(output.text)
+}
+
+pub fn new_app(profile: &str, destination: &str) -> Result<String> {
+    let profile = parse_profile(profile)?;
+    let summary = scaffold_project_at(profile, Path::new(destination))?;
+    Ok(format!(
+        "AiDENs new\nprofile: {}\nname: {}\ncreated: {}\nfiles: {:?}",
+        profile.id(),
+        summary.package_name,
+        summary.app_dir.display(),
+        summary.files
+    ))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScaffoldSummary {
+    pub app_dir: PathBuf,
+    pub package_name: String,
+    pub files: Vec<String>,
+}
+
+pub fn scaffold_project(
+    profile: AiDENsProfile,
+    name: &str,
+    destination_root: &Path,
+) -> Result<ScaffoldSummary> {
+    let package_name = sanitize_package_name(name)?;
+    scaffold_project_inner(profile, destination_root.join(&package_name), package_name)
+}
+
+pub fn scaffold_project_at(profile: AiDENsProfile, app_dir: &Path) -> Result<ScaffoldSummary> {
+    let name = app_dir
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| anyhow::anyhow!("destination must include an app directory name"))?;
+    let package_name = sanitize_package_name(name)?;
+    scaffold_project_inner(profile, app_dir.to_path_buf(), package_name)
+}
+
+fn scaffold_project_inner(
+    profile: AiDENsProfile,
+    app_dir: PathBuf,
+    package_name: String,
+) -> Result<ScaffoldSummary> {
+    if app_dir.exists() {
+        bail!("target app directory already exists: {}", app_dir.display());
+    }
+
+    let plan = profile.expand(&package_name);
+    plan.validate().map_err(anyhow::Error::msg)?;
+    let mut cfg = AiDENsConfigV1::safe_default(&package_name);
+    cfg.profile_id = Some(profile.id().into());
+    cfg.memory_mode = plan.memory_mode;
+    cfg.receipt_level = plan.receipt_level;
+    cfg.provider = ProviderConfigV1 {
+        kind: "disabled".into(),
+        model: None,
+        api_key: None,
+        base_url: None,
+        mock_response: None,
+    };
+    cfg.receipts.store_root = Some(format!("target/aidens-receipts/{package_name}"));
+    cfg.tools.sandbox_root = Some(".".into());
+    cfg.tools.enabled_bundles = plan.enabled_tool_bundles.clone();
+
+    std::fs::create_dir_all(app_dir.join("src"))
+        .with_context(|| format!("failed to create {}", app_dir.join("src").display()))?;
+    std::fs::create_dir_all(app_dir.join("tests"))
+        .with_context(|| format!("failed to create {}", app_dir.join("tests").display()))?;
+
+    let files = vec![
+        "Cargo.toml".to_string(),
+        "aidens.toml".to_string(),
+        "src/main.rs".to_string(),
+        "tests/smoke.rs".to_string(),
+    ];
+    std::fs::write(
+        app_dir.join("Cargo.toml"),
+        render_cargo_toml(&package_name, &workspace_aidens_crate_path()),
+    )?;
+    std::fs::write(app_dir.join("aidens.toml"), cfg.to_toml_string()?)?;
+    std::fs::write(app_dir.join("src").join("main.rs"), render_main_rs())?;
+    std::fs::write(
+        app_dir.join("tests").join("smoke.rs"),
+        render_smoke_test(&package_name),
+    )?;
+
+    Ok(ScaffoldSummary {
+        app_dir,
+        package_name,
+        files,
+    })
+}
+
+fn load_or_default_config(path: &str) -> Result<(String, AiDENsConfigV1)> {
+    let path_ref = Path::new(path);
+    if path_ref.exists() {
+        let loaded = load_config_file(path_ref)?;
+        Ok((format!("loaded {}", loaded.path.display()), loaded.config))
+    } else {
+        Ok((
+            format!(
+                "missing {}; using safe disabled defaults",
+                path_ref.display()
+            ),
+            AiDENsConfigV1::safe_default("aidens-cli"),
+        ))
+    }
+}
+
+fn receipt_store_config_from_options(
+    store: Option<String>,
+    config: Option<String>,
+) -> Result<CanonicalEventLogConfig> {
+    if let Some(root) = store {
+        return Ok(CanonicalEventLogConfig::for_root(root));
+    }
+    if let Some(config) = config {
+        let loaded = load_config_file(&config)?;
+        let root =
+            receipt_store_root_for_config(&loaded.config, &loaded.path).ok_or_else(|| {
+                anyhow::anyhow!(
+                    "receipt-store-not-configured: receipt_level=minimal and no --store override"
+                )
+            })?;
+        return Ok(CanonicalEventLogConfig::for_root(root));
+    }
+    Ok(CanonicalEventLogConfig::for_root(
+        "target/aidens-receipts/aidens-cli",
+    ))
+}
+
+fn receipt_store_truth_for_config(cfg: &AiDENsConfigV1) -> RuntimeCapabilityTruthV1 {
+    if let Some(root) = cfg
+        .receipts
+        .store_root
+        .clone()
+        .or_else(|| default_receipt_store_root(&cfg.app_id, &cfg.receipt_level))
+    {
+        return truth(
+            "receipts:canonical-log",
+            vec![
+                CapabilityStateV1::Configured,
+                CapabilityStateV1::Available,
+                CapabilityStateV1::Healthy,
+            ],
+            Some(format!(
+                "append-only canonical receipt/report log; root={root}; receipt_level={}",
+                cfg.receipt_level
+            )),
+        );
+    }
+    truth(
+        "receipts:minimal-no-durable-store",
+        vec![CapabilityStateV1::Configured, CapabilityStateV1::Disabled],
+        Some("receipt_level=minimal; no durable store configured".into()),
+    )
+}
+
+fn receipt_store_root_for_config(cfg: &AiDENsConfigV1, config_path: &Path) -> Option<String> {
+    let Some(root) = cfg.receipts.store_root.clone() else {
+        return default_receipt_store_root(&cfg.app_id, &cfg.receipt_level);
+    };
+    let path = PathBuf::from(root);
+    if path.is_absolute() {
+        return Some(path.display().to_string());
+    }
+    Some(
+        config_path
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .join(path)
+            .display()
+            .to_string(),
+    )
+}
+
+fn memory_store_root_for_config(cfg: &AiDENsConfigV1, config_path: &Path) -> Option<String> {
+    let root = cfg.memory.store_root.clone()?;
+    let path = PathBuf::from(root);
+    if path.is_absolute() {
+        return Some(path.display().to_string());
+    }
+    Some(
+        config_path
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .join(path)
+            .display()
+            .to_string(),
+    )
+}
+
+fn default_receipt_store_root(app_id: &str, receipt_level: &ReportLevelV1) -> Option<String> {
+    if receipt_level == &ReportLevelV1::Minimal {
+        return None;
+    }
+    Some(format!(
+        "target/aidens-receipts/{}",
+        receipt_store_segment(app_id)
+    ))
+}
+
+fn receipt_store_segment(app_id: &str) -> String {
+    let mut segment = String::new();
+    let mut last_dash = false;
+    for ch in app_id.trim().chars() {
+        let next = if ch.is_ascii_alphanumeric() || ch == '_' {
+            ch.to_ascii_lowercase()
+        } else {
+            '-'
+        };
+        if next == '-' {
+            if !last_dash {
+                segment.push(next);
+            }
+            last_dash = true;
+        } else {
+            segment.push(next);
+            last_dash = false;
+        }
+    }
+    let segment = segment.trim_matches('-').to_string();
+    if segment.is_empty() {
+        "aidens-cli".into()
+    } else {
+        segment
+    }
+}
+
+fn plan_from_config(cfg: &AiDENsConfigV1) -> AiDENsAppPlanV1 {
+    let profile = cfg
+        .profile_id
+        .as_deref()
+        .and_then(AiDENsProfile::from_id)
+        .unwrap_or(AiDENsProfile::ChatOnly);
+    let mut plan = profile.expand(cfg.app_id.clone());
+    plan.memory_mode = cfg.memory_mode.clone();
+    plan.receipt_level = cfg.receipt_level.clone();
+    plan.enabled_tool_bundles = cfg.tools.enabled_bundles.clone();
+    plan
+}
+
+fn compile_config_plan(config_status: &str, cfg: &AiDENsConfigV1) -> Result<AiDENsCompiledPlanV1> {
+    let plan = plan_from_config(cfg);
+    plan.validate().map_err(anyhow::Error::msg)?;
+    validate_plan_runtime_contract(&plan, cfg)?;
+    let provider_route = route_for_config(cfg);
+    let tool_exposure = tool_exposure_for_config(cfg);
+    let doctor = doctor_report_for_config(config_status, cfg);
+    let config_apply_receipt = ConfigApplyReportV1::new(ConfigApplyReportDraftV1 {
+        app_id: cfg.app_id.clone(),
+        config_source: config_status.into(),
+        provider_route: provider_route.clone(),
+        tool_exposure: tool_exposure.clone(),
+        memory_mode: plan.memory_mode.clone(),
+        receipt_level: plan.receipt_level.clone(),
+        enabled_tool_bundles: cfg.tools.enabled_bundles.clone(),
+        sandbox_root: cfg.tools.sandbox_root.clone(),
+        applied: true,
+        reason_codes: Vec::new(),
+    });
+    let parity_report = plan_runtime_parity_report(&plan, &provider_route, &tool_exposure, &doctor);
+    if !parity_report.is_passing() {
+        bail!(
+            "plan/runtime parity failed: {}",
+            parity_report.mismatches.join("; ")
+        );
+    }
+    Ok(AiDENsCompiledPlanV1 {
+        plan_id: ArtifactId::new("compiled-plan"),
+        plan,
+        provider_route,
+        tool_exposure,
+        doctor,
+        config_apply_receipt,
+        parity_report,
+    })
+}
+
+fn validate_plan_runtime_contract(plan: &AiDENsAppPlanV1, cfg: &AiDENsConfigV1) -> Result<()> {
+    if plan.provider_required && is_disabled_provider(&cfg.provider.kind) {
+        bail!("provider_required plan cannot treat disabled provider as valid")
+    }
+    let readiness = provider_readiness_for_spec(&provider_spec_from_config(&cfg.provider));
+    if plan.provider_required && !readiness.executable {
+        bail!(
+            "provider_required plan has no executable provider: {}",
+            readiness.reason_codes.join(",")
+        )
+    }
+    ensure_memory_store_policy(cfg)?;
+    Ok(())
+}
+
+fn ensure_memory_store_policy(cfg: &AiDENsConfigV1) -> Result<()> {
+    if cfg.memory_mode == MemoryModeV1::Required && cfg.memory.store_root.is_none() {
+        bail!(
+            "memory-required-without-durable-store: memory_mode=required needs [memory].store_root"
+        )
+    }
+    Ok(())
+}
+
+fn route_for_config(cfg: &AiDENsConfigV1) -> ProviderRouteReportV1 {
+    let spec = provider_spec_from_config(&cfg.provider);
+    route_receipt_for_spec(&spec)
+}
+
+fn is_disabled_provider(kind: &str) -> bool {
+    matches!(
+        kind.trim().to_ascii_lowercase().as_str(),
+        "" | "disabled" | "none"
+    )
+}
+
+fn provider_spec_from_config(provider: &ProviderConfigV1) -> ProviderSpecV1 {
+    ProviderSpecV1 {
+        kind: provider.kind.clone(),
+        model: provider.model.clone(),
+        api_key: provider.api_key.clone(),
+        base_url: provider.base_url.clone(),
+        mock_response: provider.mock_response.clone(),
+    }
+}
+
+fn provider_capability_truth(cfg: &AiDENsConfigV1) -> RuntimeCapabilityTruthV1 {
+    let spec = provider_spec_from_config(&cfg.provider);
+    let readiness = provider_readiness_for_spec(&spec);
+    let route = route_for_config(cfg);
+    let mut states = Vec::new();
+    if readiness.configured {
+        states.push(CapabilityStateV1::Configured);
+    }
+    if readiness.executable {
+        states.extend([
+            CapabilityStateV1::Available,
+            CapabilityStateV1::Healthy,
+            CapabilityStateV1::ExecutableThisTurn,
+        ]);
+    } else if is_disabled_provider(&cfg.provider.kind) {
+        states.push(CapabilityStateV1::Disabled);
+    } else if readiness
+        .reason_codes
+        .iter()
+        .any(|reason| reason.contains("api-key"))
+    {
+        states.push(CapabilityStateV1::BlockedByPolicy);
+    } else {
+        states.push(CapabilityStateV1::Unavailable);
+    }
+    if route.degraded {
+        states.push(CapabilityStateV1::Degraded);
+    }
+    if route.route_label == "parser-fallback" {
+        states.push(CapabilityStateV1::FallbackOnly);
+    }
+    truth(
+        format!("provider:{}", cfg.provider.kind),
+        states,
+        Some(merged_reason_codes(readiness.reason_codes, route.reason_codes).join(",")),
+    )
+}
+
+fn provider_route_truth(cfg: &AiDENsConfigV1) -> RuntimeCapabilityTruthV1 {
+    let route = route_for_config(cfg);
+    let mut states = vec![CapabilityStateV1::Configured];
+    match route.route {
+        ProviderRouteKindV1::Disabled => {
+            states = vec![CapabilityStateV1::Disabled, CapabilityStateV1::Deferred];
+        }
+        ProviderRouteKindV1::Unavailable => {
+            states.push(CapabilityStateV1::Unavailable);
+        }
+        ProviderRouteKindV1::ParserFallback | ProviderRouteKindV1::Degraded => {
+            states.push(CapabilityStateV1::Degraded);
+        }
+        _ => {
+            states.extend([
+                CapabilityStateV1::Available,
+                CapabilityStateV1::ExecutableThisTurn,
+            ]);
+        }
+    }
+    truth(
+        format!("provider-route:{}", route.route_label),
+        states,
+        Some(route.reason_codes.join(",")),
+    )
+}
+
+fn memory_truth_for_config(cfg: &AiDENsConfigV1) -> RuntimeCapabilityTruthV1 {
+    let store_root = cfg.memory.store_root.as_deref();
+    let (states, reason) = match (&cfg.memory_mode, store_root) {
+        (MemoryModeV1::Disabled, Some(root)) => (
+            vec![CapabilityStateV1::Disabled],
+            format!(
+                "memory_mode=disabled; durable memory store configured but unused; root={root}"
+            ),
+        ),
+        (MemoryModeV1::Disabled, None) => (
+            vec![CapabilityStateV1::Disabled],
+            "memory_mode=disabled; durable memory store not configured".to_string(),
+        ),
+        (MemoryModeV1::Optional, Some(root)) => (
+            vec![
+                CapabilityStateV1::Configured,
+                CapabilityStateV1::Available,
+                CapabilityStateV1::Healthy,
+            ],
+            format!("memory_mode=optional; durable memory store configured; root={root}"),
+        ),
+        (MemoryModeV1::Optional, None) => (
+            vec![CapabilityStateV1::Configured, CapabilityStateV1::Degraded],
+            "memory_mode=optional; durable memory store not configured".to_string(),
+        ),
+        (MemoryModeV1::Required, Some(root)) => (
+            vec![
+                CapabilityStateV1::Configured,
+                CapabilityStateV1::Available,
+                CapabilityStateV1::Healthy,
+            ],
+            format!("memory_mode=required; durable memory store configured; root={root}"),
+        ),
+        (MemoryModeV1::Required, None) => (
+            vec![
+                CapabilityStateV1::Configured,
+                CapabilityStateV1::BlockedByPolicy,
+            ],
+            "memory_mode=required; memory-required-without-durable-store".to_string(),
+        ),
+    };
+    truth("memory:runtime", states, Some(reason))
+}
+
+fn doctor_report_for_config(config_status: &str, cfg: &AiDENsConfigV1) -> AiDENsDoctorReportV1 {
+    let registry = tool_registry_for_config(cfg);
+    let exposure = tool_exposure_for_config(cfg);
+    let mut sections = BTreeMap::new();
+
+    sections.insert(
+        "config".into(),
+        vec![truth(
+            "config:file",
+            vec![
+                CapabilityStateV1::Configured,
+                CapabilityStateV1::Available,
+                CapabilityStateV1::Healthy,
+            ],
+            Some(config_status.into()),
+        )],
+    );
+    sections.insert("provider".into(), vec![provider_capability_truth(cfg)]);
+    sections.insert("provider_route".into(), vec![provider_route_truth(cfg)]);
+
+    let tool_truth = exposure
+        .declared_tool_ids
+        .iter()
+        .cloned()
+        .map(|tool_id| {
+            let mut states = vec![CapabilityStateV1::Declared];
+            if registry.contains_tool_id(&tool_id) {
+                states.push(CapabilityStateV1::Registered);
+            }
+            if exposure.exposed_tool_ids.contains(&tool_id) {
+                states.push(CapabilityStateV1::ExposedThisTurn);
+            }
+            if registry.can_execute(&tool_id) {
+                states.push(CapabilityStateV1::ExecutableThisTurn);
+            } else if registry.contains_tool_id(&tool_id) {
+                states.push(CapabilityStateV1::Deferred);
+            }
+            if exposure.hidden_tool_ids.contains(&tool_id) {
+                states.push(CapabilityStateV1::Hidden);
+            }
+            if exposure.blocked_tool_ids.contains(&tool_id) {
+                states.push(CapabilityStateV1::BlockedByPolicy);
+            }
+            let reason = exposure
+                .decisions
+                .iter()
+                .find(|decision| decision.capability_id == tool_id)
+                .map(|decision| decision.reason_codes.join(","))
+                .filter(|reason| !reason.is_empty())
+                .unwrap_or_else(|| "read-only policy exposure".into());
+            if reason.contains("permit-required") {
+                states.push(CapabilityStateV1::RequiresApproval);
+            }
+            truth(tool_id, states, Some(reason))
+        })
+        .collect::<Vec<_>>();
+    sections.insert("tools".into(), tool_truth);
+
+    sections.insert(
+        "security".into(),
+        vec![
+            truth(
+                "security:approval",
+                vec![CapabilityStateV1::Configured, CapabilityStateV1::Healthy],
+                Some(format!(
+                    "approval_mode={}, write_policy={}",
+                    cfg.security.approval_mode, cfg.security.write_policy
+                )),
+            ),
+            truth(
+                "security:network",
+                vec![CapabilityStateV1::Disabled],
+                Some(cfg.security.network_policy.clone()),
+            ),
+        ],
+    );
+    sections.insert("receipts".into(), vec![receipt_store_truth_for_config(cfg)]);
+    sections.insert("memory".into(), vec![memory_truth_for_config(cfg)]);
+    sections.insert(
+        "governance".into(),
+        vec![truth(
+            "governance:p12-promotion-policy",
+            vec![CapabilityStateV1::Configured, CapabilityStateV1::Available],
+            Some("Risk-bearing promotion is delegated to verification-control and verification-adjudication".into()),
+        )],
+    );
+    sections.insert(
+        "repair".into(),
+        vec![truth(
+            "repair:p12-supersession-records",
+            vec![CapabilityStateV1::Configured, CapabilityStateV1::Available],
+            Some(
+                "Repairs are delegated to verification-control and semantic-memory-forge records"
+                    .into(),
+            ),
+        )],
+    );
+    sections.insert(
+        "queue".into(),
+        vec![truth(
+            "queue:runtime",
+            vec![CapabilityStateV1::Configured, CapabilityStateV1::Available],
+            Some("P11 append-only daemon-owned queue substrate; jobs require namespace root and idempotency key".into()),
+        )],
+    );
+    sections.insert(
+        "schedule".into(),
+        vec![truth(
+            "schedule:runtime",
+            vec![CapabilityStateV1::Configured, CapabilityStateV1::Available],
+            Some("P11 one-shot schedule occurrence compiler; recurring schedules remain deferred until built on idempotency keys".into()),
+        )],
+    );
+    sections.insert(
+        "wake".into(),
+        vec![truth(
+            "wake:runtime",
+            vec![CapabilityStateV1::Configured, CapabilityStateV1::Available],
+            Some("P11 wake signals produce idempotency-keyed queue jobs; no network/file side effects by default".into()),
+        )],
+    );
+    sections.insert(
+        "daemon".into(),
+        vec![truth(
+            "daemon:runtime",
+            vec![CapabilityStateV1::Configured, CapabilityStateV1::Available],
+            Some("P11 daemon controller requires owner-scoped writes, leases, safe mode, and duplicate suppression".into()),
+        )],
+    );
+    sections.insert(
+        "runtime".into(),
+        vec![truth(
+            "runtime:runner",
+            vec![CapabilityStateV1::Configured, CapabilityStateV1::Available],
+            Some("runner uses executable provider boundary and P04 tool lifecycle gates".into()),
+        )],
+    );
+    sections.insert("scaffold_surfaces".into(), scaffold_surface_truths());
+
+    AiDENsDoctorReportV1::new(cfg.app_id.clone(), sections)
+}
+
+fn scaffold_surface_truths() -> Vec<RuntimeCapabilityTruthV1> {
+    SCAFFOLD_ONLY_CRATES
+        .iter()
+        .map(|(crate_name, note)| {
+            truth(
+                format!("crate:{crate_name}"),
+                vec![CapabilityStateV1::Disabled, CapabilityStateV1::Deferred],
+                Some(format!("scaffold-only; {note}")),
+            )
+        })
+        .collect()
+}
+
+fn tool_registry_for_config(cfg: &AiDENsConfigV1) -> ToolRegistryV1 {
+    registry_from_enabled_bundles(
+        &cfg.tools.enabled_bundles,
+        cfg.tools.sandbox_root.as_deref(),
+    )
+}
+
+fn tool_exposure_for_config(cfg: &AiDENsConfigV1) -> aidens_contracts::ToolExposureSetV1 {
+    let route = route_for_config(cfg);
+    let mut policy = if cfg.profile_id.as_deref() == Some("coding-agent") {
+        ToolExposurePolicyV1::coding_agent_default()
+    } else {
+        ToolExposurePolicyV1::read_only_default()
+    }
+    .for_provider_route(&route);
+    if let Some(sandbox_root) = cfg.tools.sandbox_root.as_deref() {
+        policy = policy.with_sandbox_root(sandbox_root);
+    }
+    tool_registry_for_config(cfg)
+        .plan_exposure_with_declarations(&policy, safe_coding_tool_declarations())
+}
+
+fn plan_runtime_parity_report(
+    plan: &AiDENsAppPlanV1,
+    provider_route: &ProviderRouteReportV1,
+    tool_exposure: &ToolExposureSetV1,
+    doctor: &AiDENsDoctorReportV1,
+) -> PlanRuntimeParityReportV1 {
+    let checks = vec![
+        PlanRuntimeParityCheckV1::new(
+            PlanRuntimeParityCheckKindV1::ProviderRoute,
+            provider_route.route_label.clone(),
+            doctor_provider_route_label(doctor),
+        ),
+        PlanRuntimeParityCheckV1::new(
+            PlanRuntimeParityCheckKindV1::ToolExposure,
+            sorted_join(tool_exposure.exposed_tool_ids.clone()),
+            sorted_join(doctor_exposed_tool_ids(doctor)),
+        ),
+        PlanRuntimeParityCheckV1::new(
+            PlanRuntimeParityCheckKindV1::MemoryMode,
+            plan.memory_mode.to_string(),
+            doctor_memory_mode(doctor),
+        ),
+        PlanRuntimeParityCheckV1::new(
+            PlanRuntimeParityCheckKindV1::ScaffoldState,
+            format!("{} disabled/deferred", SCAFFOLD_ONLY_CRATES.len()),
+            doctor_scaffold_state(doctor),
+        ),
+    ];
+    PlanRuntimeParityReportV1::new(plan.app_id.clone(), checks)
+}
+
+fn doctor_provider_route_label(doctor: &AiDENsDoctorReportV1) -> String {
+    doctor
+        .sections
+        .get("provider_route")
+        .and_then(|section| section.first())
+        .and_then(|truth| truth.capability_id.strip_prefix("provider-route:"))
+        .unwrap_or("<missing>")
+        .to_string()
+}
+
+fn doctor_exposed_tool_ids(doctor: &AiDENsDoctorReportV1) -> Vec<String> {
+    doctor
+        .sections
+        .get("tools")
+        .into_iter()
+        .flat_map(|section| section.iter())
+        .filter(|truth| truth.states.contains(&CapabilityStateV1::ExposedThisTurn))
+        .map(|truth| truth.capability_id.clone())
+        .collect()
+}
+
+fn doctor_memory_mode(doctor: &AiDENsDoctorReportV1) -> String {
+    doctor
+        .sections
+        .get("memory")
+        .and_then(|section| section.first())
+        .and_then(|truth| truth.reason.as_deref())
+        .and_then(|reason| {
+            reason
+                .strip_prefix("memory_mode=")
+                .and_then(|rest| rest.split(';').next())
+        })
+        .unwrap_or("<missing>")
+        .to_string()
+}
+
+fn doctor_scaffold_state(doctor: &AiDENsDoctorReportV1) -> String {
+    let Some(section) = doctor.sections.get("scaffold_surfaces") else {
+        return "<missing>".into();
+    };
+    let all_deferred = section.iter().all(|truth| {
+        truth.states.contains(&CapabilityStateV1::Disabled)
+            && truth.states.contains(&CapabilityStateV1::Deferred)
+            && !truth.states.contains(&CapabilityStateV1::Healthy)
+    });
+    if all_deferred {
+        format!("{} disabled/deferred", section.len())
+    } else {
+        "promoted-or-mixed".into()
+    }
+}
+
+fn sorted_join(mut values: Vec<String>) -> String {
+    values.sort();
+    values.join(",")
+}
+
+fn merged_reason_codes(mut left: Vec<String>, right: Vec<String>) -> Vec<String> {
+    left.extend(right);
+    left.sort();
+    left.dedup();
+    left
+}
+
+fn parse_profile(profile: &str) -> Result<AiDENsProfile> {
+    AiDENsProfile::from_id(profile)
+        .ok_or_else(|| anyhow::anyhow!("unknown AiDENs profile: {profile}"))
+}
+
+fn parse_risk_class(risk: &str) -> Result<CanonicalToolSideEffectClass> {
+    match risk.trim().to_ascii_lowercase().as_str() {
+        "read-only" | "read_only" | "readonly" => Ok(CanonicalToolSideEffectClass::ReadOnly),
+        "memory-write" | "memory" => Ok(CanonicalToolSideEffectClass::Write),
+        "file-write" | "file" | "write" => Ok(CanonicalToolSideEffectClass::Write),
+        "shell" => Ok(CanonicalToolSideEffectClass::Admin),
+        "network" => Ok(CanonicalToolSideEffectClass::Analysis),
+        "schedule" => Ok(CanonicalToolSideEffectClass::Admin),
+        "queue-or-daemon" | "queue" | "daemon" => Ok(CanonicalToolSideEffectClass::Admin),
+        "external-federation" | "federation" => Ok(CanonicalToolSideEffectClass::Admin),
+        _ => bail!("unknown risk class: {risk}"),
+    }
+}
+
+fn sanitize_package_name(name: &str) -> Result<String> {
+    let mut package = String::new();
+    let mut last_was_dash = false;
+    for ch in name.trim().chars() {
+        let next = if ch.is_ascii_alphanumeric() || ch == '_' {
+            ch.to_ascii_lowercase()
+        } else {
+            '-'
+        };
+        if next == '-' {
+            if !last_was_dash {
+                package.push(next);
+            }
+            last_was_dash = true;
+        } else {
+            package.push(next);
+            last_was_dash = false;
+        }
+    }
+    let package = package.trim_matches('-').to_string();
+    if package.is_empty() {
+        bail!("app name must contain at least one ASCII alphanumeric character");
+    }
+    if package.chars().next().is_some_and(|ch| ch.is_ascii_digit()) {
+        return Ok(format!("aidens-{package}"));
+    }
+    Ok(package)
+}
+
+fn workspace_aidens_crate_path() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("workspace root")
+        .join("crates")
+        .join("aidens")
+}
+
+fn render_cargo_toml(package_name: &str, aidens_path: &Path) -> String {
+    format!(
+        r#"[package]
+name = "{package_name}"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+aidens = {{ path = "{}" }}
+anyhow = "1"
+tokio = {{ version = "1", features = ["rt-multi-thread", "macros"] }}
+"#,
+        aidens_path.display()
+    )
+}
+
+fn render_main_rs() -> String {
+    r#"use aidens::prelude::*;
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let app = AiDENsApp::from_config("aidens.toml").build().await?;
+    let output = app.run_once("hello").await?;
+    println!("{}", output.text);
+    Ok(())
+}
+"#
+    .into()
+}
+
+fn render_smoke_test(app_id: &str) -> String {
+    format!(
+        r#"use aidens::prelude::*;
+
+#[test]
+fn generated_plan_is_safe_and_visible() {{
+    let plan = AiDENsProfile::CodingAgent.expand("{app_id}");
+
+    assert!(!plan.dangerous_auto_approval);
+    assert!(plan.validate().is_ok());
+    assert!(plan.risk_summary().contains("permit_required=true"));
+}}
+"#
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use aidens_contracts::{MemoryModeV1, ReportLevelV1};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_root() -> PathBuf {
+        std::env::temp_dir().join(format!(
+            "aidens-cli-test-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ))
+    }
+
+    fn workspace_root() -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .ancestors()
+            .nth(2)
+            .unwrap()
+            .to_path_buf()
+    }
+
+    #[test]
+    fn doctor_without_config_reports_disabled_provider() {
+        let report = doctor(Some("definitely-missing-aidens.toml".into())).unwrap();
+
+        assert!(report.contains("provider:disabled"));
+        assert!(report.contains("receipts:canonical-log"));
+    }
+
+    #[test]
+    fn doctor_reports_scaffold_crates_as_deferred_not_healthy() {
+        let report = doctor(Some("definitely-missing-aidens.toml".into())).unwrap();
+        let report: AiDENsDoctorReportV1 = serde_json::from_str(&report).unwrap();
+        let scaffold = report
+            .sections
+            .get("scaffold_surfaces")
+            .expect("scaffold surface section");
+
+        assert_eq!(scaffold.len(), SCAFFOLD_ONLY_CRATES.len());
+        assert!(!scaffold
+            .iter()
+            .any(|truth| truth.capability_id == "crate:aidens-delegation-kit"));
+        assert!(!scaffold
+            .iter()
+            .any(|truth| truth.capability_id == "crate:aidens-governance-kit"));
+        assert!(!scaffold
+            .iter()
+            .any(|truth| truth.capability_id == "crate:aidens-repair-kit"));
+        assert!(!scaffold
+            .iter()
+            .any(|truth| truth.capability_id == "crate:aidens-daemon-kit"));
+        assert!(!scaffold
+            .iter()
+            .any(|truth| truth.capability_id == "crate:aidens-queue-kit"));
+        assert!(!scaffold
+            .iter()
+            .any(|truth| truth.capability_id == "crate:aidens-memory-kit"));
+        assert!(report.sections["daemon"][0]
+            .states
+            .contains(&CapabilityStateV1::Available));
+        assert!(report.sections["queue"][0]
+            .states
+            .contains(&CapabilityStateV1::Available));
+        assert!(report.sections["schedule"][0]
+            .states
+            .contains(&CapabilityStateV1::Available));
+        assert!(report.sections["wake"][0]
+            .states
+            .contains(&CapabilityStateV1::Available));
+        assert!(report.sections["governance"][0]
+            .states
+            .contains(&CapabilityStateV1::Available));
+        assert!(report.sections["repair"][0]
+            .states
+            .contains(&CapabilityStateV1::Available));
+        for surface in scaffold {
+            assert!(surface.capability_id.starts_with("crate:"));
+            assert!(surface.states.contains(&CapabilityStateV1::Deferred));
+            assert!(surface.states.contains(&CapabilityStateV1::Disabled));
+            assert!(!surface.states.contains(&CapabilityStateV1::Healthy));
+        }
+    }
+
+    #[test]
+    fn provider_check_reports_missing_api_key_without_claiming_executable() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("aidens.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "agent"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "openai"
+model = "gpt-test"
+"#,
+        )
+        .unwrap();
+
+        let report = provider_check(Some(path.display().to_string())).unwrap();
+
+        assert!(report.contains("configured: true"));
+        assert!(report.contains("executable: false"));
+        assert!(report.contains("native_tool_loop: false"));
+        assert!(report.contains("api-key-missing"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn status_reports_blocked_modes_without_hiding_degradation() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("aidens.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "status-agent"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "openai"
+model = "gpt-test"
+"#,
+        )
+        .unwrap();
+
+        let report = status(Some(path.display().to_string())).unwrap();
+        let report: OperatorStatusReportV1 = serde_json::from_str(&report).unwrap();
+
+        assert_eq!(
+            report.kind,
+            aidens_contracts::ArtifactKindV1::OperatorStatusReport
+        );
+        assert_eq!(report.provider_route_label, "unavailable");
+        assert!(report.exposes_degraded_modes());
+        assert!(report.blocked_modes.contains(&"provider:openai".into()));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn package_readiness_blocks_scaffold_completion_claims() {
+        let root = temp_root();
+        std::fs::create_dir_all(root.join("examples")).unwrap();
+        std::fs::write(
+            root.join("README.md"),
+            "The aidens-plan-kit is complete for operators.\n",
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("examples").join("aidens.mock.toml"),
+            r#"
+app_id = "release-agent"
+profile_id = "coding-agent"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+model = "mock-model"
+mock_response = "release smoke"
+
+[receipts]
+store_root = "receipts"
+
+[tools]
+sandbox_root = "."
+enabled_bundles = ["safe-coding"]
+"#,
+        )
+        .unwrap();
+
+        let report = release_readiness_report(&root, "examples/aidens.mock.toml", false).unwrap();
+        assert!(report.blocks_release());
+        assert_eq!(report.public_doc_findings.len(), 1);
+        assert_eq!(
+            report.public_doc_findings[0].surface_id,
+            "crate:aidens-plan-kit"
+        );
+
+        let error = package_command(PackageCommand::Readiness {
+            root: root.display().to_string(),
+            config: "examples/aidens.mock.toml".into(),
+            include_verify: false,
+        })
+        .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("public-doc-claims-scaffold-complete"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn package_examples_manifest_covers_public_profiles_honestly() {
+        let manifest = package_command(PackageCommand::Examples {
+            root: workspace_root().display().to_string(),
+        })
+        .unwrap();
+        let manifest: ExampleAppManifestV1 = serde_json::from_str(&manifest).unwrap();
+
+        for profile in [
+            "chat-only",
+            "coding-agent",
+            "memory-agent",
+            "autonomous-daemon",
+            "research-workbench",
+        ] {
+            assert!(manifest.covers_profile(profile), "missing {profile}");
+        }
+        assert!(manifest
+            .unsupported_advanced_features
+            .iter()
+            .any(|feature| feature.contains("aidens-plan-kit")));
+        assert!(manifest.examples.iter().any(|example| {
+            example.path == "examples/aidens.memory.toml"
+                && example.status == ReleaseSurfaceStateV1::Partial
+        }));
+    }
+
+    #[test]
+    fn package_completion_audit_reports_deferred_horizon_without_healthy_claims() {
+        let gate_results = P19_REQUIRED_GATE_COMMANDS
+            .iter()
+            .map(|command| format!("{command}=passed"))
+            .collect::<Vec<_>>();
+        let encoded = package_command(PackageCommand::CompletionAudit {
+            root: workspace_root().display().to_string(),
+            config: "examples/aidens.mock.toml".into(),
+            gate_results,
+        })
+        .unwrap();
+        let report: CompletionAuditReportV1 = serde_json::from_str(&encoded).unwrap();
+
+        assert!(report.release_bar_passed);
+        assert_eq!(
+            report.completion_state,
+            aidens_contracts::CompletionAuditStateV1::DeferredHorizon
+        );
+        assert!(report
+            .deferred_surfaces
+            .iter()
+            .any(|surface| surface == "crate:aidens-profile-daemon"));
+        assert!(report.known_limitations.current);
+        assert!(!report
+            .release_readiness
+            .public_doc_findings
+            .iter()
+            .any(|finding| finding.reason_code.contains("healthy")));
+    }
+
+    #[test]
+    fn doctor_fails_memory_required_without_memory_store() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("aidens.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "memory-required-agent"
+memory_mode = "required"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+mock_response = "ok"
+"#,
+        )
+        .unwrap();
+
+        let error = doctor(Some(path.display().to_string())).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("memory-required-without-durable-store"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn doctor_reports_optional_memory_without_store_as_degraded() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("aidens.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "optional-memory-agent"
+memory_mode = "optional"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+mock_response = "ok"
+"#,
+        )
+        .unwrap();
+
+        let report = doctor(Some(path.display().to_string())).unwrap();
+        let report: AiDENsDoctorReportV1 = serde_json::from_str(&report).unwrap();
+        let memory = report.sections.get("memory").unwrap();
+
+        assert!(memory[0].states.contains(&CapabilityStateV1::Degraded));
+        assert!(!memory[0].states.contains(&CapabilityStateV1::Healthy));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn run_fails_memory_required_without_memory_store() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("aidens.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "memory-required-agent"
+memory_mode = "required"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+mock_response = "ok"
+"#,
+        )
+        .unwrap();
+
+        let error =
+            run_once_command(Some(path.display().to_string()), vec!["hello".into()]).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("memory-required-without-durable-store"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn list_tools_exposes_safe_tools_only() {
+        let report = list_tools().unwrap();
+
+        assert!(report.contains("aidens:repo-read:1"));
+        assert!(report.contains("declared"));
+        assert!(report.contains("executable"));
+        assert!(report.contains("hidden_this_turn"));
+        assert!(report.contains("blocked_this_turn"));
+        assert!(report.contains("declared_but_not_registered"));
+        assert!(report.contains("provider_schema_tool_ids"));
+        assert!(report.contains("aidens:shell:1"));
+    }
+
+    #[test]
+    fn inspect_tools_reports_registered_vs_executable() {
+        let report = inspect_tools(None).unwrap();
+
+        assert!(report.contains("declared"));
+        assert!(report.contains("registered"));
+        assert!(report.contains("executable"));
+        assert!(report.contains("hidden_this_turn"));
+        assert!(report.contains("blocked_this_turn"));
+        assert!(report.contains("declared_but_not_registered"));
+        assert!(report.contains("aidens:repo-read:1"));
+        assert!(report.contains("aidens:shell:1"));
+    }
+
+    #[test]
+    fn permit_commands_emit_typed_approval_and_permit_artifacts() {
+        let request = permit_command(PermitCommand::Request {
+            tool_id: "aidens:file-write:1".into(),
+            risk: "file-write".into(),
+            sandbox_root: "/repo".into(),
+        })
+        .unwrap();
+        let request: ApprovalRequestV1 = serde_json::from_str(&request).unwrap();
+        assert_eq!(request.tool_id, "aidens:file-write:1");
+        assert_eq!(request.sandbox_root, "/repo");
+
+        let approval = permit_command(PermitCommand::Approve {
+            request_id: request.request_id.0.clone(),
+            tool_id: "aidens:file-write:1".into(),
+            risk: "file-write".into(),
+            sandbox_root: "/repo".into(),
+            decided_by: "operator".into(),
+        })
+        .unwrap();
+        let approval: ApprovalDecisionV1 = serde_json::from_str(&approval).unwrap();
+        assert!(approval.approved);
+        assert_eq!(
+            approval
+                .permit_grant
+                .as_ref()
+                .map(|grant| grant.tool_id.as_str()),
+            Some("aidens:file-write:1")
+        );
+
+        let denial = permit_command(PermitCommand::Deny {
+            request_id: request.request_id.0,
+            decided_by: "operator".into(),
+            reason: "no".into(),
+        })
+        .unwrap();
+        let denial: ApprovalDecisionV1 = serde_json::from_str(&denial).unwrap();
+        assert!(!denial.approved);
+
+        let revocation = permit_command(PermitCommand::Revoke {
+            permit_id: "permit:test".into(),
+            tool_id: "aidens:file-write:1".into(),
+            risk: "file-write".into(),
+            sandbox_root: "/repo".into(),
+            reason: "expired".into(),
+        })
+        .unwrap();
+        let revocation: PermitUseReportV1 = serde_json::from_str(&revocation).unwrap();
+        assert!(!revocation.allowed);
+        assert!(revocation
+            .reason_codes
+            .contains(&"permit-revoked:expired".into()));
+    }
+
+    #[test]
+    fn p10_coding_commands_read_propose_apply_and_packetize() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::write(root.join("README.md"), "hello p10\n").unwrap();
+
+        let read = coding_command(CodingCommand::RepoRead {
+            sandbox_root: root.display().to_string(),
+            path: "README.md".into(),
+        })
+        .unwrap();
+        assert!(read.contains("RepoRead") || read.contains("repo-read"));
+
+        let diff = "--- a/README.md\n+++ b/README.md\n@@\n-hello p10\n+hello p10 cli\n";
+        let proposal = coding_command(CodingCommand::PatchPropose {
+            sandbox_root: root.display().to_string(),
+            summary: "update readme".into(),
+            diff: diff.into(),
+        })
+        .unwrap();
+        assert!(proposal.contains("\"mutates_files\": false"));
+        assert_eq!(
+            std::fs::read_to_string(root.join("README.md")).unwrap(),
+            "hello p10\n"
+        );
+
+        let request = permit_command(PermitCommand::Request {
+            tool_id: "aidens:patch-apply:1".into(),
+            risk: "file-write".into(),
+            sandbox_root: root.canonicalize().unwrap().display().to_string(),
+        })
+        .unwrap();
+        let request: ApprovalRequestV1 = serde_json::from_str(&request).unwrap();
+        let approval = permit_command(PermitCommand::Approve {
+            request_id: request.request_id.0,
+            tool_id: "aidens:patch-apply:1".into(),
+            risk: "file-write".into(),
+            sandbox_root: root.canonicalize().unwrap().display().to_string(),
+            decided_by: "operator".into(),
+        })
+        .unwrap();
+
+        let applied = coding_command(CodingCommand::PatchApply {
+            sandbox_root: root.display().to_string(),
+            diff: diff.into(),
+            permit_json: approval,
+        })
+        .unwrap();
+        assert!(applied.contains("\"applied\": true"));
+        assert_eq!(
+            std::fs::read_to_string(root.join("README.md")).unwrap(),
+            "hello p10 cli\n"
+        );
+
+        let packet = coding_command(CodingCommand::CodexPacket {
+            current_pass: "P10".into(),
+            next_pass: "P11".into(),
+            issue: "coding packet".into(),
+            source_map: vec!["crates/aidens-tool-kit/src/lib.rs".into()],
+            changed_files: vec!["crates/aidens-tool-kit/src/lib.rs".into()],
+            command_receipts: vec![serde_json::to_string(&CommandRunReportV1::blocked(
+                root.display().to_string(),
+                vec!["cargo".into(), "check".into(), "--workspace".into()],
+                "fixture-command-receipt",
+            ))
+            .unwrap()],
+            receipt_ids: vec!["receipt:fixture".into()],
+            blockers: Vec::new(),
+            notes: vec!["handoff".into()],
+        })
+        .unwrap();
+        let packet: CodexPacketV1 = serde_json::from_str(&packet).unwrap();
+        assert!(packet.has_resume_context());
+        assert_eq!(packet.commands_run.len(), 1);
+        assert_eq!(
+            packet.receipt_ids,
+            vec![ArtifactId("receipt:fixture".into())]
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn p11_daemon_commands_suppress_duplicates_persist_cancel_and_safe_mode() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let root_arg = root.display().to_string();
+        let due_at = "2026-04-27T00:00:00Z".parse().unwrap();
+
+        let first = daemon_command(DaemonCommand::Schedule {
+            root: root_arg.clone(),
+            name: "cli-p11".into(),
+            owner: "daemon-a".into(),
+            schedule_id: "once".into(),
+            occurrence_key: "same-occurrence".into(),
+            due_at,
+            payload: r#"{"task":"work"}"#.into(),
+            risk: "read-only".into(),
+        })
+        .unwrap();
+        let first: serde_json::Value = serde_json::from_str(&first).unwrap();
+        assert_eq!(first["enqueued"], true);
+        let job_id = first["job"]["job_id"].as_str().unwrap().to_string();
+
+        let second = daemon_command(DaemonCommand::Schedule {
+            root: root_arg.clone(),
+            name: "cli-p11".into(),
+            owner: "daemon-a".into(),
+            schedule_id: "once".into(),
+            occurrence_key: "same-occurrence".into(),
+            due_at,
+            payload: r#"{"task":"work"}"#.into(),
+            risk: "read-only".into(),
+        })
+        .unwrap();
+        let second: serde_json::Value = serde_json::from_str(&second).unwrap();
+        assert_eq!(second["enqueued"], false);
+        assert_eq!(
+            second["duplicate_suppression_receipt"]["existing_job_id"],
+            job_id
+        );
+
+        daemon_command(DaemonCommand::Cancel {
+            root: root_arg.clone(),
+            name: "cli-p11".into(),
+            owner: "daemon-a".into(),
+            job_id: job_id.clone(),
+            reason: "operator-cancelled".into(),
+        })
+        .unwrap();
+        let snapshot = daemon_command(DaemonCommand::List {
+            root: root_arg.clone(),
+            name: "cli-p11".into(),
+            owner: "daemon-a".into(),
+        })
+        .unwrap();
+        let snapshot: serde_json::Value = serde_json::from_str(&snapshot).unwrap();
+        assert_eq!(snapshot["jobs"].as_array().unwrap().len(), 1);
+        assert_eq!(snapshot["jobs"][0]["state"], "cancelled");
+
+        daemon_command(DaemonCommand::SafeMode {
+            root: root_arg.clone(),
+            name: "cli-p11".into(),
+            owner: "daemon-a".into(),
+            enabled: true,
+            reason: "operator-safe-mode".into(),
+        })
+        .unwrap();
+        let blocked = daemon_command(DaemonCommand::Wake {
+            root: root_arg.clone(),
+            name: "cli-p11".into(),
+            owner: "daemon-a".into(),
+            source: "filesystem".into(),
+            signal_key: "risky".into(),
+            payload: r#"{"cmd":"cargo test"}"#.into(),
+            risk: "shell".into(),
+        })
+        .unwrap();
+        let blocked: serde_json::Value = serde_json::from_str(&blocked).unwrap();
+        assert_eq!(blocked["enqueued"], false);
+        assert_eq!(
+            blocked["safe_mode_receipt"]["operation"],
+            "blocked-risky-job"
+        );
+
+        let drained = daemon_command(DaemonCommand::Drain {
+            root: root_arg,
+            name: "cli-p11".into(),
+            owner: "daemon-a".into(),
+            reason: "operator-drain".into(),
+        })
+        .unwrap();
+        let drained: serde_json::Value = serde_json::from_str(&drained).unwrap();
+        assert_eq!(drained.as_array().unwrap().len(), 0);
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn provider_route_does_not_claim_native_when_backend_is_unavailable() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("aidens.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "agent"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "openrouter"
+model = "test"
+api_key = "configured-but-no-backend"
+"#,
+        )
+        .unwrap();
+
+        let report = provider_check(Some(path.display().to_string())).unwrap();
+
+        assert!(report.contains("executable: false"));
+        assert!(report.contains("route: unavailable"));
+        assert!(report.contains("native_tool_loop: false"));
+        assert!(!report.contains("native-openai-chat"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn provider_check_reports_ollama_chat_without_native_tool_loop() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("aidens.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "agent"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "ollama"
+model = "llama3"
+"#,
+        )
+        .unwrap();
+
+        let report = provider_check(Some(path.display().to_string())).unwrap();
+
+        assert!(report.contains("executable: true"));
+        assert!(report.contains("route: ollama-chat"));
+        assert!(report.contains("native_tool_loop: false"));
+        assert!(report.contains("ollama-native-tool-loop-unimplemented"));
+        assert!(!report.contains("native-ollama"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn new_app_scaffold_contains_safe_config_and_tests() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+
+        let summary = scaffold_project(AiDENsProfile::CodingAgent, "My Agent", &root).unwrap();
+
+        assert_eq!(summary.package_name, "my-agent");
+        assert!(summary.app_dir.join("Cargo.toml").exists());
+        assert!(summary.app_dir.join("src").join("main.rs").exists());
+        assert!(summary.app_dir.join("tests").join("smoke.rs").exists());
+        let cfg = load_config_file(summary.app_dir.join("aidens.toml"))
+            .unwrap()
+            .config;
+        assert_eq!(cfg.provider.kind, "disabled");
+        assert_eq!(cfg.memory_mode, MemoryModeV1::Optional);
+        assert_eq!(cfg.receipt_level, ReportLevelV1::Full);
+        assert_eq!(
+            cfg.receipts.store_root.as_deref(),
+            Some("target/aidens-receipts/my-agent")
+        );
+        let main = std::fs::read_to_string(summary.app_dir.join("src").join("main.rs")).unwrap();
+        assert!(main.contains("AiDENsApp::from_config"));
+        assert!(main.contains("run_once"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn new_user_mock_flow_reaches_receipt_inspection() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let summary =
+            scaffold_project(AiDENsProfile::CodingAgent, "New User Agent", &root).unwrap();
+        assert!(summary.app_dir.join("aidens.toml").exists());
+
+        let path = root.join("aidens.mock.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "new-user-mock"
+profile_id = "coding-agent"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+model = "mock-model"
+mock_response = "new user mock response"
+
+[receipts]
+store_root = "receipts"
+
+[tools]
+sandbox_root = "."
+enabled_bundles = ["safe-coding"]
+"#,
+        )
+        .unwrap();
+
+        assert!(provider_check(Some(path.display().to_string()))
+            .unwrap()
+            .contains("executable: true"));
+        assert!(inspect_tools(Some(path.display().to_string()))
+            .unwrap()
+            .contains("aidens:repo-read:1"));
+        assert_eq!(
+            run_once_command(Some(path.display().to_string()), vec!["hello".into()]).unwrap(),
+            "new user mock response"
+        );
+        let receipts = receipts_command(EventLogCommand::List {
+            store: None,
+            config: Some(path.display().to_string()),
+        })
+        .unwrap();
+        assert!(receipts.contains("\"owner_crate\": \"aidens-orchestration\""));
+        assert!(receipts.contains("\"schema_name\": \"run-report-v1\""));
+        assert!(workspace_root().join("scripts").join("verify.sh").exists());
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn receipts_commands_inspect_restart_visible_run() {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("aidens.toml");
+        std::fs::write(
+            &path,
+            r#"
+app_id = "receipt-agent"
+memory_mode = "disabled"
+receipt_level = "full"
+
+[provider]
+kind = "mock"
+mock_response = "persisted response"
+
+[receipts]
+store_root = "receipts"
+"#,
+        )
+        .unwrap();
+
+        let output = run_once_command(
+            Some(path.display().to_string()),
+            vec!["hello".into(), "receipt".into()],
+        )
+        .unwrap();
+        assert_eq!(output, "persisted response");
+
+        let list = receipts_command(EventLogCommand::List {
+            store: None,
+            config: Some(path.display().to_string()),
+        })
+        .unwrap();
+        let list: serde_json::Value = serde_json::from_str(&list).unwrap();
+        let run_receipt_id = list["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|record| record["schema_name"] == "run-report-v1")
+            .and_then(|record| record["receipt_id"].as_str())
+            .unwrap()
+            .to_string();
+
+        let inspect = receipts_command(EventLogCommand::Inspect {
+            store: None,
+            config: Some(path.display().to_string()),
+            receipt_id: run_receipt_id.clone(),
+        })
+        .unwrap();
+        let inspected: serde_json::Value = serde_json::from_str(&inspect).unwrap();
+        assert_eq!(inspected["owner_crate"], "aidens-orchestration");
+        assert_eq!(inspected["schema_name"], "run-report-v1");
+        assert_eq!(inspected["body"]["kind"], "run");
+        assert_eq!(inspected["content_digest"].as_str().unwrap().len(), 64);
+
+        let verified = receipts_command(EventLogCommand::VerifyDigest {
+            store: None,
+            config: Some(path.display().to_string()),
+            receipt_id: run_receipt_id,
+        })
+        .unwrap();
+        assert!(verified.contains("\"verified\": true"));
+
+        let export = receipts_command(EventLogCommand::Export {
+            store: None,
+            config: Some(path.display().to_string()),
+        })
+        .unwrap();
+        assert!(export.contains("\"schema_name\": \"run-report-v1\""));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn boundary_compile_cli_rejects_duplicate_keys() {
+        let output = boundary_command(BoundaryCommand::Compile {
+            input: r#"{"path":"a","path":"b"}"#.into(),
+            schema: None,
+            treatment_fields: Vec::new(),
+            hard_fail_treatment_change: false,
+        })
+        .unwrap();
+        let output: serde_json::Value = serde_json::from_str(&output).unwrap();
+
+        assert_eq!(output["accepted"], false);
+        assert_eq!(output["duplicate_key_findings"][0]["key"], "path");
+        assert_eq!(output["reason_codes"][0], "duplicate-json-object-key");
+    }
+
+    #[test]
+    fn boundary_compile_cli_reports_schema_failure() {
+        let output = boundary_command(BoundaryCommand::Compile {
+            input: r#"{"path":7}"#.into(),
+            schema: Some(
+                r#"{"type":"object","required":["path"],"properties":{"path":{"type":"string"}}}"#
+                    .into(),
+            ),
+            treatment_fields: Vec::new(),
+            hard_fail_treatment_change: false,
+        })
+        .unwrap();
+        let output: serde_json::Value = serde_json::from_str(&output).unwrap();
+
+        assert_eq!(output["accepted"], false);
+        assert_eq!(output["schema_validation"]["kind"], "schema-validation");
+        assert_eq!(output["schema_validation"]["valid"], false);
+    }
+
+    #[test]
+    fn view_query_cli_uses_canonical_runtime() {
+        let root = temp_root();
+        let memory_root = root.join("memory");
+
+        let output = view_command(ViewCommand::Query {
+            memory_store: memory_root.display().to_string(),
+            view_mode: "semantic".into(),
+            query: "repository status".into(),
+            subject: None,
+            predicate: None,
+            valid_at: None,
+            recorded_at: None,
+            aliases: Vec::new(),
+            allow_alias_expansion: false,
+            allow_timeless_fallback: false,
+        })
+        .unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
+
+        assert_eq!(parsed["kind"], "canonical-runtime-view");
+        assert_eq!(parsed["canonical_owner"], "knowledge-runtime");
+        assert_eq!(parsed["memory_owner"], "semantic-memory");
+        assert_eq!(parsed["result_count"], 0);
+        assert!(parsed["trace"].is_object());
+
+        let temporal_output = view_command(ViewCommand::Query {
+            memory_store: memory_root.display().to_string(),
+            view_mode: "temporal".into(),
+            query: "repository status".into(),
+            subject: None,
+            predicate: None,
+            valid_at: Some("2026-04-01T00:00:00Z".parse().unwrap()),
+            recorded_at: Some("9999-01-01T00:00:00Z".parse().unwrap()),
+            aliases: Vec::new(),
+            allow_alias_expansion: false,
+            allow_timeless_fallback: false,
+        })
+        .unwrap();
+        let temporal: serde_json::Value = serde_json::from_str(&temporal_output).unwrap();
+        assert_eq!(temporal["kind"], "canonical-runtime-view");
+        assert_eq!(temporal["trace"]["valid_as_of"], "2026-04-01T00:00:00Z");
+        assert_eq!(temporal["trace"]["recorded_as_of"], "9999-01-01T00:00:00Z");
+
+        let local_filter_error = view_command(ViewCommand::Query {
+            memory_store: memory_root.display().to_string(),
+            view_mode: "entity".into(),
+            query: "repository status".into(),
+            subject: Some("repository".into()),
+            predicate: Some("status".into()),
+            valid_at: None,
+            recorded_at: None,
+            aliases: vec!["repo".into()],
+            allow_alias_expansion: false,
+            allow_timeless_fallback: false,
+        })
+        .unwrap_err();
+        assert!(local_filter_error
+            .to_string()
+            .contains("legacy AiDENs memory view filters were removed"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn schemas_generate_is_deterministic_and_check_passes() {
+        let root = temp_root();
+        let root_arg = root.display().to_string();
+
+        let first = schemas_generate(&root_arg).unwrap();
+        let manifest = std::fs::read_to_string(root.join("generated_schema_manifest_v1.json"))
+            .expect("manifest");
+        let compatibility_schema = std::fs::read_to_string(
+            root.join("schema-compatibility-report")
+                .join("v1.schema.json"),
+        )
+        .expect("compatibility schema");
+        let second = schemas_generate(&root_arg).unwrap();
+
+        assert_eq!(first, second);
+        assert_eq!(
+            manifest,
+            std::fs::read_to_string(root.join("generated_schema_manifest_v1.json")).unwrap()
+        );
+        assert_eq!(
+            compatibility_schema,
+            std::fs::read_to_string(
+                root.join("schema-compatibility-report")
+                    .join("v1.schema.json")
+            )
+            .unwrap()
+        );
+        let report: SchemaCompatibilityReportV1 =
+            serde_json::from_str(&schemas_check(&root_arg).unwrap()).unwrap();
+        assert!(report.compatible);
+        assert_eq!(
+            report.checked_schema_count,
+            generated_schema_documents().len()
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn schemas_check_fails_on_unregistered_artifact_family() {
+        let root = temp_root();
+        let root_arg = root.display().to_string();
+        schemas_generate(&root_arg).unwrap();
+        let unknown = root.join("unknown-family");
+        std::fs::create_dir_all(&unknown).unwrap();
+        std::fs::write(unknown.join("v1.schema.json"), "{}\n").unwrap();
+
+        let error = schemas_check(&root_arg).expect_err("unknown schema should fail check");
+
+        assert!(error
+            .to_string()
+            .contains("unregistered-artifact-family-schema"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn schemas_check_fails_on_same_major_schema_drift() {
+        let root = temp_root();
+        let root_arg = root.display().to_string();
+        schemas_generate(&root_arg).unwrap();
+        let schema_path = root
+            .join("schema-compatibility-report")
+            .join("v1.schema.json");
+        let mut schema: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(&schema_path).unwrap()).unwrap();
+        schema["description"] =
+            serde_json::Value::String("manual drift without version bump".into());
+        std::fs::write(&schema_path, serde_json::to_string_pretty(&schema).unwrap()).unwrap();
+
+        let error = schemas_check(&root_arg).expect_err("schema drift should fail check");
+
+        assert!(error
+            .to_string()
+            .contains("schema-content-drift-without-major-bump"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn sanitize_rejects_empty_names() {
+        assert!(sanitize_package_name("!!!").is_err());
+        assert_eq!(
+            sanitize_package_name("123 Agent").unwrap(),
+            "aidens-123-agent"
+        );
+    }
+}

@@ -1,0 +1,42 @@
+{
+  "active_stale_after": [],
+  "archive_only": false,
+  "archive_root": "/home/sikmindz/Coding/Libraries/scr-runtime/docs/codex-runs/archive",
+  "collisions": [],
+  "current_run": "P30",
+  "dry_run": false,
+  "enabled": true,
+  "errors": [],
+  "manifest_paths": [
+    "docs/codex-runs/archive/P31-20260514T024939Z/ARCHIVE_MANIFEST.json"
+  ],
+  "moved": [
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260514T024939Z/files/docs/P31_COMPLETION_FRESH_UNZIP_CERTIFICATION.md",
+      "bytes": 398,
+      "mtime_utc": "2026-05-14T02:29:23Z",
+      "original_path": "docs/P31_COMPLETION_FRESH_UNZIP_CERTIFICATION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P31",
+      "sha256": "d89a32826526c4cda3459098884525d12837f4fd7852912cc0899228622fbd2c"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260514T024939Z/files/docs/P31_COMPLETION_FRESH_UNZIP_CERTIFICATION.md",
+      "bytes": 398,
+      "mtime_utc": "2026-05-14T02:29:23Z",
+      "original_path": "docs/P31_COMPLETION_FRESH_UNZIP_CERTIFICATION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P31",
+      "sha256": "d89a32826526c4cda3459098884525d12837f4fd7852912cc0899228622fbd2c"
+    }
+  ],
+  "report_path": "/home/sikmindz/Coding/Libraries/scr-runtime/scr-runtime-generic-rust-next-codex-context-20260514.codex-archive.json",
+  "skipped_existing": [],
+  "stale_active_before": [
+    "docs/P31_COMPLETION_FRESH_UNZIP_CERTIFICATION.md"
+  ],
+  "unclassified": [],
+  "verify_only": false
+}

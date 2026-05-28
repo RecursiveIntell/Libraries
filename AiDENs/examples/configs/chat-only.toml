@@ -1,0 +1,18 @@
+app_id = "p21-chat-only-example"
+profile_id = "chat-only"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "mock"
+mock_response = "Hello from AiDENs chat-only example."
+
+[tools]
+enabled_bundles = []
+sandbox_root = "."
+
+[receipts]
+store_root = "target/aidens-receipts/p21-chat-only-example"
+
+[agency]
+enabled = true

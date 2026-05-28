@@ -39,6 +39,7 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import hashlib
 import json
 import os
@@ -57,7 +58,7 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 fallback
     tomllib = None
 
-SCRIPT_VERSION = "2026.05.02-p23"
+SCRIPT_VERSION = "2026.05.07-p29"
 UTC = timezone.utc
 ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
 
@@ -381,10 +382,48 @@ SCRIPT_REF_RES = [
 ]
 
 CODEX_ARCHIVE_MANIFEST_VERSION = "CodexRunArchiveManifestV1"
+ROOT_MARKDOWN_ARCHIVE_MANIFEST_VERSION = "RootMarkdownArchiveManifestV1"
 CODEX_RUN_INDEX = "docs/codex-runs/CODEX_RUN_INDEX.md"
 CODEX_CURRENT_RUN = "docs/codex-runs/CURRENT_RUN.md"
 CODEX_ARCHIVAL_POLICY = "docs/codex-runs/ARCHIVAL_POLICY.md"
 CODEX_ARTIFACT_CLASSIFICATION = "docs/codex-runs/CODEX_ARTIFACT_CLASSIFICATION.json"
+ROOT_MARKDOWN_ARCHIVE_DIR = "docs/root-markdown-archive"
+ROOT_MARKDOWN_ARCHIVE_MANIFEST = "ROOT_MARKDOWN_ARCHIVE_MANIFEST.json"
+ROOT_MARKDOWN_PROTECTED_FILES = {
+    "AGENTS.md",
+    "CLAUDE.md",
+    "README.md",
+    "CONTRIBUTING.md",
+    "LICENSE.md",
+    "CHANGELOG.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md",
+    "SUPPORT.md",
+    "SUPPORT_PROFILE.md",
+    "SOURCE_BASIS.md",
+    "STATUS.md",
+    "ARCHITECTURE.md",
+    "DESIGN.md",
+    "ROADMAP.md",
+    "SHADOW_SEMANTICS_AUDIT.md",
+}
+ROOT_MARKDOWN_CANDIDATE_PATTERNS = [
+    "*AUDIT*.MD",
+    "*HARD_AUDIT*.MD",
+    "*ISSUE_MATRIX*.MD",
+    "*RISK_REGISTER*.MD",
+    "*PROMPT*.MD",
+    "*MASTER*.MD",
+    "*SNAPSHOT*.MD",
+    "*STATUS_DASHBOARD*.MD",
+    "*IMPLEMENTATION_PLAYBOOK*.MD",
+    "*CONFORMANCE*.MD",
+    "*HARDENING*.MD",
+    "*PLAN*.MD",
+    "*TENSOR*.MD",
+    "*MATRIX*.MD",
+]
+ROOT_MARKDOWN_PROTECTED_FILES_UPPER = {name.upper() for name in ROOT_MARKDOWN_PROTECTED_FILES}
 
 PROTECTED_CODEX_ACTIVE_FILES = {
     "AGENTS.md",
@@ -481,12 +520,16 @@ class ArchiveReport:
     error_count: int
     warning_count: int
     archive_sha256: str | None
+    archive_zip_byte_sha256: str | None
+    archive_sha256_semantics: str
+    content_manifest_sha256: str | None
     archive_written: bool
     manifest_path: str | None
     report_path: str | None
     excluded_path: str | None
     findings_path: str | None
     codex_archive: dict[str, Any] | None
+    root_markdown_archive: dict[str, Any] | None
 
 
 @dataclass(frozen=True)
@@ -500,6 +543,9 @@ class Policy:
     include_generated_schemas: bool
     include_codex_artifacts: bool
     include_codex_archive: bool
+    include_root_markdown_archive: bool
+    root_markdown_archive_root: str
+    root_markdown_archive_root_rel: str
     include_editor_config: bool
     include_doc_binaries: bool
     include_images: bool
@@ -549,6 +595,32 @@ class CodexArchiveResult:
     errors: list[str]
 
 
+@dataclass
+class RootMarkdownArchiveResult:
+    enabled: bool
+    dry_run: bool
+    verify_only: bool
+    archive_only: bool
+    current_run: str
+    archive_root: str
+    archive_dir: str
+    manifest_path: str | None
+    inspected_count: int
+    protected_count: int
+    candidate_count: int
+    ambiguous_count: int
+    planned_count: int
+    moved_count: int
+    skipped_existing_count: int
+    collision_count: int
+    manifest_written: bool
+    candidate_paths: list[str]
+    protected_paths: list[str]
+    ambiguous_paths: list[str]
+    collisions: list[dict[str, Any]]
+    errors: list[str]
+
+
 def utc_now_iso() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
@@ -566,10 +638,7 @@ def is_relative_to(child: Path, parent: Path) -> bool:
 
 
 def safe_relative(path: Path, root: Path) -> Path:
-    try:
-        return path.resolve().relative_to(root.resolve())
-    except ValueError:
-        return path.relative_to(root)
+    return path.resolve().relative_to(root.resolve())
 
 
 def read_text_lossy(path: Path, limit_bytes: int | None = None) -> str | None:
@@ -586,7 +655,25 @@ def read_text_lossy(path: Path, limit_bytes: int | None = None) -> str | None:
     try:
         return data.decode("utf-8")
     except UnicodeDecodeError:
-        return data.decode("utf-8", errors="replace")
+        return None
+
+
+def text_file_policy_reason(path: Path, limit_bytes: int | None = None) -> str | None:
+    try:
+        if limit_bytes is None:
+            data = path.read_bytes()
+        else:
+            with path.open("rb") as f:
+                data = f.read(limit_bytes)
+    except OSError:
+        return "read-failed"
+    if b"\x00" in data[:4096]:
+        return "binary-null-byte"
+    try:
+        data.decode("utf-8")
+    except UnicodeDecodeError:
+        return "non-utf8-text-file"
+    return None
 
 
 def sha256_file(path: Path) -> str:
@@ -595,6 +682,11 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def sha256_json_payload(payload: object) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def mode_string(path: Path) -> str:
@@ -656,6 +748,13 @@ def path_has_current_run_marker(rel: str, current_run: str) -> bool:
             or lower.startswith(f"{token.lower()}.")
             for token in tokens
         ):
+            return True
+    current = normalize_codex_run_id(current_run)
+    for match in CODEX_RUN_MARKER_RE.finditer(rel):
+        major = int(match.group(1))
+        minor = match.group(2)
+        marker = f"P{major}" + (f"_{int(minor)}" if minor else "")
+        if normalize_codex_run_id(marker) == current:
             return True
     return False
 
@@ -840,6 +939,12 @@ def make_policy(args: argparse.Namespace, root: Path, resolved_profile: str) -> 
         else False
     )
     include_codex_archive = bool(args.include_codex_archive or package_role == "audit-full")
+    include_root_markdown_archive = bool(args.include_root_markdown_archive)
+    root_markdown_archive_root = resolve_root_markdown_archive_root(root, args.root_markdown_archive_root)
+    try:
+        root_markdown_archive_root_rel = to_posix(safe_relative(root_markdown_archive_root, root))
+    except ValueError:
+        root_markdown_archive_root_rel = to_posix(root_markdown_archive_root)
     include_doc_binaries = (
         args.include_doc_binaries
         if args.include_doc_binaries is not None
@@ -865,6 +970,9 @@ def make_policy(args: argparse.Namespace, root: Path, resolved_profile: str) -> 
         include_generated_schemas=include_generated_schemas,
         include_codex_artifacts=include_codex_artifacts,
         include_codex_archive=include_codex_archive,
+        include_root_markdown_archive=include_root_markdown_archive,
+        root_markdown_archive_root=str(root_markdown_archive_root),
+        root_markdown_archive_root_rel=root_markdown_archive_root_rel,
         include_editor_config=args.include_editor_config,
         include_doc_binaries=include_doc_binaries,
         include_images=include_images,
@@ -879,6 +987,11 @@ def make_policy(args: argparse.Namespace, root: Path, resolved_profile: str) -> 
 def should_prune_dir(rel_dir: Path, dirname: str, policy: Policy) -> str | None:
     lower = dirname.lower()
     rel_posix = to_posix(rel_dir)
+    archive_rel = policy.root_markdown_archive_root_rel.strip("/")
+    if archive_rel and (rel_posix == archive_rel or rel_posix.startswith(f"{archive_rel}/")):
+        if policy.include_root_markdown_archive:
+            return None
+        return "root-markdown-archive-disabled"
     if is_codex_archive_dir_rel(rel_posix):
         if policy.include_codex_archive:
             return None
@@ -898,6 +1011,10 @@ def should_prune_dir(rel_dir: Path, dirname: str, policy: Policy) -> str | None:
 
 def is_secret_like_path(path: Path) -> bool:
     lower_name = path.name.lower()
+    if lower_name in {
+        "phase_16_config_environment_secrets_and_redaction.md",
+    }:
+        return False
     if lower_name in ALLOWED_ENV_SAMPLE_NAMES:
         return False
     if lower_name in SECRETISH_FILENAMES:
@@ -1006,10 +1123,19 @@ def include_decision(path: Path, archive_root: Path, reserved_output_paths: set[
         return False, "log-disabled"
 
     if path.name.lower() in ALLOWED_ENV_SAMPLE_NAMES:
+        text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
+        if text_reason:
+            return False, text_reason
         return True, "included-env-sample"
     if allowed_basename(path):
+        text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
+        if text_reason:
+            return False, text_reason
         return True, "included-basename"
     if suffix in ALLOWED_TEXT_EXTENSIONS:
+        text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
+        if text_reason:
+            return False, text_reason
         return True, "included-extension"
     if suffix in DOC_BINARY_EXTENSIONS and policy.include_doc_binaries:
         return True, "included-doc-binary"
@@ -1598,13 +1724,25 @@ def render_markdown_report(result: BuildResult, extension_summary: dict[str, int
     lines.append(f"- Pruned dirs: `{report.pruned_dir_count}`")
     lines.append(f"- Findings: `{report.findings_count}` (`{report.error_count}` errors, `{report.warning_count}` warnings)")
     if report.archive_sha256:
-        lines.append(f"- Archive SHA-256: `{report.archive_sha256}`")
+        lines.append(f"- Archive zip-byte SHA-256: `{report.archive_zip_byte_sha256}`")
+        lines.append(f"- Archive hash semantics: `{report.archive_sha256_semantics}`")
+    if report.content_manifest_sha256:
+        lines.append(f"- Content manifest SHA-256: `{report.content_manifest_sha256}`")
     if report.codex_archive:
         codex = report.codex_archive
         lines.append(f"- Codex archive enabled: `{codex.get('enabled')}`")
         lines.append(f"- Codex archive planned: `{codex.get('planned_count')}`")
         lines.append(f"- Codex archive moved: `{codex.get('moved_count')}`")
         lines.append(f"- Codex active stale after normalization: `{codex.get('active_stale_after_count')}`")
+    if report.root_markdown_archive:
+        root_md = report.root_markdown_archive
+        lines.append(f"- Root Markdown archive enabled: `{root_md.get('enabled')}`")
+        lines.append(f"- Root Markdown inspected: `{root_md.get('inspected_count')}`")
+        lines.append(f"- Root Markdown protected: `{root_md.get('protected_count')}`")
+        lines.append(f"- Root Markdown candidates: `{root_md.get('candidate_count')}`")
+        lines.append(f"- Root Markdown ambiguous: `{root_md.get('ambiguous_count')}`")
+        lines.append(f"- Root Markdown moved: `{root_md.get('moved_count')}`")
+        lines.append(f"- Root Markdown collisions: `{root_md.get('collision_count')}`")
     lines.append("")
 
     lines.append("## Validation findings")
@@ -1706,6 +1844,17 @@ def resolve_codex_archive_root(root: Path, value: str) -> Path:
     return archive_root.resolve()
 
 
+def resolve_root_markdown_archive_root(root: Path, value: str) -> Path:
+    archive_root = Path(value).expanduser()
+    if not archive_root.is_absolute():
+        archive_root = root / archive_root
+    return archive_root.resolve()
+
+
+def root_markdown_archive_stamp() -> str:
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+
+
 def default_codex_archive_report_path(output_path: Path, explicit: str | None) -> Path | None:
     if explicit == "-":
         return None
@@ -1717,6 +1866,7 @@ def default_codex_archive_report_path(output_path: Path, explicit: str | None) -
 def iter_codex_archive_candidates(root: Path, current_run: str, archive_root: Path) -> list[CodexArchiveCandidate]:
     candidates: list[CodexArchiveCandidate] = []
     classification = load_codex_artifact_classification(root)
+    root_markdown_archive_root = resolve_root_markdown_archive_root(root, ROOT_MARKDOWN_ARCHIVE_DIR)
     ignored_dirs = {".git", "target", "__pycache__"}
     for dirpath, dirnames, filenames in os.walk(root, topdown=True):
         current = Path(dirpath)
@@ -1724,7 +1874,12 @@ def iter_codex_archive_candidates(root: Path, current_run: str, archive_root: Pa
         for dirname in sorted(dirnames):
             path = current / dirname
             rel = to_posix(safe_relative(path, root))
-            if dirname in ignored_dirs or is_codex_archive_dir_rel(rel) or is_relative_to(path, archive_root):
+            if (
+                dirname in ignored_dirs
+                or is_codex_archive_dir_rel(rel)
+                or is_relative_to(path, archive_root)
+                or is_relative_to(path, root_markdown_archive_root)
+            ):
                 continue
             keep_dirs.append(dirname)
         dirnames[:] = keep_dirs
@@ -1746,6 +1901,217 @@ def iter_codex_archive_candidates(root: Path, current_run: str, archive_root: Pa
                 mtime_utc=file_mtime_utc(path),
             ))
     return sorted(candidates, key=lambda c: (c.run_id, c.original_path))
+
+
+def root_markdown_candidate_matches(filename: str) -> list[str]:
+    upper = Path(filename).name.upper()
+    return [pattern for pattern in ROOT_MARKDOWN_CANDIDATE_PATTERNS if fnmatch.fnmatch(upper, pattern)]
+
+
+def classify_root_markdown_candidate(filename: str, current_run: str) -> tuple[str, str]:
+    upper = filename.upper()
+    if upper in ROOT_MARKDOWN_PROTECTED_FILES_UPPER:
+        matches = root_markdown_candidate_matches(filename)
+        if matches:
+            return "ambiguous", "ambiguous-stop: protected-root-doc"
+        return "protected", ""
+
+    if path_has_current_run_marker(filename, current_run):
+        matches = root_markdown_candidate_matches(filename)
+        if matches:
+            return "ambiguous", "ambiguous-stop: active-current-run"
+        return "active-current-run", ""
+
+    matches = root_markdown_candidate_matches(filename)
+    if len(matches) > 1:
+        return "ambiguous", f"ambiguous-stop: {','.join(sorted(matches))}"
+    if len(matches) == 1:
+        return "candidate", matches[0]
+    return "ambiguous", "ambiguous-stop: unknown-root-markdown"
+
+
+def iter_root_markdown_archive_candidates(root: Path, current_run: str) -> tuple[
+    list[tuple[str, str, str]],
+    list[str],
+    list[str],
+    list[str],
+]:
+    inspected: list[str] = []
+    candidates: list[tuple[str, str, str]] = []
+    protected: list[str] = []
+    ambiguous: list[tuple[str, str]] = []
+
+    for path in sorted(root.iterdir()):
+        if not path.is_file() or path.suffix.lower() != ".md":
+            continue
+        filename = path.name
+        inspected.append(filename)
+        category, reason = classify_root_markdown_candidate(filename, current_run)
+        if category == "candidate":
+            candidates.append((filename, reason or "root-markdown-noise", "candidate-archive"))
+        elif category == "protected":
+            protected.append(filename)
+        elif category == "ambiguous":
+            ambiguous.append((filename, reason or "ambiguous-root-markdown"))
+        elif category == "active-current-run":
+            ambiguous.append((filename, reason or "ambiguous-stop: active-current-run"))
+
+    return (
+        candidates,
+        inspected,
+        protected,
+        [f"{filename}:{reason}" for filename, reason in ambiguous],
+    )
+
+
+def make_root_markdown_archive_record(root: Path, filename: str, archived_path: Path, sha256: str, bytes_: int, mtime_utc: str, reason: str, classification: str) -> dict[str, Any]:
+    return {
+        "original_path": to_posix((root / filename).name),
+        "archived_path": to_posix(safe_relative(archived_path, root)),
+        "sha256": sha256,
+        "bytes": bytes_,
+        "mtime_utc": mtime_utc,
+        "reason": reason,
+        "classification": classification,
+    }
+
+
+def archive_root_markdown_noise(
+    root: Path,
+    args: argparse.Namespace,
+    output_path: Path,
+    current_run: str,
+    *,
+    dry_run: bool,
+    verify_only: bool,
+) -> RootMarkdownArchiveResult:
+    archive_root = resolve_root_markdown_archive_root(root, args.root_markdown_archive_root)
+    archive_dir = archive_root / root_markdown_archive_stamp()
+    manifest_path = archive_dir / ROOT_MARKDOWN_ARCHIVE_MANIFEST
+
+    candidates, inspected, protected, ambiguous = iter_root_markdown_archive_candidates(root, current_run)
+    planned: list[dict[str, Any]] = []
+    moved: list[dict[str, Any]] = []
+    skipped_existing: list[dict[str, Any]] = []
+    collisions: list[dict[str, Any]] = []
+    errors: list[str] = []
+    candidate_paths: list[str] = []
+    moved_count = 0
+    skipped_existing_count = 0
+
+    operations: list[dict[str, Any]] = []
+    for filename, reason, classification in candidates:
+        source = root / filename
+        candidate_paths.append(filename)
+        requested_dest = archive_dir / "files" / filename
+        dest, collision, same_existing = unique_archive_destination(requested_dest, sha256_file(source))
+        record = make_root_markdown_archive_record(
+            root,
+            filename,
+            dest,
+            sha256_file(source),
+            source.stat().st_size,
+            file_mtime_utc(source),
+            reason,
+            classification,
+        )
+        planned.append(record)
+        if collision:
+            collisions.append({
+                "original_path": filename,
+                "requested_path": to_posix(safe_relative(requested_dest, root)),
+                "resolved_path": to_posix(safe_relative(dest, root)),
+                "reason": collision["reason"],
+            })
+            errors.append(
+                f"failed to archive {filename}: destination collision for existing file with different content."
+            )
+            continue
+        operations.append({
+            "filename": filename,
+            "source": source,
+            "dest": dest,
+            "same_existing": same_existing,
+            "record": record,
+        })
+
+    manifest_written = False
+    should_move = (
+        not dry_run
+        and not verify_only
+        and not errors
+    )
+    if should_move:
+        for operation in operations:
+            source = operation["source"]
+            dest = operation["dest"]
+            record = operation["record"]
+            same_existing = operation["same_existing"]
+            if same_existing:
+                skipped_existing.append(record)
+                skipped_existing_count += 1
+                try:
+                    source.unlink()
+                    prune_empty_parents(source, root)
+                except OSError as exc:
+                    errors.append(f"failed to remove active duplicate after archived copy was found: {operation['filename']}: {exc}")
+                continue
+            try:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                source.rename(dest)
+                moved.append(record)
+                moved_count += 1
+                prune_empty_parents(source, root)
+            except OSError as exc:
+                errors.append(f"failed to archive {operation['filename']}: {exc}")
+                continue
+
+    if should_move and not errors and manifest_path is not None:
+        manifest_payload = {
+            "root_markdown_archive_manifest_version": ROOT_MARKDOWN_ARCHIVE_MANIFEST_VERSION,
+            "created_utc": utc_now_iso(),
+            "tool": Path(__file__).name,
+            "tool_version": SCRIPT_VERSION,
+            "repo_root": str(root),
+            "archive_root": str(archive_dir),
+            "current_run": current_run,
+            "files": moved + skipped_existing,
+            "collisions": collisions,
+            "errors": errors,
+            "summary": {
+                "inspected_count": len(inspected),
+                "protected_count": len(protected),
+                "candidate_count": len(candidates),
+                "ambiguous_count": len(ambiguous),
+            },
+        }
+        write_json(manifest_path, manifest_payload)
+        manifest_written = True
+
+    return RootMarkdownArchiveResult(
+        enabled=bool(args.archive_root_markdown_noise),
+        dry_run=dry_run,
+        verify_only=verify_only,
+        archive_only=bool(args.archive_only),
+        current_run=current_run,
+        archive_root=str(archive_root),
+        archive_dir=str(archive_dir),
+        manifest_path=str(manifest_path),
+        inspected_count=len(inspected),
+        protected_count=len(protected),
+        candidate_count=len(candidates),
+        ambiguous_count=len(ambiguous),
+        planned_count=len(planned),
+        moved_count=moved_count,
+        skipped_existing_count=skipped_existing_count,
+        collision_count=len(collisions),
+        manifest_written=manifest_written,
+        candidate_paths=candidate_paths,
+        protected_paths=protected,
+        ambiguous_paths=ambiguous,
+        collisions=collisions,
+        errors=errors,
+    )
 
 
 def archive_dir_for_run(archive_root: Path, run_id: str, stamp: str) -> Path:
@@ -2059,12 +2425,39 @@ def codex_archive_summary(result: CodexArchiveResult | None) -> dict[str, Any] |
     }
 
 
+def root_markdown_archive_summary(result: RootMarkdownArchiveResult | None) -> dict[str, Any] | None:
+    if result is None:
+        return None
+    return {
+        "enabled": result.enabled,
+        "dry_run": result.dry_run,
+        "verify_only": result.verify_only,
+        "archive_only": result.archive_only,
+        "current_run": result.current_run,
+        "archive_root": result.archive_root,
+        "archive_dir": result.archive_dir,
+        "manifest_path": result.manifest_path if result.manifest_written else None,
+        "inspected_count": result.inspected_count,
+        "protected_count": result.protected_count,
+        "candidate_count": result.candidate_count,
+        "ambiguous_count": result.ambiguous_count,
+        "planned_count": result.planned_count,
+        "moved_count": result.moved_count,
+        "skipped_existing_count": result.skipped_existing_count,
+        "collision_count": result.collision_count,
+        "candidate_paths": result.candidate_paths,
+        "ambiguous_paths": result.ambiguous_paths,
+        "errors": result.errors,
+    }
+
+
 def build_archive_action_result(
     args: argparse.Namespace,
     root: Path,
     resolved_profile: str,
     output_path: Path,
-    codex_result: CodexArchiveResult,
+    codex_result: CodexArchiveResult | None,
+    root_markdown_result: RootMarkdownArchiveResult | None,
     findings: Sequence[Finding],
 ) -> BuildResult:
     error_count, warning_count = severity_counts(findings)
@@ -2092,12 +2485,16 @@ def build_archive_action_result(
         error_count=error_count,
         warning_count=warning_count,
         archive_sha256=None,
+        archive_zip_byte_sha256=None,
+        archive_sha256_semantics="zip-byte-sha256-not-canonical-content-hash",
+        content_manifest_sha256=None,
         archive_written=False,
         manifest_path=None,
         report_path=None,
         excluded_path=None,
         findings_path=None,
         codex_archive=codex_archive_summary(codex_result),
+        root_markdown_archive=root_markdown_archive_summary(root_markdown_result),
     )
     return BuildResult(report=report_obj, files=[], excluded=[], pruned_dirs=[], findings=list(findings))
 
@@ -2115,8 +2512,12 @@ def build(args: argparse.Namespace) -> BuildResult:
     else:
         output_path = output_path.resolve()
 
-    codex_archive_result: CodexArchiveResult | None = None
+    codex_archive_result: CodexArchiveResult | None
+    root_markdown_archive_result: RootMarkdownArchiveResult | None
     archive_findings: list[Finding] = []
+
+    codex_archive_result = None
+    root_markdown_archive_result = None
     if args.verify_codex_archive_hygiene:
         codex_archive_result = archive_codex_run_artifacts(
             root,
@@ -2139,7 +2540,85 @@ def build(args: argparse.Namespace) -> BuildResult:
                 path="/",
                 detail=f"{len(codex_archive_result.active_stale_after) - 50} additional stale Codex-run artifacts omitted from console findings.",
             ))
-        return build_archive_action_result(args, root, resolved_profile, output_path, codex_archive_result, archive_findings)
+
+    if args.verify_root_markdown_noise_hygiene:
+        root_markdown_archive_result = archive_root_markdown_noise(
+            root,
+            args,
+            output_path,
+            current_run=policy.codex_current_run,
+            dry_run=True,
+            verify_only=True,
+        )
+        for rel in root_markdown_archive_result.candidate_paths[:50]:
+            archive_findings.append(Finding(
+                code="root-markdown-hygiene-candidate-remnant",
+                severity="error",
+                path=rel,
+                detail="Root Markdown noise candidate remains in workspace root.",
+            ))
+        if len(root_markdown_archive_result.candidate_paths) > 50:
+            archive_findings.append(Finding(
+                code="root-markdown-hygiene-candidate-remnant-truncated",
+                severity="error",
+                path="/",
+                detail=f"{len(root_markdown_archive_result.candidate_paths) - 50} additional root Markdown candidate remnants omitted from console findings.",
+            ))
+        for path in root_markdown_archive_result.ambiguous_paths:
+            archive_findings.append(Finding(
+                code="root-markdown-archive-ambiguous",
+                severity="error",
+                path=path,
+                detail="Root Markdown candidate classification is ambiguous.",
+            ))
+        for collision in root_markdown_archive_result.collisions:
+            archive_findings.append(Finding(
+                code="root-markdown-archive-collision",
+                severity="error",
+                path=collision.get("original_path", "/"),
+                detail="Root Markdown destination collision prevented movement.",
+            ))
+
+    if args.verify_codex_archive_hygiene or args.verify_root_markdown_noise_hygiene:
+        if root_markdown_archive_result is None and args.verify_codex_archive_hygiene:
+            root_markdown_candidates, inspected, protected, ambiguous = iter_root_markdown_archive_candidates(
+                root,
+                policy.codex_current_run,
+            )
+            root_markdown_archive_root = resolve_root_markdown_archive_root(root, args.root_markdown_archive_root)
+            root_markdown_archive_result = RootMarkdownArchiveResult(
+                enabled=False,
+                dry_run=True,
+                verify_only=True,
+                archive_only=False,
+                current_run=policy.codex_current_run,
+                archive_root=str(root_markdown_archive_root),
+                archive_dir=str(root_markdown_archive_root),
+                manifest_path=None,
+                inspected_count=len(inspected),
+                protected_count=len(protected),
+                candidate_count=len(root_markdown_candidates),
+                ambiguous_count=len(ambiguous),
+                planned_count=len(root_markdown_candidates),
+                moved_count=0,
+                skipped_existing_count=0,
+                collision_count=0,
+                manifest_written=False,
+                candidate_paths=[candidate[0] for candidate in root_markdown_candidates],
+                protected_paths=protected,
+                ambiguous_paths=ambiguous,
+                collisions=[],
+                errors=[],
+            )
+        return build_archive_action_result(
+            args,
+            root,
+            resolved_profile,
+            output_path,
+            codex_archive_result,
+            root_markdown_archive_result,
+            archive_findings,
+        )
 
     if args.archive_codex_runs:
         codex_archive_result = archive_codex_run_artifacts(
@@ -2199,8 +2678,92 @@ def build(args: argparse.Namespace) -> BuildResult:
                 detail="--no-archive-codex-runs is diagnostic only; strict packaging cannot proceed with active stale Codex-run artifacts.",
             ))
 
+    root_markdown_candidates, inspected_root_markdown, protected_root_markdown, ambiguous_root_markdown = iter_root_markdown_archive_candidates(
+        root,
+        policy.codex_current_run,
+    )
+    if args.archive_root_markdown_noise:
+        root_markdown_archive_result = archive_root_markdown_noise(
+            root,
+            args,
+            output_path,
+            current_run=policy.codex_current_run,
+            dry_run=args.dry_run or args.root_markdown_archive_dry_run,
+            verify_only=False,
+        )
+        for error in root_markdown_archive_result.errors:
+            archive_findings.append(Finding(
+                code="root-markdown-archive-error",
+                severity="error",
+                path="/",
+                detail=error,
+            ))
+        if root_markdown_archive_result.dry_run:
+            for rel in root_markdown_archive_result.candidate_paths[:50]:
+                archive_findings.append(Finding(
+                    code="root-markdown-archive-candidate-remains",
+                    severity="error" if args.strict else "warning",
+                    path=rel,
+                    detail="Root Markdown noise candidate remains because archive root pass used dry-run mode.",
+                ))
+            if len(root_markdown_archive_result.candidate_paths) > 50:
+                archive_findings.append(Finding(
+                    code="root-markdown-archive-candidate-remains-truncated",
+                    severity="error" if args.strict else "warning",
+                    path="/",
+                    detail=f"{len(root_markdown_archive_result.candidate_paths) - 50} additional root Markdown candidate remnants omitted from console findings.",
+                ))
+        for path in root_markdown_archive_result.ambiguous_paths:
+            archive_findings.append(Finding(
+                code="root-markdown-archive-ambiguous",
+                severity="error",
+                path=path,
+                detail="Root Markdown candidate classification is ambiguous.",
+            ))
+        for collision in root_markdown_archive_result.collisions:
+            archive_findings.append(Finding(
+                code="root-markdown-archive-collision",
+                severity="error",
+                path=collision.get("original_path", "/"),
+                detail="Root Markdown destination collision prevented movement.",
+            ))
+    else:
+        root_markdown_archive_root = resolve_root_markdown_archive_root(root, args.root_markdown_archive_root)
+        root_markdown_archive_result = RootMarkdownArchiveResult(
+            enabled=False,
+            dry_run=args.dry_run,
+            verify_only=False,
+            archive_only=bool(args.archive_only),
+            current_run=policy.codex_current_run,
+            archive_root=str(root_markdown_archive_root),
+            archive_dir=str(root_markdown_archive_root),
+            manifest_path=None,
+            inspected_count=len(inspected_root_markdown),
+            protected_count=len(protected_root_markdown),
+            candidate_count=len(root_markdown_candidates),
+            ambiguous_count=len(ambiguous_root_markdown),
+            planned_count=len(root_markdown_candidates),
+            moved_count=0,
+            skipped_existing_count=0,
+            collision_count=0,
+            manifest_written=False,
+            candidate_paths=[candidate[0] for candidate in root_markdown_candidates],
+            protected_paths=protected_root_markdown,
+            ambiguous_paths=ambiguous_root_markdown,
+            collisions=[],
+            errors=[],
+        )
+
     if args.archive_only:
-        return build_archive_action_result(args, root, resolved_profile, output_path, codex_archive_result, archive_findings)
+        return build_archive_action_result(
+            args,
+            root,
+            resolved_profile,
+            output_path,
+            codex_archive_result,
+            root_markdown_archive_result,
+            archive_findings,
+        )
 
     include_roots = [root]
     if policy.include_external_path_deps:
@@ -2251,6 +2814,8 @@ def build(args: argparse.Namespace) -> BuildResult:
     findings = deduped_findings
 
     file_entries = build_file_entries(archive_root, included)
+    file_entry_payload = [asdict(entry) for entry in file_entries]
+    content_manifest_sha256 = sha256_json_payload(file_entry_payload)
     included_bytes = sum(entry.bytes for entry in file_entries)
     error_count, warning_count = severity_counts(findings)
 
@@ -2286,12 +2851,16 @@ def build(args: argparse.Namespace) -> BuildResult:
         error_count=error_count,
         warning_count=warning_count,
         archive_sha256=archive_sha256,
+        archive_zip_byte_sha256=archive_sha256,
+        archive_sha256_semantics="zip-byte-sha256-not-canonical-content-hash",
+        content_manifest_sha256=content_manifest_sha256,
         archive_written=archive_written,
         manifest_path=str(manifest_path) if manifest_path else None,
         report_path=str(report_path) if report_path else None,
         excluded_path=str(excluded_path) if excluded_path else None,
         findings_path=str(findings_path) if findings_path else None,
         codex_archive=codex_archive_summary(codex_archive_result),
+        root_markdown_archive=root_markdown_archive_summary(root_markdown_archive_result),
     )
 
     result = BuildResult(
@@ -2303,10 +2872,26 @@ def build(args: argparse.Namespace) -> BuildResult:
     )
 
     manifest_payload = {
+        "package": str(output_path),
+        "manifest": str(manifest_path) if manifest_path else None,
+        "excluded": str(excluded_path) if excluded_path else None,
+        "findings": str(findings_path) if findings_path else None,
+        "sidecars": {
+            "package": str(output_path),
+            "manifest": str(manifest_path) if manifest_path else None,
+            "report": str(report_path) if report_path else None,
+            "excluded": str(excluded_path) if excluded_path else None,
+            "findings": str(findings_path) if findings_path else None,
+            "codex_archive_report": str(codex_archive_report_path) if codex_archive_report_path else None,
+        },
+        "archive_zip_byte_sha256": archive_sha256,
+        "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+        "content_manifest_sha256": content_manifest_sha256,
         "report": asdict(report_obj),
         "policy": asdict(policy),
         "codex_archive": asdict(codex_archive_result) if codex_archive_result else None,
-        "files": [asdict(entry) for entry in file_entries],
+        "root_markdown_archive": asdict(root_markdown_archive_result) if root_markdown_archive_result else None,
+        "files": file_entry_payload,
         "summaries": {
             "extensions": summarize_extensions(file_entries),
             "top_level_dirs": summarize_top_dirs(file_entries),
@@ -2362,8 +2947,13 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--no-archive-codex-runs", dest="archive_codex_runs", action="store_false", help="Diagnostic only: do not normalize stale Codex-run artifacts before packaging.")
     parser.add_argument("--archive-only", action="store_true", help="Run Codex-run archival normalization and exit without writing a zip.")
     parser.add_argument("--verify-codex-archive-hygiene", action="store_true", help="Verify no stale active Codex-run artifacts remain outside the archive/current allowlist.")
+    parser.add_argument("--archive-root-markdown-noise", action="store_true", default=False, help="Archive run/audit/spec/prompt/matrix residue Markdown files found directly in workspace root.")
+    parser.add_argument("--verify-root-markdown-noise-hygiene", action="store_true", help="Verify root Markdown noise hygiene without moving root Markdown files.")
+    parser.add_argument("--root-markdown-archive-root", default=ROOT_MARKDOWN_ARCHIVE_DIR, help="Archive root for root Markdown noise. Relative paths are resolved under --root.")
+    parser.add_argument("--root-markdown-archive-dry-run", action="store_true", help="Do not write root Markdown archive moves.")
+    parser.add_argument("--include-root-markdown-archive", action="store_true", help="Include root Markdown archive directory in package collection.")
     parser.add_argument("--include-codex-archive", action="store_true", help="Include docs/codex-runs/archive history deliberately.")
-    parser.add_argument("--codex-current-run", default="P23", help="Current Codex run identifier allowed to remain active where explicitly permitted.")
+    parser.add_argument("--codex-current-run", default="P30", help="Current Codex run identifier allowed to remain active where explicitly permitted.")
     parser.add_argument("--codex-archive-root", default="docs/codex-runs/archive", help="Archive root for stale Codex-run artifacts. Relative paths are resolved under --root.")
     parser.add_argument("--codex-archive-report-out", default=None, help="Codex archival normalization report JSON path. Use '-' to disable. Default: <archive>.codex-archive.json")
 
@@ -2419,13 +3009,26 @@ def print_console_summary(result: BuildResult) -> None:
         )
         if codex.get("report_path"):
             print(f"codex_archive_report: {codex.get('report_path')}")
+    if r.root_markdown_archive:
+        root_md = r.root_markdown_archive
+        print(
+            "root_markdown_archive: "
+            f"enabled={root_md.get('enabled')} inspected={root_md.get('inspected_count')} "
+            f"candidates={root_md.get('candidate_count')} ambiguous={root_md.get('ambiguous_count')} "
+            f"moved={root_md.get('moved_count')} collisions={root_md.get('collision_count')}"
+        )
+        if root_md.get("manifest_path"):
+            print(f"root_markdown_archive_manifest: {root_md.get('manifest_path')}")
     if r.archive_root != r.root:
         print(f"archive_root: {r.archive_root}")
         print(f"include_roots: {len(r.include_roots)} ({len(r.external_path_dep_roots)} external Cargo path deps)")
     if r.archive_written:
         print(f"wrote: {r.output}")
         if r.archive_sha256:
-            print(f"sha256: {r.archive_sha256}")
+            print(f"zip-byte-sha256: {r.archive_zip_byte_sha256}")
+            print(f"archive-hash-semantics: {r.archive_sha256_semantics}")
+        if r.content_manifest_sha256:
+            print(f"content-manifest-sha256: {r.content_manifest_sha256}")
     elif r.codex_archive and r.codex_archive.get("archive_only"):
         print("archive-only: zip not written")
     elif r.codex_archive and r.codex_archive.get("verify_only"):

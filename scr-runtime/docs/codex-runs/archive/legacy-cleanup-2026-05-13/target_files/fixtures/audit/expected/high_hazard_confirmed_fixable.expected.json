@@ -1,0 +1,10 @@
+{
+  "case_id": "high_hazard_confirmed_fixable",
+  "expected_minimum_action": "GenerateRepairPacket",
+  "required_reason_codes": [
+    "HIGH_HAZARD",
+    "HIGH_CONFIDENCE",
+    "FIXABLE"
+  ],
+  "notes": "Initial expected minimum. Codex should generate full golden receipts after evaluator exists. Updating generated golden receipts requires POLICY_CHANGE.md."
+}

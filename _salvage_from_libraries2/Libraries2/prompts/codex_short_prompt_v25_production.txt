@@ -1,0 +1,9 @@
+Read docs/v25/PRODUCTION_GAP_AUDIT_20260318.md, docs/v25/PRODUCTION_MASTER_ISSUE_MATRIX_20260318.md, plans/v25-production-closure.execplan.md, docs/v25/PRODUCTION_CONSUMER_CITATION_SPEC_20260318.md, docs/v25/PRODUCTION_EXACT_FILE_TOUCH_MAP_20260318.md, docs/v25/PRODUCTION_SCHEMA_AND_EXAMPLE_BACKFILL_PLAN_20260318.md, and docs/v25/PRODUCTION_ACCEPTANCE_AND_COMMANDS_20260318.md.
+
+Then:
+1. start with V25P-101 and V25P-102,
+2. keep profile-runtime as the only composition owner,
+3. use stack-ids refs in verification-policy,
+4. do not leave effect-runtime on raw String IDs,
+5. add schemas/examples/tests with every artifact change,
+6. finish by making check_v25_production_closure.py and the cargo command set pass.

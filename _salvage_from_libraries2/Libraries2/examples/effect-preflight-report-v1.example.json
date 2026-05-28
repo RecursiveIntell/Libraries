@@ -1,0 +1,16 @@
+{
+  "schema_version": "EffectPreflightReportV1",
+  "effect_preflight_report_id": "fxp_001",
+  "effect_intent_id": "fxi_001",
+  "input_integrity_result": "pass",
+  "admission_check_result": "pass",
+  "dependency_reachability_result": "pass",
+  "budget_sufficiency_result": "sufficient",
+  "blocked": false,
+  "advisory_only": false,
+  "commit_eligible": true,
+  "generated_at": "2026-03-15T12:00:00Z",
+  "notes": [
+    "all preconditions satisfied"
+  ]
+}

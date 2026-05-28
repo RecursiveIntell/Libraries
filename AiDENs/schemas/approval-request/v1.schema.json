@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ToolSideEffectClass": {
+      "enum": [
+        "read_only",
+        "analysis",
+        "preview_write",
+        "write",
+        "admin"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "attempt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "requested_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "risk_class": {
+      "$ref": "#/definitions/ToolSideEffectClass"
+    },
+    "run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sandbox_root": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "tool_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reason",
+    "request_id",
+    "requested_at",
+    "risk_class",
+    "sandbox_root",
+    "scope",
+    "tool_id"
+  ],
+  "title": "ApprovalRequestV1",
+  "type": "object"
+}

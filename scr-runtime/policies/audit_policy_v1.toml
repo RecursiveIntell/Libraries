@@ -1,0 +1,80 @@
+[policy]
+id = "audit_policy_v1"
+version = "1.0.0"
+domain = "audit"
+algorithm_version = "scr-p0a-reference-v1"
+canonicalization = "canonical-json-v1"
+
+[action_precedence]
+backlog = 10
+allow_with_receipt = 20
+require_source_basis = 35
+require_verification = 40
+require_owner_resolution = 50
+require_approval = 55
+generate_repair_packet = 65
+quarantine_artifact = 80
+block_mutation = 90
+block_release = 95
+
+[thresholds.autonomy_pressure]
+allow_with_receipt = 2500
+require_verification = 5000
+require_approval = 7000
+block_mutation = 9000
+
+[thresholds.verification_pressure]
+allow_with_receipt = 2500
+require_verification = 5000
+
+[thresholds.repair_priority]
+backlog = 2500
+generate_repair_packet = 7500
+
+[thresholds.quarantine_pressure]
+require_verification = 4000
+quarantine_artifact = 7000
+block_mutation = 9000
+
+[minimum_actions]
+source_truth_drift = "require_verification"
+false_completion_missing_tests = "generate_repair_packet"
+unknown_owner_mutation = "require_owner_resolution"
+destructive_missing_rollback = "block_release"
+invalid_schema = "quarantine_artifact"
+forbidden_production_term = "quarantine_artifact"
+
+[hard_rules.HR_SCHEMA_INVALID]
+enabled = true
+action = "quarantine_artifact"
+reason = "SCHEMA_INVALID"
+
+[hard_rules.HR_AUTHORITY_MISSING]
+enabled = true
+action = "require_approval"
+reason = "AUTHORITY_MISSING"
+
+[hard_rules.HR_FORBIDDEN_PRODUCTION_TERM]
+enabled = true
+action = "quarantine_artifact"
+reason = "FORBIDDEN_PRODUCTION_TERM"
+
+[hard_rules.HR_UNKNOWN_OWNER_MUTATION]
+enabled = true
+action = "require_owner_resolution"
+reason = "UNKNOWN_OWNER_MUTATION"
+
+[hard_rules.HR_SOURCE_TRUTH_DRIFT]
+enabled = true
+minimum_action = "require_verification"
+reason = "SOURCE_TRUTH_DRIFT"
+
+[hard_rules.HR_FALSE_COMPLETION_MISSING_TESTS]
+enabled = true
+action = "generate_repair_packet"
+reason = "FALSE_COMPLETION_MISSING_TESTS"
+
+[hard_rules.HR_DESTRUCTIVE_MISSING_ROLLBACK]
+enabled = true
+action = "block_release"
+reason = "DESTRUCTIVE_MISSING_ROLLBACK"

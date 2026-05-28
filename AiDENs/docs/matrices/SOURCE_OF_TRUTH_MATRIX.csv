@@ -1,0 +1,13 @@
+concept,canonical_owner,aidens_allowed_role,forbidden_aidens_role
+ids_and_digests,stack-ids,use/re-export/display,local canonical digest or deterministic artifact ID
+forge_evidence,semantic-memory-forge,invoke/report with backpointers,local evidence truth
+bridge_transform,forge-memory-bridge,invoke/report,policy engine or transform reinterpretation
+projected_memory,semantic-memory,query/report,local memory truth
+runtime_view,knowledge-runtime,request/report,local widening/degradation law
+tools,llm-tool-runtime,implement tools and display receipts,local canonical tool universe
+verification,verification-control|verification-policy|verification-adjudication|verification-calibration,invoke/report/local UI,local verification truth
+kernel,recursive-kernel-core|constraint-compiler|kernel-execution|kernel-oracles|kernel-conformance,invoke/report,local inference semantics
+attestation,attestation-exchange,re-export/display,local attestation envelope
+federation,federated-settlement,re-export/display,local settlement truth
+mechanism,mechanism-runtime,re-export/display,local theory/hypothesis truth
+schemas,contract-schema-gen,run/consume,local canonical schema registry

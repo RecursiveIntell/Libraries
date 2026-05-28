@@ -1,0 +1,1 @@
+Finish the 2026-03-22 hardening lane without reopening architecture. Restore the root control-plane pack, preserve the 17-crate support claim, ship one v21->v22->v23 demonstrator, ship one replayability/temporal benchmark package, then finish the last physical root reduction.

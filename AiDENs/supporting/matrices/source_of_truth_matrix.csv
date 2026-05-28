@@ -1,0 +1,8 @@
+concern,canonical_owner,aidens_role
+ids,stack-ids,consume/re-export
+evidence,semantic-memory-forge,delegate
+bridge,forge-memory-bridge,delegate
+memory,semantic-memory,delegate
+runtime,knowledge-runtime,delegate
+runner,AiDENs,own
+agency,AiDENs v0.1 heuristic gate,own but mark heuristic

@@ -1,0 +1,6 @@
+{"event":"provider_route_selected","provider":"mock"}
+{"event":"tool_exposure_plan_created","tool":"repo.read"}
+{"event":"permit_checked","tool":"repo.read"}
+{"event":"tool_invocation_recorded","tool":"repo.read"}
+{"event":"agency_policy_evaluated","surface":"final-output"}
+{"event":"final_response_recorded"}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "DelegationBundleV1",
+  "delegation_bundle_id": "adb_001",
+  "authority_lease_id": "aul_001",
+  "delegated_rights": [
+    "execute_effect:external_write"
+  ],
+  "reduced_ceilings": [
+    "single-tenant"
+  ],
+  "replay_requirements": [
+    "authority_chain",
+    "effect_receipt"
+  ],
+  "further_delegation_permitted": false
+}

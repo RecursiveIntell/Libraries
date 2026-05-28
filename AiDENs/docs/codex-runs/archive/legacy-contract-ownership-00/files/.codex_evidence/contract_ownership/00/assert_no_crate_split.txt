@@ -1,0 +1,6 @@
+COMMAND: bash scripts/assert_no_crate_split.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-04-29T00:01:30-05:00
+PASS: no aidens-contracts split crates detected.
+EXIT_STATUS: 0
+END_TIME: 2026-04-29T00:01:30-05:00

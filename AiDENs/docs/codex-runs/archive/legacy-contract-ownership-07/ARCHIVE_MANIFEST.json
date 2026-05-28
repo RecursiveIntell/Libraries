@@ -1,0 +1,176 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/cargo_check_workspace.txt",
+      "bytes": 72,
+      "mtime_utc": "2026-04-29T20:02:15Z",
+      "original_path": ".codex_evidence/contract_ownership/07/cargo_check_workspace.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "d7dae192715495fa89ccbe279af3efb9792c1dae1768228e369035e68a1df673"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/cargo_test_workspace.txt",
+      "bytes": 28901,
+      "mtime_utc": "2026-04-29T20:02:23Z",
+      "original_path": ".codex_evidence/contract_ownership/07/cargo_test_workspace.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "4910e9c8f4a80831eade6c9e57667744f5c9a9386aad4a6f870b5cf4cd4d42f5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/commands_run.txt",
+      "bytes": 1561,
+      "mtime_utc": "2026-04-29T20:07:11Z",
+      "original_path": ".codex_evidence/contract_ownership/07/commands_run.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "d1ea99edb59fd5bf274575b68e582bd6bbcbebc2868e14c5eecf0ae970c40979"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/final_stop_hostile_auditor_proof.txt",
+      "bytes": 13285,
+      "mtime_utc": "2026-04-29T20:07:11Z",
+      "original_path": ".codex_evidence/contract_ownership/07/final_stop_hostile_auditor_proof.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "cda28888c078b5c51184d4208a9656515e7d9ad3e844d7111ab0f2c3b1139346"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/gate_outputs.txt",
+      "bytes": 8416,
+      "mtime_utc": "2026-04-29T20:05:15Z",
+      "original_path": ".codex_evidence/contract_ownership/07/gate_outputs.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "27b281c618dec7f8201fbac91a567b69cbb3f394aa1f70eb0ab440783281e842"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/git_diff.patch",
+      "bytes": 279806,
+      "mtime_utc": "2026-04-29T20:05:57Z",
+      "original_path": ".codex_evidence/contract_ownership/07/git_diff.patch",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "7a2d524855f7c0ca5c2e6ef3a659dd16fe88b055d5b65fa4f1e97d1632f81608"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/git_diff_before.patch",
+      "bytes": 279806,
+      "mtime_utc": "2026-04-29T20:01:54Z",
+      "original_path": ".codex_evidence/contract_ownership/07/git_diff_before.patch",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "7a2d524855f7c0ca5c2e6ef3a659dd16fe88b055d5b65fa4f1e97d1632f81608"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/git_diff_name_only.txt",
+      "bytes": 2374,
+      "mtime_utc": "2026-04-29T20:04:51Z",
+      "original_path": ".codex_evidence/contract_ownership/07/git_diff_name_only.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "b1a467bca1f9272042639f4f72fc5d590bce4f2c240f857027017539ba7af450"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/git_diff_stat.txt",
+      "bytes": 4754,
+      "mtime_utc": "2026-04-29T20:05:57Z",
+      "original_path": ".codex_evidence/contract_ownership/07/git_diff_stat.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "4ef6c5f28b49c3a84fa8100f33ae866c50e9c3f76f628b4c0b2bf43d13444490"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/git_diff_stat_current_for_docs.txt",
+      "bytes": 4754,
+      "mtime_utc": "2026-04-29T20:02:39Z",
+      "original_path": ".codex_evidence/contract_ownership/07/git_diff_stat_current_for_docs.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "4ef6c5f28b49c3a84fa8100f33ae866c50e9c3f76f628b4c0b2bf43d13444490"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/git_status_after.txt",
+      "bytes": 5075,
+      "mtime_utc": "2026-04-29T20:05:57Z",
+      "original_path": ".codex_evidence/contract_ownership/07/git_status_after.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "ebe2db9b7dbe0136e53f9504c334ccd8ed409d867fd31214d7169f657488058b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/git_status_before.txt",
+      "bytes": 5075,
+      "mtime_utc": "2026-04-29T20:01:54Z",
+      "original_path": ".codex_evidence/contract_ownership/07/git_status_before.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "ebe2db9b7dbe0136e53f9504c334ccd8ed409d867fd31214d7169f657488058b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/git_status_current_for_docs.txt",
+      "bytes": 5075,
+      "mtime_utc": "2026-04-29T20:02:39Z",
+      "original_path": ".codex_evidence/contract_ownership/07/git_status_current_for_docs.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "ebe2db9b7dbe0136e53f9504c334ccd8ed409d867fd31214d7169f657488058b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/phase_report.md",
+      "bytes": 6941,
+      "mtime_utc": "2026-04-29T20:05:45Z",
+      "original_path": ".codex_evidence/contract_ownership/07/phase_report.md",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "76d56994e19d3c56a75d623c47e8310be6b9ae0b698c72c72dc7cfb8d5c93024"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/phase_verify_final_after_docs.txt",
+      "bytes": 6040,
+      "mtime_utc": "2026-04-29T20:04:40Z",
+      "original_path": ".codex_evidence/contract_ownership/07/phase_verify_final_after_docs.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "7e5fa9e9685384a9f146c497ea1b72f4051a2b17d52690ea4ed43aabd579e249"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/phase_verify_final_initial.txt",
+      "bytes": 6040,
+      "mtime_utc": "2026-04-29T20:02:06Z",
+      "original_path": ".codex_evidence/contract_ownership/07/phase_verify_final_initial.txt",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "dae484b11e2836d2c40a29c6e24b67abc051362b1eb965a0eaf6f0001483078a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/quarantine_delta.md",
+      "bytes": 92,
+      "mtime_utc": "2026-04-29T20:01:54Z",
+      "original_path": ".codex_evidence/contract_ownership/07/quarantine_delta.md",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "c1cb457dc61f9c8e6d8413cd8dd0c04d70be79d4508072c3c0fa551ecbb33a1a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/legacy-contract-ownership-07/files/.codex_evidence/contract_ownership/07/skipped_checks.md",
+      "bytes": 19,
+      "mtime_utc": "2026-04-29T20:01:54Z",
+      "original_path": ".codex_evidence/contract_ownership/07/skipped_checks.md",
+      "reason": "stale-codex-evidence",
+      "run_id": "legacy-contract-ownership-07",
+      "sha256": "a86ecf1d0bbc79da0076f4df4b470e6b9cc1f1a4a35ad34126eb324accb8e851"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "legacy-contract-ownership-07",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

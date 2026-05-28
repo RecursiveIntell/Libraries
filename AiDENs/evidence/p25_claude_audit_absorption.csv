@@ -1,0 +1,7 @@
+audit_item,p25_response,status
+Codex phase-gate drift / missed stops,Machine-checkable phase gate protocol; every-other-phase blocking injection prompts; verifier fails stale or non-blocking injections.,absorbed
+z.py scope creep risk,"z.py scope contract: only root Markdown archive hygiene; no runtime, no agent feature, no semantic adapter.",absorbed
+Root workspace markdown context noise,Root Markdown archive feature spec; protected allowlist; deterministic archive manifest; dry-run and collision gates.,absorbed
+P23/P24 stale instruction residue,Current-run classification cleanup; stale run-ID verifier; P25 run truth files.,absorbed
+Large monolithic AiDENs files,"Containment plan only, no risky refactor; identify split candidates and gates for future pass.",tracked
+Fixture-scoped claims can be oversold,Support profile convergence; flagship demo is supported-local and fixture-backed; cloud/autonomy deferred.,absorbed

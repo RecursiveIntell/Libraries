@@ -1,0 +1,12 @@
+{
+  "schema_version": "attestation_revocation_v1",
+  "attestation_revocation_id": "att-revoke-2026-03-14-01",
+  "affected_refs": [
+    "att-envelope-2026-03-14-01"
+  ],
+  "revocation_reason": "compromised_signer_key",
+  "effective_time": "2026-03-14T13:00:00Z",
+  "blast_radius": "all remote slice results signed by key-1 since 2026-03-10",
+  "required_local_invalidation_behavior": "emit dispute and block promotion",
+  "dispute_linkage": null
+}

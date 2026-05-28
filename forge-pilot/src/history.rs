@@ -82,8 +82,16 @@ impl PilotHistory {
                 exhausted: false,
             });
 
+        // LIB-MED-002: cap history vectors to prevent unbounded growth
+        const MAX_HISTORY_ENTRIES: usize = 20;
+
         if let Some(bundle_id) = bundle_id {
             entry.prior_attempt_bundle_ids.push(bundle_id);
+        }
+        if entry.prior_attempt_bundle_ids.len() > MAX_HISTORY_ENTRIES {
+            entry
+                .prior_attempt_bundle_ids
+                .drain(..entry.prior_attempt_bundle_ids.len() - MAX_HISTORY_ENTRIES);
         }
 
         let repeated = entry
@@ -92,6 +100,11 @@ impl PilotHistory {
             .map(|last| last == &outcome_signature)
             .unwrap_or(false);
         entry.prior_outcomes.push(outcome_signature);
+        if entry.prior_outcomes.len() > MAX_HISTORY_ENTRIES {
+            entry
+                .prior_outcomes
+                .drain(..entry.prior_outcomes.len() - MAX_HISTORY_ENTRIES);
+        }
         if entry.retry_count >= max_retries_per_target || repeated {
             entry.exhausted = true;
         }

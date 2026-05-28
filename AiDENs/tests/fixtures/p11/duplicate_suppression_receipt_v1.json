@@ -1,0 +1,12 @@
+{
+  "receipt_id": "duplicate-suppression:fixture",
+  "kind": "duplicate-suppression",
+  "namespace_id": "daemon-namespace:fixture",
+  "idempotency_key": "schedule:daemon-namespace:fixture:daily-refresh:2026-04-27T00:00:00Z:blake3:payload-fixture",
+  "existing_job_id": "job:fixture",
+  "suppressed_source_kind": "schedule",
+  "reason_codes": [
+    "duplicate-logical-job-suppressed"
+  ],
+  "recorded_at": "2026-04-27T00:00:00Z"
+}

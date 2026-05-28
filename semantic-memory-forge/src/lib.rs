@@ -1,4 +1,5 @@
 #![allow(deprecated)]
+#![cfg_attr(test, allow(clippy::expect_used))]
 
 //! # semantic-memory-forge
 //!

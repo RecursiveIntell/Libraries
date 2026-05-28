@@ -16,3 +16,7 @@ verification-policy = { path = "../verification-policy" }
 
 [dev-dependencies]
 serde_json = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

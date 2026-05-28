@@ -1,0 +1,1239 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AidensRunContextV1": {
+      "properties": {
+        "app_id": {
+          "type": "string"
+        },
+        "attempt_family_id": {
+          "type": "string"
+        },
+        "attempt_id": {
+          "type": "string"
+        },
+        "config_generation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "trace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_id",
+        "attempt_family_id",
+        "attempt_id",
+        "run_id",
+        "started_at",
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "ApprovalDecisionV1": {
+      "properties": {
+        "approved": {
+          "type": "boolean"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "decided_by": {
+          "type": "string"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "permit_grant": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PermitGrantV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approved",
+        "decided_at",
+        "decided_by",
+        "decision_id",
+        "request_id"
+      ],
+      "type": "object"
+    },
+    "ApprovalRequestV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "risk_class": {
+          "$ref": "#/definitions/ToolSideEffectClass"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox_root": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "request_id",
+        "requested_at",
+        "risk_class",
+        "sandbox_root",
+        "scope",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "BoundaryRepairReportV1": {
+      "properties": {
+        "after_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "before_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "canonical_backpointers": {
+          "items": {
+            "$ref": "#/definitions/CanonicalBackpointerV1"
+          },
+          "type": "array"
+        },
+        "canonical_repair_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "changed": {
+          "type": "boolean"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "repair_kind": {
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "changed",
+        "receipt_id",
+        "repair_kind",
+        "warnings"
+      ],
+      "type": "object"
+    },
+    "BudgetExhaustionReportV1": {
+      "properties": {
+        "attempt_id": {
+          "type": "string"
+        },
+        "attempted_tool_calls": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "elapsed_millis": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "exhausted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "max_retries": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_tool_calls": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_turn_millis": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "retries": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "run_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "attempt_id",
+        "attempted_tool_calls",
+        "elapsed_millis",
+        "exhausted_at",
+        "kind",
+        "max_retries",
+        "max_tool_calls",
+        "max_turn_millis",
+        "receipt_id",
+        "retries",
+        "run_id"
+      ],
+      "type": "object"
+    },
+    "CanonicalBackpointerV1": {
+      "description": "AiDENs-local wrapper pointer to a canonical owner artifact or owner type.\n\nThis does not make AiDENs authoritative for the pointed-to concept; it records where a display/report DTO must be reconciled for canonical truth.",
+      "properties": {
+        "artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "external_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_crate": {
+          "type": "string"
+        },
+        "owner_type": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owner_crate",
+        "owner_type",
+        "role"
+      ],
+      "type": "object"
+    },
+    "DisplayDigestV1": {
+      "properties": {
+        "algorithm": {
+          "type": "string"
+        },
+        "canonicalization": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "non_authoritative": {
+          "default": true,
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "canonicalization",
+        "digest"
+      ],
+      "type": "object"
+    },
+    "JsonBoundaryRepairDisplayReportV1": {
+      "properties": {
+        "after_display_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DisplayDigestV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "after_raw_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "before_display_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DisplayDigestV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_raw_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "canonical_backpointers": {
+          "items": {
+            "$ref": "#/definitions/CanonicalBackpointerV1"
+          },
+          "type": "array"
+        },
+        "canonical_repair_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "changed": {
+          "type": "boolean"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "hard_failed": {
+          "default": false,
+          "type": "boolean"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "repair_kind": {
+          "type": "string"
+        },
+        "treatment_critical_fields": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "treatment_integrity_warnings": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "changed",
+        "degraded",
+        "kind",
+        "receipt_id",
+        "repair_kind"
+      ],
+      "type": "object"
+    },
+    "PermitGrantV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "granted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "granted_by": {
+          "type": "string"
+        },
+        "permit_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "risk_class": {
+          "$ref": "#/definitions/ToolSideEffectClass"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox_root": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "granted_at",
+        "granted_by",
+        "permit_id",
+        "risk_class",
+        "sandbox_root",
+        "scope",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "PermitUseReportV1": {
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        },
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "permit_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "risk_class": {
+          "$ref": "#/definitions/ToolSideEffectClass"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox_root": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        },
+        "used_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "allowed",
+        "kind",
+        "permit_id",
+        "receipt_id",
+        "risk_class",
+        "sandbox_root",
+        "tool_id",
+        "used_at"
+      ],
+      "type": "object"
+    },
+    "ProviderRouteKindV1": {
+      "enum": [
+        "mock",
+        "native-open-ai-responses",
+        "native-open-ai-chat",
+        "native-anthropic",
+        "native-ollama",
+        "ollama-chat",
+        "open-ai-compatible",
+        "parser-fallback",
+        "disabled",
+        "unavailable",
+        "degraded"
+      ],
+      "type": "string"
+    },
+    "ProviderRouteReportV1": {
+      "properties": {
+        "degraded": {
+          "default": false,
+          "type": "boolean"
+        },
+        "degraded_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "native_tool_loop": {
+          "type": "boolean"
+        },
+        "provider_kind": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "route": {
+          "$ref": "#/definitions/ProviderRouteKindV1"
+        },
+        "route_label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "native_tool_loop",
+        "provider_kind",
+        "route",
+        "route_label"
+      ],
+      "type": "object"
+    },
+    "SchemaValidationReportV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "canonical_backpointers": {
+          "items": {
+            "$ref": "#/definitions/CanonicalBackpointerV1"
+          },
+          "type": "array"
+        },
+        "canonical_control_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "checked_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_digest": {
+          "$ref": "#/definitions/DisplayDigestV1"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DisplayDigestV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tool_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "checked_at",
+        "input_digest",
+        "kind",
+        "receipt_id",
+        "valid"
+      ],
+      "type": "object"
+    },
+    "StopRuleReportV1": {
+      "properties": {
+        "attempt_id": {
+          "type": "string"
+        },
+        "checked_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "rule": {
+          "$ref": "#/definitions/StopRuleV1"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "triggered": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "attempt_id",
+        "checked_at",
+        "kind",
+        "receipt_id",
+        "rule",
+        "run_id",
+        "triggered"
+      ],
+      "type": "object"
+    },
+    "StopRuleV1": {
+      "enum": [
+        "final-output",
+        "provider-unavailable",
+        "agency-policy",
+        "tool-not-exposed",
+        "tool-invocation-failed",
+        "recursive-tool-call",
+        "max-tool-calls",
+        "max-retries",
+        "deadline-exceeded"
+      ],
+      "type": "string"
+    },
+    "ToolCallRequestV1": {
+      "properties": {
+        "call_id": {
+          "type": "string"
+        },
+        "canonical_backpointers": {
+          "items": {
+            "$ref": "#/definitions/CanonicalBackpointerV1"
+          },
+          "type": "array"
+        },
+        "degraded": {
+          "default": false,
+          "type": "boolean"
+        },
+        "input": true,
+        "input_digest": {
+          "type": "string"
+        },
+        "raw_provider_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/definitions/ToolCallSourceV1"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_id",
+        "input",
+        "input_digest",
+        "requested_at",
+        "source",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "ToolCallResultV1": {
+      "properties": {
+        "call_id": {
+          "type": "string"
+        },
+        "canonical_backpointers": {
+          "items": {
+            "$ref": "#/definitions/CanonicalBackpointerV1"
+          },
+          "type": "array"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "input_digest": {
+          "type": "string"
+        },
+        "invocation_receipt_id": {
+          "type": "string"
+        },
+        "output": true,
+        "output_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "result_id": {
+          "type": "string"
+        },
+        "succeeded": {
+          "type": "boolean"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_id",
+        "completed_at",
+        "input_digest",
+        "invocation_receipt_id",
+        "result_id",
+        "succeeded",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "ToolCallSourceV1": {
+      "enum": [
+        "native-provider",
+        "parser-fallback"
+      ],
+      "type": "string"
+    },
+    "ToolInvocationOutcomeV1": {
+      "enum": [
+        "started",
+        "succeeded",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "ToolInvocationReportV1": {
+      "properties": {
+        "approval_decision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approval_request_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "canonical_backpointers": {
+          "items": {
+            "$ref": "#/definitions/CanonicalBackpointerV1"
+          },
+          "type": "array"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "input": true,
+        "input_digest": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "lifecycle": {
+          "items": {
+            "$ref": "#/definitions/ToolLifecycleStateV1"
+          },
+          "type": "array"
+        },
+        "outcome": {
+          "$ref": "#/definitions/ToolInvocationOutcomeV1"
+        },
+        "output": true,
+        "output_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "permit_grant_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "permit_use_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_validation_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "succeeded": {
+          "type": "boolean"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "input",
+        "input_digest",
+        "kind",
+        "lifecycle",
+        "outcome",
+        "receipt_id",
+        "started_at",
+        "succeeded",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "ToolLifecycleStateV1": {
+      "enum": [
+        "declared",
+        "registered",
+        "executable",
+        "exposed",
+        "exposed-this-turn",
+        "invoked",
+        "succeeded",
+        "failed",
+        "hidden",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "ToolSideEffectClass": {
+      "enum": [
+        "read_only",
+        "analysis",
+        "preview_write",
+        "write",
+        "admin"
+      ],
+      "type": "string"
+    },
+    "TurnFinalStateV1": {
+      "enum": [
+        "final-output",
+        "provider-unavailable",
+        "tool-blocked",
+        "tool-failed",
+        "budget-exhausted",
+        "stop-rule-triggered"
+      ],
+      "type": "string"
+    },
+    "TurnModeV1": {
+      "enum": [
+        "no-tools",
+        "native-tool-loop",
+        "parser-fallback",
+        "provider-unavailable",
+        "budget-exhausted"
+      ],
+      "type": "string"
+    },
+    "TurnReportV1": {
+      "properties": {
+        "attempt_id": {
+          "type": "string"
+        },
+        "blocked": {
+          "default": false,
+          "type": "boolean"
+        },
+        "budget_exhaustion_receipt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_at": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degraded": {
+          "default": false,
+          "type": "boolean"
+        },
+        "final_state": {
+          "$ref": "#/definitions/TurnFinalStateV1"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKindV1"
+        },
+        "mode": {
+          "$ref": "#/definitions/TurnModeV1"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "stop_rule_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "tool_call_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "tool_invocation_receipt_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "attempt_id",
+        "final_state",
+        "kind",
+        "mode",
+        "plan_id",
+        "receipt_id",
+        "run_id",
+        "started_at"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "agency_receipt_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "approval_decisions": {
+      "items": {
+        "$ref": "#/definitions/ApprovalDecisionV1"
+      },
+      "type": "array"
+    },
+    "approval_requests": {
+      "items": {
+        "$ref": "#/definitions/ApprovalRequestV1"
+      },
+      "type": "array"
+    },
+    "boundary_repair_receipts": {
+      "items": {
+        "$ref": "#/definitions/BoundaryRepairReportV1"
+      },
+      "type": "array"
+    },
+    "budget_exhaustion_receipts": {
+      "items": {
+        "$ref": "#/definitions/BudgetExhaustionReportV1"
+      },
+      "type": "array"
+    },
+    "completed_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "context": {
+      "$ref": "#/definitions/AidensRunContextV1"
+    },
+    "json_repair_receipts": {
+      "items": {
+        "$ref": "#/definitions/JsonBoundaryRepairDisplayReportV1"
+      },
+      "type": "array"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "permit_use_receipts": {
+      "items": {
+        "$ref": "#/definitions/PermitUseReportV1"
+      },
+      "type": "array"
+    },
+    "provider_route": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ProviderRouteReportV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "schema_validation_receipts": {
+      "items": {
+        "$ref": "#/definitions/SchemaValidationReportV1"
+      },
+      "type": "array"
+    },
+    "stop_rule_receipts": {
+      "items": {
+        "$ref": "#/definitions/StopRuleReportV1"
+      },
+      "type": "array"
+    },
+    "tool_call_requests": {
+      "items": {
+        "$ref": "#/definitions/ToolCallRequestV1"
+      },
+      "type": "array"
+    },
+    "tool_call_results": {
+      "items": {
+        "$ref": "#/definitions/ToolCallResultV1"
+      },
+      "type": "array"
+    },
+    "tool_exposure_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tool_invocation_receipts": {
+      "items": {
+        "$ref": "#/definitions/ToolInvocationReportV1"
+      },
+      "type": "array"
+    },
+    "turn_receipts": {
+      "items": {
+        "$ref": "#/definitions/TurnReportV1"
+      },
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "context",
+    "kind",
+    "receipt_id",
+    "warnings"
+  ],
+  "title": "RunReportV1",
+  "type": "object"
+}

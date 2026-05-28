@@ -1,0 +1,19 @@
+[package]
+name = "aidens"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+aidens-agency-kit = { path = "../aidens-agency-kit" }
+aidens-app-kit = { path = "../aidens-app-kit" }
+aidens-contracts = { path = "../aidens-contracts" }
+aidens-kernel-kit = { path = "../aidens-kernel-kit" }
+aidens-profile-coding = { path = "../aidens-profile-coding" }
+aidens-runner = { path = "../aidens-runner" }
+serde.workspace = true
+thiserror.workspace = true

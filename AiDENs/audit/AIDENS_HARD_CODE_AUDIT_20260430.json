@@ -1,0 +1,527 @@
+{
+  "aidens_testkit_normal_aidens_deps": [
+    "aidens-agency-kit",
+    "aidens-boundary-kit",
+    "aidens-budget-kit",
+    "aidens-cli",
+    "aidens-contracts",
+    "aidens-daemon-kit",
+    "aidens-governance-kit",
+    "aidens-kernel-kit",
+    "aidens-memory-kit",
+    "aidens-permit-kit",
+    "aidens-provider-kit",
+    "aidens-receipts",
+    "aidens-repair-kit",
+    "aidens-runner",
+    "aidens-tool-kit"
+  ],
+  "aidens_testkit_reverse_dev_dependents": [
+    "aidens-boundary-kit",
+    "aidens-config",
+    "aidens-permit-kit",
+    "aidens-provider-kit",
+    "aidens-receipts",
+    "aidens-tool-kit"
+  ],
+  "audit_basis": "static source/package audit; docs used only when code/manifests/scripts reference them",
+  "cargo_available_in_this_environment": false,
+  "crate_loc_top": [
+    {
+      "crate": "aidens-contracts",
+      "files": 1,
+      "loc": 10181
+    },
+    {
+      "crate": "aidens-testkit",
+      "files": 15,
+      "loc": 4656
+    },
+    {
+      "crate": "aidens-cli",
+      "files": 3,
+      "loc": 4306
+    },
+    {
+      "crate": "aidens-tool-kit",
+      "files": 2,
+      "loc": 2483
+    },
+    {
+      "crate": "aidens-runner",
+      "files": 4,
+      "loc": 2130
+    },
+    {
+      "crate": "aidens-agency-kit",
+      "files": 1,
+      "loc": 1585
+    },
+    {
+      "crate": "aidens-provider-kit",
+      "files": 1,
+      "loc": 1414
+    },
+    {
+      "crate": "aidens-boundary-kit",
+      "files": 1,
+      "loc": 1056
+    },
+    {
+      "crate": "aidens-app-kit",
+      "files": 3,
+      "loc": 900
+    },
+    {
+      "crate": "aidens-queue-kit",
+      "files": 1,
+      "loc": 789
+    },
+    {
+      "crate": "aidens-config",
+      "files": 1,
+      "loc": 365
+    },
+    {
+      "crate": "aidens-permit-kit",
+      "files": 1,
+      "loc": 329
+    },
+    {
+      "crate": "aidens-receipts",
+      "files": 1,
+      "loc": 323
+    },
+    {
+      "crate": "aidens-governance-kit",
+      "files": 1,
+      "loc": 298
+    },
+    {
+      "crate": "aidens-daemon-kit",
+      "files": 1,
+      "loc": 245
+    },
+    {
+      "crate": "aidens-memory-kit",
+      "files": 1,
+      "loc": 182
+    },
+    {
+      "crate": "aidens-capability-kit",
+      "files": 1,
+      "loc": 135
+    },
+    {
+      "crate": "aidens-kernel-kit",
+      "files": 1,
+      "loc": 112
+    },
+    {
+      "crate": "aidens-security-kit",
+      "files": 1,
+      "loc": 101
+    },
+    {
+      "crate": "aidens-profile-coding",
+      "files": 1,
+      "loc": 84
+    },
+    {
+      "crate": "aidens-schedule-kit",
+      "files": 1,
+      "loc": 77
+    },
+    {
+      "crate": "aidens-wake-kit",
+      "files": 1,
+      "loc": 72
+    },
+    {
+      "crate": "aidens-repair-kit",
+      "files": 1,
+      "loc": 65
+    },
+    {
+      "crate": "aidens-budget-kit",
+      "files": 1,
+      "loc": 61
+    },
+    {
+      "crate": "aidens-arbiter-kit",
+      "files": 1,
+      "loc": 42
+    },
+    {
+      "crate": "aidens-delegation-kit",
+      "files": 1,
+      "loc": 29
+    },
+    {
+      "crate": "aidens",
+      "files": 1,
+      "loc": 24
+    },
+    {
+      "crate": "aidens-plan-kit",
+      "files": 1,
+      "loc": 18
+    },
+    {
+      "crate": "aidens-profile-daemon",
+      "files": 1,
+      "loc": 18
+    },
+    {
+      "crate": "aidens-profile-desktop",
+      "files": 1,
+      "loc": 18
+    },
+    {
+      "crate": "aidens-profile-memory",
+      "files": 1,
+      "loc": 18
+    },
+    {
+      "crate": "aidens-profile-research",
+      "files": 1,
+      "loc": 18
+    }
+  ],
+  "crates": {
+    "aidens": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-agency-kit": true,
+        "aidens-app-kit": true,
+        "aidens-contracts": true,
+        "aidens-kernel-kit": true,
+        "aidens-profile-coding": true,
+        "aidens-runner": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens"
+    },
+    "aidens-agency-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-agency-kit"
+    },
+    "aidens-app-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-config": true,
+        "aidens-contracts": true,
+        "aidens-provider-kit": true,
+        "aidens-receipts": true,
+        "aidens-runner": true,
+        "aidens-tool-kit": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-app-kit"
+    },
+    "aidens-arbiter-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-arbiter-kit"
+    },
+    "aidens-boundary-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {
+        "aidens-testkit": true
+      },
+      "path": "crates/aidens-boundary-kit"
+    },
+    "aidens-budget-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-budget-kit"
+    },
+    "aidens-capability-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-capability-kit"
+    },
+    "aidens-cli": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-app-kit": true,
+        "aidens-boundary-kit": true,
+        "aidens-capability-kit": true,
+        "aidens-config": true,
+        "aidens-contracts": true,
+        "aidens-daemon-kit": true,
+        "aidens-memory-kit": true,
+        "aidens-permit-kit": true,
+        "aidens-provider-kit": true,
+        "aidens-receipts": true,
+        "aidens-tool-kit": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-cli"
+    },
+    "aidens-config": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {
+        "aidens-testkit": true
+      },
+      "path": "crates/aidens-config"
+    },
+    "aidens-contracts": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-contracts"
+    },
+    "aidens-daemon-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true,
+        "aidens-queue-kit": true,
+        "aidens-schedule-kit": true,
+        "aidens-wake-kit": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-daemon-kit"
+    },
+    "aidens-delegation-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-delegation-kit"
+    },
+    "aidens-governance-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-governance-kit"
+    },
+    "aidens-kernel-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-kernel-kit"
+    },
+    "aidens-memory-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-memory-kit"
+    },
+    "aidens-permit-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {
+        "aidens-testkit": true
+      },
+      "path": "crates/aidens-permit-kit"
+    },
+    "aidens-plan-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-plan-kit"
+    },
+    "aidens-profile-coding": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-profile-coding"
+    },
+    "aidens-profile-daemon": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-profile-daemon"
+    },
+    "aidens-profile-desktop": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-profile-desktop"
+    },
+    "aidens-profile-memory": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-profile-memory"
+    },
+    "aidens-profile-research": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-profile-research"
+    },
+    "aidens-provider-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {
+        "aidens-testkit": true
+      },
+      "path": "crates/aidens-provider-kit"
+    },
+    "aidens-queue-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-queue-kit"
+    },
+    "aidens-receipts": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {
+        "aidens-testkit": true
+      },
+      "path": "crates/aidens-receipts"
+    },
+    "aidens-repair-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-repair-kit"
+    },
+    "aidens-runner": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-agency-kit": true,
+        "aidens-boundary-kit": true,
+        "aidens-budget-kit": true,
+        "aidens-contracts": true,
+        "aidens-governance-kit": true,
+        "aidens-permit-kit": true,
+        "aidens-provider-kit": true,
+        "aidens-receipts": true,
+        "aidens-tool-kit": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-runner"
+    },
+    "aidens-schedule-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-schedule-kit"
+    },
+    "aidens-security-kit": {
+      "build_dependencies": {},
+      "dependencies": {},
+      "dev_dependencies": {},
+      "path": "crates/aidens-security-kit"
+    },
+    "aidens-testkit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-agency-kit": true,
+        "aidens-boundary-kit": true,
+        "aidens-budget-kit": true,
+        "aidens-cli": true,
+        "aidens-contracts": true,
+        "aidens-daemon-kit": true,
+        "aidens-governance-kit": true,
+        "aidens-kernel-kit": true,
+        "aidens-memory-kit": true,
+        "aidens-permit-kit": true,
+        "aidens-provider-kit": true,
+        "aidens-receipts": true,
+        "aidens-repair-kit": true,
+        "aidens-runner": true,
+        "aidens-tool-kit": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-testkit"
+    },
+    "aidens-tool-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-boundary-kit": true,
+        "aidens-contracts": true,
+        "aidens-permit-kit": true,
+        "aidens-security-kit": true
+      },
+      "dev_dependencies": {
+        "aidens-testkit": true
+      },
+      "path": "crates/aidens-tool-kit"
+    },
+    "aidens-wake-kit": {
+      "build_dependencies": {},
+      "dependencies": {
+        "aidens-contracts": true
+      },
+      "dev_dependencies": {},
+      "path": "crates/aidens-wake-kit"
+    }
+  },
+  "file_count": 1034,
+  "generated_at_utc": "2026-04-30T06:56:17Z",
+  "include_refs": 116,
+  "known_blockers": [
+    "evals/p20_agency_eval_cases.jsonl is missing but included by Rust test code and runtime-loaded by aidens-agency-kit tests",
+    "MANIFEST.txt names five absent paths; release archive integrity is false until restored or manifest regenerated",
+    "aidens-testkit has normal dependencies on production crates while production crates dev-depend on aidens-testkit; split pure reference testkit from integration tests",
+    "contract ownership inventory script reports canonical_types=0 when sibling canonical crates are absent; scanner must fail or mark results non-authoritative in that condition",
+    "Cargo/rustc unavailable in this environment; real workspace must run all cargo gates after package repair"
+  ],
+  "manifest_missing": [
+    "evals/p20_agency_eval_cases.jsonl",
+    "fixtures/runner/expected_event_log.ndjson",
+    "supporting/matrices/forbidden_leftovers.csv",
+    "supporting/matrices/phase_acceptance_gates.csv",
+    "supporting/matrices/source_of_truth_matrix.csv"
+  ],
+  "missing_include_refs": [
+    {
+      "literal": "../../../evals/p20_agency_eval_cases.jsonl",
+      "source": "crates/aidens-testkit/tests/phase_09_reference_hostile_tests.rs",
+      "target": "evals/p20_agency_eval_cases.jsonl"
+    }
+  ],
+  "root_dirs": [
+    ".cargo",
+    ".codex",
+    ".codex_evidence",
+    ".github",
+    "CODEX_PROMPTS",
+    "crates",
+    "docs",
+    "examples",
+    "fixtures",
+    "handoffs",
+    "passes",
+    "prompts",
+    "schemas",
+    "scripts",
+    "target",
+    "tasks",
+    "templates",
+    "tests"
+  ],
+  "rust_file_count": 54,
+  "rust_loc": 32134,
+  "rustc_available_in_this_environment": false,
+  "source_archive": "libraries-source-clean-20260430.zip"
+}

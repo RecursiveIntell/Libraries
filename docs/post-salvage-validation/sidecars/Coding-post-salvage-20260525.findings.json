@@ -1,0 +1,3092 @@
+{
+  "created_utc": "2026-05-25T17:08:34Z",
+  "error_count": 0,
+  "findings": [
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../Libraries/LLM-Pipeline",
+      "path": "Forge-Audit/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../forge-memory-bridge",
+      "path": "Libraries.BAK/semantic-memory/.semantic-memory-standalone/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../semantic-memory-forge",
+      "path": "Libraries.BAK/semantic-memory/.semantic-memory-standalone/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries.BAK/semantic-memory/.semantic-memory-standalone/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/AI-Batch-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/ComfyUI-RS/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../living-memory/living-memory",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/Tauri-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/agent-graph/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/attestation-exchange/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../forge-memory-bridge",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../recursive-kernel-core",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../semantic-memory-forge",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../forge-memory-bridge",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../knowledge-runtime",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../semantic-memory",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../semantic-memory-forge",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/discovery-portfolio/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/federated-settlement/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/job-queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../assurance-runtime",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../authority-delegation",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../continuity-runtime",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../verification-policy",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/remote-oracle-admission/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/spec-execution/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/AI-Batch-Queue",
+      "path": "Projects/StableMaster/s/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/ComfyUI-RS",
+      "path": "Projects/StableMaster/s/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/LLM-Pipeline",
+      "path": "Projects/StableMaster/s/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/Ollama-Vision-RS",
+      "path": "Projects/StableMaster/s/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/Tauri-Queue",
+      "path": "Projects/StableMaster/s/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/AI-Batch-Queue",
+      "path": "Projects/StableMaster/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/ComfyUI-RS",
+      "path": "Projects/StableMaster/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/LLM-Pipeline",
+      "path": "Projects/StableMaster/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/Ollama-Vision-RS",
+      "path": "Projects/StableMaster/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../../Libraries/Tauri-Queue",
+      "path": "Projects/StableMaster/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Utility Crates/AI-Batch-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Utility Crates/ComfyUI-RS/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../.parser-lib",
+      "path": "Utility Crates/Ollama-Vision-RS/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Utility Crates/Tauri-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Utility Crates/agent-graph/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Utility Crates/job-queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../Libraries/AI-Batch-Queue",
+      "path": "forge-workbench/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../Libraries/LLM-Pipeline",
+      "path": "forge-workbench/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../Libraries/Tauri-Queue",
+      "path": "forge-workbench/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../Libraries/LLM-Pipeline",
+      "path": "projmind/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/codex-client/tests/fixtures/test-ca.pem",
+      "path": "codex-openai/codex-rs/codex-client/src/custom_ca.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/codex-client/tests/fixtures/test-ca-trusted.pem",
+      "path": "codex-openai/codex-rs/codex-client/tests/ca_env.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/codex-client/tests/fixtures/test-ca.pem",
+      "path": "codex-openai/codex-rs/codex-client/tests/ca_env.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/codex-client/tests/fixtures/test-intermediate.pem",
+      "path": "codex-openai/codex-rs/codex-client/tests/ca_env.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/core/templates/review/exit_interrupted.xml",
+      "path": "codex-openai/codex-rs/core/src/client_common.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/core/templates/review/exit_success.xml",
+      "path": "codex-openai/codex-rs/core/src/client_common.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/execpolicy-legacy/src/default.policy",
+      "path": "codex-openai/codex-rs/execpolicy-legacy/src/lib.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/sandboxing/src/restricted_read_only_platform_defaults.sbpl",
+      "path": "codex-openai/codex-rs/sandboxing/src/seatbelt.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/sandboxing/src/seatbelt_base_policy.sbpl",
+      "path": "codex-openai/codex-rs/sandboxing/src/seatbelt.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/sandboxing/src/seatbelt_network_policy.sbpl",
+      "path": "codex-openai/codex-rs/sandboxing/src/seatbelt.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-include-ref-not-archived",
+      "detail": "include_str!/include_bytes! target exists but is not included in archive: codex-openai/codex-rs/tools/src/tool_apply_patch.lark",
+      "path": "codex-openai/codex-rs/tools/src/apply_patch_tool.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "script-ref-missing",
+      "detail": "Possible script reference not found: .codex/tools/auto_phase_runner.py",
+      "path": "Libraries/scr-runtime/scripts/run_completion_checks.sh",
+      "severity": "warning"
+    },
+    {
+      "code": "script-ref-missing",
+      "detail": "Possible script reference not found: deployment/health-check.py",
+      "path": "agent-forge/deployment/scripts/deploy-local.sh",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Agent/.env",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Cat Info App/.env",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Director/.env",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/gio/src/auto/credentials.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/gio/src/auto/unix_credentials_message.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/hyper-rustls/examples/sample.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/aia_test_cert.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/alt_name_cert.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/authority_key_identifier.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/cert.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/certs.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/certv3.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/cms.p12",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/corrupted-rsa.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/csr.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/dhparams.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/dsa.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/dsaparam.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/identity.p12",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/intermediate-ca.key",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/intermediate-ca.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/key.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/keystore-empty-chain.p12",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/leaf.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/nid_test_cert.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/nid_uid_test_cert.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/root-ca.key",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/root-ca.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/rsa-encrypted.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/openssl/test/rsa.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/ring/src/ec/suite_b/private_key.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/ring/src/rsa/signature_rsa_example_private_key.der",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/ring/tests/ecdsa_test_private_key_p256.p8",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/ring/tests/ed25519_test_private_key.bin",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/ring/tests/ed25519_test_private_key.p8",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/ring/tests/rsa_test_private_key_2048.p8",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/schannel/test/cert.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/schannel/test/identity.p12",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/schannel/test/key.key",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/schannel/test/key.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/schannel/test/key_invalid_header.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/schannel/test/key_no_end_header.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/schannel/test/key_no_headers.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/schannel/test/key_wrong_header.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/tokio-native-tls/examples/identity.p12",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/tokio-native-tls/tests/identity.p12",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/tokio-rustls/tests/certs/chain.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/tokio-rustls/tests/certs/end.key",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/tokio-rustls/tests/certs/root.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/tower-http/src/cors/allow_credentials.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/tower-http/src/follow_redirect/policy/filter_credentials.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/untrusted/mk/llvm-snapshot.gpg.key",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/web-sys/src/features/gen_Credential.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/webkit2gtk/src/auto/credential.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/webkit2gtk/src/credential.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/winapi-i686-pc-windows-gnu/lib/libwinapi_mincore-api-ms-win-security-credentials-l1-1-0.a",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/winapi-i686-pc-windows-gnu/lib/libwinapi_onecore-api-ms-win-security-credentials-l1-1-0.a",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/winapi-i686-pc-windows-gnu/lib/libwinapi_onecoreuap-api-ms-win-security-credentials-l1-1-0.a",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/winapi-x86_64-pc-windows-gnu/lib/libwinapi_mincore-api-ms-win-security-credentials-l1-1-0.a",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/winapi-x86_64-pc-windows-gnu/lib/libwinapi_onecore-api-ms-win-security-credentials-l1-1-0.a",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Gloss/src-tauri/vendor/crates/winapi-x86_64-pc-windows-gnu/lib/libwinapi_onecoreuap-api-ms-win-security-credentials-l1-1-0.a",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Kart/promptkart/backend/src/promptkart/util/secrets.py",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Libraries.BAK/docs/13_settings_persistence_and_secret_handling.md",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Libraries.BAK/libraries-source/docs/13_settings_persistence_and_secret_handling.md",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/docs/13_settings_persistence_and_secret_handling.md",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Medicine/backend/.env",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Phone/.buildozer/android/platform/python-for-android/.env",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Phone/webapp/.env.local",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "RecursiveOps/recursiveops/.secrets/jwt.secret",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Snap/.codex-runs/snap-prod-hardening/phase_reports/phase4_secret_scan.json",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Snap/.codex-runs/snap-prod-hardening/phase_reports/phase4_secret_scan_rerun.json",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Snap/.codex-runs/snap-prod-hardening/phase_reports/phase4_snap_secret_literal_check.json",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Snap/tools/snap_validation/scan_no_secret_literals.py",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "agent-forge/deployment/k8s/secrets.yaml",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "codex-openai/.npmrc",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "codex-openai/codex-rs/codex-client/tests/fixtures/test-ca-trusted.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "codex-openai/codex-rs/codex-client/tests/fixtures/test-ca.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "codex-openai/codex-rs/codex-client/tests/fixtures/test-intermediate.pem",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "forge-workbench/crates/forge-workbench-core/src/services/secret_store.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "forge-workbench/docs/13_settings_persistence_and_secret_handling.md",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "recursiveintell-web/.npmrc",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "stack-workbench/stack-workbench-codex-bundle/Libraries/docs/13_settings_persistence_and_secret_handling.md",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "website/.env",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "website/.npmrc",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "website/.settings.json",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/libraries-source/MASTER_ISSUE_MATRIX.csv on case-insensitive filesystems.",
+      "path": "Libraries.BAK/libraries-source/master_issue_matrix.csv",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/.gitignore on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/.gitignore",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/Cargo.lock on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/Cargo.lock",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/Cargo.toml on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/LICENSE on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/LICENSE",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/README.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/examples/basic_batch.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/examples/basic_batch.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/examples/eta_tracking.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/examples/eta_tracking.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/examples/model_optimization.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/examples/model_optimization.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/src/eta.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/src/eta.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/src/executor.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/src/executor.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/src/lib.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/src/lib.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/src/queue.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/src/queue.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/src/types.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/src/types.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/AI-Batch-Queue/tests/integration_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/AI-Batch-Queue/tests/integration_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/.gitignore on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/.gitignore",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/Cargo.lock on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/Cargo.lock",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/Cargo.toml on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/README.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/examples/progress_tracking.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/examples/progress_tracking.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/examples/simple_generation.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/examples/simple_generation.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/examples/workflow_builder.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/examples/workflow_builder.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/src/client.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/src/client.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/src/error.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/src/error.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/src/lib.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/src/lib.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/src/types.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/src/types.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/ComfyUI-RS/src/workflow.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/ComfyUI-RS/src/workflow.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/.gitignore on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/.gitignore",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/AGENTS.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/AGENTS.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/ARCHITECTURE.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/ARCHITECTURE.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/CLAUDE.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/CLAUDE.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/Cargo.lock on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/Cargo.lock",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/Cargo.toml on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/LICENSE on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/LICENSE",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/README.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/examples/basic_pipeline.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/examples/basic_pipeline.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/examples/context_injection.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/examples/context_injection.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/examples/payload_chain.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/examples/payload_chain.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/examples/streaming_pipeline.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/examples/streaming_pipeline.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/examples/thinking_mode.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/examples/thinking_mode.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/chain.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/chain.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/client.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/client.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/error.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/error.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/events.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/events.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/exec_ctx.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/exec_ctx.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/lib.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/lib.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/llm_call.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/llm_call.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/parsing.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/parsing.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/payload.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/payload.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/pipeline.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/pipeline.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/prompt.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/prompt.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/stage.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/stage.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/streaming.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/streaming.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/src/types.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/src/types.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/LLM-Pipeline/tests/integration_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/LLM-Pipeline/tests/integration_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/Cargo.lock on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/Cargo.lock",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/Cargo.toml on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/README.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/examples/caption_images.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/examples/caption_images.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/examples/tag_images.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/examples/tag_images.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/examples/thinking_mode.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/examples/thinking_mode.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/src/captioner.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/src/captioner.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/src/lib.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/src/lib.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/src/parser.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/src/parser.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/src/tagger.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/src/tagger.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Ollama-Vision-RS/src/types.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Ollama-Vision-RS/src/types.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/README.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/.gitignore on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/.gitignore",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/Cargo.lock on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/Cargo.lock",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/Cargo.toml on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/LICENSE on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/LICENSE",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/README.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/examples/basic_usage.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/examples/basic_usage.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/examples/with_cancellation.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/examples/with_cancellation.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/examples/with_cooldown.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/examples/with_cooldown.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/examples/with_persistence.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/examples/with_persistence.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/src/lib.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/src/lib.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/tests/integration_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/tests/integration_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-Queue/tests/test_helpers.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-Queue/tests/test_helpers.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/.gitignore on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/.gitignore",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/LICENSE on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/LICENSE",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/README.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/examples/demo-usage.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/examples/demo-usage.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/package-lock.json on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/package-lock.json",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/package.json on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/package.json",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/src/index.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/src/index.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/src/types.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/src/types.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/src/useBufferedStream.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/src/useBufferedStream.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/src/useTauriConfig.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/src/useTauriConfig.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/src/useTauriEvent.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/src/useTauriEvent.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/src/useTauriEvents.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/src/useTauriEvents.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/src/useTauriMutation.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/src/useTauriMutation.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/src/useTauriQuery.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/src/useTauriQuery.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/tsconfig.json on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/tsconfig.json",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/Tauri-React-Hooks/tsup.config.ts on case-insensitive filesystems.",
+      "path": "Libraries.bak/Tauri-React-Hooks/tsup.config.ts",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/AGENTS.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/AGENTS.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/ARCHITECTURE.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/ARCHITECTURE.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/CLAUDE.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/CLAUDE.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/Cargo.lock on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/Cargo.lock",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/Cargo.toml on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/LICENSE on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/LICENSE",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/README.md on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/benches/graph_bench.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/benches/graph_bench.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/basic.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/basic.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/checkpointing.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/checkpointing.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/conditional.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/conditional.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/human_in_loop.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/human_in_loop.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/loop_example.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/loop_example.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/map_reduce.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/map_reduce.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/parallel.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/parallel.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/pipeline_node.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/pipeline_node.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/reducers.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/reducers.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/research_agent.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/research_agent.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/retry.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/retry.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/streaming.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/streaming.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/subgraph.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/subgraph.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/examples/visualization.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/examples/visualization.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/checkpoint.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/checkpoint.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/checkpoint_store.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/checkpoint_store.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/checkpointer.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/checkpointer.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/command.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/command.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/config.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/config.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/edge.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/edge.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/error.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/error.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/event_sink.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/event_sink.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/executor.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/executor.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/graph.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/graph.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/interrupt.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/interrupt.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/join.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/join.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/lib.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/lib.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/node.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/node.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/outcome.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/outcome.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/payload.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/payload.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/prelude.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/prelude.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/reducer.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/reducer.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/retry.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/retry.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/router.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/router.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/state.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/state.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/src/stream.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/src/stream.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/checkpointer_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/checkpointer_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/execution_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/execution_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/integration_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/integration_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/interrupt_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/interrupt_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/parallel_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/parallel_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/reducer_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/reducer_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/retry_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/retry_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/routing_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/routing_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/runtime_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/runtime_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/state_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/state_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/streaming_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/streaming_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Libraries.BAK/agent-graph/tests/subgraph_tests.rs on case-insensitive filesystems.",
+      "path": "Libraries.bak/agent-graph/tests/subgraph_tests.rs",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with Recall-Coding/AGENTS.md on case-insensitive filesystems.",
+      "path": "Recall-Coding/agents.md",
+      "severity": "warning"
+    },
+    {
+      "code": "case-insensitive-path-collision",
+      "detail": "Path collides with forge-workbench/AGENTS.md on case-insensitive filesystems.",
+      "path": "forge-workbench/agents.md",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/_avif.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/_imaging.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/_imagingcms.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/_imagingft.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/_imagingmath.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/_imagingmorph.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/_imagingtk.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/_webp.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/PIL/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/_pytest/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/alembic/context.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/alembic/op.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/alembic/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/annotated_types/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/anyio/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/argon2/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/black/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/certifi/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/charset_normalizer/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/click/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/dns/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/dotenv/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/email_validator/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/fastapi/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/fontTools/misc/plistlib/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/h11/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/httpcore/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/httptools/parser/parser.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/httptools/parser/url_parser.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/httpx/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/idna/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/iniconfig/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/jinja2/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/limits/_version.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/limits/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/markupsafe/_speedups.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/markupsafe/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/packaging/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pathspec/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/cachecontrol/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/certifi/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/distlib.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/distro/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/idna/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/msgpack.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/packaging/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/pkg_resources.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/platformdirs/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/pygments.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/pyproject_hooks.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/requests.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/resolvelib/__init__.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/resolvelib/compat/collections_abc.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/resolvelib/providers.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/resolvelib/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/resolvelib/reporters.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/resolvelib/resolvers.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/resolvelib/structs.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/rich/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/tomli/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/truststore/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/typing_extensions.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/_vendor/urllib3.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pip/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pkg_resources/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/platformdirs/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pluggy/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pydantic/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pydantic/v1/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pydantic_core/_pydantic_core.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pydantic_core/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pydantic_settings/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pyotp/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pytest/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/pytest_asyncio/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/rsa/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/importlib_metadata/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/inflect/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/jaraco/collections/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/jaraco/functools/__init__.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/jaraco/functools/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/more_itertools/__init__.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/more_itertools/more.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/more_itertools/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/more_itertools/recipes.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/packaging/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/platformdirs/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/tomli/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/setuptools/_vendor/typeguard/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/slowapi/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/sniffio/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/sqlalchemy/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/starlette/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/urllib3/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/uvicorn/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/uvloop/loop.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/uvloop/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/watchfiles/_rust_notify.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/watchfiles/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/websockets/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/websockets/speedups.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/wrapt/__init__.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Medicine/backend/.venv311/lib/python3.11/site-packages/wrapt/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/Qt3DAnimation.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/Qt3DCore.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/Qt3DExtras.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/Qt3DInput.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/Qt3DLogic.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/Qt3DRender.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtBluetooth.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtCharts.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtConcurrent.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtCore.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtDBus.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtDataVisualization.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtDesigner.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtGraphs.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtGraphsWidgets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtGui.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtHelp.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtHttpServer.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtLocation.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtMultimedia.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtMultimediaWidgets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtNetwork.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtNetworkAuth.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtNfc.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtOpenGL.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtOpenGLWidgets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtPdf.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtPdfWidgets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtPositioning.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtPrintSupport.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtQml.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtQuick.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtQuick3D.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtQuickControls2.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtQuickTest.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtQuickWidgets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtRemoteObjects.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtScxml.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtSensors.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtSerialBus.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtSerialPort.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtSpatialAudio.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtSql.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtStateMachine.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtSvg.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtSvgWidgets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtTest.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtTextToSpeech.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtUiTools.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtWebChannel.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtWebEngineCore.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtWebEngineQuick.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtWebEngineWidgets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtWebSockets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtWebView.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtWidgets.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/QtXml.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/__feature__.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/PySide6/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/filelock/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/jinja2/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/markupsafe/_speedups.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/markupsafe/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/ninja/_version.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/ninja/ninja_syntax.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/ninja/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/packaging/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/cachecontrol/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/certifi/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/dependency_groups/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/distro/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/idna/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/packaging/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/platformdirs/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/pyproject_hooks/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/resolvelib/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/rich/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/tomli/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/tomli_w/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/_vendor/truststore/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pip/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkg_resources/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/__init__.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/bdist.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/commandline.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/develop.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/distribution.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/index.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/installed.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/sdist.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/utils.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pkginfo/wheel.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/platformdirs/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/pyproject_hooks/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/importlib_metadata/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/inflect/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/jaraco/collections/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/jaraco/functools/__init__.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/jaraco/functools/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/more_itertools/__init__.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/more_itertools/more.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/more_itertools/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/more_itertools/recipes.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/packaging/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/platformdirs/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/tomli/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/setuptools/_vendor/typeguard/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/shiboken6/Shiboken.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "Phone/.venv_android/lib/python3.11/site-packages/shiboken6/py.typed",
+      "severity": "warning"
+    }
+  ],
+  "root": "/home/sikmindz/Coding",
+  "warning_count": 514
+}

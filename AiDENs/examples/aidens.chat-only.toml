@@ -1,0 +1,17 @@
+app_id = "aidens-example-chat"
+profile_id = "chat-only"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "mock"
+model = "mock-chat"
+mock_response = "mock chat response from AiDENs"
+
+[receipts]
+store_root = "target/aidens-receipts/aidens-example-chat"
+
+[security]
+approval_mode = "require-side-effects"
+network_policy = "disabled"
+write_policy = "approval-required"

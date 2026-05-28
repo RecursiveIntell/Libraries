@@ -1,0 +1,86 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-24T01:20:35Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+      "bytes": 6290,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P3_ROLE_CATALOG_DUTY_SEGREGATION_AND_APPROVAL_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "da02bab8c17ebfe81b78ac3c2a2038cc34bab160f303fb14492ce3d843ceb0eb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/src/profile_p3_roles.rs",
+      "bytes": 2759,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/src/profile_p3_roles.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "947bc37be87fcbe35c9e6cb12469674b4ae57d81837d66e941c1a4d797cc6680"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/tests/profile_p3_example_roundtrip.rs",
+      "bytes": 1719,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/tests/profile_p3_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "3e0d86c2eb54086e7ddd959c8072f3338cc1c9c355fe78b719b956249f1dfc56"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/authority-delegation/tests/profile_p3_fixture_conformance.rs",
+      "bytes": 1411,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/authority-delegation/tests/profile_p3_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "ad061be3f5df25b5d0a955535fc0183b87a5ff32208ed4d5cd67267eaed893e1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/conformance/p3/README.md",
+      "bytes": 519,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p3/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "8a2b54292a2655a68838f6308401863267ffdeac6d18a76cd4f45817740019d6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/fixtures/p3/conflict_recusal_blocked.bundle.json",
+      "bytes": 2067,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p3/conflict_recusal_blocked.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "f66eb2f8cebd12d20bd501b664e010a9c63902e79af110314505880b5873a73d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/fixtures/p3/delegation_matrix_happy_path.bundle.json",
+      "bytes": 2140,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p3/delegation_matrix_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "998454da0de3f810d48a27eaaa42ec3bc56dab8dd4fc72c1eeaad8c0dc84f8cb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/repo_overlay/contracts/schemas/p3/manifest.json",
+      "bytes": 490,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p3/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "5639da9ab07e90fde8583ce40089baa0b2d3df36930a39d99ac8c9eb24e33fd1"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries2",
+  "run_id": "P3",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

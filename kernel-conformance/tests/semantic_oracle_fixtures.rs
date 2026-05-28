@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 //! SEM-001: Golden-fixture semantic oracle tests.
 //!
 //! These tests ensure that the highest-risk semantic seams produce

@@ -1,0 +1,108 @@
+{
+  "auto_injections_required": true,
+  "dry_run": true,
+  "errors": [],
+  "execute": false,
+  "finished_at": "2026-05-13T22:15:15.975041+00:00",
+  "manifest": ".codex/prompt_manifest.json",
+  "manual_injections_required": false,
+  "phases": [
+    {
+      "auto_injection": ".codex/auto_injections/phase_00_gate.md",
+      "commands": [],
+      "id": "phase_00",
+      "name": "current-state failure proof",
+      "prompt": ".codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "prompt_bytes": 746,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "required_commands": [
+        "python -m pytest -q || true",
+        "python scripts/validate_codex_pack.py || true"
+      ],
+      "status": "ok"
+    },
+    {
+      "auto_injection": ".codex/auto_injections/phase_01_gate.md",
+      "commands": [],
+      "id": "phase_01",
+      "name": "restore active Codex pack",
+      "prompt": ".codex/prompts/phase_01_restore_active_codex_pack.md",
+      "prompt_bytes": 686,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_01_restore_active_codex_pack.md",
+      "required_commands": [
+        "python scripts/assert_codex_active_pack.py"
+      ],
+      "status": "ok"
+    },
+    {
+      "auto_injection": ".codex/auto_injections/phase_02_gate.md",
+      "commands": [],
+      "id": "phase_02",
+      "name": "automated phase runner",
+      "prompt": ".codex/prompts/phase_02_auto_phase_runner.md",
+      "prompt_bytes": 732,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_02_auto_phase_runner.md",
+      "required_commands": [
+        "python .codex/tools/auto_phase_runner.py --dry-run --print-prompts --receipt .codex/runs/P0-completion/auto_phase_dry_run.json"
+      ],
+      "status": "ok"
+    },
+    {
+      "auto_injection": ".codex/auto_injections/phase_03_gate.md",
+      "commands": [],
+      "id": "phase_03",
+      "name": "packaging policy",
+      "prompt": ".codex/prompts/phase_03_packaging_policy.md",
+      "prompt_bytes": 1011,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_03_packaging_policy.md",
+      "required_commands": [
+        "python z.py --mode next-codex-context --no-archive-codex-runs --no-strict --output /tmp/claimledger-phase-03-packaging.zip && python scripts/assert_archive_includes_codex.py /tmp/claimledger-phase-03-packaging.zip && rm -f /tmp/claimledger-phase-03-packaging.zip"
+      ],
+      "status": "ok"
+    },
+    {
+      "auto_injection": ".codex/auto_injections/phase_04_gate.md",
+      "commands": [],
+      "id": "phase_04",
+      "name": "tests and release gates",
+      "prompt": ".codex/prompts/phase_04_tests_and_release_gates.md",
+      "prompt_bytes": 838,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "required_commands": [
+        "python -m pytest -q",
+        "bash scripts/run_all_checks.sh",
+        "python scripts/validate_codex_pack.py"
+      ],
+      "status": "ok"
+    },
+    {
+      "auto_injection": ".codex/auto_injections/phase_05_gate.md",
+      "commands": [],
+      "id": "phase_05",
+      "name": "fresh unzip certification",
+      "prompt": ".codex/prompts/phase_05_fresh_unzip_certification.md",
+      "prompt_bytes": 558,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_05_fresh_unzip_certification.md",
+      "required_commands": [
+        "bash scripts/run_completion_checks.sh"
+      ],
+      "status": "ok"
+    },
+    {
+      "auto_injection": ".codex/auto_injections/phase_06_gate.md",
+      "commands": [],
+      "id": "phase_06",
+      "name": "hostile audit handoff",
+      "prompt": ".codex/prompts/phase_06_hostile_audit_handoff.md",
+      "prompt_bytes": 569,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_06_hostile_audit_handoff.md",
+      "required_commands": [
+        "test -f docs/PASS_CL_P0_COMPLETION_AUTOMATED_PHASES.md"
+      ],
+      "status": "ok"
+    }
+  ],
+  "receipt_version": "AutoPhaseRunnerReceiptV1",
+  "started_at": "2026-05-13T22:15:15.974006+00:00",
+  "status": "ok"
+}

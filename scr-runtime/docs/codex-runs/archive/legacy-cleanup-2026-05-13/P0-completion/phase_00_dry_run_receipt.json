@@ -1,0 +1,28 @@
+{
+  "auto_injections_required": true,
+  "dry_run": true,
+  "errors": [],
+  "execute": false,
+  "finished_at": "2026-05-13T22:15:16.026339+00:00",
+  "manifest": ".codex/prompt_manifest.json",
+  "manual_injections_required": false,
+  "phases": [
+    {
+      "auto_injection": ".codex/auto_injections/phase_00_gate.md",
+      "commands": [],
+      "id": "phase_00",
+      "name": "current-state failure proof",
+      "prompt": ".codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "prompt_bytes": 746,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_00_current_state_and_failure_proof.md",
+      "required_commands": [
+        "python -m pytest -q || true",
+        "python scripts/validate_codex_pack.py || true"
+      ],
+      "status": "ok"
+    }
+  ],
+  "receipt_version": "AutoPhaseRunnerReceiptV1",
+  "started_at": "2026-05-13T22:15:16.026050+00:00",
+  "status": "ok"
+}

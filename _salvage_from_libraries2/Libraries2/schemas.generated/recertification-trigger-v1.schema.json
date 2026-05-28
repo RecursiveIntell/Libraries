@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "deployment_profile_id": {
+      "type": "string"
+    },
+    "recertification_trigger_id": {
+      "type": "string"
+    },
+    "required_action": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "trigger_kind": {
+      "type": "string"
+    },
+    "triggered_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "deployment_profile_id",
+    "recertification_trigger_id",
+    "required_action",
+    "schema_version",
+    "trigger_kind",
+    "triggered_at"
+  ],
+  "title": "RecertificationTriggerV1",
+  "type": "object"
+}

@@ -1,0 +1,8 @@
+## generated schema path scan for forbidden canonical families
+path_scan_exit_status=1
+
+## generated schema content scan for stale canonical/digest-law schema markers
+content_scan_exit_status=1
+
+## manifest family forbidden scan
+forbidden_manifest_family_hits=0

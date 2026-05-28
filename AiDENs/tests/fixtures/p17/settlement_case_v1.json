@@ -1,0 +1,20 @@
+{
+  "case_id": "settlement-case:fixture",
+  "kind": "settlement-case",
+  "local_claim_id": "claim:local-fixture",
+  "remote_subject_artifact_id": "claim:remote-fixture",
+  "remote_envelope_id": "attestation-envelope:fixture",
+  "admission_decision_id": "admission-decision:fixture",
+  "treaty_id": "treaty:fixture",
+  "shared_disposition_id": "shared-disposition:fixture",
+  "state": "settled",
+  "local_authority_preserved": true,
+  "direct_overwrite_prevented": true,
+  "reason_codes": [
+    "local-truth-not-overwritten",
+    "remote-contradiction-opened-settlement-case",
+    "settlement-disposition-recorded"
+  ],
+  "opened_at": "2026-04-27T00:00:04Z",
+  "resolved_at": "2026-04-27T00:00:05Z"
+}

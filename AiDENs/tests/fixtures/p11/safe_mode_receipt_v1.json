@@ -1,0 +1,15 @@
+{
+  "receipt_id": "safe-mode:fixture",
+  "kind": "safe-mode",
+  "namespace_id": "daemon-namespace:fixture",
+  "operation": "entered",
+  "enabled": true,
+  "affected_job_id": null,
+  "new_risky_jobs_blocked": true,
+  "inspection_allowed": true,
+  "drain_allowed": true,
+  "reason_codes": [
+    "operator-safe-mode"
+  ],
+  "recorded_at": "2026-04-27T00:00:00Z"
+}

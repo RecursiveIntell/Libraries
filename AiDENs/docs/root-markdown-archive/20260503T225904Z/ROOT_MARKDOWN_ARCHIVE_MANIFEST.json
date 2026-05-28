@@ -1,0 +1,18 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225904Z",
+  "collisions": [],
+  "created_utc": "2026-05-03T22:59:04Z",
+  "current_run": "P25",
+  "errors": [],
+  "files": [],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "root_markdown_archive_manifest_version": "RootMarkdownArchiveManifestV1",
+  "summary": {
+    "ambiguous_count": 64,
+    "candidate_count": 0,
+    "inspected_count": 69,
+    "protected_count": 5
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25"
+}

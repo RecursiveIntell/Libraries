@@ -1,0 +1,213 @@
+./ARTIFACT_SCHEMA_REGISTRY.md:41:| `CanonicalDigestV1` | P06 | `aidens-contracts` | SHA-256 digest over deterministic canonical JSON or explicit text canonicalization | no non-cryptographic digest for evidence-bearing content |
+./CODEX_PHASE_MANIFEST.yaml:52:      - scripts/assert_no_local_canonical_digest_law.sh
+./CANONICAL_OWNER_MAP.md:8:| Digests / canonical content hashing | stack-ids | stack-ids/src/digest.rs | ~/Coding/Libraries/stack-ids/src/digest.rs:L1-L18 and L33-L73 | call ContentDigest/DigestBuilder | use local SHA256 canonical digest for canonical artifacts | remove CanonicalDigestV1 if it models stack digest semantics | canonical_id_roundtrip; assert_no_shadow_truth |
+./CANONICAL_OWNER_MAP.csv:3:Digests / canonical content hashing,stack-ids,stack-ids/src/digest.rs,~/Coding/Libraries/stack-ids/src/digest.rs:L1-L18 and L33-L73,call ContentDigest/DigestBuilder,use local SHA256 canonical digest for canonical artifacts,remove/compat-isolate CanonicalDigestV1 if it models stack digest semantics,canonical_id_roundtrip; assert_no_shadow_truth
+./tasks/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.json:18:    "CanonicalDigestV1",
+./handoffs/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.md:37:- Contract constructor and golden-fixture tests for `BoundaryCompileRequestV1`, `BoundaryCompileOutcomeV1`, `SchemaValidationReceiptV1`, `JsonRepairReceiptV2`, `CanonicalDigestV1`, and `DuplicateKeyFindingV1`.
+./CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md:10:   - `stable_json_digest`
+./CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md:11:   - `stable_text_digest`
+./CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md:12:   - `deterministic_artifact_id`
+./CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md:13:   - `canonical_json_string`
+./CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md:14:   - `CanonicalDigestV1`
+./CODEX_PROMPTS/PHASE_04_DIGEST_IDENTITY_COLLAPSE.md:25:bash scripts/assert_no_local_canonical_digest_law.sh
+./schemas/boundary-compile-outcome/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/boundary-compile-outcome/v1.schema.json:149:        "after_canonical_digest": {
+./schemas/boundary-compile-outcome/v1.schema.json:152:              "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/boundary-compile-outcome/v1.schema.json:165:        "before_canonical_digest": {
+./schemas/boundary-compile-outcome/v1.schema.json:168:              "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/boundary-compile-outcome/v1.schema.json:253:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/boundary-compile-outcome/v1.schema.json:276:              "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/boundary-compile-outcome/v1.schema.json:307:    "canonical_digest": {
+./schemas/boundary-compile-outcome/v1.schema.json:310:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/generated_schema_manifest_v1.json:4:  "registry_digest": "sha256:7eabcae7510265c56855af1f9b6a64de2c75133d7cbd66ece7e300cce0d20b3d",
+./schemas/generated_schema_manifest_v1.json:11:      "schema_digest": "sha256:a87eba18efd3c3f4340265c65bc75e65031dbbdbd86279d15f911802d81e1e51"
+./schemas/generated_schema_manifest_v1.json:18:      "schema_digest": "sha256:8696c6cab761b5a8c776ce81c18a87ed1326ad533fbea9925492300120273d05"
+./schemas/generated_schema_manifest_v1.json:25:      "schema_digest": "sha256:65bc75f5df1ff2cc749f831f12f1ba5eef988677d4302568b922fb7f1ab13b49"
+./schemas/generated_schema_manifest_v1.json:32:      "schema_digest": "sha256:47c09f7d65becb9ddf8333ec5671ec73bc955aec0fe8b41f249ec0b5e367e4b4"
+./schemas/generated_schema_manifest_v1.json:39:      "schema_digest": "sha256:4f0dd222bc380ab2ece64c3122c4698fb88a4c1cb6d12c5ec6117da0921a7d5f"
+./schemas/generated_schema_manifest_v1.json:46:      "schema_digest": "sha256:1cf5fbcdb8d81305a97164a636733e60e777aa8c98813fe03c92d6c809f9c220"
+./schemas/generated_schema_manifest_v1.json:53:      "schema_digest": "sha256:fd1b435e0b0ded63e05495614c894b813cb1fbef687fd84674cc036c81579c89"
+./schemas/generated_schema_manifest_v1.json:60:      "schema_digest": "sha256:35c1eb411abc1fa034e2501585664c7be5a48dd3751c7ac22d313714e346b550"
+./schemas/generated_schema_manifest_v1.json:67:      "schema_digest": "sha256:dc6ed40a612f662836dec0fda21eeecf34d73449f3fd2bfcdc12974405b75779"
+./schemas/generated_schema_manifest_v1.json:74:      "schema_digest": "sha256:8cd6d2506f2dca4d8c66eee9e0d9a35d009bb9397abdcea9adc2ddfc41fc5bb3"
+./schemas/generated_schema_manifest_v1.json:79:      "rust_type": "CanonicalDigestV1",
+./schemas/generated_schema_manifest_v1.json:81:      "schema_digest": "sha256:17d9a3d56aa97c3491ab52b09cb735bcf1d455f507830e05b9a3ffd67447ba88"
+./schemas/generated_schema_manifest_v1.json:88:      "schema_digest": "sha256:7433fb56cf6b5412d100cd0d389fc74b9149891615af7cd03674fbf32e534853"
+./schemas/generated_schema_manifest_v1.json:95:      "schema_digest": "sha256:e3974bb393c1f8d6763628a7cd4af47ac72a07018c9b72355d5d34ebf09301b0"
+./schemas/generated_schema_manifest_v1.json:102:      "schema_digest": "sha256:d0974564b16f3934b4992bbaa5cecd5a09fb74a029213711977239ed7687d127"
+./schemas/generated_schema_manifest_v1.json:109:      "schema_digest": "sha256:81fdd8ed1eaa6c612a7d4de6bd8d5e937108510c5fd848d7f26b8a527212f71c"
+./schemas/generated_schema_manifest_v1.json:116:      "schema_digest": "sha256:1af163fc657103ea8fe5654b0273197aacf6457d605b206ea5404de99eb4d2c7"
+./schemas/generated_schema_manifest_v1.json:123:      "schema_digest": "sha256:1a90a91eb6b73ce9bbe6346e7039725b5bf98e30e71db3a7ebec2e95e37cb424"
+./schemas/generated_schema_manifest_v1.json:130:      "schema_digest": "sha256:a8a28bf7305d2b9e4f7924f72745550d59eebbc664c5438f27501eb7b1a5c81f"
+./schemas/generated_schema_manifest_v1.json:137:      "schema_digest": "sha256:c8cf4b03bf65cb6cf0287581b379d7d94d97b590d4a9d4bc9b87cded3b30822d"
+./schemas/generated_schema_manifest_v1.json:144:      "schema_digest": "sha256:5da9ab6c235047c39184dd2de7d0964c56de5e9335194dcfb8422ff7eae2bf70"
+./schemas/generated_schema_manifest_v1.json:151:      "schema_digest": "sha256:23fe35e57a61bccb27f947a7ffee123fb8e87dfa620d238014edc9b9f91a44ad"
+./schemas/generated_schema_manifest_v1.json:158:      "schema_digest": "sha256:6cbecd023b760e52a42328421c5e05ac13be0182546cd0b86d2d1bd7f6464aa2"
+./schemas/generated_schema_manifest_v1.json:165:      "schema_digest": "sha256:f3029cee8728b9fcca9316a117515186941ccc7ca54758a07c9f42d9a1550ea1"
+./schemas/generated_schema_manifest_v1.json:172:      "schema_digest": "sha256:96521c484d01ab522ca1078b1fd6b9e07096d1ee0efa8b16cda49487eae9d0b6"
+./schemas/generated_schema_manifest_v1.json:179:      "schema_digest": "sha256:3aed509049957f8d6411eb69b8a75c31668422117e5dc9ff577eb1a3b93466c3"
+./schemas/generated_schema_manifest_v1.json:186:      "schema_digest": "sha256:2ebc10d617acd15bdba7d6a64b621a88b585fa77e8fe877f0e4033097bd92c4a"
+./schemas/generated_schema_manifest_v1.json:193:      "schema_digest": "sha256:78ca0a177241565173b98348e33a6fbd42be73d016486b8a90e05c1c5c7ba6ca"
+./schemas/generated_schema_manifest_v1.json:200:      "schema_digest": "sha256:3c055180cd408cf8c10f179b958aae6b81f0776308e05f104944a3838403f423"
+./schemas/generated_schema_manifest_v1.json:207:      "schema_digest": "sha256:d96e937ecb6dfe9be68b9580a44a17db801ea7a0720d965fa04346177ab8c79e"
+./schemas/generated_schema_manifest_v1.json:214:      "schema_digest": "sha256:67a20fc809e27f40d6f2e026bf63728c17169158ed76eb2201c04368ad94cc5a"
+./schemas/generated_schema_manifest_v1.json:221:      "schema_digest": "sha256:e5a27668f71678b9e47d1ae52158a9c84f6fc80e731d71f921bbf3d2489ed846"
+./schemas/generated_schema_manifest_v1.json:228:      "schema_digest": "sha256:240f17cfc84ed5e4123b386c5c5305f44e4d1b50cbf170800412e8badd3ffb8d"
+./schemas/generated_schema_manifest_v1.json:235:      "schema_digest": "sha256:97ab254083959e15f9e4a26940dd98fbc1ee9d069be66f13a0f79b72efd82fc7"
+./schemas/generated_schema_manifest_v1.json:242:      "schema_digest": "sha256:b965684ac0599f6410a9a3832c8b262431af1793de4cef345617a80879603de8"
+./schemas/generated_schema_manifest_v1.json:249:      "schema_digest": "sha256:4c46c068694ded03058ce01a97b912f3fc59d1da103b74214a1d09e3ac186040"
+./schemas/generated_schema_manifest_v1.json:256:      "schema_digest": "sha256:7c3e736e2ee56c02daf1763ec2edc8a9f2f54fac13134fcae4a32640a98a6575"
+./schemas/generated_schema_manifest_v1.json:263:      "schema_digest": "sha256:34d2f382bb8815b2fcc333669a762ed6b3d0bcea0de2401ee4b3b8cd3f862ca9"
+./schemas/generated_schema_manifest_v1.json:270:      "schema_digest": "sha256:1bdf7c90c215cd0c61fab4e8c8edfa9285ad4eff763f66dce429e2014d3060a2"
+./schemas/generated_schema_manifest_v1.json:277:      "schema_digest": "sha256:6d0a3811a2de91c336abc012cf1f4031002c85be9bd4159c4dccd8758343dfc2"
+./schemas/generated_schema_manifest_v1.json:284:      "schema_digest": "sha256:cc73ebf5c710552883dfc4c056ea14cd0bf8bf9ccb102588d085fa8e4b14f699"
+./schemas/generated_schema_manifest_v1.json:291:      "schema_digest": "sha256:783788956b82d8cff7c8f9f9cd0909e8474955f069bc47505f1fc4d3216fea8a"
+./schemas/generated_schema_manifest_v1.json:298:      "schema_digest": "sha256:5bd0e90250c41ad0fc6edda87739850ab0df5d6f83d06be34370b9354950c1f3"
+./schemas/generated_schema_manifest_v1.json:305:      "schema_digest": "sha256:e264c44eaafb7c6deb8415202a69074ad4241e3396a34aec1ef76c526bf03dc8"
+./schemas/generated_schema_manifest_v1.json:312:      "schema_digest": "sha256:ad7b55bfd8e6f7c8a0cfcd75baa38ee287f594c209722f949864c17e78b749ed"
+./schemas/generated_schema_manifest_v1.json:319:      "schema_digest": "sha256:ceef5fc4ec7fcfea227cd689b10a3c38afcda0050ea183de366fdb3911fde2d4"
+./schemas/generated_schema_manifest_v1.json:326:      "schema_digest": "sha256:d8b5f50346be12b29b51a8bdf9b084759533c33d7ada1bc86a1e3b26910ec2c6"
+./schemas/generated_schema_manifest_v1.json:333:      "schema_digest": "sha256:36a73cf803ffaf2cb23b9c6b2daaad0cf25bb2bd13359133ce3ae0449f69f8d5"
+./schemas/generated_schema_manifest_v1.json:340:      "schema_digest": "sha256:9c3b91c82028d86fdcf899e18bd39bbed447b416b414e9d82941e24549b02061"
+./schemas/generated_schema_manifest_v1.json:347:      "schema_digest": "sha256:ff89681ac9fe7195d70af08038515dd24650e96332c112d52122c50636d1b1ae"
+./schemas/generated_schema_manifest_v1.json:354:      "schema_digest": "sha256:363e16818450a2a0ef08680629252b5a8e6e28a670275fe2bd292b6e348618b2"
+./schemas/generated_schema_manifest_v1.json:361:      "schema_digest": "sha256:ca1e9474efc710203195d6f8ff41a51fe2da87b8626a7d7042615e73f174bd55"
+./schemas/generated_schema_manifest_v1.json:368:      "schema_digest": "sha256:6ce35565d13b3378d0dae6490cb9ebdb144e436b868a469cb860f05a673b009b"
+./schemas/generated_schema_manifest_v1.json:375:      "schema_digest": "sha256:1a9cbb1d3d030e1b4aecc1614cef5f8714ed1bb4d02ef3d9339503a88fd464b7"
+./schemas/generated_schema_manifest_v1.json:382:      "schema_digest": "sha256:a662991f385931e39290c0bec3a611980b6d6ca475eae85c9f4cddfdc201b0e9"
+./schemas/generated_schema_manifest_v1.json:389:      "schema_digest": "sha256:65f18381448ffb6c6eb4c38c9264a7be489ed4a628be46d43023792d0bcc05ac"
+./schemas/generated_schema_manifest_v1.json:396:      "schema_digest": "sha256:3f63b0d541a2a45ba6189638d95541f56b7fe8dbcb4c977c70de99371478be4c"
+./schemas/generated_schema_manifest_v1.json:403:      "schema_digest": "sha256:a6c54f4171d2bfe562cfa88844d156543bcaaf5665fa930d65a62e1ac2e28f2b"
+./schemas/generated_schema_manifest_v1.json:410:      "schema_digest": "sha256:e593e0d66f16458369b0b280ce52b9223e4cad3e50f6e90e16fbdd79df5f9c02"
+./schemas/generated_schema_manifest_v1.json:417:      "schema_digest": "sha256:86d481e5120f6c134e9bc836cd9511c1cbf3215e462fde52cb6f12f031e8503a"
+./schemas/generated_schema_manifest_v1.json:424:      "schema_digest": "sha256:42858f7bbeb85bedb8a108ee79f07a895f512f2a4de12586ab2dacf61535a636"
+./schemas/generated_schema_manifest_v1.json:431:      "schema_digest": "sha256:6758c2d8907e7421011144faf6f9bf12b69fb0a3f6412cf56851623804acff7a"
+./schemas/generated_schema_manifest_v1.json:438:      "schema_digest": "sha256:20861039d4b7830c8a2b052068267babb673cf3abface7239fdd217dfe193e39"
+./schemas/generated_schema_manifest_v1.json:445:      "schema_digest": "sha256:93aaf733cd705de22120130b4430a682bd0c620b9c894c406fe37269aa6a8376"
+./schemas/generated_schema_manifest_v1.json:452:      "schema_digest": "sha256:270b1ae8bae1c34358558175838c940d90d8ea2a749e6e08477d056fc930cec5"
+./schemas/generated_schema_manifest_v1.json:459:      "schema_digest": "sha256:696adc5980630d3becdc15637859b44dd54705f49d783040bb93884f0a6e93a4"
+./schemas/generated_schema_manifest_v1.json:466:      "schema_digest": "sha256:075e0562879c88764ab998392659779a409e44965f410fa51ae8286906701b3e"
+./schemas/generated_schema_manifest_v1.json:473:      "schema_digest": "sha256:7e87cddac1a21aee826bd84e26adbfc38cd4111bf49ac8fea4617e51c0be32be"
+./schemas/generated_schema_manifest_v1.json:480:      "schema_digest": "sha256:3db5b5cd4139a115faadb8ceab3a7712ff84f457c51d94772d7c66fd97ba6899"
+./schemas/generated_schema_manifest_v1.json:487:      "schema_digest": "sha256:195e6445e968aa28401ef9786b749c3ee931ac943277da43f63c7d42d250e7d1"
+./schemas/generated_schema_manifest_v1.json:494:      "schema_digest": "sha256:e136c76fb9b6f320ebaf670f89816e4fa5aaee264bf5918d5d3eb30c0b581ad3"
+./schemas/generated_schema_manifest_v1.json:501:      "schema_digest": "sha256:ca9f10d94598f714b87c4e6fb532a2d6d1360f0e60fb25936010911e646eb522"
+./schemas/generated_schema_manifest_v1.json:508:      "schema_digest": "sha256:6ef7ffbb88b786bca454329bb7ec7fc11924f1951d513b1ca21b5f6c2105a2c2"
+./schemas/generated_schema_manifest_v1.json:515:      "schema_digest": "sha256:b1c0ead8550157db00a1ce676fe447372ceeac74e2993e469620969773fff4cd"
+./schemas/generated_schema_manifest_v1.json:522:      "schema_digest": "sha256:89ca9d4dbd26c6dce4be818ef188b9933c22a34bcfb7f6e7da749bdfcb5c7448"
+./schemas/generated_schema_manifest_v1.json:529:      "schema_digest": "sha256:c43cb9a4b89d2f269b820406259c8c65401239d310ea71cbd04600c7dcf02ce6"
+./schemas/generated_schema_manifest_v1.json:536:      "schema_digest": "sha256:3a818a207d05d391052913b53d392da2011e4d81682e4d42d92a375d748b006c"
+./schemas/generated_schema_manifest_v1.json:543:      "schema_digest": "sha256:76bd2005327cd04229f54b0fd6356e1dcb7d482d19c02791c43353166c83ad1d"
+./schemas/generated_schema_manifest_v1.json:550:      "schema_digest": "sha256:73dab8b7eebc0ff4aa965af5b5299bd627126b575538dff860d6b31c5270d108"
+./schemas/generated_schema_manifest_v1.json:557:      "schema_digest": "sha256:abec0c7bc5dd6eb5bbed8b5e366a2d452399fa055de265298230e800f6939874"
+./schemas/generated_schema_manifest_v1.json:564:      "schema_digest": "sha256:2ef243dd9bc0d1a9a7b5447959a309b90b94d45a90c2e008c870f3c0f77c40b6"
+./schemas/generated_schema_manifest_v1.json:571:      "schema_digest": "sha256:0568263917fc492a119e126ce6dc7afbddac3acdaa7487a1c0289a75cc927d9d"
+./schemas/generated_schema_manifest_v1.json:578:      "schema_digest": "sha256:b8963089f609b79b3c6b1ddd848a4e76b9ccbb0c1bc3e747b289358da979c41a"
+./schemas/generated_schema_manifest_v1.json:585:      "schema_digest": "sha256:0433ed156852f7ce3f31a881b97c60e23ca5ae882a3ea383e3ed3b7d6bfbc62c"
+./schemas/generated_schema_manifest_v1.json:592:      "schema_digest": "sha256:303b4a7cd4992e1d71d4c0229b15961b593d41f74fbec80a39a05f7ace7f927a"
+./schemas/generated_schema_manifest_v1.json:599:      "schema_digest": "sha256:e4dea617a55db32afb49b7a63363945193cd11dd990f1fd94827912f2bc22192"
+./schemas/generated_schema_manifest_v1.json:606:      "schema_digest": "sha256:bd2e4f90d1a841e189d5ae91a4ad2ca6a5675f2481471f9f9634c252b8a5ed4b"
+./schemas/generated_schema_manifest_v1.json:613:      "schema_digest": "sha256:7c6b945d5a6b2d075a42d73bba137d57b4a51a8b0d7094d60bbf2da49f013508"
+./schemas/generated_schema_manifest_v1.json:620:      "schema_digest": "sha256:ed862035218ab8e9838159fc95d7806e4883d2ce02899a03828b1d3b5c06a71d"
+./schemas/generated_schema_manifest_v1.json:627:      "schema_digest": "sha256:ed1a4c408fdb91244865cce89882e4fef7510bd1c4fb7856e52dd2a6c9d653df"
+./schemas/generated_schema_manifest_v1.json:634:      "schema_digest": "sha256:1d23eadbb3802d9691f81beb908c7e1acd02b38124d03f59d95b7a17b75d62ac"
+./schemas/generated_schema_manifest_v1.json:641:      "schema_digest": "sha256:49ebadb8f53bd0c502efa05cb97ea68347e43c3197e154f0d3c67f6ca336f411"
+./schemas/generated_schema_manifest_v1.json:648:      "schema_digest": "sha256:fe5ac39a5553d867b355c8dbb066f41776bdce06f329dcb1bbc12414e90f4f8d"
+./schemas/generated_schema_manifest_v1.json:655:      "schema_digest": "sha256:f1fc4810f3c39a79ebb972e19bc5fd37f197d382c65e7c05c93b1c50c51fa330"
+./schemas/generated_schema_manifest_v1.json:662:      "schema_digest": "sha256:a72cd5d9dab9f9bee2c8ccf6b7d94e039933dcda9752f29bc2384ae2d986a76c"
+./schemas/generated_schema_manifest_v1.json:669:      "schema_digest": "sha256:408d362d2f2e4eb37e070d1a96ee795d471d3ceae8dafb3ecbfb5bba49c3c980"
+./schemas/generated_schema_manifest_v1.json:676:      "schema_digest": "sha256:43fdbfbc07d95c4546d689acba6484f4c1bc225596f743a3b38cdbf9acbf333a"
+./schemas/generated_schema_manifest_v1.json:683:      "schema_digest": "sha256:998211cb271af7a3b2c870b323af95fcc77495c2cfb5057215b741e5662c671d"
+./schemas/generated_schema_manifest_v1.json:690:      "schema_digest": "sha256:2740dfc5f8756cd2a3c30ffafd51bb7ec89eb21a37fecfdc74d88b7f033eed35"
+./schemas/generated_schema_manifest_v1.json:697:      "schema_digest": "sha256:626adb76b02e83aecdc1faaca1cd8eefce37a9a714ff15abfce2709da8723edc"
+./schemas/generated_schema_manifest_v1.json:704:      "schema_digest": "sha256:0bf117ea0820c827e008b7c9ad659ba47cb830891241f64175014fac0573b040"
+./schemas/json-repair-receipt/v2.schema.json:87:    "CanonicalDigestV1": {
+./schemas/json-repair-receipt/v2.schema.json:108:    "after_canonical_digest": {
+./schemas/json-repair-receipt/v2.schema.json:111:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/json-repair-receipt/v2.schema.json:124:    "before_canonical_digest": {
+./schemas/json-repair-receipt/v2.schema.json:127:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/execution_lineage_graph_v1.sketch.json:9:      "content_digest": "sha256:..."
+./schemas/poison_receipt_record_v1.sketch.json:6:  "raw_digest": "sha256:...",
+./schemas/core_artifact_header_v1.sketch.json:6:  "content_digest": "sha256:...",
+./schemas/core_artifact_header_v1.sketch.json:18:  "schema_digest": "sha256:...",
+./schemas/simulator-contract/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/simulator-contract/v1.schema.json:145:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/canonical-digest/v1.schema.json:19:  "title": "CanonicalDigestV1",
+./schemas/mechanism-bundle/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/mechanism-bundle/v1.schema.json:171:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/mechanism-bundle/v1.schema.json:205:      "$ref": "#/definitions/CanonicalDigestV1"
+./prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md:24:- `CanonicalDigestV1`
+./schemas/fit-run-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/fit-run-receipt/v1.schema.json:123:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/fit-run-receipt/v1.schema.json:142:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/fit-run-receipt/v1.schema.json:145:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/repo-read-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/repo-read-receipt/v1.schema.json:117:      "$ref": "#/definitions/CanonicalDigestV1"
+./passes/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.md:32:- `CanonicalDigestV1`
+./schemas/repo-list-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/repo-list-receipt/v1.schema.json:148:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/remote-oracle-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/remote-oracle-receipt/v1.schema.json:144:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/patch-proposal/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/patch-proposal/v1.schema.json:109:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/attestation-envelope/v1.schema.json:98:    "CanonicalDigestV1": {
+./schemas/attestation-envelope/v1.schema.json:173:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/run-receipt/v1.schema.json:331:    "CanonicalDigestV1": {
+./schemas/run-receipt/v1.schema.json:352:        "after_canonical_digest": {
+./schemas/run-receipt/v1.schema.json:355:              "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/run-receipt/v1.schema.json:368:        "before_canonical_digest": {
+./schemas/run-receipt/v1.schema.json:371:              "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/run-receipt/v1.schema.json:636:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/run-receipt/v1.schema.json:659:              "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/schema-validation-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/schema-validation-receipt/v1.schema.json:125:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/schema-validation-receipt/v1.schema.json:148:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/admission-decision/v1.schema.json:97:    "CanonicalDigestV1": {
+./schemas/admission-decision/v1.schema.json:165:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/patch-apply-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/patch-apply-receipt/v1.schema.json:110:        "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/patch-apply-receipt/v1.schema.json:123:        "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/patch-apply-receipt/v1.schema.json:128:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/command-run-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/command-run-receipt/v1.schema.json:165:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/command-run-receipt/v1.schema.json:173:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/codex-packet/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/codex-packet/v1.schema.json:165:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/codex-packet/v1.schema.json:173:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/history-preservation-report/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/history-preservation-report/v1.schema.json:120:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/history-preservation-report/v1.schema.json:126:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/projection-digest/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/projection-digest/v1.schema.json:125:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/view-disclosure-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/view-disclosure-receipt/v1.schema.json:113:          "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/compaction-receipt/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/compaction-receipt/v1.schema.json:121:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/compaction-receipt/v1.schema.json:130:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/oracle-slice-request/v1.schema.json:87:    "CanonicalDigestV1": {
+./schemas/oracle-slice-request/v1.schema.json:119:      "$ref": "#/definitions/CanonicalDigestV1"
+./schemas/oracle-slice-request/v1.schema.json:140:      "$ref": "#/definitions/CanonicalDigestV1"
+./scripts/phase_verify_contract_ownership.sh:94:    run_gate assert_no_local_canonical_digest_law bash scripts/assert_no_local_canonical_digest_law.sh
+./scripts/phase_verify_contract_ownership.sh:107:    run_gate assert_no_local_canonical_digest_law bash scripts/assert_no_local_canonical_digest_law.sh
+./scripts/assert_no_local_canonical_digest_law.sh:13:  'pub fn stable_json_digest' \
+./scripts/assert_no_local_canonical_digest_law.sh:14:  'pub fn stable_text_digest' \
+./scripts/assert_no_local_canonical_digest_law.sh:15:  'pub fn deterministic_artifact_id' \
+./scripts/assert_no_local_canonical_digest_law.sh:16:  'pub struct CanonicalDigestV1' \
+./scripts/assert_no_local_canonical_digest_law.sh:17:  'pub enum CanonicalDigestV1' \
+./scripts/assert_no_local_canonical_digest_law.sh:18:  'pub type CanonicalDigestV1'; do
+./scripts/assert_no_local_canonical_digest_law.sh:26:# canonical_json_string may exist only if private and explicitly display/test scoped.
+./scripts/assert_no_local_canonical_digest_law.sh:27:if grep -RIn 'pub fn canonical_json_string' "$FILE"; then
+./scripts/assert_no_local_canonical_digest_law.sh:28:  echo "FAIL: canonical_json_string must not be exported from aidens-contracts"
+./docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:15:- `stable_json_digest`
+./docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:16:- `stable_text_digest`
+./docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:17:- `deterministic_artifact_id`
+./docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:18:- `canonical_json_string`
+./docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:19:- `CanonicalDigestV1`
+./docs/AUDITOR_HANDOFF.md:13:bash scripts/assert_no_local_canonical_digest_law.sh
+./docs/HUMAN_GUARDRAIL_PROMPTS.md:85:1. AiDENs does not export stable_json_digest, stable_text_digest, or deterministic_artifact_id as canonical law.
+./docs/FINAL_STATE_SPEC.md:39:- exported `stable_json_digest`;
+./docs/FINAL_STATE_SPEC.md:40:- exported `stable_text_digest`;
+./docs/FINAL_STATE_SPEC.md:41:- exported `deterministic_artifact_id`;
+./docs/SHADOW_OWNERSHIP_ISSUE_MATRIX.md:11:| P0-007 | P0 | Local digest/canonicalization law | `stable_json_digest`, `stable_text_digest`, `deterministic_artifact_id`, `CanonicalDigestV1` | `stack-ids` | Replace with `stack-ids` or demote to display-only with non-authoritative name | digest gate passes |
+./docs/RE_RUN_AND_VERIFICATION.md:14:bash scripts/assert_no_local_canonical_digest_law.sh
+./docs/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md:15:| No local canonical digest law | `assert_no_local_canonical_digest_law.sh` | no exported local digest/ID law remains |

@@ -1,0 +1,170 @@
+{
+  "basis": {
+    "mode": "static_code_and_repo_artifact_audit",
+    "source": "uploaded workspace /mnt/data/libraries-source-clean-20260330.zip",
+    "compile_confirmed": false,
+    "notes": [
+      "Cargo toolchain was not available in the sandbox, so no cargo-based gates were rerun independently.",
+      "This audit is therefore code-grounded and receipt-aware, not build-confirmed."
+    ]
+  },
+  "scale": {
+    "min": 0,
+    "max": 5,
+    "meaning": {
+      "0": "clean",
+      "5": "severe risk"
+    }
+  },
+  "axes": {
+    "Truth": "repo truth, support-claim clarity, and narrative consistency",
+    "Contracts": "schema/type/identity boundary rigor",
+    "Runtime": "execution semantics, failure behavior, and blast radius",
+    "Verification": "governance, conformance, and adjudication authority",
+    "Ops": "release gates, reproducibility, and operator discipline",
+    "Scale": "hotspots, growth pressure, and performance evidence",
+    "Security": "capability control, approval enforcement, and misuse resistance",
+    "Human": "maintainer load, onboarding pain, and cognitive surface"
+  },
+  "current_severity": [
+    {
+      "lens": "Constitutional truth auditor",
+      "Truth": 4,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Verification": 3,
+      "Ops": 4,
+      "Scale": 2,
+      "Security": 1,
+      "Human": 4
+    },
+    {
+      "lens": "Contract/schema lawyer",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Verification": 2,
+      "Ops": 2,
+      "Scale": 1,
+      "Security": 1,
+      "Human": 2
+    },
+    {
+      "lens": "Failure-semantics sadist",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 3,
+      "Verification": 3,
+      "Ops": 2,
+      "Scale": 2,
+      "Security": 2,
+      "Human": 2
+    },
+    {
+      "lens": "Ops/release skeptic",
+      "Truth": 4,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Verification": 2,
+      "Ops": 4,
+      "Scale": 2,
+      "Security": 1,
+      "Human": 3
+    },
+    {
+      "lens": "Blast-radius pessimist",
+      "Truth": 2,
+      "Contracts": 2,
+      "Runtime": 4,
+      "Verification": 3,
+      "Ops": 3,
+      "Scale": 4,
+      "Security": 2,
+      "Human": 4
+    },
+    {
+      "lens": "Performance skeptic",
+      "Truth": 1,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Verification": 1,
+      "Ops": 2,
+      "Scale": 3,
+      "Security": 1,
+      "Human": 2
+    },
+    {
+      "lens": "Security goblin",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Verification": 2,
+      "Ops": 2,
+      "Scale": 1,
+      "Security": 2,
+      "Human": 2
+    },
+    {
+      "lens": "New maintainer from hell",
+      "Truth": 3,
+      "Contracts": 2,
+      "Runtime": 3,
+      "Verification": 2,
+      "Ops": 3,
+      "Scale": 3,
+      "Security": 1,
+      "Human": 5
+    }
+  ],
+  "summary": {
+    "verdict": "architecturally strong, operationally credible, but not yet constitutionally airtight",
+    "overall_score_10": 8.2,
+    "largest_hotspots_by_src_loc": [
+      {
+        "crate": "semantic-memory",
+        "src_loc": 16749,
+        "test_loc": 11392,
+        "test_markers": 307
+      },
+      {
+        "crate": "living-memory/living-memory",
+        "src_loc": 9137,
+        "test_loc": 6897,
+        "test_markers": 181
+      },
+      {
+        "crate": "forge-pilot",
+        "src_loc": 9092,
+        "test_loc": 3078,
+        "test_markers": 62
+      },
+      {
+        "crate": "knowledge-runtime",
+        "src_loc": 5747,
+        "test_loc": 5140,
+        "test_markers": 145
+      },
+      {
+        "crate": "profile-runtime",
+        "src_loc": 3621,
+        "test_loc": 364,
+        "test_markers": 13
+      },
+      {
+        "crate": "llm-tool-runtime",
+        "src_loc": 3161,
+        "test_loc": 1195,
+        "test_markers": 65
+      }
+    ],
+    "workspace_metrics": {
+      "workspace_members": 30,
+      "member_src_files": 241,
+      "member_test_files": 148,
+      "member_src_loc": 67097,
+      "member_test_loc": 36620,
+      "production_panic_shortcuts_found": 0,
+      "production_unsafe_found": 0
+    }
+  }
+}

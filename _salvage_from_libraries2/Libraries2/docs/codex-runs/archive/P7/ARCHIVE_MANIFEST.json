@@ -1,0 +1,86 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-24T01:20:35Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+      "bytes": 6300,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/CANONICAL_STACK_PROFILE_SPEC_P7_INCIDENT_TAXONOMY_ESCALATION_AND_PAGER_ROUTING_PROFILE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "50c2e0e57c73c34189570e7d4515676c52f239de4d48253bbd5f0e1dbb278d4b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/conformance/p7/README.md",
+      "bytes": 522,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/conformance/p7/README.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "0c3de3ccb024d3a224a44d3c2242fbb2f4ae53644e3cf0f0b876ab973dd8ebbe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/src/profile_p7_incident_routing.rs",
+      "bytes": 2836,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/src/profile_p7_incident_routing.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "bd324ef487b495ab3155870ce770b22bc17aaa179357ce5ab3f8fea8957015e0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/tests/profile_p7_example_roundtrip.rs",
+      "bytes": 1754,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/tests/profile_p7_example_roundtrip.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "3bcc3bec76020aa33b0db7ba2ab4e9e253550bed1f4b1dc564e968c193b3a471"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/continuity-runtime/tests/profile_p7_fixture_conformance.rs",
+      "bytes": 1443,
+      "mtime_utc": "2026-03-16T11:20:46Z",
+      "original_path": "repo_overlay/continuity-runtime/tests/profile_p7_fixture_conformance.rs",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "15ea1da94777c996a09d4141e8cf897b5d35fb316cc4f47a5b508a4a35f4981b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/fixtures/p7/incident_taxonomy_happy_path.bundle.json",
+      "bytes": 1809,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p7/incident_taxonomy_happy_path.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "c32d5e3ce73530df6166ddd55023192ac8006da7204f75afd9f1f2b4ebff8119"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/fixtures/p7/pager_route_escalation_timeout.bundle.json",
+      "bytes": 1964,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/fixtures/p7/pager_route_escalation_timeout.bundle.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "c8adcb5eb549a13a43a33840625a1f6deb9d2d6733d571505d2f485d87c60afd"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/repo_overlay/contracts/schemas/p7/manifest.json",
+      "bytes": 509,
+      "mtime_utc": "2026-03-16T11:17:50Z",
+      "original_path": "repo_overlay/contracts/schemas/p7/manifest.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "60f6e235ccc28f9dd184ed29c18952b15719781991e29bc55a9cef271ead91b8"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries2",
+  "run_id": "P7",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

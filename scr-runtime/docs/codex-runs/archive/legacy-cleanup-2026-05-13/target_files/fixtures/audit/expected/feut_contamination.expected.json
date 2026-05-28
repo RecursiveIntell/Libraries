@@ -1,0 +1,8 @@
+{
+  "case_id": "feut_contamination",
+  "expected_minimum_action": "QuarantineArtifact",
+  "required_reason_codes": [
+    "FORBIDDEN_PRODUCTION_TERM"
+  ],
+  "notes": "Initial expected minimum. Codex should generate full golden receipts after evaluator exists. Updating generated golden receipts requires POLICY_CHANGE.md."
+}

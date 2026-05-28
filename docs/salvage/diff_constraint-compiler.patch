@@ -1,0 +1,288 @@
+diff -ruN ../Libraries2/constraint-compiler/CHANGELOG.md constraint-compiler/CHANGELOG.md
+--- ../Libraries2/constraint-compiler/CHANGELOG.md	1969-12-31 18:00:00.000000000 -0600
++++ constraint-compiler/CHANGELOG.md	2026-03-26 08:13:21.494809051 -0500
+@@ -0,0 +1,6 @@
++# Changelog
++
++## [Unreleased]
++
++### Fixed
++- [CC-2] Canonical JSON hashing fix
+diff -ruN ../Libraries2/constraint-compiler/Cargo.toml constraint-compiler/Cargo.toml
+--- ../Libraries2/constraint-compiler/Cargo.toml	2026-03-12 04:07:48.000000000 -0500
++++ constraint-compiler/Cargo.toml	2026-03-30 22:31:16.494506252 -0500
+@@ -17,3 +17,7 @@
+ schemars = { workspace = true }
+ 
+ [dev-dependencies]
++
++# LIB-005: inherit workspace lint policy
++[lints]
++workspace = true
+diff -ruN ../Libraries2/constraint-compiler/README.md constraint-compiler/README.md
+--- ../Libraries2/constraint-compiler/README.md	2026-03-11 22:04:58.000000000 -0500
++++ constraint-compiler/README.md	2026-03-26 08:15:41.618405006 -0500
+@@ -2,9 +2,17 @@
+ 
+ Deterministic projection-to-inference graph compiler for the canonical lane.
+ 
++## Usage
++
++```rust
++use constraint_compiler::{compile_batch, CompileOutput, CompilerPolicy};
++```
++
+ ## Scope
+ 
+-This crate compiles canonical projection import batches into bounded inference graph artifacts: nodes, hyperedges, constraints, invalidation cones, degradations, and oracle candidates.
++This crate compiles canonical projection import batches into bounded inference
++graph artifacts: nodes, hyperedges, constraints, invalidation cones,
++degradations, and oracle candidates.
+ 
+ ## Non-goals
+ 
+@@ -12,6 +20,24 @@
+ - no runtime repair or scheduler policy
+ - no fabrication of semantics from thin exports
+ 
+-## Current maturity
++## Ecosystem
+ 
+-Phase 0 compiler defects are closed and gate-proven. Phase 2 hardening remains open around nuisance normalization, inferential-only graph construction, and tighter oracle slice selection.
++**Depends on:**
++- `stack-ids` -- identity primitives (`ConstraintId`, `ContentDigest`, `OracleSliceId`, `RegionId`, `ScopeKey`)
++- `forge-memory-bridge` -- projection import batch types
++- `recursive-kernel-core` -- kernel operator metadata and constraint units
++- `semantic-memory-forge` -- constraint seed kinds and export record semantics
++
++**Depended on by:**
++- `kernel-execution`
++- `kernel-oracles`
++- `kernel-conformance`
++- `knowledge-runtime`
++- `forge-pilot`
++- `contract-schema-gen`
++
++## stack-ids integration
++
++Uses `ConstraintId`, `ContentDigest`, `OracleSliceId`, `RegionDigestId`,
++`RegionId`, and `ScopeKey` from `stack-ids` for all compiler artifact
++identifiers and content addressing.
+diff -ruN ../Libraries2/constraint-compiler/src/lib.rs constraint-compiler/src/lib.rs
+--- ../Libraries2/constraint-compiler/src/lib.rs	2026-03-24 14:44:15.100200109 -0500
++++ constraint-compiler/src/lib.rs	2026-05-12 20:04:55.802735674 -0500
+@@ -1,3 +1,5 @@
++#![cfg_attr(test, allow(clippy::expect_used))]
++
+ use forge_memory_bridge::{ImportProjectionRecord, ProjectionImportBatchV3};
+ use recursive_kernel_core::{constraint_compiler_operator, ConstraintUnit, OperatorMetadata};
+ use schemars::JsonSchema;
+@@ -18,7 +20,7 @@
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+ #[serde(rename_all = "snake_case")]
+-pub enum DegradationMarker {
++pub enum ConstraintDegradation {
+     MissingClaimFamily,
+     MissingAssertionGroup,
+     MissingRelationGroup,
+@@ -98,7 +100,7 @@
+     pub constraints: Vec<ConstraintUnit>,
+     pub regions: Vec<CompiledRegion>,
+     pub invalidation_cones: Vec<InvalidationCone>,
+-    pub degradations: Vec<DegradationMarker>,
++    pub degradations: Vec<ConstraintDegradation>,
+     pub oracle_candidates: Vec<OracleSliceCandidate>,
+ }
+ 
+@@ -131,7 +133,7 @@
+                                 | ImportProjectionRecord::EvidenceRef(_)
+                         )))
+             {
+-                degradations.push(DegradationMarker::ThinExport);
++                degradations.push(ConstraintDegradation::ThinExport);
+             }
+             continue;
+         }
+@@ -170,7 +172,7 @@
+                                     constraint_seed_name(semantics.constraint_seed_kind.as_ref())
+                                 });
+                             } else {
+-                                degradations.push(DegradationMarker::MissingAssertionGroup);
++                                degradations.push(ConstraintDegradation::MissingAssertionGroup);
+                             }
+                         }
+                     }
+@@ -186,7 +188,7 @@
+                                     constraint_seed_name(semantics.constraint_seed_kind.as_ref())
+                                 });
+                             } else {
+-                                degradations.push(DegradationMarker::MissingRelationGroup);
++                                degradations.push(ConstraintDegradation::MissingRelationGroup);
+                             }
+                         }
+                     }
+@@ -196,7 +198,7 @@
+                 }
+             }
+             None => {
+-                degradations.push(DegradationMarker::ThinExport);
++                degradations.push(ConstraintDegradation::ThinExport);
+             }
+         }
+ 
+@@ -204,7 +206,7 @@
+             if semantics.claim_family_id.is_none()
+                 && matches!(rich_record.record, ImportProjectionRecord::ClaimVersion(_))
+             {
+-                degradations.push(DegradationMarker::MissingClaimFamily);
++                degradations.push(ConstraintDegradation::MissingClaimFamily);
+             }
+             if semantics.relation_group_id.is_none()
+                 && matches!(
+@@ -212,7 +214,7 @@
+                     ImportProjectionRecord::RelationVersion(_)
+                 )
+             {
+-                degradations.push(DegradationMarker::MissingRelationGroup);
++                degradations.push(ConstraintDegradation::MissingRelationGroup);
+             }
+         }
+     }
+@@ -267,20 +269,22 @@
+         vec![]
+     };
+ 
+-    let graph_hash = ContentDigest::compute(
+-        &serde_json::to_vec(&(
+-            policy,
+-            &batch.scope_key,
+-            &geometry_manifest,
+-            &nodes,
+-            &hyperedges,
+-            &constraints,
+-            &regions,
+-            &invalidation_cones,
+-            &degradations,
+-        ))
+-        .unwrap(),
+-    );
++    let graph_hash = match ContentDigest::compute_json(&(
++        policy,
++        &batch.scope_key,
++        &geometry_manifest,
++        &nodes,
++        &hyperedges,
++        &constraints,
++        &regions,
++        &invalidation_cones,
++        &degradations,
++    )) {
++        Ok(digest) => digest,
++        Err(err) => ContentDigest::compute_str(&format!(
++            "constraint-compiler.graph-hash-serialization-error:{err}"
++        )),
++    };
+ 
+     CompileOutput {
+         graph_hash,
+@@ -426,9 +430,13 @@
+         let node_ids = node_ids.into_iter().collect::<Vec<_>>();
+         let hyperedge_ids = hyperedge_ids.into_iter().collect::<Vec<_>>();
+         let constraint_ids = constraint_ids.into_iter().collect::<Vec<_>>();
+-        let region_digest = ContentDigest::compute(
+-            &serde_json::to_vec(&(&node_ids, &hyperedge_ids, &constraint_ids)).unwrap(),
+-        );
++        let region_digest =
++            match ContentDigest::compute_json(&(&node_ids, &hyperedge_ids, &constraint_ids)) {
++                Ok(digest) => digest,
++                Err(err) => ContentDigest::compute_str(&format!(
++                    "constraint-compiler.region-digest-serialization-error:{err}"
++                )),
++            };
+         regions.push(CompiledRegion {
+             region_id: RegionId::new(format!("region:{}", region_digest.hex())),
+             region_digest_id: RegionDigestId::new(format!("region-digest:{}", region_digest.hex())),
+diff -ruN ../Libraries2/constraint-compiler/src/lib_tests.rs constraint-compiler/src/lib_tests.rs
+--- ../Libraries2/constraint-compiler/src/lib_tests.rs	2026-03-24 14:44:15.101200103 -0500
++++ constraint-compiler/src/lib_tests.rs	2026-03-30 16:47:11.981188749 -0500
+@@ -268,7 +268,9 @@
+         },
+     );
+ 
+-    assert!(output.degradations.contains(&DegradationMarker::ThinExport));
++    assert!(output
++        .degradations
++        .contains(&ConstraintDegradation::ThinExport));
+     assert!(output.oracle_candidates.is_empty());
+ }
+ 
+@@ -284,7 +286,9 @@
+         },
+     );
+ 
+-    assert!(output.degradations.contains(&DegradationMarker::ThinExport));
++    assert!(output
++        .degradations
++        .contains(&ConstraintDegradation::ThinExport));
+     let group_hyperedge = output
+         .hyperedges
+         .iter()
+@@ -338,7 +342,7 @@
+     );
+ 
+     assert!(
+-        !output.degradations.contains(&DegradationMarker::ThinExport),
++        !output.degradations.contains(&ConstraintDegradation::ThinExport),
+         "alias/evidence-ref records intentionally omit semantics and must not down-classify a rich export"
+     );
+ }
+@@ -379,7 +383,9 @@
+     );
+ 
+     assert!(
+-        output.degradations.contains(&DegradationMarker::ThinExport),
++        output
++            .degradations
++            .contains(&ConstraintDegradation::ThinExport),
+         "auxiliary alias/evidence records must keep explicitly thin exports degraded"
+     );
+ }
+@@ -404,12 +410,12 @@
+ 
+     assert!(output
+         .degradations
+-        .contains(&DegradationMarker::MissingClaimFamily));
++        .contains(&ConstraintDegradation::MissingClaimFamily));
+     assert!(
+         output
+             .degradations
+             .iter()
+-            .filter(|d| **d == DegradationMarker::ThinExport)
++            .filter(|d| **d == ConstraintDegradation::ThinExport)
+             .count()
+             == 0
+     );
+@@ -665,17 +671,19 @@
+     let missing_assertion_group = output
+         .degradations
+         .iter()
+-        .filter(|d| **d == DegradationMarker::MissingAssertionGroup)
++        .filter(|d| **d == ConstraintDegradation::MissingAssertionGroup)
+         .count();
+     let missing_relation_group = output
+         .degradations
+         .iter()
+-        .filter(|d| **d == DegradationMarker::MissingRelationGroup)
++        .filter(|d| **d == ConstraintDegradation::MissingRelationGroup)
+         .count();
+ 
+     assert_eq!(missing_assertion_group, 1);
+     assert_eq!(missing_relation_group, 1);
+-    assert!(!output.degradations.contains(&DegradationMarker::ThinExport));
++    assert!(!output
++        .degradations
++        .contains(&ConstraintDegradation::ThinExport));
+ }
+ 
+ #[test]

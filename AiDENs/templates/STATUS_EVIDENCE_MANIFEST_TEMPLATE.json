@@ -1,0 +1,29 @@
+{
+  "run_id": "HSP-YYYYMMDD",
+  "source_basis": {
+    "package": "",
+    "sha256": "",
+    "content_manifest_sha256": "",
+    "notes": ""
+  },
+  "support_labels_requested": [],
+  "support_labels_granted": [],
+  "forbidden_labels": [
+    "v11B-complete",
+    "v11C-complete",
+    "production-cloud-ready",
+    "broad-autonomy-ready",
+    "canonical-truth-owner"
+  ],
+  "command_bar": [],
+  "acceptance_gates": [],
+  "issue_matrix_counts": {},
+  "package_sidecars": {},
+  "extracted_replay": {
+    "command": "",
+    "result": "",
+    "evidence": ""
+  },
+  "known_limitations": "",
+  "final_auditor_handoff": ""
+}

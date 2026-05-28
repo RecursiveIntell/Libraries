@@ -1,0 +1,111 @@
+   Compiling cfg-if v1.0.4
+   Compiling once_cell v1.21.3
+   Compiling smallvec v1.15.1
+   Compiling libc v0.2.182
+   Compiling serde_core v1.0.228
+   Compiling zerocopy v0.8.39
+   Compiling zmij v1.0.21
+   Compiling bitflags v2.11.0
+   Compiling memchr v2.8.0
+   Compiling scopeguard v1.2.0
+   Compiling itoa v1.0.17
+   Compiling num-traits v0.2.19
+   Compiling cpufeatures v0.2.17
+   Compiling arrayvec v0.7.6
+   Compiling constant_time_eq v0.4.2
+   Compiling pin-project-lite v0.2.16
+   Compiling arrayref v0.3.9
+   Compiling lock_api v0.4.14
+   Compiling rustix v1.1.3
+   Compiling iana-time-zone v0.1.65
+   Compiling dyn-clone v1.0.20
+   Compiling tracing-core v0.1.36
+   Compiling blake3 v1.8.3
+   Compiling libsqlite3-sys v0.30.1
+   Compiling bytes v1.11.1
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling linux-raw-sys v0.11.0
+   Compiling fallible-iterator v0.3.0
+   Compiling thiserror v2.0.18
+   Compiling anyhow v1.0.101
+   Compiling fastrand v2.3.0
+   Compiling tracing v0.1.44
+   Compiling getrandom v0.4.1
+   Compiling parking_lot_core v0.9.12
+   Compiling errno v0.3.14
+   Compiling mio v1.1.1
+   Compiling socket2 v0.6.2
+   Compiling signal-hook-registry v1.4.8
+   Compiling parking_lot v0.12.5
+   Compiling tokio v1.49.0
+   Compiling tempfile v3.25.0
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.149
+   Compiling uuid v1.22.0
+   Compiling chrono v0.4.44
+   Compiling schemars v0.8.22
+   Compiling ahash v0.8.12
+   Compiling hashbrown v0.14.5
+   Compiling stack-ids v0.1.1 (/home/sikmindz/Coding/Libraries/stack-ids)
+   Compiling hashlink v0.9.1
+   Compiling rusqlite v0.32.1
+   Compiling job-queue v0.2.0 (/home/sikmindz/Coding/Libraries/job-queue)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.54s
+     Running unittests src/lib.rs (job-queue/target/debug/deps/job_queue-4a560138a83375a4)
+
+running 44 tests
+test db::tests::test_claim_next_job_empty_queue ... ok
+test db::tests::test_claim_skips_future_next_run ... ok
+test db::tests::test_claim_with_worker_id ... ok
+test db::tests::test_get_job_not_found ... ok
+test db::tests::test_insert_job_full_with_none_canonical_fields ... ok
+test db::tests::test_cancel_completed_fails ... ok
+test db::tests::test_insert_and_get_next_pending ... ok
+test db::tests::test_insert_job_full_with_canonical_fields ... ok
+test db::tests::test_cancel_pending ... ok
+test db::tests::test_heartbeat ... ok
+test db::tests::test_cancel_processing ... ok
+test db::tests::test_claim_skips_cancelled ... ok
+test db::tests::test_canonical_fields_survive_retry_cycle ... ok
+test db::tests::test_cancel_completed_returns_current_status ... ok
+test db::tests::test_invalid_transition_completed_to_processing ... ok
+test db::tests::test_claim_next_job ... ok
+test db::tests::test_legacy_insert_without_canonical_fields ... ok
+test db::tests::test_open_in_memory ... ok
+test db::tests::test_reorder_nonexistent_errors ... ok
+test db::tests::test_mark_processing ... ok
+test db::tests::test_mark_failed ... ok
+test db::tests::test_list_all_jobs ... ok
+test db::tests::test_mark_completed ... ok
+test db::tests::test_mark_completed_guards_status ... ok
+test db::tests::test_mark_failed_guards_status ... ok
+test db::tests::test_reclaim_stale_ignores_fresh ... ok
+test db::tests::test_reorder_non_pending_returns_false ... ok
+test db::tests::test_priority_ordering ... ok
+test db::tests::test_mark_processing_guards_status ... ok
+test db::tests::test_prune_old_jobs ... ok
+test db::tests::test_reorder_pending ... ok
+test db::tests::test_reclaim_stale_jobs ... ok
+test db::tests::test_requeue_interrupted ... ok
+test db::tests::test_update_canonical_lineage_nonexistent_job ... ok
+test db::tests::test_retry_backoff_permanent ... ok
+test db::tests::test_retry_backoff_transient ... ok
+test db::tests::test_retry_rate_limited ... ok
+test db::tests::test_update_canonical_lineage_partial ... ok
+test db::tests::test_trace_id_column_and_details_round_trip ... ok
+test db::tests::test_update_canonical_lineage ... ok
+test db::tests::test_update_priority ... ok
+test db::tests::test_worker_mismatch_rejects_complete_and_fail ... ok
+test db::tests::test_retry_exhausted_remains_failed ... ok
+test executor::tests::lineage_persistence_failure_aborts_execution_and_marks_job_failed ... ok
+
+test result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+   Doc-tests job_queue
+
+running 2 tests
+test src/lib.rs - JobHandler (line 308) ... ignored
+test src/queue.rs - queue::QueueManager (line 19) ... ignored
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

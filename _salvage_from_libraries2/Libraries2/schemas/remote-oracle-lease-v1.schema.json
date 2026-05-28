@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RemoteDisclosureClassV1": {
+      "enum": [
+        "non-sensitive",
+        "redacted_structured_only"
+      ],
+      "type": "string"
+    },
+    "RemoteExactnessClassV1": {
+      "enum": [
+        "exact",
+        "bounded_exact"
+      ],
+      "type": "string"
+    },
+    "RemoteReplayObligationV1": {
+      "enum": [
+        "must_return_replay_ticket_or_nonreplayable_reason"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "allowed_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "allowed_graph_or_slice_kinds": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "budget_ceiling": {
+      "type": "string"
+    },
+    "disclosure_ceiling": {
+      "$ref": "#/definitions/RemoteDisclosureClassV1"
+    },
+    "exactness_class_ceiling": {
+      "$ref": "#/definitions/RemoteExactnessClassV1"
+    },
+    "lease_expiry": {
+      "type": "string"
+    },
+    "oracle_identity": {
+      "type": "string"
+    },
+    "policy_owner_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "remote_oracle_lease_id": {
+      "type": "string"
+    },
+    "replay_obligation": {
+      "$ref": "#/definitions/RemoteReplayObligationV1"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "budget_ceiling",
+    "disclosure_ceiling",
+    "exactness_class_ceiling",
+    "lease_expiry",
+    "oracle_identity",
+    "remote_oracle_lease_id",
+    "replay_obligation",
+    "schema_version"
+  ],
+  "title": "RemoteOracleLeaseV1",
+  "type": "object"
+}

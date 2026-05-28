@@ -1,0 +1,205 @@
+{
+  "pass_id": "P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING",
+  "goal": "Finish AiDENs v0.1 as a build-certified, documentation-honest, agency-aware, receipt-bearing orchestration layer over canonical libraries.",
+  "required_commands": [
+    "cargo fmt --all --check",
+    "cargo check --workspace --all-targets --all-features",
+    "cargo test --workspace --all-targets --all-features",
+    "cargo clippy --workspace --all-targets --all-features -- -D warnings",
+    "bash scripts/verify.sh",
+    "python3 scripts/p20_scan_aidens.py --root . --out target/p20-scan",
+    "bash scripts/p20_generate_audit_bundle.sh"
+  ],
+  "issues": [
+    {
+      "id": "P20-001",
+      "priority": "P0",
+      "stream": "Proof",
+      "title": "Run full cargo/script baseline and capture evidence",
+      "why": "All later claims need proof",
+      "acceptance": "cargo/check/test/clippy/verify logs captured; failures fixed or quarantined",
+      "proof": "target/aidens-final-audit/*.log"
+    },
+    {
+      "id": "P20-002",
+      "priority": "P0",
+      "stream": "Docs",
+      "title": "Rewrite root README into real project README",
+      "why": "Current README may be stale Codex-bundle prose",
+      "acceptance": "README has operator/developer quickstart, supported matrix, limitations",
+      "proof": "README.md + docs-code report"
+    },
+    {
+      "id": "P20-003",
+      "priority": "P0",
+      "stream": "Docs",
+      "title": "Reconcile STATUS and issue matrices with actual code",
+      "why": "STATUS overclaim is the current main risk",
+      "acceptance": "No done/implemented claim without code+test proof",
+      "proof": "docs-code report"
+    },
+    {
+      "id": "P20-004",
+      "priority": "P0",
+      "stream": "Contracts",
+      "title": "Inventory every aidens-contracts public type",
+      "why": "Oversized contracts crate can become shadow truth",
+      "acceptance": "Ownership inventory complete; ambiguous types resolved",
+      "proof": "CONTRACT_OWNERSHIP_INVENTORY"
+    },
+    {
+      "id": "P20-005",
+      "priority": "P0",
+      "stream": "Scanner",
+      "title": "Install deterministic P20 scanner into verify gate",
+      "why": "Grep-only checks are too weak",
+      "acceptance": "scanner runs in p20_verify and verify.sh or documented equivalent",
+      "proof": "p20-scan.json/md"
+    },
+    {
+      "id": "P20-006",
+      "priority": "P0",
+      "stream": "Providers",
+      "title": "Lock provider capability matrix",
+      "why": "Provider truth must match executable support",
+      "acceptance": "mock/Ollama supported only if tested; cloud unavailable unless implemented",
+      "proof": "provider matrix + tests"
+    },
+    {
+      "id": "P20-007",
+      "priority": "P0",
+      "stream": "Runner",
+      "title": "Prove vertical slice with durable receipts",
+      "why": "No E2E path means no finish",
+      "acceptance": "tool turn test passes and records event log/receipts",
+      "proof": "runner test + audit log"
+    },
+    {
+      "id": "P20-008",
+      "priority": "P0",
+      "stream": "Agency",
+      "title": "Add agency/influence policy crate or module",
+      "why": "New research requires first-class influence governance",
+      "acceptance": "agency artifacts + pre-generation gate + receipts exist",
+      "proof": "agency tests/report"
+    },
+    {
+      "id": "P20-009",
+      "priority": "P0",
+      "stream": "Agency",
+      "title": "Add influence/advice receipts",
+      "why": "Consequential influence without receipts is non-auditable",
+      "acceptance": "high-impact/memory/repeated-nudge receipts emitted",
+      "proof": "agency eval report"
+    },
+    {
+      "id": "P20-010",
+      "priority": "P0",
+      "stream": "Testkit",
+      "title": "Close deferred temporal reference behavior or demote docs",
+      "why": "Deferred interpreter contradicts done claims",
+      "acceptance": "no deferred reference for supported features",
+      "proof": "testkit tests"
+    },
+    {
+      "id": "P20-011",
+      "priority": "P1",
+      "stream": "Memory",
+      "title": "Prove canonical memory adapter path",
+      "why": "AiDENs must delegate to semantic-memory lane",
+      "acceptance": "forge export -> bridge -> import -> query test exists",
+      "proof": "integration test"
+    },
+    {
+      "id": "P20-012",
+      "priority": "P1",
+      "stream": "Kernel",
+      "title": "Prove canonical kernel adapter path",
+      "why": "Kernel law belongs to canonical crates",
+      "acceptance": "compile/execute/oracle/witness path tested or docs demote",
+      "proof": "integration test"
+    },
+    {
+      "id": "P20-013",
+      "priority": "P1",
+      "stream": "Governance",
+      "title": "Prove verification/governance adapter path",
+      "why": "Control decisions require receipts",
+      "acceptance": "adapter test + receipt proof",
+      "proof": "integration test"
+    },
+    {
+      "id": "P20-014",
+      "priority": "P1",
+      "stream": "Repair",
+      "title": "Demote or prove repair record path",
+      "why": "Repair cannot stay folklore",
+      "acceptance": "repair tests or status demotion",
+      "proof": "repair report"
+    },
+    {
+      "id": "P20-015",
+      "priority": "P1",
+      "stream": "Boundary",
+      "title": "Harden JSON repair/treatment integrity",
+      "why": "Parser repair is semantic choke point",
+      "acceptance": "duplicate-key and treatment-changing repair tests pass",
+      "proof": "boundary tests"
+    },
+    {
+      "id": "P20-016",
+      "priority": "P1",
+      "stream": "Digests",
+      "title": "Audit digest algorithm labels",
+      "why": "Mislabeling hash algorithm breaks evidence integrity",
+      "acceptance": "no hardcoded wrong digest prefixes",
+      "proof": "scanner + unit tests"
+    },
+    {
+      "id": "P20-017",
+      "priority": "P1",
+      "stream": "Scaffolds",
+      "title": "Resolve scaffold crate fate",
+      "why": "Scaffolds cannot be product-ready",
+      "acceptance": "implemented, removed, or marked deferred",
+      "proof": "scaffold-status.md"
+    },
+    {
+      "id": "P20-018",
+      "priority": "P1",
+      "stream": "Queue",
+      "title": "Truthfully bound queue/schedule/wake support",
+      "why": "One-shot vs recurring semantics must be honest",
+      "acceptance": "queue/schedule docs and tests match implementation",
+      "proof": "tests + status"
+    },
+    {
+      "id": "P20-019",
+      "priority": "P1",
+      "stream": "CLI",
+      "title": "Update doctor/package audit outputs",
+      "why": "Operator UX must reflect real support",
+      "acceptance": "CLI reports supported/partial/deferred correctly",
+      "proof": "CLI tests"
+    },
+    {
+      "id": "P20-020",
+      "priority": "P1",
+      "stream": "Audit",
+      "title": "Generate final audit bundle",
+      "why": "Release handoff needs artifacts",
+      "acceptance": "bundle exists and summarizes pass/fail",
+      "proof": "target/aidens-final-audit"
+    }
+  ],
+  "blocking_categories": [
+    "build_or_test_failure",
+    "false_completion_claim",
+    "shadow_canonical_truth",
+    "fake_provider_capability",
+    "scaffold_promoted",
+    "missing_agency_governance",
+    "boundary_repair_without_receipt",
+    "reference_interpreter_deferred_for_supported_feature"
+  ]
+}

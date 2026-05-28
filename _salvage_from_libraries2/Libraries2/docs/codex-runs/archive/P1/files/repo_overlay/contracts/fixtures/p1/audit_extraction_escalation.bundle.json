@@ -1,0 +1,76 @@
+{
+  "fixture_name": "audit_extraction_escalation",
+  "wave": "p1",
+  "artifacts": {
+    "AuditExtractionPolicyV1": {
+      "schema_version": "AuditExtractionPolicyV1",
+      "audit_extraction_policy_id": "aep_001",
+      "allowed_artifact_families": [
+        "EpisodeBundleV1",
+        "DecisionTraceV1",
+        "PostmortemBundleV1"
+      ],
+      "required_redaction_rule_set_id": "rrs_001",
+      "disclosure_budget_class": "regulator_export",
+      "export_package_format": "attested_bundle",
+      "expiry_hours": 72,
+      "evidence_preservation_required": true
+    },
+    "RedactionRuleSetV1": {
+      "schema_version": "RedactionRuleSetV1",
+      "redaction_rule_set_id": "rrs_001",
+      "target_artifact_families": [
+        "EpisodeBundleV1",
+        "EffectObservationBundleV1",
+        "PostmortemBundleV1"
+      ],
+      "field_actions": [
+        {
+          "field": "email",
+          "action": "tokenize"
+        },
+        {
+          "field": "free_text_note",
+          "action": "mask"
+        },
+        {
+          "field": "ip_address",
+          "action": "truncate"
+        }
+      ],
+      "reversibility_class": "operator_reversible_only",
+      "approval_requirement": "privacy-review",
+      "default_disclosure_budget_class": "limited_support_export"
+    },
+    "AccessPurposeMatrixV1": {
+      "schema_version": "AccessPurposeMatrixV1",
+      "access_purpose_matrix_id": "apm_001",
+      "actor_classes": [
+        "reliability",
+        "privacy",
+        "support"
+      ],
+      "purpose_rules": [
+        {
+          "actor_class": "support",
+          "purpose": "incident_triage",
+          "allowed_artifact_families": [
+            "IncidentCaseV1",
+            "ServiceLevelProfileV1"
+          ]
+        },
+        {
+          "actor_class": "privacy",
+          "purpose": "audit_export",
+          "allowed_artifact_families": [
+            "EpisodeBundleV1",
+            "PrivacyRetentionProfileV1"
+          ]
+        }
+      ],
+      "default_decision": "deny",
+      "elevation_path": "privacy-approval",
+      "audit_logging_required": true
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "PermitGrantV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "granted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "granted_by": {
+          "type": "string"
+        },
+        "permit_id": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "risk_class": {
+          "$ref": "#/definitions/ToolSideEffectClass"
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox_root": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "granted_at",
+        "granted_by",
+        "permit_id",
+        "risk_class",
+        "sandbox_root",
+        "scope",
+        "tool_id"
+      ],
+      "type": "object"
+    },
+    "ToolSideEffectClass": {
+      "enum": [
+        "read_only",
+        "analysis",
+        "preview_write",
+        "write",
+        "admin"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "approved": {
+      "type": "boolean"
+    },
+    "decided_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "decided_by": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "permit_grant": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PermitGrantV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "request_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approved",
+    "decided_at",
+    "decided_by",
+    "decision_id",
+    "request_id"
+  ],
+  "title": "ApprovalDecisionV1",
+  "type": "object"
+}

@@ -1,0 +1,27 @@
+{
+  "truth_id": "sandbox-truth:fixture",
+  "kind": "sandbox-truth",
+  "sandbox_root": "/repo",
+  "denied_prefixes": [
+    ".ssh",
+    ".gnupg",
+    ".cargo",
+    ".recall",
+    ".password-store"
+  ],
+  "symlink_policy": "canonicalize-and-require-within-root",
+  "env_allowlist": [
+    "PATH",
+    "CARGO_HOME",
+    "RUSTUP_HOME"
+  ],
+  "network_policy": "disabled",
+  "process_timeout_millis": 120000,
+  "write_requires_permit": true,
+  "shell_requires_permit": true,
+  "reason_codes": [
+    "no-shell-file-write-or-network-by-default",
+    "side-effects-require-scoped-permit"
+  ],
+  "checked_at": "2026-04-26T00:00:00Z"
+}

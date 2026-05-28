@@ -1,0 +1,12 @@
+{
+  "schema_version": "TenantBoundaryProfileV1",
+  "tenant_boundary_profile_id": "tbp_001",
+  "tenant_key_kind": "account_id",
+  "isolation_class": "hard_logical_isolation",
+  "shared_service_allowances": [
+    "centralized_schema_registry",
+    "centralized_alerting_metadata_only"
+  ],
+  "cross_tenant_query_default": "blocked",
+  "key_management_segregation": "per_tenant_kek"
+}

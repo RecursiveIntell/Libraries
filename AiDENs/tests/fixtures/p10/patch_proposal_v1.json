@@ -1,0 +1,19 @@
+{
+  "proposal_id": "patch-proposal:fixture",
+  "kind": "patch-proposal",
+  "summary": "update README",
+  "unified_diff": "--- a/README.md\n+++ b/README.md\n@@\n-hello\n+hello p10\n",
+  "touched_paths": [
+    "README.md"
+  ],
+  "diff_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-utf8-text-v1-display-only",
+    "digest": "blake3:fixture"
+  },
+  "mutates_files": false,
+  "reason_codes": [
+    "proposal-only-no-file-mutation"
+  ],
+  "proposed_at": "2026-04-26T00:00:00Z"
+}

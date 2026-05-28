@@ -1,0 +1,21 @@
+{
+  "phase": "1-core-agent",
+  "destination": "~/Coding/Libraries/AiDENs",
+  "source": "~/Coding/Recall",
+  "must_create_or_finish": [
+    "aidens-provider-kit",
+    "aidens-tool-kit",
+    "aidens-security-kit",
+    "aidens-permit-kit",
+    "aidens-arbiter-kit",
+    "aidens-budget-kit",
+    "aidens-runner"
+  ],
+  "required_tests": [
+    "OpenRouter is not labeled Ollama",
+    "parser fallback is explicit",
+    "disabled tool is absent",
+    "write tool requires permit",
+    "run emits receipt"
+  ]
+}

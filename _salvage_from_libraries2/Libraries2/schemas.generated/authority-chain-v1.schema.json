@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "approval_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "authority_chain_id": {
+      "type": "string"
+    },
+    "current_validity_state": {
+      "type": "string"
+    },
+    "delegated_principals": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "external_principals": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "local_principal": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approval_refs",
+    "authority_chain_id",
+    "current_validity_state",
+    "delegated_principals",
+    "external_principals",
+    "local_principal",
+    "schema_version"
+  ],
+  "title": "AuthorityChainV1",
+  "type": "object"
+}

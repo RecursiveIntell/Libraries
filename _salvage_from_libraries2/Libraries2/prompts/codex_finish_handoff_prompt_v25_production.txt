@@ -1,0 +1,44 @@
+You are landing the v25 production-closure pass in the libraries workspace.
+
+Read in order:
+1. docs/v25/PRODUCTION_GAP_AUDIT_20260318.md
+2. docs/v25/PRODUCTION_MASTER_ISSUE_MATRIX_20260318.md
+3. plans/v25-production-closure.execplan.md
+4. docs/v25/PRODUCTION_NON_GOALS_AND_GUARDRAILS_20260318.md
+5. docs/v25/PRODUCTION_CONSUMER_CITATION_SPEC_20260318.md
+6. docs/v25/PRODUCTION_EXACT_FILE_TOUCH_MAP_20260318.md
+7. docs/v25/PRODUCTION_SCHEMA_AND_EXAMPLE_BACKFILL_PLAN_20260318.md
+8. docs/v25/PRODUCTION_CI_AND_GATE_PLAN_20260318.md
+9. docs/v25/PRODUCTION_ACCEPTANCE_AND_COMMANDS_20260318.md
+10. apply/v25/PRODUCTION_APPLY_SEQUENCE_20260318.md
+
+Mission:
+Close every remaining seam needed for a production-grade v25 lane in this repo.
+The stack already has the v25 owner crate and v26 horizon spec.
+Your job is to finish the downstream consumer adoption, publication completeness, and release-grade gates.
+
+Non-negotiable rules:
+- do not invent a new spec wave
+- do not move composition ownership out of profile-runtime
+- do not let any consumer crate inspect raw profile fields
+- do not create a dependency from verification-policy onto profile-runtime
+- do not leave effect-runtime on raw String IDs for effect-owned IDs
+- do not change external artifact shapes without backfilling schema JSON, example JSON, and tests
+- do not claim completion without running the final command set
+
+Required execution order:
+1. V25P-101 and V25P-102
+2. V25P-201, V25P-202, V25P-203
+3. V25P-301 and V25P-302
+4. V25P-401 and V25P-402
+5. V25P-501, V25P-502, V25P-503
+
+Your first response must contain:
+1. a repo-vs-pack gap audit based on the current checkout
+2. the exact issue IDs you will execute first
+3. the first files you will touch
+4. the first tests you will add or update
+5. any plan corrections required before coding
+
+Then start implementing.
+Do not give a theory essay.

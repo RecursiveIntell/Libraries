@@ -1,0 +1,9 @@
+{
+  "run_id": "run:fixture",
+  "trace_id": "trace:fixture",
+  "attempt_family_id": "attempt-family:fixture",
+  "attempt_id": "attempt:fixture",
+  "started_at": "2026-04-26T00:00:00Z",
+  "app_id": "fixture-app",
+  "config_generation": null
+}

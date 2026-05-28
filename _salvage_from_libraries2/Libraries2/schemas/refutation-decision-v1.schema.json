@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RefutationClassV1": {
+      "enum": [
+        "none",
+        "causal_refuted"
+      ],
+      "type": "string"
+    },
+    "VerificationDisposition": {
+      "enum": [
+        "eligible_for_promotion",
+        "advisory_only",
+        "blocked_by_policy",
+        "pending_approval",
+        "refuted",
+        "degraded_no_promotion",
+        "budget_exhausted",
+        "failed"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "case_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "disposition": {
+      "$ref": "#/definitions/VerificationDisposition"
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "follow_up_required": {
+      "type": "boolean"
+    },
+    "policy_decision_id": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "refutation_class": {
+      "$ref": "#/definitions/RefutationClassV1"
+    },
+    "refuted": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "violated_constraints": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "witness_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "case_id",
+    "decision_id",
+    "disposition",
+    "follow_up_required",
+    "policy_decision_id",
+    "reason",
+    "refutation_class",
+    "refuted",
+    "schema_version"
+  ],
+  "title": "RefutationDecision",
+  "type": "object"
+}

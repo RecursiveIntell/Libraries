@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "expected_configured": {
+      "type": "boolean"
+    },
+    "expected_executable": {
+      "type": "boolean"
+    },
+    "expected_native_tool_loop": {
+      "type": "boolean"
+    },
+    "expected_reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "expected_route_label": {
+      "type": "string"
+    },
+    "fixture_id": {
+      "type": "string"
+    },
+    "input_config": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "provider_kind": {
+      "type": "string"
+    },
+    "scenario": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "expected_configured",
+    "expected_executable",
+    "expected_native_tool_loop",
+    "expected_route_label",
+    "fixture_id",
+    "input_config",
+    "provider_kind",
+    "scenario"
+  ],
+  "title": "ProviderCertificationFixtureV1",
+  "type": "object"
+}

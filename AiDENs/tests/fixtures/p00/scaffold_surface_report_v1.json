@@ -1,0 +1,13 @@
+{
+  "report_id": "scaffold-surface-report:fixture",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "crates": [
+    {
+      "crate_name": "aidens-testkit",
+      "status": "scaffold-only",
+      "rust_files": 1,
+      "approximate_rust_loc": 69,
+      "note": "deferred to P08 reference harness work"
+    }
+  ]
+}

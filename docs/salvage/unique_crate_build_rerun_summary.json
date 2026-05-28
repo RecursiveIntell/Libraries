@@ -1,0 +1,34 @@
+[
+  {
+    "crate": "ollama-vision",
+    "command": "cargo check --manifest-path ollama-vision/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 14.78,
+    "log": "docs/salvage/build_logs/ollama-vision_check_rerun.log"
+  },
+  {
+    "crate": "ollama-vision",
+    "command": "cargo test --manifest-path ollama-vision/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 18.29,
+    "log": "docs/salvage/build_logs/ollama-vision_test_rerun.log"
+  },
+  {
+    "crate": "llm-pipeline",
+    "command": "cargo check --manifest-path llm-pipeline/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 1.62,
+    "log": "docs/salvage/build_logs/llm-pipeline_check_rerun.log"
+  },
+  {
+    "crate": "llm-pipeline",
+    "command": "cargo test --manifest-path llm-pipeline/Cargo.toml",
+    "status": "fail",
+    "returncode": 101,
+    "seconds": 11.88,
+    "log": "docs/salvage/build_logs/llm-pipeline_test_rerun.log"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "schema_version": "aidens.codex-artifact-classification.v1",
+  "active_run": "P31A",
+  "policy": "Only P31A release-truth files may be active. P31 boundary compiler files are deferred until P31A passes. P24-P30 artifacts must be archived or classified as historical evidence.",
+  "artifacts": [
+    {
+      "path": "00_P31_CODEX_SUPER_PASS_PROMPT.md",
+      "run": "P31",
+      "classification": "deferred-next-plan",
+      "reason": "Boundary compiler plan deferred until P31A release-truth gate passes."
+    },
+    {
+      "path": "P30_CODEX_SUPER_PASS_PROMPT.md",
+      "run": "P30",
+      "classification": "historical-evidence",
+      "reason": "Previous pass artifact; must not be active current instruction."
+    }
+  ]
+}

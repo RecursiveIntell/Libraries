@@ -1,0 +1,29 @@
+{
+  "schema_version": "IncidentTaxonomyV1",
+  "incident_taxonomy_id": "itx_001",
+  "incident_classes": [
+    {
+      "incident_class": "availability_degradation",
+      "default_severity": "sev2"
+    },
+    {
+      "incident_class": "cross_tenant_exposure",
+      "default_severity": "sev1"
+    }
+  ],
+  "default_routes": [
+    {
+      "incident_class": "availability_degradation",
+      "route": "reliability_primary"
+    },
+    {
+      "incident_class": "cross_tenant_exposure",
+      "route": "security_primary"
+    }
+  ],
+  "required_artifact_families": [
+    "IncidentCaseV1",
+    "ContainmentDecisionV1",
+    "PostmortemBundleV1"
+  ]
+}

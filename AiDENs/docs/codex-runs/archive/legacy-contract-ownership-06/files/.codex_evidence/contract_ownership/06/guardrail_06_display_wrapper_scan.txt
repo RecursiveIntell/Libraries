@@ -1,0 +1,128 @@
+.codex_evidence/contract_ownership/06/phase_report.md:71:PASS: schema generation scope appears AiDENs-local/non-authoritative (registered_families=58, checked_schema_files=58).
+.codex_evidence/contract_ownership/06/phase_report.md:80:- `CanonicalBackpointerV1` was added as an AiDENs-local display/report pointer, not a canonical artifact definition.
+.codex_evidence/contract_ownership/06/phase_report.md:81:- Tool request/result/invocation/exposure DTOs now carry explicit `canonical_backpointers` to `llm-tool-runtime` owner types.
+.codex_evidence/contract_ownership/06/phase_report.md:84:- Repair/schema display reports now carry typed canonical ID fields: `StackBoundaryRepairRecordId` and `StackControlReceiptId`, plus canonical backpointers to `verification-control`.
+.codex_evidence/contract_ownership/06/phase_report.md:88:- Generated local schema output remains AiDENs-local and non-authoritative; schema scope gate still passes.
+.codex_evidence/contract_ownership/06/phase_report.md:98:- Repair/control truth is grounded in `verification-control` or quarantined.
+.codex_evidence/contract_ownership/06/phase_report.md:99:- Runtime, kernel, and subtraction surfaces are display/report wrappers with backpointers, not independent canonical law.
+.codex_evidence/contract_ownership/06/phase_report.md:104:This quarantines display reports whose canonical ID vectors are intentionally empty until owner-approved canonical record production/persistence is wired.
+.codex_evidence/contract_ownership/06/phase_report.md:113:- `BoundaryRepairReportV1`, `JsonRepairReportV2`, and `SchemaValidationReportV1` can carry canonical IDs, but current display helpers do not mint/persist concrete owner records; this is quarantined.
+docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md:11:1. `BoundaryRepairReportV1` and `JsonRepairReportV2` now carry `canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>` and `canonical_backpointers`, but the current `aidens-boundary-kit` display repair helpers do not persist or return concrete `verification-control::BoundaryRepairRecord` artifacts.
+docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md:12:2. `SchemaValidationReportV1` now carries `canonical_control_receipt_ids: Vec<StackControlReceiptId>` and `canonical_backpointers`, but local schema validation display reports do not mint canonical `verification-control::ControlReceipt` records.
+docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md:17:- Boundary repairs must either be produced through `verification-control::BoundaryRepairRecord` and record the returned `BoundaryRepairRecordId`, or remain display-only and blocked from being used as repair truth.
+docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md:23:- Do not treat empty canonical ID vectors as canonical truth.
+docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md:25:- Use the new backpointer fields only for display/report reconciliation with owner crates.
+crates/aidens-contracts/src/lib.rs:71:/// records where a display/report DTO must be reconciled for canonical truth.
+crates/aidens-contracts/src/lib.rs:73:pub struct CanonicalBackpointerV1 {
+crates/aidens-contracts/src/lib.rs:85:impl CanonicalBackpointerV1 {
+crates/aidens-contracts/src/lib.rs:138:) -> Vec<CanonicalBackpointerV1> {
+crates/aidens-contracts/src/lib.rs:139:    vec![CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:1223:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:1244:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:1267:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:1286:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:1559:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:1588:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:1633:        self.canonical_backpointers
+crates/aidens-contracts/src/lib.rs:1634:            .push(CanonicalBackpointerV1::external(
+crates/aidens-contracts/src/lib.rs:3490:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3510:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3530:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3586:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3603:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3649:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3671:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3698:    pub canonical_degradation_record_id: Option<StackDegradationRecordId>,
+crates/aidens-contracts/src/lib.rs:3700:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3722:            canonical_degradation_record_id: None,
+crates/aidens-contracts/src/lib.rs:3723:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:3750:    pub canonical_projection_id: Option<StackProjectionId>,
+crates/aidens-contracts/src/lib.rs:3752:    pub canonical_import_batch_id: Option<StackImportBatchId>,
+crates/aidens-contracts/src/lib.rs:3758:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3779:            canonical_projection_id: None,
+crates/aidens-contracts/src/lib.rs:3780:            canonical_import_batch_id: None,
+crates/aidens-contracts/src/lib.rs:3784:            canonical_backpointers: vec![
+crates/aidens-contracts/src/lib.rs:3785:                CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:3790:                CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:3824:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:3849:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5056:    pub canonical_region_id: Option<StackRegionId>,
+crates/aidens-contracts/src/lib.rs:5067:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5095:            canonical_region_id: None,
+crates/aidens-contracts/src/lib.rs:5102:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5144:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5194:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5252:    pub canonical_residual_id: Option<StackResidualId>,
+crates/aidens-contracts/src/lib.rs:5254:    pub canonical_region_id: Option<StackRegionId>,
+crates/aidens-contracts/src/lib.rs:5265:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5286:            canonical_residual_id: None,
+crates/aidens-contracts/src/lib.rs:5287:            canonical_region_id: None,
+crates/aidens-contracts/src/lib.rs:5300:            canonical_backpointers: vec![
+crates/aidens-contracts/src/lib.rs:5301:                CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:5306:                CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:5333:    pub canonical_syndrome_id: Option<StackSyndromeId>,
+crates/aidens-contracts/src/lib.rs:5335:    pub canonical_region_id: Option<StackRegionId>,
+crates/aidens-contracts/src/lib.rs:5343:    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+crates/aidens-contracts/src/lib.rs:5348:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5365:            canonical_syndrome_id: None,
+crates/aidens-contracts/src/lib.rs:5366:            canonical_region_id: None,
+crates/aidens-contracts/src/lib.rs:5370:            canonical_repair_record_ids: Vec::new(),
+crates/aidens-contracts/src/lib.rs:5373:            canonical_backpointers: vec![
+crates/aidens-contracts/src/lib.rs:5374:                CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:5379:                CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:5390:        self.global_recompute_required && self.canonical_repair_record_ids.is_empty()
+crates/aidens-contracts/src/lib.rs:5550:    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+crates/aidens-contracts/src/lib.rs:5556:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5574:        let mut canonical_repair_record_ids = syndromes
+crates/aidens-contracts/src/lib.rs:5576:            .flat_map(|syndrome| syndrome.canonical_repair_record_ids.iter().cloned())
+crates/aidens-contracts/src/lib.rs:5578:        canonical_repair_record_ids.sort();
+crates/aidens-contracts/src/lib.rs:5579:        canonical_repair_record_ids.dedup();
+crates/aidens-contracts/src/lib.rs:5609:            canonical_repair_record_ids,
+crates/aidens-contracts/src/lib.rs:5613:            canonical_backpointers: vec![
+crates/aidens-contracts/src/lib.rs:5614:                CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:5619:                CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:5771:    pub quarantined_claim_ids: Vec<ArtifactId>,
+crates/aidens-contracts/src/lib.rs:5775:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5786:        quarantined_claim_ids: Vec<ArtifactId>,
+crates/aidens-contracts/src/lib.rs:5799:            quarantined_claim_ids: sorted_unique_artifact_ids(quarantined_claim_ids),
+crates/aidens-contracts/src/lib.rs:5801:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5814:    pub fn claim_is_superseded_or_quarantined(&self, claim_id: &ArtifactId) -> bool {
+crates/aidens-contracts/src/lib.rs:5816:            || self.quarantined_claim_ids.contains(claim_id)
+crates/aidens-contracts/src/lib.rs:5820:        !self.claim_is_support(claim_id) || self.claim_is_superseded_or_quarantined(claim_id)
+crates/aidens-contracts/src/lib.rs:5842:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:5931:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:5965:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6000:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:6188:    pub fn canonical_backpointer(&self) -> CanonicalBackpointerV1 {
+crates/aidens-contracts/src/lib.rs:6189:        CanonicalBackpointerV1::owner_type(
+crates/aidens-contracts/src/lib.rs:6216:    pub fn canonical_backpointer(&self) -> CanonicalBackpointerV1 {
+crates/aidens-contracts/src/lib.rs:6217:        CanonicalBackpointerV1::external(
+crates/aidens-contracts/src/lib.rs:6248:    pub fn canonical_backpointer(&self) -> CanonicalBackpointerV1 {
+crates/aidens-contracts/src/lib.rs:6249:        CanonicalBackpointerV1::external(
+crates/aidens-contracts/src/lib.rs:6285:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6300:    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+crates/aidens-contracts/src/lib.rs:6302:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6321:            canonicalization: "stack-ids-json-c14n-v1-display-only".into(),
+crates/aidens-contracts/src/lib.rs:6324:            reason_codes: vec!["display-only-not-artifact-identity".into()],
+crates/aidens-contracts/src/lib.rs:6331:            canonicalization: "stack-ids-utf8-text-v1-display-only".into(),
+crates/aidens-contracts/src/lib.rs:6334:            reason_codes: vec!["display-only-not-artifact-identity".into()],
+crates/aidens-contracts/src/lib.rs:6344:            canonicalization: format!("{}-display-only", canonicalization.into()),
+crates/aidens-contracts/src/lib.rs:6347:            reason_codes: vec!["display-only-not-artifact-identity".into()],
+crates/aidens-contracts/src/lib.rs:6409:    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+crates/aidens-contracts/src/lib.rs:6411:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6431:            canonical_repair_record_ids: Vec::new(),
+crates/aidens-contracts/src/lib.rs:6432:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:6449:            canonical_repair_record_ids: receipt.canonical_repair_record_ids,
+crates/aidens-contracts/src/lib.rs:6450:            canonical_backpointers: receipt.canonical_backpointers,
+crates/aidens-contracts/src/lib.rs:6485:    pub canonical_control_receipt_ids: Vec<StackControlReceiptId>,
+crates/aidens-contracts/src/lib.rs:6487:    pub canonical_backpointers: Vec<CanonicalBackpointerV1>,
+crates/aidens-contracts/src/lib.rs:6513:            canonical_control_receipt_ids: Vec::new(),
+crates/aidens-contracts/src/lib.rs:6514:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:6619:/// AiDENs-local, non-authoritative schema index for product/display/report DTOs.
+crates/aidens-contracts/src/lib.rs:6643:            reason_codes: vec!["aidens-local-non-authoritative-schema-index".into()],
+crates/aidens-contracts/src/lib.rs:6693:/// AiDENs-local, non-authoritative manifest for generated display/report schemas.
+crates/aidens-contracts/src/lib.rs:6737:/// AiDENs-local, non-authoritative generated schema document.
+crates/aidens-contracts/src/lib.rs:8425:    fn artifact_id_roundtrips_through_canonical_stack_id() {
+crates/aidens-contracts/src/lib.rs:8664:            canonical_backpointers: canonical_owner_backpointer(
+crates/aidens-contracts/src/lib.rs:8870:            canonical_repair_record_ids: Vec::new(),
+crates/aidens-contracts/src/lib.rs:8871:            canonical_backpointers: canonical_owner_backpointer(

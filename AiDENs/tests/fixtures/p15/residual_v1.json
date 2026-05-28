@@ -1,0 +1,27 @@
+{
+  "residual_id": "residual:fixture",
+  "kind": "residual",
+  "graph_id": "compiled-region-graph:fixture",
+  "region_id": "region:fixture",
+  "iteration": 3,
+  "previous_value": 0.07,
+  "current_value": 0.01,
+  "delta": 0.06,
+  "threshold": 0.05,
+  "converged": true,
+  "stop_rule_evidence": {
+    "stop_state": "fixed_point",
+    "iteration": 3,
+    "max_iterations": 8,
+    "residual_threshold": 0.05,
+    "damping": 0.5,
+    "observed_residual": 0.01,
+    "reason_codes": [
+      "kernel-stop-rule-evidence"
+    ]
+  },
+  "reason_codes": [
+    "residual-within-threshold"
+  ],
+  "measured_at": "2026-04-27T00:00:00Z"
+}

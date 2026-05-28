@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "adjudicated_state": {
+      "type": "string"
+    },
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effect_adjudication_receipt_id": {
+      "type": "string"
+    },
+    "effect_execution_receipt_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "observation_bundle_id": {
+      "type": "string"
+    },
+    "policy_decision_id": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "adjudicated_state",
+    "effect_adjudication_receipt_id",
+    "effect_execution_receipt_id",
+    "generated_at",
+    "observation_bundle_id",
+    "policy_decision_id",
+    "schema_version"
+  ],
+  "title": "EffectAdjudicationReceiptV1",
+  "type": "object"
+}

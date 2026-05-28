@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "ReleaseArtifactEntryV1": {
+      "properties": {
+        "artifact_kind": {
+          "$ref": "#/definitions/ReleaseArtifactKindV1"
+        },
+        "byte_len": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "content_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "byte_len",
+        "path",
+        "required"
+      ],
+      "type": "object"
+    },
+    "ReleaseArtifactKindV1": {
+      "enum": [
+        "source",
+        "document",
+        "schema",
+        "fixture",
+        "example",
+        "script",
+        "ci",
+        "handoff",
+        "manifest",
+        "generated"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifacts": {
+      "items": {
+        "$ref": "#/definitions/ReleaseArtifactEntryV1"
+      },
+      "type": "array"
+    },
+    "complete": {
+      "type": "boolean"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "manifest_id": {
+      "type": "string"
+    },
+    "missing_required_paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "package_name": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "source_basis": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifacts",
+    "complete",
+    "generated_at",
+    "kind",
+    "manifest_id",
+    "missing_required_paths",
+    "package_name",
+    "source_basis"
+  ],
+  "title": "ReleaseArtifactManifestV1",
+  "type": "object"
+}

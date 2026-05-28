@@ -1,0 +1,24 @@
+{
+  "schema_version": "release_rollback_decision_v1",
+  "release_rollback_decision_id": "release-rollback-decision-v25",
+  "release_readiness_decision_id": "release-readiness-decision-v25",
+  "incident_case_id": "incident-case-v25",
+  "policy_decision_id": "policy-decision-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "required_obligation_refs": [
+    "obligation:release-rollback:required"
+  ],
+  "blocking_obligation_refs": [
+    "obligation:release-rollback:blocking"
+  ],
+  "monitoring_obligation_refs": [
+    "obligation:release-rollback:monitoring"
+  ],
+  "rollback_required": false,
+  "generated_at": "2026-03-17T00:00:11Z"
+}

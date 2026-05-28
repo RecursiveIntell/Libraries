@@ -1,0 +1,19 @@
+{
+  "receipt_id": "query-widening:p13-fixture",
+  "kind": "query-widening",
+  "request_id": "runtime-view-request:p13-fixture",
+  "policy_id": "retrieval-policy:p13-fixture",
+  "widening_kind": "alias-expansion",
+  "original_terms": [
+    "repo"
+  ],
+  "widened_terms": [
+    "repo",
+    "repository"
+  ],
+  "allowed_by_policy": true,
+  "reason_codes": [
+    "alias-expansion-disclosed"
+  ],
+  "recorded_at": "2026-04-27T01:00:02Z"
+}

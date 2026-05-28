@@ -1,0 +1,31 @@
+{
+  "pass_id": "P13",
+  "title": "Multi-view runtime, retrieval disclosure, and query widening law",
+  "phase": "Runtime/query core",
+  "prompt_file": "prompts/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY_PROMPT.md",
+  "pass_doc": "passes/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.md",
+  "crates": [
+    "aidens-runner",
+    "aidens-memory-kit",
+    "aidens-contracts",
+    "aidens-cli",
+    "aidens-governance-kit"
+  ],
+  "artifacts": [
+    "RuntimeViewRequestV1",
+    "ViewDisclosureReceiptV1",
+    "QueryWideningReceiptV1",
+    "RetrievalPolicyV1",
+    "ProjectionDigestV1",
+    "DegradationEventV1"
+  ],
+  "acceptance": [
+    "A time-scoped query cannot silently fall back to timeless retrieval.",
+    "Alias expansion/widening emits QueryWideningReceiptV1.",
+    "Projection rebuild from memory/evidence produces identical digest under same policy."
+  ],
+  "forbidden": [
+    "Do not let runtime become a second durable truth store.",
+    "Do not merge execution receipts into domain truth without explicit relation artifacts."
+  ]
+}

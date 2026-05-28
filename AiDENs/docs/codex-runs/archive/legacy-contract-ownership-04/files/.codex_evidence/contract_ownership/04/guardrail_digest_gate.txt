@@ -1,0 +1,2 @@
+PASS: no exported local canonical digest law detected.
+EXIT_STATUS=0

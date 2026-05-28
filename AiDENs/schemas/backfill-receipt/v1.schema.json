@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifact_family": {
+      "type": "string"
+    },
+    "backfilled_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "from_version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "migrated_fixture_count": {
+      "format": "uint",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "migration_plan_id": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "source_fixture_paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "succeeded": {
+      "type": "boolean"
+    },
+    "to_version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "artifact_family",
+    "backfilled_at",
+    "from_version",
+    "kind",
+    "migrated_fixture_count",
+    "migration_plan_id",
+    "receipt_id",
+    "succeeded",
+    "to_version"
+  ],
+  "title": "BackfillReportV1",
+  "type": "object"
+}

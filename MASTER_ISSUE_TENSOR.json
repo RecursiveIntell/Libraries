@@ -1,0 +1,414 @@
+{
+  "meta": {
+    "title": "Libraries Master Issue Tensor \u2014 Combined Claude Opus 4.6 + GPT-5.4",
+    "date": "2026-03-30",
+    "systems": [
+      "Claude Opus 4.6 (code-grounded)",
+      "GPT-5.4 (code-grounded + receipt-aware)"
+    ],
+    "note": "Both audits inspected the same archive. GPT-5.4 had access to the full 30-crate workspace; Claude inspected the Recall-visible surface (vendored deps + import boundaries)."
+  },
+  "scale": {
+    "min": 0,
+    "max": 5,
+    "meaning": {
+      "0": "clean",
+      "5": "severe risk"
+    }
+  },
+  "axes": {
+    "Truth": "repo truth, support-claim clarity, and narrative consistency",
+    "Contracts": "schema/type/identity boundary rigor",
+    "Runtime": "execution semantics, failure behavior, and blast radius",
+    "Governance": "governance authority, constitutional enforcement, scope gating",
+    "Ops": "release gates, reproducibility, and operator discipline",
+    "Scale": "hotspots, growth pressure, and performance evidence",
+    "Security": "capability control, approval enforcement, and misuse resistance",
+    "Human": "maintainer load, onboarding pain, and cognitive surface"
+  },
+  "combined_severity": [
+    {
+      "lens": "Type system lawyer (Claude)",
+      "Truth": 2,
+      "Contracts": 2,
+      "Runtime": 2,
+      "Governance": 2,
+      "Ops": 1,
+      "Scale": 1,
+      "Security": 1,
+      "Human": 1
+    },
+    {
+      "lens": "Failure semantics adversary (Claude)",
+      "Truth": 1,
+      "Contracts": 1,
+      "Runtime": 3,
+      "Governance": 3,
+      "Ops": 1,
+      "Scale": 2,
+      "Security": 1,
+      "Human": 1
+    },
+    {
+      "lens": "Governance skeptic (Claude)",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 4,
+      "Ops": 1,
+      "Scale": 1,
+      "Security": 2,
+      "Human": 1
+    },
+    {
+      "lens": "Tool runtime adversary (Claude)",
+      "Truth": 1,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 2,
+      "Ops": 1,
+      "Scale": 1,
+      "Security": 2,
+      "Human": 2
+    },
+    {
+      "lens": "Memory integrity auditor (Claude)",
+      "Truth": 1,
+      "Contracts": 2,
+      "Runtime": 2,
+      "Governance": 1,
+      "Ops": 1,
+      "Scale": 1,
+      "Security": 1,
+      "Human": 1
+    },
+    {
+      "lens": "Performance pessimist (Claude)",
+      "Truth": 1,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 1,
+      "Ops": 1,
+      "Scale": 3,
+      "Security": 1,
+      "Human": 1
+    },
+    {
+      "lens": "Provider integration tester (Claude)",
+      "Truth": 1,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 1,
+      "Ops": 1,
+      "Scale": 1,
+      "Security": 1,
+      "Human": 1
+    },
+    {
+      "lens": "Concurrency adversary (Claude)",
+      "Truth": 1,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 1,
+      "Ops": 1,
+      "Scale": 1,
+      "Security": 1,
+      "Human": 1
+    },
+    {
+      "lens": "Build / dependency auditor (Claude)",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 1,
+      "Governance": 1,
+      "Ops": 4,
+      "Scale": 1,
+      "Security": 1,
+      "Human": 3
+    },
+    {
+      "lens": "DARPA/CLARA reviewer (Claude)",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 1,
+      "Governance": 2,
+      "Ops": 2,
+      "Scale": 1,
+      "Security": 1,
+      "Human": 2
+    },
+    {
+      "lens": "Constitutional truth auditor (GPT-5.4)",
+      "Truth": 4,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 3,
+      "Ops": 4,
+      "Scale": 2,
+      "Security": 1,
+      "Human": 4
+    },
+    {
+      "lens": "Contract/schema lawyer (GPT-5.4)",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 2,
+      "Ops": 2,
+      "Scale": 1,
+      "Security": 1,
+      "Human": 2
+    },
+    {
+      "lens": "Failure-semantics sadist (GPT-5.4)",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 3,
+      "Governance": 3,
+      "Ops": 2,
+      "Scale": 2,
+      "Security": 2,
+      "Human": 2
+    },
+    {
+      "lens": "Ops/release skeptic (GPT-5.4)",
+      "Truth": 4,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 2,
+      "Ops": 4,
+      "Scale": 2,
+      "Security": 1,
+      "Human": 3
+    },
+    {
+      "lens": "Blast-radius pessimist (GPT-5.4)",
+      "Truth": 2,
+      "Contracts": 2,
+      "Runtime": 4,
+      "Governance": 3,
+      "Ops": 3,
+      "Scale": 4,
+      "Security": 2,
+      "Human": 4
+    },
+    {
+      "lens": "Performance skeptic (GPT-5.4)",
+      "Truth": 1,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 1,
+      "Ops": 2,
+      "Scale": 3,
+      "Security": 1,
+      "Human": 2
+    },
+    {
+      "lens": "Security goblin (GPT-5.4)",
+      "Truth": 2,
+      "Contracts": 1,
+      "Runtime": 2,
+      "Governance": 2,
+      "Ops": 2,
+      "Scale": 1,
+      "Security": 2,
+      "Human": 2
+    },
+    {
+      "lens": "New maintainer from hell (GPT-5.4)",
+      "Truth": 3,
+      "Contracts": 2,
+      "Runtime": 3,
+      "Governance": 2,
+      "Ops": 3,
+      "Scale": 3,
+      "Security": 1,
+      "Human": 5
+    }
+  ],
+  "issues": [
+    {
+      "id": "LIB-001",
+      "source": "GPT-5.4",
+      "priority": "P0",
+      "title": "Governance gate is observational and fail-open",
+      "area": "Governance",
+      "status": "closed — GovernanceMode::Strict + observe_governance_with_mode + gate_execution_with_mode added to governance_gate.rs with 8 tests"
+    },
+    {
+      "id": "LIB-002",
+      "source": "GPT-5.4",
+      "priority": "P1",
+      "title": "Closeout claim narrower than workspace",
+      "area": "Ops/Truth",
+      "status": "closed — CRATE_HARDENING_MATRIX.md added with per-crate build/release/panic/doc/bench/lint status and lane classification"
+    },
+    {
+      "id": "LIB-003",
+      "source": "GPT-5.4",
+      "priority": "P1",
+      "title": "Root-level packet sprawl / narrative drift",
+      "area": "Truth/Human",
+      "status": "closed — archived 9 superseded numbered docs, moved 2 spec docs to docs/, root reduced from ~30 to 19 files"
+    },
+    {
+      "id": "LIB-004",
+      "source": "GPT-5.4",
+      "priority": "P1",
+      "title": "Giant crates carry disproportionate risk",
+      "area": "Scale/Runtime",
+      "status": "closed — diff-size caps (500 lines) and cross-crate regression test checks added to check_hotspot_budgets.sh"
+    },
+    {
+      "id": "LIB-005",
+      "source": "GPT-5.4",
+      "priority": "P2",
+      "title": "No workspace-level compiler lint enforcement",
+      "area": "Ops",
+      "status": "closed — workspace lints (deny unsafe_code, clippy::todo, clippy::dbg_macro, clippy::unimplemented) added to all 30 crates"
+    },
+    {
+      "id": "LIB-006",
+      "source": "GPT-5.4",
+      "priority": "P2",
+      "title": "Performance evidence is dev-profile only",
+      "area": "Scale",
+      "status": "closed — scripts/capture_release_profile_benchmarks.sh added, produces evidence/perf_release_*.json with --release numbers"
+    },
+    {
+      "id": "LIB-007",
+      "source": "GPT-5.4",
+      "priority": "P1",
+      "title": "No independent reproducibility harness",
+      "area": "Ops",
+      "status": "closed — scripts/external_audit_harness.sh added, runs 7 core gates and produces evidence/external_audit_report.json"
+    },
+    {
+      "id": "CLIB-001",
+      "source": "Claude",
+      "priority": "P2",
+      "title": "GovernanceReceipt uses String not enum for disposition",
+      "area": "Contracts",
+      "status": "not_applicable_in_libraries — Libraries GovernanceReceiptV1 already uses GovernanceGateResult enum; stringly-typed receipt is in Recall workspace"
+    },
+    {
+      "id": "CLIB-002",
+      "source": "Claude",
+      "priority": "P2",
+      "title": "ToolCtx construction via serde round-trip",
+      "area": "Contracts",
+      "status": "open — recall workspace (session.rs); ToolCtx type is in Libraries llm-tool-runtime but fragile construction is in Recall"
+    },
+    {
+      "id": "CLIB-003",
+      "source": "Claude",
+      "priority": "P1",
+      "title": "Constraint compilation output discarded during ingest",
+      "area": "Governance/Runtime",
+      "status": "open — recall workspace (pipeline.rs/session.rs); CompileOutput type is in Libraries constraint-compiler but discard is in Recall"
+    },
+    {
+      "id": "CLIB-004",
+      "source": "Claude",
+      "priority": "P2",
+      "title": "Reranker failure has no receipt signal",
+      "area": "Runtime",
+      "status": "open — recall workspace only (QueryReceipt not in Libraries)"
+    },
+    {
+      "id": "CLIB-005",
+      "source": "Claude",
+      "priority": "P1",
+      "title": "Governance receipt is metadata not a gate",
+      "area": "Governance",
+      "status": "partially_closed — Libraries side fixed via LIB-001 strict mode; Recall session.rs still needs to call gate_execution_with_mode"
+    },
+    {
+      "id": "CLIB-006",
+      "source": "Claude",
+      "priority": "P2",
+      "title": "Governance exceptions lack temporal validation",
+      "area": "Governance/Security",
+      "status": "open — recall workspace only (scope_governance.rs not in Libraries)"
+    },
+    {
+      "id": "CLIB-007",
+      "source": "Claude",
+      "priority": "P1",
+      "title": "Write tools shown to model without approval handler",
+      "area": "Tools/Security",
+      "status": "open — recall workspace only (session.rs tool prompt builder not in Libraries)"
+    },
+    {
+      "id": "CLIB-008",
+      "source": "Claude",
+      "priority": "P2",
+      "title": "Memory dedup via embedding search not hash index",
+      "area": "Runtime",
+      "status": "open — recall workspace only (session.rs/memory_policy.rs not in Libraries)"
+    },
+    {
+      "id": "CLIB-009",
+      "source": "Claude",
+      "priority": "P2",
+      "title": "orient() has no hard cap independent of budget",
+      "area": "Runtime/Scale",
+      "status": "open — recall workspace only (session.rs orient() not in Libraries)"
+    },
+    {
+      "id": "CLIB-010",
+      "source": "Claude",
+      "priority": "P2",
+      "title": "FailoverProvider doesn't record provider identity",
+      "area": "Runtime",
+      "status": "open — recall workspace only (FailoverProvider/CompletionResponse not in Libraries)"
+    },
+    {
+      "id": "CLIB-011",
+      "source": "Claude",
+      "priority": "P3",
+      "title": "Mutex poisoning recovery may use stale data",
+      "area": "Runtime",
+      "status": "open — recall workspace only (session.rs lock_or_recover not in Libraries)"
+    },
+    {
+      "id": "CLIB-012",
+      "source": "Claude",
+      "priority": "P1",
+      "title": "15 sibling path dependencies \u2014 reproducibility barrier",
+      "area": "Ops",
+      "status": "open — recall workspace Cargo.toml; partially mitigated by LIB-007 external harness for Libraries side"
+    },
+    {
+      "id": "CLIB-013",
+      "source": "Claude",
+      "priority": "P3",
+      "title": "ExportEnvelopeV3 carries 35+ empty fields",
+      "area": "Human",
+      "status": "closed — doc comment added to ExportEnvelopeV3 categorizing core vs v13/v14/v15 extension fields"
+    },
+    {
+      "id": "CLIB-014",
+      "source": "Claude",
+      "priority": "P2",
+      "title": "Capability spec claims not machine-verifiable",
+      "area": "Ops/Truth",
+      "status": "open — recall workspace only (recall_full_capability_spec.md not in Libraries)"
+    }
+  ],
+  "summary": {
+    "combined_score_10": 8.1,
+    "claude_score": 8.0,
+    "gpt54_score": 8.2,
+    "convergent_themes": [
+      "Governance is observational not commanding (LIB-001 \u2248 CLIB-005)",
+      "Reproducibility and external verifiability (LIB-007 \u2248 CLIB-012)",
+      "Hotspot concentration in large crates (LIB-004 \u2248 CLIB-009)",
+      "Operational truth sprawl (LIB-003 \u2248 CLIB-014)"
+    ],
+    "divergent_findings": [
+      "GPT-5.4 flagged LIB-005 (no workspace lints) \u2014 Recall workspace now has them",
+      "Claude found specific code-level issues (ToolCtx construction, temporal validation) that document-level audit couldn't see"
+    ]
+  }
+}

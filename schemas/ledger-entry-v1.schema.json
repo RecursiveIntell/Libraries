@@ -872,7 +872,8 @@
         "supersession_verification",
         "comparability_drift",
         "calibration_caveat",
-        "scope_stale"
+        "scope_stale",
+        "query_turn"
       ],
       "type": "string"
     },

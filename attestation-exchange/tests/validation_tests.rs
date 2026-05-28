@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use attestation_exchange::{
     AttestationEnvelopeV1, AttestationReplayabilityClassV1, AttestationValidationError,
     TransparencyAdmissibilityJudgmentV1, TransparencyReceiptV1, TrustRootExpirationPolicyV1,

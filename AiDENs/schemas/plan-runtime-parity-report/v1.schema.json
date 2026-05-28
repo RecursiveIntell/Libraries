@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ArtifactKindV1": {
+      "description": "AiDENs-local display discriminator; not a canonical artifact family schema.",
+      "type": "string"
+    },
+    "PlanRuntimeParityCheckKindV1": {
+      "enum": [
+        "provider-route",
+        "tool-exposure",
+        "memory-mode",
+        "scaffold-state"
+      ],
+      "type": "string"
+    },
+    "PlanRuntimeParityCheckV1": {
+      "properties": {
+        "check": {
+          "$ref": "#/definitions/PlanRuntimeParityCheckKindV1"
+        },
+        "expected": {
+          "type": "string"
+        },
+        "observed": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "check",
+        "expected",
+        "observed",
+        "passed"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "app_id": {
+      "type": "string"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/definitions/PlanRuntimeParityCheckV1"
+      },
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/definitions/ArtifactKindV1"
+    },
+    "mismatches": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "report_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "app_id",
+    "checks",
+    "generated_at",
+    "kind",
+    "report_id"
+  ],
+  "title": "PlanRuntimeParityReportV1",
+  "type": "object"
+}

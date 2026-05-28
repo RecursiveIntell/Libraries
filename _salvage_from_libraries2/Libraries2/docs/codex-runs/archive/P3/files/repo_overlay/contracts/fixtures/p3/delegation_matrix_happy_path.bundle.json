@@ -1,0 +1,81 @@
+{
+  "fixture_name": "delegation_matrix_happy_path",
+  "wave": "p3",
+  "artifacts": {
+    "RoleCatalogV1": {
+      "schema_version": "RoleCatalogV1",
+      "role_catalog_id": "rc_001",
+      "role_definitions": [
+        {
+          "role": "release-manager",
+          "capabilities": [
+            "release_approve",
+            "rollback_authorize"
+          ]
+        },
+        {
+          "role": "incident-commander",
+          "capabilities": [
+            "containment_authorize",
+            "continuity_exception_request"
+          ]
+        }
+      ],
+      "default_autonomy_ceiling": "verification_only",
+      "scope_rule": "namespace_and_service_bounded",
+      "review_cycle_days": 90
+    },
+    "DelegationMatrixV1": {
+      "schema_version": "DelegationMatrixV1",
+      "delegation_matrix_id": "dm_001",
+      "allowed_edges": [
+        {
+          "from_role": "release-manager",
+          "to_role": "service-owner",
+          "capability": "release_approve"
+        },
+        {
+          "from_role": "ops-manager",
+          "to_role": "incident-commander",
+          "capability": "containment_authorize"
+        }
+      ],
+      "max_delegation_depth": 2,
+      "required_lease_classes": [
+        "bounded_time",
+        "bounded_scope"
+      ],
+      "forbidden_chain_patterns": [
+        "same_person_request_and_approve",
+        "cross_tenant_effect_without_dual_control"
+      ]
+    },
+    "ApprovalMatrixV1": {
+      "schema_version": "ApprovalMatrixV1",
+      "approval_matrix_id": "am_001",
+      "approval_rules": [
+        {
+          "action_class": "prod_release",
+          "required_roles": [
+            "release-manager",
+            "service-owner"
+          ]
+        },
+        {
+          "action_class": "continuity_exception",
+          "required_roles": [
+            "incident-commander",
+            "ops-manager"
+          ]
+        }
+      ],
+      "default_quorum": "2_of_2",
+      "requires_independent_review_for": [
+        "cross_tenant_change",
+        "production_break_glass",
+        "customer_visible_release"
+      ],
+      "break_glass_post_hoc_review_hours": 24
+    }
+  }
+}

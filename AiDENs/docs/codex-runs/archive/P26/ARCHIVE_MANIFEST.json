@@ -1,0 +1,86 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-04T19:59:59Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/scripts/assert_p26_abstention_repair_cases.py",
+      "bytes": 1053,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_abstention_repair_cases.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "90f33ea68e8753e6f936276a2d4c775fcd9c76770f308feca27ff56a0a98fe13"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/scripts/assert_p26_agent_spec_contract.py",
+      "bytes": 963,
+      "mtime_utc": "2026-05-04T19:37:57Z",
+      "original_path": "scripts/assert_p26_agent_spec_contract.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "3e385c0dedcc8f924c1b8a63197108923bf0b98185a09d417d1cd6ed14509340"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/scripts/assert_p26_coding_agent_v1_lane.py",
+      "bytes": 1066,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_coding_agent_v1_lane.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "d087934bb15ab15d20c39e61d51a1950a37392b22e8a704bdcbc188cda16b016"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/scripts/assert_p26_memory_grounded_agent_lane.py",
+      "bytes": 1256,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_memory_grounded_agent_lane.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "70143cfd5a19c2fa89fdcdfdf72a7d3a18465077463037b38e2758dbbf53ce2e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/scripts/assert_p26_plan_act_verify_receipts.py",
+      "bytes": 1114,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_plan_act_verify_receipts.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "2416120ea3fbb3c999493ca9be50db3b3155247651306defb85a3df8f62e51bb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/scripts/assert_p26_run_bundle_evidence.py",
+      "bytes": 839,
+      "mtime_utc": "2026-05-04T19:37:57Z",
+      "original_path": "scripts/assert_p26_run_bundle_evidence.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "733d3fa58a4e2d3339e7c43050925f6849c41292ddc9ed6a06c3b3cf9c927915"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/scripts/assert_p26_run_bundle_v3_replay.py",
+      "bytes": 1294,
+      "mtime_utc": "2026-05-04T19:47:07Z",
+      "original_path": "scripts/assert_p26_run_bundle_v3_replay.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "919aff910b19e58b71ff2284fe585b308916ff98a4499e294a14bf2cd11db67a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26/files/scripts/assert_p26_support_truth.py",
+      "bytes": 619,
+      "mtime_utc": "2026-05-04T19:42:02Z",
+      "original_path": "scripts/assert_p26_support_truth.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "9ab99889a1d25aa1550cfd15c09bc6e5661b438dc7efc85dfd6f29c31e367237"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P26",
+  "skipped_existing": [],
+  "superseded_by": "P26",
+  "tool": "z.py",
+  "tool_version": "2026.05.03-p25",
+  "unclassified": []
+}

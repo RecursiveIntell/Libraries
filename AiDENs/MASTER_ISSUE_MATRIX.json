@@ -1,0 +1,902 @@
+[
+  {
+    "id": "AIDENS-P00-01",
+    "pass": "P00",
+    "title": "Update root README/status docs to reflect the 2026-04-26 snapshot, not 2026-04-25.",
+    "priority": "P0",
+    "crates": "workspace root, scripts, docs, aidens-testkit",
+    "acceptance": "bash scripts/verify.sh exists and is referenced by README, AGENTS.md, and CI.; grep for stale 20260425 metrics either returns none or only explicit historical references.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P00-02",
+    "pass": "P00",
+    "title": "Add scripts/verify.sh as the single pass gate that chains fmt/check/test/clippy plus local fake-ready checks.",
+    "priority": "P0",
+    "crates": "workspace root, scripts, docs, aidens-testkit",
+    "acceptance": "bash scripts/verify.sh exists and is referenced by README, AGENTS.md, and CI.; grep for stale 20260425 metrics either returns none or only explicit historical references.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P00-03",
+    "pass": "P00",
+    "title": "Add scripts/assert_no_scaffold_promoted.sh that permits scaffold markers only in explicitly deferred crates and fails if doctor/README claims they are complete.",
+    "priority": "P0",
+    "crates": "workspace root, scripts, docs, aidens-testkit",
+    "acceptance": "bash scripts/verify.sh exists and is referenced by README, AGENTS.md, and CI.; grep for stale 20260425 metrics either returns none or only explicit historical references.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P00-04",
+    "pass": "P00",
+    "title": "Add a status file that lists every crate as implemented, partial, or scaffold-only with no ambiguous \u201chealthy\u201d wording.",
+    "priority": "P0",
+    "crates": "workspace root, scripts, docs, aidens-testkit",
+    "acceptance": "bash scripts/verify.sh exists and is referenced by README, AGENTS.md, and CI.; grep for stale 20260425 metrics either returns none or only explicit historical references.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P00-05",
+    "pass": "P00",
+    "title": "Make CI call the same script Codex uses locally.",
+    "priority": "P0",
+    "crates": "workspace root, scripts, docs, aidens-testkit",
+    "acceptance": "bash scripts/verify.sh exists and is referenced by README, AGENTS.md, and CI.; grep for stale 20260425 metrics either returns none or only explicit historical references.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P01-01",
+    "pass": "P01",
+    "title": "Audit every public builder and CLI path for ignored inputs.",
+    "priority": "P0",
+    "crates": "aidens-app-kit, aidens-runner, aidens-cli, aidens-contracts",
+    "acceptance": "No public method accepts meaningful input and silently discards it.; from_plan cannot produce a disabled-provider runner when provider_required=true unless the plan explicitly selects disabled and returns a blocked run.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P01-02",
+    "pass": "P01",
+    "title": "Make AiDENsApp::from_plan either require provider information in the plan or fail with an explicit provider-unbound error.",
+    "priority": "P0",
+    "crates": "aidens-app-kit, aidens-runner, aidens-cli, aidens-contracts",
+    "acceptance": "No public method accepts meaningful input and silently discards it.; from_plan cannot produce a disabled-provider runner when provider_required=true unless the plan explicitly selects disabled and returns a blocked run.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P01-03",
+    "pass": "P01",
+    "title": "Ensure custom ToolRegistry passed to app builder is preserved and observable through inspect-tools/list-tools.",
+    "priority": "P0",
+    "crates": "aidens-app-kit, aidens-runner, aidens-cli, aidens-contracts",
+    "acceptance": "No public method accepts meaningful input and silently discards it.; from_plan cannot produce a disabled-provider runner when provider_required=true unless the plan explicitly selects disabled and returns a blocked run.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P01-04",
+    "pass": "P01",
+    "title": "Add plan-to-runner parity tests for provider, memory mode, receipt level, enabled tool bundles, and sandbox root.",
+    "priority": "P0",
+    "crates": "aidens-app-kit, aidens-runner, aidens-cli, aidens-contracts",
+    "acceptance": "No public method accepts meaningful input and silently discards it.; from_plan cannot produce a disabled-provider runner when provider_required=true unless the plan explicitly selects disabled and returns a blocked run.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P01-05",
+    "pass": "P01",
+    "title": "Reject MemoryMode::Required until P09 lands, unless a concrete memory store is configured.",
+    "priority": "P0",
+    "crates": "aidens-app-kit, aidens-runner, aidens-cli, aidens-contracts",
+    "acceptance": "No public method accepts meaningful input and silently discards it.; from_plan cannot produce a disabled-provider runner when provider_required=true unless the plan explicitly selects disabled and returns a blocked run.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P02-01",
+    "pass": "P02",
+    "title": "Separate advertised capability from implemented capability: AdvertisedProviderCapabilityV1 vs ExecutableProviderCapabilityV1.",
+    "priority": "P0",
+    "crates": "aidens-provider-kit, aidens-contracts, aidens-cli, aidens-runner",
+    "acceptance": "provider-check never reports native_tool_loop=true for an unavailable or unsupported backend.; OpenAI/OpenRouter/Anthropic routes either execute real requests behind feature-gated clients or return provider-boundary-unavailable with native_tool_loop=false.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P02-02",
+    "pass": "P02",
+    "title": "Add a backend matrix for disabled, mock, ollama, openai-compatible, openai, openrouter, anthropic.",
+    "priority": "P0",
+    "crates": "aidens-provider-kit, aidens-contracts, aidens-cli, aidens-runner",
+    "acceptance": "provider-check never reports native_tool_loop=true for an unavailable or unsupported backend.; OpenAI/OpenRouter/Anthropic routes either execute real requests behind feature-gated clients or return provider-boundary-unavailable with native_tool_loop=false.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P02-03",
+    "pass": "P02",
+    "title": "Implement real OpenAI-compatible / OpenAI / OpenRouter / Anthropic HTTP boundaries or mark them unavailable without native route labels.",
+    "priority": "P0",
+    "crates": "aidens-provider-kit, aidens-contracts, aidens-cli, aidens-runner",
+    "acceptance": "provider-check never reports native_tool_loop=true for an unavailable or unsupported backend.; OpenAI/OpenRouter/Anthropic routes either execute real requests behind feature-gated clients or return provider-boundary-unavailable with native_tool_loop=false.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P02-04",
+    "pass": "P02",
+    "title": "Route native_tool_loop=true only when a backend can actually send and receive tool calls in that provider dialect.",
+    "priority": "P0",
+    "crates": "aidens-provider-kit, aidens-contracts, aidens-cli, aidens-runner",
+    "acceptance": "provider-check never reports native_tool_loop=true for an unavailable or unsupported backend.; OpenAI/OpenRouter/Anthropic routes either execute real requests behind feature-gated clients or return provider-boundary-unavailable with native_tool_loop=false.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P02-05",
+    "pass": "P02",
+    "title": "Add provider certification fixtures for each provider kind covering configured, missing key, missing model, network failure, malformed response, and tool-loop unavailable.",
+    "priority": "P0",
+    "crates": "aidens-provider-kit, aidens-contracts, aidens-cli, aidens-runner",
+    "acceptance": "provider-check never reports native_tool_loop=true for an unavailable or unsupported backend.; OpenAI/OpenRouter/Anthropic routes either execute real requests behind feature-gated clients or return provider-boundary-unavailable with native_tool_loop=false.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P03-01",
+    "pass": "P03",
+    "title": "Define TurnExecutorV1 and TurnModeV1: no-tools, native-tool-loop, parser-fallback, provider-unavailable, budget-exhausted.",
+    "priority": "P0",
+    "crates": "aidens-runner, aidens-provider-kit, aidens-tool-kit, aidens-budget-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "A mock/provider fixture can request repo-read and receive the tool result before final answer.; Every tool call has a receipt linked to run_id, attempt_id, tool_id, input digest, output digest, and outcome.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P03-02",
+    "pass": "P03",
+    "title": "Extend provider request/response contracts to carry provider_tool_schemas and provider-specific tool call outputs.",
+    "priority": "P0",
+    "crates": "aidens-runner, aidens-provider-kit, aidens-tool-kit, aidens-budget-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "A mock/provider fixture can request repo-read and receive the tool result before final answer.; Every tool call has a receipt linked to run_id, attempt_id, tool_id, input digest, output digest, and outcome.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P03-03",
+    "pass": "P03",
+    "title": "Implement parser fallback using boundary compiler only as degraded path; it must never be reported as native.",
+    "priority": "P0",
+    "crates": "aidens-runner, aidens-provider-kit, aidens-tool-kit, aidens-budget-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "A mock/provider fixture can request repo-read and receive the tool result before final answer.; Every tool call has a receipt linked to run_id, attempt_id, tool_id, input digest, output digest, and outcome.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P03-04",
+    "pass": "P03",
+    "title": "Call ToolDispatcher from the runner and append canonical ToolReceipt plus AiDENs ToolInvocationReportV1 to the run report chain.",
+    "priority": "P0",
+    "crates": "aidens-runner, aidens-provider-kit, aidens-tool-kit, aidens-budget-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "A mock/provider fixture can request repo-read and receive the tool result before final answer.; Every tool call has canonical receipt/report linkage to run_id, attempt_id, tool_id, input digest, output digest, and outcome.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P03-05",
+    "pass": "P03",
+    "title": "Enforce max_tool_calls, max_retries, timeout/deadline, and no-recursive-tool-loop stop rules.",
+    "priority": "P0",
+    "crates": "aidens-runner, aidens-provider-kit, aidens-tool-kit, aidens-budget-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "A mock/provider fixture can request repo-read and receive the tool result before final answer.; Every tool call has a receipt linked to run_id, attempt_id, tool_id, input digest, output digest, and outcome.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P04-01",
+    "pass": "P04",
+    "title": "Normalize lifecycle states: declared, registered, executable, exposed_this_turn, invoked, succeeded, failed, blocked, hidden.",
+    "priority": "P0",
+    "crates": "aidens-tool-kit, aidens-permit-kit, aidens-security-kit, aidens-contracts, aidens-cli",
+    "acceptance": "list-tools and inspect-tools distinguish declared, registered, executable, exposed, hidden, blocked.; Side-effect tools cannot be exposed or invoked without permit; denial includes ApprovalRequestV1 or reason code.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P04-02",
+    "pass": "P04",
+    "title": "Add exposure planner that consumes provider executable capability, permit policy, risk class, sandbox truth, and max tool limits.",
+    "priority": "P0",
+    "crates": "aidens-tool-kit, aidens-permit-kit, aidens-security-kit, aidens-contracts, aidens-cli",
+    "acceptance": "list-tools and inspect-tools distinguish declared, registered, executable, exposed, hidden, blocked.; Side-effect tools cannot be exposed or invoked without permit; denial includes ApprovalRequestV1 or reason code.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P04-03",
+    "pass": "P04",
+    "title": "Implement approval request/decision ledger and CLI commands to inspect, approve, deny, and revoke permits.",
+    "priority": "P0",
+    "crates": "aidens-tool-kit, aidens-permit-kit, aidens-security-kit, aidens-contracts, aidens-cli",
+    "acceptance": "list-tools and inspect-tools distinguish declared, registered, executable, exposed, hidden, blocked.; Side-effect tools cannot be exposed or invoked without permit; denial includes ApprovalRequestV1 or reason code.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P04-04",
+    "pass": "P04",
+    "title": "Ensure side-effect tool invocation without matching permit emits a receipt-bearing denial, not a raw error only.",
+    "priority": "P0",
+    "crates": "aidens-tool-kit, aidens-permit-kit, aidens-security-kit, aidens-contracts, aidens-cli",
+    "acceptance": "list-tools and inspect-tools distinguish declared, registered, executable, exposed, hidden, blocked.; Side-effect tools cannot be exposed or invoked without permit; denial includes ApprovalRequestV1 or reason code.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P04-05",
+    "pass": "P04",
+    "title": "Add policy tests for hidden, blocked, declared-not-registered, registered-not-executable, and permit-required cases.",
+    "priority": "P0",
+    "crates": "aidens-tool-kit, aidens-permit-kit, aidens-security-kit, aidens-contracts, aidens-cli",
+    "acceptance": "list-tools and inspect-tools distinguish declared, registered, executable, exposed, hidden, blocked.; Side-effect tools cannot be exposed or invoked without permit; denial includes ApprovalRequestV1 or reason code.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P05-01",
+    "pass": "P05",
+    "title": "Use canonical library receipt payloads with a durable AiDENs receipt log/sink.",
+    "priority": "P0",
+    "crates": "aidens-receipts, aidens-contracts, aidens-cli, aidens-runner, aidens-daemon-kit",
+    "acceptance": "A run can be inspected after process restart via durable store.; Receipt digests are stable across pretty/compact JSON representation.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P05-02",
+    "pass": "P05",
+    "title": "Implement durable NDJSON receipt store first; design SQLite store behind same trait.",
+    "priority": "P0",
+    "crates": "aidens-receipts, aidens-contracts, aidens-cli, aidens-runner, aidens-daemon-kit",
+    "acceptance": "A run can be inspected after process restart via durable store.; Receipt digests are stable across pretty/compact JSON representation.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P05-03",
+    "pass": "P05",
+    "title": "Add same-transaction outbox abstraction for future SQLite domain mutations.",
+    "priority": "P0",
+    "crates": "aidens-receipts, aidens-contracts, aidens-cli, aidens-runner, aidens-daemon-kit",
+    "acceptance": "A run can be inspected after process restart via durable store.; Receipt digests are stable across pretty/compact JSON representation.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P05-04",
+    "pass": "P05",
+    "title": "Add CLI: receipts list, receipts inspect, receipts export, receipts verify-digest.",
+    "priority": "P0",
+    "crates": "aidens-receipts, aidens-contracts, aidens-cli, aidens-runner, aidens-daemon-kit",
+    "acceptance": "A run can be inspected after process restart via durable store.; Receipt digests are stable across pretty/compact JSON representation.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P05-05",
+    "pass": "P05",
+    "title": "Link RunReportV1, provider/tool/control canonical receipts, boundary repair receipts, permit receipts, and future queue records without local canonical receipt truth.",
+    "priority": "P0",
+    "crates": "aidens-receipts, aidens-contracts, aidens-cli, aidens-runner, aidens-daemon-kit",
+    "acceptance": "A run can be inspected after process restart via durable store.; Canonical receipt digests are stable across pretty/compact JSON representation.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P06-01",
+    "pass": "P06",
+    "title": "Declare accepted dialects: strict-json, json-schema-2020-12, rfc8785-canonical-json.",
+    "priority": "P1",
+    "crates": "aidens-boundary-kit, aidens-contracts, aidens-cli, aidens-testkit",
+    "acceptance": "Duplicate-key fixture is rejected with DuplicateKeyFindingV1.; Schema-invalid tool input is blocked before invocation and emits SchemaValidationReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P06-02",
+    "pass": "P06",
+    "title": "Reject duplicate keys and non-finite numbers where JSON semantics are ambiguous.",
+    "priority": "P1",
+    "crates": "aidens-boundary-kit, aidens-contracts, aidens-cli, aidens-testkit",
+    "acceptance": "Duplicate-key fixture is rejected with DuplicateKeyFindingV1.; Schema-invalid tool input is blocked before invocation and emits SchemaValidationReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P06-03",
+    "pass": "P06",
+    "title": "Add schema validation using generated schemas; validate schema documents against meta-schema.",
+    "priority": "P1",
+    "crates": "aidens-boundary-kit, aidens-contracts, aidens-cli, aidens-testkit",
+    "acceptance": "Duplicate-key fixture is rejected with DuplicateKeyFindingV1.; Schema-invalid tool input is blocked before invocation and emits SchemaValidationReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P06-04",
+    "pass": "P06",
+    "title": "Replace FNV-1a with cryptographic digest over RFC8785/JCS-style canonical JSON or a deterministic canonicalizer with declared limits.",
+    "priority": "P1",
+    "crates": "aidens-boundary-kit, aidens-contracts, aidens-cli, aidens-testkit",
+    "acceptance": "Duplicate-key fixture is rejected with DuplicateKeyFindingV1.; Schema-invalid tool input is blocked before invocation and emits SchemaValidationReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P06-05",
+    "pass": "P06",
+    "title": "Turn markdown-fence and substring repair into bounded, policy-controlled repair classes with before/after digests.",
+    "priority": "P1",
+    "crates": "aidens-boundary-kit, aidens-contracts, aidens-cli, aidens-testkit",
+    "acceptance": "Duplicate-key fixture is rejected with DuplicateKeyFindingV1.; Schema-invalid tool input is blocked before invocation and emits SchemaValidationReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P07-01",
+    "pass": "P07",
+    "title": "Add schema generation command for every public artifact family.",
+    "priority": "P1",
+    "crates": "aidens-contracts, aidens-cli, workspace root, schemas",
+    "acceptance": "cargo run -p aidens-cli -- schemas generate creates deterministic schema files.; schemas check fails on unregistered artifact family or incompatible breaking change without major bump.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P07-02",
+    "pass": "P07",
+    "title": "Generate schemas into schemas/<family>/<version>.schema.json plus manifest.",
+    "priority": "P1",
+    "crates": "aidens-contracts, aidens-cli, workspace root, schemas",
+    "acceptance": "cargo run -p aidens-cli -- schemas generate creates deterministic schema files.; schemas check fails on unregistered artifact family or incompatible breaking change without major bump.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P07-03",
+    "pass": "P07",
+    "title": "Add golden JSON fixtures for each artifact type and ensure serde round-trip.",
+    "priority": "P1",
+    "crates": "aidens-contracts, aidens-cli, workspace root, schemas",
+    "acceptance": "cargo run -p aidens-cli -- schemas generate creates deterministic schema files.; schemas check fails on unregistered artifact family or incompatible breaking change without major bump.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P07-04",
+    "pass": "P07",
+    "title": "Add schema compatibility checks: backward, forward, full, transitive for selected families.",
+    "priority": "P1",
+    "crates": "aidens-contracts, aidens-cli, workspace root, schemas",
+    "acceptance": "cargo run -p aidens-cli -- schemas generate creates deterministic schema files.; schemas check fails on unregistered artifact family or incompatible breaking change without major bump.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P07-05",
+    "pass": "P07",
+    "title": "Adopt expand/backfill/flip-read/contract migration law for persistent stores.",
+    "priority": "P1",
+    "crates": "aidens-contracts, aidens-cli, workspace root, schemas",
+    "acceptance": "cargo run -p aidens-cli -- schemas generate creates deterministic schema files.; schemas check fails on unregistered artifact family or incompatible breaking change without major bump.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P08-01",
+    "pass": "P08",
+    "title": "Create aidens-testkit reference modules for plan->exposure, provider route, permit, boundary repair, and receipt lineage.",
+    "priority": "P1",
+    "crates": "aidens-testkit, aidens-config, aidens-tool-kit, aidens-permit-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "Reference fixtures cover all provider kinds, risk classes, memory modes, receipt levels, and tool lifecycle states.; Any production/reference mismatch fails tests with human-readable diff.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P08-02",
+    "pass": "P08",
+    "title": "Add golden fixtures in tests/fixtures/reference/*.json.",
+    "priority": "P1",
+    "crates": "aidens-testkit, aidens-config, aidens-tool-kit, aidens-permit-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "Reference fixtures cover all provider kinds, risk classes, memory modes, receipt levels, and tool lifecycle states.; Any production/reference mismatch fails tests with human-readable diff.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P08-03",
+    "pass": "P08",
+    "title": "Compare production implementations against reference for each fixture.",
+    "priority": "P1",
+    "crates": "aidens-testkit, aidens-config, aidens-tool-kit, aidens-permit-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "Reference fixtures cover all provider kinds, risk classes, memory modes, receipt levels, and tool lifecycle states.; Any production/reference mismatch fails tests with human-readable diff.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P08-04",
+    "pass": "P08",
+    "title": "Add property tests for exposure monotonicity: adding permissions may expose more tools; removing permissions cannot expose more.",
+    "priority": "P1",
+    "crates": "aidens-testkit, aidens-config, aidens-tool-kit, aidens-permit-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "Reference fixtures cover all provider kinds, risk classes, memory modes, receipt levels, and tool lifecycle states.; Any production/reference mismatch fails tests with human-readable diff.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P08-05",
+    "pass": "P08",
+    "title": "Add regression conversion path for any discovered counterexample.",
+    "priority": "P1",
+    "crates": "aidens-testkit, aidens-config, aidens-tool-kit, aidens-permit-kit, aidens-boundary-kit, aidens-receipts",
+    "acceptance": "Reference fixtures cover all provider kinds, risk classes, memory modes, receipt levels, and tool lifecycle states.; Any production/reference mismatch fails tests with human-readable diff.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P09-01",
+    "pass": "P09",
+    "title": "Define episode/evidence/claim IDs and bitemporal coordinates: valid_from/valid_to and recorded_from/recorded_to.",
+    "priority": "P1",
+    "crates": "aidens-memory-kit, aidens-contracts, aidens-receipts, aidens-boundary-kit, aidens-cli",
+    "acceptance": "Can insert a claim, supersede it retroactively, and answer both \u201cwhat was true at valid time V\u201d and \u201cwhat did we believe at recorded time R\u201d.; MemoryRequired app fails doctor/run if no memory store is configured.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P09-02",
+    "pass": "P09",
+    "title": "Implement append-plus-supersession in SQLite or a feature-gated durable store; no in-place truth rewrite.",
+    "priority": "P1",
+    "crates": "aidens-memory-kit, aidens-contracts, aidens-receipts, aidens-boundary-kit, aidens-cli",
+    "acceptance": "Can insert a claim, supersede it retroactively, and answer both \u201cwhat was true at valid time V\u201d and \u201cwhat did we believe at recorded time R\u201d.; MemoryRequired app fails doctor/run if no memory store is configured.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P09-03",
+    "pass": "P09",
+    "title": "Call semantic-memory-forge EpisodeBundleV1 and canonical runtime query APIs: by episode, by claim, as_of(valid_t, recorded_t).",
+    "priority": "P1",
+    "crates": "aidens-memory-kit, aidens-contracts, aidens-receipts, aidens-boundary-kit, aidens-cli",
+    "acceptance": "Can insert a claim through canonical memory crates, supersede it retroactively, and answer both \u201cwhat was true at valid time V\u201d and \u201cwhat did we believe at recorded time R\u201d.; MemoryRequired app fails doctor/run if no memory store is configured.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P09-04",
+    "pass": "P09",
+    "title": "Make MemoryMode::Required require configured durable memory; Optional reports degraded if absent.",
+    "priority": "P1",
+    "crates": "aidens-memory-kit, aidens-contracts, aidens-receipts, aidens-boundary-kit, aidens-cli",
+    "acceptance": "Can insert a claim, supersede it retroactively, and answer both \u201cwhat was true at valid time V\u201d and \u201cwhat did we believe at recorded time R\u201d.; MemoryRequired app fails doctor/run if no memory store is configured.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P09-05",
+    "pass": "P09",
+    "title": "Emit memory write/query receipts linked to execution context.",
+    "priority": "P1",
+    "crates": "aidens-memory-kit, aidens-contracts, aidens-receipts, aidens-boundary-kit, aidens-cli",
+    "acceptance": "Can insert a claim, supersede it retroactively, and answer both \u201cwhat was true at valid time V\u201d and \u201cwhat did we believe at recorded time R\u201d.; MemoryRequired app fails doctor/run if no memory store is configured.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P10-01",
+    "pass": "P10",
+    "title": "Add repo-list, file-stat, grep/search, patch-propose, patch-apply-with-permit, and run-checks tools.",
+    "priority": "P1",
+    "crates": "aidens-tool-kit, aidens-security-kit, aidens-permit-kit, aidens-runner, aidens-cli, aidens-profile-coding",
+    "acceptance": "Coding profile can read repo, propose a patch, request approval, apply patch after permit, and run cargo checks with receipts.; Attempted path traversal/sensitive prefix access fails with receipt.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P10-02",
+    "pass": "P10",
+    "title": "Implement sandbox truth: root path, denied prefixes, symlink policy, env filtering, network policy, process timeout.",
+    "priority": "P1",
+    "crates": "aidens-tool-kit, aidens-security-kit, aidens-permit-kit, aidens-runner, aidens-cli, aidens-profile-coding",
+    "acceptance": "Coding profile can read repo, propose a patch, request approval, apply patch after permit, and run cargo checks with receipts.; Attempted path traversal/sensitive prefix access fails with receipt.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P10-03",
+    "pass": "P10",
+    "title": "Patch proposal must be non-mutating; patch apply requires permit and writes patch receipt.",
+    "priority": "P1",
+    "crates": "aidens-tool-kit, aidens-security-kit, aidens-permit-kit, aidens-runner, aidens-cli, aidens-profile-coding",
+    "acceptance": "Coding profile can read repo, propose a patch, request approval, apply patch after permit, and run cargo checks with receipts.; Attempted path traversal/sensitive prefix access fails with receipt.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P10-04",
+    "pass": "P10",
+    "title": "run-checks must execute only allowed commands from config/policy and capture stdout/stderr digests.",
+    "priority": "P1",
+    "crates": "aidens-tool-kit, aidens-security-kit, aidens-permit-kit, aidens-runner, aidens-cli, aidens-profile-coding",
+    "acceptance": "Coding profile can read repo, propose a patch, request approval, apply patch after permit, and run cargo checks with receipts.; Attempted path traversal/sensitive prefix access fails with receipt.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P10-05",
+    "pass": "P10",
+    "title": "Generate CodexPacketV1 with current issue, source map, commands run, receipts, unresolved blockers, and next pass pointer.",
+    "priority": "P1",
+    "crates": "aidens-tool-kit, aidens-security-kit, aidens-permit-kit, aidens-runner, aidens-cli, aidens-profile-coding",
+    "acceptance": "Coding profile can read repo, propose a patch, request approval, apply patch after permit, and run cargo checks with receipts.; Attempted path traversal/sensitive prefix access fails with receipt.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P11-01",
+    "pass": "P11",
+    "title": "Define durable job identity, idempotency key, attempt family, lease owner, lease expiry, and occurrence key.",
+    "priority": "P1",
+    "crates": "aidens-queue-kit, aidens-schedule-kit, aidens-wake-kit, aidens-daemon-kit, aidens-receipts, aidens-contracts, aidens-cli",
+    "acceptance": "Repeated same schedule occurrence cannot create duplicate logical jobs.; Daemon restart preserves queued jobs and does not resurrect cancelled jobs.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P11-02",
+    "pass": "P11",
+    "title": "Implement one daemon-owned write queue and read-only CLI/UI observers.",
+    "priority": "P1",
+    "crates": "aidens-queue-kit, aidens-schedule-kit, aidens-wake-kit, aidens-daemon-kit, aidens-receipts, aidens-contracts, aidens-cli",
+    "acceptance": "Repeated same schedule occurrence cannot create duplicate logical jobs.; Daemon restart preserves queued jobs and does not resurrect cancelled jobs.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P11-03",
+    "pass": "P11",
+    "title": "Add safe mode, queue drain, cancellation, lease steal after expiry, and poison job quarantine.",
+    "priority": "P1",
+    "crates": "aidens-queue-kit, aidens-schedule-kit, aidens-wake-kit, aidens-daemon-kit, aidens-receipts, aidens-contracts, aidens-cli",
+    "acceptance": "Repeated same schedule occurrence cannot create duplicate logical jobs.; Daemon restart preserves queued jobs and does not resurrect cancelled jobs.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P11-04",
+    "pass": "P11",
+    "title": "Emit receipts for enqueue, dequeue, lease-acquire, execute, retry, cancel, duplicate-suppressed, and safe-mode transitions.",
+    "priority": "P1",
+    "crates": "aidens-queue-kit, aidens-schedule-kit, aidens-wake-kit, aidens-daemon-kit, aidens-receipts, aidens-contracts, aidens-cli",
+    "acceptance": "Repeated same schedule occurrence cannot create duplicate logical jobs.; Daemon restart preserves queued jobs and does not resurrect cancelled jobs.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P11-05",
+    "pass": "P11",
+    "title": "Add model-check-inspired regression tests for duplicate schedule occurrence, crash/restart, lease expiry, and cancellation resurrection.",
+    "priority": "P1",
+    "crates": "aidens-queue-kit, aidens-schedule-kit, aidens-wake-kit, aidens-daemon-kit, aidens-receipts, aidens-contracts, aidens-cli",
+    "acceptance": "Repeated same schedule occurrence cannot create duplicate logical jobs.; Daemon restart preserves queued jobs and does not resurrect cancelled jobs.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P12-01",
+    "pass": "P12",
+    "title": "Route risk-bearing verification through canonical verification-control and policy plans.",
+    "priority": "P1",
+    "crates": "aidens-governance-kit, aidens-repair-kit, aidens-arbiter-kit, aidens-contracts, aidens-memory-kit, aidens-receipts",
+    "acceptance": "Risk-bearing claims use canonical VerificationCase/CheckPlan/ControlReceipt; AiDENs defines no local verification-plan truth.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P12-02",
+    "pass": "P12",
+    "title": "Use Forge evidence bundles and canonical verification attempts for evidence/refutation.",
+    "priority": "P1",
+    "crates": "aidens-governance-kit, aidens-repair-kit, aidens-arbiter-kit, aidens-contracts, aidens-memory-kit, aidens-receipts",
+    "acceptance": "Evidence/refutation semantics come from Forge and verification crates; AiDENs adapters do not mint local evidence DTOs.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P12-03",
+    "pass": "P12",
+    "title": "Use Forge contradiction witnesses rather than local contradiction state machines.",
+    "priority": "P1",
+    "crates": "aidens-governance-kit, aidens-repair-kit, aidens-arbiter-kit, aidens-contracts, aidens-memory-kit, aidens-receipts",
+    "acceptance": "Contradiction validation uses canonical ContradictionWitnessV1 and never overwrites memory directly.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P12-04",
+    "pass": "P12",
+    "title": "Emit canonical repair records from verification-control/Forge repair artifacts.",
+    "priority": "P1",
+    "crates": "aidens-governance-kit, aidens-repair-kit, aidens-arbiter-kit, aidens-contracts, aidens-memory-kit, aidens-receipts",
+    "acceptance": "Repair lineage uses BoundaryRepairRecord or Forge retraction records, not AiDENs-owned repair truth.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P12-05",
+    "pass": "P12",
+    "title": "Use canonical promotion/adjudication decisions and control receipts; no output self-promotes.",
+    "priority": "P1",
+    "crates": "aidens-governance-kit, aidens-repair-kit, aidens-arbiter-kit, aidens-contracts, aidens-memory-kit, aidens-receipts",
+    "acceptance": "Promotion and governance decisions come from verification-adjudication/control, with AiDENs as caller only.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P13-01",
+    "pass": "P13",
+    "title": "Define view modes: semantic, temporal, entity, causal, control, execution, combined-with-disclosure.",
+    "priority": "P1",
+    "crates": "aidens-runner, aidens-memory-kit, aidens-contracts, aidens-cli, aidens-governance-kit",
+    "acceptance": "A time-scoped query cannot silently fall back to timeless retrieval.; Alias expansion/widening emits QueryWideningReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P13-02",
+    "pass": "P13",
+    "title": "Every query must state valid/recorded time behavior, identity expansion policy, scope, and widening/fallback rules.",
+    "priority": "P1",
+    "crates": "aidens-runner, aidens-memory-kit, aidens-contracts, aidens-cli, aidens-governance-kit",
+    "acceptance": "A time-scoped query cannot silently fall back to timeless retrieval.; Alias expansion/widening emits QueryWideningReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P13-03",
+    "pass": "P13",
+    "title": "Add disclosure receipts when retrieval widens entity aliases, time windows, scope, or fallback index.",
+    "priority": "P1",
+    "crates": "aidens-runner, aidens-memory-kit, aidens-contracts, aidens-cli, aidens-governance-kit",
+    "acceptance": "A time-scoped query cannot silently fall back to timeless retrieval.; Alias expansion/widening emits QueryWideningReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P13-04",
+    "pass": "P13",
+    "title": "Separate projections/caches from authoritative memory with rebuild-from-source tests.",
+    "priority": "P1",
+    "crates": "aidens-runner, aidens-memory-kit, aidens-contracts, aidens-cli, aidens-governance-kit",
+    "acceptance": "A time-scoped query cannot silently fall back to timeless retrieval.; Alias expansion/widening emits QueryWideningReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P13-05",
+    "pass": "P13",
+    "title": "CLI query commands must print view mode and degradation reason before result details.",
+    "priority": "P1",
+    "crates": "aidens-runner, aidens-memory-kit, aidens-contracts, aidens-cli, aidens-governance-kit",
+    "acceptance": "A time-scoped query cannot silently fall back to timeless retrieval.; Alias expansion/widening emits QueryWideningReceiptV1.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P14-01",
+    "pass": "P14",
+    "title": "Update examples for chat-only, coding, memory, daemon, and research profiles; mark unsupported advanced features honestly.",
+    "priority": "P2",
+    "crates": "aidens-cli, aidens-app-kit, aidens, docs, examples, CI",
+    "acceptance": "A new user can create an app, run provider-check, inspect tools, run mock turn, inspect receipts, and run verify.sh.; Release readiness report blocks if any public docs claim a scaffolded crate is complete.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P14-02",
+    "pass": "P14",
+    "title": "Add commands: status, doctor, receipts, schemas, memory, queue, permits, run, tools, provider-check, package.",
+    "priority": "P2",
+    "crates": "aidens-cli, aidens-app-kit, aidens, docs, examples, CI",
+    "acceptance": "A new user can create an app, run provider-check, inspect tools, run mock turn, inspect receipts, and run verify.sh.; Release readiness report blocks if any public docs claim a scaffolded crate is complete.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P14-03",
+    "pass": "P14",
+    "title": "Add end-to-end smoke scripts for disabled, mock, ollama, and one API provider fixture path.",
+    "priority": "P2",
+    "crates": "aidens-cli, aidens-app-kit, aidens, docs, examples, CI",
+    "acceptance": "A new user can create an app, run provider-check, inspect tools, run mock turn, inspect receipts, and run verify.sh.; Release readiness report blocks if any public docs claim a scaffolded crate is complete.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P14-04",
+    "pass": "P14",
+    "title": "Produce release readiness report with supported/partial/deferred matrix.",
+    "priority": "P2",
+    "crates": "aidens-cli, aidens-app-kit, aidens, docs, examples, CI",
+    "acceptance": "A new user can create an app, run provider-check, inspect tools, run mock turn, inspect receipts, and run verify.sh.; Release readiness report blocks if any public docs claim a scaffolded crate is complete.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P14-05",
+    "pass": "P14",
+    "title": "Ensure README quickstart has no impossible command or unsupported feature claim.",
+    "priority": "P2",
+    "crates": "aidens-cli, aidens-app-kit, aidens, docs, examples, CI",
+    "acceptance": "A new user can create an app, run provider-check, inspect tools, run mock turn, inspect receipts, and run verify.sh.; Release readiness report blocks if any public docs claim a scaffolded crate is complete.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P15-01",
+    "pass": "P15",
+    "title": "Define distinct graph kinds: storage, retrieval, inference, repair, control. Forbid using storage graph directly as inference graph.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-repair-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A synthetic contradiction emits SyndromeV1 and local repair candidate instead of global recompute.; Loopy propagation with non-convergence emits ConvergenceReportV1 and degraded state.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P15-02",
+    "pass": "P15",
+    "title": "Compile small regions from memory/projection evidence with typed node, edge, hyperedge, factor, nuisance, and boundary definitions.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-repair-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A synthetic contradiction emits SyndromeV1 and local repair candidate instead of global recompute.; Loopy propagation with non-convergence emits ConvergenceReportV1 and degraded state.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P15-03",
+    "pass": "P15",
+    "title": "Implement bounded message passing with damping, residual threshold, iteration cap, and oscillation receipt.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-repair-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A synthetic contradiction emits SyndromeV1 and local repair candidate instead of global recompute.; Loopy propagation with non-convergence emits ConvergenceReportV1 and degraded state.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P15-04",
+    "pass": "P15",
+    "title": "Add exact-on-small oracle slice for small acyclic/low-treewidth regions or deterministic constraint subsets.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-repair-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A synthetic contradiction emits SyndromeV1 and local repair candidate instead of global recompute.; Loopy propagation with non-convergence emits ConvergenceReportV1 and degraded state.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P15-05",
+    "pass": "P15",
+    "title": "Route contradictions by syndrome to local repair before global rebuild.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-repair-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A synthetic contradiction emits SyndromeV1 and local repair candidate instead of global recompute.; Loopy propagation with non-convergence emits ConvergenceReportV1 and degraded state.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P16-01",
+    "pass": "P16",
+    "title": "Define subtractive operator classes: dedupe, summarize, compact, retire, quarantine, minimize, support-core extraction.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-memory-kit, aidens-repair-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "Subtraction cannot delete support needed by accepted claim unless claim is superseded/quarantined first.; Compaction emits receipt and history preservation report with before/after digests.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P16-02",
+    "pass": "P16",
+    "title": "Require each operation to declare preserved invariants: replay, as-of query, claim support, receipt lineage, legal retention, or operator-specific proof.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-memory-kit, aidens-repair-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "Subtraction cannot delete support needed by accepted claim unless claim is superseded/quarantined first.; Compaction emits receipt and history preservation report with before/after digests.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P16-03",
+    "pass": "P16",
+    "title": "Implement dry-run subtraction that emits removal frontier and invariant checks before mutation.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-memory-kit, aidens-repair-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "Subtraction cannot delete support needed by accepted claim unless claim is superseded/quarantined first.; Compaction emits receipt and history preservation report with before/after digests.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P16-04",
+    "pass": "P16",
+    "title": "Compaction may replace stored detail only when replay/history budget says what is lost and what is preserved.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-memory-kit, aidens-repair-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "Subtraction cannot delete support needed by accepted claim unless claim is superseded/quarantined first.; Compaction emits receipt and history preservation report with before/after digests.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P16-05",
+    "pass": "P16",
+    "title": "Add challenge API to reconstruct or contest a compacted artifact within declared budget.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-memory-kit, aidens-repair-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "Subtraction cannot delete support needed by accepted claim unless claim is superseded/quarantined first.; Compaction emits receipt and history preservation report with before/after digests.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P17-01",
+    "pass": "P17",
+    "title": "Define signed/attested artifact envelope with subject digest, producer, schema, time, policy, and signature/verification result.",
+    "priority": "P2",
+    "crates": "aidens-delegation-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "External artifact can be imported only through AdmissionDecisionV1.; Remote contradiction creates settlement/dispute artifact, not direct overwrite.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P17-02",
+    "pass": "P17",
+    "title": "Add admission policy that can accept, quarantine, downgrade, reject, or request additional witness.",
+    "priority": "P2",
+    "crates": "aidens-delegation-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "External artifact can be imported only through AdmissionDecisionV1.; Remote contradiction creates settlement/dispute artifact, not direct overwrite.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P17-03",
+    "pass": "P17",
+    "title": "Implement remote-oracle result import as advisory unless locally promoted through governance.",
+    "priority": "P2",
+    "crates": "aidens-delegation-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "External artifact can be imported only through AdmissionDecisionV1.; Remote contradiction creates settlement/dispute artifact, not direct overwrite.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P17-04",
+    "pass": "P17",
+    "title": "Add settlement cases for conflicting external claims while preserving local authority.",
+    "priority": "P2",
+    "crates": "aidens-delegation-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "External artifact can be imported only through AdmissionDecisionV1.; Remote contradiction creates settlement/dispute artifact, not direct overwrite.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P17-05",
+    "pass": "P17",
+    "title": "Add revocation/trust-root update receipts and re-evaluate affected admitted artifacts.",
+    "priority": "P2",
+    "crates": "aidens-delegation-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "External artifact can be imported only through AdmissionDecisionV1.; Remote contradiction creates settlement/dispute artifact, not direct overwrite.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P18-01",
+    "pass": "P18",
+    "title": "Define mechanism/theory artifact model: assumptions, variables, equations/program, simulator contract, evidence support, refuters, stability/invariance reports.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A candidate mechanism can be fit, refuted, versioned, superseded, and replayed from artifacts.; High score alone cannot promote theory without refuter/gov artifacts.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P18-02",
+    "pass": "P18",
+    "title": "Add search-program artifact for symbolic/sparse/neural/hybrid mechanisms without promotion by score alone.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A candidate mechanism can be fit, refuted, versioned, superseded, and replayed from artifacts.; High score alone cannot promote theory without refuter/gov artifacts.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P18-03",
+    "pass": "P18",
+    "title": "Require fit runs to record dataset, execution context, seed, optimizer, nuisance state, and result digest.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A candidate mechanism can be fit, refuted, versioned, superseded, and replayed from artifacts.; High score alone cannot promote theory without refuter/gov artifacts.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P18-04",
+    "pass": "P18",
+    "title": "Publish theory only after refuter suite and governance disposition.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A candidate mechanism can be fit, refuted, versioned, superseded, and replayed from artifacts.; High score alone cannot promote theory without refuter/gov artifacts.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P18-05",
+    "pass": "P18",
+    "title": "Allow multiple observationally equivalent mechanisms to coexist with explicit non-identification disclosure.",
+    "priority": "P2",
+    "crates": "aidens-kernel-kit, aidens-governance-kit, aidens-memory-kit, aidens-contracts, aidens-receipts",
+    "acceptance": "A candidate mechanism can be fit, refuted, versioned, superseded, and replayed from artifacts.; High score alone cannot promote theory without refuter/gov artifacts.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P19-01",
+    "pass": "P19",
+    "title": "Run all acceptance gates and produce machine-readable results.",
+    "priority": "P2",
+    "crates": "workspace root, all crates, docs, CI",
+    "acceptance": "cargo fmt/check/test/clippy pass for workspace with all features.; All pass acceptance gates are satisfied or explicitly waived by governance artifact.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P19-02",
+    "pass": "P19",
+    "title": "Generate traceability matrix: requirement -> pass -> crate -> tests -> artifacts -> docs.",
+    "priority": "P2",
+    "crates": "workspace root, all crates, docs, CI",
+    "acceptance": "cargo fmt/check/test/clippy pass for workspace with all features.; All pass acceptance gates are satisfied or explicitly waived by governance artifact.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P19-03",
+    "pass": "P19",
+    "title": "Package schemas, fixtures, examples, scripts, AGENTS.md, and docs into release artifacts.",
+    "priority": "P2",
+    "crates": "workspace root, all crates, docs, CI",
+    "acceptance": "cargo fmt/check/test/clippy pass for workspace with all features.; All pass acceptance gates are satisfied or explicitly waived by governance artifact.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P19-04",
+    "pass": "P19",
+    "title": "Audit docs for false claims, stale metrics, and unsupported feature promises.",
+    "priority": "P2",
+    "crates": "workspace root, all crates, docs, CI",
+    "acceptance": "cargo fmt/check/test/clippy pass for workspace with all features.; All pass acceptance gates are satisfied or explicitly waived by governance artifact.",
+    "proof": "tests + receipts + docs + command output"
+  },
+  {
+    "id": "AIDENS-P19-05",
+    "pass": "P19",
+    "title": "Create final \u201ccomplete / near-complete / deferred horizon\u201d report with explicit blockers and next roadmap.",
+    "priority": "P2",
+    "crates": "workspace root, all crates, docs, CI",
+    "acceptance": "cargo fmt/check/test/clippy pass for workspace with all features.; All pass acceptance gates are satisfied or explicitly waived by governance artifact.",
+    "proof": "tests + receipts + docs + command output"
+  }
+]

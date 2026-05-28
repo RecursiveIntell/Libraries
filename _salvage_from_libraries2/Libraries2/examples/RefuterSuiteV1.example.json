@@ -1,0 +1,14 @@
+{
+  "schema_version": "refuter_suite_v1",
+  "refuter_suite_id": "refuter-suite-core-causal",
+  "treatment_definition_check": true,
+  "negative_control_option": true,
+  "placebo_option": true,
+  "dummy_outcome_option": true,
+  "subset_stability_option": true,
+  "alternative_comparison_option": false,
+  "admissibility_notes": [
+    "synthetic controls deferred on first pass"
+  ],
+  "cost_metadata": "R0-R3 must fit within medium budget"
+}

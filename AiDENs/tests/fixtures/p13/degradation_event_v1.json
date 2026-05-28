@@ -1,0 +1,11 @@
+{
+  "event_id": "degradation-event:p13-fixture",
+  "kind": "degradation-event",
+  "request_id": "runtime-view-request:p13-fixture",
+  "view_mode": "temporal",
+  "degraded": true,
+  "fallback_attempted": false,
+  "fallback_allowed": false,
+  "reason_code": "time-scoped-query-no-results-no-timeless-fallback",
+  "recorded_at": "2026-04-27T01:00:03Z"
+}

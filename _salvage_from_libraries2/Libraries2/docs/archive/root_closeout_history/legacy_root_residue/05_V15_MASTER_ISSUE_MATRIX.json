@@ -1,0 +1,516 @@
+{
+  "issues": [
+    {
+      "id": "FOUND-001",
+      "phase": "0",
+      "priority": "P0",
+      "title": "Freeze the endgame artifact vocabulary and owner map",
+      "crates": [
+        "root docs",
+        "contract-schema-gen",
+        "stack-ids"
+      ],
+      "kind": "foundation",
+      "depends_on": [],
+      "acceptance": [
+        "One stable vocabulary covers remaining substrate, v14, and v15 artifacts",
+        "Every new artifact family has a named owner crate or proposed new owner crate",
+        "No duplicate or competing names remain in pack docs"
+      ],
+      "proof": [
+        "artifact registry doc",
+        "owner map doc",
+        "grep proof over pack files"
+      ]
+    },
+    {
+      "id": "FOUND-002",
+      "phase": "0",
+      "priority": "P0",
+      "title": "Freeze schema publication and compatibility policy through v15",
+      "crates": [
+        "contract-schema-gen",
+        "schemas",
+        "examples"
+      ],
+      "kind": "foundation",
+      "depends_on": [
+        "FOUND-001"
+      ],
+      "acceptance": [
+        "Every wire-visible v14/v15 artifact has a draft schema and example fixture",
+        "Compatibility windows and additive-vs-breaking policy are explicit",
+        "Schema generation owner paths are declared"
+      ],
+      "proof": [
+        "schema registry doc",
+        "draft schema files",
+        "draft example fixtures"
+      ]
+    },
+    {
+      "id": "FOUND-003",
+      "phase": "0",
+      "priority": "P0",
+      "title": "Freeze reference-interpreter obligations before more structs land",
+      "crates": [
+        "knowledge-runtime",
+        "forge-memory-bridge",
+        "semantic-memory",
+        "kernel-conformance"
+      ],
+      "kind": "foundation",
+      "depends_on": [
+        "FOUND-001"
+      ],
+      "acceptance": [
+        "Reference behavior targets exist for time slicing, widening, bridge atomicity, region replay, carrier diff, experiment comparability, and remote admission/dispute",
+        "Test fixture classes are named before implementation drifts"
+      ],
+      "proof": [
+        "reference interpreter plan",
+        "test/conformance plan"
+      ]
+    },
+    {
+      "id": "FOUND-004",
+      "phase": "0",
+      "priority": "P1",
+      "title": "Add shared IDs for all remaining v14/v15 artifact families",
+      "crates": [
+        "stack-ids"
+      ],
+      "kind": "foundation",
+      "depends_on": [
+        "FOUND-001"
+      ],
+      "acceptance": [
+        "Cross-crate IDs exist for interventions, experiments, counterfactuals, decisions, attestation, trust, admission, remote slices, disputes, and disclosure",
+        "No crate-local copies appear for these IDs"
+      ],
+      "proof": [
+        "stack-ids snippet",
+        "roundtrip ID tests once landed"
+      ]
+    },
+    {
+      "id": "SUB-001",
+      "phase": "1",
+      "priority": "P0",
+      "title": "Close remaining episode/execution/repair substrate gaps before causal and remote layers widen",
+      "crates": [
+        "semantic-memory-forge",
+        "forge-memory-bridge",
+        "semantic-memory",
+        "knowledge-runtime",
+        "verification-*"
+      ],
+      "kind": "substrate",
+      "depends_on": [
+        "FOUND-002",
+        "FOUND-003"
+      ],
+      "acceptance": [
+        "Episode bundle, execution context, runtime provenance, verification plan, and repair record remain the common lane for later work",
+        "No v14/v15 artifact bypasses episode or execution lineage where applicable"
+      ],
+      "proof": [
+        "substrate closeout checklist",
+        "runtime provenance fixtures",
+        "repair fixtures"
+      ]
+    },
+    {
+      "id": "SUB-002",
+      "phase": "1",
+      "priority": "P1",
+      "title": "Close remaining regional and algebraic substrate seams that later work depends on",
+      "crates": [
+        "constraint-compiler",
+        "kernel-execution",
+        "kernel-oracles",
+        "kernel-conformance",
+        "semantic-memory"
+      ],
+      "kind": "substrate",
+      "depends_on": [
+        "FOUND-003"
+      ],
+      "acceptance": [
+        "Region replay, budget, and typed boundary artifacts exist where v14/v15 need them",
+        "Carrier-level diffs and contradiction surfaces are available for later decision traces and remote slices"
+      ],
+      "proof": [
+        "conformance fixtures",
+        "region and algebra notes"
+      ]
+    },
+    {
+      "id": "V14-FORGE-001",
+      "phase": "2",
+      "priority": "P0",
+      "title": "Add v14 intervention and counterfactual artifact families",
+      "crates": [
+        "semantic-memory-forge",
+        "living-memory"
+      ],
+      "kind": "contract",
+      "depends_on": [
+        "FOUND-004",
+        "SUB-001"
+      ],
+      "acceptance": [
+        "`InterventionBundleV1`, `OutcomeSchemaV1`, `CohortContractV1`, `CounterfactualSliceV1` exist as canonical exportable artifact families",
+        "Artifacts preserve episode/time/policy lineage",
+        "No narrative-only causal summaries substitute for typed artifacts"
+      ],
+      "proof": [
+        "v14 forge scaffold",
+        "serde roundtrips once landed",
+        "schema files"
+      ]
+    },
+    {
+      "id": "V14-CONTROL-001",
+      "phase": "2",
+      "priority": "P0",
+      "title": "Add v14 control and policy artifact families",
+      "crates": [
+        "verification-control",
+        "verification-policy",
+        "verification-adjudication"
+      ],
+      "kind": "control",
+      "depends_on": [
+        "FOUND-004",
+        "V14-FORGE-001"
+      ],
+      "acceptance": [
+        "`ExperimentCaseV1`, `ComparabilityMatrixV1`, `DecisionTraceV1`, `RefuterSuiteV1`, `RefuterResultV1`, `ExperimentBudgetV1`, `RolloutDecisionV1`, and `RollbackDecisionV1` exist with clear owners",
+        "No causal output can become rollout-meaningful without `DecisionTraceV1` and policy references"
+      ],
+      "proof": [
+        "v14 control scaffolds",
+        "schema files",
+        "examples"
+      ]
+    },
+    {
+      "id": "V14-SMEM-001",
+      "phase": "2",
+      "priority": "P0",
+      "title": "Teach projection storage/query surfaces to preserve v14 artifacts and backpointers",
+      "crates": [
+        "semantic-memory",
+        "forge-memory-bridge"
+      ],
+      "kind": "storage",
+      "depends_on": [
+        "V14-FORGE-001",
+        "V14-CONTROL-001"
+      ],
+      "acceptance": [
+        "Imports preserve intervention/counterfactual/decision lineage",
+        "Decision traces backpoint into experiments, cohorts, and replay slices",
+        "No broad hidden joins are required to answer causal provenance questions"
+      ],
+      "proof": [
+        "SQL scaffold",
+        "query fixture plan",
+        "bridge golden tests once landed"
+      ]
+    },
+    {
+      "id": "V14-RUNTIME-001",
+      "phase": "2",
+      "priority": "P1",
+      "title": "Make runtime disclose cohort and counterfactual-slice semantics",
+      "crates": [
+        "knowledge-runtime"
+      ],
+      "kind": "runtime",
+      "depends_on": [
+        "V14-SMEM-001"
+      ],
+      "acceptance": [
+        "Runtime provenance can say what cohort, comparability, and counterfactual slice it used",
+        "No silent population drift or hidden widening remains on the causal path"
+      ],
+      "proof": [
+        "runtime provenance fixture plan",
+        "reference interpreter tests"
+      ]
+    },
+    {
+      "id": "V14-ORACLE-001",
+      "phase": "2",
+      "priority": "P1",
+      "title": "Bind bounded exactness and refuter work into kernel/oracle surfaces",
+      "crates": [
+        "kernel-oracles",
+        "kernel-conformance"
+      ],
+      "kind": "kernel",
+      "depends_on": [
+        "SUB-002",
+        "V14-FORGE-001"
+      ],
+      "acceptance": [
+        "Bounded exact or stricter experiment evaluators exist for at least one governed path",
+        "Refuter outputs preserve replay and exactness metadata"
+      ],
+      "proof": [
+        "oracle scaffold",
+        "conformance fixture plan"
+      ]
+    },
+    {
+      "id": "V14-PILOT-001",
+      "phase": "2",
+      "priority": "P1",
+      "title": "Keep pilot/orchestration consumer-only on v14 paths",
+      "crates": [
+        "forge-pilot"
+      ],
+      "kind": "orchestration",
+      "depends_on": [
+        "V14-CONTROL-001",
+        "V14-RUNTIME-001"
+      ],
+      "acceptance": [
+        "Pilot can schedule interventions/refuters but cannot bypass policy or author truth",
+        "Loop receipts expose decision-trace and budget lineage"
+      ],
+      "proof": [
+        "forge-pilot scaffold",
+        "hostile review checklist"
+      ]
+    },
+    {
+      "id": "V14-REF-001",
+      "phase": "3",
+      "priority": "P0",
+      "title": "Prove one full v14 path from intervention to rollback-ready decision trace",
+      "crates": [
+        "semantic-memory-forge",
+        "semantic-memory",
+        "verification-*",
+        "knowledge-runtime",
+        "kernel-oracles"
+      ],
+      "kind": "proof",
+      "depends_on": [
+        "V14-FORGE-001",
+        "V14-CONTROL-001",
+        "V14-SMEM-001",
+        "V14-RUNTIME-001",
+        "V14-ORACLE-001"
+      ],
+      "acceptance": [
+        "One governed path proves intervention -> cohort -> comparability -> counterfactual slice -> refuter -> decision trace -> rollout/rollback decision",
+        "Budget exhaustion yields typed evidence and advisory-only behavior"
+      ],
+      "proof": [
+        "golden fixtures",
+        "example JSON coverage",
+        "conformance checklist"
+      ]
+    },
+    {
+      "id": "V15-EXCH-001",
+      "phase": "4",
+      "priority": "P0",
+      "title": "Add attestation and trust-root artifact families with explicit owner crate",
+      "crates": [
+        "attestation-exchange",
+        "contract-schema-gen"
+      ],
+      "kind": "contract",
+      "depends_on": [
+        "FOUND-004",
+        "FOUND-002"
+      ],
+      "acceptance": [
+        "`AttestationEnvelopeV1`, `TrustRootSetV1`, `TransparencyReceiptV1` exist with a named owner crate",
+        "Envelope semantics preserve digest, signer, trust-root, disclosure, and replayability data"
+      ],
+      "proof": [
+        "attestation-exchange scaffold",
+        "schema files",
+        "example fixtures"
+      ]
+    },
+    {
+      "id": "V15-ADMIT-001",
+      "phase": "4",
+      "priority": "P0",
+      "title": "Add admission, lease, result, replay-ticket, dispute, and disclosure artifact families",
+      "crates": [
+        "remote-oracle-admission",
+        "verification-policy",
+        "verification-control"
+      ],
+      "kind": "contract",
+      "depends_on": [
+        "V15-EXCH-001"
+      ],
+      "acceptance": [
+        "`ArtifactAdmissionPolicyV1`, `RemoteOracleLeaseV1`, `RemoteSliceRequestV1`, `RemoteSliceResultV1`, `CrossRuntimeReplayTicketV1`, `DisputeBundleV1`, `DisclosurePolicyV1`, and `DisclosureBudgetV1` exist with stable owner mapping",
+        "No remote artifact can become meaningful without policy and replay/dispute semantics"
+      ],
+      "proof": [
+        "remote-oracle-admission scaffold",
+        "schema files",
+        "example fixtures"
+      ]
+    },
+    {
+      "id": "V15-SMEM-001",
+      "phase": "4",
+      "priority": "P0",
+      "title": "Preserve attested exchange lineage in import/queryable storage",
+      "crates": [
+        "semantic-memory",
+        "forge-memory-bridge"
+      ],
+      "kind": "storage",
+      "depends_on": [
+        "V15-EXCH-001",
+        "V15-ADMIT-001"
+      ],
+      "acceptance": [
+        "Projection surfaces can answer which envelope, trust-root, admission policy, replay ticket, and dispute state apply",
+        "Remote results cannot be flattened into unlabeled local scores"
+      ],
+      "proof": [
+        "SQL scaffold",
+        "storage notes",
+        "query fixture plan"
+      ]
+    },
+    {
+      "id": "V15-LLM-001",
+      "phase": "4",
+      "priority": "P1",
+      "title": "Make llm-tool-runtime preserve remote execution evidence rather than provider log folklore",
+      "crates": [
+        "llm-tool-runtime"
+      ],
+      "kind": "execution",
+      "depends_on": [
+        "V15-ADMIT-001"
+      ],
+      "acceptance": [
+        "Remote execution evidence becomes a typed receipt surface",
+        "Provider/tool routes, budget lineage, and replayability class survive handoff"
+      ],
+      "proof": [
+        "llm-tool-runtime scaffold",
+        "example fixtures"
+      ]
+    },
+    {
+      "id": "V15-PILOT-001",
+      "phase": "4",
+      "priority": "P1",
+      "title": "Allow pilot to use remote oracles only through leases and admitted artifacts",
+      "crates": [
+        "forge-pilot"
+      ],
+      "kind": "orchestration",
+      "depends_on": [
+        "V15-ADMIT-001",
+        "V15-LLM-001"
+      ],
+      "acceptance": [
+        "Pilot uses remote oracles only through `RemoteOracleLeaseV1` and admitted result artifacts",
+        "No remote score-only path can influence control"
+      ],
+      "proof": [
+        "forge-pilot scaffold",
+        "hostile review checklist"
+      ]
+    },
+    {
+      "id": "V15-REV-001",
+      "phase": "4",
+      "priority": "P1",
+      "title": "Land revocation and supersession handling on the exchange path",
+      "crates": [
+        "remote-oracle-admission",
+        "verification-control",
+        "verification-adjudication"
+      ],
+      "kind": "control",
+      "depends_on": [
+        "V15-ADMIT-001"
+      ],
+      "acceptance": [
+        "Revocation and supersession become typed artifacts with explicit local invalidation behavior",
+        "Silent ignore is impossible on materially important admitted artifacts"
+      ],
+      "proof": [
+        "control scaffold",
+        "example fixtures"
+      ]
+    },
+    {
+      "id": "V15-REF-001",
+      "phase": "5",
+      "priority": "P0",
+      "title": "Prove one full v15 path from local artifact to remote result to dispute or re-admission",
+      "crates": [
+        "attestation-exchange",
+        "remote-oracle-admission",
+        "semantic-memory",
+        "verification-*",
+        "llm-tool-runtime",
+        "forge-pilot"
+      ],
+      "kind": "proof",
+      "depends_on": [
+        "V15-EXCH-001",
+        "V15-ADMIT-001",
+        "V15-SMEM-001",
+        "V15-LLM-001",
+        "V15-PILOT-001",
+        "V15-REV-001"
+      ],
+      "acceptance": [
+        "One governed path proves local artifact -> attested envelope -> transparency receipt -> admission policy -> remote request/result -> replay ticket -> local disposition",
+        "One dispute/revoke/re-admit path works without hidden override"
+      ],
+      "proof": [
+        "golden fixtures",
+        "example JSON coverage",
+        "release checklist items"
+      ]
+    },
+    {
+      "id": "REL-001",
+      "phase": "5",
+      "priority": "P0",
+      "title": "Declare v15 complete only when the release bar is artifact-complete",
+      "crates": [
+        "root docs",
+        "scripts",
+        "schemas",
+        "examples"
+      ],
+      "kind": "release",
+      "depends_on": [
+        "V14-REF-001",
+        "V15-REF-001"
+      ],
+      "acceptance": [
+        "Release bar includes schema coverage, examples, reference interpreters, replay/dispute proofs, and consumer-only orchestration proof",
+        "Docs teach the canonical path rather than the compatibility path"
+      ],
+      "proof": [
+        "release bar doc",
+        "pack truth script",
+        "manifest"
+      ]
+    }
+  ]
+}

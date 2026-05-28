@@ -94,6 +94,20 @@ struct FusedEntry {
 
 /// Execute the merge pipeline on results from multiple legs.
 pub fn merge(leg_results: Vec<Vec<LegResult>>, policy: &MergePolicy) -> MergedResults {
+    let limit = policy.limit;
+    if limit == 0 {
+        return MergedResults {
+            results: Vec::new(),
+            duplicates_fused: 0,
+            total_raw: leg_results.into_iter().map(|leg| leg.len()).sum(),
+        };
+    }
+    let multi_leg_boost = if policy.multi_leg_boost.is_finite() && policy.multi_leg_boost >= 0.0 {
+        policy.multi_leg_boost
+    } else {
+        0.0
+    };
+
     // Phase 1: Collect
     let all_results: Vec<LegResult> = leg_results.into_iter().flatten().collect();
     let total_raw = all_results.len();
@@ -108,6 +122,7 @@ pub fn merge(leg_results: Vec<Vec<LegResult>>, policy: &MergePolicy) -> MergedRe
             // Fuse: add this leg's provenance
             if !entry.source_legs.contains(&lr.leg_index) {
                 entry.source_legs.push(lr.leg_index);
+                entry.source_legs.sort_unstable();
             }
             entry.per_leg_scores.push((lr.leg_index, lr.result.score));
             if lr.result.score > entry.best_score {
@@ -128,7 +143,7 @@ pub fn merge(leg_results: Vec<Vec<LegResult>>, policy: &MergePolicy) -> MergedRe
         }
     }
 
-    let duplicates_fused = total_raw - fused_map.len();
+    let duplicates_fused = total_raw.saturating_sub(fused_map.len());
 
     // Collect in insertion order for determinism
     let fused: Vec<FusedEntry> = insertion_order
@@ -139,9 +154,11 @@ pub fn merge(leg_results: Vec<Vec<LegResult>>, policy: &MergePolicy) -> MergedRe
     // Phase 3: Normalize scores
     let items: Vec<MergedItem> = match policy.normalization {
         ScoreNormalization::MinMax => {
-            let (min_score, max_score) = fused.iter().fold((f64::MAX, f64::MIN), |(mn, mx), e| {
-                (mn.min(e.best_score), mx.max(e.best_score))
-            });
+            let (min_score, max_score) = fused
+                .iter()
+                .fold((f64::INFINITY, f64::NEG_INFINITY), |(mn, mx), e| {
+                    (mn.min(e.best_score), mx.max(e.best_score))
+                });
             let range = max_score - min_score;
 
             fused
@@ -154,7 +171,8 @@ pub fn merge(leg_results: Vec<Vec<LegResult>>, policy: &MergePolicy) -> MergedRe
                     };
                     // Phase 4: Boost for multi-leg support
                     let extra_legs = (e.source_legs.len() as f64 - 1.0).max(0.0);
-                    let boosted = normalized * (1.0 + extra_legs * policy.multi_leg_boost);
+                    let boosted =
+                        (normalized * (1.0 + extra_legs * multi_leg_boost)).clamp(0.0, 1.0);
 
                     MergedItem {
                         result: e.best_result,
@@ -169,7 +187,7 @@ pub fn merge(leg_results: Vec<Vec<LegResult>>, policy: &MergePolicy) -> MergedRe
             .into_iter()
             .map(|e| {
                 let extra_legs = (e.source_legs.len() as f64 - 1.0).max(0.0);
-                let boosted = e.best_score * (1.0 + extra_legs * policy.multi_leg_boost);
+                let boosted = e.best_score * (1.0 + extra_legs * multi_leg_boost);
 
                 MergedItem {
                     result: e.best_result,
@@ -187,13 +205,19 @@ pub fn merge(leg_results: Vec<Vec<LegResult>>, policy: &MergePolicy) -> MergedRe
     ranked.sort_by(|a, b| {
         b.final_score
             .partial_cmp(&a.final_score)
-            .unwrap_or(std::cmp::Ordering::Equal)
+            .unwrap_or_else(|| {
+                if a.final_score.is_nan() {
+                    std::cmp::Ordering::Greater
+                } else {
+                    std::cmp::Ordering::Less
+                }
+            })
             .then_with(|| b.source_legs.len().cmp(&a.source_legs.len()))
             .then_with(|| result_identity_key(&a.result).cmp(&result_identity_key(&b.result)))
     });
 
     // Phase 6: Truncate
-    ranked.truncate(policy.limit);
+    ranked.truncate(limit);
 
     MergedResults {
         results: ranked,
@@ -313,6 +337,40 @@ mod tests {
         };
         let merged = merge(vec![leg], &policy);
         assert_eq!(merged.results.len(), 5);
+    }
+
+    #[test]
+    fn zero_limit_returns_empty_results() {
+        let leg = vec![LegResult {
+            leg_index: 0,
+            result: make_fact_result("f1", 1.0),
+        }];
+        let policy = MergePolicy {
+            limit: 0,
+            ..Default::default()
+        };
+        let merged = merge(vec![leg], &policy);
+        assert!(merged.results.is_empty());
+        assert_eq!(merged.total_raw, 1);
+    }
+
+    #[test]
+    fn minmax_boost_stays_in_unit_range() {
+        let leg0 = vec![LegResult {
+            leg_index: 0,
+            result: make_fact_result("f1", 1.0),
+        }];
+        let leg1 = vec![LegResult {
+            leg_index: 1,
+            result: make_fact_result("f1", 1.0),
+        }];
+        let policy = MergePolicy {
+            limit: 10,
+            normalization: ScoreNormalization::MinMax,
+            multi_leg_boost: 10.0,
+        };
+        let merged = merge(vec![leg0, leg1], &policy);
+        assert!(merged.results[0].final_score <= 1.0);
     }
 
     #[test]

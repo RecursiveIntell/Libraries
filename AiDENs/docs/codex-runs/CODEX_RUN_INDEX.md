@@ -1,0 +1,85 @@
+# Codex Run Index
+
+Updated UTC: `2026-05-13T18:13:06Z`
+Archive root: `docs/codex-runs/archive`
+
+## Archive Manifests
+
+- `docs/codex-runs/archive/P0/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P1/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P10/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P11/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P12/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P13/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P14/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P15/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P16/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P17/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P18/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P19/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P2/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P20-20260502T012243Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P20/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P20_1-20260502T012243Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P20_1/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P20_2-20260502T012243Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P20_2/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P21/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P22/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P23/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P24-20260503T225812Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P24-20260503T225903Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P24-20260503T231205Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P24-20260503T231318Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P24-20260513T071357Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P24-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P24/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P25-20260504T233808Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P25-20260513T071357Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P25-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P25/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P26-20260504T203115Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P26-20260504T233808Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P26-20260513T071357Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P26-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P26/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P27-20260513T071357Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P27-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P27/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P28-20260513T071357Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P28-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P28/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P29/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P3/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30-20260511T004357Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30-20260513T081502Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_0/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_1/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_2/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_3/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_4/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_5/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_6/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_7/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_8/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P30_9/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P4/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P5/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P6/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P7/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P8/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P9/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/legacy-contract-ownership-00/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/legacy-contract-ownership-01/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/legacy-contract-ownership-02/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/legacy-contract-ownership-03/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/legacy-contract-ownership-04/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/legacy-contract-ownership-05/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/legacy-contract-ownership-06/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/legacy-contract-ownership-07/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/unclassified/20260502T005849Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/unclassified/20260502T012243Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/unclassified/20260503T032019Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/unclassified/20260504T195959Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/unclassified/20260513T081502Z/ARCHIVE_MANIFEST.json`

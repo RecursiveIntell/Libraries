@@ -1,0 +1,11 @@
+{
+  "schema_version": "ResilienceExerciseV1",
+  "resilience_exercise_id": "rex_001",
+  "service_level_profile_id": "slp_001",
+  "exercise_kind": "tabletop",
+  "scenario": "deploy regression with missing approver",
+  "completed_at": "2026-03-10T15:00:00Z",
+  "follow_up_actions": [
+    "improve break-glass recordkeeping"
+  ]
+}

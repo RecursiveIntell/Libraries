@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use assurance_runtime::{
     HazardLibraryV1, HazardScenarioV1, MitigationPlaybookV1, MonitorCatalogV1,
 };

@@ -53,3 +53,7 @@ rand = "0.9"
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 tempfile = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

@@ -1,0 +1,13 @@
+{
+  "schema_version": "PrivacyRetentionProfileV1",
+  "privacy_retention_profile_id": "prp_001",
+  "applicable_namespaces": [
+    "prod/customer-support",
+    "prod/billing"
+  ],
+  "default_retention_class": "customer_sensitive_365d",
+  "archive_restore_expectation": "restore_before_audit_export",
+  "cross_border_transfer_default": "blocked",
+  "default_redaction_rule_set_id": "rrs_001",
+  "compaction_requires_receipt": true
+}

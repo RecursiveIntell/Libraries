@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use assurance_runtime::{
     AssuranceCaseV1, CertificationBundleV1, ControlMappingV1, DeploymentProfileV1,
     FieldMonitoringPlanV1, HazardRegisterV1, OperatingEnvelopeV1, RecertificationTriggerV1,

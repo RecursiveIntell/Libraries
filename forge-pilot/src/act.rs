@@ -320,7 +320,13 @@ async fn execute_oracle_plan(
                 *max_removed_nodes,
             )),
         },
-        _ => unreachable!(),
+        // LIB-HIGH-001: replaced unreachable!() with recoverable error
+        _ => {
+            return Err(PilotError::Other(format!(
+                "unsupported plan kind for oracle execution: {:?}",
+                plan
+            )))
+        }
     };
 
     let bundle = build_bundle_from_oracle(OracleBundleInput {

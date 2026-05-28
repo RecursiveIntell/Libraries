@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use verification_policy::{
     AccessPurposeMatrixV1, AuditExtractionPolicyV1, PrivacyRetentionProfileV1, RedactionRuleSetV1,
 };

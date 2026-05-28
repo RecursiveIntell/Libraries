@@ -1,0 +1,14 @@
+{
+  "receipt_id": "provider-readiness:fixture",
+  "kind": "provider-readiness",
+  "provider_kind": "openai",
+  "model": "gpt-test",
+  "configured": true,
+  "executable": false,
+  "native_tool_loop_executable": false,
+  "route_label": "unavailable",
+  "reason_codes": [
+    "provider-boundary-unavailable"
+  ],
+  "checked_at": "2026-04-26T00:00:00Z"
+}

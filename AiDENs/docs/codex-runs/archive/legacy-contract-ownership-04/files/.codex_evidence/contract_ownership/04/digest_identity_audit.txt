@@ -1,0 +1,228 @@
+PHASE 04 DIGEST IDENTITY AUDIT
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+SOURCE BASIS: 2026-04-28
+
+Forbidden exported/local canonical digest symbol scan:
+PASS: no stale local canonical digest law names or sha256 local digest markers remain in source/fixtures scan scope.
+
+Stack-owned digest API evidence:
+crates/aidens-contracts/src/lib.rs:29:        ArtifactId, AttemptId, ClaimId, ClaimVersionId, ContentDigest, DigestBuilder, EnvelopeId,
+crates/aidens-contracts/src/lib.rs:39:    pub fn digest_json(value: &serde_json::Value) -> Result<ContentDigest, stack_ids::DigestError> {
+crates/aidens-contracts/src/lib.rs:40:        ContentDigest::compute_json(value)
+crates/aidens-contracts/src/lib.rs:49:    ClaimVersionId as StackClaimVersionId, ContentDigest as StackContentDigest,
+crates/aidens-contracts/src/lib.rs:50:    DigestBuilder as StackDigestBuilder, EnvelopeId as StackEnvelopeId,
+crates/aidens-contracts/src/lib.rs:67:    let digest = canonical_stack::digest_json(value)
+crates/aidens-contracts/src/lib.rs:73:    let digest = StackContentDigest::compute_str(text);
+crates/aidens-contracts/src/lib.rs:77:fn non_authoritative_display_digest_string(digest: &StackContentDigest) -> String {
+crates/aidens-contracts/src/lib.rs:82:    let digest = StackContentDigest::compute_str(material);
+crates/aidens-contracts/src/lib.rs:87:// `stack_ids::ContentDigest` and this string must not be used as identity.
+crates/aidens-contracts/src/lib.rs:6011:        digest: StackContentDigest,
+crates/aidens-contracts/src/lib.rs:8453:        let digest = canonical_stack::digest_json(&serde_json::json!({"b": 2, "a": 1})).unwrap();
+crates/aidens-contracts/src/lib.rs:10113:            StackContentDigest::compute_str("remote-ready"),
+../stack-ids/src/digest.rs:15://! `compute_json()` and `DigestBuilder::update_json()` do not trust map key order from
+../stack-ids/src/digest.rs:23://! use stack_ids::ContentDigest;
+../stack-ids/src/digest.rs:25://! let digest = ContentDigest::compute(b"hello world");
+../stack-ids/src/digest.rs:40:pub struct ContentDigest(pub String);
+../stack-ids/src/digest.rs:42:impl ContentDigest {
+../stack-ids/src/digest.rs:50:    pub fn compute_str(data: &str) -> Self {
+../stack-ids/src/digest.rs:62:    pub fn compute_json<T: Serialize>(value: &T) -> Result<Self, DigestError> {
+../stack-ids/src/digest.rs:72:        Ok(Self::compute_str(&canonical))
+../stack-ids/src/digest.rs:106:impl std::fmt::Display for ContentDigest {
+../stack-ids/src/digest.rs:116:pub struct DigestBuilder {
+../stack-ids/src/digest.rs:120:impl DigestBuilder {
+../stack-ids/src/digest.rs:165:    pub fn finalize(self) -> ContentDigest {
+../stack-ids/src/digest.rs:167:        ContentDigest(hash.to_hex().to_string())
+../stack-ids/src/digest.rs:192:impl Default for DigestBuilder {
+../stack-ids/src/digest.rs:238:        let digest = ContentDigest::compute(b"hello world");
+../stack-ids/src/digest.rs:245:        let a = ContentDigest::compute(b"test data");
+../stack-ids/src/digest.rs:246:        let b = ContentDigest::compute(b"test data");
+../stack-ids/src/digest.rs:252:        let a = ContentDigest::compute(b"input A");
+../stack-ids/src/digest.rs:253:        let b = ContentDigest::compute(b"input B");
+../stack-ids/src/digest.rs:258:    fn compute_json_deterministic() {
+../stack-ids/src/digest.rs:262:        let d1 = ContentDigest::compute_json(&map).unwrap();
+../stack-ids/src/digest.rs:267:        let d2 = ContentDigest::compute_json(&map2).unwrap();
+../stack-ids/src/digest.rs:274:    fn compute_json_normalizes_hash_map_key_order() {
+../stack-ids/src/digest.rs:283:        let left = ContentDigest::compute_json(&unsorted).unwrap();
+../stack-ids/src/digest.rs:284:        let right = ContentDigest::compute_json(&reordered).unwrap();
+../stack-ids/src/digest.rs:290:    fn compute_json_matches_pinned_golden_digest() {
+../stack-ids/src/digest.rs:295:        let digest = ContentDigest::compute_json(&ordered).unwrap();
+../stack-ids/src/digest.rs:305:        let digest = ContentDigest::compute(b"test");
+../stack-ids/src/digest.rs:306:        let restored = ContentDigest::from_hex(digest.hex()).unwrap();
+../stack-ids/src/digest.rs:312:        let err = ContentDigest::from_hex("abc").unwrap_err();
+../stack-ids/src/digest.rs:318:        let err = ContentDigest::from_hex("g".repeat(64)).unwrap_err();
+../stack-ids/src/digest.rs:325:            let mut b = DigestBuilder::new();
+../stack-ids/src/digest.rs:330:            let mut b = DigestBuilder::new();
+../stack-ids/src/digest.rs:341:            let mut b = DigestBuilder::new();
+../stack-ids/src/digest.rs:346:            let mut b = DigestBuilder::new();
+../stack-ids/src/digest.rs:355:        let digest = ContentDigest::compute(b"test");
+../stack-ids/src/digest.rs:357:        let back: ContentDigest = serde_json::from_str(&json).unwrap();
+
+Non-authoritative display surfaces:
+docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:11:- `DisplayDigestV1` only as a non-authoritative report/display wrapper.
+docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:25:- `DisplayDigestV1.non_authoritative` is always true for constructors;
+docs/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md:26:- `DisplayDigestV1` is not an artifact identity type and must not be used as a canonical stack content address.
+crates/aidens-tool-kit/src/lib.rs:6:    CapabilityGateDecisionV1, CapabilityGateOutcomeV1, CommandRunReportV1, DisplayDigestV1,
+crates/aidens-tool-kit/src/lib.rs:1032:        Some(DisplayDigestV1::for_text(&content))
+crates/aidens-tool-kit/src/lib.rs:1118:        before_digests.insert(display_path.clone(), DisplayDigestV1::for_text(&before));
+crates/aidens-tool-kit/src/lib.rs:1119:        after_digests.insert(display_path.clone(), DisplayDigestV1::for_text(&after));
+crates/aidens-cli/src/lib.rs:7:    generated_schema_manifest_pretty_json, non_authoritative_text_display_digest, AiDENsAppPlanV1,
+crates/aidens-cli/src/lib.rs:1327:            non_authoritative_text_display_digest(&String::from_utf8_lossy(&bytes)),
+crates/aidens-cli/src/lib.rs:1349:        material.push_str(&non_authoritative_text_display_digest(
+crates/aidens-cli/src/lib.rs:1355:        non_authoritative_text_display_digest(&material),
+crates/aidens-boundary-kit/src/lib.rs:7:    non_authoritative_json_display_digest, non_authoritative_text_display_digest, ArtifactId,
+crates/aidens-boundary-kit/src/lib.rs:8:    BoundaryCompileOutcomeV1, BoundaryCompileRequestV1, BoundaryRepairReportV1, DisplayDigestV1,
+crates/aidens-boundary-kit/src/lib.rs:199:                outcome.display_digest = Some(DisplayDigestV1::for_json_value(&value));
+crates/aidens-boundary-kit/src/lib.rs:275:        display_digest: Some(DisplayDigestV1::for_json_value(&value)),
+crates/aidens-boundary-kit/src/lib.rs:325:        before_raw_digest: Some(non_authoritative_text_display_digest(before)),
+crates/aidens-boundary-kit/src/lib.rs:326:        after_raw_digest: Some(non_authoritative_text_display_digest(after)),
+crates/aidens-boundary-kit/src/lib.rs:327:        before_display_digest: before_value.map(DisplayDigestV1::for_json_value),
+crates/aidens-boundary-kit/src/lib.rs:328:        after_display_digest: after_value.map(DisplayDigestV1::for_json_value),
+crates/aidens-boundary-kit/src/lib.rs:549:pub fn non_authoritative_boundary_json_display_digest(value: &Value) -> String {
+crates/aidens-boundary-kit/src/lib.rs:550:    non_authoritative_json_display_digest(value)
+crates/aidens-boundary-kit/src/lib.rs:554:    non_authoritative_text_display_digest(text)
+crates/aidens-boundary-kit/src/lib.rs:954:            non_authoritative_boundary_json_display_digest(&left),
+crates/aidens-boundary-kit/src/lib.rs:955:            non_authoritative_boundary_json_display_digest(&right)
+crates/aidens-boundary-kit/src/lib.rs:957:        assert!(non_authoritative_boundary_json_display_digest(&left).starts_with("blake3:"));
+crates/aidens-boundary-kit/src/lib.rs:959:            DisplayDigestV1::for_json_value(&left),
+crates/aidens-boundary-kit/src/lib.rs:960:            DisplayDigestV1::for_json_value(&right)
+crates/aidens-contracts/src/lib.rs:63:    non_authoritative_json_display_digest(value)
+crates/aidens-contracts/src/lib.rs:66:pub fn non_authoritative_json_display_digest(value: &serde_json::Value) -> String {
+crates/aidens-contracts/src/lib.rs:69:    non_authoritative_display_digest_string(&digest)
+crates/aidens-contracts/src/lib.rs:72:pub fn non_authoritative_text_display_digest(text: &str) -> String {
+crates/aidens-contracts/src/lib.rs:74:    non_authoritative_display_digest_string(&digest)
+crates/aidens-contracts/src/lib.rs:77:fn non_authoritative_display_digest_string(digest: &StackContentDigest) -> String {
+crates/aidens-contracts/src/lib.rs:621:            raw_digest: non_authoritative_json_display_digest(&serde_json::Value::String(
+crates/aidens-contracts/src/lib.rs:1600:    pub content_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:1623:            content_digest: DisplayDigestV1::for_text(content),
+crates/aidens-contracts/src/lib.rs:1644:            content_digest: DisplayDigestV1::for_text(""),
+crates/aidens-contracts/src/lib.rs:1667:    pub listing_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:1688:            listing_digest: DisplayDigestV1::for_json_value(&listing),
+crates/aidens-contracts/src/lib.rs:1707:            listing_digest: DisplayDigestV1::for_json_value(&serde_json::json!([])),
+crates/aidens-contracts/src/lib.rs:1722:    pub diff_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:1740:            diff_digest: DisplayDigestV1::for_text(&unified_diff),
+crates/aidens-contracts/src/lib.rs:1760:    pub input_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:1761:    pub before_digests: BTreeMap<String, DisplayDigestV1>,
+crates/aidens-contracts/src/lib.rs:1762:    pub after_digests: BTreeMap<String, DisplayDigestV1>,
+crates/aidens-contracts/src/lib.rs:1774:        before_digests: BTreeMap<String, DisplayDigestV1>,
+crates/aidens-contracts/src/lib.rs:1775:        after_digests: BTreeMap<String, DisplayDigestV1>,
+crates/aidens-contracts/src/lib.rs:1788:            input_digest: DisplayDigestV1::for_json_value(input),
+crates/aidens-contracts/src/lib.rs:1811:            input_digest: DisplayDigestV1::for_json_value(input),
+crates/aidens-contracts/src/lib.rs:1832:    pub stdout_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:1833:    pub stderr_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:1865:            stdout_digest: DisplayDigestV1::for_text(stdout),
+crates/aidens-contracts/src/lib.rs:1866:            stderr_digest: DisplayDigestV1::for_text(stderr),
+crates/aidens-contracts/src/lib.rs:1897:            stdout_digest: DisplayDigestV1::for_text(""),
+crates/aidens-contracts/src/lib.rs:1898:            stderr_digest: DisplayDigestV1::for_text(""),
+crates/aidens-contracts/src/lib.rs:2088:        let payload_digest = non_authoritative_json_display_digest(&payload);
+crates/aidens-contracts/src/lib.rs:2215:        let payload_digest = non_authoritative_json_display_digest(&payload);
+crates/aidens-contracts/src/lib.rs:2271:        let payload_digest = non_authoritative_json_display_digest(&payload);
+crates/aidens-contracts/src/lib.rs:2501:            public_key_digest: non_authoritative_text_display_digest(public_key_material.as_ref()),
+crates/aidens-contracts/src/lib.rs:2551:    pub subject_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:2574:    pub subject_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:2775:    pub structural_signature_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:2776:    pub observational_signature_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:2834:            structural_signature_digest: DisplayDigestV1::for_json_value(&structural_payload),
+crates/aidens-contracts/src/lib.rs:2835:            observational_signature_digest: DisplayDigestV1::for_json_value(&observational_payload),
+crates/aidens-contracts/src/lib.rs:2901:    pub simulator_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:2937:            simulator_digest: DisplayDigestV1::for_json_value(&digest_payload),
+crates/aidens-contracts/src/lib.rs:2967:    pub dataset_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:2968:    pub parameter_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:2969:    pub output_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:3006:            dataset_digest: DisplayDigestV1::for_json_value(&dataset),
+crates/aidens-contracts/src/lib.rs:3007:            parameter_digest: DisplayDigestV1::for_json_value(&parameters),
+crates/aidens-contracts/src/lib.rs:3008:            output_digest: DisplayDigestV1::for_json_value(&output),
+crates/aidens-contracts/src/lib.rs:3574:    pub digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:3598:            digest: DisplayDigestV1::for_json_value(&digest_payload),
+crates/aidens-contracts/src/lib.rs:3833:            output_digest: non_authoritative_text_display_digest(output),
+crates/aidens-contracts/src/lib.rs:3848:            output_digest: non_authoritative_text_display_digest(output),
+crates/aidens-contracts/src/lib.rs:4067:            output_digest: Some(non_authoritative_text_display_digest(&output.into())),
+crates/aidens-contracts/src/lib.rs:5150:    pub approximate_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5151:    pub oracle_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5166:        approximate_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5167:        oracle_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5726:    pub before_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5727:    pub after_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5744:        before_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5745:        after_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5803:    pub before_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5804:    pub after_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:5979:pub struct DisplayDigestV1 {
+crates/aidens-contracts/src/lib.rs:5984:    pub non_authoritative: bool,
+crates/aidens-contracts/src/lib.rs:5989:impl DisplayDigestV1 {
+crates/aidens-contracts/src/lib.rs:5994:            digest: non_authoritative_json_display_digest(value),
+crates/aidens-contracts/src/lib.rs:5995:            non_authoritative: true,
+crates/aidens-contracts/src/lib.rs:5996:            reason_codes: vec!["display-only-not-artifact-identity".into()],
+crates/aidens-contracts/src/lib.rs:6004:            digest: non_authoritative_text_display_digest(text),
+crates/aidens-contracts/src/lib.rs:6005:            non_authoritative: true,
+crates/aidens-contracts/src/lib.rs:6006:            reason_codes: vec!["display-only-not-artifact-identity".into()],
+crates/aidens-contracts/src/lib.rs:6017:            digest: non_authoritative_display_digest_string(&digest),
+crates/aidens-contracts/src/lib.rs:6018:            non_authoritative: true,
+crates/aidens-contracts/src/lib.rs:6019:            reason_codes: vec!["display-only-not-artifact-identity".into()],
+crates/aidens-contracts/src/lib.rs:6067:    pub before_display_digest: Option<DisplayDigestV1>,
+crates/aidens-contracts/src/lib.rs:6069:    pub after_display_digest: Option<DisplayDigestV1>,
+crates/aidens-contracts/src/lib.rs:6137:    pub schema_digest: Option<DisplayDigestV1>,
+crates/aidens-contracts/src/lib.rs:6138:    pub input_digest: DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:6160:            schema_digest: schema.map(DisplayDigestV1::for_json_value),
+crates/aidens-contracts/src/lib.rs:6161:            input_digest: DisplayDigestV1::for_json_value(input),
+crates/aidens-contracts/src/lib.rs:6239:    pub display_digest: Option<DisplayDigestV1>,
+crates/aidens-contracts/src/lib.rs:6359:            registry_digest: non_authoritative_json_display_digest(
+crates/aidens-contracts/src/lib.rs:6390:            schema_digest: non_authoritative_json_display_digest(&self.schema),
+crates/aidens-contracts/src/lib.rs:6477:            registry_digest: non_authoritative_json_display_digest(
+crates/aidens-contracts/src/lib.rs:7086:            DisplayDigestV1,
+crates/aidens-contracts/src/lib.rs:7087:            "DisplayDigestV1",
+crates/aidens-contracts/src/lib.rs:8452:    fn stack_digest_is_exposed_as_non_authoritative_display_digest() {
+crates/aidens-contracts/src/lib.rs:8455:        let wrapped = DisplayDigestV1::from_stack_content_digest_for_display(
+crates/aidens-contracts/src/lib.rs:8460:        assert!(wrapped.non_authoritative);
+crates/aidens-contracts/src/lib.rs:8822:            non_authoritative_json_display_digest(&pretty),
+crates/aidens-contracts/src/lib.rs:8823:            non_authoritative_json_display_digest(&compact)
+crates/aidens-contracts/src/lib.rs:8832:            non_authoritative_json_display_digest(&serde_json::json!({"tool":"read","ok":false}));
+crates/aidens-contracts/src/lib.rs:8858:        let digest = DisplayDigestV1::for_json_value(&left);
+crates/aidens-contracts/src/lib.rs:8871:            before_raw_digest: Some(non_authoritative_text_display_digest("prefix {\"a\":1}")),
+crates/aidens-contracts/src/lib.rs:8872:            after_raw_digest: Some(non_authoritative_text_display_digest("{\"a\":1}")),
+crates/aidens-contracts/src/lib.rs:8874:            after_display_digest: Some(DisplayDigestV1::for_json_value(
+crates/aidens-contracts/src/lib.rs:8898:        assert!(digest.non_authoritative);
+crates/aidens-contracts/src/lib.rs:8899:        assert_eq!(digest, DisplayDigestV1::for_json_value(&right));
+crates/aidens-contracts/src/lib.rs:9132:        let digest: DisplayDigestV1 = serde_json::from_str(digest).unwrap();
+crates/aidens-contracts/src/lib.rs:9134:        assert!(digest.non_authoritative);
+crates/aidens-contracts/src/lib.rs:9368:        let _: DisplayDigestV1 = serde_json::from_str(include_str!(
+crates/aidens-contracts/src/lib.rs:9932:        let digest = DisplayDigestV1::for_json_value(&serde_json::json!({
+crates/aidens-contracts/src/lib.rs:10055:        let digest = DisplayDigestV1::for_json_value(&serde_json::json!({
+
+Fixture files with stack-id display digest markers after Phase 04:
+tests/fixtures/p03/tool_call_request_v1.json
+tests/fixtures/p03/tool_call_result_v1.json
+tests/fixtures/p03/tool_invocation_receipt_v1.json
+tests/fixtures/p05/execution_lineage_graph_v1.json
+tests/fixtures/p05/poison_receipt_record_v1.json
+tests/fixtures/p06/boundary_compile_outcome_v1.json
+tests/fixtures/p06/display_digest_v1.json
+tests/fixtures/p06/json_repair_receipt_v2.json
+tests/fixtures/p06/schema_validation_receipt_v1.json
+tests/fixtures/p07/generated_schema_manifest_v1.json
+tests/fixtures/p07/schema_compatibility_report_v1.json
+tests/fixtures/p10/codex_packet_v1.json
+tests/fixtures/p10/command_run_receipt_v1.json
+tests/fixtures/p10/patch_apply_receipt_v1.json
+tests/fixtures/p10/patch_proposal_v1.json
+tests/fixtures/p10/repo_list_receipt_v1.json
+tests/fixtures/p10/repo_read_receipt_v1.json
+tests/fixtures/p11/duplicate_suppression_receipt_v1.json
+tests/fixtures/p11/job_v1.json
+tests/fixtures/p11/schedule_occurrence_v1.json
+tests/fixtures/p11/wake_signal_v1.json
+tests/fixtures/p13/projection_digest_v1.json
+tests/fixtures/p13/view_disclosure_receipt_v1.json
+tests/fixtures/p14/install_smoke_receipt_v1.json
+tests/fixtures/p14/release_readiness_report_v1.json
+tests/fixtures/p15/oracle_slice_request_v1.json
+tests/fixtures/p16/compaction_receipt_v1.json
+tests/fixtures/p16/history_preservation_report_v1.json
+tests/fixtures/p17/admission_decision_v1.json
+tests/fixtures/p17/attestation_envelope_v1.json
+tests/fixtures/p17/remote_oracle_receipt_v1.json
+tests/fixtures/p17/trust_root_v1.json
+tests/fixtures/p18/fit_run_receipt_v1.json
+tests/fixtures/p18/mechanism_bundle_v1.json
+tests/fixtures/p18/simulator_contract_v1.json
+tests/fixtures/p19/completion_audit_report_v1.json
+tests/fixtures/p19/release_artifact_manifest_v1.json

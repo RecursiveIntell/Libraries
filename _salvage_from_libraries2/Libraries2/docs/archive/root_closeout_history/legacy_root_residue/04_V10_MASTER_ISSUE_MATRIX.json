@@ -1,0 +1,90 @@
+[
+  {
+    "id": "V10-001",
+    "area": "Graph geometry separation",
+    "priority": "P0",
+    "owner": "knowledge-runtime + kernel + verification-control",
+    "acceptance": "Storage, retrieval, inference, repair, and control graphs are explicitly separate logical surfaces with declared compilation and artifact exchange rules.",
+    "proof": "graph-compilation docs + fixtures + no-silent-collapse tests"
+  },
+  {
+    "id": "V10-002",
+    "area": "Small communicating regions",
+    "priority": "P0",
+    "owner": "kernel-execution + verification-control",
+    "acceptance": "Default unit of work is bounded region; regions exchange typed artifacts only (deltas, residuals, syndromes, witnesses, control receipts).",
+    "proof": "region scheduler fixtures + bounded-region execution traces"
+  },
+  {
+    "id": "V10-003",
+    "area": "Time-aware incremental recomputation",
+    "priority": "P0",
+    "owner": "semantic-memory + knowledge-runtime + kernel-execution",
+    "acceptance": "Lineage deltas, time-slice changes, repair outcomes, and invalidation manifests trigger bounded recomputation instead of blind global rebuild by default.",
+    "proof": "incremental recomputation fixtures + replay equivalence checks"
+  },
+  {
+    "id": "V10-004",
+    "area": "Syndrome-first contradiction routing",
+    "priority": "P0",
+    "owner": "kernel + verification-adjudication + semantic-memory",
+    "acceptance": "Contradictions localize as typed syndromes and are routed onto compiled repair surfaces before any broad invalidation or rewrite.",
+    "proof": "syndrome fixtures + repair route tests + blast-radius proofs"
+  },
+  {
+    "id": "V10-005",
+    "area": "Repair graph and local surgery",
+    "priority": "P0",
+    "owner": "verification-adjudication + semantic-memory + kernel",
+    "acceptance": "Repair candidates operate on explicit repair graphs with reversibility, blast radius, candidate ranking, and witness support.",
+    "proof": "repair-graph tests + minimal-change fixtures"
+  },
+  {
+    "id": "V10-006",
+    "area": "Nuisance-state modeling",
+    "priority": "P0",
+    "owner": "kernel + verification-calibration + knowledge-runtime",
+    "acceptance": "Execution drift, retry storms, retrieval widening, provider instability, and operational confounders are first-class nuisance state, not metadata crumbs.",
+    "proof": "nuisance-state artifacts + calibration/drift fixtures"
+  },
+  {
+    "id": "V10-007",
+    "area": "Convergence governance",
+    "priority": "P1",
+    "owner": "kernel-execution + kernel-oracles",
+    "acceptance": "Every loopy/iterative operator has damping, stop rules, residual thresholds, escalation rules, and failure artifacts.",
+    "proof": "operator contract checks + oscillation fixtures + oracle escalation tests"
+  },
+  {
+    "id": "V10-008",
+    "area": "Oracle-slice regime",
+    "priority": "P1",
+    "owner": "kernel-oracles + kernel-conformance",
+    "acceptance": "Approximate execution has bounded exact/conservative oracle slices with explicit slice selection policy and parity checks.",
+    "proof": "oracle slice fixtures + parity/certificate tests"
+  },
+  {
+    "id": "V10-009",
+    "area": "Artifact transport between regions",
+    "priority": "P1",
+    "owner": "stack-ids + llm-tool-runtime + verification-control",
+    "acceptance": "Typed artifacts exchanged between regions have canonical IDs, digests, provenance, and replay references.",
+    "proof": "artifact schema + cross-region transport tests"
+  },
+  {
+    "id": "V10-010",
+    "area": "Benchmarkable runtime proof",
+    "priority": "P1",
+    "owner": "knowledge-runtime + kernel + verification-control + forge-pilot",
+    "acceptance": "At least one benchmark proves runtime superiority on revision-robust, evidence-bound, execution-aware reasoning.",
+    "proof": "benchmark harness + score sheet + reproducible fixture set"
+  },
+  {
+    "id": "V10-011",
+    "area": "Repo-surface simplification for v10",
+    "priority": "P2",
+    "owner": "repo maintainer",
+    "acceptance": "v10 work is added without multiplying root-document chaos; canonical entrypoints are explicit.",
+    "proof": "front-door map + moved/archive manifest"
+  }
+]

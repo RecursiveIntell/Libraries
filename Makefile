@@ -65,3 +65,7 @@ root-archive-manifest:
 
 public-type-drift:
 	python3 scripts/check_public_type_drift.py
+
+check-schemas:
+	python3 scripts/check_v25_json_surface.py
+	bash scripts/check_schema_registry_uniqueness.sh

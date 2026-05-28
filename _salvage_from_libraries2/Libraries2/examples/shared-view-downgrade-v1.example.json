@@ -1,0 +1,7 @@
+{
+  "schema_version": "shared_view_downgrade_v1",
+  "shared_view_downgrade_id": "shared-view-downgrade-v25",
+  "reason": "missing_required_replay",
+  "detail": "one required runtime replay source is missing; shared settlement must downgrade to advisory-only view",
+  "preserves_local_dissent": true
+}

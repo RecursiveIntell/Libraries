@@ -1,0 +1,65 @@
+{
+  "run_title": "P20_TRUTHFUL_FINISH_AND_RELEASE_HARDENING",
+  "phases": [
+    {
+      "id": 0,
+      "name": "00_OPERATOR_ARBITRATION_AND_BASELINE",
+      "prompt_file": "prompts/phases/PHASE_00_OPERATOR_ARBITRATION_AND_BASELINE.md"
+    },
+    {
+      "id": 1,
+      "name": "01_BUILD_CERTIFICATION",
+      "prompt_file": "prompts/phases/PHASE_01_BUILD_CERTIFICATION.md"
+    },
+    {
+      "id": 2,
+      "name": "02_DOCUMENTATION_TRUTH",
+      "prompt_file": "prompts/phases/PHASE_02_DOCUMENTATION_TRUTH.md"
+    },
+    {
+      "id": 3,
+      "name": "03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH",
+      "prompt_file": "prompts/phases/PHASE_03_CONTRACT_OWNERSHIP_AND_SHADOW_TRUTH.md"
+    },
+    {
+      "id": 4,
+      "name": "04_BOUNDARY_SCANNER_AND_VERIFY_GATE",
+      "prompt_file": "prompts/phases/PHASE_04_BOUNDARY_SCANNER_AND_VERIFY_GATE.md"
+    },
+    {
+      "id": 5,
+      "name": "05_PROVIDER_CAPABILITY_TRUTH",
+      "prompt_file": "prompts/phases/PHASE_05_PROVIDER_CAPABILITY_TRUTH.md"
+    },
+    {
+      "id": 6,
+      "name": "06_RUNNER_VERTICAL_SLICE",
+      "prompt_file": "prompts/phases/PHASE_06_RUNNER_VERTICAL_SLICE.md"
+    },
+    {
+      "id": 7,
+      "name": "07_CANONICAL_ADAPTER_PROOF",
+      "prompt_file": "prompts/phases/PHASE_07_CANONICAL_ADAPTER_PROOF.md"
+    },
+    {
+      "id": 8,
+      "name": "08_AGENCY_INFLUENCE_GOVERNANCE",
+      "prompt_file": "prompts/phases/PHASE_08_AGENCY_INFLUENCE_GOVERNANCE.md"
+    },
+    {
+      "id": 9,
+      "name": "09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS",
+      "prompt_file": "prompts/phases/PHASE_09_REFERENCE_INTERPRETERS_AND_HOSTILE_TESTS.md"
+    },
+    {
+      "id": 10,
+      "name": "10_RELEASE_AUDIT_BUNDLE",
+      "prompt_file": "prompts/phases/PHASE_10_RELEASE_AUDIT_BUNDLE.md"
+    }
+  ],
+  "manual_injections_required": true,
+  "final_commands": [
+    "bash scripts/p20_verify.sh",
+    "bash scripts/p20_generate_audit_bundle.sh"
+  ]
+}

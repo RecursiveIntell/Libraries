@@ -1,0 +1,360 @@
+{
+  "bundle": "AIDENS_P30_V11B_CENTERED_SUPER_PASS_BUNDLE_20260510",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 4936,
+      "sha256": "64a75b32d0663c0b3fc1dac274cb189a4b5e29c81a15b0e22a1cd36769e05612"
+    },
+    {
+      "path": "INSTALL_P30_BUNDLE_TO_REPO.sh",
+      "bytes": 299,
+      "sha256": "6996e7c203044216e1ee47427e62a8dac53449247e3dd312829d3649ec19ee8d"
+    },
+    {
+      "path": "P30_ACCEPTANCE_GATES.md",
+      "bytes": 3786,
+      "sha256": "47c8262985ccbdc1a15dd49000f0f41f17f05e5791b42b88a1831db0876a17ea"
+    },
+    {
+      "path": "P30_BUNDLE_MANIFEST.json",
+      "bytes": 11444,
+      "sha256": "be189edf7a3bec821d0cc9945e617e2ca96addcb90c418c85aa75a6334175e21"
+    },
+    {
+      "path": "P30_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 4695,
+      "sha256": "21f0fae852ae35e00d0121dccb4f8c52f5317a04d5b8e75d769916cbac22137f"
+    },
+    {
+      "path": "P30_COMMANDS.md",
+      "bytes": 1239,
+      "sha256": "3586ea69ab46ddbbcf60ea70f65d5a302dc097482fd1e0cf9c96e3486dad3dd3"
+    },
+    {
+      "path": "P30_EVIDENCE_AND_REPORTING.md",
+      "bytes": 1023,
+      "sha256": "0f25f8ac3e7bcf9d2d9fcd5c7fdfe5f3b86df08297f4f778c8451b818754c018"
+    },
+    {
+      "path": "P30_EXPECTED_FINAL_STATE.md",
+      "bytes": 1252,
+      "sha256": "949e85a609385398329f04ff8294b03231f80c3b6b85d2281d1338eed414490f"
+    },
+    {
+      "path": "P30_FORBIDDEN_FINAL_STATE.md",
+      "bytes": 1218,
+      "sha256": "d553d4625b54e73a642f6318c3f0b0eebb5fb30bf49622e2cd718f6350a490fe"
+    },
+    {
+      "path": "P30_MANUAL_PHASE_INJECTIONS.md",
+      "bytes": 3248,
+      "sha256": "88cbeba740b60d69729eae64f40c2b642287c1fb9b92e764b775ff0a8284fcac"
+    },
+    {
+      "path": "P30_OPERATOR_PASTE_FIRST.md",
+      "bytes": 1642,
+      "sha256": "2989f1e3c0da721f4070aa867f692f0a34247caf5936308a598a6cbe927d2991"
+    },
+    {
+      "path": "P30_OWNER_SOURCE_OF_TRUTH_MAP.md",
+      "bytes": 1670,
+      "sha256": "f5280d47f9745b0765930966d993cf6acda4a2eb5ba6514fcc515b35a5dd8816"
+    },
+    {
+      "path": "P30_PHASE_PLAN.md",
+      "bytes": 3350,
+      "sha256": "7106f68068a8ce1ee785b0b0a90d5c2fe2fc2a2ad8e3521284557520e5ea60bd"
+    },
+    {
+      "path": "P30_RELEASE_CLAIM_POLICY.md",
+      "bytes": 793,
+      "sha256": "e8b0029cc62ebfbd48b7b0963aa623b701154a3f858039a53e396df3dbc53eb7"
+    },
+    {
+      "path": "P30_ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "bytes": 1037,
+      "sha256": "db5cfd25cd2025486641a014fd432c42257351632cc0e5e8831b7ab5c69c92e8"
+    },
+    {
+      "path": "P30_SOURCE_BASIS.md",
+      "bytes": 2239,
+      "sha256": "bd6ab9894596c91c76dfa52652e726ca0615d861f059f4491a1419577b2c7baf"
+    },
+    {
+      "path": "P30_V11B_EXECUTION_SPINE.md",
+      "bytes": 2230,
+      "sha256": "3723225851cbcec8aecc548ed5b504fa92d645dc095de6f9633334bb6972ef3a"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2948,
+      "sha256": "d3b292e2242f792033115172299ac786eb79586cde70666749e1ab1c6440d4c2"
+    },
+    {
+      "path": "input_evidence/AIDENS_HOSTILE_AUDIT_20260508.md",
+      "bytes": 209598,
+      "sha256": "1f8bf3ac5e71e023e7317f0ab7c86306ef912a1adcaf4f5001461cb4e129adb5"
+    },
+    {
+      "path": "input_evidence/AIDENS_HOSTILE_AUDIT_ISSUES_20260508.csv",
+      "bytes": 266967,
+      "sha256": "38035090abac95dc079ef227ac05a4545d0a4054e9023b07ff6ae692a0f46367"
+    },
+    {
+      "path": "input_evidence/AIDENS_HOSTILE_AUDIT_ISSUES_20260508.json",
+      "bytes": 406594,
+      "sha256": "ae404f1218b16c45ea01c5b9760c69f567bbab7b15fed9ed5d6195cfc850b4df"
+    },
+    {
+      "path": "input_evidence/AiDENs-aidens-next-codex-context-20260508.codex-archive.json",
+      "bytes": 516,
+      "sha256": "f06554c9a93217318ab075347e7228303253e606545ed718174294dd84b24892"
+    },
+    {
+      "path": "input_evidence/AiDENs-aidens-next-codex-context-20260508.excluded.json",
+      "bytes": 18763,
+      "sha256": "058a1dd62e4a12ae7c0e08abce62348f8eb6923c2ba07e0ed4fbc25f4c83da8b"
+    },
+    {
+      "path": "input_evidence/AiDENs-aidens-next-codex-context-20260508.findings.json",
+      "bytes": 156,
+      "sha256": "09516987a2ae7f478ae85a1ed8b5a65ac284eec088c767f6368ab6d18149def1"
+    },
+    {
+      "path": "input_evidence/AiDENs-aidens-next-codex-context-20260508.manifest.json",
+      "bytes": 496155,
+      "sha256": "5ebad8fdf0c6b6d0e5653d29c04f439840ed09c9e55393368a5687fbad3b384a"
+    },
+    {
+      "path": "input_evidence/AiDENs-aidens-next-codex-context-20260508.report.md",
+      "bytes": 4820,
+      "sha256": "20abeb8b890cd3570fd90015cc8de3a58f4c20e3cc758c8096dbfa05d4b3fd39"
+    },
+    {
+      "path": "input_evidence/CANONICAL_STACK_SPEC_ENDSTATE_RECURSIVE_SUBTRACTIVE_RUNTIME.md",
+      "bytes": 35515,
+      "sha256": "97567dafae32fd0455612d2eed4c5f8c3b69d78eee24fb9d67781f57852654c9"
+    },
+    {
+      "path": "input_evidence/CANONICAL_STACK_SPEC_V11A_CONSTITUTIONAL_ARTIFACT_RUNTIME_CORE.md",
+      "bytes": 27758,
+      "sha256": "b0f3b9a60d2c8b3402bfe852b38972ccdbe15bb6f76cec898c7f22435c83ab47"
+    },
+    {
+      "path": "input_evidence/CANONICAL_STACK_SPEC_V11B_RECURSIVE_SUBTRACTIVE_REGIONAL_RUNTIME.md",
+      "bytes": 23799,
+      "sha256": "b084524a4ef10b6e5b55e0190af01774a32164382252a2bf4c3f78abc8215c60"
+    },
+    {
+      "path": "input_evidence/CANONICAL_STACK_SPEC_V11C_SELF_HOSTING_FEDERATED_MECHANISM_AND_AGENCY_RUNTIME.md",
+      "bytes": 18112,
+      "sha256": "b9fb61460e5967361275aa25b2939ac62d9865f8ee2891f2ea26e13ce70b9e37"
+    },
+    {
+      "path": "input_evidence/CANONICAL_STACK_SPEC_V9_EPISODIC_AUTHORITY_AND_EXECUTION_EVIDENCE.md",
+      "bytes": 23042,
+      "sha256": "2cf62c9d996895759a87a7fa4dc630942909f4aa2aebf6c8ff4e6dd9ad84ea76"
+    },
+    {
+      "path": "input_evidence/V11_PLUS_ARTIFACT_FAMILY_INDEX.md",
+      "bytes": 15563,
+      "sha256": "392a9de4e09b3f867369277b5091ca5b66a36383f2dbecbf1b874802c27e48a2"
+    },
+    {
+      "path": "input_evidence/V11_PLUS_CONFORMANCE_AND_RELEASE_BAR.md",
+      "bytes": 14960,
+      "sha256": "23f8720fa51285d40d420350ee5d372beb0aa2cc414871b3d48f1e09e9b88e0f"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-00_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "382d09ac602e0190ca38108fc1aac8da2dc6ff3ce412303354925ea2eca22f39"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-01_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "1cd9a4e65c84e8993b838a733f90dd41a6fb40dde0680170f88a1ddda28aa671"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-02_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "ba16ee211caa63ec8ab38a173d0e5043884c264ad50168e80b1cf2080a86a527"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-03_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "2c001633a41f43295070b409e338ca09639df1ed694820139718ef8767df449f"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-04_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "4ee54de10c5c0481fc5ded95cae2a14680b041728baab78ed01aa009f0af6d1a"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-05_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "ccf6fa60ab90a6fc4ee4efec4d21cacb915f86e044f393ba9600b3a9d2e913eb"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-06_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "2a4ee4783cc77ea4e0eeec3b8e9aa23e92d75893d90766cbf9e4c950a423d9db"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-07_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "b7b9925e8e75502f5e4dabc795fe6743228ab2586372970c9706b7bd3c3c5d87"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-08_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "c818a29b35cf9ffadfaea322ed8eb7f27282d32568776ab8feed69be330e162f"
+    },
+    {
+      "path": "manual_injections/AFTER_P30-09_REVALIDATION.md",
+      "bytes": 715,
+      "sha256": "7be3daf69b8b4c37ac866d4030eaa866f9e2ed3e78a5f9094ca61fe4ab8a5edd"
+    },
+    {
+      "path": "matrices/P30_HOSTILE_AUDIT_ABSORPTION_MATRIX.csv",
+      "bytes": 384888,
+      "sha256": "33e00456807205b1344666957861e0c840efcf6fca9cf0d7fdd3060e24163a00"
+    },
+    {
+      "path": "matrices/P30_HOSTILE_AUDIT_ABSORPTION_MATRIX.json",
+      "bytes": 582737,
+      "sha256": "b8c860683a65c3f406312c55d56ac8dd5db88e8f4254dd539e0f6013cf13c653"
+    },
+    {
+      "path": "matrices/P30_HOSTILE_AUDIT_ABSORPTION_MATRIX.md",
+      "bytes": 16597,
+      "sha256": "723fc77fe1cdf6a8b3fa75be0e63f61c878b1e3fce3b09bac5a6115f86c06052"
+    },
+    {
+      "path": "prompts/phases/P30-00_PREFLIGHT_SOURCE_BASIS_LOCK_WORKSPACE_PORTABILITY_BUILD_CERTIFICATION_SPLIT.md",
+      "bytes": 1149,
+      "sha256": "665e5bea38749596a5f9cbd05bab6acfb3492d36b815616f05d5a2675dc37b05"
+    },
+    {
+      "path": "prompts/phases/P30-01_EXECUTABLE_TOOL_CALL_PARSER_BOUNDARY_AND_STRICT_STRUCTURED_OUTPUT_LAW.md",
+      "bytes": 1129,
+      "sha256": "2aa1cbc2b5847229a9461008f33b22cd2b8fcdc3991317b843fe4d3b3cafdf54"
+    },
+    {
+      "path": "prompts/phases/P30-02_PATCH_SAFETY_ROLLBACK_TRUTH_COMMAND_SANDBOX_AND_PERMIT_FAIL_CLOSED_BEHAVIOR.md",
+      "bytes": 1165,
+      "sha256": "7b29eb7dba86d2f392b1f9c72e6723e5d56343eb4852083e0fc97c27a71a29fa"
+    },
+    {
+      "path": "prompts/phases/P30-03_REPLAY_IDENTITY_DETERMINISTIC_MATERIAL_IDS_AND_EXPOSURE_ATTEMPT_IDENTITY_LAW.md",
+      "bytes": 1123,
+      "sha256": "6ee46c11fc40759db4b9f3256f17c5efa2e20571ea6c325a12dc2ad4b5d8208e"
+    },
+    {
+      "path": "prompts/phases/P30-04_EXECUTION_EVIDENCE_DEFAULTS_DURABLE_FAILURE_RECEIPTS_RETRY_PROVIDER_TOOL_EVIDENCE.md",
+      "bytes": 1120,
+      "sha256": "8a910a5eccdeb27d3939f2200524565ce3863911b6498ecc692171b5c22dc18c"
+    },
+    {
+      "path": "prompts/phases/P30-05_VERIFICATION_SEMANTICS_PROOF_DEBT_DEGRADATION_HONESTY_AND_NO_ADVISORY_PROMOTION.md",
+      "bytes": 1109,
+      "sha256": "f05a6c012370145421360f8dd62df880baa78f2e3fac4b18318a9934e07921fa"
+    },
+    {
+      "path": "prompts/phases/P30-06_GATE_RESURRECTION_SCHEMA_ROOT_DOC_HYGIENE_ACTIVE_DOC_MANIFEST_AND_PACKAGE_EVIDENCE.md",
+      "bytes": 1122,
+      "sha256": "181e1407ab3682fdd1a24bfffc19e93a69a22c1e22ea2343147fdd6ee83cda58"
+    },
+    {
+      "path": "prompts/phases/P30-07_HOSTILE_SWEEP_PANIC_DYNAMIC_JSON_SILENT_DEGRADATION_LINT_SUPPRESSION_CODE_SHAPE.md",
+      "bytes": 1077,
+      "sha256": "246a63ded809fd4175e2ae1fdc9f94ec5c7760cab756eb3083ecff239bb88da4"
+    },
+    {
+      "path": "prompts/phases/P30-08_V11A_B_SEED_ARTIFACT_RUNTIME_OPERATOR_RECEIPTS_RIGHT_GRAPH_REGION_CONVERGENCE_HOOKS.md",
+      "bytes": 1138,
+      "sha256": "c27b72a1ffb2db58d01ce73a4af2b971a40b2aa87864957ea2f3aa262da72c78"
+    },
+    {
+      "path": "prompts/phases/P30-09_FULL_CONFORMANCE_REPLAY_FINAL_PACKAGING_HOSTILE_AUDITOR_HANDOFF_AND_UNRESOLVED_RISKS.md",
+      "bytes": 1089,
+      "sha256": "a20b116b302f2043c4a23e31cd3bf726e3f8c42dbe7bb50bf2d80c0515607286"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_00_PREFLIGHT_SOURCE_BASIS_AND_V11B_TARGET_LOCK.md",
+      "bytes": 1047,
+      "sha256": "8b1ae97dbde300b3d43d6a5d47f2c40dc7ac3a2ed771c72010bf1a59ccf2e020"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_01_V11A_PREREQUISITE_BLOCKER_CLOSURE.md",
+      "bytes": 1117,
+      "sha256": "55881851f285e88ebb882dcbb2b171272d9bb6ca5380c2970a0aaea2b826d5d9"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_02_STRICT_BOUNDARY_HARDENING.md",
+      "bytes": 1079,
+      "sha256": "9017a23f713491b378065621a4bd90e95754d5a26b0b75844f77dd1a1220799f"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_03_EXECUTION_EVIDENCE_DURABLE_FAILURE_RECEIPTS.md",
+      "bytes": 1003,
+      "sha256": "9f628e00787e3396c976cf1516cdfd64576ff543a5109d7c581040cdba336df6"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_04_V11B_RIGHT_GRAPH_SPINE.md",
+      "bytes": 953,
+      "sha256": "80422febbd1e3362b29625ac324d2a9a76a631e43c3a2b94857f9d637334f4b1"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_05_V11B_REGION_PROTOCOL.md",
+      "bytes": 949,
+      "sha256": "9c6104e7323f9f63282d90d50cf6d8d76df049af3054826e48a6a54c33c784c5"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_06_V11B_CONVERGENCE_RESIDUAL_SYNDROME_REPAIR.md",
+      "bytes": 1017,
+      "sha256": "340da472b3fa1b60c2861ef2c271db4109f17f84acf5b4e8cf1903703fc3cfe7"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_07_V11B_SUBTRACTION_DELTA_CAUSAL.md",
+      "bytes": 1059,
+      "sha256": "c1bd54b7d42b7735c2e01da87bd1a3ea4fb112caf0b66be1e147bb6a43e990c2"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_08_HOSTILE_SWEEP_DOC_GATE_HYGIENE.md",
+      "bytes": 971,
+      "sha256": "ef9c27fdf94c1b8ecd0675e3373e748aaf9ceb70ec7e125351f65bafd4ffe407"
+    },
+    {
+      "path": "prompts/phases/P30_PHASE_09_FINAL_CONFORMANCE_PACKAGE_HANDOFF.md",
+      "bytes": 1015,
+      "sha256": "62a3c45c252c3de60bf589967c25160385c5a6c2efb5cbb4dd0fb5f941f83404"
+    },
+    {
+      "path": "scripts/p30_guard.py",
+      "bytes": 4372,
+      "sha256": "cc6491024cc5e663afe667b5de5dbdd36dafc446a6afd3b3669d0606625f5159"
+    },
+    {
+      "path": "scripts/p30_verify.sh",
+      "bytes": 1260,
+      "sha256": "7140bbe8ef0a4c866f85e4969e732415a1a9f5ff9ca51bb4f58f91fac29d1102"
+    },
+    {
+      "path": "templates/P30_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 898,
+      "sha256": "52c6304677d4f805d77338f4a859a740c93bfe62bf7b576f5e951f6b4c90a5af"
+    },
+    {
+      "path": "templates/P30_KNOWN_LIMITATIONS_TEMPLATE.md",
+      "bytes": 164,
+      "sha256": "478b335d5e1f098d7f9cd33a5ba6772481f22e5f457c9674a622045162bf34a4"
+    },
+    {
+      "path": "templates/P30_PHASE_REPORT_TEMPLATE.md",
+      "bytes": 374,
+      "sha256": "ee03ba4863d8467268308a195b5b84c018edf2f8aec5790187f4d589b1c4df15"
+    }
+  ]
+}

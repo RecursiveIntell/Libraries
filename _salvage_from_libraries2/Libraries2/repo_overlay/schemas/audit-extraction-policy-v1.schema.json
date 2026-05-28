@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AuditExtractionPolicyV1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "audit_extraction_policy_id": {
+      "type": "string"
+    },
+    "allowed_artifact_families": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_redaction_rule_set_id": {
+      "type": "string"
+    },
+    "disclosure_budget_class": {
+      "type": "string"
+    },
+    "export_package_format": {
+      "type": "string"
+    },
+    "expiry_hours": {
+      "type": "number"
+    },
+    "evidence_preservation_required": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "audit_extraction_policy_id",
+    "allowed_artifact_families",
+    "required_redaction_rule_set_id",
+    "disclosure_budget_class",
+    "export_package_format",
+    "expiry_hours",
+    "evidence_preservation_required"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "block_on_open_obligations": {
+      "type": "boolean"
+    },
+    "forbid_score_only_gate": {
+      "type": "boolean"
+    },
+    "release_policy_profile_id": {
+      "type": "string"
+    },
+    "required_assurance_sections": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_monitor_classes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "block_on_open_obligations",
+    "forbid_score_only_gate",
+    "release_policy_profile_id",
+    "schema_version"
+  ],
+  "title": "ReleasePolicyProfileV1",
+  "type": "object"
+}

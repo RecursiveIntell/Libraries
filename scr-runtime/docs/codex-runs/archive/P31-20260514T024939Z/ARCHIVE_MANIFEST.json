@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-14T02:49:39Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260514T024939Z/files/docs/P31_COMPLETION_FRESH_UNZIP_CERTIFICATION.md",
+      "bytes": 398,
+      "mtime_utc": "2026-05-14T02:29:23Z",
+      "original_path": "docs/P31_COMPLETION_FRESH_UNZIP_CERTIFICATION.md",
+      "reason": "stale-run-doc",
+      "run_id": "P31",
+      "sha256": "d89a32826526c4cda3459098884525d12837f4fd7852912cc0899228622fbd2c"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+  "run_id": "P31",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "zip_source_certifier.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

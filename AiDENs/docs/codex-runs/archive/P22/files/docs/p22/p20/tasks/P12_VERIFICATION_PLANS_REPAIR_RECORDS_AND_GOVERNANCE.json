@@ -1,0 +1,32 @@
+{
+  "pass_id": "P12",
+  "title": "Canonical verification, repair, contradiction, and governance adapters",
+  "phase": "Governed runtime",
+  "prompt_file": "prompts/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE_PROMPT.md",
+  "pass_doc": "passes/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md",
+  "crates": [
+    "aidens-governance-kit",
+    "aidens-repair-kit",
+    "aidens-arbiter-kit",
+    "aidens-contracts",
+    "aidens-memory-kit",
+    "aidens-receipts"
+  ],
+  "artifacts": [
+    "verification_control::CheckPlan",
+    "verification_control::ControlReceipt",
+    "verification_control::BoundaryRepairRecord",
+    "verification_adjudication::PromotionDecision",
+    "semantic_memory_forge::EvidenceBundle",
+    "semantic_memory_forge::ContradictionWitnessV1"
+  ],
+  "acceptance": [
+    "Risk-bearing claims route through canonical verification-control/policy/adjudication artifacts.",
+    "Contradiction uses canonical Forge witnesses and does not silently overwrite memory.",
+    "Repair emits canonical verification-control or Forge repair lineage."
+  ],
+  "forbidden": [
+    "Do not call a ranking score \u201cverified\u201d.",
+    "Do not delete contradicted claims; supersede or quarantine them."
+  ]
+}

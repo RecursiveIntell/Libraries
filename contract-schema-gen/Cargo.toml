@@ -34,3 +34,7 @@ verification-calibration = { path = "../verification-calibration" }
 verification-control = { path = "../verification-control" }
 verification-policy = { path = "../verification-policy" }
 tempfile = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

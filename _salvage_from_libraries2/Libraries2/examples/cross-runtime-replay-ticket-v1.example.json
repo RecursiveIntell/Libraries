@@ -1,0 +1,23 @@
+{
+  "schema_version": "cross_runtime_replay_ticket_v1",
+  "cross_runtime_replay_ticket_id": "cross-runtime-ticket-v25",
+  "applicability_context_id": "applicability-context-v25",
+  "profile_set_id": "profile-set-v25",
+  "composition_receipt_id": "composition-receipt-v25",
+  "effective_constitution_id": "effective-constitution-v25",
+  "compiled_obligation_set_id": "compiled-obligation-set-v25",
+  "profile_exception_bundle_ids": [],
+  "artifact_refs": [
+    "artifact:replay:v25"
+  ],
+  "time_coordinates": "2026-03-17T00:00:00Z",
+  "required_trust_roots": [
+    "trust-root-set-v25"
+  ],
+  "allowed_disclosure": "non-sensitive",
+  "lease_window": "2026-03-17T00:00:00Z/2026-03-18T00:00:00Z",
+  "replay_expectations": [
+    "expectation:complete"
+  ],
+  "failure_behavior": "retry"
+}

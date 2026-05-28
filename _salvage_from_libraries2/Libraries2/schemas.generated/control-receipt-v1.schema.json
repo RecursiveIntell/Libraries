@@ -1,0 +1,307 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "ConstitutionalContextStatus": {
+      "enum": [
+        "missing",
+        "partial",
+        "complete"
+      ],
+      "type": "string"
+    },
+    "ControlActionKind": {
+      "enum": [
+        "tool_execution",
+        "orchestration_loop",
+        "verification_execution"
+      ],
+      "type": "string"
+    },
+    "ReceiptBudgetContext": {
+      "properties": {
+        "budget_kind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_steps": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "time_budget_ms": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "action_kind": {
+      "$ref": "#/definitions/ControlActionKind"
+    },
+    "actor": {
+      "type": "string"
+    },
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attempt_id": {
+      "type": "string"
+    },
+    "blocking_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "budget_context": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ReceiptBudgetContext"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "case_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "citation_status": {
+      "$ref": "#/definitions/ConstitutionalContextStatus"
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deadline": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "details": true,
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "family_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "finished_at": {
+      "type": "string"
+    },
+    "monitoring_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "non_authoritative": {
+      "type": "boolean"
+    },
+    "obligation_refs_status": {
+      "$ref": "#/definitions/ConstitutionalContextStatus"
+    },
+    "parent_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "plan_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "planner_stage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "promotable": {
+      "type": "boolean"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "replay_parent_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "required_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "retry_owner": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_receipt_kind": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "trace_ctx": {
+      "$ref": "#/definitions/TraceCtx"
+    },
+    "trial_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "workload_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "action_kind",
+    "actor",
+    "advisory_only",
+    "attempt_id",
+    "citation_status",
+    "degraded",
+    "details",
+    "finished_at",
+    "non_authoritative",
+    "obligation_refs_status",
+    "promotable",
+    "receipt_id",
+    "schema_version",
+    "source_receipt_kind",
+    "started_at",
+    "trace_ctx"
+  ],
+  "title": "ControlReceipt",
+  "type": "object"
+}

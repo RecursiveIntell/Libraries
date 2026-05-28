@@ -1,0 +1,17 @@
+{
+  "disposition_id": "shared-disposition:fixture",
+  "kind": "shared-disposition",
+  "settlement_case_id": "settlement-case:fixture",
+  "outcome": "local-authority-preserved",
+  "local_disposition": "degraded_no_promotion",
+  "remote_disposition": "downgrade",
+  "local_authority_preserved": true,
+  "accepted_by": [
+    "local-fixture",
+    "remote-fixture"
+  ],
+  "reason_codes": [
+    "remote-claim-did-not-overwrite-local-truth"
+  ],
+  "recorded_at": "2026-04-27T00:00:06Z"
+}

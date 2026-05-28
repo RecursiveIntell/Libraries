@@ -1,0 +1,450 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "DispatchOutcomeV1": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "degraded",
+        "cancelled",
+        "exhausted"
+      ],
+      "type": "string"
+    },
+    "ExecutionContextV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancellation_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degradation_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dispatch_outcome": {
+          "$ref": "#/definitions/DispatchOutcomeV1"
+        },
+        "environment_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_route": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "queue_hops": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workload_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "dispatch_outcome",
+        "schema_version",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "PromotionState": {
+      "description": "Promotion state for the claim represented by this bundle.",
+      "oneOf": [
+        {
+          "properties": {
+            "state": {
+              "enum": [
+                "not_promoted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "state": {
+              "enum": [
+                "eligible"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "blocked"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason",
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "promoted_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "state": {
+              "enum": [
+                "promoted"
+              ],
+              "type": "string"
+            },
+            "version_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "VerificationLifecycleState": {
+      "description": "Compact lifecycle state that can be projected into memory-visible truth.",
+      "enum": [
+        "unverified",
+        "verified",
+        "contradicted",
+        "superseded"
+      ],
+      "type": "string"
+    },
+    "VerificationSummary": {
+      "description": "Compact verification summary designed for projection/import visibility.",
+      "properties": {
+        "comparability_snapshot_version": {
+          "description": "Immutable comparability snapshot version when carried by the source.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_trial_count": {
+          "description": "Number of completed trials contributing to the summary.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "failed_refutation_count": {
+          "description": "Number of failed refutation artifacts.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "lifecycle_state": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/VerificationLifecycleState"
+            }
+          ],
+          "description": "Verification lifecycle."
+        },
+        "notes": {
+          "default": [],
+          "description": "Human-readable, source-authored notes.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "passed_refutation_count": {
+          "description": "Number of passed refutation artifacts.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "promotion_state": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/PromotionState"
+            }
+          ],
+          "description": "Promotion state."
+        }
+      },
+      "required": [
+        "completed_trial_count",
+        "failed_refutation_count",
+        "lifecycle_state",
+        "passed_refutation_count",
+        "promotion_state"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "bundle_id": {
+      "type": "string"
+    },
+    "claim_version_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "content_digest": {
+      "type": "string"
+    },
+    "control_plane_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "episode_id": {
+      "type": "string"
+    },
+    "evidence_bundle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "execution_context": {
+      "$ref": "#/definitions/ExecutionContextV1"
+    },
+    "exported_at": {
+      "type": "string"
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "primary_document_id": {
+      "type": "string"
+    },
+    "recorded_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "refutation_artifact_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "relation_version_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope_key": {
+      "$ref": "#/definitions/ScopeKey"
+    },
+    "source_envelope_id": {
+      "type": "string"
+    },
+    "source_evidence_pointers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "source_receipt_digests": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "supersedes_bundle_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "thin_export": {
+      "type": "boolean"
+    },
+    "valid_from": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "verification_summary": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/VerificationSummary"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "bundle_id",
+    "content_digest",
+    "episode_id",
+    "execution_context",
+    "exported_at",
+    "namespace",
+    "primary_document_id",
+    "schema_version",
+    "scope_key",
+    "source_envelope_id",
+    "thin_export"
+  ],
+  "title": "EpisodeBundleV1",
+  "type": "object"
+}

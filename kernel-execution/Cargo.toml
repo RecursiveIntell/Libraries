@@ -13,3 +13,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 stack-ids = { path = "../stack-ids" }
 schemars = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

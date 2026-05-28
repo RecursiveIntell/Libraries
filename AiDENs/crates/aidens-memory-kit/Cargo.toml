@@ -1,0 +1,19 @@
+[package]
+name = "aidens-memory-kit"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+forge-memory-bridge.workspace = true
+knowledge-runtime.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+semantic-memory.workspace = true
+semantic-memory-forge.workspace = true
+stack-ids.workspace = true
+thiserror.workspace = true

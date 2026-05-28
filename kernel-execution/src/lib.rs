@@ -1,3 +1,5 @@
+#![cfg_attr(test, allow(clippy::expect_used))]
+
 use constraint_compiler::{CompileOutput, CompiledRegion, InvalidationCone};
 use recursive_kernel_core::{ArtifactAuthorityClass, Syndrome};
 use schemars::JsonSchema;

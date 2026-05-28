@@ -1,0 +1,130 @@
+[
+  {
+    "crate": "llm-output-parser",
+    "command": "cargo check --manifest-path llm-output-parser/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 4.59,
+    "log": "docs/salvage/build_logs/llm-output-parser_check.log"
+  },
+  {
+    "crate": "llm-output-parser",
+    "command": "cargo test --manifest-path llm-output-parser/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 3.75,
+    "log": "docs/salvage/build_logs/llm-output-parser_test.log"
+  },
+  {
+    "crate": "job-queue",
+    "command": "cargo check --manifest-path job-queue/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 0.07,
+    "log": "docs/salvage/build_logs/job-queue_check.log"
+  },
+  {
+    "crate": "job-queue",
+    "command": "cargo test --manifest-path job-queue/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 9.71,
+    "log": "docs/salvage/build_logs/job-queue_test.log"
+  },
+  {
+    "crate": "agent-graph",
+    "command": "cargo check --manifest-path agent-graph/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 0.06,
+    "log": "docs/salvage/build_logs/agent-graph_check.log"
+  },
+  {
+    "crate": "agent-graph",
+    "command": "cargo test --manifest-path agent-graph/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 21.52,
+    "log": "docs/salvage/build_logs/agent-graph_test.log"
+  },
+  {
+    "crate": "comfyui-rs",
+    "command": "cargo check --manifest-path comfyui-rs/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 14.74,
+    "log": "docs/salvage/build_logs/comfyui-rs_check.log"
+  },
+  {
+    "crate": "comfyui-rs",
+    "command": "cargo test --manifest-path comfyui-rs/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 20.08,
+    "log": "docs/salvage/build_logs/comfyui-rs_test.log"
+  },
+  {
+    "crate": "ollama-vision",
+    "command": "cargo check --manifest-path ollama-vision/Cargo.toml",
+    "status": "fail",
+    "returncode": 101,
+    "seconds": 0.06,
+    "log": "docs/salvage/build_logs/ollama-vision_check.log"
+  },
+  {
+    "crate": "ollama-vision",
+    "command": "cargo test --manifest-path ollama-vision/Cargo.toml",
+    "status": "fail",
+    "returncode": 101,
+    "seconds": 0.05,
+    "log": "docs/salvage/build_logs/ollama-vision_test.log"
+  },
+  {
+    "crate": "ai-batch-queue",
+    "command": "cargo check --manifest-path ai-batch-queue/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 65.99,
+    "log": "docs/salvage/build_logs/ai-batch-queue_check.log"
+  },
+  {
+    "crate": "ai-batch-queue",
+    "command": "cargo test --manifest-path ai-batch-queue/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 77.2,
+    "log": "docs/salvage/build_logs/ai-batch-queue_test.log"
+  },
+  {
+    "crate": "tauri-queue",
+    "command": "cargo check --manifest-path tauri-queue/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 75.56,
+    "log": "docs/salvage/build_logs/tauri-queue_check.log"
+  },
+  {
+    "crate": "tauri-queue",
+    "command": "cargo test --manifest-path tauri-queue/Cargo.toml",
+    "status": "pass",
+    "returncode": 0,
+    "seconds": 76.23,
+    "log": "docs/salvage/build_logs/tauri-queue_test.log"
+  },
+  {
+    "crate": "llm-pipeline",
+    "command": "cargo check --manifest-path llm-pipeline/Cargo.toml",
+    "status": "fail",
+    "returncode": 101,
+    "seconds": 18.72,
+    "log": "docs/salvage/build_logs/llm-pipeline_check.log"
+  },
+  {
+    "crate": "llm-pipeline",
+    "command": "cargo test --manifest-path llm-pipeline/Cargo.toml",
+    "status": "fail",
+    "returncode": 101,
+    "seconds": 36.92,
+    "log": "docs/salvage/build_logs/llm-pipeline_test.log"
+  }
+]

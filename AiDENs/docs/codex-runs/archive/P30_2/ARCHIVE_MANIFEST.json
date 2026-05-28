@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-11T00:41:41Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P30_2/files/prompts/phases/P30-02_PATCH_SAFETY_ROLLBACK_TRUTH_COMMAND_SANDBOX_AND_PERMIT_FAIL_CLOSED_BEHAVIOR.md",
+      "bytes": 1165,
+      "mtime_utc": "2026-05-10T23:55:56Z",
+      "original_path": "prompts/phases/P30-02_PATCH_SAFETY_ROLLBACK_TRUTH_COMMAND_SANDBOX_AND_PERMIT_FAIL_CLOSED_BEHAVIOR.md",
+      "reason": "stale-phase-prompt",
+      "run_id": "P30_2",
+      "sha256": "7b29eb7dba86d2f392b1f9c72e6723e5d56343eb4852083e0fc97c27a71a29fa"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P30_2",
+  "skipped_existing": [],
+  "superseded_by": "P29",
+  "tool": "z.py",
+  "tool_version": "2026.05.07-p29",
+  "unclassified": []
+}

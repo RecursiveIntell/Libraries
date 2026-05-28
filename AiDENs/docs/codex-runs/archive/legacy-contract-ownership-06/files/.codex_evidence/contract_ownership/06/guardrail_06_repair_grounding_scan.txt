@@ -1,0 +1,44 @@
+docs/contract-ownership/FINAL_QUARANTINE_LEDGER.md:7:| phase06-wrapper-canonical-record-gaps | quarantined canonical record gaps | 06 | `docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md` | Decide owner-approved production/persistence for concrete repair, validation, region, and subtraction canonical records. | Treat AiDENs DTOs with empty canonical ID vectors as display/report wrappers only; do not use them as canonical truth. |
+docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md:11:1. `BoundaryRepairReportV1` and `JsonRepairReportV2` now carry `canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>` and `canonical_backpointers`, but the current `aidens-boundary-kit` display repair helpers do not persist or return concrete `verification-control::BoundaryRepairRecord` artifacts.
+docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md:12:2. `SchemaValidationReportV1` now carries `canonical_control_receipt_ids: Vec<StackControlReceiptId>` and `canonical_backpointers`, but local schema validation display reports do not mint canonical `verification-control::ControlReceipt` records.
+docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md:17:- Boundary repairs must either be produced through `verification-control::BoundaryRepairRecord` and record the returned `BoundaryRepairRecordId`, or remain display-only and blocked from being used as repair truth.
+crates/aidens-repair-kit/src/lib.rs:5:    pub use verification_control::{
+crates/aidens-repair-kit/src/lib.rs:6:        BoundaryArtifactKind, BoundaryRepairRecord, BOUNDARY_REPAIR_RECORD_V1_SCHEMA,
+crates/aidens-repair-kit/src/lib.rs:10:pub use canonical_stack::BoundaryRepairRecord as CanonicalBoundaryRepairRecord;
+crates/aidens-repair-kit/src/lib.rs:27:    ) -> CanonicalBoundaryRepairRecord {
+crates/aidens-repair-kit/src/lib.rs:28:        canonical_stack::BoundaryRepairRecord::new(
+crates/aidens-boundary-kit/src/lib.rs:335:        canonical_repair_record_ids: Vec::new(),
+crates/aidens-boundary-kit/src/lib.rs:338:            "BoundaryRepairRecord",
+crates/aidens-boundary-kit/src/lib.rs:339:            "canonical-boundary-repair-owner",
+crates/aidens-boundary-kit/src/lib.rs:571:        canonical_repair_record_ids: Vec::new(),
+crates/aidens-boundary-kit/src/lib.rs:574:            "BoundaryRepairRecord",
+crates/aidens-boundary-kit/src/lib.rs:575:            "canonical-boundary-repair-owner",
+crates/aidens-boundary-kit/src/lib.rs:593:        canonical_repair_record_ids: Vec::new(),
+crates/aidens-boundary-kit/src/lib.rs:596:            "BoundaryRepairRecord",
+crates/aidens-boundary-kit/src/lib.rs:597:            "canonical-boundary-repair-owner",
+crates/aidens-contracts/src/lib.rs:29:        ArtifactId, AttemptId, BoundaryRepairRecordId, ClaimId, ClaimVersionId, ContentDigest,
+crates/aidens-contracts/src/lib.rs:35:    pub use verification_control::{
+crates/aidens-contracts/src/lib.rs:36:        BoundaryRepairRecord as CanonicalBoundaryRepairRecord,
+crates/aidens-contracts/src/lib.rs:50:    BoundaryRepairRecordId as StackBoundaryRepairRecordId, CanonicalKernelStopReason,
+crates/aidens-contracts/src/lib.rs:52:    ContentDigest as StackContentDigest, ControlReceiptId as StackControlReceiptId,
+crates/aidens-contracts/src/lib.rs:5343:    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+crates/aidens-contracts/src/lib.rs:5370:            canonical_repair_record_ids: Vec::new(),
+crates/aidens-contracts/src/lib.rs:5390:        self.global_recompute_required && self.canonical_repair_record_ids.is_empty()
+crates/aidens-contracts/src/lib.rs:5550:    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+crates/aidens-contracts/src/lib.rs:5574:        let mut canonical_repair_record_ids = syndromes
+crates/aidens-contracts/src/lib.rs:5576:            .flat_map(|syndrome| syndrome.canonical_repair_record_ids.iter().cloned())
+crates/aidens-contracts/src/lib.rs:5578:        canonical_repair_record_ids.sort();
+crates/aidens-contracts/src/lib.rs:5579:        canonical_repair_record_ids.dedup();
+crates/aidens-contracts/src/lib.rs:5609:            canonical_repair_record_ids,
+crates/aidens-contracts/src/lib.rs:6300:    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+crates/aidens-contracts/src/lib.rs:6409:    pub canonical_repair_record_ids: Vec<StackBoundaryRepairRecordId>,
+crates/aidens-contracts/src/lib.rs:6431:            canonical_repair_record_ids: Vec::new(),
+crates/aidens-contracts/src/lib.rs:6434:                "BoundaryRepairRecord",
+crates/aidens-contracts/src/lib.rs:6435:                "canonical-boundary-repair-owner",
+crates/aidens-contracts/src/lib.rs:6449:            canonical_repair_record_ids: receipt.canonical_repair_record_ids,
+crates/aidens-contracts/src/lib.rs:6485:    pub canonical_control_receipt_ids: Vec<StackControlReceiptId>,
+crates/aidens-contracts/src/lib.rs:6513:            canonical_control_receipt_ids: Vec::new(),
+crates/aidens-contracts/src/lib.rs:6517:                "canonical-schema-validation-owner",
+crates/aidens-contracts/src/lib.rs:8870:            canonical_repair_record_ids: Vec::new(),
+crates/aidens-contracts/src/lib.rs:8873:                "BoundaryRepairRecord",
+crates/aidens-contracts/src/lib.rs:8874:                "canonical-boundary-repair-owner",

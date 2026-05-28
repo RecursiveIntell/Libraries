@@ -1,0 +1,18 @@
+{
+  "schema_version": "EvidenceCollectionPlanV1",
+  "evidence_collection_plan_id": "ecp_001",
+  "regulatory_regime_profile_id": "rrp_001",
+  "required_evidence_classes": [
+    {
+      "evidence_class": "release_decision",
+      "minimum_family": "ReleaseReadinessDecisionV1"
+    },
+    {
+      "evidence_class": "monitoring",
+      "minimum_family": "FieldMonitoringPlanV1"
+    }
+  ],
+  "collection_cadence": "per_release_and_quarterly_rollup",
+  "retention_class": "regulated_730d",
+  "owner_ref": "team:compliance"
+}

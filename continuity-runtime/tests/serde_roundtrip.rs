@@ -1,3 +1,5 @@
+#![allow(clippy::expect_used)]
+
 use continuity_runtime::{IncidentSeverityV1, ServiceLevelProfileV1};
 
 #[test]

@@ -1,0 +1,15 @@
+{
+  "receipts": [
+    {
+      "sequence": 1,
+      "digest": "a",
+      "previous_digest": null
+    },
+    {
+      "sequence": 3,
+      "digest": "b",
+      "previous_digest": "wrong"
+    }
+  ],
+  "expected": "reject"
+}

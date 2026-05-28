@@ -1,0 +1,151 @@
+# EXACT_FILE_TOUCH_MAP
+
+## PACK-001
+- `scripts/check_pack_truth.sh`
+- `README.md`
+- `PACK_README.md`
+- `00_START_HERE.md`
+- `01_EXECUTIVE_SUMMARY.md`
+- `02_SOURCE_BASIS.md`
+- `03_SNAPSHOT_MATRIX.md`
+- `04_MASTER_ISSUE_MATRIX.md`
+- `04_MASTER_ISSUE_MATRIX.csv`
+- `04_MASTER_ISSUE_MATRIX.json`
+- `05_IMPLEMENTATION_PLAN.md`
+- `06_TEST_AND_CONFORMANCE_PLAN.md`
+- `07_RELEASE_AND_GOVERNANCE.md`
+- `08_RISK_REGISTER.md`
+- `09_CRATE_BOUNDARY_MAP.md`
+- `10_STATUS_DASHBOARD.md`
+- `11_BENCHMARK_PLAN.md`
+- `12_V10_HORIZON_BACKLOG.md`
+- `13_IMPLEMENTATION_PLAYBOOK.md`
+- `14_CODEX_IMPLEMENTATION_PROMPT.md`
+- `15_CLAUDE_IMPLEMENTATION_PROMPT.md`
+- `16_HOSTILE_REVIEW_PROMPT.md`
+- `17_APPLY_PLAN.md`
+
+## PACK-002
+- `docs/archive/root_closeout_history/manifest.json`
+- `docs/archive/root_closeout_history/legacy_root_residue/*`
+
+## PACK-003
+- `STATUS_DASHBOARD.md`
+- `STATUS_EVIDENCE_MANIFEST.json`
+- `release/closeout_receipt_v1.json`
+- `RELEASE_CHECKLIST.md`
+
+## SPEC-001
+- `CANONICAL_STACK_SPEC_V6.md`
+- `CANONICAL_STACK_SPEC_V7_RECURSIVE_INFERENCE_KERNEL.md`
+- `scripts/check_doc_truth.sh`
+- `README.md`
+- `PACK_README.md`
+
+## GATE-001
+- `SUPPORT_PROFILE.md`
+- `Cargo.toml`
+- `Makefile`
+- `release/closeout_receipt_v1.json`
+- `STATUS_DASHBOARD.md`
+- `RELEASE_CHECKLIST.md`
+
+## RUNTIME-001
+- `kernel-execution/src/lib.rs`
+- `knowledge-runtime/src/inference.rs`
+- `knowledge-runtime/src/obs/trace.rs`
+- `contract-schema-gen/src/lib.rs`
+- `knowledge-runtime/tests/**`
+
+## EXEC-001
+- `semantic-memory-forge/src/v9.rs`
+- `llm-tool-runtime/src/contracts.rs`
+- `llm-tool-runtime/src/runtime.rs`
+- `forge-pilot/src/**`
+- `verification-control/src/**`
+- `verification-policy/src/**`
+- `verification-calibration/src/**`
+- `verification-adjudication/src/**`
+- `contract-schema-gen/src/lib.rs`
+
+## TYPE-001
+- `stack-ids/src/**`
+- `mechanism-runtime/src/lib.rs`
+- `federated-settlement/src/lib.rs`
+- `discovery-portfolio/src/lib.rs`
+- `constitutional-memory/src/lib.rs`
+- `spec-execution/src/lib.rs`
+
+## NAME-001
+- `mechanism-runtime/Cargo.toml`
+- `mechanism-runtime/README.md`
+- `federated-settlement/Cargo.toml`
+- `federated-settlement/README.md`
+- `discovery-portfolio/Cargo.toml`
+- `discovery-portfolio/README.md`
+- `constitutional-memory/Cargo.toml`
+- `constitutional-memory/README.md`
+- `spec-execution/Cargo.toml`
+- `spec-execution/README.md`
+- `assurance-runtime/Cargo.toml`
+- `assurance-runtime/README.md`
+- `continuity-runtime/Cargo.toml`
+- `continuity-runtime/README.md`
+- `authority-delegation/Cargo.toml`
+- `authority-delegation/README.md`
+- `attestation-exchange/Cargo.toml`
+- `attestation-exchange/README.md`
+
+## DOC-001
+- `forge-pilot/src/**`
+- `kernel-conformance/src/**`
+- `llm-tool-runtime/src/**`
+- `kernel-execution/src/lib.rs`
+- `contract-schema-gen/src/**`
+- `kernel-oracles/src/lib.rs`
+- `verification-adjudication/src/**`
+
+## SAFE-001
+- `semantic-memory-forge/src/envelope.rs`
+- `semantic-memory-forge/src/v11.rs`
+- `stack-ids/src/ids.rs`
+- `stack-ids/src/trace.rs`
+- `forge-memory-bridge/src/transform.rs`
+- `knowledge-runtime/src/**`
+- `kernel-conformance/src/**`
+- `forge-pilot/src/main_support/mod.rs`
+- `scripts/check_no_prod_panics.sh`
+- `STATUS_DASHBOARD.md`
+
+## MOD-001
+- `semantic-memory-forge/src/envelope.rs`
+- `living-memory/living-memory/src/lab/evidence.rs`
+- `semantic-memory/src/projection_storage.rs`
+- `stack-ids/src/ids.rs`
+- `verification-control/src/lib.rs`
+- `forge-pilot/src/main_support/mod.rs`
+- `forge-pilot/src/loop_runner.rs`
+- `LLM-Pipeline/src/llm_call.rs`
+- `forge-memory-bridge/src/transform.rs`
+- `constraint-compiler/src/lib.rs`
+
+## PACK-004
+- `PACK_README.md`
+- `MANIFEST.json`
+- `release/*`
+- `.gitignore`
+- `packaging script(s)`
+
+## DOC-002
+- `README.md`
+- `PACK_README.md`
+- `docs/archive/root_closeout_history/manifest.json`
+- `docs/examples/**`
+- `root closeout docs`
+
+## REL-001
+- `docs/benchmarks/**`
+- `contracts/fixtures/demo/**`
+- `verification-control/tests/**`
+- `STATUS_DASHBOARD.md`
+- `11_BENCHMARK_PLAN.md`

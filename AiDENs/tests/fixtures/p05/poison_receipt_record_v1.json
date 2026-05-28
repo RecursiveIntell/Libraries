@@ -1,0 +1,11 @@
+{
+  "poison_id": "poison-receipt:fixture",
+  "source_path": "target/aidens-receipts/fixture/receipt-transactions.ndjson",
+  "line_number": 1,
+  "raw_digest": "blake3:c30540e2c0aa0ae19e867c8751b310bbd0abc53386ecf0e0c6b0b5d58fb0b896",
+  "raw_line": "bad-line",
+  "reason_codes": [
+    "receipt-transaction-json-error"
+  ],
+  "recorded_at": "2026-04-26T00:00:00Z"
+}

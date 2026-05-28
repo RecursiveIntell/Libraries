@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "generated_at": {
+      "type": "string"
+    },
+    "generated_migration_plan_id": {
+      "type": "string"
+    },
+    "generated_schema_bundle_id": {
+      "type": "string"
+    },
+    "horizon_only": {
+      "type": "boolean"
+    },
+    "normative_ast_id": {
+      "type": "string"
+    },
+    "proof_obligation_set_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "spec_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "generated_at",
+    "generated_migration_plan_id",
+    "generated_schema_bundle_id",
+    "horizon_only",
+    "normative_ast_id",
+    "proof_obligation_set_id",
+    "schema_version",
+    "spec_bundle_id"
+  ],
+  "title": "GeneratedMigrationPlanV1",
+  "type": "object"
+}

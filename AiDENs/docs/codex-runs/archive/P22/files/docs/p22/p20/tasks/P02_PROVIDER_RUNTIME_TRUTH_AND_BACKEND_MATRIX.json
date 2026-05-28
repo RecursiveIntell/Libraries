@@ -1,0 +1,28 @@
+{
+  "pass_id": "P02",
+  "title": "Provider runtime truth and executable backend matrix",
+  "phase": "Foundation / runtime",
+  "prompt_file": "prompts/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX_PROMPT.md",
+  "pass_doc": "passes/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.md",
+  "crates": [
+    "aidens-provider-kit",
+    "aidens-contracts",
+    "aidens-cli",
+    "aidens-runner"
+  ],
+  "artifacts": [
+    "ProviderBackendMatrixV1",
+    "ProviderReadinessReceiptV1",
+    "ProviderRouteReceiptV2",
+    "ProviderCertificationFixtureV1"
+  ],
+  "acceptance": [
+    "provider-check never reports native_tool_loop=true for an unavailable or unsupported backend.",
+    "OpenAI/OpenRouter/Anthropic routes either execute real requests behind feature-gated clients or return provider-boundary-unavailable with native_tool_loop=false.",
+    "Ollama route truth distinguishes ordinary chat from native tool loop if tool calling is not implemented."
+  ],
+  "forbidden": [
+    "Do not use provider kind string alone to infer executable native capability.",
+    "Do not label parser fallback as native."
+  ]
+}

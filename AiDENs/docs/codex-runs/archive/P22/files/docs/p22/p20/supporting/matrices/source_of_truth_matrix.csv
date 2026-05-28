@@ -1,0 +1,9 @@
+surface,canonical_owner,aidens_allowed,aidens_forbidden
+ids/digests,stack-ids,use/re-export,local ID law
+evidence/export,semantic-memory-forge,delegate/report,local evidence truth
+bridge/import,forge-memory-bridge,delegate/report,reinterpret import semantics
+memory projection,semantic-memory,query/report,local memory truth
+runtime views,knowledge-runtime,delegate/disclose,hidden shadow database
+kernel,kernel crates,delegate/execute,local witnesses/syndromes
+verification,verification-*,delegate/report,local verification law
+agency,aidens-agency-kit,gate/receipt,prompt-only influence policy

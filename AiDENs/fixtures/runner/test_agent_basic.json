@@ -1,0 +1,18 @@
+{
+  "fixture_id": "test-agent-basic-v1",
+  "turns": [
+    {
+      "role": "user",
+      "content": "Read README.md and summarize the agent status without making unsupported claims."
+    },
+    {
+      "role": "assistant_tool_call",
+      "tool": "repo.read",
+      "arguments": { "path": "README.md" }
+    },
+    {
+      "role": "assistant_final",
+      "content": "I read README.md and will summarize only what the evidence supports."
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ReplayRequirementV1": {
+      "properties": {
+        "replay_available": {
+          "type": "boolean"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "runtime_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "replay_available",
+        "required",
+        "runtime_name"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "all_required_replays_available": {
+      "type": "boolean"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "missing_required_runtime_names": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "replay_requirements": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/ReplayRequirementV1"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "settlement_case_id": {
+      "type": "string"
+    },
+    "shared_replay_slice_id": {
+      "type": "string"
+    },
+    "treaty_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "all_required_replays_available",
+    "applicability_context_id",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "degraded",
+    "effective_constitution_id",
+    "generated_at",
+    "profile_set_id",
+    "schema_version",
+    "settlement_case_id",
+    "shared_replay_slice_id",
+    "treaty_bundle_id"
+  ],
+  "title": "SharedReplaySliceV1",
+  "type": "object"
+}

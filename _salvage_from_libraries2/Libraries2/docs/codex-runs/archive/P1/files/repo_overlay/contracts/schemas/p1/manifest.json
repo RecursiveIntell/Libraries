@@ -1,0 +1,17 @@
+{
+  "profile": "p1",
+  "title": "Privacy, Retention, Disclosure, and Redaction",
+  "primary_owner": "verification-policy",
+  "schemas": [
+    "privacy-retention-profile-v1.schema.json",
+    "redaction-rule-set-v1.schema.json",
+    "access-purpose-matrix-v1.schema.json",
+    "audit-extraction-policy-v1.schema.json"
+  ],
+  "examples": [
+    "privacy-retention-profile-v1.example.json",
+    "redaction-rule-set-v1.example.json",
+    "access-purpose-matrix-v1.example.json",
+    "audit-extraction-policy-v1.example.json"
+  ]
+}

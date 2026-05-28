@@ -1,0 +1,29 @@
+{
+  "auto_injections_required": true,
+  "dry_run": true,
+  "errors": [],
+  "execute": false,
+  "finished_at": "2026-05-13T22:15:16.225011+00:00",
+  "manifest": ".codex/prompt_manifest.json",
+  "manual_injections_required": false,
+  "phases": [
+    {
+      "auto_injection": ".codex/auto_injections/phase_04_gate.md",
+      "commands": [],
+      "id": "phase_04",
+      "name": "tests and release gates",
+      "prompt": ".codex/prompts/phase_04_tests_and_release_gates.md",
+      "prompt_bytes": 838,
+      "prompt_path": "/home/sikmindz/Coding/Libraries/scr-runtime/.codex/prompts/phase_04_tests_and_release_gates.md",
+      "required_commands": [
+        "python -m pytest -q",
+        "bash scripts/run_all_checks.sh",
+        "python scripts/validate_codex_pack.py"
+      ],
+      "status": "ok"
+    }
+  ],
+  "receipt_version": "AutoPhaseRunnerReceiptV1",
+  "started_at": "2026-05-13T22:15:16.224752+00:00",
+  "status": "ok"
+}

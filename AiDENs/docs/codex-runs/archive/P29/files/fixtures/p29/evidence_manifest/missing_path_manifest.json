@@ -1,0 +1,13 @@
+{
+  "schema": "P29MissingPathManifestFixtureV1",
+  "phase_reports": [
+    "handoffs/p29/PHASE_00_REPORT.md"
+  ],
+  "validation_results": [
+    {
+      "label": "fake",
+      "log": "target/p29/audit/missing.log"
+    }
+  ],
+  "expected": "reject unless external/degraded label is explicit"
+}

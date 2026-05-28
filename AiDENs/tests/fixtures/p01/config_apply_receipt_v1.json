@@ -1,0 +1,38 @@
+{
+  "receipt_id": "config-apply:fixture",
+  "kind": "config-apply",
+  "app_id": "fixture-app",
+  "config_source": "tests/fixtures/p01/aidens.mock.toml",
+  "provider_route": {
+    "provider_kind": "mock",
+    "model": "mock-model",
+    "route": "mock",
+    "route_label": "mock",
+    "native_tool_loop": false,
+    "degraded": false,
+    "degraded_reason": null,
+    "reason_codes": [
+      "mock-provider-selected"
+    ]
+  },
+  "tool_exposure": {
+    "exposure_id": "tool-exposure:fixture",
+    "exposed_tool_ids": [
+      "aidens:repo-read:1"
+    ],
+    "hidden_tool_ids": [
+      "aidens:patch-propose:1"
+    ],
+    "blocked_tool_ids": [],
+    "reason": "policy-filtered exposure"
+  },
+  "memory_mode": "disabled",
+  "receipt_level": "full",
+  "enabled_tool_bundles": [
+    "safe-coding"
+  ],
+  "sandbox_root": ".",
+  "applied": true,
+  "reason_codes": [],
+  "applied_at": "2026-04-26T00:00:00Z"
+}

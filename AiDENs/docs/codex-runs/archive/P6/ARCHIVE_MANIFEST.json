@@ -1,0 +1,41 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-02T00:58:49Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/handoffs/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.md",
+      "bytes": 3242,
+      "mtime_utc": "2026-04-28T21:15:14Z",
+      "original_path": "handoffs/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.md",
+      "reason": "stale-run-handoff",
+      "run_id": "P6",
+      "sha256": "6bed5270432f8ec6ee892badee95b28740c9481499a272dacdf9a2cfe3c5c004"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md",
+      "bytes": 1341,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "prompts/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION_PROMPT.md",
+      "reason": "stale-run-prompt",
+      "run_id": "P6",
+      "sha256": "d62dfead5fac950de8faf36faad3a65596de5357a8884e55c7272d863f623929"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P6/files/tasks/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.json",
+      "bytes": 1201,
+      "mtime_utc": "2026-04-26T17:00:00Z",
+      "original_path": "tasks/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.json",
+      "reason": "stale-run-task",
+      "run_id": "P6",
+      "sha256": "55562c5855fac8233b1fd52c426c9f244314e2b6484970f2f4e102d34ae02dac"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P6",
+  "skipped_existing": [],
+  "superseded_by": "P22",
+  "tool": "z.py",
+  "tool_version": "2026.05.01",
+  "unclassified": []
+}

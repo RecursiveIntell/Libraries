@@ -1,0 +1,34 @@
+{
+  "receipt_id": "fit-run-report:linear-response-v1",
+  "kind": "fit-run-report",
+  "mechanism_id": "mechanism-report:linear-response-v1",
+  "theory_id": "theory-version:linear-response-v1",
+  "simulator_contract_id": "simulator-contract:linear-response-v1",
+  "dataset_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:5555555555555555555555555555555555555555555555555555555555555555"
+  },
+  "parameter_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:6666666666666666666666666666666666666666666666666666666666666666"
+  },
+  "output_digest": {
+    "algorithm": "blake3",
+    "canonicalization": "stack-ids-json-c14n-v1-display-only",
+    "digest": "blake3:7777777777777777777777777777777777777777777777777777777777777777"
+  },
+  "outcome": "succeeded",
+  "objective": "least-squares",
+  "score": 0.99,
+  "score_is_verification": false,
+  "seed": 7,
+  "replay_command": ["cargo", "run", "-p", "aidens-kernel-kit", "--example", "linear-response", "--", "--seed", "7"],
+  "source_receipt_ids": ["receipt:dataset-boundary"],
+  "reason_codes": [
+    "fit-run-recorded-as-evidence",
+    "score-is-not-verification"
+  ],
+  "fitted_at": "2026-04-27T00:01:00Z"
+}

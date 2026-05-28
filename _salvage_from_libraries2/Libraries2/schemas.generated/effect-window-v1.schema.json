@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "close_midflight_behavior": {
+      "type": "string"
+    },
+    "commit_atomicity": {
+      "type": "string"
+    },
+    "earliest_start": {
+      "type": "string"
+    },
+    "effect_window_id": {
+      "type": "string"
+    },
+    "latest_admissible_start": {
+      "type": "string"
+    },
+    "retry_owner": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "timeout_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "close_midflight_behavior",
+    "commit_atomicity",
+    "earliest_start",
+    "effect_window_id",
+    "latest_admissible_start",
+    "retry_owner",
+    "schema_version",
+    "timeout_at"
+  ],
+  "title": "EffectWindowV1",
+  "type": "object"
+}
