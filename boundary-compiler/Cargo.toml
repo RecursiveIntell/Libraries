@@ -1,0 +1,25 @@
+[package]
+name = "boundary-compiler"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "RFC 8785 JSON Canonicalization (JCS) with boundary profiles and duplicate-key rejection"
+license = "Apache-2.0"
+repository = "https://github.com/recursiveintell/boundary-compiler"
+keywords = ["json", "canonicalization", "rfc8785", "jcs", "blake3"]
+categories = ["cryptography", "encoding", "validation"]
+readme = "README.md"
+
+[dependencies]
+blake3 = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+# LIB-005: inherit workspace lint policy
+[lints]
+workspace = true

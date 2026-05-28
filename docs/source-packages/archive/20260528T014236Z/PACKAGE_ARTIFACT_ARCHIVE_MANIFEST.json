@@ -1,0 +1,151 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/docs/source-packages/archive/20260528T014236Z",
+  "collisions": [],
+  "created_utc": "2026-05-28T01:42:36Z",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/02_MASTER_ISSUE_MATRIX.md",
+      "bytes": 2797,
+      "mtime_utc": "2026-05-28T00:05:08Z",
+      "original_path": "02_MASTER_ISSUE_MATRIX.md",
+      "reason": "root-issue-matrix-residue",
+      "sha256": "9bed169efb4a1aac50fc83bc179d17998c59507e3d30e8f2096279ec151c7bcc"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/06_RISK_REGISTER.md",
+      "bytes": 2813,
+      "mtime_utc": "2026-05-28T00:05:08Z",
+      "original_path": "06_RISK_REGISTER.md",
+      "reason": "root-risk-register-residue",
+      "sha256": "20b5bf3e5db076536786ed8dbdd61996cd338e769e814ab3659f6da969384eb9"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.codex-archive.json",
+      "bytes": 111989,
+      "mtime_utc": "2026-05-24T01:20:27Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "1c3c3138d4fb9b1b8f145ae9224d761f03700b2422f994bf9a2ab16828e9aef2"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.excluded.json",
+      "bytes": 26466,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.excluded.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "4ccbff4041b941394f5c2adfcf23cdaec95702c74af2d15fa0fc042568848e47"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.findings.json",
+      "bytes": 584,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.findings.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "1841344334e831a41e4486ed1e7771fe721050e7439d51b2b75af326d1be55d7"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.manifest.json",
+      "bytes": 1786088,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.manifest.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "6cda367370bd2a6793924235276d417cac14c29c6949abfb59a15c7a47d723e1"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.report.md",
+      "bytes": 7213,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.report.md",
+      "reason": "prior-generated-sidecar",
+      "sha256": "573a9dbfd86c9f88799cf812248c82e30edc2dae0dbce33563a8dec8e93a860d"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.zip",
+      "bytes": 5176515,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.zip",
+      "reason": "prior-context-archive",
+      "sha256": "8284e2590d37ff491d36c9a7b3b17d0d5ea4ccec44bebeea86a7a8d7439d4b25"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/02_MASTER_ISSUE_MATRIX.md",
+      "bytes": 2797,
+      "mtime_utc": "2026-05-28T00:05:08Z",
+      "original_path": "02_MASTER_ISSUE_MATRIX.md",
+      "reason": "root-issue-matrix-residue",
+      "sha256": "9bed169efb4a1aac50fc83bc179d17998c59507e3d30e8f2096279ec151c7bcc"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/06_RISK_REGISTER.md",
+      "bytes": 2813,
+      "mtime_utc": "2026-05-28T00:05:08Z",
+      "original_path": "06_RISK_REGISTER.md",
+      "reason": "root-risk-register-residue",
+      "sha256": "20b5bf3e5db076536786ed8dbdd61996cd338e769e814ab3659f6da969384eb9"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.codex-archive.json",
+      "bytes": 111989,
+      "mtime_utc": "2026-05-24T01:20:27Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "1c3c3138d4fb9b1b8f145ae9224d761f03700b2422f994bf9a2ab16828e9aef2"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.excluded.json",
+      "bytes": 26466,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.excluded.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "4ccbff4041b941394f5c2adfcf23cdaec95702c74af2d15fa0fc042568848e47"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.findings.json",
+      "bytes": 584,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.findings.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "1841344334e831a41e4486ed1e7771fe721050e7439d51b2b75af326d1be55d7"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.manifest.json",
+      "bytes": 1786088,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.manifest.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "6cda367370bd2a6793924235276d417cac14c29c6949abfb59a15c7a47d723e1"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.report.md",
+      "bytes": 7213,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.report.md",
+      "reason": "prior-generated-sidecar",
+      "sha256": "573a9dbfd86c9f88799cf812248c82e30edc2dae0dbce33563a8dec8e93a860d"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260528T014236Z/files/Libraries-libraries-next-codex-context-20260524T012026Z.zip",
+      "bytes": 5176515,
+      "mtime_utc": "2026-05-24T01:20:33Z",
+      "original_path": "Libraries-libraries-next-codex-context-20260524T012026Z.zip",
+      "reason": "prior-context-archive",
+      "sha256": "8284e2590d37ff491d36c9a7b3b17d0d5ea4ccec44bebeea86a7a8d7439d4b25"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "root_package_archive_manifest_version": "RootPackageArtifactArchiveManifestV1",
+  "summary": {
+    "candidate_count": 8,
+    "collision_count": 0,
+    "inspected_count": 87,
+    "moved_count": 8,
+    "planned_count": 8,
+    "protected_count": 6,
+    "skipped_existing_count": 0
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31"
+}

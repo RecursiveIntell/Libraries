@@ -2,10 +2,14 @@
 resolver = "2"
 members = [
     "agent-graph",
+    "agent-guard",
     "ai-batch-queue",
     "assurance-runtime",
     "attestation-exchange",
     "authority-delegation",
+    "bitemporal-runtime",
+    "boundary-compiler",
+    "claim-ledger",
     "comfyui-rs",
     "constraint-compiler",
     "constitutional-memory",
@@ -38,11 +42,15 @@ members = [
     "Primitives/sandbox-workspace",
     "Primitives/stabilizer-core",
     "Primitives/typed-patch",
+    "quant-governor",
+    "quant-eval",
+    "receipt-bench",
     "profile-runtime",
     "recursive-kernel-core",
     "remote-oracle-admission",
     "semantic-memory",
     "semantic-memory-forge",
+    "scr-runtime-compression",
     "spec-execution",
     "stack-ids",
     "tauri-queue",
@@ -64,6 +72,9 @@ default-members = [
     "assurance-runtime",
     "attestation-exchange",
     "authority-delegation",
+    "bitemporal-runtime",
+    "boundary-compiler",
+    "claim-ledger",
     "comfyui-rs",
     "constraint-compiler",
     "constitutional-memory",
@@ -81,6 +92,7 @@ default-members = [
     "knowledge-runtime",
     "living-memory/living-memory",
     "llm-output-parser",
+    "claim-ledger",
     "llm-pipeline",
     "llm-tool-runtime",
     "mechanism-runtime",
@@ -95,11 +107,15 @@ default-members = [
     "Primitives/sandbox-workspace",
     "Primitives/stabilizer-core",
     "Primitives/typed-patch",
+    "quant-governor",
+    "quant-eval",
+    "receipt-bench",
     "profile-runtime",
     "recursive-kernel-core",
     "remote-oracle-admission",
     "semantic-memory",
     "semantic-memory-forge",
+    "scr-runtime-compression",
     "spec-execution",
     "stack-ids",
     "tauri-queue",
@@ -123,6 +139,7 @@ expect_used = { level = "warn", priority = -1 }
 [workspace.dependencies]
 async-trait = "0.1.89"
 blake3 = "1.8.3"
+sha2 = "0.10"
 chrono = "0.4.44"
 proptest = "1.10.0"
 rusqlite = "0.32.1"

@@ -1,0 +1,30 @@
+[package]
+name = "scr-runtime-compression"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Runtime integration adapter for semantic-memory compression layer — CompressedSearchPath and ExactFallbackAdapter delegates to turbo-quant/fib-quant"
+license = "MIT"
+authors = ["Libraries Authors"]
+repository = "https://github.com/nousresearch/Libraries"
+keywords = ["compression", "runtime", "semantic-memory", "quantization", "adapter"]
+categories = ["compression", "runtime", "memory"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+thiserror = "1"
+chrono = { version = "0.4", features = ["serde"] }
+
+# Optional codec dependencies — brought in by feature flags from turbo-quant / fib-quant
+# We do NOT pin specific versions here; the runtime adapter is codec-agnostic.
+# Codec versions are governed at the workspace level.
+
+[dev-dependencies]
+serde_json = "1"
+tempfile = "3"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"

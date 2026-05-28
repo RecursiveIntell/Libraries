@@ -1,0 +1,26 @@
+[package]
+name = "bitemporal-runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Bitemporal truth primitives — valid_time/recorded_time tracking, append-supersede, as-of queries, temporal snapshots."
+license = "MIT OR Apache-2.0"
+authors = ["sikmindz"]
+readme = "README.md"
+
+[dependencies]
+chrono = { version = "0.4.44", features = ["serde"] }
+serde = { version = "1.0.228", features = ["derive"] }
+sha2 = "0.10"
+thiserror = "2.0.18"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+todo = "deny"
+dbg_macro = "deny"
+unimplemented = "deny"

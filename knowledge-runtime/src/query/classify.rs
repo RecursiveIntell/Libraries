@@ -209,7 +209,7 @@ mod tests {
         let result = classify("what does @reembed_all do");
         match &result.mode {
             QueryMode::EntityLookup { mention } => assert_eq!(mention, "reembed_all"),
-            other => panic!("expected EntityLookup, got {:?}", other),
+            other => unreachable!("QueryMode::EntityLookup expected, got {other:?}"),
         }
     }
 
@@ -218,7 +218,7 @@ mod tests {
         let result = classify("find \"MemoryStore\" usage");
         match &result.mode {
             QueryMode::EntityLookup { mention } => assert_eq!(mention, "MemoryStore"),
-            other => panic!("expected EntityLookup, got {:?}", other),
+            other => unreachable!("QueryMode::EntityLookup expected, got {other:?}"),
         }
     }
 
@@ -229,7 +229,7 @@ mod tests {
             QueryMode::TemporalLookup { temporal_expr } => {
                 assert_eq!(temporal_expr, "last week");
             }
-            other => panic!("expected TemporalLookup, got {:?}", other),
+            other => unreachable!("QueryMode::TemporalLookup expected, got {other:?}"),
         }
     }
 
@@ -253,7 +253,7 @@ mod tests {
                     .collect();
                 assert_eq!(mentions, vec!["MemoryStore", "alice", "bob"]);
             }
-            other => panic!("expected Mixed, got {:?}", other),
+            other => unreachable!("QueryMode::Mixed expected, got {other:?}"),
         }
     }
 
@@ -264,7 +264,7 @@ mod tests {
             QueryMode::TemporalLookup { temporal_expr } => {
                 assert_eq!(temporal_expr, "last week");
             }
-            other => panic!("expected TemporalLookup, got {:?}", other),
+            other => unreachable!("QueryMode::TemporalLookup expected, got {other:?}"),
         }
     }
 }

@@ -1,0 +1,25 @@
+[package]
+name = "quant-eval"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Compression and semantic search evaluation benchmark suite"
+license = "MIT"
+repository = "https://github.com/NousResearch/quant-eval"
+keywords = ["benchmark", "compression", "semantic-search", "quantization", "evaluation"]
+categories = ["development-tools", "performance", "testing"]
+
+[dependencies]
+thiserror = "2.0.18"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+chrono = { version = "0.4.44", features = ["serde"] }
+sha2 = "0.10"
+blake3 = "1.8.3"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[[test]]
+name = "integration"
+path = "tests/integration.rs"

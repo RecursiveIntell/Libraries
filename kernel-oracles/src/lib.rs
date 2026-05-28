@@ -946,7 +946,7 @@ mod tests {
                     "combinatorial search should stop at bounded budget"
                 );
             }
-            other => panic!("expected NoFlipFound, got {other:?}"),
+            other => unreachable!("OracleRefutationOutcome::NoFlipFound expected, got {other:?}"),
         }
         assert_eq!(
             result.mode,
@@ -969,7 +969,7 @@ mod tests {
                     "expected two-node witness to break support"
                 );
             }
-            other => panic!("expected flip witness, got {other:?}"),
+            other => unreachable!("OracleRefutationOutcome::FlipWitness expected, got {other:?}"),
         }
         assert_eq!(result.searched_budget, 3);
     }
