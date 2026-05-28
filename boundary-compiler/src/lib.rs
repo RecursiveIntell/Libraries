@@ -42,7 +42,9 @@ pub mod error;
 pub mod profile;
 pub mod schema;
 
-pub use canonicalizer::{canonicalize_flexible, parse_and_validate, parse_with_dup_check, Canonicalizer};
+pub use canonicalizer::{
+    canonicalize_flexible, parse_and_validate, parse_with_dup_check, Canonicalizer,
+};
 pub use digest::ContentDigest;
 pub use error::JcsError;
 pub use profile::BoundaryProfile;

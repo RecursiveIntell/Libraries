@@ -171,10 +171,7 @@ impl SemanticMemoryBenchmark {
             scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
             // Take top K as relevant
-            let relevant: Vec<(usize, f32)> = scores
-                .into_iter()
-                .take(self.config.top_k)
-                .collect();
+            let relevant: Vec<(usize, f32)> = scores.into_iter().take(self.config.top_k).collect();
 
             judgments.push(relevant);
         }
@@ -243,16 +240,28 @@ impl SemanticMemoryBenchmark {
 
         for (result, rel) in results.iter().zip(relevance.iter()) {
             let result_set: std::collections::HashSet<_> = result.iter().take(k).cloned().collect();
-            let rel_set: std::collections::HashMap<_, _> = rel.iter().take(k).map(|(i, s)| (i, *s)).collect();
+            let rel_set: std::collections::HashMap<_, _> =
+                rel.iter().take(k).map(|(i, s)| (i, *s)).collect();
 
             // Precision@K
-            let relevant_retrieved = result_set.iter().filter(|idx| rel_set.contains_key(*idx)).count();
-            let precision = if k > 0 { relevant_retrieved as f32 / k as f32 } else { 0.0 };
+            let relevant_retrieved = result_set
+                .iter()
+                .filter(|idx| rel_set.contains_key(*idx))
+                .count();
+            let precision = if k > 0 {
+                relevant_retrieved as f32 / k as f32
+            } else {
+                0.0
+            };
             precision_sum += precision;
 
             // Recall@K
             let total_relevant = rel_set.len();
-            let recall = if total_relevant > 0 { relevant_retrieved as f32 / total_relevant as f32 } else { 0.0 };
+            let recall = if total_relevant > 0 {
+                relevant_retrieved as f32 / total_relevant as f32
+            } else {
+                0.0
+            };
             recall_sum += recall;
 
             // NDCG@K (simplified)

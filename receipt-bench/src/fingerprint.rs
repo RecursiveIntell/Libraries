@@ -96,9 +96,7 @@ fn hostname() -> Option<String> {
 }
 
 fn username() -> Option<String> {
-    env::var("USER")
-        .or_else(|_| env::var("USERNAME"))
-        .ok()
+    env::var("USER").or_else(|_| env::var("USERNAME")).ok()
 }
 
 fn num_cpus() -> usize {

@@ -24,9 +24,7 @@ mod receipt;
 
 pub use control_plane::ControlPlane;
 pub use error::{Error, Result};
-pub use receipt::{
-    Action, ActionType, SecurityDecision, SecurityMechanism, Subject,
-};
+pub use receipt::{Action, ActionType, SecurityDecision, SecurityMechanism, Subject};
 
 use chrono::Utc;
 use std::sync::atomic::{AtomicBool, Ordering};

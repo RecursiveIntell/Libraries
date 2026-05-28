@@ -68,11 +68,7 @@ impl DegradationReceipt {
     }
 
     /// Set source and target profiles.
-    pub fn with_profiles(
-        mut self,
-        source: impl Into<String>,
-        target: impl Into<String>,
-    ) -> Self {
+    pub fn with_profiles(mut self, source: impl Into<String>, target: impl Into<String>) -> Self {
         self.source_profile = Some(source.into());
         self.target_profile = Some(target.into());
         self
@@ -99,12 +95,7 @@ mod tests {
 
     #[test]
     fn degradation_receipt_creation() {
-        let receipt = DegradationReceipt::new(
-            DegradationType::QuantizationStep,
-            0.05,
-            1024,
-            0.02,
-        );
+        let receipt = DegradationReceipt::new(DegradationType::QuantizationStep, 0.05, 1024, 0.02);
 
         assert_eq!(receipt.degradation_type, DegradationType::QuantizationStep);
         assert!(receipt.is_acceptable(0.1));
@@ -113,12 +104,7 @@ mod tests {
 
     #[test]
     fn benefit_cost_ratio() {
-        let receipt = DegradationReceipt::new(
-            DegradationType::SizeQuality,
-            0.1,
-            5000,
-            0.05,
-        );
+        let receipt = DegradationReceipt::new(DegradationType::SizeQuality, 0.1, 5000, 0.05);
 
         let ratio = receipt.benefit_cost_ratio();
         assert!(ratio > 0.0);

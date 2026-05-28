@@ -63,7 +63,10 @@ impl InMemoryDb {
             let mut best: Option<&types::BitemporalRecord> = None;
             for v in versions {
                 if v.recorded_time <= recorded_time {
-                    if best.map(|b| v.recorded_time > b.recorded_time).unwrap_or(true) {
+                    if best
+                        .map(|b| v.recorded_time > b.recorded_time)
+                        .unwrap_or(true)
+                    {
                         best = Some(v);
                     }
                 }
@@ -86,7 +89,10 @@ impl InMemoryDb {
             let mut best: Option<&types::BitemporalRecord> = None;
             for v in versions {
                 if v.recorded_time <= recorded_time && v.valid_time <= valid_time {
-                    if best.map(|b| v.recorded_time > b.recorded_time).unwrap_or(true) {
+                    if best
+                        .map(|b| v.recorded_time > b.recorded_time)
+                        .unwrap_or(true)
+                    {
                         best = Some(v);
                     }
                 }

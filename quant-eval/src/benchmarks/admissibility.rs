@@ -130,10 +130,7 @@ impl AdmissibilityTest {
     }
 
     /// Run admissibility tests using provided test sets.
-    pub fn run(
-        &self,
-        test_sets: &[TestSetEntry],
-    ) -> Result<AdmissibilitySummary, QuantEvalError> {
+    pub fn run(&self, test_sets: &[TestSetEntry]) -> Result<AdmissibilitySummary, QuantEvalError> {
         let mut profile_results = Vec::new();
         let mut total_passed = 0usize;
         let mut total_failed = 0usize;
@@ -156,7 +153,8 @@ impl AdmissibilityTest {
 
                 // Simulate test execution
                 // In practice, this would apply actual codec
-                let passed = entry.should_succeed && result.similarity >= entry.similarity_threshold;
+                let passed =
+                    entry.should_succeed && result.similarity >= entry.similarity_threshold;
 
                 if passed {
                     tests_passed += 1;
@@ -185,11 +183,7 @@ impl AdmissibilityTest {
     }
 
     /// Run a single test entry with a profile.
-    fn run_single_test(
-        &self,
-        entry: &TestSetEntry,
-        profile: &CodecProfile,
-    ) -> AdmissibilityResult {
+    fn run_single_test(&self, entry: &TestSetEntry, profile: &CodecProfile) -> AdmissibilityResult {
         // Simulate compression/decompression
         // In practice, this would use actual codec implementations
 
@@ -318,14 +312,12 @@ mod tests {
 
     #[test]
     fn test_custom_profiles() {
-        let profiles = vec![
-            CodecProfile {
-                name: "ultra_fast".to_string(),
-                compression_ratio: 2.0,
-                bits_per_element: 4.0,
-                quality_target: 0.95,
-            },
-        ];
+        let profiles = vec![CodecProfile {
+            name: "ultra_fast".to_string(),
+            compression_ratio: 2.0,
+            bits_per_element: 4.0,
+            quality_target: 0.95,
+        }];
 
         let test = AdmissibilityTest::with_profiles(profiles);
         let test_vectors = vec![TestSetEntry {

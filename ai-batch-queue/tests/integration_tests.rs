@@ -591,9 +591,27 @@ fn test_retry_preserves_attempt_id_and_clears_trial_id() {
     queue.mark_running(&id).unwrap();
 
     // Complete item 0, fail items 1 and 2
-    queue.update_item(&id, "item-0", BatchItemStatus::Completed, None, Some(100)).unwrap();
-    queue.update_item(&id, "item-1", BatchItemStatus::Failed, Some("transient error".to_string()), Some(50)).unwrap();
-    queue.update_item(&id, "item-2", BatchItemStatus::Failed, Some("transient error 2".to_string()), Some(60)).unwrap();
+    queue
+        .update_item(&id, "item-0", BatchItemStatus::Completed, None, Some(100))
+        .unwrap();
+    queue
+        .update_item(
+            &id,
+            "item-1",
+            BatchItemStatus::Failed,
+            Some("transient error".to_string()),
+            Some(50),
+        )
+        .unwrap();
+    queue
+        .update_item(
+            &id,
+            "item-2",
+            BatchItemStatus::Failed,
+            Some("transient error 2".to_string()),
+            Some(60),
+        )
+        .unwrap();
     queue.mark_completed(&id).unwrap();
 
     // Retry failed items
@@ -607,9 +625,15 @@ fn test_retry_preserves_attempt_id_and_clears_trial_id() {
 
     // Items 1 & 2: retried — attempt_id preserved, trial_id cleared
     assert_eq!(job.items[1].attempt_id, Some(attempt_1));
-    assert!(job.items[1].trial_id.is_none(), "trial_id must be cleared on retry");
+    assert!(
+        job.items[1].trial_id.is_none(),
+        "trial_id must be cleared on retry"
+    );
     assert_eq!(job.items[2].attempt_id, Some(attempt_2));
-    assert!(job.items[2].trial_id.is_none(), "trial_id must be cleared on retry");
+    assert!(
+        job.items[2].trial_id.is_none(),
+        "trial_id must be cleared on retry"
+    );
 
     // Status reset to Pending
     assert_eq!(job.items[1].status, BatchItemStatus::Pending);
@@ -636,8 +660,18 @@ fn test_batch_item_retry_keeps_attempt_family() {
     queue.mark_running(&id).unwrap();
 
     // Fail item 0, complete item 1
-    queue.update_item(&id, "item-0", BatchItemStatus::Failed, Some("transient".to_string()), Some(50)).unwrap();
-    queue.update_item(&id, "item-1", BatchItemStatus::Completed, None, Some(100)).unwrap();
+    queue
+        .update_item(
+            &id,
+            "item-0",
+            BatchItemStatus::Failed,
+            Some("transient".to_string()),
+            Some(50),
+        )
+        .unwrap();
+    queue
+        .update_item(&id, "item-1", BatchItemStatus::Completed, None, Some(100))
+        .unwrap();
     queue.mark_completed(&id).unwrap();
 
     // Batch-item retry

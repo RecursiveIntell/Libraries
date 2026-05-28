@@ -11,8 +11,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::ids::sha256_text;
 use super::types::SupportState;
+use crate::ids::sha256_text;
 
 /// An entry in the claim ledger.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -246,7 +246,11 @@ impl LedgerEntryBuilder {
 }
 
 /// Compute the digest for an entry.
-pub fn compute_entry_digest(sequence: u64, previous_digest: Option<&str>, event: &LedgerEvent) -> String {
+pub fn compute_entry_digest(
+    sequence: u64,
+    previous_digest: Option<&str>,
+    event: &LedgerEvent,
+) -> String {
     let content = serde_json::json!({
         "sequence": sequence,
         "previous_entry_digest": previous_digest,
@@ -283,9 +287,7 @@ pub fn verify_ledger(entries: &[LedgerEntry]) -> LedgerVerification {
                 verification.valid = false;
                 verification.errors.push(format!(
                     "previous_entry_digest mismatch at sequence {}: expected {}, got {:?}",
-                    entry.sequence,
-                    prev.entry_digest,
-                    entry.previous_entry_digest
+                    entry.sequence, prev.entry_digest, entry.previous_entry_digest
                 ));
             }
         }
@@ -354,7 +356,10 @@ mod tests {
             .add_claim("clm_b", "src1", "sp2", "claim b");
 
         assert_eq!(entry2.sequence, 2);
-        assert_eq!(entry2.previous_entry_digest, Some(entry1.entry_digest.clone()));
+        assert_eq!(
+            entry2.previous_entry_digest,
+            Some(entry1.entry_digest.clone())
+        );
     }
 
     #[test]
@@ -393,7 +398,8 @@ mod tests {
 
     #[test]
     fn serialize_entry_round_trips() {
-        let entry = LedgerEntryBuilder::new(1, None).add_claim("clm_test", "src1", "sp1", "hello world");
+        let entry =
+            LedgerEntryBuilder::new(1, None).add_claim("clm_test", "src1", "sp1", "hello world");
 
         let json = serialize_entry(&entry);
         let parsed: LedgerEntry = serde_json::from_str(&json).unwrap();

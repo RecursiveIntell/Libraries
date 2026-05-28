@@ -11,8 +11,7 @@ use crate::{BenchmarkReceipt, MachineFingerprint};
 pub struct BenchmarkSuite {
     commit_hash: Option<String>,
     machine_fingerprint: MachineFingerprint,
-    benchmarks:
-        HashMap<String, Box<dyn Fn() -> Result<BenchmarkResult, String> + Send + Sync>>,
+    benchmarks: HashMap<String, Box<dyn Fn() -> Result<BenchmarkResult, String> + Send + Sync>>,
 }
 
 impl BenchmarkSuite {
@@ -81,7 +80,9 @@ impl BenchmarkSuite {
 
     /// Run a specific named benchmark and return just that result.
     pub fn run_one(&self, name: &str) -> Result<BenchmarkResult, BenchError> {
-        let bench = self.benchmarks.get(name)
+        let bench = self
+            .benchmarks
+            .get(name)
             .ok_or_else(|| BenchError::Execution(format!("No benchmark named '{}'", name)))?;
 
         let result = bench()?;
@@ -245,9 +246,7 @@ pub mod compression {
             iterations,
             elapsed_ns,
             ns_per_iter,
-            throughput: Some(
-                (iterations as f64 * data_size as f64) / (elapsed_ns as f64 / 1e9),
-            ),
+            throughput: Some((iterations as f64 * data_size as f64) / (elapsed_ns as f64 / 1e9)),
             error: None,
         })
     }

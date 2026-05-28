@@ -133,14 +133,12 @@ impl BenchmarkReceipt {
 
     /// Serialize this receipt to JSON bytes.
     pub fn to_json(&self) -> Result<Vec<u8>, QuantEvalError> {
-        serde_json::to_vec(self)
-            .map_err(|e| QuantEvalError::Serialization(e.to_string()))
+        serde_json::to_vec(self).map_err(|e| QuantEvalError::Serialization(e.to_string()))
     }
 
     /// Deserialize a receipt from JSON bytes.
     pub fn from_json(bytes: &[u8]) -> Result<Self, QuantEvalError> {
-        serde_json::from_slice(bytes)
-            .map_err(|e| QuantEvalError::Serialization(e.to_string()))
+        serde_json::from_slice(bytes).map_err(|e| QuantEvalError::Serialization(e.to_string()))
     }
 }
 
@@ -158,8 +156,7 @@ impl ReceiptDiff {
 
         for target_result in &target.results {
             if let Some(baseline_result) = baseline_map.get(target_result.name.as_str()) {
-                let diff_ns =
-                    target_result.ns_per_iter as i64 - baseline_result.ns_per_iter as i64;
+                let diff_ns = target_result.ns_per_iter as i64 - baseline_result.ns_per_iter as i64;
                 let percent_change = if baseline_result.ns_per_iter > 0 {
                     (diff_ns as f64 / baseline_result.ns_per_iter as f64) * 100.0
                 } else {
@@ -186,14 +183,12 @@ impl ReceiptDiff {
 
     /// Serialize this diff to JSON bytes.
     pub fn to_json(&self) -> Result<Vec<u8>, QuantEvalError> {
-        serde_json::to_vec(self)
-            .map_err(|e| QuantEvalError::Serialization(e.to_string()))
+        serde_json::to_vec(self).map_err(|e| QuantEvalError::Serialization(e.to_string()))
     }
 
     /// Deserialize a diff from JSON bytes.
     pub fn from_json(bytes: &[u8]) -> Result<Self, QuantEvalError> {
-        serde_json::from_slice(bytes)
-            .map_err(|e| QuantEvalError::Serialization(e.to_string()))
+        serde_json::from_slice(bytes).map_err(|e| QuantEvalError::Serialization(e.to_string()))
     }
 }
 

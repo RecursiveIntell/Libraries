@@ -20,11 +20,7 @@ pub struct ExactFallbackReceipt {
 
 impl ExactFallbackReceipt {
     /// Create a new exact fallback receipt.
-    pub fn new(
-        raw_digest: Digest,
-        compressed_digest: Digest,
-        fallback_retention: bool,
-    ) -> Self {
+    pub fn new(raw_digest: Digest, compressed_digest: Digest, fallback_retention: bool) -> Self {
         Self {
             raw_digest,
             compressed_digest,
@@ -121,11 +117,8 @@ mod tests {
 
     #[test]
     fn fallback_receipt_display() {
-        let receipt = ExactFallbackReceipt::new(
-            Digest::sha256("raw"),
-            Digest::blake3("compressed"),
-            true,
-        );
+        let receipt =
+            ExactFallbackReceipt::new(Digest::sha256("raw"), Digest::blake3("compressed"), true);
         assert!(receipt.fallback_retention);
     }
 }

@@ -131,7 +131,11 @@ impl SupportAdmissionReceipt {
     ) -> Self {
         Self {
             receipt_version: "SupportAdmissionReceiptV1".to_string(),
-            support_admission_receipt_id: ids::support_admission_receipt_id(claim_id, previous_ref, new_ref),
+            support_admission_receipt_id: ids::support_admission_receipt_id(
+                claim_id,
+                previous_ref,
+                new_ref,
+            ),
             claim_id: claim_id.to_string(),
             previous_support_judgment_ref: previous_ref.to_string(),
             new_support_judgment_ref: new_ref.to_string(),
@@ -175,7 +179,11 @@ impl LedgerAppendReceipt {
     ) -> Self {
         Self {
             receipt_version: "LedgerAppendReceiptV1".to_string(),
-            ledger_append_receipt_id: ids::ledger_append_receipt_id(ledger_ref, sequence, &entry_digest),
+            ledger_append_receipt_id: ids::ledger_append_receipt_id(
+                ledger_ref,
+                sequence,
+                &entry_digest,
+            ),
             ledger_ref: ledger_ref.to_string(),
             sequence,
             previous_entry_digest,

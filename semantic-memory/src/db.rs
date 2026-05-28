@@ -645,7 +645,7 @@ fn configure_connection(
     if max_db_size_bytes > 0 {
         let page_size: u64 = conn.query_row("PRAGMA page_size", [], |row| row.get(0))?;
         let max_page_count = max_db_size_bytes.div_ceil(page_size);
-        
+
         // SM-AUD-0065: Validate max_page_count before setting pragma
         const MAX_SQLITE_PAGE_COUNT: u64 = 1_073_741_823; // SQLite hard limit
         const MIN_SQLITE_PAGE_COUNT: u64 = 1;
@@ -655,7 +655,7 @@ fn configure_connection(
                 max_page_count, MIN_SQLITE_PAGE_COUNT, MAX_SQLITE_PAGE_COUNT
             )));
         }
-        
+
         let actual_max_page_count: u64 = conn.query_row(
             &format!("PRAGMA max_page_count = {}", max_page_count),
             [],
@@ -675,7 +675,7 @@ fn configure_connection(
     let foreign_keys_enabled: bool = conn.query_row("PRAGMA foreign_keys", [], |row| row.get(0))?;
     if !foreign_keys_enabled {
         return Err(MemoryError::StorageError(
-            "PRAGMA foreign_keys failed to enable after configuration".to_string()
+            "PRAGMA foreign_keys failed to enable after configuration".to_string(),
         ));
     }
 

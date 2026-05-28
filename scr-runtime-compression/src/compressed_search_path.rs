@@ -20,10 +20,7 @@ use super::CodecId;
 /// - `P` — the underlying search path type (e.g. `Vec<NamespaceId>`, `ScopeFilter`, etc.)
 ///   must be `Send + Sync` so the wrapper can be used across async boundaries.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(bound(
-    serialize = "P: Serialize",
-    deserialize = "P: Deserialize<'de>"
-))]
+#[serde(bound(serialize = "P: Serialize", deserialize = "P: Deserialize<'de>"))]
 pub struct CompressedSearchPath<P> {
     /// The raw search path being executed.
     path: P,

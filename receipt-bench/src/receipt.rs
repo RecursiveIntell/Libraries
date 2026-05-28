@@ -145,8 +145,7 @@ impl ReceiptDiff {
 
         for target_result in &target.results {
             if let Some(baseline_result) = baseline_map.get(target_result.name.as_str()) {
-                let diff_ns =
-                    target_result.ns_per_iter as i64 - baseline_result.ns_per_iter as i64;
+                let diff_ns = target_result.ns_per_iter as i64 - baseline_result.ns_per_iter as i64;
                 let percent_change = if baseline_result.ns_per_iter > 0 {
                     (diff_ns as f64 / baseline_result.ns_per_iter as f64) * 100.0
                 } else {
@@ -209,20 +208,14 @@ mod tests {
 
     #[test]
     fn test_receipt_creation() {
-        let receipt = BenchmarkReceipt::new(
-            "abc123".to_string(),
-            dummy_fingerprint(),
-        );
+        let receipt = BenchmarkReceipt::new("abc123".to_string(), dummy_fingerprint());
         assert_eq!(receipt.commit_hash, "abc123");
         assert!(receipt.results.is_empty());
     }
 
     #[test]
     fn test_receipt_add_result() {
-        let mut receipt = BenchmarkReceipt::new(
-            "abc123".to_string(),
-            dummy_fingerprint(),
-        );
+        let mut receipt = BenchmarkReceipt::new("abc123".to_string(), dummy_fingerprint());
         receipt.add_result(BenchmarkResult {
             name: "test_bench".to_string(),
             iterations: 1000,
@@ -237,10 +230,7 @@ mod tests {
 
     #[test]
     fn test_receipt_serialization() {
-        let mut receipt = BenchmarkReceipt::new(
-            "abc123".to_string(),
-            dummy_fingerprint(),
-        );
+        let mut receipt = BenchmarkReceipt::new("abc123".to_string(), dummy_fingerprint());
         receipt.add_result(BenchmarkResult {
             name: "test_bench".to_string(),
             iterations: 1000,
@@ -258,10 +248,7 @@ mod tests {
 
     #[test]
     fn test_diff_comparison() {
-        let mut baseline = BenchmarkReceipt::new(
-            "abc123".to_string(),
-            dummy_fingerprint(),
-        );
+        let mut baseline = BenchmarkReceipt::new("abc123".to_string(), dummy_fingerprint());
         baseline.add_result(BenchmarkResult {
             name: "test_bench".to_string(),
             iterations: 1000,
@@ -271,10 +258,7 @@ mod tests {
             error: None,
         });
 
-        let mut target = BenchmarkReceipt::new(
-            "def456".to_string(),
-            dummy_fingerprint(),
-        );
+        let mut target = BenchmarkReceipt::new("def456".to_string(), dummy_fingerprint());
         target.add_result(BenchmarkResult {
             name: "test_bench".to_string(),
             iterations: 1000,

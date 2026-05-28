@@ -227,7 +227,9 @@ where
             .ok_or_else(|| anyhow::anyhow!("job {} not found", job_id))?;
         if matches!(
             job.status,
-            BatchJobStatus::Completed | BatchJobStatus::CompletedWithErrors | BatchJobStatus::Cancelled
+            BatchJobStatus::Completed
+                | BatchJobStatus::CompletedWithErrors
+                | BatchJobStatus::Cancelled
         ) {
             anyhow::bail!("job {} is no longer mutable", job_id);
         }
@@ -249,13 +251,22 @@ where
                 if item.status != BatchItemStatus::Pending
                     && item.status != BatchItemStatus::Running =>
             {
-                anyhow::bail!("item {} cannot be cancelled from {:?}", item_id, item.status);
+                anyhow::bail!(
+                    "item {} cannot be cancelled from {:?}",
+                    item_id,
+                    item.status
+                );
             }
             BatchItemStatus::Completed | BatchItemStatus::Failed | BatchItemStatus::Skipped
                 if item.status != BatchItemStatus::Running
                     && item.status != BatchItemStatus::Pending =>
             {
-                anyhow::bail!("item {} cannot transition from {:?} to {:?}", item_id, item.status, status);
+                anyhow::bail!(
+                    "item {} cannot transition from {:?} to {:?}",
+                    item_id,
+                    item.status,
+                    status
+                );
             }
             BatchItemStatus::Pending => {
                 anyhow::bail!("item {} cannot be moved back to pending directly", item_id);
@@ -291,7 +302,10 @@ where
             .find(|j| j.id == job_id)
             .ok_or_else(|| anyhow::anyhow!("job {} not found", job_id))?;
         if job.status != BatchJobStatus::Running && job.status != BatchJobStatus::Cancelled {
-            anyhow::bail!("job {} must be running or cancelled before completion", job_id);
+            anyhow::bail!(
+                "job {} must be running or cancelled before completion",
+                job_id
+            );
         }
 
         let failed = job
@@ -307,7 +321,9 @@ where
         let skipped = job
             .items
             .iter()
-            .filter(|i| i.status == BatchItemStatus::Cancelled || i.status == BatchItemStatus::Skipped)
+            .filter(|i| {
+                i.status == BatchItemStatus::Cancelled || i.status == BatchItemStatus::Skipped
+            })
             .count();
 
         if job.status == BatchJobStatus::Cancelled
@@ -450,7 +466,8 @@ where
     /// Estimate remaining processing time for a job in milliseconds.
     /// Returns `None` if no historical data is available.
     pub fn estimate_remaining_ms(&self, job_id: &str) -> Option<u64> {
-        self.estimate_remaining(job_id).map(|estimate| estimate.remaining_ms)
+        self.estimate_remaining(job_id)
+            .map(|estimate| estimate.remaining_ms)
     }
 
     /// Estimate remaining processing time with confidence and sample metadata.
@@ -477,11 +494,8 @@ where
             });
         }
 
-        self.eta.estimate(
-            &job.resource_key,
-            &job.operation,
-            &remaining_buckets,
-        )
+        self.eta
+            .estimate(&job.resource_key, &job.operation, &remaining_buckets)
     }
 
     /// Check if any batch job is currently running.

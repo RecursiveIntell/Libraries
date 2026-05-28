@@ -122,10 +122,7 @@ impl<T> ExactFallbackAdapter<T> {
     ///
     /// Returns `Ok(results)` if all decodes succeed, or `Err` on the first failure
     /// (short-circuit). Use this when you need to decode a batch atomically.
-    pub fn decode_batch(
-        &self,
-        items: &[(CodecId, &[u8])],
-    ) -> DecodeResult<Vec<T>> {
+    pub fn decode_batch(&self, items: &[(CodecId, &[u8])]) -> DecodeResult<Vec<T>> {
         let mut results = Vec::with_capacity(items.len());
         for (codec_id, data) in items {
             results.push(self.decode_exact(*codec_id, data)?);
@@ -167,11 +164,7 @@ where
     ///
     /// This is useful when the same compressed vector needs to be used in multiple
     /// result sets simultaneously.
-    pub fn decode_clone(
-        &self,
-        codec_id: CodecId,
-        compressed_data: &[u8],
-    ) -> DecodeResult<T> {
+    pub fn decode_clone(&self, codec_id: CodecId, compressed_data: &[u8]) -> DecodeResult<T> {
         self.decode_exact(codec_id, compressed_data)
     }
 }
@@ -251,10 +244,8 @@ mod tests {
 
     #[test]
     fn non_strict_mode_still_decodes() {
-        let adapter = ExactFallbackAdapter::new(Box::new(|_codec_id, data| {
-            Ok(data.to_vec())
-        }))
-        .with_strict_mode(false);
+        let adapter = ExactFallbackAdapter::new(Box::new(|_codec_id, data| Ok(data.to_vec())))
+            .with_strict_mode(false);
 
         let result = adapter.decode_exact(CodecId::TurboQuant, b"hello");
         assert!(result.is_ok());

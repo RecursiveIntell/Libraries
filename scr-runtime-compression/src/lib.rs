@@ -11,15 +11,15 @@
 //! - **No `unwrap` in production paths** — all fallible operations return `Result` or `Option`.
 //! - **Rust 2021, MSRV 1.75** — compatible with the workspace minimum.
 
-mod error;
-mod compressed_search_path;
-mod exact_fallback_adapter;
 mod codec_dispatch;
+mod compressed_search_path;
+mod error;
+mod exact_fallback_adapter;
 
-pub use error::{CompressionError, DecompressError};
-pub use compressed_search_path::CompressedSearchPath;
-pub use exact_fallback_adapter::ExactFallbackAdapter;
 pub use codec_dispatch::{build_adapter, select_codec, CodecDispatch};
+pub use compressed_search_path::CompressedSearchPath;
+pub use error::{CompressionError, DecompressError};
+pub use exact_fallback_adapter::ExactFallbackAdapter;
 
 /// Codec identity for runtime dispatch.
 ///

@@ -218,7 +218,8 @@ impl CompressionBenchmark {
         for (exact_result, compressed_result) in exact.iter().zip(compressed.iter()) {
             // Compute overlap as a proxy for cosine similarity
             let exact_set: std::collections::HashSet<_> = exact_result.iter().cloned().collect();
-            let compressed_set: std::collections::HashSet<_> = compressed_result.iter().cloned().collect();
+            let compressed_set: std::collections::HashSet<_> =
+                compressed_result.iter().cloned().collect();
 
             let intersection = exact_set.intersection(&compressed_set).count();
             let union = exact_set.union(&compressed_set).count();
@@ -255,9 +256,7 @@ impl CompressionBenchmark {
         let max = similarities[n - 1];
 
         // Compute std dev
-        let variance = similarities.iter()
-            .map(|s| (s - mean).powi(2))
-            .sum::<f32>() / n as f32;
+        let variance = similarities.iter().map(|s| (s - mean).powi(2)).sum::<f32>() / n as f32;
         let std_dev = variance.sqrt();
 
         Ok(CosineSimilarityStats {

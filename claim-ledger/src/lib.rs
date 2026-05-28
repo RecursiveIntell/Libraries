@@ -32,19 +32,18 @@ pub mod types;
 
 // Re-export commonly used types at the crate root for ergonomic access.
 pub use error::ClaimLedgerError;
-pub use ids::{stable_id, ulid, sha256_text, sha256_bytes, normalize_text};
+pub use ids::{normalize_text, sha256_bytes, sha256_text, stable_id, ulid};
 pub use ledger::{
-    LedgerEntry, LedgerEvent, LedgerEntryBuilder, verify_ledger,
-    parse_ledger_entries, serialize_entry, LedgerVerification,
+    parse_ledger_entries, serialize_entry, verify_ledger, LedgerEntry, LedgerEntryBuilder,
+    LedgerEvent, LedgerVerification,
 };
 pub use receipt::{
-    ExportReceipt, SupportAdmissionReceipt, LedgerAppendReceipt,
-    ContradictionResolutionReceipt, SupersessionReceipt,
+    ContradictionResolutionReceipt, ExportReceipt, LedgerAppendReceipt, SupersessionReceipt,
+    SupportAdmissionReceipt,
 };
 pub use types::{
-    Claim, EvidenceBundle, SupportJudgment, SupportProofPayload, SupportAdmission,
-    ContradictionRecord, ContradictionResolutionRecord, ContradictionResolution, Supersession,
-    SourceArtifact, SourceSpan, SourceIndex, EvidenceLink,
-    SupportState, EvidenceRelation, SupportAdmissionMethod,
-    ContradictionStatus, ProofDebt,
+    Claim, ContradictionRecord, ContradictionResolution, ContradictionResolutionRecord,
+    ContradictionStatus, EvidenceBundle, EvidenceLink, EvidenceRelation, ProofDebt, SourceArtifact,
+    SourceIndex, SourceSpan, Supersession, SupportAdmission, SupportAdmissionMethod,
+    SupportJudgment, SupportProofPayload, SupportState,
 };

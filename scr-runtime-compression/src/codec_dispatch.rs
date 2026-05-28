@@ -146,7 +146,7 @@ mod tests {
     #[cfg(feature = "turbo")]
     fn select_codec_turbo() {
         use quant_governor::ContentType;
-        
+
         // Audio with low latency tolerance should select Turbo
         let policy = GovernancePolicy::default();
         let request = GovernanceRequest {

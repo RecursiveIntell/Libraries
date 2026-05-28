@@ -48,7 +48,9 @@ fn test_admissibility_test_integration() {
     let test = AdmissibilityTest::new();
     let test_vectors = AdmissibilityTest::standard_test_vectors(32);
 
-    let summary = test.run(&test_vectors).expect("admissibility test should succeed");
+    let summary = test
+        .run(&test_vectors)
+        .expect("admissibility test should succeed");
 
     assert_eq!(summary.total, test_vectors.len() * 3); // 3 profiles
     assert!(summary.passed > 0);

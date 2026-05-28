@@ -40,10 +40,18 @@ impl Canonicalizer {
 
     fn write_value(&self, out: &mut String, value: &Value) -> Result<(), JcsError> {
         match value {
-            Value::Null => { out.push_str("null"); }
-            Value::Bool(b) => { out.push_str(if *b { "true" } else { "false" }); }
-            Value::Number(n) => { self.write_number(out, n); }
-            Value::String(s) => { self.write_string(out, s); }
+            Value::Null => {
+                out.push_str("null");
+            }
+            Value::Bool(b) => {
+                out.push_str(if *b { "true" } else { "false" });
+            }
+            Value::Number(n) => {
+                self.write_number(out, n);
+            }
+            Value::String(s) => {
+                self.write_string(out, s);
+            }
             Value::Array(arr) => self.write_array(out, arr)?,
             Value::Object(obj) => self.write_object(out, obj)?,
         }
@@ -62,8 +70,8 @@ impl Canonicalizer {
             match c {
                 '"' => out.push_str("\\\""),
                 '\\' => out.push_str("\\\\"),
-                '\u{08}' => out.push_str("\\b"),  // backspace
-                '\u{0C}' => out.push_str("\\f"),  // form feed
+                '\u{08}' => out.push_str("\\b"), // backspace
+                '\u{0C}' => out.push_str("\\f"), // form feed
                 '\n' => out.push_str("\\n"),
                 '\r' => out.push_str("\\r"),
                 '\t' => out.push_str("\\t"),
@@ -104,9 +112,7 @@ impl Canonicalizer {
 
         for (key, value) in obj.iter() {
             if !seen_keys.insert(key.clone()) {
-                return Err(JcsError::DuplicateKey {
-                    key: key.clone(),
-                });
+                return Err(JcsError::DuplicateKey { key: key.clone() });
             }
 
             if !first {
@@ -137,8 +143,9 @@ pub fn parse_with_dup_check(s: &str) -> Result<Value, JcsError> {
     if let Some(dup) = find_duplicate_key(s) {
         return Err(JcsError::DuplicateKey { key: dup });
     }
-    let value: Value = serde_json::from_str(s)
-        .map_err(|e| JcsError::InvalidJson { reason: e.to_string() })?;
+    let value: Value = serde_json::from_str(s).map_err(|e| JcsError::InvalidJson {
+        reason: e.to_string(),
+    })?;
     Ok(value)
 }
 
@@ -204,7 +211,7 @@ fn skip_string(bytes: &[u8], mut i: usize, n: usize) -> usize {
     while i < n {
         match bytes[i] {
             b'"' => return i + 1, // position after closing quote
-            b'\\' => i += 2,       // skip escaped char
+            b'\\' => i += 2,      // skip escaped char
             _ => i += 1,
         }
     }
@@ -216,7 +223,8 @@ fn skip_string(bytes: &[u8], mut i: usize, n: usize) -> usize {
 fn is_key_at_depth(bytes: &[u8], pos: usize, n: usize) -> bool {
     let mut j = pos;
     // skip whitespace
-    while j < n && (bytes[j] == b' ' || bytes[j] == b'\t' || bytes[j] == b'\n' || bytes[j] == b'\r') {
+    while j < n && (bytes[j] == b' ' || bytes[j] == b'\t' || bytes[j] == b'\n' || bytes[j] == b'\r')
+    {
         j += 1;
     }
     j < n && bytes[j] == b':'
@@ -325,10 +333,7 @@ mod tests {
             "a": [3, 2, 1]
         });
         let out = c.canonicalize(&obj).unwrap();
-        assert_eq!(
-            out,
-            r#"{"a":[3,2,1],"z":{"a":2,"b":1}}"#
-        );
+        assert_eq!(out, r#"{"a":[3,2,1],"z":{"a":2,"b":1}}"#);
     }
 
     #[test]

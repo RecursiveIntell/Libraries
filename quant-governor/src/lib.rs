@@ -42,8 +42,8 @@ pub mod error;
 pub mod policy;
 pub mod receipt;
 
-pub use degradation::DegradationReceipt;
 pub use decision::{CodecDecision, CodecProfile};
+pub use degradation::DegradationReceipt;
 pub use error::GovernorError;
 pub use policy::{AdmissibilityClass, ContentType, GovernancePolicy, GovernanceRequest};
 pub use receipt::ExactFallbackReceipt;
@@ -52,7 +52,10 @@ pub use receipt::ExactFallbackReceipt;
 ///
 /// Given a governance request and policy, produces a codec decision
 /// with selected profile and metadata.
-pub fn evaluate(request: GovernanceRequest, policy: &GovernancePolicy) -> Result<CodecDecision, GovernorError> {
+pub fn evaluate(
+    request: GovernanceRequest,
+    policy: &GovernancePolicy,
+) -> Result<CodecDecision, GovernorError> {
     policy.evaluate(request)
 }
 

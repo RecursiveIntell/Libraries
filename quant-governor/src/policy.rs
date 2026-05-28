@@ -126,11 +126,7 @@ impl Default for GovernancePolicy {
 
 impl GovernancePolicy {
     /// Create a new governance policy with custom settings.
-    pub fn new(
-        max_degradation: f64,
-        small_content_threshold: u64,
-        raw_min_accuracy: f64,
-    ) -> Self {
+    pub fn new(max_degradation: f64, small_content_threshold: u64, raw_min_accuracy: f64) -> Self {
         Self {
             max_degradation,
             small_content_threshold,
@@ -185,10 +181,7 @@ impl GovernancePolicy {
         if request.accuracy_requirement >= self.raw_min_accuracy
             || request.admissibility == AdmissibilityClass::Critical
         {
-            return Ok(CodecDecision::direct(
-                CodecProfile::Raw,
-                0.0,
-            ));
+            return Ok(CodecDecision::direct(CodecProfile::Raw, 0.0));
         }
 
         // Select codec based on content type and requirements
@@ -249,7 +242,10 @@ impl GovernancePolicy {
         }
     }
 
-    fn select_for_structured(&self, request: &GovernanceRequest) -> Result<CodecProfile, GovernorError> {
+    fn select_for_structured(
+        &self,
+        request: &GovernanceRequest,
+    ) -> Result<CodecProfile, GovernorError> {
         if request.accuracy_requirement >= 0.99 {
             Ok(CodecProfile::Raw)
         } else {

@@ -14,14 +14,22 @@ pub fn normalize_text(text: &str) -> String {
     }
     let mut result = Vec::with_capacity(chars.len());
     for c in chars {
-        if result.is_empty() || !result.last().map_or(false, |last: &char| last.is_whitespace() && c.is_whitespace()) {
+        if result.is_empty()
+            || !result.last().map_or(false, |last: &char| {
+                last.is_whitespace() && c.is_whitespace()
+            })
+        {
             result.push(c);
         } else if !c.is_whitespace() {
             result.push(c);
         }
     }
     let leading = result.iter().take_while(|c| c.is_whitespace()).count();
-    let trailing = result.iter().rev().take_while(|c| c.is_whitespace()).count();
+    let trailing = result
+        .iter()
+        .rev()
+        .take_while(|c| c.is_whitespace())
+        .count();
     let end = result.len() - trailing;
     result[leading..end].iter().collect()
 }
@@ -99,7 +107,16 @@ pub fn contradiction_id(left_claim_id: &str, right_claim_id: &str, pattern: &str
 
 /// Build an export receipt ID from operation and input references.
 pub fn export_receipt_id(operation: &str, input_refs: &[&str]) -> String {
-    stable_id("xpt", &[operation].iter().chain(input_refs.iter()).copied().collect::<Vec<_>>().as_slice(), 20)
+    stable_id(
+        "xpt",
+        &[operation]
+            .iter()
+            .chain(input_refs.iter())
+            .copied()
+            .collect::<Vec<_>>()
+            .as_slice(),
+        20,
+    )
 }
 
 /// Build a support admission receipt ID from claim and judgment refs.
@@ -109,7 +126,11 @@ pub fn support_admission_receipt_id(claim_id: &str, prev_ref: &str, new_ref: &st
 
 /// Build a ledger append receipt ID from ledger path, sequence, and entry digest.
 pub fn ledger_append_receipt_id(ledger_path: &str, sequence: u64, entry_digest: &str) -> String {
-    stable_id("lap", &[ledger_path, &sequence.to_string(), entry_digest], 20)
+    stable_id(
+        "lap",
+        &[ledger_path, &sequence.to_string(), entry_digest],
+        20,
+    )
 }
 
 /// Build a supersession receipt ID from superseded and superseding refs.
@@ -118,7 +139,11 @@ pub fn supersession_receipt_id(superseded_ref: &str, superseding_ref: &str) -> S
 }
 
 /// Build a contradiction resolution receipt ID.
-pub fn contradiction_resolution_receipt_id(contradiction_id: &str, prev_status: &str, resolution: &str) -> String {
+pub fn contradiction_resolution_receipt_id(
+    contradiction_id: &str,
+    prev_status: &str,
+    resolution: &str,
+) -> String {
     stable_id("crr", &[contradiction_id, prev_status, resolution], 20)
 }
 

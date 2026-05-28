@@ -85,7 +85,11 @@ fn main() {
     ];
 
     for preset in presets {
-        println!("  - {}: max_deg={:.2}", preset.name(), preset.max_degradation());
+        println!(
+            "  - {}: max_deg={:.2}",
+            preset.name(),
+            preset.max_degradation()
+        );
     }
 
     println!("\nDone!");
