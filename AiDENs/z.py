@@ -44,8 +44,10 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import stat
 import sys
+import unicodedata
 import zipfile
 from collections import Counter
 from dataclasses import asdict, dataclass
@@ -58,9 +60,10 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 fallback
     tomllib = None
 
-SCRIPT_VERSION = "2026.05.07-p29"
+SCRIPT_VERSION = "2026.05.22-p31"
 UTC = timezone.utc
 ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
+PACKAGE_POLICY_SCHEMA_NAME = "PackagePolicyV1"
 
 PROFILES = (
     "auto",
@@ -68,6 +71,7 @@ PROFILES = (
     "libraries",
     "recall",
     "recall-coding",
+    "semantic-memory",
     "generic-rust",
     "generic",
     "research",
@@ -90,6 +94,7 @@ ALWAYS_EXCLUDED_DIR_NAMES = {
     ".git",
     ".hg",
     ".svn",
+    ".aicc-out",
     ".claude",
     ".cache",
     ".pytest_cache",
@@ -121,9 +126,12 @@ ALWAYS_EXCLUDED_DIR_NAMES = {
 }
 
 EXCLUDED_DIR_PREFIXES = (
+    ".venv",
     "tmp",
     "tmp-",
     "source-zips-",
+    "target-",
+    "venv",
 )
 
 GENERATED_SCHEMA_DIR_NAMES = {
@@ -205,6 +213,11 @@ LOG_EXTENSIONS = {
     ".log",
 }
 
+PATCH_EVIDENCE_EXTENSIONS = {
+    ".diff",
+    ".patch",
+}
+
 GENERATED_SIDECAR_SUFFIXES = (
     ".manifest.json",
     ".report.md",
@@ -243,6 +256,7 @@ ALLOWED_TEXT_EXTENSIONS = {
     ".zsh",
     ".ps1",
     ".py",
+    ".pyi",
     ".proto",
     ".graphql",
     ".gql",
@@ -279,6 +293,7 @@ ALLOWED_BASENAMES = {
     "Makefile",
     "NOTICE",
     "Procfile",
+    "py.typed",
     "README",
     "SECURITY",
     "rust-toolchain",
@@ -307,6 +322,7 @@ SECRETISH_FILENAMES = {
     ".env.local",
     ".env.production",
     ".env.development",
+    ".settings.json",
     ".npmrc",
     ".pypirc",
     ".netrc",
@@ -376,6 +392,55 @@ INCLUDE_CARGO_MANIFEST_RE = re.compile(
 
 CARGO_PATH_DEP_RE = re.compile(r"\bpath\s*=\s*\"([^\"]+)\"")
 
+CARGO_DEP_TABLE_NAMES = {
+    "dependencies",
+    "dev-dependencies",
+    "build-dependencies",
+}
+
+THIRD_PARTY_SOURCE_DIR_NAMES = {
+    "vendor",
+    "third_party",
+    "third-party",
+    "external",
+    "deps",
+}
+
+ADVISORY_RUST_REF_DIR_NAMES = {
+    "benches",
+    "examples",
+    "fixtures",
+    "reference",
+    "test",
+    "testdata",
+    "tests",
+}
+
+PROJECT_SCRIPT_DIR_NAMES = {
+    ".github",
+    "bin",
+    "ci",
+    "script",
+    "scripts",
+    "tool",
+    "tools",
+}
+
+SECRET_PLACEHOLDER_TOKENS = {
+    "dummy",
+    "example",
+    "fake",
+    "fixture",
+    "invalid",
+    "never-store",
+    "placeholder",
+    "redact",
+    "sample",
+    "test",
+    "your-",
+    "your_",
+}
+
 SCRIPT_REF_RES = [
     re.compile(r"(?:^|\s)(?:source|\.)\s+([A-Za-z0-9_./\-]+\.sh)(?:\s|$)"),
     re.compile(r"(?:^|\s)(?:python3?|bash|sh|zsh)\s+([A-Za-z0-9_./\-]+\.(?:py|sh|bash|zsh))(?:\s|$)"),
@@ -383,12 +448,50 @@ SCRIPT_REF_RES = [
 
 CODEX_ARCHIVE_MANIFEST_VERSION = "CodexRunArchiveManifestV1"
 ROOT_MARKDOWN_ARCHIVE_MANIFEST_VERSION = "RootMarkdownArchiveManifestV1"
+ROOT_PACKAGE_ARCHIVE_MANIFEST_VERSION = "RootPackageArtifactArchiveManifestV1"
 CODEX_RUN_INDEX = "docs/codex-runs/CODEX_RUN_INDEX.md"
 CODEX_CURRENT_RUN = "docs/codex-runs/CURRENT_RUN.md"
 CODEX_ARCHIVAL_POLICY = "docs/codex-runs/ARCHIVAL_POLICY.md"
 CODEX_ARTIFACT_CLASSIFICATION = "docs/codex-runs/CODEX_ARTIFACT_CLASSIFICATION.json"
 ROOT_MARKDOWN_ARCHIVE_DIR = "docs/root-markdown-archive"
 ROOT_MARKDOWN_ARCHIVE_MANIFEST = "ROOT_MARKDOWN_ARCHIVE_MANIFEST.json"
+ROOT_PACKAGE_ARCHIVE_DIR = "docs/source-packages/archive"
+ROOT_PACKAGE_ARCHIVE_MANIFEST = "PACKAGE_ARTIFACT_ARCHIVE_MANIFEST.json"
+ROOT_PACKAGE_ARCHIVE_ROLES = {
+    "next-codex-context",
+    "codex-run-full",
+    "audit-full",
+}
+CONTEXT_LOG_BASENAMES = {
+    "commands_run.log",
+    "commands_run.receipts.jsonl",
+}
+CONTEXT_COMMAND_EVIDENCE_BASENAMES = CONTEXT_LOG_BASENAMES | {
+    "COMMAND_RECEIPTS.jsonl",
+    "COMMAND_EXECUTION_RECEIPTS.jsonl",
+}
+CONTEXT_COMMAND_EVIDENCE_MARKDOWN_RE = re.compile(r"(^|/)[A-Za-z0-9_.-]*COMMANDS_RUN\.md$")
+CONTEXT_COMMAND_RECEIPT_SYNTHETIC_PATH = ".zpy/COMMAND_RECEIPTS.jsonl"
+CONTEXT_LOG_ROLES = {
+    "next-codex-context",
+    "codex-run-full",
+    "audit-full",
+}
+PATCH_EVIDENCE_ROLES = {
+    "next-codex-context",
+    "codex-run-full",
+    "research-context",
+    "audit-full",
+}
+CONTEXT_REQUIRED_ROLES = {
+    "next-codex-context",
+    "codex-run-full",
+    "audit-full",
+}
+CPG_RUN_ARTIFACT_DIRS = {
+    ".cpg/runs",
+    ".cpg/hook_receipts",
+}
 ROOT_MARKDOWN_PROTECTED_FILES = {
     "AGENTS.md",
     "CLAUDE.md",
@@ -424,6 +527,65 @@ ROOT_MARKDOWN_CANDIDATE_PATTERNS = [
     "*MATRIX*.MD",
 ]
 ROOT_MARKDOWN_PROTECTED_FILES_UPPER = {name.upper() for name in ROOT_MARKDOWN_PROTECTED_FILES}
+ROOT_PACKAGE_PROTECTED_FILE_PATTERNS = {
+    "AGENTS.md",
+    "Cargo.lock",
+    "Cargo.toml",
+    "pyproject.toml",
+    "README.md",
+    "z.py",
+}
+ROOT_PACKAGE_PROTECTED_PREFIXES = (
+    "CHANGELOG",
+    "CONTRIBUTING",
+    "LICENSE",
+    "SECURITY",
+)
+ROOT_PACKAGE_ARTIFACT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"^.*-next-codex-context-[A-Za-z0-9T]+Z?\.zip$"), "prior-context-archive"),
+    (re.compile(r"^.*-next-codex-context-[A-Za-z0-9T]+Z?\.(?:manifest\.json|report\.md|excluded\.json|findings\.json)$"), "prior-generated-sidecar"),
+    (re.compile(r"^.*-next-codex-context-[A-Za-z0-9T]+Z?\.codex-archive\.json$"), "prior-codex-archive-report"),
+    (re.compile(r"^.*\.codex-archive\.json$"), "prior-codex-archive-report"),
+    (re.compile(r"^README_BUNDLE\.md$"), "prior-bundle-readme"),
+    (re.compile(r"^BUNDLE_MANIFEST\.json$"), "prior-bundle-manifest"),
+    (re.compile(r"^.*_BUNDLE\.md$"), "prior-bundle-doc"),
+    (re.compile(r"^.*_PROMPT\.md$"), "root-prompt-residue"),
+    (re.compile(r"^.*_AUDIT\.md$"), "root-audit-residue"),
+    (re.compile(r"^.*_ISSUE_MATRIX\.md$"), "root-issue-matrix-residue"),
+    (re.compile(r"^.*_RISK_REGISTER\.md$"), "root-risk-register-residue"),
+]
+
+WINDOWS_RESERVED_BASENAMES = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    *(f"COM{i}" for i in range(1, 10)),
+    *(f"LPT{i}" for i in range(1, 10)),
+}
+
+POLICY_TOP_LEVEL_KEYS = {
+    "schema",
+    "package",
+    "modes",
+    "protected_root_files",
+    "required_files",
+    "allowed_extensions",
+    "allowed_basenames",
+    "path_rules",
+    "ecosystem_parity",
+    "root_hygiene",
+    "security",
+    "archive",
+    "provenance",
+    "sbom",
+}
+
+POLICY_MODE_CONTEXTS = {
+    "context": {"next-codex-context", "codex-context", "codex-run-full", "full-context", "research-context", "audit-full"},
+    "audit": {"audit-full", "codex-run-full"},
+    "release": {"source-clean", "release-context"},
+}
 
 PROTECTED_CODEX_ACTIVE_FILES = {
     "AGENTS.md",
@@ -484,6 +646,13 @@ class FileEntry:
 
 
 @dataclass(frozen=True)
+class SyntheticFile:
+    path: str
+    data: bytes
+    mode: int = 0o644
+
+
+@dataclass(frozen=True)
 class ExcludedEntry:
     path: str
     reason: str
@@ -493,6 +662,29 @@ class ExcludedEntry:
 class PrunedDirEntry:
     path: str
     reason: str
+
+
+@dataclass(frozen=True)
+class DecisionEntry:
+    path: str
+    decision: str
+    reason: str
+    source: str
+    mode: str
+
+
+@dataclass(frozen=True)
+class EcosystemAdapterResult:
+    ecosystem: str
+    detected: bool
+    manifests: list[str]
+    dry_run_available: bool
+    dry_run_command: str | None
+    dry_run_status: str
+    expected_files: list[str]
+    missing_from_zpy_package: list[str]
+    extra_in_zpy_package: list[str]
+    findings: list[dict[str, str]]
 
 
 @dataclass
@@ -528,12 +720,18 @@ class ArchiveReport:
     report_path: str | None
     excluded_path: str | None
     findings_path: str | None
+    decision_log_path: str | None
+    policy_path: str | None
+    ecosystem_parity: list[dict[str, Any]]
     codex_archive: dict[str, Any] | None
     root_markdown_archive: dict[str, Any] | None
+    root_package_archive: dict[str, Any] | None
 
 
 @dataclass(frozen=True)
 class Policy:
+    policy_path: str | None
+    policy_document: dict[str, Any] | None
     profile: str
     mode: str
     package_role: str
@@ -546,14 +744,30 @@ class Policy:
     include_root_markdown_archive: bool
     root_markdown_archive_root: str
     root_markdown_archive_root_rel: str
+    include_root_package_archive: bool
+    root_package_archive_root: str
+    root_package_archive_root_rel: str
     include_editor_config: bool
     include_doc_binaries: bool
     include_images: bool
     include_logs: bool
+    include_patch_artifacts: bool
     allow_secret_like_names: bool
     follow_symlinks: bool
     max_file_size_bytes: int
     secret_scan_max_bytes: int
+    required_files: list[dict[str, Any]]
+    path_rules: list[dict[str, Any]]
+    allowed_extensions: list[str]
+    allowed_basenames: list[str]
+    ecosystem_parity_enabled: bool
+    ecosystem_parity_default_severity: str
+    ecosystem_parity_adapters: dict[str, str]
+    fail_on_unicode_collision: bool
+    fail_on_case_collision: bool
+    fail_on_windows_reserved_name: bool
+    emit_decision_log: bool
+    source_date_epoch: int | None
 
 
 @dataclass
@@ -563,6 +777,8 @@ class BuildResult:
     excluded: list[ExcludedEntry]
     pruned_dirs: list[PrunedDirEntry]
     findings: list[Finding]
+    decisions: list[DecisionEntry]
+    ecosystem_parity: list[EcosystemAdapterResult]
 
 
 @dataclass(frozen=True)
@@ -621,6 +837,31 @@ class RootMarkdownArchiveResult:
     errors: list[str]
 
 
+@dataclass
+class RootPackageArchiveResult:
+    enabled: bool
+    dry_run: bool
+    verify_only: bool
+    archive_only: bool
+    archive_root: str
+    archive_dir: str
+    manifest_path: str | None
+    inspected_count: int
+    protected_count: int
+    candidate_count: int
+    planned_count: int
+    moved_count: int
+    skipped_existing_count: int
+    collision_count: int
+    manifest_written: bool
+    candidate_paths: list[str]
+    protected_paths: list[str]
+    moved: list[dict[str, Any]]
+    skipped_existing: list[dict[str, Any]]
+    collisions: list[dict[str, Any]]
+    errors: list[str]
+
+
 def utc_now_iso() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
@@ -638,7 +879,13 @@ def is_relative_to(child: Path, parent: Path) -> bool:
 
 
 def safe_relative(path: Path, root: Path) -> Path:
-    return path.resolve().relative_to(root.resolve())
+    try:
+        return path.resolve().relative_to(root.resolve())
+    except ValueError:
+        # Symlink entries can resolve outside the workspace even though the
+        # directory entry itself is under root. Keep relative names lexical;
+        # target containment is checked separately where symlinks are allowed.
+        return Path(os.path.abspath(path)).relative_to(Path(os.path.abspath(root)))
 
 
 def read_text_lossy(path: Path, limit_bytes: int | None = None) -> str | None:
@@ -834,6 +1081,11 @@ def is_codex_archive_dir_rel(rel: str) -> bool:
     )
 
 
+def is_cpg_run_artifact_dir_rel(rel: str) -> bool:
+    rel = rel.strip("/")
+    return any(rel == artifact_dir or rel.startswith(f"{artifact_dir}/") for artifact_dir in CPG_RUN_ARTIFACT_DIRS)
+
+
 def is_allowed_current_codex_rel(rel: str, current_run: str) -> bool:
     current = normalize_codex_run_id(current_run)
     for variant in codex_rel_variants(rel):
@@ -909,6 +1161,8 @@ def safe_archive_component(value: str) -> str:
 
 def infer_profile(root: Path) -> str:
     name = root.name.lower()
+    if name == "semantic-memory":
+        return "semantic-memory"
     if "aidens" in name:
         return "aidens"
     if "recall-coding" in name or "recall_coding" in name:
@@ -925,9 +1179,151 @@ def infer_profile(root: Path) -> str:
     return "generic"
 
 
+def read_policy_document(path: Path) -> dict[str, Any]:
+    text = path.read_text(encoding="utf-8")
+    if path.suffix.lower() == ".json":
+        payload = json.loads(text)
+    else:
+        if tomllib is None:
+            raise ValueError("TOML policy files require Python 3.11+ tomllib support")
+        payload = tomllib.loads(text)
+    if not isinstance(payload, dict):
+        raise ValueError("PackagePolicyV1 policy must be a table/object")
+    return payload
+
+
+def validate_policy_document(payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    extra = sorted(set(payload) - POLICY_TOP_LEVEL_KEYS)
+    if extra:
+        errors.append(f"unknown top-level policy keys: {', '.join(extra)}")
+    if payload.get("schema") != PACKAGE_POLICY_SCHEMA_NAME:
+        errors.append(f"schema must be {PACKAGE_POLICY_SCHEMA_NAME!r}")
+    package = payload.get("package")
+    if not isinstance(package, dict):
+        errors.append("package must be an object/table")
+    elif not isinstance(package.get("name"), str) or not package.get("name", "").strip():
+        errors.append("package.name is required")
+    modes = payload.get("modes")
+    if not isinstance(modes, dict):
+        errors.append("modes must be an object/table")
+    for key in ("protected_root_files", "allowed_extensions", "allowed_basenames"):
+        value = payload.get(key)
+        if value is not None and not (isinstance(value, list) and all(isinstance(item, str) for item in value)):
+            errors.append(f"{key} must be a string array")
+    required = payload.get("required_files", [])
+    if required is not None:
+        if not isinstance(required, list):
+            errors.append("required_files must be an array")
+        else:
+            for idx, item in enumerate(required):
+                if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+                    errors.append(f"required_files[{idx}] must include string path")
+                if isinstance(item, dict) and item.get("mode", "all") not in {"all", "context", "audit", "release"}:
+                    errors.append(f"required_files[{idx}].mode is invalid")
+    path_rules = payload.get("path_rules", [])
+    if path_rules is not None:
+        if not isinstance(path_rules, list):
+            errors.append("path_rules must be an array")
+        else:
+            for idx, item in enumerate(path_rules):
+                if not isinstance(item, dict):
+                    errors.append(f"path_rules[{idx}] must be an object")
+                    continue
+                if not isinstance(item.get("pattern"), str):
+                    errors.append(f"path_rules[{idx}].pattern is required")
+                if item.get("decision") not in {"include", "exclude", "quarantine", "archive-root"}:
+                    errors.append(f"path_rules[{idx}].decision is invalid")
+    return errors
+
+
+def load_policy_file(value: str | None) -> tuple[Path | None, dict[str, Any] | None, list[Finding]]:
+    if not value:
+        return None, None, []
+    path = Path(value).expanduser().resolve()
+    findings: list[Finding] = []
+    try:
+        payload = read_policy_document(path)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        return path, None, [Finding(
+            code="package-policy-load-failed",
+            severity="error",
+            path=str(path),
+            detail=str(exc),
+        )]
+    for error in validate_policy_document(payload):
+        findings.append(Finding(
+            code="package-policy-invalid",
+            severity="error",
+            path=str(path),
+            detail=error,
+        ))
+    return path, payload, findings
+
+
+def policy_mode_section(policy_doc: dict[str, Any] | None, mode: str, package_role: str) -> dict[str, Any]:
+    if not policy_doc:
+        return {}
+    modes = policy_doc.get("modes", {})
+    if not isinstance(modes, dict):
+        return {}
+    for key in (mode, package_role):
+        value = modes.get(key)
+        if isinstance(value, dict):
+            return value
+    return {}
+
+
+def policy_bool(section: dict[str, Any], key: str, fallback: bool) -> bool:
+    value = section.get(key)
+    return value if isinstance(value, bool) else fallback
+
+
+def source_date_epoch_from_value(value: Any) -> int | None:
+    if value is None:
+        env_value = os.environ.get("SOURCE_DATE_EPOCH")
+        if env_value is None:
+            return None
+        value = env_value
+    if isinstance(value, int):
+        return value if value >= 0 else None
+    if isinstance(value, str) and value.strip().isdigit():
+        return int(value.strip())
+    return None
+
+
+def mode_matches_policy_rule(rule: dict[str, Any], mode: str, package_role: str) -> bool:
+    modes = rule.get("modes")
+    if modes is None:
+        return True
+    if not isinstance(modes, list):
+        return False
+    return mode in modes or package_role in modes
+
+
+def required_file_applies(required: dict[str, Any], mode: str, package_role: str) -> bool:
+    required_mode = str(required.get("mode", "all"))
+    if required_mode == "all":
+        return True
+    if required_mode in POLICY_MODE_CONTEXTS:
+        return mode in POLICY_MODE_CONTEXTS[required_mode] or package_role in POLICY_MODE_CONTEXTS[required_mode]
+    return required_mode in {mode, package_role}
+
+
 def make_policy(args: argparse.Namespace, root: Path, resolved_profile: str) -> Policy:
     mode = args.mode
     package_role = package_role_for_mode(mode)
+    policy_path, policy_doc, _policy_findings = load_policy_file(getattr(args, "policy", None))
+    mode_policy = policy_mode_section(policy_doc, mode, package_role)
+    security_policy = policy_doc.get("security", {}) if policy_doc else {}
+    if not isinstance(security_policy, dict):
+        security_policy = {}
+    archive_policy = policy_doc.get("archive", {}) if policy_doc else {}
+    if not isinstance(archive_policy, dict):
+        archive_policy = {}
+    ecosystem_policy = policy_doc.get("ecosystem_parity", {}) if policy_doc else {}
+    if not isinstance(ecosystem_policy, dict):
+        ecosystem_policy = {}
     include_generated_schemas = (
         args.include_generated_schemas
         if args.include_generated_schemas is not None
@@ -940,47 +1336,88 @@ def make_policy(args: argparse.Namespace, root: Path, resolved_profile: str) -> 
     )
     include_codex_archive = bool(args.include_codex_archive or package_role == "audit-full")
     include_root_markdown_archive = bool(args.include_root_markdown_archive)
+    include_root_package_archive = bool(args.include_root_package_archive or package_role == "audit-full")
     root_markdown_archive_root = resolve_root_markdown_archive_root(root, args.root_markdown_archive_root)
     try:
         root_markdown_archive_root_rel = to_posix(safe_relative(root_markdown_archive_root, root))
     except ValueError:
         root_markdown_archive_root_rel = to_posix(root_markdown_archive_root)
+    root_package_archive_root = resolve_root_package_archive_root(root, args.root_package_archive_root)
+    try:
+        root_package_archive_root_rel = to_posix(safe_relative(root_package_archive_root, root))
+    except ValueError:
+        root_package_archive_root_rel = to_posix(root_package_archive_root)
     include_doc_binaries = (
         args.include_doc_binaries
         if args.include_doc_binaries is not None
-        else package_role in {"research-context", "codex-run-full", "audit-full"}
+        else policy_bool(mode_policy, "include_doc_binaries", package_role in {"research-context", "codex-run-full", "audit-full"})
     )
     include_images = (
         args.include_images
         if args.include_images is not None
-        else package_role in {"research-context", "codex-run-full", "audit-full"}
+        else policy_bool(mode_policy, "include_images", package_role in {"research-context", "codex-run-full", "audit-full"})
     )
     include_logs = (
         args.include_logs
         if args.include_logs is not None
-        else False
+        else policy_bool(mode_policy, "include_logs", False)
     )
+    include_patch_artifacts = policy_bool(
+        mode_policy,
+        "include_patch_artifacts",
+        package_role in PATCH_EVIDENCE_ROLES,
+    )
+    max_file_size_bytes = (
+        int(security_policy["max_file_size_bytes"])
+        if isinstance(security_policy.get("max_file_size_bytes"), int)
+        else int(args.max_file_size_mb * 1024 * 1024) if args.max_file_size_mb > 0 else 0
+    )
+    adapters = ecosystem_policy.get("adapters", {})
+    if not isinstance(adapters, dict):
+        adapters = {}
+    required_files = policy_doc.get("required_files", []) if policy_doc else []
+    path_rules = policy_doc.get("path_rules", []) if policy_doc else []
+    allowed_extensions = policy_doc.get("allowed_extensions", []) if policy_doc else []
+    allowed_basenames = policy_doc.get("allowed_basenames", []) if policy_doc else []
     return Policy(
+        policy_path=str(policy_path) if policy_path else None,
+        policy_document=policy_doc,
         profile=resolved_profile,
         mode=mode,
         package_role=package_role,
         codex_current_run=normalize_codex_run_id(args.codex_current_run),
         codex_artifact_classification=load_codex_artifact_classification(root),
-        include_external_path_deps=args.include_external_path_deps,
+        include_external_path_deps=args.include_external_path_deps or resolved_profile == "semantic-memory",
         include_generated_schemas=include_generated_schemas,
         include_codex_artifacts=include_codex_artifacts,
         include_codex_archive=include_codex_archive,
         include_root_markdown_archive=include_root_markdown_archive,
         root_markdown_archive_root=str(root_markdown_archive_root),
         root_markdown_archive_root_rel=root_markdown_archive_root_rel,
+        include_root_package_archive=include_root_package_archive,
+        root_package_archive_root=str(root_package_archive_root),
+        root_package_archive_root_rel=root_package_archive_root_rel,
         include_editor_config=args.include_editor_config,
         include_doc_binaries=include_doc_binaries,
         include_images=include_images,
         include_logs=include_logs,
-        allow_secret_like_names=args.allow_secret_like_names,
-        follow_symlinks=args.follow_symlinks,
-        max_file_size_bytes=int(args.max_file_size_mb * 1024 * 1024) if args.max_file_size_mb > 0 else 0,
+        include_patch_artifacts=include_patch_artifacts,
+        allow_secret_like_names=args.allow_secret_like_names or policy_bool(security_policy, "allow_secret_like_names", False),
+        follow_symlinks=args.follow_symlinks or policy_bool(security_policy, "follow_symlinks", False),
+        max_file_size_bytes=max_file_size_bytes,
         secret_scan_max_bytes=int(args.secret_scan_max_kb * 1024),
+        required_files=[item for item in required_files if isinstance(item, dict)],
+        path_rules=[item for item in path_rules if isinstance(item, dict)],
+        allowed_extensions=[item for item in allowed_extensions if isinstance(item, str)],
+        allowed_basenames=[item for item in allowed_basenames if isinstance(item, str)],
+        ecosystem_parity_enabled=policy_bool(ecosystem_policy, "enabled", True),
+        ecosystem_parity_default_severity=str(ecosystem_policy.get("default_severity", "info")),
+        ecosystem_parity_adapters={str(k): str(v) for k, v in adapters.items()},
+        fail_on_unicode_collision=policy_bool(security_policy, "fail_on_unicode_collision", True),
+        fail_on_case_collision=policy_bool(security_policy, "fail_on_case_collision", package_role in {"source-clean", "release-context"}),
+        fail_on_windows_reserved_name=policy_bool(security_policy, "fail_on_windows_reserved_name", True),
+        emit_decision_log=policy_bool(archive_policy, "emit_decision_log", False),
+        source_date_epoch=source_date_epoch_from_value(archive_policy.get("source_date_epoch")),
     )
 
 
@@ -992,10 +1429,17 @@ def should_prune_dir(rel_dir: Path, dirname: str, policy: Policy) -> str | None:
         if policy.include_root_markdown_archive:
             return None
         return "root-markdown-archive-disabled"
+    package_archive_rel = policy.root_package_archive_root_rel.strip("/")
+    if package_archive_rel and (rel_posix == package_archive_rel or rel_posix.startswith(f"{package_archive_rel}/")):
+        if policy.include_root_package_archive:
+            return None
+        return "root-package-archive-disabled"
     if is_codex_archive_dir_rel(rel_posix):
         if policy.include_codex_archive:
             return None
         return "codex-archive-disabled"
+    if policy.package_role == "next-codex-context" and is_cpg_run_artifact_dir_rel(rel_posix):
+        return "cpg-run-artifacts-disabled"
     if dirname in ALWAYS_EXCLUDED_DIR_NAMES or lower in {d.lower() for d in ALWAYS_EXCLUDED_DIR_NAMES}:
         return "excluded-directory"
     if any(lower.startswith(prefix.lower()) for prefix in EXCLUDED_DIR_PREFIXES):
@@ -1032,12 +1476,61 @@ def is_generated_sidecar_path(path: Path) -> bool:
     return any(path.name.endswith(suffix) for suffix in GENERATED_SIDECAR_SUFFIXES)
 
 
+def is_fixture_sidecar_rel(rel: str) -> bool:
+    rel = rel.strip("/")
+    return rel.startswith("tests/fixtures/") and any(rel.endswith(suffix) for suffix in GENERATED_SIDECAR_SUFFIXES)
+
+
+def is_context_receipt_log(rel: str, package_role: str) -> bool:
+    p = Path(rel)
+    return (
+        package_role in CONTEXT_LOG_ROLES
+        and p.name in CONTEXT_LOG_BASENAMES
+    )
+
+
+def is_context_command_evidence_rel(rel: str) -> bool:
+    rel = rel.strip("/")
+    if not rel:
+        return False
+    name = Path(rel).name
+    return name in CONTEXT_COMMAND_EVIDENCE_BASENAMES or bool(CONTEXT_COMMAND_EVIDENCE_MARKDOWN_RE.search(rel))
+
+
 def allowed_basename(path: Path) -> bool:
     name = path.name
     if name in ALLOWED_BASENAMES:
         return True
     upper = name.upper()
     return any(upper == p or upper.startswith(p + ".") or upper.startswith(p + "-") for p in ALLOWED_BASENAME_PREFIXES)
+
+
+def decision_source_for_reason(reason: str) -> str:
+    if reason.startswith("policy-"):
+        return "package-policy"
+    if reason.startswith("ecosystem-"):
+        return "ecosystem-adapter"
+    if "secret" in reason:
+        return "security-gate"
+    if "symlink" in reason or reason in {"special-file", "hardlink-detected"}:
+        return "portability-gate"
+    if reason in {"included-context-receipt-log", "included-patch-evidence"}:
+        return "audit-evidence-policy"
+    if reason.endswith("-disabled") or reason in {"archive-file", "binary-build-artifact", "database-file"}:
+        return "hygiene-policy"
+    if reason.startswith("included-"):
+        return "extension-basename-policy"
+    return "zpy-heuristic"
+
+
+def matching_path_rule(rel: str, policy: Policy) -> dict[str, Any] | None:
+    for rule in policy.path_rules:
+        if not mode_matches_policy_rule(rule, policy.mode, policy.package_role):
+            continue
+        pattern = str(rule.get("pattern", ""))
+        if pattern and (fnmatch.fnmatch(rel, pattern) or fnmatch.fnmatch(Path(rel).name, pattern)):
+            return rule
+    return None
 
 
 def is_codex_control_rel(rel: str, current_run: str) -> bool:
@@ -1071,11 +1564,21 @@ def include_decision(path: Path, archive_root: Path, reserved_output_paths: set[
         return False, "unresolvable-path"
     rel = to_posix(safe_relative(path, archive_root))
 
+    try:
+        lstat_result = path.lstat()
+    except OSError:
+        return False, "stat-failed"
+    if not stat.S_ISREG(lstat_result.st_mode) and not stat.S_ISLNK(lstat_result.st_mode):
+        return False, "special-file"
+
     if resolved in reserved_output_paths:
         return False, "generated-output"
 
     if policy.package_role == "release-context" and is_codex_control_rel(rel, policy.codex_current_run):
         return False, "package-role-codex-control-disabled"
+
+    if is_fixture_sidecar_rel(rel):
+        return True, "included-fixture-sidecar"
 
     if is_generated_sidecar_path(path):
         return False, "generated-sidecar"
@@ -1109,6 +1612,9 @@ def include_decision(path: Path, archive_root: Path, reserved_output_paths: set[
         return False, "max-file-size-exceeded"
 
     suffix = path.suffix.lower()
+    rule = matching_path_rule(rel, policy)
+    if rule and rule.get("decision") in {"exclude", "quarantine", "archive-root"}:
+        return False, f"policy-{rule.get('decision')}: {rule.get('reason', rule.get('pattern', rel))}"
     if suffix in ARCHIVE_EXTENSIONS:
         return False, "archive-file"
     if suffix in BINARY_EXTENSIONS:
@@ -1119,8 +1625,29 @@ def include_decision(path: Path, archive_root: Path, reserved_output_paths: set[
         return False, "doc-binary-disabled"
     if suffix in IMAGE_EXTENSIONS and not policy.include_images:
         return False, "image-disabled"
-    if suffix in LOG_EXTENSIONS and not policy.include_logs:
-        return False, "log-disabled"
+    if suffix in LOG_EXTENSIONS:
+        if is_context_receipt_log(rel, policy.package_role):
+            text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
+            if text_reason:
+                return False, text_reason
+            return True, "included-context-receipt-log"
+        if not policy.include_logs:
+            return False, "log-disabled"
+    if suffix in PATCH_EVIDENCE_EXTENSIONS:
+        if policy.include_patch_artifacts:
+            text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
+            if text_reason:
+                return False, text_reason
+            return True, "included-patch-evidence"
+        return False, "patch-evidence-disabled"
+
+    if policy.profile == "semantic-memory" and rel in {
+        "semantic-memory/Cargo.lock",
+        "stack-ids/Cargo.lock",
+        "semantic-memory-forge/Cargo.lock",
+        "forge-memory-bridge/Cargo.lock",
+    }:
+        return False, "member-lockfile-pruned-for-packaged-workspace"
 
     if path.name.lower() in ALLOWED_ENV_SAMPLE_NAMES:
         text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
@@ -1132,11 +1659,26 @@ def include_decision(path: Path, archive_root: Path, reserved_output_paths: set[
         if text_reason:
             return False, text_reason
         return True, "included-basename"
+    if path.name in policy.allowed_basenames:
+        text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
+        if text_reason:
+            return False, text_reason
+        return True, "policy-included-basename"
+    if rule and rule.get("decision") == "include":
+        text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
+        if text_reason:
+            return False, text_reason
+        return True, f"policy-include: {rule.get('reason', rule.get('pattern', rel))}"
     if suffix in ALLOWED_TEXT_EXTENSIONS:
         text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
         if text_reason:
             return False, text_reason
         return True, "included-extension"
+    if suffix in policy.allowed_extensions:
+        text_reason = text_file_policy_reason(path, limit_bytes=1024 * 1024)
+        if text_reason:
+            return False, text_reason
+        return True, "policy-included-extension"
     if suffix in DOC_BINARY_EXTENSIONS and policy.include_doc_binaries:
         return True, "included-doc-binary"
     if suffix in IMAGE_EXTENSIONS and policy.include_images:
@@ -1151,11 +1693,12 @@ def collect_files(
     include_roots: Sequence[Path],
     reserved_output_paths: set[Path],
     policy: Policy,
-) -> tuple[list[Path], list[ExcludedEntry], list[PrunedDirEntry], list[Finding]]:
+) -> tuple[list[Path], list[ExcludedEntry], list[PrunedDirEntry], list[Finding], list[DecisionEntry]]:
     included: list[Path] = []
     excluded: list[ExcludedEntry] = []
     pruned: list[PrunedDirEntry] = []
     findings: list[Finding] = []
+    decisions: list[DecisionEntry] = []
     seen_files: set[Path] = set()
 
     def consider_file(path: Path) -> None:
@@ -1172,11 +1715,33 @@ def collect_files(
         except ValueError:
             rel = path
         include, reason = include_decision(path, archive_root, reserved_output_paths, policy)
+        reserved_component = windows_reserved_path(to_posix(rel))
+        if reserved_component:
+            findings.append(Finding(
+                code="windows-reserved-path",
+                severity="error" if policy.fail_on_windows_reserved_name else "warning",
+                path=to_posix(rel),
+                detail=f"Path component {reserved_component!r} is reserved on Windows.",
+            ))
         if include:
             included.append(path)
+            decisions.append(DecisionEntry(
+                path=to_posix(rel),
+                decision="include",
+                reason=reason,
+                source=decision_source_for_reason(reason),
+                mode=policy.mode,
+            ))
         else:
             excluded.append(ExcludedEntry(path=to_posix(rel), reason=reason))
-            if reason in {"secret-like-filename", "symlink-target-outside-root", "broken-symlink"}:
+            decisions.append(DecisionEntry(
+                path=to_posix(rel),
+                decision="exclude",
+                reason=reason,
+                source=decision_source_for_reason(reason),
+                mode=policy.mode,
+            ))
+            if reason in {"secret-like-filename", "symlink-target-outside-root", "broken-symlink", "special-file"}:
                 findings.append(Finding(
                     code=reason,
                     severity="error" if reason != "secret-like-filename" else "warning",
@@ -1193,6 +1758,13 @@ def collect_files(
                 reason = should_prune_dir(rel_dir, dirname, policy)
                 if reason:
                     pruned.append(PrunedDirEntry(path=to_posix(rel_dir), reason=reason))
+                    decisions.append(DecisionEntry(
+                        path=to_posix(rel_dir),
+                        decision="prune-dir",
+                        reason=reason,
+                        source=decision_source_for_reason(reason),
+                        mode=policy.mode,
+                    ))
                 else:
                     keep_dirs.append(dirname)
             dirnames[:] = keep_dirs
@@ -1200,7 +1772,7 @@ def collect_files(
             for filename in sorted(filenames):
                 consider_file(current / filename)
 
-    if not is_under_any(archive_root, include_roots):
+    if policy.profile != "semantic-memory" and not is_under_any(archive_root, include_roots):
         for path in sorted(archive_root.iterdir(), key=lambda p: p.name):
             if path.is_file():
                 consider_file(path)
@@ -1208,7 +1780,8 @@ def collect_files(
     included.sort(key=lambda p: to_posix(safe_relative(p, archive_root)))
     excluded.sort(key=lambda e: e.path)
     pruned.sort(key=lambda e: e.path)
-    return included, excluded, pruned, findings
+    decisions.sort(key=lambda d: (d.path, d.decision, d.reason))
+    return included, excluded, pruned, findings, decisions
 
 
 def path_exists_any(root: Path, alternatives: Sequence[str]) -> bool:
@@ -1225,18 +1798,44 @@ def has_cargo_member(root: Path) -> bool:
     return False
 
 
-def walk_toml_path_values(value: Any) -> list[str]:
-    paths: list[str] = []
-    if isinstance(value, dict):
-        path_value = value.get("path")
-        if isinstance(path_value, str):
-            paths.append(path_value)
-        for nested in value.values():
-            paths.extend(walk_toml_path_values(nested))
-    elif isinstance(value, list):
-        for nested in value:
-            paths.extend(walk_toml_path_values(nested))
-    return paths
+def collect_cargo_dependency_path_refs(parsed: dict[str, Any]) -> list[str]:
+    refs: list[str] = []
+
+    def collect_dependency_table(table: Any) -> None:
+        if not isinstance(table, dict):
+            return
+        for dep_spec in table.values():
+            if isinstance(dep_spec, dict):
+                path_value = dep_spec.get("path")
+                if isinstance(path_value, str):
+                    refs.append(path_value)
+
+    for table_name in CARGO_DEP_TABLE_NAMES:
+        collect_dependency_table(parsed.get(table_name))
+
+    workspace = parsed.get("workspace")
+    if isinstance(workspace, dict):
+        for table_name in CARGO_DEP_TABLE_NAMES:
+            collect_dependency_table(workspace.get(table_name))
+
+    target = parsed.get("target")
+    if isinstance(target, dict):
+        for target_spec in target.values():
+            if not isinstance(target_spec, dict):
+                continue
+            for table_name in CARGO_DEP_TABLE_NAMES:
+                collect_dependency_table(target_spec.get(table_name))
+
+    patch = parsed.get("patch")
+    if isinstance(patch, dict):
+        for registry_patch in patch.values():
+            collect_dependency_table(registry_patch)
+
+    replace = parsed.get("replace")
+    if isinstance(replace, dict):
+        collect_dependency_table(replace)
+
+    return refs
 
 
 def cargo_path_refs(cargo_toml: Path) -> list[str]:
@@ -1251,7 +1850,7 @@ def cargo_path_refs(cargo_toml: Path) -> list[str]:
         except tomllib.TOMLDecodeError:
             parsed = None
         if parsed is not None:
-            refs.extend(walk_toml_path_values(parsed))
+            refs.extend(collect_cargo_dependency_path_refs(parsed))
     if not refs:
         refs.extend(match.group(1) for match in CARGO_PATH_DEP_RE.finditer(text))
 
@@ -1290,6 +1889,35 @@ def cargo_package_root(path_ref: Path) -> Path | None:
 
 def is_under_any(path: Path, roots: Sequence[Path]) -> bool:
     return any(is_relative_to(path, root) for root in roots)
+
+
+def rel_parts(path: Path, root: Path) -> tuple[str, ...]:
+    return tuple(to_posix(safe_relative(path, root)).split("/"))
+
+
+def has_any_path_part(path: Path, root: Path, names: set[str]) -> bool:
+    wanted = {name.lower() for name in names}
+    return any(part.lower() in wanted for part in rel_parts(path, root))
+
+
+def is_third_party_source_path(path: Path, root: Path) -> bool:
+    return has_any_path_part(path, root, THIRD_PARTY_SOURCE_DIR_NAMES)
+
+
+def is_advisory_rust_ref_path(path: Path, root: Path) -> bool:
+    return is_third_party_source_path(path, root) or has_any_path_part(path, root, ADVISORY_RUST_REF_DIR_NAMES)
+
+
+def is_project_script_path(path: Path, root: Path) -> bool:
+    return has_any_path_part(path, root, PROJECT_SCRIPT_DIR_NAMES)
+
+
+def advisory_context_severity(policy: Policy, default: str = "error") -> str:
+    if policy.package_role in {"next-codex-context", "research-context", "codex-run-full", "audit-full"}:
+        return "warning"
+    if policy.profile in {"research", "generic"}:
+        return "warning"
+    return default
 
 
 def dedupe_roots(roots: Sequence[Path]) -> list[Path]:
@@ -1377,6 +2005,11 @@ def check_required_surfaces(root: Path, profile: str, mode: str) -> list[Finding
         if package_role in {"next-codex-context", "codex-run-full", "audit-full"}:
             require("missing-agents", ["AGENTS.md", "agents.md"], "Codex-context mode should include an agent instruction file.", severity="warning")
 
+    elif profile == "semantic-memory":
+        require("missing-cargo-toml", ["Cargo.toml"], "semantic-memory profile expects the crate manifest.")
+        require("missing-source-root", ["src"], "semantic-memory profile expects the crate src/ tree.")
+        require("missing-audit-gates", ["01_ACCEPTANCE_GATES.sh"], "semantic-memory stabilization handoffs should include acceptance gates.", severity="warning")
+
     elif profile == "generic-rust":
         require("missing-cargo-toml", ["Cargo.toml"], "generic-rust profile expects a Rust manifest.")
         require("missing-source-root", ["src", "crates"], "generic-rust profile expects src/ or crates/.", severity="warning")
@@ -1393,6 +2026,303 @@ def check_required_surfaces(root: Path, profile: str, mode: str) -> list[Finding
     return findings
 
 
+def check_context_package_evidence(
+    root: Path,
+    archive_root: Path,
+    included: Sequence[Path],
+    policy: Policy,
+    synthetic_rels: Sequence[str] = (),
+) -> list[Finding]:
+    findings: list[Finding] = []
+    if policy.package_role not in CONTEXT_LOG_ROLES:
+        return findings
+
+    included_root_rels = {
+        to_posix(safe_relative(path, root))
+        for path in included
+        if is_relative_to(path, root)
+    }
+    included_root_rels.update(rel.strip("/") for rel in synthetic_rels if rel.strip("/"))
+    for required in ("python/poly_kv/_native.pyi", "python/poly_kv/py.typed"):
+        if (root / required).exists() and required not in included_root_rels:
+            findings.append(Finding(
+                code="context-package-required-file-not-archived",
+                severity="error",
+                path=required,
+                detail="Required Python sidecar file exists in the repo but is absent from the package manifest.",
+            ))
+
+    command_evidence = [rel for rel in included_root_rels if is_context_command_evidence_rel(rel)]
+    if not command_evidence:
+        findings.append(Finding(
+            code="context-package-command-evidence-missing",
+            severity="error",
+            path="/",
+            detail=(
+                "Context/audit package manifest must include command-run evidence "
+                "(commands_run.log, commands_run.receipts.jsonl, COMMAND_RECEIPTS.jsonl, "
+                "COMMAND_EXECUTION_RECEIPTS.jsonl, or *_COMMANDS_RUN.md)."
+            ),
+        ))
+
+    return findings
+
+
+def check_policy_required_files(root: Path, included: Sequence[Path], policy: Policy) -> list[Finding]:
+    findings: list[Finding] = []
+    if not policy.required_files:
+        return findings
+    included_rels = {
+        to_posix(safe_relative(path, root))
+        for path in included
+        if is_relative_to(path, root)
+    }
+    for required in policy.required_files:
+        if not required_file_applies(required, policy.mode, policy.package_role):
+            continue
+        rel = str(required.get("path", "")).strip("/")
+        if not rel:
+            continue
+        severity = str(required.get("severity", "error"))
+        if severity not in {"warning", "error"}:
+            severity = "error"
+        if rel not in included_rels:
+            detail = str(required.get("reason", "Required by PackagePolicyV1 but absent from the package manifest."))
+            findings.append(Finding(
+                code="package-policy-required-file-missing",
+                severity=severity,
+                path=rel,
+                detail=detail,
+            ))
+    return findings
+
+
+def is_safe_archive_name(name: str) -> bool:
+    if not name or "\\" in name or "\x00" in name:
+        return False
+    path = Path(name)
+    if path.is_absolute():
+        return False
+    if re.match(r"^[A-Za-z]:", name):
+        return False
+    return all(part not in {"", ".", ".."} for part in name.split("/"))
+
+
+def windows_reserved_path(rel: str) -> str | None:
+    for part in rel.split("/"):
+        stem = part.split(".")[0].upper().rstrip(" ")
+        if stem in WINDOWS_RESERVED_BASENAMES:
+            return part
+    return None
+
+
+def check_portability_gates(files: Sequence[FileEntry], policy: Policy) -> list[Finding]:
+    findings: list[Finding] = []
+    normalized: dict[str, str] = {}
+    casefolded: dict[str, str] = {}
+    for entry in files:
+        rel = entry.path
+        if not is_safe_archive_name(rel):
+            findings.append(Finding(
+                code="archive-entry-unsafe-path",
+                severity="error",
+                path=rel,
+                detail="Archive entry path is absolute, traversing, empty, drive-rooted, or contains an unsafe separator.",
+            ))
+        normalized_key = unicodedata.normalize("NFC", rel)
+        prior = normalized.get(normalized_key)
+        if prior and prior != rel:
+            findings.append(Finding(
+                code="unicode-normalization-collision",
+                severity="error" if policy.fail_on_unicode_collision else "warning",
+                path=rel,
+                detail=f"Path collides with {prior} after NFC normalization.",
+            ))
+        else:
+            normalized[normalized_key] = rel
+        case_key = rel.casefold()
+        prior_case = casefolded.get(case_key)
+        if prior_case and prior_case != rel:
+            findings.append(Finding(
+                code="case-insensitive-path-collision",
+                severity="error" if policy.fail_on_case_collision else "warning",
+                path=rel,
+                detail=f"Path collides with {prior_case} on case-insensitive filesystems.",
+            ))
+        else:
+            casefolded[case_key] = rel
+        reserved = windows_reserved_path(rel)
+        if reserved:
+            findings.append(Finding(
+                code="windows-reserved-path",
+                severity="error" if policy.fail_on_windows_reserved_name else "warning",
+                path=rel,
+                detail=f"Path component {reserved!r} is reserved on Windows.",
+            ))
+    return findings
+
+
+def adapter_severity(policy: Policy, ecosystem: str) -> str:
+    value = policy.ecosystem_parity_adapters.get(ecosystem, policy.ecosystem_parity_default_severity)
+    if value not in {"off", "info", "warning", "error"}:
+        return "info"
+    return value
+
+
+def ecosystem_finding(severity: str, code: str, path: str, detail: str) -> dict[str, str]:
+    return {"severity": severity, "code": code, "path": path, "detail": detail}
+
+
+def existing_rels(root: Path, patterns: Sequence[str]) -> list[str]:
+    found: list[str] = []
+    for pattern in patterns:
+        for path in root.rglob(pattern):
+            if path.is_file():
+                if any(part in ALWAYS_EXCLUDED_DIR_NAMES for part in path.parts):
+                    continue
+                found.append(to_posix(safe_relative(path, root)))
+    return sorted(set(found))
+
+
+def command_status(command: str) -> tuple[bool, str]:
+    exe = command.split()[0]
+    if shutil.which(exe):
+        return True, "available-not-run"
+    return False, "missing-not-run"
+
+
+def make_adapter_result(
+    ecosystem: str,
+    detected: bool,
+    manifests: list[str],
+    command: str | None,
+    expected_files: list[str],
+    included_rels: set[str],
+    findings: list[dict[str, str]],
+) -> EcosystemAdapterResult:
+    available = False
+    status = "not-applicable"
+    if command and detected:
+        available, status = command_status(command)
+        if detected and not available:
+            findings.append(ecosystem_finding(
+                "info",
+                f"{ecosystem}-dry-run-command-missing",
+                "/",
+                f"Optional ecosystem dry-run command was not executed because `{command.split()[0]}` is unavailable.",
+            ))
+    missing = sorted(rel for rel in expected_files if rel not in included_rels)
+    return EcosystemAdapterResult(
+        ecosystem=ecosystem,
+        detected=detected,
+        manifests=manifests,
+        dry_run_available=available,
+        dry_run_command=command,
+        dry_run_status=status,
+        expected_files=sorted(set(expected_files)),
+        missing_from_zpy_package=missing,
+        extra_in_zpy_package=[],
+        findings=findings,
+    )
+
+
+def docker_copy_add_sources(dockerfile: Path) -> list[str]:
+    text = read_text_lossy(dockerfile)
+    if text is None:
+        return []
+    sources: list[str] = []
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split()
+        if not parts or parts[0].upper() not in {"COPY", "ADD"}:
+            continue
+        args = [part for part in parts[1:] if not part.startswith("--")]
+        if len(args) >= 2:
+            for source in args[:-1]:
+                if source.startswith(("http://", "https://")):
+                    continue
+                sources.append(source.strip('"').strip("'").rstrip("/"))
+    return sources
+
+
+def run_ecosystem_adapters(root: Path, included_rels: set[str], policy: Policy) -> tuple[list[EcosystemAdapterResult], list[Finding]]:
+    if not policy.ecosystem_parity_enabled:
+        return [], []
+    results: list[EcosystemAdapterResult] = []
+    findings: list[Finding] = []
+
+    def add_result(result: EcosystemAdapterResult) -> None:
+        results.append(result)
+        severity = adapter_severity(policy, result.ecosystem)
+        if severity == "off":
+            return
+        for rel in result.missing_from_zpy_package:
+            findings.append(Finding(
+                code=f"{result.ecosystem}-expected-file-not-packaged",
+                severity=severity if severity in {"warning", "error"} else "warning",
+                path=rel,
+                detail=f"{result.ecosystem} adapter expected this existing file to be included.",
+            ))
+        for item in result.findings:
+            item_severity = item["severity"] if item["severity"] != "info" else severity
+            if item_severity == "off":
+                continue
+            findings.append(Finding(
+                code=item["code"],
+                severity=item_severity,
+                path=item["path"],
+                detail=item["detail"],
+            ))
+
+    rust_manifests = existing_rels(root, ["Cargo.toml"])
+    rust_expected = [rel for rel in ("Cargo.toml", "Cargo.lock", "README.md", "LICENSE") if (root / rel).exists()]
+    add_result(make_adapter_result("rust", bool(rust_manifests), rust_manifests, "cargo package --list --allow-dirty", rust_expected, included_rels, []))
+
+    python_manifests = existing_rels(root, ["pyproject.toml", "setup.cfg", "setup.py", "MANIFEST.in"])
+    python_expected = [rel for rel in ("pyproject.toml", "setup.cfg", "setup.py", "MANIFEST.in") if (root / rel).exists()]
+    python_expected.extend(existing_rels(root, ["py.typed", "*.pyi"]))
+    add_result(make_adapter_result("python", bool(python_manifests), python_manifests, "python -m build --sdist --wheel", python_expected, included_rels, []))
+
+    node_manifests = [rel for rel in ("package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock") if (root / rel).exists()]
+    node_expected = [rel for rel in ("package.json", "README.md", "LICENSE") if (root / rel).exists()]
+    add_result(make_adapter_result("node", bool(node_manifests), node_manifests, "npm pack --dry-run --json", node_expected, included_rels, []))
+
+    go_manifests = [rel for rel in ("go.mod", "go.sum", "go.work") if (root / rel).exists()]
+    add_result(make_adapter_result("go", bool(go_manifests), go_manifests, "go list -m -json all", go_manifests, included_rels, []))
+
+    docker_manifests = [rel for rel in ("Dockerfile", "Containerfile", ".dockerignore") if (root / rel).exists()]
+    docker_expected = list(docker_manifests)
+    docker_findings: list[dict[str, str]] = []
+    for docker_rel in ("Dockerfile", "Containerfile"):
+        docker_path = root / docker_rel
+        if not docker_path.exists():
+            continue
+        for source in docker_copy_add_sources(docker_path):
+            source_path = root / source
+            if source_path.exists() and source_path.is_file():
+                docker_expected.append(to_posix(safe_relative(source_path, root)))
+            elif not any(ch in source for ch in "*?["):
+                docker_findings.append(ecosystem_finding(
+                    "warning",
+                    "docker-copy-add-source-missing",
+                    docker_rel,
+                    f"Dockerfile references missing COPY/ADD source: {source}",
+                ))
+    add_result(make_adapter_result("docker", bool(docker_manifests), docker_manifests, "docker buildx build --progress=plain --dry-run .", docker_expected, included_rels, docker_findings))
+
+    git_manifests = [rel for rel in (".gitignore", ".gitattributes") if (root / rel).exists()]
+    git_detected = (root / ".git").exists() or bool(git_manifests)
+    git_expected = list(git_manifests)
+    git_findings = []
+    if (root / ".git").exists():
+        git_findings.append(ecosystem_finding("info", "git-metadata-excluded", ".git/", "Git metadata detected and intentionally excluded from transferable package contents."))
+    add_result(make_adapter_result("git", git_detected, git_manifests, "git archive --format=tar HEAD", git_expected, included_rels, git_findings))
+
+    return results, findings
+
+
 def nearest_cargo_manifest_dir(path: Path, root: Path) -> Path | None:
     current = path.parent
     root_resolved = root.resolve()
@@ -1404,17 +2334,20 @@ def nearest_cargo_manifest_dir(path: Path, root: Path) -> Path | None:
         current = current.parent
 
 
-def check_rust_include_refs(root: Path, included: Sequence[Path]) -> list[Finding]:
+def check_rust_include_refs(root: Path, included: Sequence[Path], policy: Policy) -> list[Finding]:
     findings: list[Finding] = []
     included_resolved = {p.resolve() for p in included}
 
     for path in included:
         if path.suffix.lower() != ".rs":
             continue
+        if is_third_party_source_path(path, root):
+            continue
         text = read_text_lossy(path)
         if text is None:
             continue
         rel = to_posix(safe_relative(path, root))
+        severity = "warning" if is_advisory_rust_ref_path(path, root) else advisory_context_severity(policy)
 
         for match in INCLUDE_LITERAL_RE.finditer(text):
             ref = match.group(1)
@@ -1424,21 +2357,21 @@ def check_rust_include_refs(root: Path, included: Sequence[Path]) -> list[Findin
             if not is_relative_to(target, root):
                 findings.append(Finding(
                     code="rust-include-ref-outside-root",
-                    severity="error",
+                    severity=severity,
                     path=rel,
                     detail=f"include_str!/include_bytes! reference points outside archive root: {ref}",
                 ))
             elif not target.exists():
                 findings.append(Finding(
                     code="rust-include-ref-missing",
-                    severity="error",
+                    severity=severity,
                     path=rel,
                     detail=f"include_str!/include_bytes! reference does not exist: {ref}",
                 ))
             elif target not in included_resolved:
                 findings.append(Finding(
                     code="rust-include-ref-not-archived",
-                    severity="error",
+                    severity=severity,
                     path=rel,
                     detail=f"include_str!/include_bytes! target exists but is not included in archive: {to_posix(safe_relative(target, root))}",
                 ))
@@ -1458,21 +2391,21 @@ def check_rust_include_refs(root: Path, included: Sequence[Path]) -> list[Findin
             if not is_relative_to(target, root):
                 findings.append(Finding(
                     code="rust-include-ref-outside-root",
-                    severity="error",
+                    severity=severity,
                     path=rel,
                     detail=f"CARGO_MANIFEST_DIR include reference points outside archive root: {ref}",
                 ))
             elif not target.exists():
                 findings.append(Finding(
                     code="rust-include-ref-missing",
-                    severity="error",
+                    severity=severity,
                     path=rel,
                     detail=f"CARGO_MANIFEST_DIR include reference does not exist: {ref}",
                 ))
             elif target not in included_resolved:
                 findings.append(Finding(
                     code="rust-include-ref-not-archived",
-                    severity="error",
+                    severity=severity,
                     path=rel,
                     detail=f"CARGO_MANIFEST_DIR include target exists but is not included in archive: {to_posix(safe_relative(target, root))}",
                 ))
@@ -1480,19 +2413,22 @@ def check_rust_include_refs(root: Path, included: Sequence[Path]) -> list[Findin
     return findings
 
 
-def check_cargo_path_deps(root: Path, included: Sequence[Path], allow_external: bool) -> list[Finding]:
+def check_cargo_path_deps(root: Path, included: Sequence[Path], allow_external: bool, policy: Policy) -> list[Finding]:
     findings: list[Finding] = []
     included_resolved = {p.resolve() for p in included}
     cargo_tomls = [p for p in included if p.name == "Cargo.toml"]
+    missing_severity = advisory_context_severity(policy)
 
     for cargo in cargo_tomls:
+        if is_third_party_source_path(cargo, root):
+            continue
         rel = to_posix(safe_relative(cargo, root))
         for dep in cargo_path_refs(cargo):
             dep_path = (cargo.parent / dep).resolve()
             if not dep_path.exists():
                 findings.append(Finding(
                     code="cargo-path-dep-missing",
-                    severity="error",
+                    severity=missing_severity,
                     path=rel,
                     detail=f"Cargo path dependency does not exist: {dep}",
                 ))
@@ -1500,7 +2436,7 @@ def check_cargo_path_deps(root: Path, included: Sequence[Path], allow_external: 
             if not is_relative_to(dep_path, root):
                 findings.append(Finding(
                     code="cargo-path-dep-outside-root",
-                    severity="warning" if allow_external else "error",
+                    severity="warning" if allow_external else advisory_context_severity(policy),
                     path=rel,
                     detail=f"Cargo path dependency points outside archive root: {dep}",
                 ))
@@ -1509,14 +2445,14 @@ def check_cargo_path_deps(root: Path, included: Sequence[Path], allow_external: 
             if dep_manifest.exists() and dep_manifest.resolve() not in included_resolved:
                 findings.append(Finding(
                     code="cargo-path-dep-not-archived",
-                    severity="error",
+                    severity=advisory_context_severity(policy),
                     path=rel,
                     detail=f"Cargo path dependency exists but its manifest is not included: {to_posix(safe_relative(dep_manifest, root))}",
                 ))
     return findings
 
 
-def check_script_refs(root: Path, included: Sequence[Path]) -> list[Finding]:
+def check_script_refs(root: Path, included: Sequence[Path], policy: Policy) -> list[Finding]:
     findings: list[Finding] = []
     included_resolved = {p.resolve() for p in included}
     script_suffixes = {".sh", ".bash", ".zsh"}
@@ -1534,12 +2470,15 @@ def check_script_refs(root: Path, included: Sequence[Path]) -> list[Finding]:
     for path in included:
         if path.suffix.lower() not in script_suffixes:
             continue
+        if is_third_party_source_path(path, root) or not is_project_script_path(path, root):
+            continue
         text = read_text_lossy(path)
         if text is None:
             continue
         rel = to_posix(safe_relative(path, root))
         if is_codex_archive_rel(rel):
             continue
+        severity = advisory_context_severity(policy)
         for line in text.splitlines():
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
@@ -1558,14 +2497,14 @@ def check_script_refs(root: Path, included: Sequence[Path]) -> list[Finding]:
                             if candidate.exists() and is_relative_to(candidate, root) and candidate.resolve() not in included_resolved:
                                 findings.append(Finding(
                                     code="script-ref-not-archived",
-                                    severity="error",
+                                    severity=severity,
                                     path=rel,
                                     detail=f"Script reference exists but is not included: {ref}",
                                 ))
                         continue
                     findings.append(Finding(
                         code="script-ref-missing",
-                        severity="error",
+                        severity=severity,
                         path=rel,
                         detail=f"Possible script reference not found: {ref}",
                     ))
@@ -1575,6 +2514,8 @@ def check_script_refs(root: Path, included: Sequence[Path]) -> list[Finding]:
 def check_secret_content(root: Path, included: Sequence[Path], policy: Policy) -> list[Finding]:
     findings: list[Finding] = []
     for path in included:
+        if is_third_party_source_path(path, root):
+            continue
         suffix = path.suffix.lower()
         if suffix not in ALLOWED_TEXT_EXTENSIONS and not allowed_basename(path) and path.name.lower() not in ALLOWED_ENV_SAMPLE_NAMES:
             continue
@@ -1589,7 +2530,7 @@ def check_secret_content(root: Path, included: Sequence[Path], policy: Policy) -
             continue
         rel = to_posix(safe_relative(path, root))
         for pattern_name, regex, severity in SECRET_CONTENT_PATTERNS:
-            match = first_reportable_secret_match(pattern_name, regex, text)
+            match = first_reportable_secret_match(pattern_name, regex, text, path, root)
             if match:
                 line_no = text[: match.start()].count("\n") + 1
                 findings.append(Finding(
@@ -1601,11 +2542,43 @@ def check_secret_content(root: Path, included: Sequence[Path], policy: Policy) -
     return findings
 
 
-def first_reportable_secret_match(pattern_name: str, regex: re.Pattern[str], text: str) -> re.Match[str] | None:
-    if pattern_name != "named-secret-assignment":
-        return regex.search(text)
+def is_benign_secret_match(pattern_name: str, path: Path, root: Path, text: str, match: re.Match[str]) -> bool:
+    line_start = text.rfind("\n", 0, match.start()) + 1
+    line_end = text.find("\n", match.end())
+    if line_end == -1:
+        line_end = len(text)
+    line = text[line_start:line_end].lower()
+    rel = to_posix(safe_relative(path, root)).lower()
+    parts = set(rel.split("/"))
+
+    placeholderish = any(token in line for token in SECRET_PLACEHOLDER_TOKENS)
+    if path.name.lower() in ALLOWED_ENV_SAMPLE_NAMES and placeholderish:
+        return True
+
+    if pattern_name in {"openai-like-key", "github-token", "private-key-block"}:
+        fixture_context = bool(parts & {"examples", "fixtures", "reference", "test", "testdata", "tests"})
+        repeated_digits = "1234567890" in match.group(0) or "abcdef" in match.group(0).lower()
+        if pattern_name in {"openai-like-key", "github-token"} and fixture_context:
+            return True
+        if repeated_digits and pattern_name != "private-key-block":
+            return True
+        if placeholderish and pattern_name != "private-key-block":
+            return True
+
+    return False
+
+
+def first_reportable_secret_match(
+    pattern_name: str,
+    regex: re.Pattern[str],
+    text: str,
+    path: Path,
+    root: Path,
+) -> re.Match[str] | None:
     for match in regex.finditer(text):
-        if is_non_literal_rust_secret_forwarding(text, match):
+        if pattern_name == "named-secret-assignment" and is_non_literal_rust_secret_forwarding(text, match):
+            continue
+        if is_benign_secret_match(pattern_name, path, root, text, match):
             continue
         return match
     return None
@@ -1645,10 +2618,159 @@ def build_file_entries(root: Path, included: Sequence[Path]) -> list[FileEntry]:
     return entries
 
 
-def zip_info_for_file(path: Path, arcname: str, deterministic: bool) -> zipfile.ZipInfo:
+def file_entry_for_synthetic(synthetic: SyntheticFile) -> FileEntry:
+    return FileEntry(
+        path=synthetic.path,
+        bytes=len(synthetic.data),
+        sha256=hashlib.sha256(synthetic.data).hexdigest(),
+        mode=f"{synthetic.mode:06o}",
+        executable=bool(synthetic.mode & stat.S_IXUSR),
+        mtime_utc="1980-01-01T00:00:00Z",
+    )
+
+
+def toml_workspace_version(workspace_manifest: Path, name: str, fallback: str) -> str:
+    if tomllib is None or not workspace_manifest.exists():
+        return fallback
+    try:
+        with workspace_manifest.open("rb") as f:
+            data = tomllib.load(f)
+        value = data.get("workspace", {}).get("dependencies", {}).get(name)
+    except (OSError, tomllib.TOMLDecodeError):
+        return fallback
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict) and isinstance(value.get("version"), str):
+        return value["version"]
+    return fallback
+
+
+def table_dep(version: str, features: Sequence[str] | None = None) -> str:
+    if not features:
+        return f'"{version}"'
+    rendered_features = ", ".join(f'"{feature}"' for feature in features)
+    return f'{{ version = "{version}", features = [{rendered_features}] }}'
+
+
+def semantic_memory_workspace_manifest(archive_root: Path) -> bytes:
+    parent_manifest = archive_root / "Cargo.toml"
+
+    def version(name: str, fallback: str) -> str:
+        return toml_workspace_version(parent_manifest, name, fallback)
+
+    body = f"""# Generated by semantic-memory/z.py for hermetic review archives.
+[workspace]
+resolver = "2"
+members = [
+  "semantic-memory",
+  "stack-ids",
+  "semantic-memory-forge",
+  "forge-memory-bridge",
+]
+default-members = ["semantic-memory"]
+
+[workspace.dependencies]
+rusqlite = {table_dep(version("rusqlite", "0.32.1"), ["bundled", "blob"])}
+serde = {table_dep(version("serde", "1.0.228"), ["derive"])}
+serde_json = {table_dep(version("serde_json", "1.0.149"))}
+tokio = {table_dep(version("tokio", "1.50.0"), ["rt", "macros", "sync"])}
+thiserror = {table_dep(version("thiserror", "2.0.18"))}
+tracing = {table_dep(version("tracing", "0.1.44"))}
+uuid = {table_dep(version("uuid", "1.22.0"), ["v4"])}
+chrono = {table_dep(version("chrono", "0.4.44"), ["serde"])}
+schemars = {table_dep(version("schemars", "0.8.22"))}
+tempfile = {table_dep(version("tempfile", "3.27.0"))}
+proptest = {table_dep(version("proptest", "1.10.0"))}
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+missing_docs = "allow"
+
+[workspace.lints.clippy]
+todo = "deny"
+dbg_macro = "deny"
+unimplemented = "deny"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+"""
+    return body.encode("utf-8")
+
+
+def context_command_receipt(
+    root: Path,
+    archive_root: Path,
+    output_path: Path,
+    policy: Policy,
+) -> bytes:
+    record = {
+        "schema": "ZpyCommandReceiptV1",
+        "authority": "receipt",
+        "tool": Path(__file__).name,
+        "script_version": SCRIPT_VERSION,
+        "created_utc": utc_now_iso(),
+        "command_argv": [Path(sys.argv[0]).name, *sys.argv[1:]],
+        "root": str(root),
+        "archive_root": str(archive_root),
+        "output": str(output_path),
+        "profile": policy.profile,
+        "mode": policy.mode,
+        "package_role": policy.package_role,
+        "status": "package-command-recorded",
+        "note": "Generated by z.py for this package invocation; no repository source file was required.",
+    }
+    return (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
+
+
+def synthetic_files_for_profile(
+    archive_root: Path,
+    included: Sequence[Path],
+    profile: str,
+    *,
+    root: Path | None = None,
+    output_path: Path | None = None,
+    policy: Policy | None = None,
+) -> list[SyntheticFile]:
+    included_rels = {to_posix(safe_relative(path, archive_root)) for path in included}
+    synthetic: list[SyntheticFile] = []
+
+    if (
+        policy is not None
+        and output_path is not None
+        and policy.package_role in CONTEXT_LOG_ROLES
+        and not any(is_context_command_evidence_rel(rel) for rel in included_rels)
+    ):
+        synthetic.append(SyntheticFile(
+            CONTEXT_COMMAND_RECEIPT_SYNTHETIC_PATH,
+            context_command_receipt(root or archive_root, archive_root, output_path, policy),
+        ))
+
+    if profile != "semantic-memory":
+        return synthetic
+
+    if "Cargo.toml" not in included_rels:
+        synthetic.append(SyntheticFile("Cargo.toml", semantic_memory_workspace_manifest(archive_root)))
+
+    root_lock = archive_root / "Cargo.lock"
+    if "Cargo.lock" not in included_rels and root_lock.exists():
+        synthetic.append(SyntheticFile("Cargo.lock", root_lock.read_bytes()))
+
+    return synthetic
+
+
+def deterministic_zip_time(source_date_epoch: int | None) -> tuple[int, int, int, int, int, int]:
+    if source_date_epoch is not None:
+        return datetime.fromtimestamp(source_date_epoch, UTC).timetuple()[:6]
+    env_epoch = source_date_epoch_from_value(None)
+    if env_epoch is not None:
+        return datetime.fromtimestamp(env_epoch, UTC).timetuple()[:6]
+    return ZIP_EPOCH
+
+
+def zip_info_for_file(path: Path, arcname: str, deterministic: bool, source_date_epoch: int | None = None) -> zipfile.ZipInfo:
     info = zipfile.ZipInfo(arcname)
     if deterministic:
-        info.date_time = ZIP_EPOCH
+        info.date_time = deterministic_zip_time(source_date_epoch)
     else:
         info.date_time = datetime.fromtimestamp(path.stat().st_mtime).timetuple()[:6]
     mode = stat.S_IMODE(path.stat().st_mode)
@@ -1656,12 +2778,30 @@ def zip_info_for_file(path: Path, arcname: str, deterministic: bool) -> zipfile.
     return info
 
 
-def write_archive(root: Path, output_path: Path, included: Sequence[Path], deterministic: bool, compresslevel: int) -> None:
+def zip_info_for_synthetic(synthetic: SyntheticFile, deterministic: bool, source_date_epoch: int | None = None) -> zipfile.ZipInfo:
+    info = zipfile.ZipInfo(synthetic.path)
+    info.date_time = deterministic_zip_time(source_date_epoch) if deterministic else datetime.now().timetuple()[:6]
+    info.external_attr = ((stat.S_IFREG | synthetic.mode) & 0xFFFF) << 16
+    return info
+
+
+def write_archive(
+    root: Path,
+    output_path: Path,
+    included: Sequence[Path],
+    deterministic: bool,
+    compresslevel: int,
+    synthetic_files: Sequence[SyntheticFile] = (),
+    source_date_epoch: int | None = None,
+) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=compresslevel) as zf:
+        for synthetic in synthetic_files:
+            info = zip_info_for_synthetic(synthetic, deterministic=deterministic, source_date_epoch=source_date_epoch)
+            zf.writestr(info, synthetic.data, compress_type=zipfile.ZIP_DEFLATED, compresslevel=compresslevel)
         for path in included:
             arcname = to_posix(safe_relative(path, root))
-            info = zip_info_for_file(path, arcname, deterministic=deterministic)
+            info = zip_info_for_file(path, arcname, deterministic=deterministic, source_date_epoch=source_date_epoch)
             with path.open("rb") as f:
                 zf.writestr(info, f.read(), compress_type=zipfile.ZIP_DEFLATED, compresslevel=compresslevel)
 
@@ -1718,6 +2858,8 @@ def render_markdown_report(result: BuildResult, extension_summary: dict[str, int
     lines.append(f"- Package role: `{report.package_role}`")
     lines.append(f"- Strict: `{report.strict}`")
     lines.append(f"- Dry run: `{report.dry_run}`")
+    if report.policy_path:
+        lines.append(f"- Package policy: `{report.policy_path}`")
     lines.append(f"- Included files: `{report.included_count}`")
     lines.append(f"- Included bytes: `{report.included_bytes}`")
     lines.append(f"- Excluded files: `{report.excluded_file_count}`")
@@ -1728,6 +2870,9 @@ def render_markdown_report(result: BuildResult, extension_summary: dict[str, int
         lines.append(f"- Archive hash semantics: `{report.archive_sha256_semantics}`")
     if report.content_manifest_sha256:
         lines.append(f"- Content manifest SHA-256: `{report.content_manifest_sha256}`")
+    if report.ecosystem_parity:
+        detected = [item["ecosystem"] for item in report.ecosystem_parity if item.get("detected")]
+        lines.append(f"- Ecosystems detected: `{', '.join(detected) if detected else 'none'}`")
     if report.codex_archive:
         codex = report.codex_archive
         lines.append(f"- Codex archive enabled: `{codex.get('enabled')}`")
@@ -1743,6 +2888,42 @@ def render_markdown_report(result: BuildResult, extension_summary: dict[str, int
         lines.append(f"- Root Markdown ambiguous: `{root_md.get('ambiguous_count')}`")
         lines.append(f"- Root Markdown moved: `{root_md.get('moved_count')}`")
         lines.append(f"- Root Markdown collisions: `{root_md.get('collision_count')}`")
+    if report.root_package_archive:
+        root_pkg = report.root_package_archive
+        lines.append(f"- Root package archive enabled: `{root_pkg.get('enabled')}`")
+        lines.append(f"- Root package inspected: `{root_pkg.get('inspected_count')}`")
+        lines.append(f"- Root package protected: `{root_pkg.get('protected_count')}`")
+        lines.append(f"- Root package candidates: `{root_pkg.get('candidate_count')}`")
+        lines.append(f"- Root package moved: `{root_pkg.get('moved_count')}`")
+        lines.append(f"- Root package skipped existing: `{root_pkg.get('skipped_existing_count')}`")
+        lines.append(f"- Root package collisions: `{root_pkg.get('collision_count')}`")
+    lines.append("")
+
+    lines.append("## Ecosystem parity")
+    lines.append("")
+    if report.ecosystem_parity:
+        lines.append("| Ecosystem | Detected | Manifests | Missing expected | Dry-run status |")
+        lines.append("|---|---:|---:|---:|---|")
+        for adapter in report.ecosystem_parity:
+            lines.append(
+                f"| `{adapter.get('ecosystem')}` | `{adapter.get('detected')}` | "
+                f"{len(adapter.get('manifests', []))} | {len(adapter.get('missing_from_zpy_package', []))} | "
+                f"`{adapter.get('dry_run_status')}` |"
+            )
+    else:
+        lines.append("No ecosystem adapters were run.")
+    lines.append("")
+
+    lines.append("## Decision provenance")
+    lines.append("")
+    lines.append(f"- Decisions recorded: `{len(result.decisions)}`")
+    if result.decisions:
+        include_count = sum(1 for decision in result.decisions if decision.decision == "include")
+        exclude_count = sum(1 for decision in result.decisions if decision.decision == "exclude")
+        prune_count = sum(1 for decision in result.decisions if decision.decision == "prune-dir")
+        lines.append(f"- Includes: `{include_count}`")
+        lines.append(f"- Excludes: `{exclude_count}`")
+        lines.append(f"- Pruned dirs: `{prune_count}`")
     lines.append("")
 
     lines.append("## Validation findings")
@@ -1816,7 +2997,7 @@ def render_markdown_report(result: BuildResult, extension_summary: dict[str, int
 
 
 def default_output_path(root: Path, resolved_profile: str, mode: str) -> Path:
-    stamp = datetime.now(UTC).strftime("%Y%m%d")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     safe_profile = resolved_profile.replace("/", "-")
     safe_mode = mode.replace("/", "-")
     return root / f"{root.name}-{safe_profile}-{safe_mode}-{stamp}.zip"
@@ -1851,7 +3032,18 @@ def resolve_root_markdown_archive_root(root: Path, value: str) -> Path:
     return archive_root.resolve()
 
 
+def resolve_root_package_archive_root(root: Path, value: str) -> Path:
+    archive_root = Path(value).expanduser()
+    if not archive_root.is_absolute():
+        archive_root = root / archive_root
+    return archive_root.resolve()
+
+
 def root_markdown_archive_stamp() -> str:
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+
+
+def root_package_archive_stamp() -> str:
     return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
@@ -1946,6 +3138,9 @@ def iter_root_markdown_archive_candidates(root: Path, current_run: str) -> tuple
             continue
         filename = path.name
         inspected.append(filename)
+        if classify_root_package_artifact(filename):
+            protected.append(filename)
+            continue
         category, reason = classify_root_markdown_candidate(filename, current_run)
         if category == "candidate":
             candidates.append((filename, reason or "root-markdown-noise", "candidate-archive"))
@@ -1974,6 +3169,202 @@ def make_root_markdown_archive_record(root: Path, filename: str, archived_path: 
         "reason": reason,
         "classification": classification,
     }
+
+
+def is_root_package_protected_file(name: str) -> bool:
+    if name in ROOT_PACKAGE_PROTECTED_FILE_PATTERNS:
+        return True
+    upper = name.upper()
+    return any(
+        upper == prefix
+        or upper.startswith(prefix + ".")
+        or upper.startswith(prefix + "_")
+        or upper.startswith(prefix + "-")
+        for prefix in ROOT_PACKAGE_PROTECTED_PREFIXES
+    )
+
+
+def classify_root_package_artifact(filename: str) -> str | None:
+    if is_root_package_protected_file(filename):
+        return None
+    for pattern, reason in ROOT_PACKAGE_ARTIFACT_PATTERNS:
+        if pattern.match(filename):
+            return reason
+    return None
+
+
+def iter_root_package_archive_candidates(
+    root: Path,
+    reserved_output_paths: set[Path],
+    archive_root: Path,
+) -> tuple[list[tuple[str, str]], list[str], list[str]]:
+    inspected: list[str] = []
+    protected: list[str] = []
+    candidates: list[tuple[str, str]] = []
+
+    for path in sorted(root.iterdir(), key=lambda p: p.name):
+        if not path.is_file():
+            continue
+        if is_relative_to(path, archive_root):
+            continue
+        inspected.append(path.name)
+        try:
+            resolved = path.resolve()
+        except OSError:
+            protected.append(path.name)
+            continue
+        if resolved in reserved_output_paths:
+            protected.append(path.name)
+            continue
+        if is_root_package_protected_file(path.name):
+            protected.append(path.name)
+            continue
+        reason = classify_root_package_artifact(path.name)
+        if reason:
+            candidates.append((path.name, reason))
+
+    return candidates, inspected, protected
+
+
+def make_root_package_archive_record(root: Path, filename: str, archived_path: Path, sha256: str, bytes_: int, mtime_utc: str, reason: str) -> dict[str, Any]:
+    return {
+        "original_path": filename,
+        "archived_path": to_posix(safe_relative(archived_path, root)),
+        "sha256": sha256,
+        "bytes": bytes_,
+        "mtime_utc": mtime_utc,
+        "reason": reason,
+    }
+
+
+def archive_root_package_artifacts(
+    root: Path,
+    args: argparse.Namespace,
+    reserved_output_paths: set[Path],
+    *,
+    enabled: bool,
+    dry_run: bool,
+    verify_only: bool,
+) -> RootPackageArchiveResult:
+    archive_root = resolve_root_package_archive_root(root, args.root_package_archive_root)
+    archive_dir = archive_root / root_package_archive_stamp()
+    manifest_path = archive_dir / ROOT_PACKAGE_ARCHIVE_MANIFEST
+
+    candidates, inspected, protected = iter_root_package_archive_candidates(root, reserved_output_paths, archive_root)
+    planned: list[dict[str, Any]] = []
+    moved: list[dict[str, Any]] = []
+    skipped_existing: list[dict[str, Any]] = []
+    collisions: list[dict[str, Any]] = []
+    errors: list[str] = []
+    operations: list[dict[str, Any]] = []
+
+    for filename, reason in candidates:
+        source = root / filename
+        try:
+            source_sha256 = sha256_file(source)
+            source_bytes = source.stat().st_size
+            mtime_utc = file_mtime_utc(source)
+        except OSError as exc:
+            errors.append(f"failed to inspect root package artifact {filename}: {exc}")
+            continue
+        requested_dest = archive_dir / "files" / filename
+        dest, collision, same_existing = unique_archive_destination(requested_dest, source_sha256)
+        record = make_root_package_archive_record(
+            root,
+            filename,
+            dest,
+            source_sha256,
+            source_bytes,
+            mtime_utc,
+            reason,
+        )
+        planned.append(record)
+        if collision:
+            collision = dict(collision)
+            collision["original_path"] = filename
+            collisions.append(collision)
+            errors.append(
+                f"failed to archive {filename}: destination collision for existing file with different content."
+            )
+            continue
+        operations.append({
+            "filename": filename,
+            "source": source,
+            "dest": dest,
+            "same_existing": same_existing,
+            "record": record,
+        })
+
+    manifest_written = False
+    should_move = enabled and not dry_run and not verify_only and not errors
+    if should_move:
+        for operation in operations:
+            source = operation["source"]
+            dest = operation["dest"]
+            record = operation["record"]
+            same_existing = operation["same_existing"]
+            if same_existing:
+                skipped_existing.append(record)
+                try:
+                    source.unlink()
+                except OSError as exc:
+                    errors.append(f"failed to remove active duplicate after archived copy was found: {operation['filename']}: {exc}")
+                continue
+            try:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                source.rename(dest)
+                moved.append(record)
+            except OSError as exc:
+                errors.append(f"failed to archive {operation['filename']}: {exc}")
+
+    if enabled and should_move and not errors:
+        manifest_payload = {
+            "root_package_archive_manifest_version": ROOT_PACKAGE_ARCHIVE_MANIFEST_VERSION,
+            "created_utc": utc_now_iso(),
+            "tool": Path(__file__).name,
+            "tool_version": SCRIPT_VERSION,
+            "repo_root": str(root),
+            "archive_root": str(archive_dir),
+            "files": moved + skipped_existing,
+            "planned": planned,
+            "collisions": collisions,
+            "errors": errors,
+            "summary": {
+                "inspected_count": len(inspected),
+                "protected_count": len(protected),
+                "candidate_count": len(candidates),
+                "planned_count": len(planned),
+                "moved_count": len(moved),
+                "skipped_existing_count": len(skipped_existing),
+                "collision_count": len(collisions),
+            },
+        }
+        write_json(manifest_path, manifest_payload)
+        manifest_written = True
+
+    return RootPackageArchiveResult(
+        enabled=enabled,
+        dry_run=dry_run,
+        verify_only=verify_only,
+        archive_only=bool(args.archive_only),
+        archive_root=str(archive_root),
+        archive_dir=str(archive_dir),
+        manifest_path=str(manifest_path) if manifest_written else None,
+        inspected_count=len(inspected),
+        protected_count=len(protected),
+        candidate_count=len(candidates),
+        planned_count=len(planned),
+        moved_count=len(moved),
+        skipped_existing_count=len(skipped_existing),
+        collision_count=len(collisions),
+        manifest_written=manifest_written,
+        candidate_paths=[filename for filename, _reason in candidates],
+        protected_paths=protected,
+        moved=moved,
+        skipped_existing=skipped_existing,
+        collisions=collisions,
+        errors=errors,
+    )
 
 
 def archive_root_markdown_noise(
@@ -2451,6 +3842,30 @@ def root_markdown_archive_summary(result: RootMarkdownArchiveResult | None) -> d
     }
 
 
+def root_package_archive_summary(result: RootPackageArchiveResult | None) -> dict[str, Any] | None:
+    if result is None:
+        return None
+    return {
+        "enabled": result.enabled,
+        "dry_run": result.dry_run,
+        "verify_only": result.verify_only,
+        "archive_only": result.archive_only,
+        "archive_root": result.archive_root,
+        "archive_dir": result.archive_dir,
+        "manifest_path": result.manifest_path,
+        "inspected_count": result.inspected_count,
+        "protected_count": result.protected_count,
+        "candidate_count": result.candidate_count,
+        "planned_count": result.planned_count,
+        "moved_count": result.moved_count,
+        "skipped_existing_count": result.skipped_existing_count,
+        "collision_count": result.collision_count,
+        "candidate_paths": result.candidate_paths,
+        "moved": result.moved,
+        "errors": result.errors,
+    }
+
+
 def build_archive_action_result(
     args: argparse.Namespace,
     root: Path,
@@ -2458,6 +3873,7 @@ def build_archive_action_result(
     output_path: Path,
     codex_result: CodexArchiveResult | None,
     root_markdown_result: RootMarkdownArchiveResult | None,
+    root_package_result: RootPackageArchiveResult | None,
     findings: Sequence[Finding],
 ) -> BuildResult:
     error_count, warning_count = severity_counts(findings)
@@ -2493,10 +3909,14 @@ def build_archive_action_result(
         report_path=None,
         excluded_path=None,
         findings_path=None,
+        decision_log_path=None,
+        policy_path=getattr(args, "policy", None),
+        ecosystem_parity=[],
         codex_archive=codex_archive_summary(codex_result),
         root_markdown_archive=root_markdown_archive_summary(root_markdown_result),
+        root_package_archive=root_package_archive_summary(root_package_result),
     )
-    return BuildResult(report=report_obj, files=[], excluded=[], pruned_dirs=[], findings=list(findings))
+    return BuildResult(report=report_obj, files=[], excluded=[], pruned_dirs=[], findings=list(findings), decisions=[], ecosystem_parity=[])
 
 
 def build(args: argparse.Namespace) -> BuildResult:
@@ -2505,6 +3925,7 @@ def build(args: argparse.Namespace) -> BuildResult:
 
     resolved_profile = infer_profile(root) if args.profile == "auto" else args.profile
     policy = make_policy(args, root, resolved_profile)
+    _policy_path, _policy_doc, policy_findings = load_policy_file(getattr(args, "policy", None))
 
     output_path = Path(args.output).expanduser() if args.output else default_output_path(root, resolved_profile, args.mode)
     if not output_path.is_absolute():
@@ -2512,12 +3933,31 @@ def build(args: argparse.Namespace) -> BuildResult:
     else:
         output_path = output_path.resolve()
 
+    manifest_path = output_sidecar_path(output_path, ".manifest.json", args.manifest_out)
+    report_path = output_sidecar_path(output_path, ".report.md", args.report_out)
+    excluded_path = output_sidecar_path(output_path, ".excluded.json", args.excluded_out)
+    findings_path = output_sidecar_path(output_path, ".findings.json", args.findings_out)
+    decision_log_path = output_sidecar_path(output_path, ".decision-log.jsonl", args.decision_log_out) if policy.emit_decision_log or args.decision_log_out else None
+    codex_archive_report_path = default_codex_archive_report_path(output_path, args.codex_archive_report_out)
+    reserved_output_paths = {
+        path.resolve()
+        for path in [output_path, manifest_path, report_path, excluded_path, findings_path, codex_archive_report_path]
+        if path is not None
+    }
+    root_package_archive_enabled = (
+        args.archive_root_package_artifacts
+        if args.archive_root_package_artifacts is not None
+        else policy.package_role in ROOT_PACKAGE_ARCHIVE_ROLES
+    )
+
     codex_archive_result: CodexArchiveResult | None
     root_markdown_archive_result: RootMarkdownArchiveResult | None
+    root_package_archive_result: RootPackageArchiveResult | None
     archive_findings: list[Finding] = []
 
     codex_archive_result = None
     root_markdown_archive_result = None
+    root_package_archive_result = None
     if args.verify_codex_archive_hygiene:
         codex_archive_result = archive_codex_run_artifacts(
             root,
@@ -2579,7 +4019,38 @@ def build(args: argparse.Namespace) -> BuildResult:
                 detail="Root Markdown destination collision prevented movement.",
             ))
 
-    if args.verify_codex_archive_hygiene or args.verify_root_markdown_noise_hygiene:
+    if args.verify_root_package_hygiene:
+        root_package_archive_result = archive_root_package_artifacts(
+            root,
+            args,
+            reserved_output_paths,
+            enabled=bool(root_package_archive_enabled),
+            dry_run=True,
+            verify_only=True,
+        )
+        for rel in root_package_archive_result.candidate_paths[:50]:
+            archive_findings.append(Finding(
+                code="root-package-hygiene-candidate-remnant",
+                severity="error",
+                path=rel,
+                detail="Root package artifact remains in workspace root.",
+            ))
+        if len(root_package_archive_result.candidate_paths) > 50:
+            archive_findings.append(Finding(
+                code="root-package-hygiene-candidate-remnant-truncated",
+                severity="error",
+                path="/",
+                detail=f"{len(root_package_archive_result.candidate_paths) - 50} additional root package artifacts omitted from console findings.",
+            ))
+        for error in root_package_archive_result.errors:
+            archive_findings.append(Finding(
+                code="root-package-archive-error",
+                severity="error",
+                path="/",
+                detail=error,
+            ))
+
+    if args.verify_codex_archive_hygiene or args.verify_root_markdown_noise_hygiene or args.verify_root_package_hygiene:
         if root_markdown_archive_result is None and args.verify_codex_archive_hygiene:
             root_markdown_candidates, inspected, protected, ambiguous = iter_root_markdown_archive_candidates(
                 root,
@@ -2617,6 +4088,7 @@ def build(args: argparse.Namespace) -> BuildResult:
             output_path,
             codex_archive_result,
             root_markdown_archive_result,
+            root_package_archive_result,
             archive_findings,
         )
 
@@ -2754,6 +4226,94 @@ def build(args: argparse.Namespace) -> BuildResult:
             errors=[],
         )
 
+    root_package_archive_root = resolve_root_package_archive_root(root, args.root_package_archive_root)
+    if root_package_archive_enabled:
+        root_package_archive_result = archive_root_package_artifacts(
+            root,
+            args,
+            reserved_output_paths,
+            enabled=True,
+            dry_run=args.dry_run or args.root_package_archive_dry_run,
+            verify_only=False,
+        )
+        for error in root_package_archive_result.errors:
+            archive_findings.append(Finding(
+                code="root-package-archive-error",
+                severity="error",
+                path="/",
+                detail=error,
+            ))
+        if root_package_archive_result.dry_run:
+            for rel in root_package_archive_result.candidate_paths[:50]:
+                archive_findings.append(Finding(
+                    code="root-package-archive-candidate-remains",
+                    severity="error" if args.strict else "warning",
+                    path=rel,
+                    detail="Root package artifact remains because archive root pass used dry-run mode.",
+                ))
+            if len(root_package_archive_result.candidate_paths) > 50:
+                archive_findings.append(Finding(
+                    code="root-package-archive-candidate-remains-truncated",
+                    severity="error" if args.strict else "warning",
+                    path="/",
+                    detail=f"{len(root_package_archive_result.candidate_paths) - 50} additional root package artifacts omitted from console findings.",
+                ))
+        active_after, _inspected_after, _protected_after = iter_root_package_archive_candidates(
+            root,
+            reserved_output_paths,
+            root_package_archive_root,
+        )
+        for rel, _reason in active_after[:50]:
+            archive_findings.append(Finding(
+                code="root-package-active-after-normalization",
+                severity="error",
+                path=rel,
+                detail="Root package artifact remains active after archival normalization.",
+            ))
+        if len(active_after) > 50:
+            archive_findings.append(Finding(
+                code="root-package-active-after-normalization-truncated",
+                severity="error",
+                path="/",
+                detail=f"{len(active_after) - 50} additional root package artifacts omitted from console findings.",
+            ))
+    else:
+        active_root_package, inspected_root_package, protected_root_package = iter_root_package_archive_candidates(
+            root,
+            reserved_output_paths,
+            root_package_archive_root,
+        )
+        root_package_archive_result = RootPackageArchiveResult(
+            enabled=False,
+            dry_run=args.dry_run,
+            verify_only=False,
+            archive_only=bool(args.archive_only),
+            archive_root=str(root_package_archive_root),
+            archive_dir=str(root_package_archive_root),
+            manifest_path=None,
+            inspected_count=len(inspected_root_package),
+            protected_count=len(protected_root_package),
+            candidate_count=len(active_root_package),
+            planned_count=len(active_root_package),
+            moved_count=0,
+            skipped_existing_count=0,
+            collision_count=0,
+            manifest_written=False,
+            candidate_paths=[candidate[0] for candidate in active_root_package],
+            protected_paths=protected_root_package,
+            moved=[],
+            skipped_existing=[],
+            collisions=[],
+            errors=[],
+        )
+        if args.strict and active_root_package:
+            archive_findings.append(Finding(
+                code="root-package-archive-disabled-with-active-artifacts",
+                severity="error",
+                path="/",
+                detail="Strict packaging cannot proceed while root package artifacts remain active.",
+            ))
+
     if args.archive_only:
         return build_archive_action_result(
             args,
@@ -2762,6 +4322,7 @@ def build(args: argparse.Namespace) -> BuildResult:
             output_path,
             codex_archive_result,
             root_markdown_archive_result,
+            root_package_archive_result,
             archive_findings,
         )
 
@@ -2772,36 +4333,50 @@ def build(args: argparse.Namespace) -> BuildResult:
     archive_root = common_archive_root(include_roots)
     external_path_dep_roots = [path for path in include_roots if path.resolve() != root.resolve()]
 
-    manifest_path = output_sidecar_path(output_path, ".manifest.json", args.manifest_out)
-    report_path = output_sidecar_path(output_path, ".report.md", args.report_out)
-    excluded_path = output_sidecar_path(output_path, ".excluded.json", args.excluded_out)
-    findings_path = output_sidecar_path(output_path, ".findings.json", args.findings_out)
-    codex_archive_report_path = default_codex_archive_report_path(output_path, args.codex_archive_report_out)
-    reserved_output_paths = {
-        path.resolve()
-        for path in [output_path, manifest_path, report_path, excluded_path, findings_path, codex_archive_report_path]
-        if path is not None
-    }
-
-    included, excluded, pruned_dirs, collection_findings = collect_files(
+    included, excluded, pruned_dirs, collection_findings, decisions = collect_files(
         archive_root,
         include_roots,
         reserved_output_paths,
         policy,
     )
     findings: list[Finding] = []
+    findings.extend(policy_findings)
     findings.extend(archive_findings)
     findings.extend(collection_findings)
     findings.extend(check_required_surfaces(root, resolved_profile, args.mode))
+    findings.extend(check_policy_required_files(root, included, policy))
 
     if args.check_rust_include_refs:
-        findings.extend(check_rust_include_refs(archive_root, included))
+        findings.extend(check_rust_include_refs(archive_root, included, policy))
     if args.check_cargo_path_deps:
-        findings.extend(check_cargo_path_deps(archive_root, included, allow_external=args.allow_external_path_deps))
+        findings.extend(check_cargo_path_deps(archive_root, included, allow_external=args.allow_external_path_deps, policy=policy))
     if args.check_script_refs:
-        findings.extend(check_script_refs(archive_root, included))
+        findings.extend(check_script_refs(archive_root, included, policy))
     if args.check_secrets:
         findings.extend(check_secret_content(archive_root, included, policy))
+
+    synthetic_files = synthetic_files_for_profile(
+        archive_root,
+        included,
+        resolved_profile,
+        root=root,
+        output_path=output_path,
+        policy=policy,
+    )
+    synthetic_paths = {synthetic.path for synthetic in synthetic_files}
+    findings.extend(check_context_package_evidence(root, archive_root, included, policy, sorted(synthetic_paths)))
+    conflicting_paths = [
+        to_posix(safe_relative(path, archive_root))
+        for path in included
+        if to_posix(safe_relative(path, archive_root)) in synthetic_paths
+    ]
+    for rel in conflicting_paths:
+        findings.append(Finding(
+            code="synthetic-file-conflict",
+            severity="error",
+            path=rel,
+            detail="Generated archive root file conflicts with an included file.",
+        ))
 
     # De-duplicate findings while preserving deterministic order.
     seen_finding_keys: set[tuple[str, str, str, str]] = set()
@@ -2813,7 +4388,16 @@ def build(args: argparse.Namespace) -> BuildResult:
             deduped_findings.append(finding)
     findings = deduped_findings
 
-    file_entries = build_file_entries(archive_root, included)
+    file_entries = [file_entry_for_synthetic(synthetic) for synthetic in synthetic_files]
+    file_entries.extend(build_file_entries(archive_root, included))
+    findings.extend(check_portability_gates(file_entries, policy))
+    included_root_rels = {
+        entry.path
+        for entry in file_entries
+        if not entry.path.startswith("../")
+    }
+    ecosystem_results, ecosystem_findings = run_ecosystem_adapters(root, included_root_rels, policy)
+    findings.extend(ecosystem_findings)
     file_entry_payload = [asdict(entry) for entry in file_entries]
     content_manifest_sha256 = sha256_json_payload(file_entry_payload)
     included_bytes = sum(entry.bytes for entry in file_entries)
@@ -2823,7 +4407,15 @@ def build(args: argparse.Namespace) -> BuildResult:
     archive_written = False
     should_write_archive = (not args.dry_run) and not (args.strict and error_count > 0)
     if should_write_archive:
-        write_archive(archive_root, output_path, included, deterministic=not args.preserve_mtime, compresslevel=args.compresslevel)
+        write_archive(
+            archive_root,
+            output_path,
+            included,
+            deterministic=not args.preserve_mtime,
+            compresslevel=args.compresslevel,
+            synthetic_files=synthetic_files,
+            source_date_epoch=policy.source_date_epoch,
+        )
         archive_sha256 = sha256_file(output_path)
         archive_written = True
 
@@ -2859,8 +4451,12 @@ def build(args: argparse.Namespace) -> BuildResult:
         report_path=str(report_path) if report_path else None,
         excluded_path=str(excluded_path) if excluded_path else None,
         findings_path=str(findings_path) if findings_path else None,
+        decision_log_path=str(decision_log_path) if decision_log_path else None,
+        policy_path=policy.policy_path,
+        ecosystem_parity=[asdict(result) for result in ecosystem_results],
         codex_archive=codex_archive_summary(codex_archive_result),
         root_markdown_archive=root_markdown_archive_summary(root_markdown_archive_result),
+        root_package_archive=root_package_archive_summary(root_package_archive_result),
     )
 
     result = BuildResult(
@@ -2869,6 +4465,8 @@ def build(args: argparse.Namespace) -> BuildResult:
         excluded=excluded,
         pruned_dirs=pruned_dirs,
         findings=findings,
+        decisions=decisions,
+        ecosystem_parity=ecosystem_results,
     )
 
     manifest_payload = {
@@ -2882,6 +4480,7 @@ def build(args: argparse.Namespace) -> BuildResult:
             "report": str(report_path) if report_path else None,
             "excluded": str(excluded_path) if excluded_path else None,
             "findings": str(findings_path) if findings_path else None,
+            "decision_log": str(decision_log_path) if decision_log_path else None,
             "codex_archive_report": str(codex_archive_report_path) if codex_archive_report_path else None,
         },
         "archive_zip_byte_sha256": archive_sha256,
@@ -2889,8 +4488,11 @@ def build(args: argparse.Namespace) -> BuildResult:
         "content_manifest_sha256": content_manifest_sha256,
         "report": asdict(report_obj),
         "policy": asdict(policy),
+        "decisions": [asdict(entry) for entry in decisions],
+        "ecosystem_parity": [asdict(entry) for entry in ecosystem_results],
         "codex_archive": asdict(codex_archive_result) if codex_archive_result else None,
         "root_markdown_archive": asdict(root_markdown_archive_result) if root_markdown_archive_result else None,
+        "root_package_archive": asdict(root_package_archive_result) if root_package_archive_result else None,
         "files": file_entry_payload,
         "summaries": {
             "extensions": summarize_extensions(file_entries),
@@ -2917,6 +4519,11 @@ def build(args: argparse.Namespace) -> BuildResult:
             "warning_count": warning_count,
             "findings": [asdict(entry) for entry in findings],
         })
+    if decision_log_path:
+        decision_log_path.parent.mkdir(parents=True, exist_ok=True)
+        with decision_log_path.open("w", encoding="utf-8") as f:
+            for decision in decisions:
+                f.write(json.dumps(asdict(decision), sort_keys=True) + "\n")
     if report_path:
         markdown = render_markdown_report(
             result,
@@ -2930,11 +4537,12 @@ def build(args: argparse.Namespace) -> BuildResult:
     return result
 
 
-def parse_args(argv: Sequence[str]) -> argparse.Namespace:
+def build_package_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Create an audited source/context zip archive with manifest, report, and validation gates.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+    parser.set_defaults(command="package")
     parser.add_argument("--root", default=".", help="Workspace/repository root to archive.")
     parser.add_argument("-o", "--output", default=None, help="Output zip path. Relative paths are resolved under --root.")
     parser.add_argument("--profile", choices=PROFILES, default="auto", help="Project profile used for required-surface checks.")
@@ -2953,14 +4561,24 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--root-markdown-archive-dry-run", action="store_true", help="Do not write root Markdown archive moves.")
     parser.add_argument("--include-root-markdown-archive", action="store_true", help="Include root Markdown archive directory in package collection.")
     parser.add_argument("--include-codex-archive", action="store_true", help="Include docs/codex-runs/archive history deliberately.")
+    parser.add_argument("--archive-root-package-artifacts", dest="archive_root_package_artifacts", action="store_true", default=None, help="Archive root-level prior package artifacts before package collection.")
+    parser.add_argument("--no-archive-root-package-artifacts", dest="archive_root_package_artifacts", action="store_false", help="Diagnostic only: do not archive root-level prior package artifacts before package collection.")
+    parser.add_argument("--verify-root-package-hygiene", action="store_true", help="Verify no root-level prior package artifacts remain without moving files.")
+    parser.add_argument("--root-package-archive-root", default=ROOT_PACKAGE_ARCHIVE_DIR, help="Archive root for root package artifacts. Relative paths are resolved under --root.")
+    parser.add_argument("--root-package-archive-dry-run", action="store_true", help="Do not write root package artifact archive moves.")
+    parser.add_argument("--include-root-package-archive", action="store_true", help="Include root package artifact archive directory in package collection.")
     parser.add_argument("--codex-current-run", default="P30", help="Current Codex run identifier allowed to remain active where explicitly permitted.")
     parser.add_argument("--codex-archive-root", default="docs/codex-runs/archive", help="Archive root for stale Codex-run artifacts. Relative paths are resolved under --root.")
     parser.add_argument("--codex-archive-report-out", default=None, help="Codex archival normalization report JSON path. Use '-' to disable. Default: <archive>.codex-archive.json")
+    parser.add_argument("--policy", default=None, help="Optional PackagePolicyV1 TOML/JSON file.")
 
     parser.add_argument("--manifest-out", default=None, help="Manifest JSON path. Use '-' to disable. Default: <archive>.manifest.json")
+    parser.add_argument("--manifest", default=None, help=argparse.SUPPRESS)
     parser.add_argument("--report-out", default=None, help="Markdown report path. Use '-' to disable. Default: <archive>.report.md")
     parser.add_argument("--excluded-out", default=None, help="Excluded file JSON path. Use '-' to disable. Default: <archive>.excluded.json")
     parser.add_argument("--findings-out", default=None, help="Findings JSON path. Use '-' to disable. Default: <archive>.findings.json")
+    parser.add_argument("--decision-log-out", default=None, help="Decision provenance JSONL path. Default: <archive>.decision-log.jsonl when policy enables it.")
+    parser.add_argument("--verify-package", default=None, help=argparse.SUPPRESS)
 
     parser.add_argument("--include-external-path-deps", dest="include_external_path_deps", action="store_true", default=True, help="Include Cargo path dependencies outside --root and store paths from their common parent.")
     parser.add_argument("--no-include-external-path-deps", dest="include_external_path_deps", action="store_false", help="Only archive files under --root; external Cargo path dependencies remain validation findings.")
@@ -2993,7 +4611,56 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--compresslevel", type=int, default=9, choices=range(0, 10), help="ZIP compression level 0-9.")
     parser.add_argument("--preserve-mtime", action="store_true", help="Preserve file mtimes in zip entries. Default is deterministic timestamps.")
 
-    return parser.parse_args(argv)
+    return parser
+
+
+def parse_args(argv: Sequence[str]) -> argparse.Namespace:
+    argv = list(argv)
+    if argv and argv[0] == "package":
+        return build_package_parser().parse_args(argv[1:])
+    if argv and argv[0] == "verify":
+        parser = argparse.ArgumentParser(
+            description="Verify a z.py package and manifest without relying on the source tree.",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        )
+        parser.set_defaults(command="verify")
+        parser.add_argument("--package", required=True, help="Package archive to verify.")
+        parser.add_argument("--manifest", required=True, help="Manifest JSON to verify against.")
+        parser.add_argument("--strict", dest="strict", action="store_true", default=True)
+        parser.add_argument("--no-strict", dest="strict", action="store_false")
+        return parser.parse_args(argv[1:])
+    if argv and argv[0] == "policy":
+        parser = argparse.ArgumentParser(description="PackagePolicyV1 helpers.")
+        sub = parser.add_subparsers(dest="policy_command", required=True)
+        init = sub.add_parser("init", help="Write a starter zpy.package.toml policy.")
+        init.set_defaults(command="policy")
+        init.add_argument("--root", default=".")
+        init.add_argument("--policy", default="zpy.package.toml")
+        init.add_argument("--force", action="store_true")
+        validate = sub.add_parser("validate", help="Validate a PackagePolicyV1 TOML/JSON policy.")
+        validate.set_defaults(command="policy")
+        validate.add_argument("--policy", required=True)
+        return parser.parse_args(argv[1:])
+    if argv and argv[0] == "explain":
+        parser = argparse.ArgumentParser(description="Explain the include/exclude decision for a manifest path.")
+        parser.set_defaults(command="explain")
+        parser.add_argument("--manifest", required=True)
+        parser.add_argument("--path", required=True)
+        return parser.parse_args(argv[1:])
+    if argv and argv[0] == "compare":
+        parser = argparse.ArgumentParser(description="Compare two z.py manifests.")
+        parser.set_defaults(command="compare")
+        parser.add_argument("--old", required=True)
+        parser.add_argument("--new", required=True)
+        return parser.parse_args(argv[1:])
+
+    args = build_package_parser().parse_args(argv)
+    if args.verify_package:
+        args.command = "verify"
+        args.package = args.verify_package
+        if not args.manifest:
+            raise SystemExit("--verify-package requires --manifest")
+    return args
 
 
 def print_console_summary(result: BuildResult) -> None:
@@ -3019,6 +4686,16 @@ def print_console_summary(result: BuildResult) -> None:
         )
         if root_md.get("manifest_path"):
             print(f"root_markdown_archive_manifest: {root_md.get('manifest_path')}")
+    if r.root_package_archive:
+        root_pkg = r.root_package_archive
+        print(
+            "root_package_archive: "
+            f"enabled={root_pkg.get('enabled')} inspected={root_pkg.get('inspected_count')} "
+            f"candidates={root_pkg.get('candidate_count')} moved={root_pkg.get('moved_count')} "
+            f"skipped_existing={root_pkg.get('skipped_existing_count')} collisions={root_pkg.get('collision_count')}"
+        )
+        if root_pkg.get("manifest_path"):
+            print(f"root_package_archive_manifest: {root_pkg.get('manifest_path')}")
     if r.archive_root != r.root:
         print(f"archive_root: {r.archive_root}")
         print(f"include_roots: {len(r.include_roots)} ({len(r.external_path_dep_roots)} external Cargo path deps)")
@@ -3049,9 +4726,178 @@ def print_console_summary(result: BuildResult) -> None:
             print(f"  ... {len(result.findings) - 20} more; see findings JSON/report")
 
 
+def verify_package(package_path: Path, manifest_path: Path) -> tuple[list[Finding], dict[str, Any]]:
+    findings: list[Finding] = []
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest_files = {
+        item["path"]: item
+        for item in payload.get("files", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    if not package_path.exists():
+        findings.append(Finding("verify-package-missing", "error", str(package_path), "Package archive does not exist."))
+        return findings, payload
+    seen_zip_names: set[str] = set()
+    try:
+        with zipfile.ZipFile(package_path) as zf:
+            names = zf.namelist()
+            for name in names:
+                if name in seen_zip_names:
+                    findings.append(Finding("verify-duplicate-archive-entry", "error", name, "Duplicate archive entry name."))
+                seen_zip_names.add(name)
+                if not is_safe_archive_name(name):
+                    findings.append(Finding("verify-unsafe-archive-entry", "error", name, "Archive entry path is not transfer-safe."))
+            zip_names = set(names)
+            for rel, item in manifest_files.items():
+                if rel not in zip_names:
+                    findings.append(Finding("verify-manifest-file-missing-in-package", "error", rel, "Manifest file entry is absent from the zip."))
+                    continue
+                with zf.open(rel) as f:
+                    digest = hashlib.sha256(f.read()).hexdigest()
+                if digest != item.get("sha256"):
+                    findings.append(Finding("verify-manifest-hash-mismatch", "error", rel, "Zip entry SHA-256 does not match manifest."))
+            extra = sorted(zip_names - set(manifest_files))
+            for rel in extra[:50]:
+                findings.append(Finding("verify-package-entry-missing-from-manifest", "error", rel, "Zip contains an entry not declared in manifest files."))
+            if len(extra) > 50:
+                findings.append(Finding("verify-package-entry-missing-from-manifest-truncated", "error", "/", f"{len(extra) - 50} additional undeclared zip entries omitted."))
+    except zipfile.BadZipFile as exc:
+        findings.append(Finding("verify-bad-zip", "error", str(package_path), str(exc)))
+    expected_sha = payload.get("archive_zip_byte_sha256") or payload.get("archive_sha256")
+    if expected_sha and package_path.exists():
+        actual_sha = sha256_file(package_path)
+        if actual_sha != expected_sha:
+            findings.append(Finding("verify-archive-sha256-mismatch", "error", str(package_path), "Archive byte SHA-256 does not match manifest."))
+    return findings, payload
+
+
+def run_verify_command(args: argparse.Namespace) -> int:
+    findings, _payload = verify_package(Path(args.package).expanduser().resolve(), Path(args.manifest).expanduser().resolve())
+    errors, warnings = severity_counts(findings)
+    if findings:
+        print(f"verify: {len(findings)} findings ({errors} errors, {warnings} warnings)")
+        for finding in findings[:50]:
+            print(f"  - {finding.severity.upper()} {finding.code} {finding.path}: {finding.detail}")
+    else:
+        print("verify: OK")
+    return 2 if args.strict and errors else 0
+
+
+def starter_policy(root: Path) -> str:
+    package_name = root.name or "package"
+    return "\n".join([
+        'schema = "PackagePolicyV1"',
+        "",
+        "[package]",
+        f'name = "{package_name}"',
+        'role = "source-context"',
+        'root = "."',
+        "",
+        "[modes.next-codex-context]",
+        "include_logs = false",
+        "include_patch_artifacts = true",
+        "include_codex_artifacts = false",
+        "",
+        "[ecosystem_parity]",
+        "enabled = true",
+        'default_severity = "info"',
+        "",
+        "[security]",
+        "check_secrets = true",
+        "allow_secret_like_names = false",
+        "follow_symlinks = false",
+        "fail_on_unicode_collision = true",
+        "fail_on_case_collision = false",
+        "fail_on_windows_reserved_name = true",
+        "",
+        "[archive]",
+        "deterministic_timestamps = true",
+        "emit_decision_log = false",
+        "",
+    ])
+
+
+def run_policy_command(args: argparse.Namespace) -> int:
+    if args.policy_command == "init":
+        root = Path(args.root).expanduser().resolve()
+        path = Path(args.policy).expanduser()
+        if not path.is_absolute():
+            path = root / path
+        if path.exists() and not args.force:
+            print(f"policy init refused to overwrite existing file: {path}", file=sys.stderr)
+            return 2
+        path.write_text(starter_policy(root), encoding="utf-8")
+        print(f"wrote policy: {path}")
+        return 0
+    path = Path(args.policy).expanduser().resolve()
+    try:
+        payload = read_policy_document(path)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"policy invalid: {exc}", file=sys.stderr)
+        return 2
+    errors = validate_policy_document(payload)
+    if errors:
+        print("policy invalid:")
+        for error in errors:
+            print(f"  - {error}")
+        return 2
+    print(f"policy OK: {path}")
+    return 0
+
+
+def run_explain_command(args: argparse.Namespace) -> int:
+    payload = json.loads(Path(args.manifest).expanduser().read_text(encoding="utf-8"))
+    wanted = args.path.strip("/")
+    for decision in payload.get("decisions", []):
+        if decision.get("path") == wanted:
+            print(json.dumps(decision, indent=2, sort_keys=True))
+            return 0
+    for item in payload.get("files", []):
+        if item.get("path") == wanted:
+            print(json.dumps({
+                "path": wanted,
+                "decision": "include",
+                "reason": "manifest-file-entry",
+                "source": "manifest",
+                "mode": payload.get("report", {}).get("mode"),
+            }, indent=2, sort_keys=True))
+            return 0
+    print(f"no decision recorded for {wanted}", file=sys.stderr)
+    return 2
+
+
+def run_compare_command(args: argparse.Namespace) -> int:
+    old = json.loads(Path(args.old).expanduser().read_text(encoding="utf-8"))
+    new = json.loads(Path(args.new).expanduser().read_text(encoding="utf-8"))
+    old_files = {item["path"]: item for item in old.get("files", []) if isinstance(item, dict) and "path" in item}
+    new_files = {item["path"]: item for item in new.get("files", []) if isinstance(item, dict) and "path" in item}
+    added = sorted(set(new_files) - set(old_files))
+    removed = sorted(set(old_files) - set(new_files))
+    changed = sorted(path for path in set(old_files) & set(new_files) if old_files[path].get("sha256") != new_files[path].get("sha256"))
+    print(json.dumps({
+        "added": added,
+        "removed": removed,
+        "changed": changed,
+        "summary": {
+            "added_count": len(added),
+            "removed_count": len(removed),
+            "changed_count": len(changed),
+        },
+    }, indent=2, sort_keys=True))
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     try:
+        if args.command == "verify":
+            return run_verify_command(args)
+        if args.command == "policy":
+            return run_policy_command(args)
+        if args.command == "explain":
+            return run_explain_command(args)
+        if args.command == "compare":
+            return run_compare_command(args)
         result = build(args)
         print_console_summary(result)
         if args.strict and result.report.error_count:

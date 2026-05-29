@@ -1,6 +1,6 @@
 # Codex Run Index
 
-Updated UTC: `2026-05-13T18:13:06Z`
+Updated UTC: `2026-05-29T05:46:01Z`
 Archive root: `docs/codex-runs/archive`
 
 ## Archive Manifests
@@ -33,21 +33,26 @@ Archive root: `docs/codex-runs/archive`
 - `docs/codex-runs/archive/P24-20260503T231318Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P24-20260513T071357Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P24-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P24-20260529T054601Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P24/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P25-20260504T233808Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P25-20260513T071357Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P25-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P25-20260529T054601Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P25/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P26-20260504T203115Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P26-20260504T233808Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P26-20260513T071357Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P26-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P26-20260529T054601Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P26/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P27-20260513T071357Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P27-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P27-20260529T054601Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P27/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P28-20260513T071357Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P28-20260513T181306Z/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P28-20260529T054601Z/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P28/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P29/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P3/ARCHIVE_MANIFEST.json`
@@ -64,6 +69,7 @@ Archive root: `docs/codex-runs/archive`
 - `docs/codex-runs/archive/P30_7/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P30_8/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P30_9/ARCHIVE_MANIFEST.json`
+- `docs/codex-runs/archive/P31/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P4/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P5/ARCHIVE_MANIFEST.json`
 - `docs/codex-runs/archive/P6/ARCHIVE_MANIFEST.json`
