@@ -224,3 +224,84 @@ impl BoundaryCompileReceiptV1 {
         }
     }
 }
+
+/// Receipt for a conformance run — proves that a fixture corpus was evaluated
+/// and each fixture produced a pass/fail result.
+///
+/// This is the P32 schema-compatibility receipt type. It registers in the
+/// `boundary-compile` artifact family alongside BoundaryCompileReceiptV1.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ConformanceRunReceiptV1 {
+    pub receipt_id: ArtifactId,
+    pub profile_id: ArtifactId,
+    pub fixture_count: u32,
+    pub passed_count: u32,
+    pub failed_count: u32,
+    pub fixture_results: Vec<ConformanceFixtureResultV1>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub environment: Option<ConformanceEnvironmentV1>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub reason_codes: Vec<String>,
+    pub recorded_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ConformanceFixtureResultV1 {
+    pub fixture_id: String,
+    pub passed: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub input_digest: Option<DisplayDigestV1>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_digest: Option<DisplayDigestV1>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub actual_digest: Option<DisplayDigestV1>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub reason_codes: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ConformanceEnvironmentV1 {
+    pub rustc_version: String,
+    pub target_triple: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ci_run_id: Option<String>,
+}
+
+impl ConformanceRunReceiptV1 {
+    pub fn new(
+        profile_id: ArtifactId,
+        fixture_results: Vec<ConformanceFixtureResultV1>,
+        environment: Option<ConformanceEnvironmentV1>,
+    ) -> Self {
+        let passed_count = fixture_results.iter().filter(|r| r.passed).count() as u32;
+        let failed_count = fixture_results.len() as u32 - passed_count;
+        let fixture_count = fixture_results.len() as u32;
+        let material = format!(
+            "{}|{}|{}|{}",
+            profile_id.0,
+            fixture_count,
+            passed_count,
+            fixture_results
+                .iter()
+                .map(|r| if r.passed { "p" } else { "f" })
+                .collect::<Vec<_>>()
+                .join("")
+        );
+        let reason_codes = if failed_count == 0 {
+            vec!["conformance-run-passed".into()]
+        } else {
+            vec!["conformance-run-failures".into()]
+        };
+        Self {
+            receipt_id: generated_artifact_id_from_material("conformance-run", &material),
+            profile_id,
+            fixture_count,
+            passed_count,
+            failed_count,
+            fixture_results,
+            environment,
+            reason_codes,
+            recorded_at: Utc::now(),
+        }
+    }
+}
