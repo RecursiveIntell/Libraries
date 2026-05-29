@@ -46,6 +46,20 @@ impl DisplayDigestV1 {
         }
     }
 
+    /// Construct a DisplayDigestV1 from a pre-computed hex digest string.
+    ///
+    /// Use this when the digest has already been computed by a boundary
+    /// compiler or other subsystem that produces SHA-256 hex strings.
+    pub fn from_hex(hex_digest: impl Into<String>) -> Self {
+        Self {
+            algorithm: "sha256".into(),
+            canonicalization: "boundary-compiler-sha256-hex-display-only".into(),
+            digest: hex_digest.into(),
+            non_authoritative: true,
+            reason_codes: vec!["display-only-not-artifact-identity".into()],
+        }
+    }
+
     pub fn from_stack_content_digest_for_display(
         digest: StackContentDigest,
         canonicalization: impl Into<String>,

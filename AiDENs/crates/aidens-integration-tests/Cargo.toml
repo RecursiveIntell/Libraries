@@ -28,6 +28,7 @@ aidens-tool-kit = { path = "../aidens-tool-kit" }
 async-trait.workspace = true
 assurance-runtime.workspace = true
 authority-delegation.workspace = true
+boundary-compiler-core = { path = "../boundary-compiler-core" }
 chrono.workspace = true
 constraint-compiler.workspace = true
 forge-memory-bridge.workspace = true

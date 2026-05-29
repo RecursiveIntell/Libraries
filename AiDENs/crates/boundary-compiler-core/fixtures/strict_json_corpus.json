@@ -1,0 +1,129 @@
+{
+  "schema_version": "boundary-compiler-fixture-corpus-v1",
+  "description": "Golden fixture corpus for boundary-compiler-core strict JSON compilation and conformance testing.",
+  "generated_at": "2026-05-29T19:30:00Z",
+  "fixture_count": 15,
+  "fixtures": [
+    {
+      "fixture_id": "bc-fixture-001",
+      "name": "valid_minimal_json",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":42,\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Accept",
+      "expected_error_kinds": [],
+      "reason_codes": ["boundary-compile-accepted"]
+    },
+    {
+      "fixture_id": "bc-fixture-002",
+      "name": "malformed_json",
+      "input": "{\"id\":\"evt-1\"",
+      "expected_decision": "Reject",
+      "expected_error_kinds": ["MalformedJson"],
+      "reason_codes": ["malformed-json-rejected"]
+    },
+    {
+      "fixture_id": "bc-fixture-003",
+      "name": "unknown_field_rejected",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":42,\"treatment\":{\"id\":\"trt-1\"},\"unknown_field\":true}",
+      "expected_decision": "Reject",
+      "expected_error_kinds": ["UnknownField"],
+      "reason_codes": ["unknown-field-rejected"]
+    },
+    {
+      "fixture_id": "bc-fixture-004",
+      "name": "duplicate_key_rejected",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":42,\"amount\":99,\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Reject",
+      "expected_error_kinds": ["DuplicateKey"],
+      "reason_codes": ["duplicate-json-object-key"]
+    },
+    {
+      "fixture_id": "bc-fixture-005",
+      "name": "field_type_mismatch_string_expected_number",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":\"not-a-number\",\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Reject",
+      "expected_error_kinds": ["FieldTypeMismatch"],
+      "reason_codes": ["field-type-mismatch"]
+    },
+    {
+      "fixture_id": "bc-fixture-006",
+      "name": "missing_required_field",
+      "input": "{\"id\":\"evt-1\",\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Reject",
+      "expected_error_kinds": ["MissingRequiredField"],
+      "reason_codes": ["missing-required-field"]
+    },
+    {
+      "fixture_id": "bc-fixture-007",
+      "name": "null_field_rejected",
+      "input": "{\"id\":\"evt-1\",\"kind\":null,\"amount\":42,\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Reject",
+      "expected_error_kinds": ["NullField"],
+      "reason_codes": ["null-field-rejected"]
+    },
+    {
+      "fixture_id": "bc-fixture-008",
+      "name": "nested_treatment_preserved",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":42,\"treatment\":{\"id\":\"trt-1\",\"dose\":5.0}}",
+      "expected_decision": "Accept",
+      "expected_error_kinds": [],
+      "reason_codes": ["boundary-compile-accepted"]
+    },
+    {
+      "fixture_id": "bc-fixture-009",
+      "name": "empty_object_accepted_minimal",
+      "input": "{}",
+      "expected_decision": "Reject",
+      "expected_error_kinds": ["MissingRequiredField"],
+      "reason_codes": ["missing-required-field"]
+    },
+    {
+      "fixture_id": "bc-fixture-010",
+      "name": "jcs_canonical_ordering",
+      "input": "{\"treatment\":{\"id\":\"trt-1\"},\"kind\":\"measurement\",\"amount\":42,\"id\":\"evt-1\"}",
+      "expected_decision": "Accept",
+      "expected_error_kinds": [],
+      "reason_codes": ["boundary-compile-accepted"]
+    },
+    {
+      "fixture_id": "bc-fixture-011",
+      "name": "number_type_field_with_integer",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":42,\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Accept",
+      "expected_error_kinds": [],
+      "reason_codes": ["boundary-compile-accepted"]
+    },
+    {
+      "fixture_id": "bc-fixture-012",
+      "name": "number_type_field_with_float",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":42.5,\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Accept",
+      "expected_error_kinds": [],
+      "reason_codes": ["boundary-compile-accepted"]
+    },
+    {
+      "fixture_id": "bc-fixture-013",
+      "name": "string_type_field_with_wrong_type",
+      "input": "{\"id\":123,\"kind\":\"measurement\",\"amount\":42,\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Reject",
+      "expected_error_kinds": ["FieldTypeMismatch"],
+      "reason_codes": ["field-type-mismatch"]
+    },
+    {
+      "fixture_id": "bc-fixture-014",
+      "name": "deeply_nested_treatment",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":42,\"treatment\":{\"id\":\"trt-1\",\"nested\":{\"deep\":true}}}",
+      "expected_decision": "Accept",
+      "expected_error_kinds": [],
+      "reason_codes": ["boundary-compile-accepted"]
+    },
+    {
+      "fixture_id": "bc-fixture-015",
+      "name": "treatment_path_integrity_degradation",
+      "input": "{\"id\":\"evt-1\",\"kind\":\"measurement\",\"amount\":42,\"treatment\":{\"id\":\"trt-1\"}}",
+      "expected_decision": "Accept",
+      "expected_error_kinds": [],
+      "reason_codes": ["boundary-compile-accepted"],
+      "notes": "With treatment_critical_paths=[\"/treatment/id\"] this fixture produces both an accepted result and a TreatmentIntegrityReceiptV1 recording that the treatment path was preserved"
+    }
+  ]
+}
