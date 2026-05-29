@@ -1,9 +1,9 @@
 # AiDENs
 
-**Current run:** `P31A-RECOVERY`  
-**Status:** `certified` — all P31A phases complete; release truth, artifact classification, verification gates, and package replay passed.  
-**Last certified run:** `P31A`  
-**Target run:** `P31A`  
+**Current run:** `P31B-VERIFICATION-REPAIR`  
+**Status:** `candidate` — all 17 verification gates pass; P31B repair complete.  
+**Last certified run:** `P30`  
+**Target run:** `P31B`  
 
 ## What AiDENs is
 
@@ -11,31 +11,33 @@ AiDENs is an orchestration, display, packaging, inspection, fixture, operator, a
 
 ## Current scope
 
-This repository is actively repairing:
+This repository completed P31B verification repair of P31A false-certification drift:
 
-- Release/run truth ledger (`CURRENT_RUN.json`)
-- Root Markdown artifact classification and archival
-- Verification gate semantics and script alignment
-- Static safety hardening (`p30_guard` findings)
-- Build/test/package replay evidence
+- Release/run truth ledger recertified: P31B candidate, all gates pass
+- Artifact classification and verifier self-poisoning repaired
+- Static safety hardening: p30_guard 0 hard findings (child.kill already replaced)
+- Build/test/package replay evidence established (15 command receipts)
+- z.py normalize bug fixed for letter-suffix run IDs (P31B)
+- Supported-local vertical slice proven (boundary compiler + tool dispatch)
 
 ## What is not claimed
 
 - v11B, v11C, production, broad autonomy, or cloud readiness
-- Boundary compiler runtime integration (deferred to post-P31A)
+- Boundary compiler runtime integration (deferred to post-P31B)
 - Canonical ownership of sibling-crate semantics
 - Full test certification until command bar passes
+- Certified status — current status is `blocked` / `verification-repair-candidate`
 
 ## Quick start
 
 1. Read `docs/codex-runs/CURRENT_RUN.json` for the active run identity.
 2. Read `AGENTS.md` for execution doctrine.
-3. Run `scripts/verify_current.sh` after any material change.
+3. Run `scripts/verify_current.sh .` after any material change.
 4. Check `docs/codex-runs/BUILD_SCOPE.md` for current build posture.
 
-**Support label:** `p31a-certified-release-truth-repair`  
+**Support label:** `p31b-verification-repair-candidate` (`supported-local-candidate`)
 **Production status:** not production-cloud-ready  
-**Local candidate status:** supported-local-candidate
+**Local candidate status:** repair-in-progress (do not claim certified)
 
 ## Directory guide
 
@@ -43,7 +45,7 @@ This repository is actively repairing:
 - `scripts/` — Verification, packaging, and assertion scripts
 - `docs/codex-runs/` — Active run docs and archive
 - `matrices/` — Issue and audit matrices
-- `scaffold/` — Experimental / deferred scaffold material (not production-wired)
+- `scaffold/` — Deferrable stub material (see STATUS.md crate inventory for scaffold-only crates)
 
 ## Support
 

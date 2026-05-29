@@ -108,6 +108,8 @@ async fn episodes_participate_in_generic_search_and_explanations() {
                 confidence: 0.8,
                 verification_status: VerificationStatus::Unverified,
                 experiment_id: None,
+                valid_time: None,
+                fact_digest: None,
             },
         )
         .await
@@ -180,6 +182,8 @@ async fn graph_view_exposes_document_chunk_and_episode_causal_links() {
                     at: "2026-03-06 00:00:00".to_string(),
                 },
                 experiment_id: Some("exp-incident".to_string()),
+                valid_time: None,
+                fact_digest: None,
             },
         )
         .await

@@ -49,6 +49,7 @@ pub mod node;
 pub mod outcome;
 pub mod payload;
 pub mod prelude;
+pub mod receipt;
 pub mod reducer;
 pub mod retry;
 pub mod router;
@@ -60,4 +61,5 @@ pub mod checkpoint;
 
 pub use error::{AgentGraphError, Result};
 pub use graph::{AgentGraph, END, START};
+pub use receipt::{ExecutionOutcome, GraphExecutionReceiptV1, StepExecutionReceiptV1};
 pub use state::AgentState;

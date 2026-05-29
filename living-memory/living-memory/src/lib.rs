@@ -115,3 +115,6 @@ pub use lab::evidence::{
     ReceiptStorage, SampleSupport, StepRequirement, Treatment, VerificationPolicy,
     VerificationState, VerificationStep,
 };
+
+// Claim ledger types (Phase 7 — wired into forge-pilot export boundary)
+pub use claim_ledger::{Claim, EvidenceBundle, LedgerEntry, LedgerEvent};

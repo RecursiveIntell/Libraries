@@ -627,6 +627,7 @@ name = "check-runner"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "check-runner-sys",
  "effect-signature",
  "forge-policy",
  "libc",
@@ -636,6 +637,13 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "check-runner-sys"
+version = "0.1.0"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -1586,6 +1594,7 @@ dependencies = [
  "cea-store",
  "check-runner",
  "chrono",
+ "claim-ledger",
  "effect-signature",
  "forge-memory-bridge",
  "forge-policy",
@@ -4642,13 +4651,17 @@ dependencies = [
 name = "semantic-memory"
 version = "0.5.0"
 dependencies = [
+ "bitemporal-runtime",
+ "boundary-compiler",
  "bytemuck",
  "chrono",
  "forge-memory-bridge",
  "hnsw_rs",
+ "quant-governor",
  "reqwest 0.12.28",
  "rusqlite",
  "schemars 0.8.22",
+ "scr-runtime-compression",
  "semantic-memory-forge",
  "serde",
  "serde_json",

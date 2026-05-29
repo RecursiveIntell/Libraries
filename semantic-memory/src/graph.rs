@@ -192,36 +192,22 @@ fn dedupe_edges(edges: Vec<GraphEdge>) -> Result<Vec<GraphEdge>, MemoryError> {
     Ok(deduped)
 }
 
+use boundary_compiler::Canonicalizer;
+
 fn edge_dedup_key(edge: &GraphEdge) -> Result<String, MemoryError> {
     let edge_type = serde_json::to_string(&edge.edge_type)
         .map_err(|err| MemoryError::Other(format!("failed to serialize graph edge type: {err}")))?;
-    let metadata = canonical_json_string(&edge.metadata).map_err(|err| {
-        MemoryError::Other(format!("failed to serialize graph edge metadata: {err}"))
-    })?;
+    let c = Canonicalizer::new();
+    let metadata = match &edge.metadata {
+        Some(value) => c.canonicalize(value).map_err(|err| {
+            MemoryError::Other(format!("failed to canonicalize graph edge metadata: {err}"))
+        })?,
+        None => "null".to_string(),
+    };
     Ok(format!(
         "{}|{}|{}|{:.6}|{}",
         edge.source, edge.target, edge_type, edge.weight, metadata
     ))
-}
-
-fn canonical_json_string(value: &Option<serde_json::Value>) -> Result<String, serde_json::Error> {
-    fn canonicalize(value: serde_json::Value) -> serde_json::Value {
-        match value {
-            serde_json::Value::Object(map) => {
-                let ordered = map
-                    .into_iter()
-                    .map(|(key, value)| (key, canonicalize(value)))
-                    .collect();
-                serde_json::Value::Object(ordered)
-            }
-            serde_json::Value::Array(values) => {
-                serde_json::Value::Array(values.into_iter().map(canonicalize).collect())
-            }
-            other => other,
-        }
-    }
-
-    serde_json::to_string(&value.clone().map(canonicalize))
 }
 
 fn reverse_edge(edge: GraphEdge) -> GraphEdge {

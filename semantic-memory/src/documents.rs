@@ -456,6 +456,14 @@ impl MemoryStore {
                     reason: format!("duplicate external_chunk_id '{external_chunk_id}'"),
                 });
             }
+            if entry.content.trim().is_empty() {
+                return Err(MemoryError::InvalidConfig {
+                    field: "chunk_manifest.content",
+                    reason: format!(
+                        "content must not be empty (chunk index {index}, id='{external_chunk_id}')"
+                    ),
+                });
+            }
             self.validate_content("chunk_manifest.content", &entry.content)?;
             if entry
                 .content_digest

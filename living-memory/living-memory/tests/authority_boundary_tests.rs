@@ -36,6 +36,7 @@ fn forge_engine_manifest_pins_local_authority_boundary() {
         "cea-sqlite".to_string(),
         "cea-store".to_string(),
         "check-runner".to_string(),
+        "claim-ledger".to_string(), // Phase 7: forge-pilot export boundary
         "effect-signature".to_string(),
         "forge-memory-bridge".to_string(),
         "forge-policy".to_string(),

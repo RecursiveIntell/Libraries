@@ -70,6 +70,8 @@ async fn write_variants_persist_trace_id() {
                 confidence: 0.7,
                 verification_status: semantic_memory::VerificationStatus::Unverified,
                 experiment_id: None,
+                valid_time: None,
+                fact_digest: None,
             },
             Some(&trace_ctx),
         )

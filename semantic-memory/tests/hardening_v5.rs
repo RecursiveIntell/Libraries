@@ -49,6 +49,8 @@ fn test_meta() -> EpisodeMeta {
         confidence: 0.8,
         verification_status: VerificationStatus::Unverified,
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     }
 }
 
@@ -134,6 +136,8 @@ async fn multiple_episodes_per_document() {
         confidence: 0.6,
         verification_status: VerificationStatus::Unverified,
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     };
     let meta_b = EpisodeMeta {
         cause_ids: vec!["cause-2".to_string()],
@@ -145,6 +149,8 @@ async fn multiple_episodes_per_document() {
             at: "2026-03-06".to_string(),
         },
         experiment_id: Some("exp-1".to_string()),
+        valid_time: None,
+        fact_digest: None,
     };
 
     let ep_a = store
@@ -263,6 +269,8 @@ async fn graph_causal_backlinks_use_normalized_table() {
             at: "2026-03-06".to_string(),
         },
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     };
     let ep_id = store
         .create_episode("ep-causal", &doc_id, &meta)
@@ -308,6 +316,8 @@ async fn graph_episode_node_has_causal_and_document_edges() {
         confidence: 0.7,
         verification_status: VerificationStatus::Unverified,
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     };
     let ep_id = store
         .create_episode("ep-edges", &doc_id, &meta)

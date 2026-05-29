@@ -16,7 +16,7 @@ ap.add_argument("package_pos", nargs="?")
 ap.add_argument("--package", dest="package_opt")
 ap.add_argument("--verifier", default="scripts/verify_current.sh")
 ap.add_argument("--require-verifier", action="store_true")
-ap.add_argument("--receipt-out", default="handoffs/P31A_PACKAGE_REPLAY_RECEIPT.json")
+ap.add_argument("--receipt-out", default="target/verify-current/P31B_VERIFICATION/package_self_replay_receipt.json")
 ap.add_argument("--expected-run")
 args = ap.parse_args()
 package_arg = args.package_opt or args.package_pos
@@ -49,7 +49,7 @@ def finish(code: int, status: str, message: str) -> int:
 if not package.exists():
     raise SystemExit(finish(2, "package_missing", f"FAIL: package not found: {package}"))
 
-with tempfile.TemporaryDirectory(prefix="aidens_p31a_replay_") as td_s:
+with tempfile.TemporaryDirectory(prefix="aidens_p31b_replay_") as td_s:
     td = Path(td_s)
     try:
         with zipfile.ZipFile(package) as zf:
@@ -86,4 +86,9 @@ with tempfile.TemporaryDirectory(prefix="aidens_p31a_replay_") as td_s:
     if "../" in combined and ("failed to read" in combined or "no such file" in combined):
         receipt["blockers"].append("external_path_dependency_unavailable_in_extracted_package")
         raise SystemExit(finish(2, "blocked", "FAIL: package self-replay blocked by unavailable external path dependency"))
+    if "permission denied" in combined or "permissionerror" in combined:
+        receipt["blockers"].append("permission_denied_in_extracted_replay")
+        receipt["verifier_stdout_tail"] = result.stdout[-6000:]
+        receipt["verifier_stderr_tail"] = result.stderr[-6000:]
+        raise SystemExit(finish(2, "blocked", "FAIL: package self-replay blocked by permission denied in extracted environment"))
     raise SystemExit(finish(2, "failed", f"FAIL: extracted verifier failed with exit {result.returncode}"))

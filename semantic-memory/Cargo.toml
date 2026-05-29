@@ -16,7 +16,7 @@ default = ["hnsw"]
 hnsw = ["dep:hnsw_rs"]
 brute-force = []
 testing = []
-turbo-quant-codec = ["dep:turbo-quant"]
+turbo-quant-codec = ["dep:turbo-quant", "dep:quant-governor", "dep:scr-runtime-compression"]
 
 [dependencies]
 bytemuck = { version = "1", features = ["derive"] }
@@ -32,10 +32,14 @@ chrono = { workspace = true, features = ["serde"] }
 stack-ids = { version = "0.1.1", path = "../stack-ids" }
 forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
 schemars = { workspace = true }
+boundary-compiler = { version = "0.1.0", path = "../boundary-compiler" }
+bitemporal-runtime = { version = "0.1.0", path = "../bitemporal-runtime" }
 
 # HNSW approximate nearest neighbor search (optional)
 hnsw_rs = { version = "0.3", optional = true }
 turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
+quant-governor = { path = "../quant-governor", optional = true }
+scr-runtime-compression = { path = "../scr-runtime-compression", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

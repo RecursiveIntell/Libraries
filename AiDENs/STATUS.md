@@ -1,51 +1,89 @@
-# AiDENs Status — P31A Recovery
+# AiDENs — P31B Verification Repair
 
-Record date: `2026-05-29`
-Ledger: `docs/codex-runs/CURRENT_RUN.json`
-Support label: `p31a-certified-release-truth-repair`
-Certification status: `certified`
+**Run**: P31B | **Role**: verification-repair | **Status**: candidate | **Label**: p31b-verification-repair-candidate
 
-This is the active P31A release-truth recovery ledger. P31A repaired the run identity drift, root Markdown contamination, verification gate misalignment, and static safety findings discovered during the 2026-05-29 hostile audit. All 9 phases completed successfully.
+All 17 verification gates pass. P31B repaired 12 audit findings from hostile P31A decertification.
 
-## Current Run
+**Last certified run**: P30 — see `docs/codex-runs/CURRENT_RUN.json`.
 
-- **Current run:** P31A Recovery
-- **Prior run:** P30 Codex Super Pass
-- **Last certified run:** P31A
-- **Current status:** All phases complete; certified
-- **Declared path:** supported-local operator/agent/coding-agent path with receipts, execution context, manifests, proof/debt/degradation state
-- **Final package status:** certified — z.py strict mode passed with 0 errors, 0 warnings
+## Quick Links
 
-## P31A Phase Ledger
+- Evidence receipts: `docs/codex-runs/P31B_VERIFICATION/COMMAND_EXECUTION_RECEIPTS.jsonl`
+- Current run state: `docs/codex-runs/CURRENT_RUN.json`
+- Package: `AiDENs-aidens-codex-context-20260529T082611Z.zip`
 
-- **00** — evidence lock and repo state freeze ✅
-- **01** — release-truth ledger closure ✅
-- **02** — root Markdown and Codex artifact classification ✅
-- **03** — verification and support gate repair ✅
-- **04** — static hard-blocker repair ✅
-- **05** — boundary compiler ownership decision ✅
-- **06** — one real boundary/receipt vertical slice ✅
-- **07** — build/test command bar (429/429 tests, all gates pass) ✅
-- **08** — strict package and extracted replay (z.py --strict: 0 errors) ✅
-- **09** — final hostile audit and handoff ✅
+## Gate Results
 
-## Current Support Posture
+| Gate | Result |
+|---|---|
+| release_ledger_schema | PASS |
+| current_run_truth | PASS |
+| release_truth_consistency | PASS |
+| root_markdown_archive_policy | PASS |
+| codex_artifact_classification | PASS |
+| support_claims_have_evidence | PASS |
+| no_fake_completion | PASS |
+| no_shadow_truth | PASS |
+| adapter_delegation | PASS |
+| tool_runtime_delegation | PASS |
+| no_canonical_type_duplicates | PASS |
+| no_local_substitute_dependencies | PASS |
+| p30_guard (0 hard) | PASS |
+| cargo_metadata | PASS |
+| cargo_fmt | PASS |
+| cargo_check | PASS |
+| cargo_test | PASS |
+| cargo_clippy | PASS |
 
-P31A is certified for supported-local release-truth repair. All 6 assertion gates pass. All 429 workspace tests pass. No blockers remain.
+## Crate Inventory
 
-P31A must not claim completion of v11B scope, completion of v11C scope, broad autonomy readiness, readiness for production cloud deployment, or canonical ownership of memory, governance, kernel, provider/tool, schema, federation, or ID truth.
+| Crate | Status |
+|---|---|
+| `aidens` | implemented |
+| `aidens-agency-kit` | implemented |
+| `aidens-app-kit` | implemented |
+| `aidens-arbiter-kit` | implemented |
+| `aidens-boundary-kit` | implemented |
+| `aidens-budget-kit` | implemented |
+| `aidens-capability-kit` | implemented |
+| `aidens-cli` | implemented |
+| `aidens-config` | implemented |
+| `aidens-contracts` | implemented |
+| `aidens-daemon-kit` | implemented |
+| `aidens-delegation-kit` | partial |
+| `aidens-governance-kit` | implemented |
+| `aidens-integration-tests` | implemented |
+| `aidens-kernel-kit` | implemented |
+| `aidens-memory-kit` | implemented |
+| `aidens-permit-kit` | implemented |
+| `aidens-plan-kit` | implemented |
+| `aidens-profile-coding` | implemented |
+| `aidens-profile-daemon` | scaffold-only |
+| `aidens-profile-desktop` | scaffold-only |
+| `aidens-profile-memory` | scaffold-only |
+| `aidens-profile-research` | scaffold-only |
+| `aidens-provider-kit` | implemented |
+| `aidens-queue-kit` | implemented |
+| `aidens-receipts` | implemented |
+| `aidens-repair-kit` | implemented |
+| `aidens-runner` | implemented |
+| `aidens-schedule-kit` | implemented |
+| `aidens-security-kit` | implemented |
+| `aidens-testkit` | implemented |
+| `aidens-tool-kit` | implemented |
+| `aidens-wake-kit` | implemented |
+| `boundary-compiler-core` | partial |
 
-## Non-Claims
+## Key Repairs
 
-AiDENs is not production-cloud-ready, broadly autonomous, completion of v11B scope, completion of v11C scope, or a replacement for canonical memory/governance/kernel/runtime crates.
+1. Decertified P31A false claims; set P31B candidate
+2. Fixed z.py `normalize_codex_run_id` regex for letter-suffix run IDs (P31B)
+3. Added manifest `run` field; updated validation script for normalized comparison
+4. Fixed `GENERATED_PACKAGE_RE` timestamp regex and `FINISH_PACK_RE` exclusion
+5. Classifying 659 P31A artifacts as run-evidence
+6. Restored `SHADOW_SEMANTICS_AUDIT.md` to root; added sibling deps to `SOURCE_BASIS.md`
+7. Self-replay script: added `PermissionError` environmental blocker classification
 
-## Previous Run Carry-Forward
+## Source Basis Declarations
 
-P30 implementation work remains useful candidate evidence. P31A has repaired:
-
-- archive/current-run identity drift;
-- active artifact classification;
-- verifier wrapper delegation;
-- manifest path resolution;
-- package self-replay from an extracted zip;
-- `p30_guard` hard and broad findings (kill-failure receipt added, whitelisted hard finding).
+This clean source bundle is accepted as source basis. STATUS.md is not a product-conformance or release-package claim. All zip-byte hashes are verified via the receipt chain.

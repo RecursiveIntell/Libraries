@@ -315,6 +315,28 @@ CREATE INDEX IF NOT EXISTS idx_derived_vector_generations_profile
 ON derived_vector_artifact_generations(codec_family, codec_profile_digest, status, created_at DESC);
 "#;
 
+/// V23 migration: codec governance columns on derived_vector_artifacts.
+/// Tracks governed compression pipeline metadata for turbo-quant-codec integration.
+const MIGRATION_V23: &str = r#"
+ALTER TABLE derived_vector_artifacts ADD COLUMN codec_governance_receipt_id TEXT;
+ALTER TABLE derived_vector_artifacts ADD COLUMN codec_profile TEXT;
+ALTER TABLE derived_vector_artifacts ADD COLUMN degradation_budget REAL;
+ALTER TABLE derived_vector_artifacts ADD COLUMN raw_source_artifact_id TEXT;
+"#;
+
+/// V22 migration: bitemporal columns on episodes table.
+/// Adds valid_time, recorded_time, superseded_by, and fact_digest for append-supersede semantics.
+const MIGRATION_V22: &str = r#"
+ALTER TABLE episodes ADD COLUMN valid_time TEXT;
+ALTER TABLE episodes ADD COLUMN recorded_time TEXT NOT NULL DEFAULT (datetime('now'));
+ALTER TABLE episodes ADD COLUMN superseded_by TEXT;
+ALTER TABLE episodes ADD COLUMN fact_digest TEXT;
+CREATE INDEX IF NOT EXISTS idx_episodes_recorded ON episodes(recorded_time ASC);
+CREATE INDEX IF NOT EXISTS idx_episodes_valid ON episodes(valid_time);
+CREATE INDEX IF NOT EXISTS idx_episodes_superseded ON episodes(superseded_by) WHERE superseded_by IS NOT NULL;
+UPDATE episodes SET recorded_time = updated_at WHERE recorded_time IS NULL OR recorded_time = '';
+"#;
+
 /// Ordered list of migrations.
 #[allow(deprecated)]
 const MIGRATIONS: &[(u32, &str)] = &[
@@ -339,10 +361,12 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (19, MIGRATION_V19),
     (20, MIGRATION_V20),
     (21, MIGRATION_V21),
+    (22, MIGRATION_V22),
+    (23, MIGRATION_V23),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 21;
+pub const MAX_SCHEMA_VERSION: u32 = 23;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {
@@ -958,6 +982,11 @@ pub(crate) struct DerivedVectorArtifactRow {
     pub dim: usize,
     pub status: String,
     pub encoded: Vec<u8>,
+    // Codec governance columns (V23 migration)
+    pub codec_governance_receipt_id: Option<String>,
+    pub codec_profile: Option<String>,
+    pub degradation_budget: Option<f64>,
+    pub raw_source_artifact_id: Option<String>,
 }
 
 /// Active derived vector artifact generation row.
@@ -1100,8 +1129,9 @@ pub(crate) fn upsert_derived_vector_artifact(
     conn.execute(
         "INSERT OR REPLACE INTO derived_vector_artifacts
              (item_key, generation_id, codec_family, codec_profile_digest, source_embedding_digest,
-              encoded_digest, artifact_digest, encoding, dim, encoded, created_at, status)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6, ?7, ?8, ?9, datetime('now'), ?10)",
+              encoded_digest, artifact_digest, encoding, dim, encoded, created_at, status,
+              codec_governance_receipt_id, codec_profile, degradation_budget, raw_source_artifact_id)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6, ?7, ?8, ?9, datetime('now'), ?10, ?11, ?12, ?13, ?14)",
         params![
             row.item_key,
             row.generation_id.as_deref(),
@@ -1113,7 +1143,11 @@ pub(crate) fn upsert_derived_vector_artifact(
             i64::try_from(row.dim)
                 .map_err(|err| MemoryError::Other(format!("artifact dim overflow: {err}")))?,
             row.encoded,
-            row.status
+            row.status,
+            row.codec_governance_receipt_id.as_deref(),
+            row.codec_profile.as_deref(),
+            row.degradation_budget,
+            row.raw_source_artifact_id.as_deref(),
         ],
     )?;
     Ok(())
@@ -1158,7 +1192,8 @@ pub(crate) fn load_derived_vector_artifacts_by_profile(
 ) -> Result<Vec<DerivedVectorArtifactRow>, MemoryError> {
     let mut stmt = conn.prepare(
         "SELECT item_key, generation_id, codec_family, codec_profile_digest, source_embedding_digest,
-                encoded_digest, encoding, dim, status, encoded
+                encoded_digest, encoding, dim, status, encoded,
+                codec_governance_receipt_id, codec_profile, degradation_budget, raw_source_artifact_id
          FROM derived_vector_artifacts
          WHERE codec_family = ?1 AND codec_profile_digest = ?2 AND status = 'active'",
     )?;
@@ -1181,6 +1216,10 @@ pub(crate) fn load_derived_vector_artifacts_by_profile(
             })?,
             status: row.get(8)?,
             encoded: row.get(9)?,
+            codec_governance_receipt_id: row.get(10)?,
+            codec_profile: row.get(11)?,
+            degradation_budget: row.get(12)?,
+            raw_source_artifact_id: row.get(13)?,
         })
     })?;
 
@@ -1198,7 +1237,8 @@ pub(crate) fn load_derived_vector_artifacts_by_generation(
 ) -> Result<Vec<DerivedVectorArtifactRow>, MemoryError> {
     let mut stmt = conn.prepare(
         "SELECT item_key, generation_id, codec_family, codec_profile_digest, source_embedding_digest,
-                encoded_digest, encoding, dim, status, encoded
+                encoded_digest, encoding, dim, status, encoded,
+                codec_governance_receipt_id, codec_profile, degradation_budget, raw_source_artifact_id
          FROM derived_vector_artifacts
          WHERE generation_id = ?1 AND status = 'active'",
     )?;
@@ -1221,6 +1261,10 @@ pub(crate) fn load_derived_vector_artifacts_by_generation(
             })?,
             status: row.get(8)?,
             encoded: row.get(9)?,
+            codec_governance_receipt_id: row.get(10)?,
+            codec_profile: row.get(11)?,
+            degradation_budget: row.get(12)?,
+            raw_source_artifact_id: row.get(13)?,
         })
     })?;
 
@@ -1365,10 +1409,17 @@ pub(crate) fn rebuild_turbo_quant_artifacts(
             dim,
             status: "active".to_string(),
             encoded: artifact.encoded,
+            // V23 governance columns — populated by encode_governed path; existing
+            // turbo-quant build path leaves these as None (nullable).
+            codec_governance_receipt_id: None,
+            codec_profile: None,
+            degradation_budget: None,
+            raw_source_artifact_id: None,
         });
     }
     drop(stmt);
 
+    let build_receipt_id = uuid::Uuid::new_v4().to_string();
     let source_snapshot_digest = source_snapshot_digest(&pending, dim);
     let artifact_manifest_digest = derived_artifact_manifest_digest(&pending);
     let source_tables = vec![
@@ -1389,7 +1440,7 @@ pub(crate) fn rebuild_turbo_quant_artifacts(
         dim,
         encoding: "turbo_code_wire_v1".to_string(),
         created_at: Utc::now(),
-        build_receipt_id: None,
+        build_receipt_id: Some(build_receipt_id.clone()),
         artifact_manifest_digest: artifact_manifest_digest.clone(),
         status: if skipped_row_count == 0 {
             "active".to_string()
@@ -1459,6 +1510,7 @@ pub(crate) fn rebuild_turbo_quant_artifacts(
         generation_id: Some(generation_id),
         source_snapshot_digest: Some(source_snapshot_digest),
         artifact_manifest_digest: Some(artifact_manifest_digest),
+        build_receipt_id: Some(build_receipt_id),
         skipped_row_count,
         elapsed_ms: started.elapsed().as_millis(),
         created_at: Utc::now(),

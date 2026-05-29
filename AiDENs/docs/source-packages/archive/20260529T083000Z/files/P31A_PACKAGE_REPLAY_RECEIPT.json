@@ -1,0 +1,15 @@
+{
+  "artifact_kind": "aidens_package_self_replay_receipt.v1",
+  "blockers": [],
+  "created_utc": "2026-05-29T08:26:41.945404+00:00",
+  "expected_run": "P31B",
+  "extracted_repo": "/tmp/aidens_p31a_replay_xi0g0e3y/AiDENs",
+  "known_limits": [],
+  "message": "FAIL: extracted verifier failed with exit 2",
+  "package": "/home/sikmindz/Coding/Libraries/AiDENs/AiDENs-aidens-codex-context-20260529T082611Z.zip",
+  "status": "failed",
+  "verifier": "scripts/verify_current.sh",
+  "verifier_exit_code": 2,
+  "verifier_stderr_tail": "[verify-current] FAIL p30_guard exit=2\n--- stdout tail ---\n--- stderr tail ---\npython3: can't open file '/tmp/aidens_p31a_replay_xi0g0e3y/AiDENs/scripts/p30_guard.py': [Errno 2] No such file or directory\n",
+  "verifier_stdout_tail": "[verify-current] release_ledger_schema: python3 scripts/assert_release_ledger_schema.py\n[verify-current] PASS release_ledger_schema\n[verify-current] current_run_truth: python3 scripts/assert_current_run_truth.py\n[verify-current] PASS current_run_truth\n[verify-current] release_truth_consistency: python3 scripts/assert_release_truth_consistency.py\n[verify-current] PASS release_truth_consistency\n[verify-current] root_markdown_archive_policy: python3 scripts/assert_root_markdown_archive_policy.py\n[verify-current] PASS root_markdown_archive_policy\n[verify-current] codex_artifact_classification: python3 scripts/assert_codex_artifact_classification.py\n[verify-current] PASS codex_artifact_classification\n[verify-current] support_claims_have_evidence: python3 scripts/assert_support_claims_have_evidence.py\n[verify-current] PASS support_claims_have_evidence\n[verify-current] no_fake_completion: bash scripts/assert_no_fake_completion.sh .\n[verify-current] PASS no_fake_completion\n[verify-current] no_shadow_truth: bash scripts/assert_no_shadow_truth.sh\n[verify-current] PASS no_shadow_truth\n[verify-current] adapter_delegation: bash scripts/assert_adapter_delegation.sh\n[verify-current] PASS adapter_delegation\n[verify-current] tool_runtime_delegation: bash scripts/assert_tool_runtime_delegation.sh\n[verify-current] PASS tool_runtime_delegation\n[verify-current] no_canonical_type_duplicates: python3 scripts/assert_no_canonical_type_duplicates.py\n[verify-current] PASS no_canonical_type_duplicates\n[verify-current] no_local_substitute_dependencies: bash scripts/assert_no_local_substitute_dependencies.sh\n[verify-current] PASS no_local_substitute_dependencies\n[verify-current] p30_guard: python3 scripts/p30_guard.py --repo .\n"
+}

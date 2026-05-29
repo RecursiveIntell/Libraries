@@ -33,6 +33,8 @@ fn make_meta(effect_type: &str, cause_ids: Vec<&str>) -> EpisodeMeta {
         confidence: 0.5,
         verification_status: VerificationStatus::Unverified,
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     }
 }
 

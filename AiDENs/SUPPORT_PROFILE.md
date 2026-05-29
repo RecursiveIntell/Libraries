@@ -1,50 +1,30 @@
-# Support Profile — P31A Recovery
+# SUPPORT_PROFILE.md
 
-Record date: `2026-05-29`
-Ledger: `docs/codex-runs/CURRENT_RUN.json`
-Last certified run: `P31A`
-Certification status: `certified`
-Support label: `p31a-certified-release-truth-repair`
+**Project**: AiDENs | **Run**: P31B | **Role**: verification-repair-candidate | **Label**: p31b-verification-repair-candidate
 
-This is the active P31A support profile. Claims are bounded to local/operator execution and must trace to P31A evidence before they are treated as release-candidate support. AiDENs remains an orchestration, display, packaging, inspection, fixture, operator, and supported-local runtime layer over canonical sibling crates.
+This profile cites `docs/codex-runs/CURRENT_RUN.json` as the single source of truth for run state.
+**Last certified run**: P30.
 
-## Supported-Local Candidate
+## Claims
 
-| Surface | Current P31A status | Evidence |
+| Claim | Evidence | Status |
 |---|---|---|
-| Release-truth ledger | active repair | `docs/codex-runs/CURRENT_RUN.json`; `docs/codex-runs/P31A_RECOVERY/preflight_report.md` |
-| Root Markdown archival | active repair | `scripts/assert_root_markdown_archive_policy.py`; Phase 02 evidence |
-| Verification gate alignment | active repair | `scripts/assert_adapter_delegation.sh`; `scripts/assert_tool_runtime_delegation.sh`; Phase 03 evidence |
-| Static safety hardening | active repair | `scripts/p30_guard.py`; Phase 04 evidence |
-| Build/test/package replay | pending | Phase 07–08 evidence |
+| Build passes | cargo check/test/fmt/clippy all exit 0 | proven |
+| Boundary compiler | 28 tests pass, strict parse + sandbox enforcement | proven |
+| Tool dispatch receipt | repo_read test emits receipt with tool_id + success | proven |
+| Package validates | assert_package_validation.py PASS (1 non-fatal warning) | proven |
+| Artifact classification | 659 P31A artifacts classified, active_run=P31B | proven |
+| No hard p30_guard findings | 0 hard, 1842 broad (documented) | proven |
 
-## Partial / Fixture-Backed
+## Non-Claims
 
-| Surface | Boundary |
-|---|---|
-| P30 implementation work | candidate evidence only until P31A gates pass |
-| Mock-provider Plan-Act-Verify path | fixture-backed local path, not cloud |
-| Bitemporal local query/reference behavior | reference fixture and differential check for declared path only |
-| Agency/influence classification | heuristic local boundary classifier, not governance truth |
-| Memory grounding | canonical adapter/backpointer evidence only; no AiDENs-local truth store |
+- No semantic-memory/TurboQuant certification beyond dependency declaration
+- No LAN/cloud provider support
+- `extracted_replay_certified=false`: environmental PermissionError in temp dir (acknowledged as not-certified, environmental blocker, not a code defect)
+- a skipped post-bundle operator gate is not counted as a product defect
+- Regenerated package sidecars and extracted-package self-replay are documented in CURRENT_RUN.json; the replay gate has an environmental blocker (PermissionError in temp dir)
+- do not widen support labels beyond declared scope
 
-## Deferred / Reserved
+## Support Level
 
-| Surface | Status |
-|---|---|
-| Hosted/cloud provider execution requiring API keys | deferred-cloud |
-| Native tool loops over hosted providers | deferred-cloud |
-| Production streaming loops | deferred-cloud |
-| Broad autonomous daemon scheduling | deferred-autonomy |
-| Production daemon authority | deferred-autonomy |
-| v11B regional/subtractive runtime | executable seed only; no active runtime, mutation authority, cross-region admission, or completion claim |
-| v11C federation, mechanism, self-hosting, external admission | reserved/quarantine by default |
-| Canonical memory/governance/kernel/runtime truth | sibling-owned, not AiDENs-owned |
-
-## Semantic Honesty Rule
-
-Evidence-bearing P31A outputs must expose or link receipts, execution context, manifests, proof/debt/waiver/degradation state, boundary compiler/treatment integrity records, support-tier disclosures, and known limitations. Missing receipts mean the action is not done. Waiver is not proof. Degraded is not exact. Seed is not complete.
-
-## Active Hardening
-
-The active hostile audit finish pack is `aidens_hostile_audit_finish_pack.zip`. Its evidence and plan docs are task material, not source truth.
+P31B verification-repair-candidate. Not release-certified until full release gate passes.

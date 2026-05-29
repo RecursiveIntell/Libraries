@@ -1,0 +1,32 @@
+{
+  "bundle_id": "aidens-p31b-baseline",
+  "timestamp": "2026-05-29T03:22:15.493277",
+  "components": {
+    "aicc": {
+      "description": "AI Context Control - Master Manifest",
+      "files": [
+        "AICC_MANIFEST.json",
+        "AICC_CONTRACT.md"
+      ]
+    },
+    "z_py": {
+      "description": "JSON/Zip Sidecar Validator",
+      "files": [
+        "z.py"
+      ]
+    },
+    "snap_py": {
+      "description": "Snapshot Protocol Logic",
+      "files": [
+        "snap.py"
+      ]
+    },
+    "claimledger": {
+      "description": "Claim Ledger & Truth Verifier",
+      "files": [
+        "claim_ledger_spec.json",
+        "claim_ledger_receipts.md"
+      ]
+    }
+  }
+}

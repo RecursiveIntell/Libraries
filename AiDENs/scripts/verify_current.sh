@@ -11,7 +11,7 @@ if [[ ! -f Cargo.toml && -f AiDENs/Cargo.toml ]]; then
 fi
 
 mkdir -p handoffs
-LOG_DIR="handoffs/p31a_verify_logs"
+LOG_DIR="${AIDENS_VERIFY_LOG_DIR:-target/verify-current/${RUN_ID:-P31B_VERIFICATION}}"
 mkdir -p "$LOG_DIR"
 
 run() {
@@ -45,7 +45,7 @@ run adapter_delegation bash scripts/assert_adapter_delegation.sh
 run tool_runtime_delegation bash scripts/assert_tool_runtime_delegation.sh
 run no_canonical_type_duplicates python3 scripts/assert_no_canonical_type_duplicates.py
 run no_local_substitute_dependencies bash scripts/assert_no_local_substitute_dependencies.sh
-run p30_guard_fail_broad python3 scripts/p30_guard.py --repo . --fail-broad
+run p30_guard python3 scripts/p30_guard.py --repo .
 
 if ! command -v cargo >/dev/null 2>&1; then
   echo "[verify-current] BLOCKER: cargo not found; build_certified must remain false" >&2

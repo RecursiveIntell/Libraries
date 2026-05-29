@@ -4,6 +4,10 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Parsing error for query mode operations (test-only).
+#[cfg(test)]
+use thiserror::Error;
+
 /// Intent classification for an incoming query.
 ///
 /// The classifier maps raw query text to a `QueryMode` that determines
@@ -41,7 +45,32 @@ impl QueryMode {
             Self::Mixed { .. } => "mixed",
         }
     }
+
+    /// Parse a `QueryMode` from a kind string.
+    ///
+    /// Returns `None` for unknown kinds — this is the correct fallback for
+    /// unknown variant names (the `unreachable!` sites were never reachable in
+    /// practice; this makes the exhaustive match non-trapping).
+    pub fn from_kind(kind: &str) -> Option<Self> {
+        match kind {
+            "semantic" => Some(Self::SemanticLookup),
+            "entity" => None, // EntityLookup needs a mention — not reconstructable from kind alone
+            "temporal" => None, // TemporalLookup needs a temporal_expr
+            "mixed" => None,  // Mixed needs components
+            _ => None,
+        }
+    }
 }
+
+#[cfg(test)]
+impl std::fmt::Display for QueryMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+#[cfg(test)]
+impl std::error::Error for QueryMode {}
 
 /// Classification result with confidence metadata.
 #[derive(Debug, Clone, Serialize, Deserialize)]

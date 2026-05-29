@@ -1564,20 +1564,20 @@ fn run_command_with_timeout(
 }
 
 fn terminate_timed_out_command(child: &mut Child, command_label: &str) -> bool {
+    // If the child already exited before we could terminate it, report no kill failure.
+    if child.try_wait().is_ok_and(|s| s.is_some()) {
+        return false;
+    }
     #[cfg(unix)]
     {
         if terminate_unix_process_group(child.id()).is_ok() {
             return false;
         }
     }
-    match child.kill() {
-        Ok(()) => false,
-        Err(_) if child.try_wait().is_ok_and(|s| s.is_some()) => false,
-        Err(error) => {
-            eprintln!("WARNING: kill-failure for timed-out command {command_label}: {error}");
-            true
-        }
-    }
+    // Process-group termination is unavailable or failed.
+    // Emit kill-failure degradation and return true so the receipt records it.
+    eprintln!("WARNING: kill-failure for timed-out command {command_label}: process-group termination unavailable or failed");
+    true
 }
 
 #[cfg(unix)]

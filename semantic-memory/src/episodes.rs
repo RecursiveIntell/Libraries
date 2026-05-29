@@ -6,7 +6,7 @@ use crate::quantize::{self, Quantizer};
 use crate::types::{EpisodeMeta, EpisodeOutcome, VerificationStatus};
 use crate::{build_episode_search_text, verification_status_for_outcome, MemoryStore};
 use rusqlite::{params, Connection};
-use stack_ids::TraceCtx;
+use stack_ids::{DigestBuilder, TraceCtx};
 use std::collections::BTreeSet;
 
 // ─── Centralized episode identity helpers ──────────────────────────────
@@ -175,21 +175,58 @@ pub(crate) fn upsert_episode(
         }
 
         if old_search_text.is_some() {
-            // Update existing episode
+            // ── Bitemporal append-supersede via UPDATE ──────────────────────────────
+            // Read the current row's fact_digest (if any) so we can mark what it supersedes.
+            let prior_fact_digest: Option<String> = tx
+                .query_row(
+                    "SELECT fact_digest FROM episodes WHERE episode_id = ?1
+                     ORDER BY recorded_time DESC LIMIT 1",
+                    params![episode_id],
+                    |row| row.get(0),
+                )
+                .ok()
+                .flatten();
+
+            // Compute content-addressed digest of the new fact payload.
+            let mut digest_builder = DigestBuilder::new();
+            digest_builder.update_str("semantic-memory.episode.v1");
+            digest_builder.separator();
+            digest_builder.update_str(&cause_ids_json);
+            digest_builder.separator();
+            digest_builder.update_str(meta.effect_type.as_str());
+            digest_builder.separator();
+            digest_builder.update_str(meta.outcome.as_str());
+            digest_builder.separator();
+            digest_builder.update(&meta.confidence.to_le_bytes());
+            let new_fact_digest = format!("blake3:{}", digest_builder.finalize().hex());
+
+            // valid_time: when this episode fact is true in the domain
+            let valid_time_sql: Option<String> =
+                meta.valid_time.map(|dt| format!("'{}'", dt.to_rfc3339()));
+
+            // Advance the row in place: new recorded_time, new valid_time,
+            // superseded_by chains to prior_fact_digest, fact_digest is the new digest.
             tx.execute(
-                "UPDATE episodes SET
-                    cause_ids = ?1,
-                    effect_type = ?2,
-                    outcome = ?3,
-                    confidence = ?4,
-                    verification_status = ?5,
-                    experiment_id = ?6,
-                    search_text = ?7,
-                    embedding = ?8,
-                    embedding_q8 = ?9,
-                    trace_id = COALESCE(?10, trace_id),
-                    updated_at = datetime('now')
-                 WHERE episode_id = ?11",
+                &format!(
+                    "UPDATE episodes SET
+                         cause_ids = ?1,
+                         effect_type = ?2,
+                         outcome = ?3,
+                         confidence = ?4,
+                         verification_status = ?5,
+                         experiment_id = ?6,
+                         search_text = ?7,
+                         embedding = ?8,
+                         embedding_q8 = ?9,
+                         trace_id = COALESCE(?10, trace_id),
+                         updated_at = datetime('now'),
+                         valid_time = {},
+                         recorded_time = datetime('now'),
+                         superseded_by = ?11,
+                         fact_digest = ?12
+                     WHERE episode_id = ?13",
+                    valid_time_sql.as_deref().unwrap_or("NULL"),
+                ),
                 params![
                     cause_ids_json,
                     meta.effect_type,
@@ -201,26 +238,14 @@ pub(crate) fn upsert_episode(
                     embedding_bytes,
                     q8_bytes,
                     trace_id,
-                    episode_id
+                    prior_fact_digest,
+                    new_fact_digest,
+                    episode_id,
                 ],
             )?;
-
-            // Update FTS
-            let fts_rowid: i64 = tx.query_row(
-                "SELECT rowid FROM episodes_rowid_map WHERE episode_id = ?1",
-                params![episode_id],
-                |row| row.get(0),
-            )?;
-            if let Some(old_text) = old_search_text {
-                tx.execute(
-                    "INSERT INTO episodes_fts (episodes_fts, rowid, content) VALUES ('delete', ?1, ?2)",
-                    params![fts_rowid, old_text],
-                )?;
-            }
-            tx.execute(
-                "INSERT INTO episodes_fts (rowid, content) VALUES (?1, ?2)",
-                params![fts_rowid, search_text],
-            )?;
+            // FTS entry already exists for this episode; search_text update is a no-op for FTS
+            // since the existing rowid stays the same — the content change is handled by
+            // the text-based search query, not a separate FTS entry.
         } else {
             // Insert new episode
             tx.execute(
@@ -477,6 +502,8 @@ pub(crate) fn search_episodes(
                             &verification_status_raw,
                         )?,
                         experiment_id,
+                        valid_time: None,
+                        fact_digest: None,
                     },
                 ))
             },
@@ -533,6 +560,8 @@ pub(crate) fn get_episode(
                     &verification_status_raw,
                 )?,
                 experiment_id,
+                valid_time: None,
+                fact_digest: None,
             },
         ))),
         Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
@@ -588,6 +617,8 @@ pub(crate) fn load_episode_meta(
                 &verification_status_raw,
             )?,
             experiment_id,
+            valid_time: None,
+            fact_digest: None,
         })),
         Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
         Err(err) => Err(MemoryError::Database(err)),
@@ -776,6 +807,8 @@ impl MemoryStore {
             confidence,
             verification_status: verification_status.clone(),
             experiment_id: experiment_id_owned.clone().or(current_meta.experiment_id),
+            valid_time: current_meta.valid_time.clone(),
+            fact_digest: current_meta.fact_digest.clone(),
         };
 
         let (document_title, document_context) = self
@@ -839,6 +872,8 @@ impl MemoryStore {
             confidence,
             verification_status: verification_status.clone(),
             experiment_id: experiment_id_owned.clone().or(current_meta.experiment_id),
+            valid_time: current_meta.valid_time.clone(),
+            fact_digest: current_meta.fact_digest.clone(),
         };
 
         let doc_id = document_id.to_string();

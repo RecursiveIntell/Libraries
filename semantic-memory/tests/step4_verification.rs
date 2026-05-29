@@ -52,6 +52,8 @@ async fn test_episode_ingest_and_search() {
         confidence: 0.5,
         verification_status: VerificationStatus::Unverified,
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     };
     store.ingest_episode(doc_id, &meta).await.unwrap();
 
@@ -86,6 +88,8 @@ async fn test_episode_update_outcome() {
         confidence: 0.3,
         verification_status: VerificationStatus::Unverified,
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     };
     store.ingest_episode(doc_id, &meta).await.unwrap();
 
@@ -127,6 +131,8 @@ async fn test_episode_search_by_outcome() {
         confidence: 0.5,
         verification_status: VerificationStatus::Unverified,
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     };
     let confirmed = EpisodeMeta {
         cause_ids: vec![],
@@ -135,6 +141,8 @@ async fn test_episode_search_by_outcome() {
         confidence: 0.9,
         verification_status: VerificationStatus::Unverified,
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     };
 
     store.ingest_episode(&docs[0].id, &pending).await.unwrap();

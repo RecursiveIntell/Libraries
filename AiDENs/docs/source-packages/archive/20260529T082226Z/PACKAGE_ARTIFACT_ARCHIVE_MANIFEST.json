@@ -1,0 +1,39 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/AiDENs/docs/source-packages/archive/20260529T082226Z",
+  "collisions": [],
+  "created_utc": "2026-05-29T08:22:26Z",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/source-packages/archive/20260529T082226Z/files/AiDENs-aidens-codex-context-20260529T082129Z.codex-archive.json",
+      "bytes": 519,
+      "mtime_utc": "2026-05-29T08:21:29Z",
+      "original_path": "AiDENs-aidens-codex-context-20260529T082129Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "1b652fc96bc51e3d97368bb8176cf4bb4a4ab232a12714cc78dc092fb69363ca"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/source-packages/archive/20260529T082226Z/files/AiDENs-aidens-codex-context-20260529T082129Z.codex-archive.json",
+      "bytes": 519,
+      "mtime_utc": "2026-05-29T08:21:29Z",
+      "original_path": "AiDENs-aidens-codex-context-20260529T082129Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "1b652fc96bc51e3d97368bb8176cf4bb4a4ab232a12714cc78dc092fb69363ca"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "root_package_archive_manifest_version": "RootPackageArtifactArchiveManifestV1",
+  "summary": {
+    "candidate_count": 1,
+    "collision_count": 0,
+    "inspected_count": 72,
+    "moved_count": 1,
+    "planned_count": 1,
+    "protected_count": 6,
+    "skipped_existing_count": 0
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31"
+}

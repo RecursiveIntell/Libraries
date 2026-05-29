@@ -9,6 +9,7 @@ use crate::error::{AgentGraphError, Result};
 use crate::event_sink::{EventSink, GraphEvent, NodeOutcomeKind};
 use crate::graph::{AgentGraph, END, START};
 use crate::interrupt::{ExecutionResult, InterruptCheckpoint};
+use crate::receipt::{ExecutionOutcome, GraphExecutionReceiptV1, StepExecutionReceiptV1};
 use crate::retry::RetryPolicy;
 use crate::router::RouterOutput;
 use crate::state::AgentState;

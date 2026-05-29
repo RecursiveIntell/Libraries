@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
 LEDGER = ROOT / "docs" / "codex-runs" / "CURRENT_RUN.json"
 RUN_RE = re.compile(r"^P\d+[A-Z]?$", re.I)
-CERT_STATUSES = {"uncertified", "blocked", "failed", "certified"}
+CERT_STATUSES = {"uncertified", "blocked", "failed", "certified", "candidate"}
 REQUIRED_STR = [
     "schema_version", "project", "last_certified_run", "active_run", "target_run",
     "parent_run", "active_run_role", "certification_status", "support_label",

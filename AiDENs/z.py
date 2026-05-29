@@ -600,7 +600,7 @@ PROTECTED_CODEX_ACTIVE_FILES = {
 }
 
 CODEX_RUN_SEGMENT_RE = re.compile(r"^(?:p|P)(\d{1,3})(?:[_-]?(\d+))?$")
-CODEX_RUN_PREFIX_RE = re.compile(r"^(?:p|P)(\d{1,3})(?:[_-]?(\d+))?")
+CODEX_RUN_PREFIX_RE = re.compile(r"^(?:p|P)(\d{1,3})(?:[_-]?(\d+))?(?:[_-]?([A-Z]\w*))?")
 CODEX_ROOT_RUN_PREFIX_RE = re.compile(r"(?:^|[_\-/])(?:p|P)(\d{1,3})(?:[_-]?(\d+))?")
 CODEX_CONTRACT_OWNERSHIP_PHASE_RE = re.compile(r"(?:^|/)\.codex_evidence/contract_ownership/(\d{2})(?:/|$)")
 CODEX_RUN_MARKER_RE = re.compile(r"(?:^|[/_.-])(?:p|P)(\d{1,3})(?:[_-]?(\d+))?(?=$|[/_.-])")
@@ -959,8 +959,16 @@ def normalize_codex_run_id(value: str | None) -> str:
     match = CODEX_RUN_PREFIX_RE.match(cleaned)
     if match:
         major = int(match.group(1))
-        minor = match.group(2)
-        return f"P{major}" + (f"_{int(minor)}" if minor else "")
+        numeric_minor = match.group(2)
+        letter_suffix = match.group(3)
+        parts = [f"P{major}"]
+        if numeric_minor:
+            parts.append(numeric_minor)
+        if letter_suffix:
+            parts.append(letter_suffix)
+        if len(parts) > 1:
+            return "_".join(parts)
+        return parts[0]
     if cleaned.startswith("legacy_"):
         return cleaned.replace("_", "-")
     return cleaned.upper()
@@ -4470,6 +4478,7 @@ def build(args: argparse.Namespace) -> BuildResult:
     )
 
     manifest_payload = {
+        "run": args.codex_current_run,
         "package": str(output_path),
         "manifest": str(manifest_path) if manifest_path else None,
         "excluded": str(excluded_path) if excluded_path else None,

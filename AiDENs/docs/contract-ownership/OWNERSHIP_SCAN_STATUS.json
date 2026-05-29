@@ -3,7 +3,7 @@
   "aidens_overlay_only": false,
   "artifact_kind": "local_operator_ownership_scan_status",
   "canonical_inventory_unavailable": false,
-  "canonical_local_def_count": 655,
+  "canonical_local_def_count": 662,
   "canonical_root": "/home/sikmindz/Coding/Libraries",
   "duplicate_findings": 0,
   "known_limits": [],

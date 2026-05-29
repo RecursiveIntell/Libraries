@@ -88,6 +88,7 @@ mod projection_lane;
 mod projection_legacy_compat;
 pub(crate) mod projection_storage;
 pub mod quantize;
+pub mod quantize_governed;
 pub mod search;
 pub mod storage;
 mod store_support;
@@ -114,14 +115,14 @@ pub use storage::StoragePaths;
 pub use tokenizer::{EstimateTokenCounter, TokenCounter};
 pub use types::{
     ChunkManifestChunkMapping, ChunkManifestEntry, ChunkManifestIngestOptions,
-    ChunkManifestIngestResult, Document, EmbeddingDisplacement, EpisodeMeta, EpisodeOutcome,
-    ExactnessProfile, ExplainedResult, ExplainedResultAnswerV1, ExplainedSearchResponse, Fact,
-    GraphDirection, GraphEdge, GraphEdgeType, GraphView, MemoryStats, Message,
-    NamespaceDeleteReport, ProjectionClaimVersion, ProjectionEntityAlias, ProjectionEpisode,
-    ProjectionEvidenceRef, ProjectionQuery, ProjectionRelationVersion, ReceiptMode, Role,
-    ScoreBreakdown, SearchContext, SearchReceiptAnswersV1, SearchReplayReportV1, SearchResponse,
-    SearchResult, SearchSource, SearchSourceType, Session, TextChunk, VectorArtifactBuildReceiptV1,
-    VectorSearchReceiptV1, VerificationStatus,
+    ChunkManifestIngestResult, Document, EmbeddingDisplacement, EpisodeAsOfReceiptV1, EpisodeMeta,
+    EpisodeOutcome, ExactnessProfile, ExplainedResult, ExplainedResultAnswerV1,
+    ExplainedSearchResponse, Fact, GraphDirection, GraphEdge, GraphEdgeType, GraphView,
+    MemoryStats, Message, NamespaceDeleteReport, ProjectionClaimVersion, ProjectionEntityAlias,
+    ProjectionEpisode, ProjectionEvidenceRef, ProjectionQuery, ProjectionRelationVersion,
+    ReceiptMode, Role, ScoreBreakdown, SearchContext, SearchReceiptAnswersV1, SearchReplayReportV1,
+    SearchResponse, SearchResult, SearchSource, SearchSourceType, Session, TextChunk,
+    VectorArtifactBuildReceiptV1, VectorSearchReceiptV1, VerificationStatus,
 };
 #[cfg(feature = "turbo-quant-codec")]
 pub use vector_codec::TurboQuantCodec;
@@ -755,10 +756,12 @@ impl MemoryStore {
     ///
     /// Call this if sidecar files are missing, corrupted, or after `reembed_all()`.
     #[cfg(feature = "hnsw")]
-    pub async fn rebuild_hnsw_index(&self) -> Result<(), MemoryError> {
+    pub async fn rebuild_hnsw_index(
+        &self,
+    ) -> Result<crate::types::VectorArtifactBuildReceiptV1, MemoryError> {
         tracing::info!("Rebuilding HNSW index from SQLite embeddings...");
         let hnsw_config = self.inner.config.hnsw.clone();
-        let new_index = self
+        let (new_index, build_receipt) = self
             .with_read_conn(move |conn| hnsw_ops::rebuild_hnsw_from_sqlite(conn, &hnsw_config))
             .await?;
 
@@ -783,9 +786,9 @@ impl MemoryStore {
             Ok(())
         })?;
 
-        tracing::info!(active = new_index.len(), "HNSW index rebuilt");
+        tracing::info!(active = new_index.len(), receipt_generation_id = ?build_receipt.generation_id, "HNSW index rebuilt");
 
-        Ok(())
+        Ok(build_receipt)
     }
 
     /// Opportunistically flush HNSW if the configured interval has elapsed.
@@ -878,7 +881,8 @@ impl MemoryStore {
             tracing::info!("HNSW compaction not needed (deleted ratio below threshold)");
             return Ok(());
         }
-        self.rebuild_hnsw_index().await
+        let _receipt = self.rebuild_hnsw_index().await?;
+        Ok(())
     }
 
     // ─── Integrity & Diagnostics ────────────────────────────────
@@ -1931,7 +1935,7 @@ impl MemoryStore {
         #[cfg(feature = "hnsw")]
         {
             tracing::info!("Rebuilding HNSW index after re-embedding...");
-            self.rebuild_hnsw_index().await?;
+            let _receipt = self.rebuild_hnsw_index().await?;
         }
 
         Ok(count)

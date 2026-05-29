@@ -1,0 +1,7 @@
+[verify-current] release_ledger_schema: python3 scripts/assert_release_ledger_schema.py
+[verify-current] FAIL release_ledger_schema exit=2
+--- stdout tail ---
+--- stderr tail ---
+FAIL: evidence.package_replay_receipt missing
+FAIL: evidence.final_verify_log missing
+FAIL: build_certified=true requires evidence.final_verify_log

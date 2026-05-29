@@ -403,6 +403,9 @@ pub struct VectorArtifactBuildReceiptV1 {
     /// Artifact manifest digest for this generation.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub artifact_manifest_digest: Option<String>,
+    /// ID of the build receipt itself (same value stored in the generation manifest).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub build_receipt_id: Option<String>,
     /// Number of rows skipped because authoritative embeddings were invalid.
     pub skipped_row_count: usize,
     /// Wall-clock build duration in milliseconds.
@@ -1020,6 +1023,21 @@ pub struct EpisodeMeta {
     pub verification_status: VerificationStatus,
     /// Links to an EvidenceBundle.run_id (if experimentally verified).
     pub experiment_id: Option<String>,
+    /// Bitemporal valid time — when this episode fact was true in the domain.
+    pub valid_time: Option<chrono::DateTime<chrono::Utc>>,
+    /// Content-addressed digest of the episode fact payload (for supersession chain).
+    pub fact_digest: Option<String>,
+}
+
+/// Receipt for an as-of bitemporal episode query.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EpisodeAsOfReceiptV1 {
+    pub query_id: String,
+    pub as_of_valid: chrono::DateTime<chrono::Utc>,
+    pub as_of_recorded: chrono::DateTime<chrono::Utc>,
+    pub episode_count: usize,
+    pub episode_ids: Vec<String>,
+    pub excluded_superseded: usize,
 }
 
 /// Outcome of an episode's causal hypothesis.

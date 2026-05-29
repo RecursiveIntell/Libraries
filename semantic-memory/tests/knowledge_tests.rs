@@ -93,6 +93,8 @@ fn episode_meta_for_delete_namespace() -> EpisodeMeta {
             at: "2026-03-07T00:00:00Z".into(),
         },
         experiment_id: None,
+        valid_time: None,
+        fact_digest: None,
     }
 }
 

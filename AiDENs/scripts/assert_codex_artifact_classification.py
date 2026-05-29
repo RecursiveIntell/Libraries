@@ -10,8 +10,9 @@ ROOT = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
 LEDGER = ROOT / "docs" / "codex-runs" / "CURRENT_RUN.json"
 CLASS = ROOT / "docs" / "codex-runs" / "CODEX_ARTIFACT_CLASSIFICATION.json"
 RUN_ARTIFACT_RE = re.compile(r"(?:^|[/_.-])P\d+[A-Z]?(?:[_./-]|$)|CODEX|codex|handoff|phase", re.I)
-ALLOWED_PREFIXES = ("docs/codex-runs/archive/", "docs/root-markdown-archive/", "target/", ".git/")
-GENERATED_PACKAGE_RE = re.compile(r"^[^/]+-(?:codex-context|next-codex-context|release-context|codex-run-full|full-context|audit-full|source-clean|research-context)-\d{8}\.(?:zip|manifest\.json|report\.md|excluded\.json|findings\.json|codex-archive\.json)$")
+ALLOWED_PREFIXES = ("docs/codex-runs/archive/", "docs/root-markdown-archive/", "docs/source-packages/archive/", "target/", ".git/", "crates/aidens-runner/target/")
+FINISH_PACK_RE = re.compile(r"^(?:aidens|AiDENs)[-_](?:hostile_audit|p\d+[a-z]?_hermes|p\d+[a-z]?_)*finish_pack\.zip$", re.I)
+GENERATED_PACKAGE_RE = re.compile(r"^[^/]+-(?:codex-context|next-codex-context|release-context|codex-run-full|full-context|audit-full|source-clean|research-context)-\d{8}T?\d{0,6}Z?\.(?:zip|manifest\.json|report\.md|excluded\.json|findings\.json|codex-archive\.json)$")
 
 
 def fail(msgs: list[str]) -> int:
@@ -47,9 +48,11 @@ def main() -> int:
         if not p.is_file():
             continue
         rel = p.relative_to(ROOT).as_posix()
-        if rel.startswith(ALLOWED_PREFIXES) or "__pycache__" in p.parts:
+        if rel.startswith(ALLOWED_PREFIXES) or "__pycache__" in p.parts or "target" in p.parts:
             continue
         if GENERATED_PACKAGE_RE.match(rel):
+            continue
+        if FINISH_PACK_RE.match(rel):
             continue
         if RUN_ARTIFACT_RE.search(rel):
             item = classified.get(rel)

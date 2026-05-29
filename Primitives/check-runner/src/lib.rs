@@ -246,14 +246,9 @@ impl ExecutionBackend for HostBackend {
                 // - Precondition: child_pid is a process group leader spawned in this session
                 // - Postcondition: entire process group receives SIGKILL, all processes terminated
                 #[allow(clippy::arc_with_non_send_sync)]
-                unsafe {
-                    // child_pid is Option<i32> — unwrap is safe here because:
-                    // 1. The child was just spawned (Ok) — PID is always Some immediately after spawn
-                    // 2. The Option exists because id() can technically fail pre-spawn (not our case)
-                    // 3. If None, killpg(0, SIGKILL) would signal our own group — explicitly avoid that
-                    let pgid = child_pid.expect("child PID must be Some immediately after spawn");
-                    libc::killpg(pgid, libc::SIGKILL);
-                }
+                check_runner_sys::kill_process_group(
+                    child_pid.expect("child PID must be Some immediately after spawn"),
+                );
 
                 Err(RunnerError::CommandTimeout {
                     command: format!("{program} {}", args.join(" ")),
@@ -821,12 +816,14 @@ mod tests {
             .unwrap();
         std::thread::sleep(Duration::from_millis(150));
 
-        let kill_result = unsafe { libc::kill(child_pid, 0) };
+        let kill_result = check_runner_sys::process_exists(child_pid);
         let errno = std::io::Error::last_os_error()
             .raw_os_error()
             .unwrap_or_default();
+        // process_exists returns true if the process exists
+        // After timeout, the process should be gone (doesn't exist)
         assert!(
-            kill_result == -1 && errno == libc::ESRCH,
+            !kill_result && errno == libc::ESRCH,
             "timed-out child process should be gone, pid={child_pid}, kill_result={kill_result}, errno={errno}"
         );
     }
@@ -842,9 +839,7 @@ mod tests {
         let backend = HostBackend::new(&config);
         let workspace = tempfile::tempdir().unwrap();
 
-        unsafe {
-            std::env::set_var("AWS_SECRET_ACCESS_KEY", "forbidden");
-        }
+        check_runner_sys::set_env("AWS_SECRET_ACCESS_KEY", "forbidden");
         let output = runtime
             .block_on(backend.run_command(
                 workspace.path(),
@@ -854,9 +849,7 @@ mod tests {
                 5,
             ))
             .unwrap();
-        unsafe {
-            std::env::remove_var("AWS_SECRET_ACCESS_KEY");
-        }
+        check_runner_sys::remove_env("AWS_SECRET_ACCESS_KEY");
 
         assert_eq!(output.stdout, "missing");
     }

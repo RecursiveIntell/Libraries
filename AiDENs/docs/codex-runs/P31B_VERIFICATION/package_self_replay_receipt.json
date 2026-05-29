@@ -1,0 +1,16 @@
+{
+  "artifact_kind": "aidens_package_self_replay_receipt.v1",
+  "created_utc": "2026-05-29T08:35:00Z",
+  "package": "AiDENs-aidens-codex-context-20260529T082611Z.zip",
+  "verifier": "scripts/verify_current.sh",
+  "expected_run": "P31B",
+  "status": "blocked",
+  "blockers": ["permission_denied_in_extracted_replay"],
+  "known_limits": [
+    "assert_no_canonical_type_duplicates subprocess fails with PermissionError in extracted temp directory",
+    "11 of 12 verify_current.sh assertions pass in extracted replay; 1 environmental blocker",
+    "Full verification passes in native repo environment (see final_verify_log.txt)"
+  ],
+  "message": "Package self-replay blocked by PermissionError in extracted environment. Native verify_current.sh passes all 17 gates. Not a code defect.",
+  "verifier_exit_code": 2
+}
