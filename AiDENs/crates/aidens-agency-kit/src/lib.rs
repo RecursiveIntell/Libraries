@@ -1109,7 +1109,7 @@ impl AgencyPolicyEngineV1 {
         let classes = classes.into_iter().collect::<Vec<_>>();
         let reason_codes = reason_codes.into_iter().collect::<Vec<_>>();
         let blocked_behavior = blocked_behavior.into_iter().collect::<Vec<_>>();
-        let report_material = format!(
+        let _report_material = format!(
             "input={input:?};classes={classes:?};outcome={outcome:?};reason_codes={reason_codes:?};blocked_behavior={blocked_behavior:?};nudge_counter={:?}",
             nudge_counter
                 .as_ref()
@@ -1335,7 +1335,7 @@ impl AgencyPolicyEngineV1 {
             schema_version: AGENCY_POLICY_REPORT_V1_SCHEMA.into(),
             classifier_id: AGENCY_POLICY_CLASSIFIER_V1.into(),
             classifier_kind: AgencyPolicyClassifierKindV1::HeuristicBoundaryClassifier,
-            report_id: receipt_id_from_material("agency-policy-report", &report_material),
+            report_id: receipt_id("agency-policy-report"),
             surface: input.surface,
             risk_surface,
             classes,
@@ -1714,8 +1714,10 @@ fn redacted_feature_id(value: &str) -> String {
 #[track_caller]
 fn receipt_id(prefix: &str) -> String {
     let caller = std::panic::Location::caller();
+    static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let seq = COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let material = format!(
-        "agency-kit-receipt-v1:{prefix}:{}:{}:{}",
+        "agency-kit-receipt-v1:{prefix}:{}:{}:{}:{seq}",
         caller.file(),
         caller.line(),
         caller.column()
