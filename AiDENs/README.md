@@ -1,45 +1,50 @@
-# AiDENs P31A Codex Pass — Release Truth and Verification Gate Repair
+# AiDENs
 
-**Purpose:** repair AiDENs' release/run truth, final verification gate, artifact classification, CI enforcement, and package replay semantics before any further runtime or v11B/v11C expansion.
+**Current run:** `P31A-RECOVERY`  
+**Status:** `blocked` — release truth, artifact classification, and verification gate repair in progress.  
+**Last certified run:** `P30`  
+**Target run:** `P31A`  
 
-This pass is intentionally narrow. It does **not** implement the P31 boundary compiler microkernel. It does **not** add runtime receipt families. It does **not** alter semantic-memory, stack-ids, verification crates, or kernel crates except where existing final gates require path/build-scope truth.
+## What AiDENs is
 
-## Why this pass exists
+AiDENs is an orchestration, display, packaging, inspection, fixture, operator, and supported-local runtime layer for the RecursiveIntell stack. It wires, scopes, exposes, validates, and coordinates. It does not own canonical truth for memory, governance, kernel, IDs, or tool contracts.
 
-The latest package is structurally healthy enough to continue, but not clean enough to certify. The package report shows strict packaging, 1,680 files, 42 include roots, 41 external Cargo path dependency roots, and zero configured validation findings. It also shows root Markdown archival disabled, 180 root Markdown docs inspected, 26 candidates, and 149 ambiguous root Markdown files. The manifest/codex archive says current run is P30 while the active root README announces a P31 boundary compiler pack; existing scripts still default to older run assumptions. P31A fixes that first.
+## Current scope
 
-## Scope
+This repository is actively repairing:
 
-P31A may change:
+- Release/run truth ledger (`CURRENT_RUN.json`)
+- Root Markdown artifact classification and archival
+- Verification gate semantics and script alignment
+- Static safety hardening (`p30_guard` findings)
+- Build/test/package replay evidence
 
-- `AGENTS.md`
-- `README.md`
-- `STATUS.md`
-- `SOURCE_BASIS.md`
-- `SUPPORT_PROFILE.md`
-- `.github/workflows/ci.yml`
-- `docs/codex-runs/CURRENT_RUN.json`
-- `docs/codex-runs/CURRENT_RUN.md`
-- `docs/codex-runs/RUN_LEDGER.jsonl`
-- `docs/codex-runs/BUILD_SCOPE.md`
-- `docs/codex-runs/CODEX_ARTIFACT_CLASSIFICATION.json`
-- `docs/codex-runs/archive/**`
-- `docs/root-markdown-archive/**`
-- `scripts/verify_current.sh`
-- release-truth/package/classification verifier scripts under `scripts/`
+## What is not claimed
 
-P31A must not change runtime behavior except for verifier/package scripts and docs. Any runtime receipt/ID/patch/search issue discovered must be recorded as a blocker/deferred issue for P31B, not implemented here.
+- v11B, v11C, production, broad autonomy, or cloud readiness
+- Boundary compiler runtime integration (deferred to post-P31A)
+- Canonical ownership of sibling-crate semantics
+- Full test certification until command bar passes
 
-## Deliverables
+## Quick start
 
-1. Canonical release ledger.
-2. Protected docs generated or checked against the ledger.
-3. Root Markdown and Codex artifact classification repaired.
-4. `verify_current.sh` replaced with a real command bar.
-5. CI runs `verify_current.sh` without stale P27/P28/P30 environment assumptions.
-6. Package self-replay procedure defined and enforced.
-7. Final report with exact commands, outputs, pass/fail/skipped status, blockers, and support label.
+1. Read `docs/codex-runs/CURRENT_RUN.json` for the active run identity.
+2. Read `AGENTS.md` for execution doctrine.
+3. Run `scripts/verify_current.sh` after any material change.
+4. Check `docs/codex-runs/BUILD_SCOPE.md` for current build posture.
 
-## Start here
+**Support label:** `p31a-blocked-release-truth-repair`  
+**Production status:** not production-cloud-ready  
+**Local candidate status:** supported-local-candidate
 
-Paste `01_P31A_MAIN_CODEX_PROMPT.md` into Codex from the repository root. Then paste manual injections from `03_P31A_MANUAL_PHASE_INJECTIONS.md` between phases.
+## Directory guide
+
+- `crates/` — Rust workspace crates
+- `scripts/` — Verification, packaging, and assertion scripts
+- `docs/codex-runs/` — Active run docs and archive
+- `matrices/` — Issue and audit matrices
+- `scaffold/` — Experimental / deferred scaffold material (not production-wired)
+
+## Support
+
+See `SUPPORT_PROFILE.md` for current support posture and known limitations.

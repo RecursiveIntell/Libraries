@@ -14,8 +14,33 @@ FORBIDDEN = [
     "fully v11a compliant",
     "v11b complete",
     "production cloud ready",
+]
+
+# Negation-safe forbidden: trigger only if NOT preceded by "not " or similar
+EXACT_FORBIDDEN = [
     "production-cloud-ready",
 ]
+
+
+def is_forbidden_claim(text_lower: str) -> list[str]:
+    hits = []
+    for phrase in FORBIDDEN:
+        if phrase in text_lower:
+            hits.append(phrase)
+    for phrase in EXACT_FORBIDDEN:
+        idx = 0
+        while True:
+            pos = text_lower.find(phrase, idx)
+            if pos == -1:
+                break
+            start = max(0, pos - 4)
+            prefix = text_lower[start:pos].rstrip()
+            if prefix.endswith("not") or prefix.endswith("no ") or prefix.endswith("non-"):
+                idx = pos + len(phrase)
+                continue
+            hits.append(phrase)
+            break
+    return hits
 REQUIRED_DISCLOSURES = [
     "supported-local-candidate",
     "not production-cloud-ready",
@@ -51,8 +76,7 @@ def main() -> int:
         text = doc.read_text(encoding="utf-8", errors="replace")
         combined += "\n" + text
         low = text.lower()
-        for phrase in FORBIDDEN:
-            if phrase in low:
+        for phrase in is_forbidden_claim(low):
                 errors.append(f"{doc.relative_to(ROOT)} contains forbidden claim: {phrase}")
     low_combined = combined.lower()
     for marker in REQUIRED_DISCLOSURES:

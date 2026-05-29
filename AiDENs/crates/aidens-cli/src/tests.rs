@@ -485,7 +485,12 @@ fn package_completion_audit_reports_deferred_horizon_without_healthy_claims() {
 
     assert_eq!(
         report.source_basis,
-        workspace_source_basis_label(&Path::new(env!("CARGO_MANIFEST_DIR")).ancestors().nth(2).unwrap())
+        workspace_source_basis_label(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .ancestors()
+                .nth(2)
+                .unwrap()
+        )
     );
     assert!(!report
         .source_basis

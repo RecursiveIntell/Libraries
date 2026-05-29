@@ -1,0 +1,134 @@
+{
+  "created_utc": "2026-05-29T05:29:24Z",
+  "error_count": 11,
+  "findings": [
+    {
+      "code": "context-package-command-evidence-missing",
+      "detail": "Context/audit package manifest must include command-run evidence (commands_run.log, commands_run.receipts.jsonl, COMMAND_RECEIPTS.jsonl, COMMAND_EXECUTION_RECEIPTS.jsonl, or *_COMMANDS_RUN.md).",
+      "path": "/",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.codex-archive.json",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.excluded.json",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.findings.json",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.manifest.json",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.report.md",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.codex-archive.json",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.excluded.json",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.findings.json",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.manifest.json",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-active-after-normalization",
+      "detail": "Root package artifact remains active after archival normalization.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.report.md",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.codex-archive.json",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.excluded.json",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.findings.json",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.manifest.json",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052137Z.report.md",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.codex-archive.json",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.excluded.json",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.findings.json",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.manifest.json",
+      "severity": "warning"
+    },
+    {
+      "code": "root-package-archive-candidate-remains",
+      "detail": "Root package artifact remains because archive root pass used dry-run mode.",
+      "path": "AiDENs-aidens-next-codex-context-20260529T052331Z.report.md",
+      "severity": "warning"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "warning_count": 10
+}

@@ -1,0 +1,26 @@
+{
+  "created_utc": "2026-05-29T05:29:48Z",
+  "error_count": 3,
+  "findings": [
+    {
+      "code": "codex-archive-disabled-with-active-stale",
+      "detail": "--no-archive-codex-runs is diagnostic only; strict packaging cannot proceed with active stale Codex-run artifacts.",
+      "path": "/",
+      "severity": "error"
+    },
+    {
+      "code": "context-package-command-evidence-missing",
+      "detail": "Context/audit package manifest must include command-run evidence (commands_run.log, commands_run.receipts.jsonl, COMMAND_RECEIPTS.jsonl, COMMAND_EXECUTION_RECEIPTS.jsonl, or *_COMMANDS_RUN.md).",
+      "path": "/",
+      "severity": "error"
+    },
+    {
+      "code": "root-package-archive-disabled-with-active-artifacts",
+      "detail": "Strict packaging cannot proceed while root package artifacts remain active.",
+      "path": "/",
+      "severity": "error"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "warning_count": 0
+}

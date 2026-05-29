@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-29T05:46:01Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260529T054601Z/files/docs/source-packages/archive/20260529T052138Z/files/P26_HARD_AUDIT.md",
+      "bytes": 2413,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P26_HARD_AUDIT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "f61c16eadd56df1c333324d3b23f37fc154f98d09f842aacc8fe104e0312c7ee"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P26",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

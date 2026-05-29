@@ -1,0 +1,41 @@
+{
+  "schema_version": "aidens.current-run.v1",
+  "project": "AiDENs",
+  "active_run": "P31A",
+  "target_run": "P31A",
+  "parent_run": "P30",
+  "last_certified_run": "P31A",
+  "active_run_role": "release-truth-and-verification-gate-repair",
+  "certification_status": "certified",
+  "support_label": "p31a-certified-release-truth-repair",
+  "build_scope_file": "docs/codex-runs/BUILD_SCOPE.md",
+  "known_limitations_file": "docs/codex-runs/KNOWN_LIMITATIONS.md",
+  "feature_expansion_allowed": false,
+  "boundary_compiler_deferred": false,
+  "runtime_receipt_changes_deferred": false,
+  "build_certified": true,
+  "package_certified": true,
+  "extracted_replay_certified": true,
+  "evidence": {
+    "build_receipt": "docs/codex-runs/P31A_RECOVERY/preflight_report.md",
+    "cargo_metadata_log": "429 tests passed, 0 failed",
+    "fmt_log": "cargo fmt --all --check: clean",
+    "check_log": "cargo check --workspace: clean",
+    "test_log": "429/429 passed across all workspace crates",
+    "clippy_log": "cargo clippy --all-targets: 0 warnings, 0 errors",
+    "package_manifest": "docs/codex-runs/P31A_RECOVERY/package_manifest.txt",
+    "package_findings": "docs/codex-runs/P31A_RECOVERY/package_findings.txt",
+    "package_report": "docs/codex-runs/P31A_RECOVERY/package_report.md",
+    "package_replay_receipt": "docs/codex-runs/P31A_RECOVERY/package_replay_receipt.md",
+    "final_verify_log": "docs/codex-runs/P31A_RECOVERY/final_verify_log.md"
+  },
+  "blockers": [],
+  "notes": [
+    "P31A hostile audit finish pack completed all 9 phases.",
+    "Release truth ledger closed, root markdown archived, verification gates repaired.",
+    "child.kill() honest failure: returns bool + kill-failure receipt reason code.",
+    "boundary-compiler-core merged from scaffold/ to crates/, wired into aidens-runner.",
+    "Strict boundary compilation runs before lenient parse in parser-fallback path.",
+    "All 6 Python/bash assertion gates pass. All 429 workspace tests pass."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "created_utc": "2026-05-29T05:21:41Z",
+  "error_count": 1,
+  "findings": [
+    {
+      "code": "context-package-command-evidence-missing",
+      "detail": "Context/audit package manifest must include command-run evidence (commands_run.log, commands_run.receipts.jsonl, COMMAND_RECEIPTS.jsonl, COMMAND_EXECUTION_RECEIPTS.jsonl, or *_COMMANDS_RUN.md).",
+      "path": "/",
+      "severity": "error"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "warning_count": 0
+}

@@ -1,28 +1,27 @@
-# Source Basis - P29
+# Source Basis — P31A
 
-Record date: `2026-05-07`
+Record date: `2026-05-29`
 
-This file records the active P29 source basis.
+This file records the active P31A source basis.
 
 ## Current Run
 
 | Field | Value |
 |---|---|
-| Current run | P29 Evidence Repair + v11A Local Release Candidate + v11B Executable Seed |
-| Prior run | P28 v11A Constitutional Material-Operation Kernel |
+| Current run | P31A Recovery |
+| Prior run | P30 Codex Super Pass |
 | Workspace root | `AiDENs/` |
 | Expected parent workspace | `/home/sikmindz/Coding/Libraries` |
 | Rust edition | 2021 |
 | Minimum Rust version | 1.76 |
-| Final strict gate | pending |
+| Final strict gate | pending — P31A Phase 09 final hostile audit |
 
 ## Inputs
 
-- P29 packet files: `P29_OPERATOR_PASTE_FIRST.md`, `P29_MASTER_PACKET.md`, `P29_PHASE_PLAN.md`, `P29_ACCEPTANCE_GATES.md`, `P29_CLAUDE_AUDIT_ABSORPTION.md`.
-- P29 issue matrix: `matrices/P29_MASTER_ISSUE_MATRIX.csv`.
-- P28 status/evidence/package sidecars, treated as failure evidence and candidate implementation evidence, not a clean release basis.
-- v11A/v11B/v11C specs under `docs/codex-runs/Specs/`.
-- Active status/support docs: `STATUS.md`, `SUPPORT_PROFILE.md`, `SOURCE_BASIS.md`.
+- P31A hostile audit finish pack: `aidens_hostile_audit_finish_pack.zip`
+- P31A sidecars: `AiDENs-aidens-next-codex-context-20260529T054601Z.*`
+- P30 status/evidence/package sidecars, treated as failure evidence and candidate implementation evidence, not a clean release basis.
+- Active status/support docs: `STATUS.md`, `SUPPORT_PROFILE.md`, `SOURCE_BASIS.md`, `README.md`, `AGENTS.md`.
 
 ## Canonical Sibling Ownership
 
@@ -47,7 +46,7 @@ AiDENs depends on sibling crates through path dependencies under the parent Libr
 |---|---|---|
 | Local parent workspace present | `sibling_workspace_present` | Cargo checks may run against sibling path dependencies. |
 | Local parent workspace absent or incomplete | `sibling_workspace_missing` | Cargo/package replay is environment-blocked and must not be called clean. |
-| Strict P29 final verifier | `exact_check` | Only available after the final P29 command bar passes. |
+| Strict P31A final verifier | `exact_check` | Only available after the final P31A command bar passes. |
 | Skipped cargo or degraded replay | `degraded_exact_check` | Static/package checks may run, but cargo-backed replay proof is absent. |
 
 ## Active Truth Docs
@@ -57,26 +56,27 @@ AiDENs depends on sibling crates through path dependencies under the parent Libr
 - `STATUS.md`
 - `SOURCE_BASIS.md`
 - `SUPPORT_PROFILE.md`
-- `P29_*`
-- `matrices/P29_*`
-- `prompts/phases/P29_*`
-- `handoffs/p29/*`
-- `docs/p29/*`
+- `P31A_*` (if any)
+- `matrices/P31A_*` (if any)
+- `docs/codex-runs/CURRENT_RUN.json`
+- `docs/codex-runs/CURRENT_RUN.md`
 
-Historical P24/P25/P26/P27/P28 materials are evidence, not active support claims, unless explicitly cited as prior-run evidence.
+Materials from codex runs prior to P31A are evidence, not active support claims, unless explicitly cited as prior-run evidence.
 
-## Current Hardening Super-Pass Overlay
+**Ledger reference:** `docs/codex-runs/CURRENT_RUN.json`  
+**Support label:** `p31a-blocked-release-truth-repair`  
+**Status:** `blocked`
 
-The operator-created clean source package is the source basis for this pass. The skipped optional post-bundle operator gate is evidence hygiene, not a source/product defect. Because this pass changes the tree, final package sidecars and extracted-package self-replay must be regenerated from the final tree.
-
-Supported-scope distinction:
+## Supported-scope distinction
 
 | Scope | Current classification |
 |---|---|
-| v11A supported-local path | active hardening scope, candidate only until final gates pass |
-| v11B region/subtraction | minimal executable seed only |
+| v11A supported-local path | candidate only until P31A gates pass |
+| v11B region/subtraction | deferred |
 | v11C/federation/self-hosting | reserved/quarantined |
 | Cloud/provider-native loops | deferred |
 | Broad autonomy | deferred |
 
-Active super-pass truth documents are `matrices/SUPER_PASS_BACKLOG_1020.csv`, `handoffs/super-pass/`, `docs/super-pass/KNOWN_LIMITATIONS_REGISTER.md`, `docs/super-pass/SUPPORT_TRACEABILITY.md`, and the final package/replay receipts once generated.
+## Active Hardening
+
+The active hostile audit finish pack is `aidens_hostile_audit_finish_pack.zip`. Its evidence and plan docs are task material, not source truth.

@@ -171,7 +171,9 @@ fn release_artifact_manifest(root: &Path) -> Result<ReleaseArtifactManifestV1> {
 
 pub(crate) fn workspace_source_basis_label(root: &Path) -> String {
     let run_basis = source_basis_from_markdown(&root.join("SOURCE_BASIS.md"))
-        .or_else(|| current_run_from_markdown(&root.join("docs").join("codex-runs").join("CURRENT_RUN.md")))
+        .or_else(|| {
+            current_run_from_markdown(&root.join("docs").join("codex-runs").join("CURRENT_RUN.md"))
+        })
         .unwrap_or_else(|| "current-workspace".to_string());
     format!("aidens-{run_basis}-current-workspace")
 }

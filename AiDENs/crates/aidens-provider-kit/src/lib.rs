@@ -491,7 +491,7 @@ pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
         },
         ProviderBackendMatrixEntryV1 {
             provider_kind: "openai-compatible".into(),
-            status: ProviderBackendStatusV1::Unsupported,
+            status: ProviderBackendStatusV1::BoundaryUnavailable,
             route_label: ProviderRouteKindV1::Unavailable.to_string(),
             api_key_required: true,
             chat_completion_executable: false,
@@ -502,7 +502,7 @@ pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
         },
         ProviderBackendMatrixEntryV1 {
             provider_kind: "compatible".into(),
-            status: ProviderBackendStatusV1::Unsupported,
+            status: ProviderBackendStatusV1::BoundaryUnavailable,
             route_label: ProviderRouteKindV1::Unavailable.to_string(),
             api_key_required: true,
             chat_completion_executable: false,
@@ -513,7 +513,7 @@ pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
         },
         ProviderBackendMatrixEntryV1 {
             provider_kind: "openai".into(),
-            status: ProviderBackendStatusV1::Unsupported,
+            status: ProviderBackendStatusV1::BoundaryUnavailable,
             route_label: ProviderRouteKindV1::Unavailable.to_string(),
             api_key_required: true,
             chat_completion_executable: false,
@@ -524,7 +524,7 @@ pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
         },
         ProviderBackendMatrixEntryV1 {
             provider_kind: "openrouter".into(),
-            status: ProviderBackendStatusV1::Unsupported,
+            status: ProviderBackendStatusV1::BoundaryUnavailable,
             route_label: ProviderRouteKindV1::Unavailable.to_string(),
             api_key_required: true,
             chat_completion_executable: false,
@@ -535,7 +535,7 @@ pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
         },
         ProviderBackendMatrixEntryV1 {
             provider_kind: "anthropic".into(),
-            status: ProviderBackendStatusV1::Unsupported,
+            status: ProviderBackendStatusV1::BoundaryUnavailable,
             route_label: ProviderRouteKindV1::Unavailable.to_string(),
             api_key_required: true,
             chat_completion_executable: false,
@@ -1279,7 +1279,7 @@ mod tests {
             "anthropic",
         ] {
             let entry = matrix.entry_for(provider).unwrap();
-            assert_eq!(entry.status, ProviderBackendStatusV1::Unsupported);
+            assert_eq!(entry.status, ProviderBackendStatusV1::BoundaryUnavailable);
             assert!(!entry.chat_completion_executable);
             assert!(!entry.native_tool_loop_executable);
             assert!(!entry.streaming_executable);
@@ -1345,7 +1345,7 @@ mod tests {
                 expected["status"],
                 "unavailable_unless_implemented_and_tested"
             );
-            assert_eq!(actual.status, ProviderBackendStatusV1::Unsupported);
+            assert_eq!(actual.status, ProviderBackendStatusV1::BoundaryUnavailable);
             assert!(!actual.chat_completion_executable);
             assert!(!actual.native_tool_loop_executable);
         }
@@ -1410,7 +1410,7 @@ mod tests {
                     .entry_for(provider)
                     .unwrap_or_else(|| panic!("missing matrix row for {provider}"))
                     .status,
-                ProviderBackendStatusV1::Unsupported
+                ProviderBackendStatusV1::BoundaryUnavailable
             );
         }
     }

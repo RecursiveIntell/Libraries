@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-29T05:46:01Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P28-20260529T054601Z/files/docs/source-packages/archive/20260529T052138Z/files/P28_MASTER_ISSUE_MATRIX.md",
+      "bytes": 2385,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P28_MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "1bb9782869a4f50ff9120949247bf48cbf45f43410adb4c12674db4e1e3c0ddb"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P28",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

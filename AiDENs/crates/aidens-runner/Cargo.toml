@@ -19,6 +19,7 @@ aidens-tool-kit = { path = "../aidens-tool-kit" }
 aidens-permit-kit = { path = "../aidens-permit-kit" }
 aidens-budget-kit = { path = "../aidens-budget-kit" }
 aidens-boundary-kit = { path = "../aidens-boundary-kit" }
+boundary-compiler-core = { path = "../boundary-compiler-core" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

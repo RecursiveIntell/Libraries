@@ -291,13 +291,11 @@ fn parser_fallback_rejects_malformed_entries_without_dropping_them() {
 
     assert_eq!(parsed.calls.len(), 1);
     assert_eq!(parsed.calls[0].tool_id, "aidens:repo-read:1");
-    assert!(parsed
-        .calls[0]
+    assert!(parsed.calls[0]
         .reason_codes
         .iter()
         .any(|reason| reason == "parser-fallback-tool-call"));
-    assert!(parsed
-        .calls[0]
+    assert!(parsed.calls[0]
         .reason_codes
         .iter()
         .any(|reason| reason == "parser-fallback-degraded"));
@@ -322,7 +320,7 @@ fn looks_like_tool_call_payload_requires_strict_json_shape() {
         r#"{"tool_call":{"tool_id":"aidens:repo-read:1","input":{"path":"README.md"}}}"#,
     ));
     assert!(!looks_like_tool_call_payload(
-        r#"{"meta":{"tool_call":{"tool_id":"aidens:repo-read:1","input":{"path":"README.md"}}}}"#, 
+        r#"{"meta":{"tool_call":{"tool_id":"aidens:repo-read:1","input":{"path":"README.md"}}}}"#,
     ));
 }
 

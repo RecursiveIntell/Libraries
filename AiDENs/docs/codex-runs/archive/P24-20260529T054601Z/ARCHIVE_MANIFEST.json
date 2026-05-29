@@ -1,0 +1,32 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-29T05:46:01Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260529T054601Z/files/docs/source-packages/archive/20260529T052138Z/files/P24_HARD_AUDIT.md",
+      "bytes": 6443,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P24_HARD_AUDIT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "0eacaa0b5ce941d4f21e395e93ad9bf52dd7be7d0cd5dd517e3ff1a07f18bfc3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260529T054601Z/files/docs/source-packages/archive/20260529T052138Z/files/P24_ISSUE_MATRIX.md",
+      "bytes": 13257,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P24_ISSUE_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "836884a992b26e5e4f2ac5be34b52d2d1fde05292b774a0d165e4055483bc99d"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P24",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

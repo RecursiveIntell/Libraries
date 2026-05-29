@@ -1,0 +1,32 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-29T05:46:01Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/docs/source-packages/archive/20260529T052138Z/files/00_P31_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 8047,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/00_P31_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "42510832937667919ed2a36adf7c099cccf884731fa46d03ca738cba121f10d6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/docs/source-packages/archive/20260529T052138Z/files/01_P31_GOAL_MODE_PROMPT.md",
+      "bytes": 2479,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/01_P31_GOAL_MODE_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "82fce9eddfe3e1dacce2fa9774daeab47b0f4677a9f1f8d5706434ea8d0b07f6"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P31",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

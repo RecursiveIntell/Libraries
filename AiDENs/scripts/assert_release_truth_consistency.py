@@ -24,9 +24,36 @@ FORBIDDEN_PHRASES = [
     "fully v11a compliant",
     "v11b complete",
     "production cloud ready",
-    "production-cloud-ready",
     "complete autonomous platform",
 ]
+
+# Exact-forbidden: these trigger even inside negations, so use exclusion terms instead
+EXACT_FORBIDDEN = [
+    "production-cloud-ready",
+]
+
+
+def is_forbidden(text_lower: str) -> list[str]:
+    hits = []
+    for phrase in FORBIDDEN_PHRASES:
+        if phrase in text_lower:
+            hits.append(phrase)
+    # "production-cloud-ready" only triggers if NOT preceded by "not " or similar negation
+    for phrase in EXACT_FORBIDDEN:
+        idx = 0
+        while True:
+            pos = text_lower.find(phrase, idx)
+            if pos == -1:
+                break
+            # Check if preceded by a negation prefix
+            start = max(0, pos - 4)
+            prefix = text_lower[start:pos].rstrip()
+            if prefix.endswith("not") or prefix.endswith("no ") or prefix.endswith("non-"):
+                idx = pos + len(phrase)
+                continue
+            hits.append(phrase)
+            break
+    return hits
 
 
 def fail(errors: list[str]) -> int:
@@ -51,9 +78,8 @@ def main() -> int:
             continue
         text = doc.read_text(encoding="utf-8", errors="replace")
         low = text.lower()
-        for phrase in FORBIDDEN_PHRASES:
-            if phrase in low:
-                errors.append(f"{doc.relative_to(ROOT)} contains forbidden support/release phrase: {phrase}")
+        for phrase in is_forbidden(low):
+            errors.append(f"{doc.relative_to(ROOT)} contains forbidden support/release phrase: {phrase}")
         for expected in [active, last, status, support]:
             if expected and expected not in text and expected.lower() not in low:
                 errors.append(f"{doc.relative_to(ROOT)} missing ledger value {expected!r}")

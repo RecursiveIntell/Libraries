@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-05-29T05:46:01Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P25-20260529T054601Z/files/docs/source-packages/archive/20260529T052138Z/files/P25_HARD_AUDIT.md",
+      "bytes": 6722,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P25_HARD_AUDIT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P25",
+      "sha256": "81284a72000bd4219e0bb32ee40aa3babdd679576a7155cd826797c0c6b3e979"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "run_id": "P25",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

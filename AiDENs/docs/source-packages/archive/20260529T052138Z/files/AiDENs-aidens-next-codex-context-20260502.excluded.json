@@ -1,0 +1,680 @@
+{
+  "created_utc": "2026-05-02T07:01:39Z",
+  "excluded": [
+    {
+      "path": "AiDENs/AiDENs 4\u204426.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260502.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-next-codex-context-20260502.codex-archive.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "AiDENs/AiDENs.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/docs/matrices/P0_DUPLICATE_TYPES.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/00_CODEX_START_HERE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/01_SOURCE_AND_EXTRACTION_MAP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/02_CRATE_BOUNDARY_MAP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/03_IMPLEMENTATION_PHASES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/04_ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/05_FOOTGUN_TEST_MATRIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/06_RECALL_SOURCE_TOUCH_MAP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/07_API_TARGETS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/08_CI_AND_COMMANDS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/09_CODEX_PHASE0_PROMPT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/10_CODEX_PHASE1_PROMPT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/11_CODEX_PHASE2_PROMPT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/12_DEFERRED_ADVANCED_PROMPT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/13_DEPENDENCY_BOUNDARY_CHECKLIST.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/14_DESIGN_LAWS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/15_CURRENT_RECALL_AUDIT_SUMMARY.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/APP_PLAN_AND_DOCTOR_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/AUDITOR_HANDOFF.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/CANONICAL_OWNER_MAP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/CURRENT_AIDENS_AUDIT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/DEPENDENCY_AND_PATH_GUIDE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/EVIDENCE_REPORTING_REQUIREMENTS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/FINAL_STATE_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/FORBIDDEN_PATTERNS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/HUMAN_GUARDRAIL_PROMPTS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/IMPLEMENTATION_SEQUENCE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/NON_GOALS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/ODD_COMBINATION_MATRIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/OPEN_AMBIGUITIES_AND_STOP_RULES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/OPERATOR_QUICKSTART.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/OWNERSHIP_COLLAPSE_ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/PROVIDER_INTEGRATION_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/RESEARCH_CONSTRAINTS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/RE_RUN_AND_VERIFICATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/RISK_REGISTER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/SOURCE_ROOTS_AND_TOUCH_MAP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/TOOL_DISPATCH_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/CANONICAL_TYPE_INVENTORY.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/COMPATIBILITY_LEDGER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/DIGEST_IDENTITY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/FINAL_AUDITOR_HANDOFF.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/FINAL_GATE_OUTPUTS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/FINAL_OWNERSHIP_COLLAPSE_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/FINAL_QUARANTINE_LEDGER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/FINAL_UNRESOLVED_RISKS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/SCHEMA_AUTHORITY_SOURCE_OF_TRUTH.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/quarantine/delegation-kit-attestation-settlement.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/quarantine/phase05-schema-sketches.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/matrices/P0_DUPLICATE_TYPES.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/matrices/SOURCE_OF_TRUTH_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/matrices/TYPE_CLASSIFICATION_TEMPLATE.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/02_AIDENS_END_PRODUCT_ARCHITECTURE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/03_CRATE_BOUNDARY_MAP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/04_EXTRACTION_PROCEDURE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/05_CURRENT_RECALL_FOOTGUNS_AND_FIXES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/06_ARTIFACT_AND_CONTRACT_MODEL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/07_APP_PLAN_AND_PROFILE_MODEL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/08_PROVIDER_TOOL_SECURITY_MODEL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/10_QUEUE_SCHEDULE_DAEMON_UI_MODEL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/11_TEST_AND_CONFORMANCE_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/12_MIGRATION_ISSUE_MATRIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/13_IMPLEMENTATION_ROADMAP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/14_RISK_REGISTER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/15_API_SKETCHES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/16_TRACEABILITY_MATRIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/17_RESEARCH_SYNTHESIS_AND_DESIGN_LAWS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/18_V0_1_MINIMUM_PRODUCT_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/MANIFEST.txt",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/prior-design-packet/README.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/templates/FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/templates/PHASE_REPORT_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/p22/templates/QUARANTINE_RECORD_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/FINAL_AUDIT_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/KNOWN_LIMITATIONS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_00_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_01_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_02_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_03_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_04_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_05_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_06_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_07_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/handoffs/p22/PHASE_08_REPORT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260425.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260429.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260430.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_00_PREFLIGHT_HOSTILE_AUDIT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_00_PREFLIGHT_SOURCE_BASIS_AND_CONTAMINATION_INVENTORY.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_01_ZPY_ARCHIVAL_NORMALIZATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_01_ZPY_TOTAL_CLOSURE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_02_ARCHIVE_CLASSIFICATION_AND_REPO_HYGIENE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_02_PACKAGE_POLICY_AND_VERIFIER_INTEGRATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_03_APPLY_REPO_NORMALIZATION_AND_ACTIVE_DOC_CLEANUP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_03_PACKAGE_MODE_AND_REPLAY_VERIFIER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_04_AGENT_RUN_CAPABILITY_VERTICAL_SLICE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_04_RELEASE_TRUTH_DOCS_AND_OPERATOR_STATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_05_OPERATOR_CLI_AND_SUPPORT_TIER_PRODUCT_FLOW.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_05_SECRET_REDACTION_AND_API_KEY_WARNING_CLOSURE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_06_ASSERTION_SUITE_AND_CI_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_06_PROVENANCE_RECEIPT_AND_EXECUTION_CONTEXT_HARDENING.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_07_GUARDED_PRODUCT_STRETCH.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_07_TEST_MATRIX_CI_AND_HOSTILE_ASSERTIONS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_08_FINAL_HOSTILE_AUDIT_AND_RELEASE_PACKAGE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/prompts/phases/PHASE_08_FINAL_REPLAY_AUDIT_AND_HANDOFF.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/assert_p22_codex_archival_hygiene.py",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/assert_p22_release_package_clean.py",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/assert_p22_zpy_archive_contract.py",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/p22_collect_final_audit.sh",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/p22_secret_scan_fixture_test.py",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/p22_verify.sh",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/p22_verify_release_archive.sh",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/p22_zpy_archival_selftest.py",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "Libraries(3-25-26).zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20442-2.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20443.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "MASTER_AUDIT_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "MASTER_ISSUE_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "discovery-portfolio/tests/property_contracts.proptest-regressions",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "forge-pilot/CODEX_IMPLEMENTATION_PROMPT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "libraries 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-3.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-4.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260323.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260324.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260326.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260328.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260330.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "schemas.7z",
+      "reason": "archive-file"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": "AiDENs/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-app-kit/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-cli/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "AiDENs/scripts/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "forge-memory-bridge/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "forge-memory-bridge/.git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "stack-ids/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "stack-ids/.git",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "summary": {
+    "archive-file": 23,
+    "doc-binary-disabled": 2,
+    "generated-output": 1,
+    "generated-sidecar": 4,
+    "stale-codex-artifact-disabled": 125,
+    "unsupported-extension-or-basename": 1
+  }
+}

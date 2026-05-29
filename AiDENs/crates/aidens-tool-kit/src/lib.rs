@@ -25,6 +25,9 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 pub mod canonical_stack;
 mod exposure;
 
+// Delegate tool-runtime types to the canonical llm_tool_runtime crate.
+pub use llm_tool_runtime;
+
 pub use exposure::ToolExposurePolicyV1;
 
 #[derive(Debug, Clone, Default)]
@@ -867,7 +870,7 @@ impl ToolDispatcher {
         }
     }
 
-fn sandbox_scope_for(&self, tool_id: &str) -> String {
+    fn sandbox_scope_for(&self, tool_id: &str) -> String {
         const UNKNOWN_SANDBOX_SCOPE: &str = "unknown-sandbox-root";
         self.registry
             .executors
@@ -877,9 +880,9 @@ fn sandbox_scope_for(&self, tool_id: &str) -> String {
                 | ToolExecutorV1::RepoList { sandbox_root }
                 | ToolExecutorV1::FileStat { sandbox_root }
                 | ToolExecutorV1::RepoSearch { sandbox_root }
-            | ToolExecutorV1::PatchPropose { sandbox_root }
-            | ToolExecutorV1::PatchApply { sandbox_root }
-            | ToolExecutorV1::RunChecks { sandbox_root } => sandbox_root.display().to_string(),
+                | ToolExecutorV1::PatchPropose { sandbox_root }
+                | ToolExecutorV1::PatchApply { sandbox_root }
+                | ToolExecutorV1::RunChecks { sandbox_root } => sandbox_root.display().to_string(),
             })
             .or_else(|| self.registry.sandbox_root_display())
             .unwrap_or_else(|| UNKNOWN_SANDBOX_SCOPE.into())
@@ -1475,6 +1478,9 @@ fn run_checks(
             "command-output-partial-after-timeout".into(),
         ];
     }
+    if timed_output.kill_failed {
+        receipt.reason_codes.push("kill-failure".into());
+    }
     if stdout_truncated {
         receipt.reason_codes.push("stdout-truncated".into());
     }
@@ -1507,6 +1513,7 @@ const MAX_COMMAND_OUTPUT_BYTES: usize = 65_536;
 struct TimedCommandOutput {
     output: std::process::Output,
     timed_out: bool,
+    kill_failed: bool,
 }
 
 fn capped_utf8_lossy(bytes: &[u8], cap: usize) -> String {
@@ -1538,13 +1545,15 @@ fn run_command_with_timeout(
             return Ok(TimedCommandOutput {
                 output: child.wait_with_output()?,
                 timed_out: false,
+                kill_failed: false,
             });
         }
         if started.elapsed() >= timeout {
-            terminate_timed_out_command(&mut child, &command[0])?;
+            let kill_failed = terminate_timed_out_command(&mut child, &command[0]);
             return Ok(TimedCommandOutput {
                 output: child.wait_with_output()?,
                 timed_out: true,
+                kill_failed,
             });
         }
         let elapsed = started.elapsed();
@@ -1554,18 +1563,19 @@ fn run_command_with_timeout(
     }
 }
 
-fn terminate_timed_out_command(child: &mut Child, command_label: &str) -> anyhow::Result<()> {
+fn terminate_timed_out_command(child: &mut Child, command_label: &str) -> bool {
     #[cfg(unix)]
     {
         if terminate_unix_process_group(child.id()).is_ok() {
-            return Ok(());
+            return false;
         }
     }
     match child.kill() {
-        Ok(()) => Ok(()),
-        Err(_) if child.try_wait()?.is_some() => Ok(()),
+        Ok(()) => false,
+        Err(_) if child.try_wait().is_ok_and(|s| s.is_some()) => false,
         Err(error) => {
-            Err(error).with_context(|| format!("failed to kill timed-out command {command_label}"))
+            eprintln!("WARNING: kill-failure for timed-out command {command_label}: {error}");
+            true
         }
     }
 }

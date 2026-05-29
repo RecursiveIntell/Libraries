@@ -364,11 +364,7 @@ fn p04_permit_scope_requires_risk_tool_sandbox_and_execution_family() {
 #[test]
 fn p04_unscoped_permit_does_not_match_any_tool_or_root() {
     let context = AidensRunContextV1::new("p04-test-unscoped");
-    let unscoped = PermitGrantV1::new(
-        CanonicalToolSideEffectClass::Admin,
-        "/repo",
-        "operator",
-    );
+    let unscoped = PermitGrantV1::new(CanonicalToolSideEffectClass::Admin, "/repo", "operator");
 
     assert!(!unscoped.matches_scope(
         &CanonicalToolSideEffectClass::Admin,
@@ -391,7 +387,7 @@ fn p04_unscoped_permit_does_not_match_any_tool_or_root() {
         None,
         None,
     ));
-    let with_context = unscoped.with_execution_context(&context);
+    let with_context = unscoped.for_execution_context(&context);
     assert!(!with_context.matches_scope(
         &CanonicalToolSideEffectClass::Admin,
         "aidens:file-write:1",

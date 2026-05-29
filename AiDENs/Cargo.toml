@@ -33,7 +33,8 @@ members = [
     "crates/aidens-profile-research",
     "crates/aidens-profile-desktop",
     "crates/aidens-profile-daemon",
-    "crates/aidens-profile-memory"
+    "crates/aidens-profile-memory",
+    "crates/boundary-compiler-core"
 ]
 
 [workspace.package]

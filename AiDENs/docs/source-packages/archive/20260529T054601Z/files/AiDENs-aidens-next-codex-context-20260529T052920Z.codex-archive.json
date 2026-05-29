@@ -1,0 +1,107 @@
+{
+  "active_stale_after": [],
+  "archive_only": false,
+  "archive_root": "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive",
+  "collisions": [],
+  "current_run": "P30",
+  "dry_run": true,
+  "enabled": true,
+  "errors": [],
+  "manifest_paths": [
+    "docs/codex-runs/archive/P24-20260529T052920Z/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P25-20260529T052920Z/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P26-20260529T052920Z/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P27-20260529T052920Z/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P28-20260529T052920Z/ARCHIVE_MANIFEST.json",
+    "docs/codex-runs/archive/P31/ARCHIVE_MANIFEST.json"
+  ],
+  "moved": [],
+  "planned": [
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260529T052920Z/files/docs/source-packages/archive/20260529T052138Z/files/P24_HARD_AUDIT.md",
+      "bytes": 6443,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P24_HARD_AUDIT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "0eacaa0b5ce941d4f21e395e93ad9bf52dd7be7d0cd5dd517e3ff1a07f18bfc3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P24-20260529T052920Z/files/docs/source-packages/archive/20260529T052138Z/files/P24_ISSUE_MATRIX.md",
+      "bytes": 13257,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P24_ISSUE_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P24",
+      "sha256": "836884a992b26e5e4f2ac5be34b52d2d1fde05292b774a0d165e4055483bc99d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P25-20260529T052920Z/files/docs/source-packages/archive/20260529T052138Z/files/P25_HARD_AUDIT.md",
+      "bytes": 6722,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P25_HARD_AUDIT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P25",
+      "sha256": "81284a72000bd4219e0bb32ee40aa3babdd679576a7155cd826797c0c6b3e979"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260529T052920Z/files/docs/source-packages/archive/20260529T052138Z/files/P26_HARD_AUDIT.md",
+      "bytes": 2413,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P26_HARD_AUDIT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "f61c16eadd56df1c333324d3b23f37fc154f98d09f842aacc8fe104e0312c7ee"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P27-20260529T052920Z/files/docs/source-packages/archive/20260529T052138Z/files/P27_MASTER_ISSUE_MATRIX.md",
+      "bytes": 3529,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P27_MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P27",
+      "sha256": "a203c05adc23a85e5cd0a3dc5d1fa134cc4a85fefc02b06a0aab4ffa4579de01"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P28-20260529T052920Z/files/docs/source-packages/archive/20260529T052138Z/files/P28_MASTER_ISSUE_MATRIX.md",
+      "bytes": 2385,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/P28_MASTER_ISSUE_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P28",
+      "sha256": "1bb9782869a4f50ff9120949247bf48cbf45f43410adb4c12674db4e1e3c0ddb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/docs/source-packages/archive/20260529T052138Z/files/00_P31_CODEX_SUPER_PASS_PROMPT.md",
+      "bytes": 8047,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/00_P31_CODEX_SUPER_PASS_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "42510832937667919ed2a36adf7c099cccf884731fa46d03ca738cba121f10d6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31/files/docs/source-packages/archive/20260529T052138Z/files/01_P31_GOAL_MODE_PROMPT.md",
+      "bytes": 2479,
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "original_path": "docs/source-packages/archive/20260529T052138Z/files/01_P31_GOAL_MODE_PROMPT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "82fce9eddfe3e1dacce2fa9774daeab47b0f4677a9f1f8d5706434ea8d0b07f6"
+    }
+  ],
+  "report_path": "/home/sikmindz/Coding/Libraries/AiDENs/AiDENs-aidens-next-codex-context-20260529T052920Z.codex-archive.json",
+  "skipped_existing": [],
+  "stale_active_before": [
+    "docs/source-packages/archive/20260529T052138Z/files/P24_HARD_AUDIT.md",
+    "docs/source-packages/archive/20260529T052138Z/files/P24_ISSUE_MATRIX.md",
+    "docs/source-packages/archive/20260529T052138Z/files/P25_HARD_AUDIT.md",
+    "docs/source-packages/archive/20260529T052138Z/files/P26_HARD_AUDIT.md",
+    "docs/source-packages/archive/20260529T052138Z/files/P27_MASTER_ISSUE_MATRIX.md",
+    "docs/source-packages/archive/20260529T052138Z/files/P28_MASTER_ISSUE_MATRIX.md",
+    "docs/source-packages/archive/20260529T052138Z/files/00_P31_CODEX_SUPER_PASS_PROMPT.md",
+    "docs/source-packages/archive/20260529T052138Z/files/01_P31_GOAL_MODE_PROMPT.md"
+  ],
+  "unclassified": [],
+  "verify_only": false
+}

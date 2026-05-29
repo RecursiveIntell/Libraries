@@ -5,6 +5,10 @@
 
 use super::*;
 
+use boundary_compiler_core::{
+    compile_json_boundary, BoundaryCompilerProfileV1, BoundaryDecisionV1,
+};
+
 pub(super) fn completion_request(
     prompt: String,
     tool_exposure: &ToolExposureSetV1,
@@ -86,18 +90,29 @@ pub(super) struct CompletionToolCallsV1 {
 }
 
 pub(super) fn parse_parser_fallback_tool_calls(text: &str) -> CompletionToolCallsV1 {
+    // Phase 06 vertical slice: strict boundary validation before lenient parse.
+    // If the text is valid JSON, run it through the strict boundary compiler
+    // to detect duplicate keys, unknown fields, and resource ceiling violations.
+    let strict_receipt = strict_boundary_compile_receipt(text);
+
     let Ok(outcome) = parse_json_boundary(text, BoundaryRepairPolicyV1::default()) else {
         if looks_like_tool_call_payload(text) {
+            let mut degradation = vec![
+                "malformed-parser-fallback-tool-call".into(),
+                "parser-fallback-boundary-parse-failed".into(),
+            ];
+            degradation.extend(strict_receipt);
+            degradation.sort();
+            degradation.dedup();
             return CompletionToolCallsV1 {
                 calls: Vec::new(),
                 boundary_repair_receipts: Vec::new(),
                 json_repair_receipts: Vec::new(),
-                degradation_reason_codes: vec![
-                    "malformed-parser-fallback-tool-call".into(),
-                    "parser-fallback-boundary-parse-failed".into(),
-                ],
+                degradation_reason_codes: degradation,
             };
         }
+        // Non-JSON text that isn't a tool call — no degradation, no strict receipt.
+        // The turn will proceed normally with final text output.
         return CompletionToolCallsV1 {
             calls: Vec::new(),
             boundary_repair_receipts: Vec::new(),
@@ -116,9 +131,12 @@ pub(super) fn parse_parser_fallback_tool_calls(text: &str) -> CompletionToolCall
             outcome.repair_receipt.repair_kind
         ));
         completion_reason_codes.push("parser-fallback-repair-blocked".into());
-        completion_reason_codes.sort();
-        completion_reason_codes.dedup();
     }
+    if !strict_receipt.is_empty() {
+        completion_reason_codes.extend(strict_receipt);
+    }
+    completion_reason_codes.sort();
+    completion_reason_codes.dedup();
     let calls = if let Some(calls) = outcome
         .value
         .get("tool_calls")
@@ -195,12 +213,20 @@ pub(super) fn looks_like_tool_call_payload(text: &str) -> bool {
             serde_json::Value::Object(object) => {
                 object.contains_key("tool_call")
                     || object.contains_key("tool_calls")
-                    || object.get("tool_id").is_some_and(|tool_id| tool_id.is_string())
+                    || object
+                        .get("tool_id")
+                        .is_some_and(|tool_id| tool_id.is_string())
             }
             _ => false,
         }
     } else {
-        false
+        // Text that starts with a tool_call: prefix is a malformed tool call attempt
+        // even if JSON parsing fails (e.g., truncated JSON, prefix-only payloads).
+        let trimmed = text.trim();
+        trimmed.starts_with("tool_call:")
+            || trimmed.starts_with("tool_calls:")
+            || trimmed.starts_with("tool_call :")
+            || trimmed.starts_with("tool_calls :")
     }
 }
 
@@ -223,4 +249,38 @@ pub(super) fn tool_invocation_receipt_from_error(
 
 pub(super) fn elapsed_millis(started_at: Instant) -> u64 {
     started_at.elapsed().as_millis().min(u128::from(u64::MAX)) as u64
+}
+
+/// Phase 06 vertical slice: run strict boundary compilation on provider tool output.
+/// Returns reason codes if the strict compiler rejects or quarantines the output,
+/// enabling receipt-bearing degradation downstream.
+fn strict_boundary_compile_receipt(text: &str) -> Vec<String> {
+    // Trim surrounding whitespace — JSON boundary compilation requires
+    // RFC 8259 strict parsing (de.end() rejects trailing content).
+    let trimmed = text.trim();
+    if trimmed.is_empty() {
+        return Vec::new();
+    }
+    let profile = BoundaryCompilerProfileV1::strict_json_default();
+    let result = compile_json_boundary(&profile, trimmed.as_bytes(), None, &[]);
+    match result.decision {
+        BoundaryDecisionV1::Accept => Vec::new(),
+        BoundaryDecisionV1::Reject => {
+            let mut codes = vec!["strict-boundary-rejected".into()];
+            for error in &result.errors {
+                codes.push(format!("strict-boundary-error:{:?}", error.kind));
+            }
+            codes
+        }
+        BoundaryDecisionV1::Quarantine => {
+            let mut codes = vec!["strict-boundary-quarantined".into()];
+            for error in &result.errors {
+                codes.push(format!("strict-boundary-error:{:?}", error.kind));
+            }
+            codes
+        }
+        BoundaryDecisionV1::RepairedAccept => {
+            vec!["strict-boundary-repaired-accept".into()]
+        }
+    }
 }
