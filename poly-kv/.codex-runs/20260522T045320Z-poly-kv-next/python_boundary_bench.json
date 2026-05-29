@@ -1,0 +1,17 @@
+{
+  "claims": [],
+  "command": [
+    "/home/linuxbrew/.linuxbrew/opt/python@3.14/bin/python3.14",
+    "-c",
+    "import poly_kv, json; print(json.dumps({'native_available': poly_kv.native_available()}))"
+  ],
+  "elapsed_ms": 40.6,
+  "exit_code": 0,
+  "native_available": false,
+  "schema_version": 1,
+  "skip_reason": "poly_kv._native is not built; maturin unavailable or develop/build not run",
+  "status": "skip",
+  "stderr_tail": "",
+  "stdout_tail": "{\"native_available\": false}\n",
+  "tier": "tier1-python-boundary"
+}

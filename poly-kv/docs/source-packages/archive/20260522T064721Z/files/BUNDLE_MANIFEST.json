@@ -1,0 +1,28 @@
+{
+  "bundle": "poly-kv-zpy-hygiene-codex-bundle-20260522",
+  "purpose": "Fix z.py package self-containment and root hygiene for solid pass-off packages",
+  "files": [
+    "README_BUNDLE.md",
+    "codex/manual-injections/FINAL_AUDIT_INJECTION.md",
+    "codex/manual-injections/PHASE_BOUNDARY_GUARDRAIL.md",
+    "codex/prompts/MASTER_PROMPT.md",
+    "codex/prompts/PHASE_00_PREFLIGHT_AND_INVENTORY.md",
+    "codex/prompts/PHASE_01_FIX_ALLOWLIST_AND_COMMAND_LOGS.md",
+    "codex/prompts/PHASE_02_ROOT_PACKAGE_ARCHIVE.md",
+    "codex/prompts/PHASE_03_STRICT_HYGIENE_GATES.md",
+    "codex/prompts/PHASE_04_VALIDATORS_AND_REGRESSION_TESTS.md",
+    "codex/prompts/PHASE_05_PACKAGE_AND_VERIFY.md",
+    "codex/prompts/PHASE_06_DOCS_AND_CLAIM_BOUNDARY.md",
+    "codex/prompts/PHASE_07_FINAL_AUDIT.md",
+    "docs/CURRENT_PACKAGE_HYGIENE_AUDIT.md",
+    "docs/FINAL_STATE.md",
+    "docs/ISSUE_MATRIX.md",
+    "docs/PACKAGE_HYGIENE_CLASSIFICATION_POLICY.md",
+    "docs/VALIDATION_GATES.md",
+    "docs/ZPY_FIX_SPEC.md",
+    "patches/REFERENCE_ZPY_CHANGE_PLAN.md",
+    "scripts/assert_source_package_hygiene.py",
+    "scripts/build_handoff_package.sh",
+    "scripts/test_zpy_hygiene_regression.py"
+  ]
+}

@@ -1,0 +1,22 @@
+2026-05-20T17:45:16Z bash scripts/preflight.sh
+2026-05-20T17:45:16Z pwd && git rev-parse --abbrev-ref HEAD && git rev-parse HEAD && git status --short && rg --files -g '!*target*' | sort | sed -n '1,240p'
+2026-05-20T17:45:16Z read required docs and phase guardrails with sed
+2026-05-20T17:45:45Z bash scripts/bootstrap_poly_kv_workspace.sh
+2026-05-20T17:48:00Z cargo fmt --all && cargo check --workspace --all-targets
+2026-05-20T17:50:00Z cargo fmt --all && cargo test --workspace --all-targets
+2026-05-20T17:52:00Z bash scripts/run_rust_gates.sh
+2026-05-20T17:52:10Z python3 scripts/validate_schemas.py
+2026-05-20T17:52:10Z python3 scripts/check_public_claims.py
+2026-05-20T17:52:10Z python3 scripts/validate_final_state.py
+2026-05-20T17:52:10Z python3 scripts/check_forbidden_patterns.py
+2026-05-20T17:52:30Z cargo test -p poly-kv synthetic -- --nocapture
+2026-05-20T17:52:30Z cargo test -p poly-kv memory_accounting
+2026-05-20T17:52:30Z cargo test -p quant-codec-core --all-targets && cargo clippy -p quant-codec-core --all-targets -- -D warnings
+2026-05-20T17:53:00Z cargo fmt --all -- --check
+2026-05-20T17:53:00Z cargo search poly-kv --limit 5
+2026-05-20T17:53:00Z cargo search quant-codec-core --limit 5
+2026-05-20T17:54:00Z bash scripts/run_rust_gates.sh && python3 scripts/validate_schemas.py && python3 scripts/check_public_claims.py && python3 scripts/validate_final_state.py && python3 scripts/check_forbidden_patterns.py
+2026-05-20T17:54:30Z rm -rf target
+2026-05-20T17:55:00Z python3 scripts/validate_final_state.py && python3 scripts/check_public_claims.py
+2026-05-20T17:55:30Z cargo check -p poly-kv --benches --features bench
+2026-05-20T17:55:45Z rm -rf target

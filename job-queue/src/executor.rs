@@ -267,7 +267,7 @@ impl QueueExecutor {
             // Build canonical trace/retry primitives for this execution
             let trace_ctx = trace_id
                 .as_ref()
-                .map(|id| stack_ids::TraceCtx::from_legacy_trace_id(id));
+                .map(stack_ids::TraceCtx::from_legacy_trace_id);
             // AttemptId: prefer persisted value from DB, synthesize only for pre-v4 rows
             let attempt_id = job_details
                 .as_ref()
@@ -651,7 +651,7 @@ impl QueueExecutor {
         // Build canonical trace/retry primitives for this execution
         let trace_ctx = trace_id
             .as_ref()
-            .map(|id| stack_ids::TraceCtx::from_legacy_trace_id(id));
+            .map(stack_ids::TraceCtx::from_legacy_trace_id);
         // AttemptId: prefer persisted value from DB, synthesize only for pre-v4 rows
         let attempt_id = job_details
             .as_ref()

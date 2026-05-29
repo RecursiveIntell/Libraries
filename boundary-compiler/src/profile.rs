@@ -11,10 +11,11 @@ use crate::error::JcsError;
 use serde::{Deserialize, Serialize};
 
 /// JSON dialect variants.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum Dialect {
     /// Canonical JSON (RFC 8785 JCS).
+    #[default]
     Canonical,
     /// Compact form (minified, no extra whitespace).
     Compact,
@@ -22,17 +23,12 @@ pub enum Dialect {
     Pretty,
 }
 
-impl Default for Dialect {
-    fn default() -> Self {
-        Dialect::Canonical
-    }
-}
-
 /// Canonicalization profile — what transformations are applied.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum CanonicalizationProfile {
     /// Strict RFC 8785 (only Unicode escapes, no sorting hints).
+    #[default]
     Strict,
     /// RFC 8785 + normalize field ordering hints.
     Normalized,
@@ -40,28 +36,17 @@ pub enum CanonicalizationProfile {
     Custom,
 }
 
-impl Default for CanonicalizationProfile {
-    fn default() -> Self {
-        CanonicalizationProfile::Strict
-    }
-}
-
 /// Policy for unknown fields encountered during schema validation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum UnknownFieldPolicy {
     /// Reject with error.
+    #[default]
     Reject,
     /// Strip unknown fields silently.
     Strip,
     /// Pass unknown fields through unchanged.
     PassThrough,
-}
-
-impl Default for UnknownFieldPolicy {
-    fn default() -> Self {
-        UnknownFieldPolicy::Reject
-    }
 }
 
 /// Resource ceiling limits for a boundary profile.
@@ -188,14 +173,12 @@ impl BoundaryProfile {
                     self.check_resources_inner(v, depth + 1)?;
                 }
             }
-            serde_json::Value::String(s) => {
-                if s.len() > self.resource_ceilings.max_string_bytes {
-                    return Err(ResourceCeilingExceeded {
-                        resource: "string_bytes".to_string(),
-                        used: s.len(),
-                        limit: self.resource_ceilings.max_string_bytes,
-                    });
-                }
+            serde_json::Value::String(s) if s.len() > self.resource_ceilings.max_string_bytes => {
+                return Err(ResourceCeilingExceeded {
+                    resource: "string_bytes".to_string(),
+                    used: s.len(),
+                    limit: self.resource_ceilings.max_string_bytes,
+                });
             }
             _ => {}
         }

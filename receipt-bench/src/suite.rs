@@ -133,12 +133,11 @@ pub mod semantic_search {
     use super::*;
     use crate::receipt::BenchmarkResult;
 
-    pub const DEFAULT_ITERATIONS: u64 = 1000;
-
     /// Run semantic search benchmark with synthetic data.
     ///
     /// Creates `dimensions` vectors of `vector_size` dimension, then performs
     /// `iterations` queries and measures latency.
+    #[allow(dead_code)]
     pub fn run_benchmark(
         dimensions: usize,
         vector_size: usize,
@@ -196,7 +195,7 @@ pub mod semantic_search {
             .unwrap()
             .subsec_nanos();
         // Simple deterministic pseudo-random for reproducibility
-        let x = (seed as u32).wrapping_mul(1103515245).wrapping_add(12345);
+        let x = seed.wrapping_mul(1103515245).wrapping_add(12345);
         (x as f32 / u32::MAX as f32) * 2.0 - 1.0
     }
 }
@@ -207,12 +206,11 @@ pub mod compression {
     use crate::receipt::BenchmarkResult;
     use std::io::{Read, Write};
 
-    pub const DEFAULT_ITERATIONS: u64 = 1000;
-
     /// Run compression benchmark using flate2 (zlib) with synthetic data.
     ///
     /// Creates `data_size` bytes of pseudo-random data, compresses it,
     /// then decompresses to verify integrity. Measures encode/decode cycle time.
+    #[allow(dead_code)]
     pub fn run_benchmark(data_size: usize, iterations: u64) -> Result<BenchmarkResult, String> {
         let data = generate_data(data_size);
 
@@ -256,7 +254,7 @@ pub mod compression {
         let seed = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
-            .subsec_nanos() as u32;
+            .subsec_nanos();
 
         (0..size)
             .map(|i| {
@@ -291,12 +289,11 @@ pub mod memory_lookup {
     use super::*;
     use crate::receipt::BenchmarkResult;
 
-    pub const DEFAULT_ITERATIONS: u64 = 1000;
-
     /// Run memory lookup benchmark with random key access.
     ///
     /// Creates `num_entries` key-value pairs (keys are strings, values are u64),
     /// then performs `iterations` random lookups. Measures lookup latency.
+    #[allow(dead_code)]
     pub fn run_benchmark(num_entries: usize, iterations: u64) -> Result<BenchmarkResult, String> {
         let entries: Vec<(String, u64)> = (0..num_entries)
             .map(|i| (format!("key_{:08}", i), i as u64))
@@ -310,7 +307,7 @@ pub mod memory_lookup {
                 .unwrap()
                 .subsec_nanos() as u64;
             (0..iterations)
-                .map(|i| (seed.wrapping_mul(i.wrapping_add(1)) as usize % num_entries))
+                .map(|i| seed.wrapping_mul(i.wrapping_add(1)) as usize % num_entries)
                 .collect()
         };
 

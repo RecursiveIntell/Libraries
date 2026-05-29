@@ -1,0 +1,67 @@
+# Expected Final File Tree
+
+```text
+<repo>/
+  Cargo.toml
+  AGENTS.md
+  README.md
+  crates/
+    quant-codec-core/
+      Cargo.toml
+      src/
+        lib.rs
+        ids.rs
+        digest.rs
+        dtype.rs
+        shape.rs
+        codec.rs
+        eval.rs
+        error.rs
+      tests/
+        shape_validation.rs
+        serde_roundtrip.rs
+        digest_stability.rs
+    poly-kv/
+      Cargo.toml
+      README.md
+      src/
+        lib.rs
+        error.rs
+        manifest.rs
+        receipts.rs
+        pool.rs
+        reader.rs
+        memory.rs
+        metrics.rs
+        codecs/
+          mod.rs
+          raw_exact.rs
+          q8_keys.rs
+          value.rs
+        adapters/
+          mod.rs
+          turbo_quant.rs
+          fibquant.rs
+      tests/
+        synthetic_roundtrip.rs
+        memory_accounting.rs
+        shape_rejection.rs
+        receipt_roundtrip.rs
+        deterministic_replay.rs
+      benches/
+        synthetic_pool.rs
+  docs/
+    SOURCE_OF_TRUTH_MAP.md
+    POLY_KV_SCHEMA_PROPOSAL.json
+    PUBLIC_CLAIM_BOUNDARY.md
+    BENCHMARK_PLAN.md
+  scripts/
+    preflight.sh
+    run_rust_gates.sh
+    validate_schemas.py
+    check_public_claims.py
+    validate_final_state.py
+  .codex-runs/
+    <run-id>/
+      ...
+```

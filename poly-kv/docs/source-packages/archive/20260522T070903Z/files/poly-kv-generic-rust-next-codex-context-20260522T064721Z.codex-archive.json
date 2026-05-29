@@ -1,0 +1,18 @@
+{
+  "active_stale_after": [],
+  "archive_only": false,
+  "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/codex-runs/archive",
+  "collisions": [],
+  "current_run": "P30",
+  "dry_run": false,
+  "enabled": true,
+  "errors": [],
+  "manifest_paths": [],
+  "moved": [],
+  "planned": [],
+  "report_path": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.codex-archive.json",
+  "skipped_existing": [],
+  "stale_active_before": [],
+  "unclassified": [],
+  "verify_only": false
+}

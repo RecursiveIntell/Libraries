@@ -48,7 +48,7 @@ impl InMemoryDb {
     /// Insert a bitemporal record into this store.
     pub fn insert(&mut self, record: types::BitemporalRecord) {
         let id = record.id.clone();
-        self.records.entry(id).or_insert_with(Vec::new).push(record);
+        self.records.entry(id).or_default().push(record);
     }
 
     /// Get all versions of a record by ID.
@@ -62,13 +62,12 @@ impl InMemoryDb {
         for versions in self.records.values() {
             let mut best: Option<&types::BitemporalRecord> = None;
             for v in versions {
-                if v.recorded_time <= recorded_time {
-                    if best
+                if v.recorded_time <= recorded_time
+                    && best
                         .map(|b| v.recorded_time > b.recorded_time)
                         .unwrap_or(true)
-                    {
-                        best = Some(v);
-                    }
+                {
+                    best = Some(v);
                 }
             }
             if let Some(r) = best {
@@ -88,13 +87,13 @@ impl InMemoryDb {
         for versions in self.records.values() {
             let mut best: Option<&types::BitemporalRecord> = None;
             for v in versions {
-                if v.recorded_time <= recorded_time && v.valid_time <= valid_time {
-                    if best
+                if v.recorded_time <= recorded_time
+                    && v.valid_time <= valid_time
+                    && best
                         .map(|b| v.recorded_time > b.recorded_time)
                         .unwrap_or(true)
-                    {
-                        best = Some(v);
-                    }
+                {
+                    best = Some(v);
                 }
             }
             if let Some(r) = best {

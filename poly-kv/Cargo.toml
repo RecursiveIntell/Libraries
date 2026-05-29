@@ -1,0 +1,13 @@
+[workspace]
+members = [
+  "crates/quant-codec-core",
+  "crates/poly-kv",
+  "crates/poly-kv-python",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/recursiveintell/poly-kv"
+rust-version = "1.75"

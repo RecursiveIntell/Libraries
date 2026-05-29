@@ -18,6 +18,7 @@ struct EtaStats {
 }
 
 impl EtaStats {
+    #[allow(clippy::manual_checked_ops)]
     fn avg_ms(&self) -> u64 {
         if self.count == 0 {
             0

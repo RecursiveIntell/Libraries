@@ -1,0 +1,18 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/root-markdown-archive/20260522T064721Z",
+  "collisions": [],
+  "created_utc": "2026-05-22T06:47:21Z",
+  "current_run": "P30",
+  "errors": [],
+  "files": [],
+  "repo_root": "/home/sikmindz/Coding/Libraries/poly-kv",
+  "root_markdown_archive_manifest_version": "RootMarkdownArchiveManifestV1",
+  "summary": {
+    "ambiguous_count": 0,
+    "candidate_count": 0,
+    "inspected_count": 5,
+    "protected_count": 5
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.11-p30"
+}

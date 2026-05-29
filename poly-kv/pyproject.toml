@@ -1,0 +1,21 @@
+[build-system]
+requires = ["maturin>=1.8,<2"]
+build-backend = "maturin"
+
+[project]
+name = "poly-kv"
+version = "0.1.0a1"
+description = "Optional Python sidecar for poly-kv bulk receipt experiments."
+requires-python = ">=3.9"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Rust",
+  "Programming Language :: Python :: 3",
+]
+
+[tool.maturin]
+manifest-path = "crates/poly-kv-python/Cargo.toml"
+python-source = "python"
+module-name = "poly_kv._native"

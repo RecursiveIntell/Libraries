@@ -24,11 +24,7 @@
 use crate::{CodecId, DecompressError, ExactFallbackAdapter};
 use quant_governor::{evaluate, GovernancePolicy, GovernanceRequest};
 
-#[cfg(feature = "turbo")]
-use turbo_quant::TurboQuantizer;
-
-#[cfg(feature = "fib")]
-use fib_quant::FibQuantizer;
+// Codec imports removed — only free-standing decode functions are used below
 
 /// Codec dispatch strategy.
 #[derive(Debug, Clone)]
@@ -53,32 +49,33 @@ pub enum CodecDispatch<'a> {
 ///
 /// Panics if both `turbo` and `fib` features are disabled (no codecs available).
 #[allow(unused_variables)]
-pub fn build_adapter<T>(dispatch: CodecDispatch) -> ExactFallbackAdapter<T>
+/// Type alias for the fallback decoder closure to avoid clippy::type_complexity.
+type FallbackDecoder<T> = Box<dyn Fn(CodecId, &[u8]) -> Result<T, DecompressError> + Send + Sync>;
+pub fn build_adapter<T>(_dispatch: CodecDispatch) -> ExactFallbackAdapter<T>
 where
     T: From<Vec<u8>> + Send + Sync + 'static,
 {
-    let fallback_decoder: Box<dyn Fn(CodecId, &[u8]) -> Result<T, DecompressError> + Send + Sync> =
-        Box::new(move |codec_id, data| {
-            match codec_id {
-                CodecId::Uncompressed => Ok(T::from(data.to_vec())),
-                #[cfg(feature = "turbo")]
-                CodecId::TurboQuant => {
-                    // Decode turbo-quant compressed data
-                    // Note: This is a simplified example - real implementation
-                    // would need to deserialize the code structure
-                    turbo_quant_decode(data).map(T::from)
-                }
-                #[cfg(feature = "fib")]
-                CodecId::FibQuant => {
-                    // Decode fib-quant compressed data
-                    fib_quant_decode(data).map(T::from)
-                }
-                #[cfg(not(any(feature = "turbo", feature = "fib")))]
-                _ => Err(DecompressError::DecodeFailed(
-                    "No codec features enabled".to_string(),
-                )),
+    let fallback_decoder: FallbackDecoder<T> = Box::new(move |codec_id, data| {
+        match codec_id {
+            CodecId::Uncompressed => Ok(T::from(data.to_vec())),
+            #[cfg(feature = "turbo")]
+            CodecId::TurboQuant => {
+                // Decode turbo-quant compressed data
+                // Note: This is a simplified example - real implementation
+                // would need to deserialize the code structure
+                turbo_quant_decode(data).map(T::from)
             }
-        });
+            #[cfg(feature = "fib")]
+            CodecId::FibQuant => {
+                // Decode fib-quant compressed data
+                fib_quant_decode(data).map(T::from)
+            }
+            #[cfg(not(any(feature = "turbo", feature = "fib")))]
+            _ => Err(DecompressError::DecodeFailed(
+                "No codec features enabled".to_string(),
+            )),
+        }
+    });
 
     ExactFallbackAdapter::new(fallback_decoder)
 }

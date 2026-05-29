@@ -215,7 +215,7 @@ pub struct SupportJudgment {
 /// - Operator: `operator_ref`
 /// - Test fixture: `fixture_ref`, `expected_assertion`, `fixture_digest`
 /// - External receipt: `external_receipt_ref`, `external_receipt_digest`, `source_adapter`, `degradation_trust_note`
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SupportProofPayload {
     /// Operator reference for operator-admitted support.
     pub operator_ref: Option<String>,
@@ -233,21 +233,6 @@ pub struct SupportProofPayload {
     pub source_adapter: Option<String>,
     /// Trust note for degraded external receipts.
     pub degradation_trust_note: Option<String>,
-}
-
-impl Default for SupportProofPayload {
-    fn default() -> Self {
-        Self {
-            operator_ref: None,
-            fixture_ref: None,
-            expected_assertion: None,
-            fixture_digest: None,
-            external_receipt_ref: None,
-            external_receipt_digest: None,
-            source_adapter: None,
-            degradation_trust_note: None,
-        }
-    }
 }
 
 impl SupportProofPayload {

@@ -1,0 +1,18 @@
+{
+  "kind": "post_tool_use",
+  "status": "ok",
+  "recorded_time": "2026-05-20T17:55:04Z",
+  "payload_keys": [
+    "cwd",
+    "hook_event_name",
+    "model",
+    "permission_mode",
+    "session_id",
+    "tool_input",
+    "tool_name",
+    "tool_response",
+    "tool_use_id",
+    "transcript_path",
+    "turn_id"
+  ]
+}

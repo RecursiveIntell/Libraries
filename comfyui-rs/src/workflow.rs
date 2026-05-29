@@ -208,7 +208,7 @@ mod tests {
     fn test_build_has_all_nodes() {
         let (workflow, _) = make_request().build();
         for i in 1..=7 {
-            assert!(workflow.get(&i.to_string()).is_some(), "Missing node {}", i);
+            assert!(workflow.get(i.to_string()).is_some(), "Missing node {}", i);
         }
     }
 

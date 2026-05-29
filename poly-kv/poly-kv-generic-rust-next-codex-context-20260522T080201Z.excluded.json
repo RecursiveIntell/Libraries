@@ -1,0 +1,51 @@
+{
+  "created_utc": "2026-05-22T08:02:01Z",
+  "excluded": [
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260522T080201Z.codex-archive.json",
+      "reason": "generated-output"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": ".git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": ".pytest_cache",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "docs/root-markdown-archive",
+      "reason": "root-markdown-archive-disabled"
+    },
+    {
+      "path": "docs/source-packages/archive",
+      "reason": "root-package-archive-disabled"
+    },
+    {
+      "path": "python/poly_kv/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "python/poly_kv/adapters/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "python/tests/__pycache__",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/poly-kv",
+  "summary": {
+    "generated-output": 1
+  }
+}

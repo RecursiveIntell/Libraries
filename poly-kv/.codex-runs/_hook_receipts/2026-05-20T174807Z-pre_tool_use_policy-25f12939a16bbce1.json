@@ -1,0 +1,17 @@
+{
+  "kind": "pre_tool_use_policy",
+  "status": "ok",
+  "recorded_time": "2026-05-20T17:48:07Z",
+  "payload_keys": [
+    "cwd",
+    "hook_event_name",
+    "model",
+    "permission_mode",
+    "session_id",
+    "tool_input",
+    "tool_name",
+    "tool_use_id",
+    "transcript_path",
+    "turn_id"
+  ]
+}

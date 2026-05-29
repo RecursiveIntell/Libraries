@@ -1,0 +1,135 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/source-packages/archive/20260522T080201Z",
+  "collisions": [],
+  "created_utc": "2026-05-22T08:02:01Z",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/README_BUNDLE.md",
+      "bytes": 794,
+      "mtime_utc": "2026-05-22T12:24:26Z",
+      "original_path": "README_BUNDLE.md",
+      "reason": "prior-bundle-readme",
+      "sha256": "4c20d6c2301f9bcf17b885d400402cbf106cf28a4371d7740401c0e96f606ca7"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.codex-archive.json",
+      "bytes": 533,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "d92246bdf620a1645e9de09da6828fbf4f2cdae824506b6fe1f497ead01f35d2"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.excluded.json",
+      "bytes": 1343,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.excluded.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "b2305eb2131b920bca20a81f84696b2d85a271575f4e0c31bab7f3fe4bfc6210"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.findings.json",
+      "bytes": 157,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.findings.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "118c3c548620777089e3d0b0183a6138ee24f6a29926737753ff8f968780e191"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.manifest.json",
+      "bytes": 91332,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.manifest.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "1cd174d0bfc49890c3bd811aaa08761c21c753a49521f4e82dd16a38a5e714fe"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.report.md",
+      "bytes": 2874,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.report.md",
+      "reason": "prior-generated-sidecar",
+      "sha256": "e1b06615773789fdf8afcbd584923b74ee6cf44ec7f78579ee21d2c05616bd1f"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.zip",
+      "bytes": 236087,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.zip",
+      "reason": "prior-context-archive",
+      "sha256": "255d163bbfb73f02f1c7d4adfa3692c2c85c980d4251bac4d73fdfc68ba9fab4"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/README_BUNDLE.md",
+      "bytes": 794,
+      "mtime_utc": "2026-05-22T12:24:26Z",
+      "original_path": "README_BUNDLE.md",
+      "reason": "prior-bundle-readme",
+      "sha256": "4c20d6c2301f9bcf17b885d400402cbf106cf28a4371d7740401c0e96f606ca7"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.codex-archive.json",
+      "bytes": 533,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "d92246bdf620a1645e9de09da6828fbf4f2cdae824506b6fe1f497ead01f35d2"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.excluded.json",
+      "bytes": 1343,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.excluded.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "b2305eb2131b920bca20a81f84696b2d85a271575f4e0c31bab7f3fe4bfc6210"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.findings.json",
+      "bytes": 157,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.findings.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "118c3c548620777089e3d0b0183a6138ee24f6a29926737753ff8f968780e191"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.manifest.json",
+      "bytes": 91332,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.manifest.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "1cd174d0bfc49890c3bd811aaa08761c21c753a49521f4e82dd16a38a5e714fe"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.report.md",
+      "bytes": 2874,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.report.md",
+      "reason": "prior-generated-sidecar",
+      "sha256": "e1b06615773789fdf8afcbd584923b74ee6cf44ec7f78579ee21d2c05616bd1f"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260522T080201Z/files/poly-kv-generic-rust-next-codex-context-20260522T070903Z.zip",
+      "bytes": 236087,
+      "mtime_utc": "2026-05-22T07:09:03Z",
+      "original_path": "poly-kv-generic-rust-next-codex-context-20260522T070903Z.zip",
+      "reason": "prior-context-archive",
+      "sha256": "255d163bbfb73f02f1c7d4adfa3692c2c85c980d4251bac4d73fdfc68ba9fab4"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/poly-kv",
+  "root_package_archive_manifest_version": "RootPackageArtifactArchiveManifestV1",
+  "summary": {
+    "candidate_count": 7,
+    "collision_count": 0,
+    "inspected_count": 14,
+    "moved_count": 7,
+    "planned_count": 7,
+    "protected_count": 7,
+    "skipped_existing_count": 0
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31"
+}

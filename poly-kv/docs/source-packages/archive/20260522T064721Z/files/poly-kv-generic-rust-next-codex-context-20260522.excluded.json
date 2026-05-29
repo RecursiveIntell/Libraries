@@ -1,0 +1,87 @@
+{
+  "created_utc": "2026-05-22T06:17:49Z",
+  "excluded": [
+    {
+      "path": ".codex-runs/20260520T174516Z-alpha1/commands_run.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/commands_run.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/touched_diff.patch",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260520.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260520.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260520.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260520.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260520.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260522.codex-archive.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "python/poly_kv/_native.pyi",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "python/poly_kv/py.typed",
+      "reason": "unsupported-extension-or-basename"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": ".git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": ".pytest_cache",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "python/poly_kv/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "python/poly_kv/adapters/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "python/tests/__pycache__",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/poly-kv",
+  "summary": {
+    "archive-file": 1,
+    "generated-output": 1,
+    "generated-sidecar": 4,
+    "log-disabled": 2,
+    "unsupported-extension-or-basename": 3
+  }
+}

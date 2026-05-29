@@ -15,12 +15,10 @@ pub fn normalize_text(text: &str) -> String {
     let mut result = Vec::with_capacity(chars.len());
     for c in chars {
         if result.is_empty()
-            || !result.last().map_or(false, |last: &char| {
-                last.is_whitespace() && c.is_whitespace()
-            })
+            || !result
+                .last()
+                .is_some_and(|last: &char| last.is_whitespace() && c.is_whitespace())
         {
-            result.push(c);
-        } else if !c.is_whitespace() {
             result.push(c);
         }
     }
@@ -109,7 +107,7 @@ pub fn contradiction_id(left_claim_id: &str, right_claim_id: &str, pattern: &str
 pub fn export_receipt_id(operation: &str, input_refs: &[&str]) -> String {
     stable_id(
         "xpt",
-        &[operation]
+        [operation]
             .iter()
             .chain(input_refs.iter())
             .copied()

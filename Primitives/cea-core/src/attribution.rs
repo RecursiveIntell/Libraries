@@ -573,7 +573,7 @@ fn normalize_candidates(candidates: &mut [WeightedCandidate], temperature: f64) 
         return;
     }
 
-    for (candidate, weight) in candidates.iter_mut().zip(weights.into_iter()) {
+    for (candidate, weight) in candidates.iter_mut().zip(weights) {
         candidate.score = weight / partition;
     }
 }

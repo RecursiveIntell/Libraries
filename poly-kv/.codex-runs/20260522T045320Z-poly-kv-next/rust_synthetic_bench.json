@@ -1,0 +1,17 @@
+{
+  "claims": [],
+  "command": [
+    "cargo",
+    "test",
+    "-p",
+    "poly-kv",
+    "synthetic_q8_key_drift_is_bounded_and_finite"
+  ],
+  "elapsed_ms": 68.406,
+  "exit_code": 0,
+  "schema_version": 1,
+  "status": "pass",
+  "stderr_tail": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s\n     Running unittests src/lib.rs (target/debug/deps/poly_kv-d8dc8ea24c41028f)\n     Running tests/deterministic_replay.rs (target/debug/deps/deterministic_replay-184400dcb6facadb)\n     Running tests/memory_accounting.rs (target/debug/deps/memory_accounting-0704cb590da0e46d)\n     Running tests/receipt_roundtrip.rs (target/debug/deps/receipt_roundtrip-3295b87bc6946d95)\n     Running tests/shape_rejection.rs (target/debug/deps/shape_rejection-6d764dbeef383c47)\n     Running tests/synthetic_roundtrip.rs (target/debug/deps/synthetic_roundtrip-cd142f489379c24f)\n",
+  "stdout_tail": "\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest synthetic_q8_key_drift_is_bounded_and_finite ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s\n\n",
+  "tier": "tier0-rust-synthetic"
+}

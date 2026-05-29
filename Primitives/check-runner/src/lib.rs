@@ -522,7 +522,7 @@ pub fn select_backend(config: &BackendConfig) -> Result<Box<dyn ExecutionBackend
             }
             #[cfg(not(feature = "container"))]
             {
-                return Err(RunnerError::NoContainerRuntime);
+                Err(RunnerError::NoContainerRuntime)
             }
         }
         _ => {

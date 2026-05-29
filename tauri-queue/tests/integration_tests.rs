@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 mod test_helpers;
 
 use std::sync::{Arc, Mutex};
@@ -367,6 +369,7 @@ fn test_job_result_variants() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_event_serialization() {
     use tauri_queue::events::*;
 
@@ -553,7 +556,7 @@ fn progress_event(job_id: &str, current_step: u32, total_steps: u32) -> JobProgr
         trace_id: None,
         worker_id: None,
         attempt_count: None,
-        status: Some("processing".into()),
+        status: None,
         trace_ctx: None,
         attempt_id: None,
         trial_id: None,

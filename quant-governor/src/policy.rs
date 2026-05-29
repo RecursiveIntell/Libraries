@@ -6,8 +6,7 @@ use crate::decision::{CodecDecision, CodecProfile};
 use crate::error::GovernorError;
 
 /// Content type for routing decisions.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub enum ContentType {
     /// Text content
     Text,
@@ -22,13 +21,8 @@ pub enum ContentType {
     /// Model weights
     Model,
     /// Other/unknown
+    #[default]
     Other,
-}
-
-impl Default for ContentType {
-    fn default() -> Self {
-        ContentType::Other
-    }
 }
 
 impl std::fmt::Display for ContentType {
@@ -46,24 +40,19 @@ impl std::fmt::Display for ContentType {
 }
 
 /// Admissibility class for content routing.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum AdmissibilityClass {
     /// Critical content requiring highest fidelity
     Critical,
     /// High priority content
     HighPriority,
     /// Standard content
+    #[default]
     Standard,
     /// Compressible content
     Compressible,
     /// Best effort content
     BestEffort,
-}
-
-impl Default for AdmissibilityClass {
-    fn default() -> Self {
-        AdmissibilityClass::Standard
-    }
 }
 
 /// Request for codec decision.

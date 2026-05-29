@@ -1,0 +1,64 @@
+{
+  "created_utc": "2026-05-22T06:47:22Z",
+  "excluded": [
+    {
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/touched_diff.patch",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260522T064721Z.codex-archive.json",
+      "reason": "generated-output"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": ".git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": ".pytest_cache",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "docs/root-markdown-archive",
+      "reason": "root-markdown-archive-disabled"
+    },
+    {
+      "path": "docs/source-packages/archive",
+      "reason": "root-package-archive-disabled"
+    },
+    {
+      "path": "python/poly_kv/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "python/poly_kv/adapters/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "python/tests/__pycache__",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "scripts/__pycache__",
+      "reason": "excluded-directory"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/poly-kv",
+  "summary": {
+    "generated-output": 1,
+    "unsupported-extension-or-basename": 1
+  }
+}

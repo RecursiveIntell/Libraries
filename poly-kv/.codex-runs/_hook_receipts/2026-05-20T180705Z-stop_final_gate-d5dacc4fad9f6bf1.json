@@ -1,0 +1,16 @@
+{
+  "kind": "stop_final_gate",
+  "status": "ok",
+  "recorded_time": "2026-05-20T18:07:05Z",
+  "payload_keys": [
+    "cwd",
+    "hook_event_name",
+    "last_assistant_message",
+    "model",
+    "permission_mode",
+    "session_id",
+    "stop_hook_active",
+    "transcript_path",
+    "turn_id"
+  ]
+}

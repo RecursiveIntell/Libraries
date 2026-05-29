@@ -257,7 +257,7 @@ fn detect_duplicates(value: &Value) -> Result<(), JcsError> {
 /// This is used for canonicalization inputs: the input need not be ordered,
 /// but duplicates MUST be rejected before canonicalization.
 pub fn parse_and_validate(input: &str) -> Result<Value, JcsError> {
-    let value = serde_json::from_str(input).map_err(|e| JcsError::ParseError(e))?;
+    let value = serde_json::from_str(input).map_err(JcsError::ParseError)?;
     detect_duplicates(&value)?;
     Ok(value)
 }

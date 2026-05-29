@@ -35,11 +35,11 @@ impl MachineFingerprint {
 
         // Number of CPUs (cap at reasonable limit to avoid DoS)
         let cpus = num_cpus().min(256);
-        hasher.update(&[cpus as u8]);
+        hasher.update([cpus as u8]);
 
         // Page size logarithm (log2, capped)
         let page_size = page_size_log();
-        hasher.update(&[page_size as u8]);
+        hasher.update([page_size as u8]);
 
         // Machine ID if available (avoids hostname collisions)
         if let Some(machine_id) = machine_id() {

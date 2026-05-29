@@ -1,0 +1,15 @@
+{
+  "kind": "user_prompt_submit",
+  "status": "ok",
+  "recorded_time": "2026-05-20T18:07:00Z",
+  "payload_keys": [
+    "cwd",
+    "hook_event_name",
+    "model",
+    "permission_mode",
+    "prompt",
+    "session_id",
+    "transcript_path",
+    "turn_id"
+  ]
+}

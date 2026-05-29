@@ -1,0 +1,14 @@
+{
+  "created_utc": "2026-05-22T08:02:01Z",
+  "error_count": 0,
+  "findings": [
+    {
+      "code": "git-metadata-excluded",
+      "detail": "Git metadata detected and intentionally excluded from transferable package contents.",
+      "path": ".git/",
+      "severity": "info"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/poly-kv",
+  "warning_count": 0
+}

@@ -1,0 +1,70 @@
+# Example local policy for z.py. This is advisory; validate through PackagePolicyV1.
+
+[schema]
+name = "PackagePolicyV1"
+
+[package]
+name = "example-repo"
+role = "next-codex-context"
+root = "."
+
+[modes.next-codex-context]
+include_logs = true
+include_patch_artifacts = true
+include_codex_artifacts = false
+include_doc_binaries = false
+include_images = false
+include_root_package_archive = false
+ecosystem_parity_severity = "warning"
+
+[modes.source-clean]
+include_logs = false
+include_patch_artifacts = false
+include_codex_artifacts = false
+include_doc_binaries = false
+include_images = false
+include_root_package_archive = false
+ecosystem_parity_severity = "error"
+
+[ecosystem_parity]
+enabled = true
+default_severity = "warning"
+
+[ecosystem_parity.adapters]
+rust = "warning"
+python = "warning"
+node = "warning"
+git = "info"
+docker = "info"
+go = "info"
+
+[root_hygiene]
+archive_root_package_artifacts = true
+archive_root_markdown_noise = false
+archive_root = "docs/source-packages/archive"
+forbidden_root_patterns = ["*-next-codex-context-*.zip", "*.manifest.json", "*.excluded.json", "*.findings.json", "*.codex-archive.json"]
+
+[security]
+check_secrets = true
+allow_secret_like_names = false
+follow_symlinks = false
+fail_on_unicode_collision = true
+fail_on_case_collision = true
+fail_on_windows_reserved_name = true
+max_file_size_bytes = 26214400
+
+[archive]
+formats = ["zip"]
+deterministic_timestamps = true
+source_date_epoch = "auto"
+compresslevel = 9
+emit_decision_log = true
+emit_checksums = true
+
+[provenance]
+emit = true
+predicate = "intoto-lite"
+
+[sbom]
+emit = false
+format = "spdx-lite"

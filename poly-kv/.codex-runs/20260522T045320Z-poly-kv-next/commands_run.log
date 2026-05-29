@@ -1,0 +1,130 @@
+bash scripts/preflight.sh
+mkdir -p .codex-runs/20260522T045320Z-poly-kv-next
+bash scripts/preflight.sh | tee .codex-runs/20260522T045320Z-poly-kv-next/startup_preflight.md
+find . -maxdepth 4 -type f | sort > .codex-runs/20260522T045320Z-poly-kv-next/source_inventory.txt
+git status --short > .codex-runs/20260522T045320Z-poly-kv-next/git_status_before.txt
+git rev-parse HEAD > .codex-runs/20260522T045320Z-poly-kv-next/commit_before.txt
+find . -name Cargo.toml -print | sort > .codex-runs/20260522T045320Z-poly-kv-next/cargo_manifests.txt
+rg --files
+sed -n '1,240p' Cargo.toml
+sed -n '1,260p' crates/quant-codec-core/src/shape.rs
+sed -n '1,260p' crates/poly-kv/src/lib.rs
+sed -n '1,300p' crates/poly-kv/src/receipts.rs
+sed -n '1,280p' crates/poly-kv/src/pool.rs
+sed -n '280,620p' crates/poly-kv/src/pool.rs
+sed -n '1,320p' crates/poly-kv/src/reader.rs
+sed -n '1,260p' crates/poly-kv/src/memory.rs
+sed -n '1,280p' crates/poly-kv/src/manifest.rs
+sed -n '1,300p' crates/poly-kv/src/codecs/q8_keys.rs
+sed -n '1,260p' crates/poly-kv/src/codecs/raw_exact.rs
+sed -n '1,260p' crates/poly-kv/src/codecs/value.rs
+sed -n '1,240p' crates/quant-codec-core/src/eval.rs
+sed -n '1,280p' crates/poly-kv/tests/common/mod.rs
+sed -n '1,260p' crates/poly-kv/tests/receipt_roundtrip.rs
+sed -n '1,260p' crates/poly-kv/tests/memory_accounting.rs
+sed -n '1,260p' crates/poly-kv/tests/shape_rejection.rs
+sed -n '1,220p' crates/poly-kv/tests/deterministic_replay.rs
+sed -n '1,240p' crates/poly-kv/tests/synthetic_roundtrip.rs
+sed -n '1,260p' crates/poly-kv/benches/synthetic_pool.rs
+sed -n '1,240p' crates/poly-kv/Cargo.toml
+sed -n '1,260p' codex/prompts/PHASE_00_PREFLIGHT_AND_INVENTORY.md
+sed -n '1,260p' codex/prompts/PHASE_01_SHAPE_AND_CONTRACTS.md
+sed -n '1,260p' codex/prompts/PHASE_02_RECEIPTS_AND_ACCOUNTING.md
+sed -n '1,260p' codex/prompts/PHASE_03_CORE_API_COMPAT.md
+sed -n '1,260p' codex/prompts/PHASE_04_PYTHON_SIDECAR_SKELETON.md
+sed -n '1,260p' codex/prompts/PHASE_05_PYTHON_INTEROP_RECEIPTS.md
+sed -n '1,260p' codex/prompts/PHASE_06_BENCHMARK_HARNESS.md
+sed -n '1,260p' codex/prompts/PHASE_07_DOCS_AND_CLAIMS.md
+sed -n '1,260p' codex/prompts/PHASE_08_VALIDATION.md
+sed -n '1,260p' codex/prompts/PHASE_09_FINAL_AUDIT.md
+sed -n '1,260p' codex/manual-injections/PHASE_BOUNDARY_GUARDRAIL.md
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_00.md
+cargo test -p quant-codec-core shape
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_01.md
+cargo fmt --all
+cargo test -p poly-kv receipt
+cargo test -p poly-kv memory
+cargo test -p poly-kv decode
+cargo test -p poly-kv accounting
+cargo test -p poly-kv
+python3 scripts/assert_receipt_integrity.py
+python3 scripts/assert_realized_accounting.py
+nl -ba scripts/assert_realized_accounting.py | sed -n '1,80p'
+python3 scripts/assert_realized_accounting.py
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_02.md
+sed -n '1,220p' crates/poly-kv/src/adapters/turbo_quant.rs
+sed -n '1,220p' crates/poly-kv/src/adapters/fibquant.rs
+sed -n '1,220p' crates/poly-kv/src/adapters/mod.rs
+rg -n "build_from_blocks|exact_fallback" crates/poly-kv README.md docs -g '*.md' -g '*.rs'
+cargo fmt --all
+cargo test -p poly-kv synthetic
+cargo check --workspace --all-targets
+cargo test -p poly-kv builder_can_derive_exact_fallback_from_input_blocks
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_03.md
+sed -n '1,260p' /home/sikmindz/Coding/Libraries/poly-kv/.agents/skills/recursiveintell-rust-crate-boundary/SKILL.md
+sed -n '1,260p' docs/SOURCE_OF_TRUTH_MAP.md
+sed -n '1,260p' scripts/assert_python_sidecar_layout.py
+cargo search pyo3 --limit 1
+python -m maturin --version
+python -m pytest --version
+cargo fmt --all
+cargo check -p poly-kv-python
+python -m compileall python
+python3 scripts/assert_python_sidecar_layout.py
+PYTHONPATH=python python -m pytest -q python/tests/test_import.py
+python -m maturin build
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_04.md
+PYTHONPATH=python python -m pytest -q python/tests/test_import.py
+PYTHONPATH=python python -m pytest -q python/tests/test_receipt_parity.py
+PYTHONPATH=python python -m pytest -q python/tests/test_shape_rejection.py
+PYTHONPATH=python python -m pytest -q python/tests/test_no_silent_copy.py
+PYTHONPATH=python python -m pytest -q python/tests
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_05.md
+python3 scripts/bench_rust_synthetic.py --run-id 20260522T045320Z-poly-kv-next
+python3 scripts/bench_boundary.py --run-id 20260522T045320Z-poly-kv-next
+python3 scripts/compare_receipts.py --run-id 20260522T045320Z-poly-kv-next
+python -m json.tool .codex-runs/20260522T045320Z-poly-kv-next/rust_synthetic_bench.json >/dev/null
+python -m json.tool .codex-runs/20260522T045320Z-poly-kv-next/python_boundary_bench.json >/dev/null
+python -m json.tool .codex-runs/20260522T045320Z-poly-kv-next/receipt_parity_report.json >/dev/null
+sed -n '1,220p' .codex-runs/20260522T045320Z-poly-kv-next/rust_synthetic_bench.json
+sed -n '1,220p' .codex-runs/20260522T045320Z-poly-kv-next/python_boundary_bench.json
+sed -n '1,220p' .codex-runs/20260522T045320Z-poly-kv-next/receipt_parity_report.json
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_06.md
+sed -n '1,260p' /home/sikmindz/Coding/Libraries/poly-kv/.agents/skills/recursiveintell-public-claim-boundary/SKILL.md
+sed -n '1,260p' docs/PUBLIC_CLAIM_BOUNDARY.md
+python3 scripts/check_public_claims.py
+sed -n '1,220p' scripts/check_public_claims.py
+sed -n '1,220p' README.md
+sed -n '1,240p' crates/poly-kv/README.md
+sed -n '1,240p' docs/PY_SIDECAR_SPEC.md
+ls docs/NEXT_RELEASE_PLAN.md docs/BENCHMARK_TIERS.md docs/CLAIM_BOUNDARY.md
+sed -n '1,240p' docs/BENCHMARK_AND_HARNESS_SPEC.md
+python3 scripts/check_public_claims.py
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_07.md
+cargo fmt --all -- --check
+cargo check --workspace --all-targets
+cargo test --workspace --all-targets
+cargo clippy --workspace --all-targets -- -D warnings
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo doc --workspace --no-deps
+python3 scripts/validate_schemas.py
+python3 scripts/check_public_claims.py
+python3 scripts/validate_final_state.py
+python3 scripts/assert_no_boundary_drift.py
+python3 scripts/assert_receipt_integrity.py
+python3 scripts/assert_realized_accounting.py
+python -m compileall python
+PYTHONPATH=python python -m pytest -q python/tests
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_08.md
+python3 scripts/validate_final_state.py
+python3 scripts/check_public_claims.py
+bash scripts/run_rust_gates.sh
+git status --short > .codex-runs/20260522T045320Z-poly-kv-next/git_status_after.txt
+git diff --stat > .codex-runs/20260522T045320Z-poly-kv-next/git_diff_stat.txt
+git diff -- Cargo.toml crates/quant-codec-core/src/shape.rs crates/quant-codec-core/src/lib.rs crates/quant-codec-core/tests/shape_validation.rs crates/poly-kv/src/manifest.rs crates/poly-kv/src/receipts.rs crates/poly-kv/src/memory.rs crates/poly-kv/src/reader.rs crates/poly-kv/src/pool.rs crates/poly-kv/src/codecs/q8_keys.rs crates/poly-kv/tests/receipt_roundtrip.rs crates/poly-kv/tests/memory_accounting.rs crates/poly-kv/tests/synthetic_roundtrip.rs scripts/assert_realized_accounting.py README.md crates/poly-kv/README.md docs/PY_SIDECAR_SPEC.md docs/BENCHMARK_AND_HARNESS_SPEC.md > .codex-runs/20260522T045320Z-poly-kv-next/touched_diff.patch
+sed -n '1,260p' codex/manual_injections/AFTER_PHASE_09.md
+git status --short
+cargo clean
+git status --short > .codex-runs/20260522T045320Z-poly-kv-next/git_status_after.txt
+git status --short

@@ -1,0 +1,428 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://recursiveintell.local/schemas/poly-kv-alpha.schema.json",
+  "title": "poly-kv alpha schema bundle",
+  "type": "object",
+  "definitions": {
+    "Digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-fA-F0-9]{64}$|^blake3:[a-fA-F0-9]{64}$"
+    },
+    "KvPoolManifestV1": {
+      "type": "object",
+      "required": [
+        "schema",
+        "pool_id",
+        "model_fingerprint",
+        "tokenizer_fingerprint",
+        "shape",
+        "codec_policy",
+        "layer_manifests",
+        "created_recorded_time"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "KvPoolManifestV1"
+        },
+        "pool_id": {
+          "type": "string"
+        },
+        "model_fingerprint": {
+          "type": "string"
+        },
+        "tokenizer_fingerprint": {
+          "type": "string"
+        },
+        "source_context_digest": {
+          "$ref": "#/definitions/Digest"
+        },
+        "shape": {
+          "$ref": "#/definitions/KvTensorShapeV1"
+        },
+        "codec_policy": {
+          "$ref": "#/definitions/CompressionPolicyV1"
+        },
+        "layer_manifests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LayerKvManifestV1"
+          }
+        },
+        "created_recorded_time": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "KvTensorShapeV1": {
+      "type": "object",
+      "required": [
+        "layers",
+        "key_heads",
+        "value_heads",
+        "seq_len",
+        "head_dim",
+        "layout",
+        "dtype"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layers": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "key_heads": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "value_heads": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "seq_len": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "head_dim": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "layout": {
+          "enum": [
+            "layers_heads_tokens_dim",
+            "layers_tokens_heads_dim",
+            "runtime_specific"
+          ]
+        },
+        "dtype": {
+          "enum": [
+            "f32",
+            "f16",
+            "bf16",
+            "i8",
+            "u8",
+            "packed_bits"
+          ]
+        }
+      }
+    },
+    "CompressionPolicyV1": {
+      "type": "object",
+      "required": [
+        "schema",
+        "policy_id",
+        "allowed_key_codecs",
+        "allowed_value_codecs",
+        "fallback_required",
+        "lossy_allowed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "CompressionPolicyV1"
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "allowed_key_codecs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_value_codecs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fallback_required": {
+          "type": "boolean"
+        },
+        "lossy_allowed": {
+          "type": "boolean"
+        },
+        "max_mse": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_attention_drift": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "LayerKvManifestV1": {
+      "type": "object",
+      "required": [
+        "schema",
+        "layer_id",
+        "key_block_digest",
+        "value_block_digest",
+        "encoded_bytes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "LayerKvManifestV1"
+        },
+        "layer_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "key_block_digest": {
+          "$ref": "#/definitions/Digest"
+        },
+        "value_block_digest": {
+          "$ref": "#/definitions/Digest"
+        },
+        "encoded_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "PoolBuildReceiptV1": {
+      "type": "object",
+      "required": [
+        "schema",
+        "receipt_id",
+        "pool_id",
+        "input_digest",
+        "output_manifest_digest",
+        "exact_bytes",
+        "encoded_bytes",
+        "quality_gate",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "PoolBuildReceiptV1"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string"
+        },
+        "input_digest": {
+          "$ref": "#/definitions/Digest"
+        },
+        "output_manifest_digest": {
+          "$ref": "#/definitions/Digest"
+        },
+        "exact_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encoded_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reader_count_at_build": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quality_gate": {
+          "$ref": "#/definitions/QualityGateResultV1"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "degraded",
+            "fail",
+            "quarantined"
+          ]
+        }
+      }
+    },
+    "ReaderInjectionReceiptV1": {
+      "type": "object",
+      "required": [
+        "schema",
+        "receipt_id",
+        "pool_id",
+        "reader_id",
+        "requested_span",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "ReaderInjectionReceiptV1"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string"
+        },
+        "reader_id": {
+          "type": "string"
+        },
+        "requested_span": {
+          "$ref": "#/definitions/TokenSpanV1"
+        },
+        "decoded_layers": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "status": {
+          "enum": [
+            "attached",
+            "decoded",
+            "fallback",
+            "error"
+          ]
+        }
+      }
+    },
+    "DecodeReceiptV1": {
+      "type": "object",
+      "required": [
+        "schema",
+        "receipt_id",
+        "pool_id",
+        "reader_id",
+        "request",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "DecodeReceiptV1"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string"
+        },
+        "reader_id": {
+          "type": "string"
+        },
+        "request": {
+          "type": "object"
+        },
+        "decoded_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scratch_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fallback",
+            "error"
+          ]
+        }
+      }
+    },
+    "FallbackReceiptV1": {
+      "type": "object",
+      "required": [
+        "schema",
+        "receipt_id",
+        "pool_id",
+        "reason",
+        "exact_ref",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "FallbackReceiptV1"
+        },
+        "receipt_id": {
+          "type": "string"
+        },
+        "pool_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "exact_ref": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "used",
+            "available",
+            "missing"
+          ]
+        }
+      }
+    },
+    "QualityGateResultV1": {
+      "type": "object",
+      "required": [
+        "schema",
+        "passed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "QualityGateResultV1"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "mse": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cosine_similarity": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "attention_drift": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "TokenSpanV1": {
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

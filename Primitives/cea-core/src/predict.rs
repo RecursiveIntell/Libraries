@@ -87,7 +87,7 @@ pub fn predict_with_config(
                     continue;
                 };
 
-                let edge_observations = edge.stats.observations.max(0) as f64;
+                let edge_observations = edge.stats.observations as f64;
                 let match_coverage = matched.coverage_weight;
                 let edge_conservative_confidence = calibration::advisory_confidence(
                     calibration::conservative_reliability(edge.stats.alpha, edge.stats.beta),

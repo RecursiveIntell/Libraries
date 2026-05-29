@@ -1,0 +1,32 @@
+{
+  "created_utc": "2026-05-20T18:07:47Z",
+  "excluded": [
+    {
+      "path": ".codex-runs/20260520T174516Z-alpha1/commands_run.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "poly-kv-generic-rust-next-codex-context-20260520.codex-archive.json",
+      "reason": "generated-output"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": ".git",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/poly-kv",
+  "summary": {
+    "generated-output": 1,
+    "log-disabled": 1
+  }
+}

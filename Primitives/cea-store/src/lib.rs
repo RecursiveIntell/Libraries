@@ -362,7 +362,7 @@ mod tests {
                 .iter()
                 .filter_map(|((stored_cause_id, effect_id, stored_version_id), _)| {
                     (stored_cause_id == cause_node_id && stored_version_id == version_id)
-                        .then(|| effect_id.clone())
+                        .then_some(effect_id.clone())
                 })
                 .collect::<Vec<_>>();
             effect_ids.sort();

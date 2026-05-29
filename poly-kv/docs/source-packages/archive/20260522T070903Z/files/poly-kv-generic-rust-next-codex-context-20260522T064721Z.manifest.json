@@ -1,0 +1,2562 @@
+{
+  "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+  "archive_zip_byte_sha256": "d458b162bef2ab6bd70966eff8e6ea1f87acf546de0d5fd0c7283dcc6b0cbbdd",
+  "codex_archive": {
+    "active_stale_after": [],
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/codex-runs/archive",
+    "collisions": [],
+    "current_run": "P30",
+    "dry_run": false,
+    "enabled": true,
+    "errors": [],
+    "manifest_paths": [],
+    "moved": [],
+    "planned": [],
+    "report_path": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.codex-archive.json",
+    "skipped_existing": [],
+    "stale_active_before": [],
+    "unclassified": [],
+    "verify_only": false
+  },
+  "content_manifest_sha256": "02a5f8b08fd7bd30d02efd9c1611807c7e631e276c3497b059c9a2188cc73215",
+  "excluded": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.excluded.json",
+  "files": [
+    {
+      "bytes": 383,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": ".agents/skills/recursiveintell-final-audit/SKILL.md",
+      "sha256": "d78caa80416fcff72f0305251144d849be328e89aed7d65dccb121a26a56efe8"
+    },
+    {
+      "bytes": 363,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": ".agents/skills/recursiveintell-phase-gate/SKILL.md",
+      "sha256": "a4f40a681e24f42eecd08b757c0bede5e7f89ebc22ef70892c6af01d6b1600f0"
+    },
+    {
+      "bytes": 325,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": ".agents/skills/recursiveintell-public-claim-boundary/SKILL.md",
+      "sha256": "3c77171f1de22d8fd187431516485489cb3d306b845388a1c6df8d1e498a88ab"
+    },
+    {
+      "bytes": 353,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": ".agents/skills/recursiveintell-rust-crate-boundary/SKILL.md",
+      "sha256": "4ecf59962be5f107e7fd9ee8b8c95bc573515735351f6b1163af63516934eab8"
+    },
+    {
+      "bytes": 426,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": ".agents/skills/recursiveintell-startup-preflight/SKILL.md",
+      "sha256": "789ea780157d8ec978ada3de1a9ebb1a88e7e3233bec3f59cb4c521f95bf579e"
+    },
+    {
+      "bytes": 2465,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/changed_files.txt",
+      "sha256": "5eee08f13d606b6497429a7b68f75004e89db548381fc882dcff77a0e774c3ef"
+    },
+    {
+      "bytes": 1678,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:40Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/commands_run.log",
+      "sha256": "a88b24d78070ad796196580c80f72a7b573edc59c168c340a4d6318ebbb27bed"
+    },
+    {
+      "bytes": 840,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/final_audit_report.md",
+      "sha256": "f11a73d073da53a461ca67ea5cec5bb5ba3f6745f7d3dac35e82811d8a93811c"
+    },
+    {
+      "bytes": 1111,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/invariant_report.md",
+      "sha256": "89b85dc9d51fac98d5380b2ec6be85a3e8ba54d9162d7e8adce5a944c42389d3"
+    },
+    {
+      "bytes": 1035,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:06Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_00_report.md",
+      "sha256": "acac9a7bc3ca16e453905328f77d583aaa97b8263557e38cab71fe19532e03ee"
+    },
+    {
+      "bytes": 1492,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:06Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_01_report.md",
+      "sha256": "367750697c8af0cfa349dd46f689c5eca40b30841926ea6bf672c96790488fc0"
+    },
+    {
+      "bytes": 661,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_02_report.md",
+      "sha256": "feb9b13ed3e753739f8974b887d83dda1a4734f6581e34715c87766333acc68d"
+    },
+    {
+      "bytes": 796,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_03_report.md",
+      "sha256": "573e06650a71842f3cb7a78f646d3c6b894c8803c28da373ebbd0106062972d6"
+    },
+    {
+      "bytes": 607,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_04_report.md",
+      "sha256": "fa87524a46a15214e3cf0dcb8c7bcc0e97cb0ef82717b288fd3a8f7060414e89"
+    },
+    {
+      "bytes": 592,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_05_report.md",
+      "sha256": "82177e987d7878e5c1d54988d6429300c191b4b8f6e240f4639f174c0b604501"
+    },
+    {
+      "bytes": 643,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_06_report.md",
+      "sha256": "d05064fce374b35e56815ef760ea558801e8c88b5da10c50801ceeb6c812f3c1"
+    },
+    {
+      "bytes": 711,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_07_report.md",
+      "sha256": "b354a08518bc0719f89e7b30823a5e34f7bc5813d4c334771bf9995eac239834"
+    },
+    {
+      "bytes": 527,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_08_report.md",
+      "sha256": "020a3f9fd1b1434e707168df07515860e8bb6ac9340f6cd37a58eb4b69521aab"
+    },
+    {
+      "bytes": 1110,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/phase_09_report.md",
+      "sha256": "d9c4ec3ae5746a7c5813a92a99135f2d11d81771f78a45f1f0f5b854c3b58f1b"
+    },
+    {
+      "bytes": 624,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/remaining_delta.md",
+      "sha256": "acbea4ed00e57edddb2e16a3610d8f64544990bdfc204d26ba66590514adea9d"
+    },
+    {
+      "bytes": 667,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/risk_register.md",
+      "sha256": "4759e6e21a215ab2c87e07b89b5ad468d193ca8c593edee223723288fe0123e3"
+    },
+    {
+      "bytes": 376,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/rollback_plan.md",
+      "sha256": "b9f267ea1a4025c185182d2a412c5d6e4bbd1673d8c8df02bbcfe481d331ae9e"
+    },
+    {
+      "bytes": 1025,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:06Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/source_inventory.md",
+      "sha256": "d03e6e98548085ec68bfcbd3a20ce39c32655084d574e22a542829c92c7f270b"
+    },
+    {
+      "bytes": 478,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:06Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/startup_preflight.md",
+      "sha256": "19f26f1788724116917c8dd51e1ea8b887535081be28e0208988b6d24af22fac"
+    },
+    {
+      "bytes": 1061,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:40Z",
+      "path": ".codex-runs/20260520T174516Z-alpha1/validation_results.md",
+      "sha256": "8e7e5051470403d1152c9e74565c84d2e3ce51b1f8e3e52c18f339c5b4c1a285"
+    },
+    {
+      "bytes": 78,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:53:57Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/cargo_manifests.txt",
+      "sha256": "272f1e2191941429854ec9bbb0e5f43077b90c21c5c7d25815070ec7d95f2b4e"
+    },
+    {
+      "bytes": 1248,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:01Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/changed_files.txt",
+      "sha256": "7e9464661180931a717326e295c45a3e7a245e19c0e33c4e78a5e3676d67f2ef"
+    },
+    {
+      "bytes": 7475,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:38Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/commands_run.log",
+      "sha256": "2e87f647f71ddb7b0c4dff4e026245167414533d23f3b4c943793c8079183d57"
+    },
+    {
+      "bytes": 41,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:53:57Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/commit_before.txt",
+      "sha256": "ef0b21bd33ddaf58abf06914cccd5f7c518f3f3a07e29e1780fed49b5de1d59e"
+    },
+    {
+      "bytes": 2202,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:01Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/final_audit_report.md",
+      "sha256": "a96e9caee9b413571ee96795114301b53e0e0cebf6f3f60458abe2335ea058fa"
+    },
+    {
+      "bytes": 604,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:05:18Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/git_diff_stat.txt",
+      "sha256": "aaa79f3a19ce0f7f05c1bb2d9d11ac0beed2230f6638a05b7f9a47a9670859dc"
+    },
+    {
+      "bytes": 2001,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:33Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/git_status_after.txt",
+      "sha256": "2546c82614f4edc937c1201752d372d7c8c81b986cf5a47a25a4c7bcb470c536"
+    },
+    {
+      "bytes": 1795,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:53:57Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/git_status_before.txt",
+      "sha256": "d7b642d53504681f9af0e0e05c729d9ae13f6207cd4b46ea7400ae2fdf35863e"
+    },
+    {
+      "bytes": 1718,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:01Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/invariant_report.md",
+      "sha256": "1abd933a6b412d43e502423614fe8f69776a89cd57dc7e8a3892ae1c32ad485c"
+    },
+    {
+      "bytes": 1323,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:55:07Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_00_guardrail.md",
+      "sha256": "9925b14eeaf2adf61dc8d56037e847cef967b3b13df7717bffc4c6f2f5572d0b"
+    },
+    {
+      "bytes": 3022,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:55:07Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_00_report.md",
+      "sha256": "a00ff97df2671c547927461605cec7cfaff8674ad48a8becb0306e25f930f98b"
+    },
+    {
+      "bytes": 1459,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:56:14Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_01_guardrail.md",
+      "sha256": "c07c6337fa2686f61174db52e46ff7539baca087697ebd126e611b140c0153b6"
+    },
+    {
+      "bytes": 1329,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:56:14Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_01_report.md",
+      "sha256": "aaf072ac54519d6ada3b3f34f5a3372591e404391917080bbf66766f6f3cd19b"
+    },
+    {
+      "bytes": 1605,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:58:11Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_02_guardrail.md",
+      "sha256": "71dd06368a76dd2cd09c14d55c6230970a99930a316e3c640113963578bd0518"
+    },
+    {
+      "bytes": 2000,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:58:11Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_02_report.md",
+      "sha256": "99908df84df8852744d8a53df2e208350d6fe4a8da994924b2b69d4f5b77222d"
+    },
+    {
+      "bytes": 1448,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:58:55Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_03_guardrail.md",
+      "sha256": "12f6cfe32674ef6e014028a0c5b9421d077d3b406ab80af0b9b9bac837ca6662"
+    },
+    {
+      "bytes": 1089,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:58:55Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_03_report.md",
+      "sha256": "7f171eacc23f8454f49a4b223b536552f96c22a295fdbd2409bcc2bd5ec82f87"
+    },
+    {
+      "bytes": 1485,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:01:23Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_04_guardrail.md",
+      "sha256": "757d638125f35da724795c8011bd302a16efc2f10e996a74f4c95a8353e09657"
+    },
+    {
+      "bytes": 2177,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:01:23Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_04_report.md",
+      "sha256": "5772e8c70f1aef03db3c1cbfe62669fd141dd5ce96b5dbd58ad112f0faf574d8"
+    },
+    {
+      "bytes": 1436,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:01:48Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_05_guardrail.md",
+      "sha256": "f9dd27e2b99a1f87ab0edc52c87caaf262c9736e1145dc38efe1e7fd73f6c3a1"
+    },
+    {
+      "bytes": 1532,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:01:48Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_05_report.md",
+      "sha256": "c68feafa58832695528fd0e9babf11c69a8eb4641ec55da9da0dcc18be112870"
+    },
+    {
+      "bytes": 1346,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:02:48Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_06_guardrail.md",
+      "sha256": "38f0f41638f953d73e4f05f032336d035ce6e9b4e7ed22e83cc7ea40fb9301a4"
+    },
+    {
+      "bytes": 1599,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:02:48Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_06_report.md",
+      "sha256": "54052189905e53cade78518a365b539e2c25a96fc35ef38fc30af0d2bd7bfb48"
+    },
+    {
+      "bytes": 1271,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:54Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_07_guardrail.md",
+      "sha256": "f5a19010a0890de9a144f547f699ef86f37bfc5cb6539129c126c899a27e02be"
+    },
+    {
+      "bytes": 1054,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:54Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_07_report.md",
+      "sha256": "32b5d0bab04fd1cf59c1f958a5648f599abb17edb5e009f500fc07cb4641a3ae"
+    },
+    {
+      "bytes": 1384,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:04:58Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_08_guardrail.md",
+      "sha256": "081c0b5a5ff0d585a31471fce1da0a57e0b5921e656cc41c22f5e0e8ba0af92c"
+    },
+    {
+      "bytes": 1372,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:04:58Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_08_report.md",
+      "sha256": "fc3e4b9bdb8d3a956e5b1c2b4d8fb02e87f92ffac8a14e2a498965c2b98024f3"
+    },
+    {
+      "bytes": 1267,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:10Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_09_guardrail.md",
+      "sha256": "f47785ad7b0dd6c446715bf7c14ae01fdedc0537837027075695243d71111dfe"
+    },
+    {
+      "bytes": 749,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:10Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/phase_09_report.md",
+      "sha256": "1402e8e5071b3934ba2deb79dfe8adff9affc0d332422b21116c58254e91cbd3"
+    },
+    {
+      "bytes": 525,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:02:19Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/python_boundary_bench.json",
+      "sha256": "e601f17e3d648335cd395311c7a185df3f5435f08f1eba8b9633329e77f27178"
+    },
+    {
+      "bytes": 366,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:02:24Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/receipt_parity_report.json",
+      "sha256": "3602aa961168357279cb7ec49b84bb79ad8ad809c93cf9166db908fca3821573"
+    },
+    {
+      "bytes": 619,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:01Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/remaining_delta.md",
+      "sha256": "33909890ae4055b6f715a6b9e4c70ac5afb6033b6b15b48a94d6fdc7ee15b3f2"
+    },
+    {
+      "bytes": 895,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:01Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/risk_register.md",
+      "sha256": "1f785d6439cf1537eba1378e226222da72fc959397a07eb627fee52d8798808d"
+    },
+    {
+      "bytes": 1304,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:01Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/rollback_plan.md",
+      "sha256": "dace6eaa8b1394f7f7eddcca9a9f9b84b3c57de615eb2015d51676a140567026"
+    },
+    {
+      "bytes": 1706,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:02:19Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/rust_synthetic_bench.json",
+      "sha256": "36ae4527856ee7a6ecbcfe842123cf054bd2ae5d1b74f40e4762f43f70c0ce6a"
+    },
+    {
+      "bytes": 17430,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:53:57Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/source_inventory.txt",
+      "sha256": "b4d63bc739217db6cc6ffd6ea484c028ec03fefa88c3dfdf2b53d069160a0132"
+    },
+    {
+      "bytes": 3066,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:53:52Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/startup_preflight.md",
+      "sha256": "3fbd019170e8776c2b2cd923aa33a0bbba521df842e5b2d9e5e4790451854906"
+    },
+    {
+      "bytes": 1903,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:06:01Z",
+      "path": ".codex-runs/20260522T045320Z-poly-kv-next/validation_results.md",
+      "sha256": "a6e451c19141bae08539cb902b83bd3c8fe349250afe74927201da6b3b51712f"
+    },
+    {
+      "bytes": 18717,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:47:21Z",
+      "path": ".codex-runs/20260522T064021Z-zpy-package-hygiene/commands_run.log",
+      "sha256": "fe69d91976b2ea2232e75669bf722f41e5af8b1b7a137e5fedb701eacea96909"
+    },
+    {
+      "bytes": 1845,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:40:49Z",
+      "path": ".codex-runs/20260522T064021Z-zpy-package-hygiene/phase_00_report.md",
+      "sha256": "35eb6dd65a77e39bbd598a2428c7a0d27f26cc2b07bf34000ca9905923654428"
+    },
+    {
+      "bytes": 1711,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:44:42Z",
+      "path": ".codex-runs/20260522T064021Z-zpy-package-hygiene/phase_01_report.md",
+      "sha256": "578a3b6b1ab4983a77cdcf4d5d452e327171a2ca63dd01af6558a841e39d3ea0"
+    },
+    {
+      "bytes": 2108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:44:50Z",
+      "path": ".codex-runs/20260522T064021Z-zpy-package-hygiene/phase_02_report.md",
+      "sha256": "1ac5701c427dbc46320a156a6b84c12769947bb864a602beaab5245f47aa1906"
+    },
+    {
+      "bytes": 1563,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:45:43Z",
+      "path": ".codex-runs/20260522T064021Z-zpy-package-hygiene/phase_03_report.md",
+      "sha256": "1521617aeb5f95bbf320dce42ff5dba32e374e0cf327b6c70477590ea366dfaa"
+    },
+    {
+      "bytes": 1625,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:45:50Z",
+      "path": ".codex-runs/20260522T064021Z-zpy-package-hygiene/phase_04_report.md",
+      "sha256": "85a410d481078c62347abfe8bd02e59b0289fba0153f5e047451751c91ea262f"
+    },
+    {
+      "bytes": 16467,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:47:21Z",
+      "path": ".codex-runs/20260522T064021Z-zpy-package-hygiene/startup_preflight.md",
+      "sha256": "35048d00b1e57539fb65a4593603a928f3f13e429948f0ac9c5eba6ce07a9794"
+    },
+    {
+      "bytes": 259,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:44:51Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174451Z-user_prompt_submit-dba0e178e0a5a790.json",
+      "sha256": "c9c3b0a5e4baddbbe300584abe23c7e6ca8047a1ab3b89ec2f3ea9b9562cba2e"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:00Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174500Z-pre_tool_use_policy-035627457dc6f581.json",
+      "sha256": "a75c81a7da10c08c758a9e1ddad173c728c9c77c4c248e054b04fa31763794bd"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:01Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174501Z-post_tool_use-6aa1ab2789bd674a.json",
+      "sha256": "9581b9b08383e2489181167c12c3417dab11eff1e930db4d5244768436c25c0d"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:11Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174511Z-post_tool_use-38d18ddeaf086242.json",
+      "sha256": "10e5d3985d068c561d1319557c8a838bbc9a3c768fde48ae29cfd17bc70a6365"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:11Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174511Z-pre_tool_use_policy-f198b58f93382f40.json",
+      "sha256": "4d5c1eb61733035bf9792ad8a370d3ca74a2d757e4625515c66959fb30fe8c15"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:16Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174516Z-post_tool_use-599a0b232e0c9588.json",
+      "sha256": "903f833c48a1be87cfbcecd4d287e2f7cf7ab7cd9bf40eb34aee54cdbf2ef79f"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:16Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174516Z-pre_tool_use_policy-3796753877d36fef.json",
+      "sha256": "c62ba52abb945c38351f62c3b68eaf86cc4db08bdcf5bf34effb70d3cbe5b196"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:26Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174526Z-post_tool_use-81723686f0fdf5ae.json",
+      "sha256": "6aba7e0fe2724a96b75cd9ddaf1fb972085c0ea4a3180834c918c9385ae7b054"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:26Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174526Z-pre_tool_use_policy-a34ff28a68d7551c.json",
+      "sha256": "d54d9c5ea4bcabce4e43e862374ef9d65ae0ab4d12a9be2957bafc5975e063ea"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:44Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174543Z-pre_tool_use_policy-ad9a5ba1dd3d4445.json",
+      "sha256": "94b3af6ec7a78f207f7ef8545a099b04c93c28eb0f08291f04bff3164046e894"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:45:44Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174544Z-post_tool_use-9eb3e0150522598b.json",
+      "sha256": "5e484b0a645f057f3c140532fb22676acdea589212c2fddba768c231a716a673"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:06Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174606Z-post_tool_use-6959f625d129ab7d.json",
+      "sha256": "eeae380fbf5550b1d04be6e48c54ea2cd5befc50b987f7c2a674f7be58353d62"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:06Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174606Z-pre_tool_use_policy-d819ce6371d22969.json",
+      "sha256": "93fedcebf4c4ebfba1a70dfc5684351de1dc51d4d75bb93de740f99c57f7bf56"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:17Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174616Z-pre_tool_use_policy-2af69928fc77fcdb.json",
+      "sha256": "1ddccb49535a2beef4a3bc397fb470550bc07bcaebc68f86b6732610778c3b74"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:17Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174617Z-post_tool_use-efc02c8237af1376.json",
+      "sha256": "999792d083a278eaaf59206c8ca968266f1e621fb3f1250f5ae70b8900f21e79"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:31Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174631Z-post_tool_use-988e60747ba956c3.json",
+      "sha256": "d7223832d333e3269e61af357ff70e2e6262aea2f33012b0377b9ce59445e41e"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:46:31Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174631Z-pre_tool_use_policy-653c36d7c1d267cc.json",
+      "sha256": "a5a0d73d32764909450d192265be0f39ba558591c4b180696f7fdd93368d36eb"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174807Z-post_tool_use-7916329f0383d5cb.json",
+      "sha256": "9a860f0c11edb44399bffb262fb228ee56f2cf498e9ec386d487b4c5962f4713"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174807Z-pre_tool_use_policy-25f12939a16bbce1.json",
+      "sha256": "4407b75983bd8c716b4e2df399bc4c0667d5bc8b4cb7d4b37394954cef908804"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:49:41Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174941Z-post_tool_use-8c166ceb29312026.json",
+      "sha256": "cc3c2ed28fee14a9657e99db894f34681892607be83376670f83b84698b4f787"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:49:41Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T174941Z-pre_tool_use_policy-07fd48af4e1f7e93.json",
+      "sha256": "59b96c7084e01d19660f58724d6c9ced277c8e58765a4d038382d613de971828"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:50:51Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175051Z-post_tool_use-a1edf978462a5e04.json",
+      "sha256": "9273466a3d4131e41cedd32fd76b874b1a15906c504763070b8ac1ecbee952e0"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:50:51Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175051Z-pre_tool_use_policy-4fc37ca91c4130f0.json",
+      "sha256": "3e72bfab8cfc760e743f9a5cb6cf413efbb859948fc4e102378cb2c67ec2611e"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:50:57Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175057Z-pre_tool_use_policy-d328c4c8ad5a1c0d.json",
+      "sha256": "3d469c7ad46f661bb2795f8d3a99d09613605d6588a6a99d6d9e04f488b428de"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:51:05Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175105Z-post_tool_use-b809d97c72cd7ae8.json",
+      "sha256": "40627b8b95a4e30b35e72ab8fd6971ecd1196d67bbbdabb749454acc52e799e5"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:51:11Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175111Z-post_tool_use-40d8b54de3179126.json",
+      "sha256": "a8b29fa70b7c975421c22de8624c914266b2c9cf5f9ef5f514c59c84ff9a310d"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:51:11Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175111Z-pre_tool_use_policy-10a93fc29604eead.json",
+      "sha256": "32a8039f5fbb78864c3c14932398e17dccf584c696a13f4ab353038651fb2178"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:51:58Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175158Z-post_tool_use-e5a29e96da35f53b.json",
+      "sha256": "9195cde16b5375e5320115266585fd793df009421c142aa6cdee71072997dc0d"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:51:58Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175158Z-pre_tool_use_policy-8158d6c378a44fb1.json",
+      "sha256": "61a73d5ca918f3f52cebe14565fb48c1c90d092d37460296bb57656a453d1cee"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:03Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175203Z-pre_tool_use_policy-18dd378e17592beb.json",
+      "sha256": "9a0cd26cefedc1affa1ad8144b69ac07e923ebc2b2d4f7cf5da3a015ddbed108"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:06Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175206Z-post_tool_use-79d96f7331b73afc.json",
+      "sha256": "8ae17374289d2fbd573384ad322cdac1010ad0ce6d12d4523c3d41ac8438db44"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:06Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175206Z-pre_tool_use_policy-49ec5e17ff9e3f07.json",
+      "sha256": "8c64c058f7a7f806933bb3a40f5dec2dc89d04b40524fc9795dc3a999d89a911"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:10Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175210Z-post_tool_use-daf80d3074ab77a5.json",
+      "sha256": "73d24cc1f0cb3585dfd039ee427d3ae02d92878a0a7181177c0c0b6bb8d26e55"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:10Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175210Z-pre_tool_use_policy-241fa5787959d955.json",
+      "sha256": "70edc12dcdf9d79e3b9d26ad40d1079a817f61d0052aaa197c61ee615892486b"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:12Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175212Z-pre_tool_use_policy-886b066ebb556595.json",
+      "sha256": "eebc4b29ae5666ecdc33a596fd1c2e8b8e8f6b7bc65f5990e07fa47b26235b9b"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:21Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175221Z-post_tool_use-455725bbb18e1660.json",
+      "sha256": "9cf53cfaa87f82667703f64a9691c3eb188e5f1b70073c1ad82fb3e075e1f9e4"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:26Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175226Z-post_tool_use-b7f4714cd7b4f6c9.json",
+      "sha256": "7c4cba8f1ca14a497b0d9dcf7a1a4ae44e277da24373de1145a000dda2688002"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:26Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175226Z-pre_tool_use_policy-838c2536bdad07d6.json",
+      "sha256": "eb78b081522eb4c7cae23219ccd2d40663cd8a84dd1d6bf7bedeec0ca1958735"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:32Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175232Z-post_tool_use-59398bcd6e2e3a0a.json",
+      "sha256": "0ac852687b662e3be5674f104f6bcedf3ff375a34ca7293a7e06ad246ce430b8"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:32Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175232Z-pre_tool_use_policy-5776356743659cc7.json",
+      "sha256": "2f6a727f241399c9d783e4bee12933fbc1a0e72a3e8bc3c1083beb1620c983f6"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:52Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175252Z-post_tool_use-b6ea6f4668756c13.json",
+      "sha256": "780fd70d5429afeed7d7b739637499cf9a1f75799f845023bc69e27b1f111c4e"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:52Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175252Z-pre_tool_use_policy-f6037829609e957d.json",
+      "sha256": "8a358920a1db73c7086b153931b5f5dbc646482589835d9b327b6d6d4d15252a"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:01Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175301Z-post_tool_use-980e8b23e4a9c3a4.json",
+      "sha256": "cb66b884977b24a4e5076f19ff9ea723b03dd3e55a2cabdd8559af8b89add4fd"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:01Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175301Z-pre_tool_use_policy-c4bbd6be4805f7f2.json",
+      "sha256": "f550c4250608f222f0a55e75f2bcff171f8e363a8db92b44de2a45b011720114"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:06Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175306Z-pre_tool_use_policy-bf4dedf0031ac45e.json",
+      "sha256": "48a85f5beea1c55fcc1f4f064009c919451da959051614b6f683c74ba5af3dc4"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:10Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175309Z-post_tool_use-cdc9dc6e1254cf8b.json",
+      "sha256": "040093e0052d93c2f96e2f5d27d39ac4077e68738b879460d54e4b44dad82657"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:16Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175315Z-post_tool_use-9a3fac5cc065fb1d.json",
+      "sha256": "4549a1942c603386685528cb1eb954bb5531e3119569a1351fb379616f2d309c"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:15Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175315Z-pre_tool_use_policy-14571fa726fb76b2.json",
+      "sha256": "df8dc2322aff8846997362ba561f0dc49902fe8e15ea73cf0b54e1183035d5b8"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:16Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175316Z-post_tool_use-09c33b0a95192949.json",
+      "sha256": "d0c966a2fdbc37bf2fa36fd1b3895a36ac77018cc638c18999ffae200be7d45b"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:22Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175322Z-post_tool_use-61fba960a4e90bd3.json",
+      "sha256": "16f24dfa0dea2c656a8160543eb33cacc3153fba492474e7e967ec2d2541790a"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:22Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175322Z-pre_tool_use_policy-80688a93f65c460a.json",
+      "sha256": "bae59909b35236f402d480305ef39b06de77322b4e8b6343c13d49adf07c0141"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:28Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175328Z-post_tool_use-e06f78db5333d126.json",
+      "sha256": "37245093a94ca03319ac989f06217d2c1d3e9785c6b60b36fd2bed00f195c0dc"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:28Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175328Z-pre_tool_use_policy-9e361e3d6375fb10.json",
+      "sha256": "89c3d4d88dd31631568c80c5310402a5b112c76f697d9947a5735db036468ca6"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:32Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175332Z-pre_tool_use_policy-d9b852e856962aed.json",
+      "sha256": "5cf933e9f295e58cf03a1f49e55ac1e9e459e2b1d949c0fb91315043f3964d00"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:33Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175333Z-post_tool_use-a782736192ba2c1f.json",
+      "sha256": "4ad1637eb1526a93a5bc021a61d334f289bba5a1876735814d7454a30b1a895c"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:42Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175342Z-post_tool_use-a84c47d4ed070254.json",
+      "sha256": "f42412162aec54435026152b4c06a81280f212ddc9f300d80d4e9640e1cbd48d"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:42Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175342Z-pre_tool_use_policy-f50c8de20822fd28.json",
+      "sha256": "f8673ca590ffd55742859a28b5d1af3ef5392825ee996176f074d41bd4c9b855"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:46Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175346Z-post_tool_use-7851b0e945184f54.json",
+      "sha256": "e701265abca21285ffbd29c6745b7cc8141a4fe2e797ee428d71ea1c73db1b8c"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:46Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175346Z-pre_tool_use_policy-1c18dcbc23675d7c.json",
+      "sha256": "76dff911fd76ecb89eb83a2330613ff7f909a6a720b69a907cf5ae1d2c398243"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:51Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175351Z-pre_tool_use_policy-712a71c3d25689da.json",
+      "sha256": "7ef8677f7a1ac17c5f4e1ac5847111bf46c410e710b728d735e34945b8843f49"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:53Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175353Z-post_tool_use-f51ae596db0841b8.json",
+      "sha256": "395a9623b3692e76195575f4fc4c95f8f0d1b72b3583e42bf952efcc9d939655"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:57Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175357Z-post_tool_use-0d26ed934028228d.json",
+      "sha256": "22f8a00973371113495d869375b54302f9c8adcd9d53b72e0d65ca21acc74e2e"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:57Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175357Z-pre_tool_use_policy-e426a838837020cc.json",
+      "sha256": "46badd7e3b9f300c79fe2666b3a6a9ea7b55954854d26a9babe2c8e227888e4c"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:54:01Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175401Z-post_tool_use-6721354de6b5004a.json",
+      "sha256": "6fdf21cd559460bf0893dd2f0057956bee4dfcb44078e0aec97e9bf5cdc047e1"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:54:01Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175401Z-pre_tool_use_policy-579de9f745566fe2.json",
+      "sha256": "2e8538b1055a92222f312bb3b919fcb2b191e0ec8a9ec69f289c1dca56f8dbb2"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:54:06Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175406Z-post_tool_use-969ccb595a08df66.json",
+      "sha256": "bed4e4d9d3adedd241119e2427f2fd8c3dcb74e7a4846356ddeecec809f073c1"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:54:06Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175406Z-pre_tool_use_policy-4a289df30e2bbddc.json",
+      "sha256": "7c19b4d6a7cbd272b18777b9a1a848a178f9ac6708f74903b236100b558508c6"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175504Z-post_tool_use-afcc153c907a80ce.json",
+      "sha256": "0082eb5adbcb933859a728c2889f2b134dfdbeffe981cc6a107cf908aab47bf2"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:04Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175504Z-pre_tool_use_policy-6fb9568a23cf7b4d.json",
+      "sha256": "93088b33cd10b6d16cb1cf6fedbb2e0a2b745aeca28bed2572fdc1f8af86b393"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:12Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175512Z-post_tool_use-cc3d72dc12d6a023.json",
+      "sha256": "34ed53b63bc40e0274a548f5f55a44fc0fdcb1c14bc7cceab04ddda096d31518"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:12Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175512Z-pre_tool_use_policy-c017b3ae9d4facc7.json",
+      "sha256": "bcc8c4dce61cc912b2ef0e0a205fbd15a86652bb7e989346054cd347f5dd864e"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:18Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175518Z-post_tool_use-f4154f232b6934cd.json",
+      "sha256": "e9ab62fcd1e16d3aaefdb9933a0ba37fd9cac3fc0b2e69e04675665f1cca5630"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:18Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175518Z-pre_tool_use_policy-7bfd6e7d756c3320.json",
+      "sha256": "e3f9376fcebc320b3c1ef73b7e8d759edc162c9c1bf4eb3c5649addd764ba5a1"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:22Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175522Z-pre_tool_use_policy-0630e4852471c880.json",
+      "sha256": "1640a3db5c3f9fde62e55913ec1cc448e114ecfd8095564eda29fb262bcb8024"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:34Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175534Z-post_tool_use-cee888ea50e55665.json",
+      "sha256": "5d54bfbe338852249f3172d11d3a7f9ad35b5d2fadfa4e03d3a29d6741228525"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:36Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175536Z-pre_tool_use_policy-33fdaf69449da162.json",
+      "sha256": "eca41edc81d06a84a871593a9d7073a4f1af8ee1ff02b00feea88f23544f06e5"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:37Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175537Z-post_tool_use-f599890565749175.json",
+      "sha256": "edc0c8046c1c6d24d67720e71af96b9575478c6f1980621c81267aebadba994e"
+    },
+    {
+      "bytes": 315,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:40Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175540Z-post_tool_use-b400f370ab525e43.json",
+      "sha256": "34b69ded622e4ebf1817d6ba9e764f605726f3583f505207784bfdc52fd0686a"
+    },
+    {
+      "bytes": 300,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:55:40Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175540Z-pre_tool_use_policy-dae117e3e35f2fcd.json",
+      "sha256": "04f52a03b62f69fca115c2b6c67e5b06db415665e319bf47e5422c9662c5077e"
+    },
+    {
+      "bytes": 296,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:56:00Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T175600Z-stop_final_gate-6679d9c854e86016.json",
+      "sha256": "0441cc3b533109c840ef8d35f6f476817d5dd94a5a41ee9b01328841938871c3"
+    },
+    {
+      "bytes": 259,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T18:07:00Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T180700Z-user_prompt_submit-50fbab7d60f1f724.json",
+      "sha256": "554669f24c8c49a656b65193556ec69eb806068adc0178e8d613eb4f1c80bc44"
+    },
+    {
+      "bytes": 296,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T18:07:05Z",
+      "path": ".codex-runs/_hook_receipts/2026-05-20T180705Z-stop_final_gate-d5dacc4fad9f6bf1.json",
+      "sha256": "f89ba70b27cf43035806e2cac466db526ddb6dff62715193093f05a2951faa83"
+    },
+    {
+      "bytes": 3783,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "AGENTS.md",
+      "sha256": "ddf1032b9bfd7deba085ad7c1cbb1d55d2b76c950c61d789fedbe5eedade7176"
+    },
+    {
+      "bytes": 31168,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:48Z",
+      "path": "Cargo.lock",
+      "sha256": "cb8b753190bf3e22abce626e3a3d3ea8b5d8531405f7fcab824a1d67fa95ec37"
+    },
+    {
+      "bytes": 265,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "Cargo.toml",
+      "sha256": "abdbf02be09ec66a2324cd3b4adecebdacb4310f19988c0933c3971cef747b35"
+    },
+    {
+      "bytes": 4162,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:36Z",
+      "path": "README.md",
+      "sha256": "ce06d2aaead4bc3529987d51747df0a89dbf74a1c3bbb1ffc1053671244400ea"
+    },
+    {
+      "bytes": 452,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "crates/poly-kv-python/Cargo.toml",
+      "sha256": "44333b565e2683928988140199bbcea9e249bea3ded9ee70dc11ed64eb2f64c3"
+    },
+    {
+      "bytes": 7949,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:46Z",
+      "path": "crates/poly-kv-python/src/lib.rs",
+      "sha256": "42a00c0edb03e2e62a26708e822f9b81ebb0456070f7ae4a02357911518e20fd"
+    },
+    {
+      "bytes": 716,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:51:58Z",
+      "path": "crates/poly-kv/Cargo.toml",
+      "sha256": "3a9545d59ecd9d917eb4915939819928a6104afa4b5018fb24c279232830e2f2"
+    },
+    {
+      "bytes": 1465,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:36Z",
+      "path": "crates/poly-kv/README.md",
+      "sha256": "b79caa329b3d943d176d8923bf95689da69d1e74159bf35690348509c7d9b009"
+    },
+    {
+      "bytes": 1537,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:12Z",
+      "path": "crates/poly-kv/benches/synthetic_pool.rs",
+      "sha256": "d0fc86c606169920365724ff61d286c940aaf2ad004cf4ec458d57a7d6a41700"
+    },
+    {
+      "bytes": 361,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:49:41Z",
+      "path": "crates/poly-kv/src/adapters/fibquant.rs",
+      "sha256": "21ee3533c587c9311b72e0dee45c8c0139a7decc29381f419740504a38d4ba2c"
+    },
+    {
+      "bytes": 116,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:49:41Z",
+      "path": "crates/poly-kv/src/adapters/mod.rs",
+      "sha256": "017d07d432b0180101ac0409b441a02b6483c64e8407af6e1b7f123b6aaa4ab0"
+    },
+    {
+      "bytes": 368,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:49:41Z",
+      "path": "crates/poly-kv/src/adapters/turbo_quant.rs",
+      "sha256": "8ec8980243f673b46ab1dada6a08053c0ca02b89226357f0d6478308d01ba6cc"
+    },
+    {
+      "bytes": 51,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:49:41Z",
+      "path": "crates/poly-kv/src/codecs/mod.rs",
+      "sha256": "1bb6dcb2f9a09a6f9de442acce959bb7b36eb8d98058eff83d34f40913d84d77"
+    },
+    {
+      "bytes": 3498,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:57:12Z",
+      "path": "crates/poly-kv/src/codecs/q8_keys.rs",
+      "sha256": "0760965573a69b076e84ea6f9b7bd0d18572ec1cf1a8a7650bf58405290478ec"
+    },
+    {
+      "bytes": 4669,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:50:57Z",
+      "path": "crates/poly-kv/src/codecs/raw_exact.rs",
+      "sha256": "cc9971e9f967f70a5901a392bb742a208645d760683343d3bee965787b4b2d52"
+    },
+    {
+      "bytes": 2899,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:50:57Z",
+      "path": "crates/poly-kv/src/codecs/value.rs",
+      "sha256": "8fd7adc7748e9cb0351f456408726499a7ec7c6667b09864c17d81588e0432d8"
+    },
+    {
+      "bytes": 1382,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:49:41Z",
+      "path": "crates/poly-kv/src/error.rs",
+      "sha256": "a67def9e8dead85fc04b24a04a99e553b3af47d3315088302687569d3352347d"
+    },
+    {
+      "bytes": 895,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:53:01Z",
+      "path": "crates/poly-kv/src/lib.rs",
+      "sha256": "33c3f42feeac1baf7c4ba084e23e9db092517f061e1e22f8089435ca5bfd571a"
+    },
+    {
+      "bytes": 4649,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:57:12Z",
+      "path": "crates/poly-kv/src/manifest.rs",
+      "sha256": "4b63926b75f6b0aea1aeab672c6d37a38e574277cb117e60681eb7a561ecaece"
+    },
+    {
+      "bytes": 1163,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:57:12Z",
+      "path": "crates/poly-kv/src/memory.rs",
+      "sha256": "b3dd4119a7205f4fe0bb04209fd4c18d9f986fbee9b91efbb22d1b20aceb003a"
+    },
+    {
+      "bytes": 1964,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:49:41Z",
+      "path": "crates/poly-kv/src/metrics.rs",
+      "sha256": "a492d0ddedec8fd86c666c223a6a9056490f3f75f4780dbe93a856986868d8dc"
+    },
+    {
+      "bytes": 19843,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:58:29Z",
+      "path": "crates/poly-kv/src/pool.rs",
+      "sha256": "56eb74903e99c7f5c2b75cb009fa3b26a439df65c51f3a840f64db8bc906db9e"
+    },
+    {
+      "bytes": 2790,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:57:12Z",
+      "path": "crates/poly-kv/src/reader.rs",
+      "sha256": "2595dd3d8bcee607f1eb2e7b332361d9325cb5db0ace92f6f3d4c1be4f86c18a"
+    },
+    {
+      "bytes": 2112,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:57:12Z",
+      "path": "crates/poly-kv/src/receipts.rs",
+      "sha256": "27b58be3d3da3fa4ffeb8a5a7d277652052e9ea7fd522350efbd06307e6dc7ca"
+    },
+    {
+      "bytes": 1746,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:26Z",
+      "path": "crates/poly-kv/tests/common/mod.rs",
+      "sha256": "3183af4039990acce440739b75e9a3d5cab10c3af2f5adf8dbacba935491bf5c"
+    },
+    {
+      "bytes": 1236,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:51:58Z",
+      "path": "crates/poly-kv/tests/deterministic_replay.rs",
+      "sha256": "71ef1b7e2b72e9e7e7290c120c8722bcedc866212cbb2fac0bd42a1da27b5a76"
+    },
+    {
+      "bytes": 1936,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:57:24Z",
+      "path": "crates/poly-kv/tests/memory_accounting.rs",
+      "sha256": "6f98bbd71db426d50310290a14d258b2993fa906b0634d2cc961a1f82d23746e"
+    },
+    {
+      "bytes": 2109,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:57:24Z",
+      "path": "crates/poly-kv/tests/receipt_roundtrip.rs",
+      "sha256": "f6741c9d8c01ba3fc9cf0efe2fcb7f6af7f06a03a85e3d8f29825ee6fc464533"
+    },
+    {
+      "bytes": 1112,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:12Z",
+      "path": "crates/poly-kv/tests/shape_rejection.rs",
+      "sha256": "7e7f4dba6ef6400c567c7a81d3874a3b0a0557177e6ffb0ef10408c4bfd18daa"
+    },
+    {
+      "bytes": 3514,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:58:29Z",
+      "path": "crates/poly-kv/tests/synthetic_roundtrip.rs",
+      "sha256": "5627ee71c8d5cce151bca06e3beea3d33687649f2ee87a1a08cfafa9af000503"
+    },
+    {
+      "bytes": 447,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": "crates/quant-codec-core/Cargo.toml",
+      "sha256": "6913d52dd4dc56cefea13464f85469dfd7fce2471fe6434272b6078fbb34d2d7"
+    },
+    {
+      "bytes": 970,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": "crates/quant-codec-core/src/codec.rs",
+      "sha256": "eb96dd18a4cbca2d4d8e55fd240d5f83c0fe3c3f221fe8c80a370f2f68a555b2"
+    },
+    {
+      "bytes": 2572,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": "crates/quant-codec-core/src/digest.rs",
+      "sha256": "bf6ae402d19027ef0ee9c9351e8352678d9c59257bbb98b8072ea2b5e5fa5a3c"
+    },
+    {
+      "bytes": 524,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": "crates/quant-codec-core/src/dtype.rs",
+      "sha256": "d616c36da64f64ed2ef96eca1458d909f1c4d3489ddbaa4a3410f2956524d553"
+    },
+    {
+      "bytes": 688,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": "crates/quant-codec-core/src/error.rs",
+      "sha256": "9c90bbfd740a3b0f42dcb37072cc436199444e870747238e139914a5cebbcbb8"
+    },
+    {
+      "bytes": 751,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": "crates/quant-codec-core/src/eval.rs",
+      "sha256": "52c98a8a27892d1896fdf03ec46964309995930a0d923df2e54f6dee1eaedcac"
+    },
+    {
+      "bytes": 1491,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": "crates/quant-codec-core/src/ids.rs",
+      "sha256": "175c2638da9139305524a761ca2cd60a1be03676133959ed144b1500ef7386a5"
+    },
+    {
+      "bytes": 583,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:55:49Z",
+      "path": "crates/quant-codec-core/src/lib.rs",
+      "sha256": "d53f514353bf02a8ab6be9531ce685124e4d84aea105d7e4f16c51578c84737b"
+    },
+    {
+      "bytes": 11334,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:04:19Z",
+      "path": "crates/quant-codec-core/src/shape.rs",
+      "sha256": "a3c87d0fc6cba8d81d7fd2d913c47cf1f2b62a4bbad1a5e96972e28d449343e8"
+    },
+    {
+      "bytes": 1047,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:48:07Z",
+      "path": "crates/quant-codec-core/tests/digest_stability.rs",
+      "sha256": "7ec58b8e1ec93d90fcf590307328904054d75ff0353555b66f3d16d9b5eec455"
+    },
+    {
+      "bytes": 560,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:50:57Z",
+      "path": "crates/quant-codec-core/tests/serde_roundtrip.rs",
+      "sha256": "2e21fac4f103fd375b6c011d9ea1595f2ec05ecfdb7d319e68e39dc088145e94"
+    },
+    {
+      "bytes": 2510,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T04:57:30Z",
+      "path": "crates/quant-codec-core/tests/shape_validation.rs",
+      "sha256": "394f321e15e1c782e5ac9e3ad3f37e987b8fc419843568fedc70250b21c84551"
+    },
+    {
+      "bytes": 1484,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/ACCEPTANCE_GATES.md",
+      "sha256": "e3ab1b9b81ecad47571eb57057ccc55a7cb7964b3a3addeaee856174dd7abe23"
+    },
+    {
+      "bytes": 1948,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/API_PROPOSAL.md",
+      "sha256": "d3d2eff3f6439782326f04059ff3b606c9b86fd5d3fd1d0d86e237f194d88507"
+    },
+    {
+      "bytes": 1620,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:36Z",
+      "path": "docs/BENCHMARK_AND_HARNESS_SPEC.md",
+      "sha256": "76cd9b7f68cd443e368902b1559b4cf15ebcbb1aa88bf663e93a0b6f87705d7c"
+    },
+    {
+      "bytes": 1557,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/BENCHMARK_PLAN.md",
+      "sha256": "500ec878158654a9d4f6f1cdc40bcd11960893db27a01478c69600bca8dbf0e8"
+    },
+    {
+      "bytes": 972,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:36Z",
+      "path": "docs/BENCHMARK_TIERS.md",
+      "sha256": "22e3c7051c40c3df70947e164c86adce6e9af8eb905bd4ea4d024a367b9d1a86"
+    },
+    {
+      "bytes": 907,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:36Z",
+      "path": "docs/CLAIM_BOUNDARY.md",
+      "sha256": "5be0b84cb781894021f74d6e218c020b454c5b2525054a255c474227b283861a"
+    },
+    {
+      "bytes": 1116,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T11:31:12Z",
+      "path": "docs/CURRENT_PACKAGE_HYGIENE_AUDIT.md",
+      "sha256": "0d99c19923edb7369b963114c613038384350c77d4e161782d07a64f06ce5122"
+    },
+    {
+      "bytes": 5873,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T09:43:20Z",
+      "path": "docs/CURRENT_STATE_AUDIT.md",
+      "sha256": "88156750f10530f1724e47f551dc60a6361be3223e2716ff4802a85220932a4c"
+    },
+    {
+      "bytes": 1240,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/EXPECTED_FINAL_FILE_TREE.md",
+      "sha256": "68d137165b2546274afcfead9a4f0a6704dbc179ceb35a3d99bd2ae2bed3cddd"
+    },
+    {
+      "bytes": 1452,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T11:31:12Z",
+      "path": "docs/FINAL_STATE.md",
+      "sha256": "3d0af6e6acf31c6e57a80cf4216e916a713b65d4199486df5be23822a4f7d09d"
+    },
+    {
+      "bytes": 657,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T09:43:20Z",
+      "path": "docs/HOSTILE_AUDITOR_HANDOFF_TEMPLATE.md",
+      "sha256": "b46c280fb2e7d81f1806dd819d1703f5b00955f18d5df413d7b5e82ff488b9de"
+    },
+    {
+      "bytes": 2451,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T11:31:12Z",
+      "path": "docs/ISSUE_MATRIX.md",
+      "sha256": "0c512fdfb8cdb4ce61936f018d0007f8a6aeadc8890b0aad44d38376b1be1dd0"
+    },
+    {
+      "bytes": 986,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:36Z",
+      "path": "docs/NEXT_RELEASE_PLAN.md",
+      "sha256": "d57444eeace00deccd5ba722498824cfb025f9722aec8175a299a1a87af4b949"
+    },
+    {
+      "bytes": 1860,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T11:31:12Z",
+      "path": "docs/PACKAGE_HYGIENE_CLASSIFICATION_POLICY.md",
+      "sha256": "65a1d35baa963c8055f5275fcc43e37493512024c2b5cad0a73ebd716910e20e"
+    },
+    {
+      "bytes": 3723,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/POLY_KV_IMPLEMENTATION_SPEC.md",
+      "sha256": "89d7b695d15c336f350478a6ce039eab0b14c1634e79cdc0ee58369cd9b1cb61"
+    },
+    {
+      "bytes": 9170,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/POLY_KV_SCHEMA_PROPOSAL.json",
+      "sha256": "c6a68a4a9649e12da62852cd9d8b8bbb4e6643305fac43b8454d52efd27b3404"
+    },
+    {
+      "bytes": 1658,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/PUBLIC_CLAIM_BOUNDARY.md",
+      "sha256": "1e7c84f4f8140a8966319df9a508327a94622d65576eddf7491a0ee1a65cd64d"
+    },
+    {
+      "bytes": 2293,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:03:36Z",
+      "path": "docs/PY_SIDECAR_SPEC.md",
+      "sha256": "a9cf218a2ba93802354bc4052cbbbd5d0eb8fb2d40d72ea7ed3af20a31632302"
+    },
+    {
+      "bytes": 3177,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/QUANT_CODEC_CORE_SPEC.md",
+      "sha256": "2a2b86b1c720fcb9a04a255e57507004d23a0a1a252ff795b28c08b0366c1a2b"
+    },
+    {
+      "bytes": 2746,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T17:52:52Z",
+      "path": "docs/README_DRAFT.md",
+      "sha256": "4108dcd6732f2d639c2bc83dad6e0fbca29a7960cab5eabe89d3d5bfd5f74eb8"
+    },
+    {
+      "bytes": 1417,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/RISK_REGISTER.md",
+      "sha256": "0fd12a4387bf170a35d44b77ee58591ab07f64344607432d50326a5f790c883a"
+    },
+    {
+      "bytes": 1198,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T09:43:20Z",
+      "path": "docs/ROLLBACK_AND_QUARANTINE_PLAN.md",
+      "sha256": "70c248f997f5d9b3149c6bc6ff6cc8cc725708339518e9742cc56a5091961988"
+    },
+    {
+      "bytes": 2584,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/SOURCE_BASIS.md",
+      "sha256": "13b70421f0f3d898b6d723da72bdd421e928c89b6c3a4edbbdab9bfe2b76eb0d"
+    },
+    {
+      "bytes": 1615,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "docs/SOURCE_OF_TRUTH_MAP.md",
+      "sha256": "591ad31671a0a226c14677140fb12a4ceaf2d70d6aae9f791b21f0cef67e627a"
+    },
+    {
+      "bytes": 1877,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T09:43:20Z",
+      "path": "docs/SOURCE_OF_TRUTH_MAP_NEXT.md",
+      "sha256": "cac0b2ffa22ccbf44d9c8400457fac730a808d9fb3e5a30a9bdc4d8cbb7b8ecf"
+    },
+    {
+      "bytes": 2687,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T09:43:20Z",
+      "path": "docs/TARGET_FINAL_STATE.md",
+      "sha256": "9b7f9ce8ddbdc9b20bf79e0f9a006c669594758de30d2b057d384693f9ebb673"
+    },
+    {
+      "bytes": 1165,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T11:31:12Z",
+      "path": "docs/VALIDATION_GATES.md",
+      "sha256": "faf6275d976556e736c9306ca2f390d0b5cedcda1f3452325d99a60b3e4ae827"
+    },
+    {
+      "bytes": 4761,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T11:31:12Z",
+      "path": "docs/ZPY_FIX_SPEC.md",
+      "sha256": "308d6253464051415862077ecb6acfd5ac1bb8b95387e8332d0c5342e25b6c5f"
+    },
+    {
+      "bytes": 395,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T18:07:47Z",
+      "path": "docs/codex-runs/ARCHIVAL_POLICY.md",
+      "sha256": "f1e9546ca27f5d3c141db2d95b4e484ed29ce71b2257acbde7437ebe8563705e"
+    },
+    {
+      "bytes": 198,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T18:07:47Z",
+      "path": "docs/codex-runs/CODEX_RUN_INDEX.md",
+      "sha256": "36d1bd7586f9ba9f234ab0a030638b073d6acea15ac4a9851ae2d6647f21e3d0"
+    },
+    {
+      "bytes": 168,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-20T18:07:47Z",
+      "path": "docs/codex-runs/CURRENT_RUN.md",
+      "sha256": "a1653906304275ca86d18dc611a8a0d6fdb1c645b6a3826b9df373e969ac8f20"
+    },
+    {
+      "bytes": 1902,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T11:31:12Z",
+      "path": "patches/REFERENCE_ZPY_CHANGE_PLAN.md",
+      "sha256": "3326b375071d4854dd6cb0d3f986ef0e2eaf5534766d12a5a713ef35a6ba4601"
+    },
+    {
+      "bytes": 529,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "pyproject.toml",
+      "sha256": "1eabbcdb88f85c1a3dbcaacd3290b3bfc4c8ae0efd8858b684bbf7f5c5b5500e"
+    },
+    {
+      "bytes": 617,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/poly_kv/__init__.py",
+      "sha256": "919ab7e5dc590849e5366fb912f1063b4a9f814955df86578bf4cba02ccbee56"
+    },
+    {
+      "bytes": 404,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/poly_kv/_native.pyi",
+      "sha256": "c548f4b0911d9fd0858a186c76de7c87ba59178d3f31ea38709bfc821e4197fb"
+    },
+    {
+      "bytes": 76,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/poly_kv/adapters/__init__.py",
+      "sha256": "612e36dfbabde0e017ba07c60e1bc222db6f146a8120238719fda796916c7bbe"
+    },
+    {
+      "bytes": 346,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/poly_kv/exceptions.py",
+      "sha256": "cf75f66ea898208cddea2c91aaff3652ef8d7cc1def573dc21d8d2557de4a649"
+    },
+    {
+      "bytes": 1,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/poly_kv/py.typed",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 2416,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/poly_kv/receipts.py",
+      "sha256": "6d1a857983e23530bc59c2aa101bfde6fe7997d06669e66b78c9d4310c4a3796"
+    },
+    {
+      "bytes": 177,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/tests/test_import.py",
+      "sha256": "cc7fb049c66dce9f58107f92cd34b85bba95b6ec7f1b8739af80f25fa5292354"
+    },
+    {
+      "bytes": 757,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/tests/test_no_silent_copy.py",
+      "sha256": "26ec3ed5611df930d21e49750133ac93a3ac9f1d4e08a751cbede070e74d3cbb"
+    },
+    {
+      "bytes": 780,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/tests/test_receipt_parity.py",
+      "sha256": "723a4cb7147f54de7bd05e642bfe7ed02e9f13a4930a56318f54bb5ef36a7e72"
+    },
+    {
+      "bytes": 529,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:00:41Z",
+      "path": "python/tests/test_shape_rejection.py",
+      "sha256": "719d9fe7826131ab89a3c6488033581b200accc1b90458d9a663896635dfe541"
+    },
+    {
+      "bytes": 1441,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-22T06:43:58Z",
+      "path": "scripts/assert_no_boundary_drift.py",
+      "sha256": "f531908c344b615a275ebfb8b0f0239d2d33043f53dd82bade6f2fe4ba7b8c6b"
+    },
+    {
+      "bytes": 700,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-22T09:43:20Z",
+      "path": "scripts/assert_python_sidecar_layout.py",
+      "sha256": "065bbdddd399207faac6e967ab4642bf5468036490dbf2d91cd4351a2f324726"
+    },
+    {
+      "bytes": 1033,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-22T04:57:50Z",
+      "path": "scripts/assert_realized_accounting.py",
+      "sha256": "30753f25f6b766c5fcb20dd2c6d57f9926243b0df4d081b9dd131c08b4f921cf"
+    },
+    {
+      "bytes": 1261,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-22T09:43:20Z",
+      "path": "scripts/assert_receipt_integrity.py",
+      "sha256": "c53a0d4d9b4abf9e2253b9ae6dc047277735aa3656f3438680f3231f26b35057"
+    },
+    {
+      "bytes": 4935,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:46:54Z",
+      "path": "scripts/assert_source_package_hygiene.py",
+      "sha256": "762de357fea157c0cc1b8f7ad92e83efbe25a44c257aae27c6e6e38ae20aa1fa"
+    },
+    {
+      "bytes": 2108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:02:15Z",
+      "path": "scripts/bench_boundary.py",
+      "sha256": "fed728ecdd091f2581de621ccaba65d40abbee5a8cd0c8f355cfb2b620476378"
+    },
+    {
+      "bytes": 1500,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:02:15Z",
+      "path": "scripts/bench_rust_synthetic.py",
+      "sha256": "e45d6f576c0916998250db83b87cfdd843d815f56ce01ad63d10acba08b60915"
+    },
+    {
+      "bytes": 1769,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "scripts/bootstrap_poly_kv_workspace.sh",
+      "sha256": "df83edd7877f19a2d192614b78afeeda9ce36e284ed4dacc42e6b738b044f335"
+    },
+    {
+      "bytes": 949,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:46:57Z",
+      "path": "scripts/build_handoff_package.sh",
+      "sha256": "204b18751d65b95ebe2e7e2eeb541bb04bf0941b9f21065eb0d1fd3bca948845"
+    },
+    {
+      "bytes": 963,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "scripts/check_forbidden_patterns.py",
+      "sha256": "89b2547e2e014c8d51ca431248ef1b3a8f421a8ed770ea097076a8fe0bb42977"
+    },
+    {
+      "bytes": 919,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "scripts/check_public_claims.py",
+      "sha256": "b76f565c496de6f7d741e6361f0eccf586993b5d1e3bcc3208317b255cb61227"
+    },
+    {
+      "bytes": 1962,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T05:02:15Z",
+      "path": "scripts/compare_receipts.py",
+      "sha256": "993a05703a0c7dc6a1648c90b3b64c776d39d5b98e08d6febb48247c9ee58766"
+    },
+    {
+      "bytes": 1027,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "scripts/preflight.sh",
+      "sha256": "7562fcac3349be397f5860fdcafad243c24e6980e7bafb35f48db4c02f3c329c"
+    },
+    {
+      "bytes": 1166,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-22T06:47:18Z",
+      "path": "scripts/preflight_next_pass.sh",
+      "sha256": "eac4ca7c933a616d386183b48d9a272adc5c836a7b7cc1d9898e6483687d1e51"
+    },
+    {
+      "bytes": 829,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-22T09:43:20Z",
+      "path": "scripts/run_next_validation.sh",
+      "sha256": "51c4d4ae58a55f05d5a4f4f6dab52fd751ca7ee1fa4bcf784c82d6abcab97d09"
+    },
+    {
+      "bytes": 388,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "scripts/run_rust_gates.sh",
+      "sha256": "14974ac94d81ffcd5164425179b16a2dbe4347c41f9903dc534b3af837103d67"
+    },
+    {
+      "bytes": 4480,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:45:24Z",
+      "path": "scripts/test_zpy_hygiene_regression.py",
+      "sha256": "ad3c31581f72ca18d7174cb1c1ae40b74ee4b04ddcb9ade74c18412dac3cd8b8"
+    },
+    {
+      "bytes": 897,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "scripts/validate_final_state.py",
+      "sha256": "37196d15c2d4805fc287474c092e435f0306cc16fe04b1c6d749340509a6d4b9"
+    },
+    {
+      "bytes": 901,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-20T22:36:22Z",
+      "path": "scripts/validate_schemas.py",
+      "sha256": "f413da06ee4403fc8d26fc74378e79743641b6249321fe4bb64bac7e1fba5d7e"
+    },
+    {
+      "bytes": 152077,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-22T06:46:48Z",
+      "path": "z.py",
+      "sha256": "93fea891e00c2631b9f979bd5d0d0f026cc96150c0446310ae84f03e19ca966f"
+    }
+  ],
+  "findings": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.findings.json",
+  "manifest": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.manifest.json",
+  "package": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.zip",
+  "policy": {
+    "allow_secret_like_names": false,
+    "codex_artifact_classification": {},
+    "codex_current_run": "P30",
+    "follow_symlinks": false,
+    "include_codex_archive": false,
+    "include_codex_artifacts": false,
+    "include_doc_binaries": false,
+    "include_editor_config": false,
+    "include_external_path_deps": true,
+    "include_generated_schemas": true,
+    "include_images": false,
+    "include_logs": false,
+    "include_root_markdown_archive": false,
+    "include_root_package_archive": false,
+    "max_file_size_bytes": 26214400,
+    "mode": "next-codex-context",
+    "package_role": "next-codex-context",
+    "profile": "generic-rust",
+    "root_markdown_archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/root-markdown-archive",
+    "root_markdown_archive_root_rel": "docs/root-markdown-archive",
+    "root_package_archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/source-packages/archive",
+    "root_package_archive_root_rel": "docs/source-packages/archive",
+    "secret_scan_max_bytes": 1048576
+  },
+  "report": {
+    "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv",
+    "archive_sha256": "d458b162bef2ab6bd70966eff8e6ea1f87acf546de0d5fd0c7283dcc6b0cbbdd",
+    "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+    "archive_written": true,
+    "archive_zip_byte_sha256": "d458b162bef2ab6bd70966eff8e6ea1f87acf546de0d5fd0c7283dcc6b0cbbdd",
+    "codex_archive": {
+      "active_stale_after_count": 0,
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/codex-runs/archive",
+      "collision_count": 0,
+      "current_run": "P30",
+      "dry_run": false,
+      "enabled": true,
+      "errors": [],
+      "manifest_paths": [],
+      "moved_count": 0,
+      "planned_count": 0,
+      "report_path": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.codex-archive.json",
+      "skipped_existing_count": 0,
+      "stale_active_before_count": 0,
+      "unclassified_count": 0,
+      "verify_only": false
+    },
+    "content_manifest_sha256": "02a5f8b08fd7bd30d02efd9c1611807c7e631e276c3497b059c9a2188cc73215",
+    "created_utc": "2026-05-22T06:47:22Z",
+    "deterministic_zip_timestamps": true,
+    "dry_run": false,
+    "error_count": 0,
+    "excluded_file_count": 2,
+    "excluded_path": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.excluded.json",
+    "external_path_dep_roots": [],
+    "findings_count": 0,
+    "findings_path": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.findings.json",
+    "include_roots": [
+      "/home/sikmindz/Coding/Libraries/poly-kv"
+    ],
+    "included_bytes": 552584,
+    "included_count": 257,
+    "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.manifest.json",
+    "mode": "next-codex-context",
+    "output": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.zip",
+    "package_role": "next-codex-context",
+    "profile_requested": "generic-rust",
+    "profile_resolved": "generic-rust",
+    "pruned_dir_count": 11,
+    "report_path": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.report.md",
+    "root": "/home/sikmindz/Coding/Libraries/poly-kv",
+    "root_markdown_archive": {
+      "ambiguous_count": 0,
+      "ambiguous_paths": [],
+      "archive_dir": "/home/sikmindz/Coding/Libraries/poly-kv/docs/root-markdown-archive/20260522T064721Z",
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/root-markdown-archive",
+      "candidate_count": 0,
+      "candidate_paths": [],
+      "collision_count": 0,
+      "current_run": "P30",
+      "dry_run": false,
+      "enabled": true,
+      "errors": [],
+      "inspected_count": 5,
+      "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/docs/root-markdown-archive/20260522T064721Z/ROOT_MARKDOWN_ARCHIVE_MANIFEST.json",
+      "moved_count": 0,
+      "planned_count": 0,
+      "protected_count": 5,
+      "skipped_existing_count": 0,
+      "verify_only": false
+    },
+    "root_package_archive": {
+      "archive_dir": "/home/sikmindz/Coding/Libraries/poly-kv/docs/source-packages/archive/20260522T064721Z",
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/source-packages/archive",
+      "candidate_count": 14,
+      "candidate_paths": [
+        "BUNDLE_MANIFEST.json",
+        "README_BUNDLE.md",
+        "poly-kv-generic-rust-next-codex-context-20260520.codex-archive.json",
+        "poly-kv-generic-rust-next-codex-context-20260520.excluded.json",
+        "poly-kv-generic-rust-next-codex-context-20260520.findings.json",
+        "poly-kv-generic-rust-next-codex-context-20260520.manifest.json",
+        "poly-kv-generic-rust-next-codex-context-20260520.report.md",
+        "poly-kv-generic-rust-next-codex-context-20260520.zip",
+        "poly-kv-generic-rust-next-codex-context-20260522.codex-archive.json",
+        "poly-kv-generic-rust-next-codex-context-20260522.excluded.json",
+        "poly-kv-generic-rust-next-codex-context-20260522.findings.json",
+        "poly-kv-generic-rust-next-codex-context-20260522.manifest.json",
+        "poly-kv-generic-rust-next-codex-context-20260522.report.md",
+        "poly-kv-generic-rust-next-codex-context-20260522.zip"
+      ],
+      "collision_count": 0,
+      "dry_run": false,
+      "enabled": true,
+      "errors": [],
+      "inspected_count": 21,
+      "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/docs/source-packages/archive/20260522T064721Z/PACKAGE_ARTIFACT_ARCHIVE_MANIFEST.json",
+      "moved": [
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/BUNDLE_MANIFEST.json",
+          "bytes": 1187,
+          "mtime_utc": "2026-05-22T11:31:12Z",
+          "original_path": "BUNDLE_MANIFEST.json",
+          "reason": "prior-bundle-manifest",
+          "sha256": "1c8e40dba3d7f168fb9d7f2095005cc00b5c3575255589da3ee8bef531c7d8ba"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/README_BUNDLE.md",
+          "bytes": 1220,
+          "mtime_utc": "2026-05-22T11:31:12Z",
+          "original_path": "README_BUNDLE.md",
+          "reason": "prior-bundle-readme",
+          "sha256": "aed443329c22ec668466f96f8467133348c76e0d59a5149fb89caa0cd5a9de70"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.codex-archive.json",
+          "bytes": 8144,
+          "mtime_utc": "2026-05-20T18:07:47Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260520.codex-archive.json",
+          "reason": "prior-codex-archive-report",
+          "sha256": "d9c05e68075f7a5af3b111efebce8908bfd9fcf66d5ccd37882bd06c7f09aa73"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.excluded.json",
+          "bytes": 702,
+          "mtime_utc": "2026-05-20T18:07:47Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260520.excluded.json",
+          "reason": "prior-generated-sidecar",
+          "sha256": "f07cc786556ec5cc1ce116e231af002a61713360828923c2e13e5c6e20c6f6ce"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.findings.json",
+          "bytes": 157,
+          "mtime_utc": "2026-05-20T18:07:47Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260520.findings.json",
+          "reason": "prior-generated-sidecar",
+          "sha256": "5b6282d51456ea89bd4321a009731125c91722c4878d1ab027a6f917fe78d1a3"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.manifest.json",
+          "bytes": 64364,
+          "mtime_utc": "2026-05-20T18:07:47Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260520.manifest.json",
+          "reason": "prior-generated-sidecar",
+          "sha256": "757e7364c6a12e724282ee938ef6fb3f7764bb63031d0eac3e73fd59b6938774"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.report.md",
+          "bytes": 2508,
+          "mtime_utc": "2026-05-20T18:07:47Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260520.report.md",
+          "reason": "prior-generated-sidecar",
+          "sha256": "3af56714a35ef34aa2e4374811df492c24dd30e5397bf6edd603b28b092afacc"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.zip",
+          "bytes": 137436,
+          "mtime_utc": "2026-05-20T18:07:47Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260520.zip",
+          "reason": "prior-context-archive",
+          "sha256": "0fecce50d054aa2f5deb0cf81ccabef923b43e329c8b2d5701b69781e9637efc"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.codex-archive.json",
+          "bytes": 525,
+          "mtime_utc": "2026-05-22T06:17:49Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260522.codex-archive.json",
+          "reason": "prior-codex-archive-report",
+          "sha256": "f9154348295c0cf0123e2ddbb33324d15917bbceb92822f48b5f34974fbf2fb7"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.excluded.json",
+          "bytes": 2271,
+          "mtime_utc": "2026-05-22T06:17:49Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260522.excluded.json",
+          "reason": "prior-generated-sidecar",
+          "sha256": "918f63e26a948460820e1f905264b484cc76f2b50fb5388d5104f07055f8869c"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.findings.json",
+          "bytes": 157,
+          "mtime_utc": "2026-05-22T06:17:49Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260522.findings.json",
+          "reason": "prior-generated-sidecar",
+          "sha256": "fd6101d033aec57af91d4890a484ab28a26c7d5defe90c079b9adddec710f400"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.manifest.json",
+          "bytes": 76208,
+          "mtime_utc": "2026-05-22T06:17:49Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260522.manifest.json",
+          "reason": "prior-generated-sidecar",
+          "sha256": "062535276e00c6b2b8fa287db3591302011bc89d7e7672516a11857276f5a952"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.report.md",
+          "bytes": 2753,
+          "mtime_utc": "2026-05-22T06:17:49Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260522.report.md",
+          "reason": "prior-generated-sidecar",
+          "sha256": "d0e6662be9f6e1c739c503a1384824474d56a73e1b7fe48e92f754055266c53b"
+        },
+        {
+          "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.zip",
+          "bytes": 200028,
+          "mtime_utc": "2026-05-22T06:17:49Z",
+          "original_path": "poly-kv-generic-rust-next-codex-context-20260522.zip",
+          "reason": "prior-context-archive",
+          "sha256": "c608a432371d72768114165022eba450c9ca5ef2c51565a44c2f3cc509762cfb"
+        }
+      ],
+      "moved_count": 14,
+      "planned_count": 14,
+      "protected_count": 7,
+      "skipped_existing_count": 0,
+      "verify_only": false
+    },
+    "script": "z.py",
+    "script_version": "2026.05.11-p30",
+    "strict": true,
+    "warning_count": 0
+  },
+  "root_markdown_archive": {
+    "ambiguous_count": 0,
+    "ambiguous_paths": [],
+    "archive_dir": "/home/sikmindz/Coding/Libraries/poly-kv/docs/root-markdown-archive/20260522T064721Z",
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/root-markdown-archive",
+    "candidate_count": 0,
+    "candidate_paths": [],
+    "collision_count": 0,
+    "collisions": [],
+    "current_run": "P30",
+    "dry_run": false,
+    "enabled": true,
+    "errors": [],
+    "inspected_count": 5,
+    "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/docs/root-markdown-archive/20260522T064721Z/ROOT_MARKDOWN_ARCHIVE_MANIFEST.json",
+    "manifest_written": true,
+    "moved_count": 0,
+    "planned_count": 0,
+    "protected_count": 5,
+    "protected_paths": [
+      "AGENTS.md",
+      "README.md",
+      "README_BUNDLE.md",
+      "poly-kv-generic-rust-next-codex-context-20260520.report.md",
+      "poly-kv-generic-rust-next-codex-context-20260522.report.md"
+    ],
+    "skipped_existing_count": 0,
+    "verify_only": false
+  },
+  "root_package_archive": {
+    "archive_dir": "/home/sikmindz/Coding/Libraries/poly-kv/docs/source-packages/archive/20260522T064721Z",
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/poly-kv/docs/source-packages/archive",
+    "candidate_count": 14,
+    "candidate_paths": [
+      "BUNDLE_MANIFEST.json",
+      "README_BUNDLE.md",
+      "poly-kv-generic-rust-next-codex-context-20260520.codex-archive.json",
+      "poly-kv-generic-rust-next-codex-context-20260520.excluded.json",
+      "poly-kv-generic-rust-next-codex-context-20260520.findings.json",
+      "poly-kv-generic-rust-next-codex-context-20260520.manifest.json",
+      "poly-kv-generic-rust-next-codex-context-20260520.report.md",
+      "poly-kv-generic-rust-next-codex-context-20260520.zip",
+      "poly-kv-generic-rust-next-codex-context-20260522.codex-archive.json",
+      "poly-kv-generic-rust-next-codex-context-20260522.excluded.json",
+      "poly-kv-generic-rust-next-codex-context-20260522.findings.json",
+      "poly-kv-generic-rust-next-codex-context-20260522.manifest.json",
+      "poly-kv-generic-rust-next-codex-context-20260522.report.md",
+      "poly-kv-generic-rust-next-codex-context-20260522.zip"
+    ],
+    "collision_count": 0,
+    "collisions": [],
+    "dry_run": false,
+    "enabled": true,
+    "errors": [],
+    "inspected_count": 21,
+    "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/docs/source-packages/archive/20260522T064721Z/PACKAGE_ARTIFACT_ARCHIVE_MANIFEST.json",
+    "manifest_written": true,
+    "moved": [
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/BUNDLE_MANIFEST.json",
+        "bytes": 1187,
+        "mtime_utc": "2026-05-22T11:31:12Z",
+        "original_path": "BUNDLE_MANIFEST.json",
+        "reason": "prior-bundle-manifest",
+        "sha256": "1c8e40dba3d7f168fb9d7f2095005cc00b5c3575255589da3ee8bef531c7d8ba"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/README_BUNDLE.md",
+        "bytes": 1220,
+        "mtime_utc": "2026-05-22T11:31:12Z",
+        "original_path": "README_BUNDLE.md",
+        "reason": "prior-bundle-readme",
+        "sha256": "aed443329c22ec668466f96f8467133348c76e0d59a5149fb89caa0cd5a9de70"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.codex-archive.json",
+        "bytes": 8144,
+        "mtime_utc": "2026-05-20T18:07:47Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260520.codex-archive.json",
+        "reason": "prior-codex-archive-report",
+        "sha256": "d9c05e68075f7a5af3b111efebce8908bfd9fcf66d5ccd37882bd06c7f09aa73"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.excluded.json",
+        "bytes": 702,
+        "mtime_utc": "2026-05-20T18:07:47Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260520.excluded.json",
+        "reason": "prior-generated-sidecar",
+        "sha256": "f07cc786556ec5cc1ce116e231af002a61713360828923c2e13e5c6e20c6f6ce"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.findings.json",
+        "bytes": 157,
+        "mtime_utc": "2026-05-20T18:07:47Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260520.findings.json",
+        "reason": "prior-generated-sidecar",
+        "sha256": "5b6282d51456ea89bd4321a009731125c91722c4878d1ab027a6f917fe78d1a3"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.manifest.json",
+        "bytes": 64364,
+        "mtime_utc": "2026-05-20T18:07:47Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260520.manifest.json",
+        "reason": "prior-generated-sidecar",
+        "sha256": "757e7364c6a12e724282ee938ef6fb3f7764bb63031d0eac3e73fd59b6938774"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.report.md",
+        "bytes": 2508,
+        "mtime_utc": "2026-05-20T18:07:47Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260520.report.md",
+        "reason": "prior-generated-sidecar",
+        "sha256": "3af56714a35ef34aa2e4374811df492c24dd30e5397bf6edd603b28b092afacc"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260520.zip",
+        "bytes": 137436,
+        "mtime_utc": "2026-05-20T18:07:47Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260520.zip",
+        "reason": "prior-context-archive",
+        "sha256": "0fecce50d054aa2f5deb0cf81ccabef923b43e329c8b2d5701b69781e9637efc"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.codex-archive.json",
+        "bytes": 525,
+        "mtime_utc": "2026-05-22T06:17:49Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260522.codex-archive.json",
+        "reason": "prior-codex-archive-report",
+        "sha256": "f9154348295c0cf0123e2ddbb33324d15917bbceb92822f48b5f34974fbf2fb7"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.excluded.json",
+        "bytes": 2271,
+        "mtime_utc": "2026-05-22T06:17:49Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260522.excluded.json",
+        "reason": "prior-generated-sidecar",
+        "sha256": "918f63e26a948460820e1f905264b484cc76f2b50fb5388d5104f07055f8869c"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.findings.json",
+        "bytes": 157,
+        "mtime_utc": "2026-05-22T06:17:49Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260522.findings.json",
+        "reason": "prior-generated-sidecar",
+        "sha256": "fd6101d033aec57af91d4890a484ab28a26c7d5defe90c079b9adddec710f400"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.manifest.json",
+        "bytes": 76208,
+        "mtime_utc": "2026-05-22T06:17:49Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260522.manifest.json",
+        "reason": "prior-generated-sidecar",
+        "sha256": "062535276e00c6b2b8fa287db3591302011bc89d7e7672516a11857276f5a952"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.report.md",
+        "bytes": 2753,
+        "mtime_utc": "2026-05-22T06:17:49Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260522.report.md",
+        "reason": "prior-generated-sidecar",
+        "sha256": "d0e6662be9f6e1c739c503a1384824474d56a73e1b7fe48e92f754055266c53b"
+      },
+      {
+        "archived_path": "docs/source-packages/archive/20260522T064721Z/files/poly-kv-generic-rust-next-codex-context-20260522.zip",
+        "bytes": 200028,
+        "mtime_utc": "2026-05-22T06:17:49Z",
+        "original_path": "poly-kv-generic-rust-next-codex-context-20260522.zip",
+        "reason": "prior-context-archive",
+        "sha256": "c608a432371d72768114165022eba450c9ca5ef2c51565a44c2f3cc509762cfb"
+      }
+    ],
+    "moved_count": 14,
+    "planned_count": 14,
+    "protected_count": 7,
+    "protected_paths": [
+      "AGENTS.md",
+      "Cargo.lock",
+      "Cargo.toml",
+      "README.md",
+      "poly-kv-generic-rust-next-codex-context-20260522T064721Z.codex-archive.json",
+      "pyproject.toml",
+      "z.py"
+    ],
+    "skipped_existing": [],
+    "skipped_existing_count": 0,
+    "verify_only": false
+  },
+  "sidecars": {
+    "codex_archive_report": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.codex-archive.json",
+    "excluded": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.excluded.json",
+    "findings": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.findings.json",
+    "manifest": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.manifest.json",
+    "package": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.zip",
+    "report": "/home/sikmindz/Coding/Libraries/poly-kv/poly-kv-generic-rust-next-codex-context-20260522T064721Z.report.md"
+  },
+  "summaries": {
+    "exclusion_reasons": {
+      "generated-output": 1,
+      "unsupported-extension-or-basename": 1
+    },
+    "extensions": {
+      ".json": 86,
+      ".lock": 1,
+      ".log": 3,
+      ".md": 90,
+      ".py": 22,
+      ".pyi": 1,
+      ".rs": 34,
+      ".sh": 6,
+      ".toml": 5,
+      ".txt": 8,
+      ".typed": 1
+    },
+    "top_level_dirs": {
+      ".agents": 5,
+      ".codex-runs": 147,
+      "AGENTS.md": 1,
+      "Cargo.lock": 1,
+      "Cargo.toml": 1,
+      "README.md": 1,
+      "crates": 38,
+      "docs": 31,
+      "patches": 1,
+      "pyproject.toml": 1,
+      "python": 10,
+      "scripts": 19,
+      "z.py": 1
+    }
+  }
+}

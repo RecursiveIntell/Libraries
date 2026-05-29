@@ -1,7 +1,7 @@
 //! Basic policy evaluation example.
 
 use quant_governor::{
-    evaluate, AdmissibilityClass, CodecProfile, ContentType, GovernancePolicy, GovernanceRequest,
+    evaluate, AdmissibilityClass, ContentType, GovernancePolicy, GovernanceRequest,
 };
 
 fn main() {

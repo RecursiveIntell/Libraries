@@ -159,6 +159,7 @@ pub fn validate_arguments_against_schema(
         .map_err(|message| ToolError::new(ToolErrorClass::InvalidArguments, message))
 }
 
+#[allow(clippy::collapsible_match)]
 fn validate_value(schema: &Value, value: &Value, path: &str) -> Result<(), String> {
     if let Some(enum_values) = schema.get("enum").and_then(|value| value.as_array()) {
         if !enum_values.iter().any(|candidate| candidate == value) {

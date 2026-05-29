@@ -1,0 +1,18 @@
+{
+  "checks": [
+    {
+      "name": "rust_synthetic_status",
+      "ok": true,
+      "status": "pass"
+    },
+    {
+      "name": "python_boundary_status",
+      "ok": true,
+      "skip_reason": "poly_kv._native is not built; maturin unavailable or develop/build not run",
+      "status": "skip"
+    }
+  ],
+  "claims": [],
+  "schema_version": 1,
+  "status": "pass"
+}

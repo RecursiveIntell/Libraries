@@ -26,6 +26,7 @@ pub use control_plane::ControlPlane;
 pub use error::{Error, Result};
 pub use receipt::{Action, ActionType, SecurityDecision, SecurityMechanism, Subject};
 
+#[cfg(test)]
 use chrono::Utc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -87,6 +88,7 @@ impl AgentGuard {
     }
 
     /// Create a security decision for a subject and action.
+    #[cfg(test)]
     fn make_decision(&self, subject: &Subject, action: &Action) -> SecurityDecision {
         let decision_id = format!("guard-{}-{}", subject.name, Utc::now().timestamp());
         SecurityDecision {

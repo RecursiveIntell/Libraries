@@ -340,16 +340,13 @@ pub fn validate_patch(patch: &StructuredPatch, policy: &PatchPolicy) -> Validati
                 }
                 EditOp::Insert { anchor, .. } => match anchor {
                     Anchor::AfterMatch { occurrence, .. }
-                    | Anchor::BeforeMatch { occurrence, .. } => {
-                        if *occurrence == 0 {
-                            violations.push(Violation {
-                                kind: ViolationKind::InvalidOccurrence,
-                                message: format!(
-                                    "file '{}': match anchor occurrence is 0 (must be 1-indexed)",
-                                    edit.path.display()
-                                ),
-                            });
-                        }
+                    | Anchor::BeforeMatch { occurrence, .. }
+                        if *occurrence == 0 =>
+                    {
+                        violations.push(Violation {
+                            kind: ViolationKind::InvalidOccurrence,
+                            message: format!("occurrence must be > 0 for {:?}, got 0", anchor),
+                        });
                     }
                     _ => {}
                 },

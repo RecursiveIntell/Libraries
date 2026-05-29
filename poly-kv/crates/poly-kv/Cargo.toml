@@ -1,0 +1,30 @@
+[package]
+name = "poly-kv"
+version = "0.1.0-alpha.1"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.75"
+description = "Shared compressed KV-cache pool infrastructure for Rust experiments."
+
+[dependencies]
+quant-codec-core = { path = "../quant-codec-core" }
+serde = { version = "1", features = ["derive"], optional = true }
+thiserror = "1"
+blake3 = "1"
+criterion = { version = "0.5", optional = true }
+
+[dev-dependencies]
+proptest = "1"
+serde_json = "1"
+
+[features]
+default = ["serde"]
+serde = ["dep:serde", "quant-codec-core/serde"]
+turbo-quant-adapter = []
+fibquant-adapter = []
+bench = ["dep:criterion"]
+
+[[bench]]
+name = "synthetic_pool"
+harness = false
+required-features = ["bench"]

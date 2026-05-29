@@ -649,7 +649,7 @@ fn configure_connection(
         // SM-AUD-0065: Validate max_page_count before setting pragma
         const MAX_SQLITE_PAGE_COUNT: u64 = 1_073_741_823; // SQLite hard limit
         const MIN_SQLITE_PAGE_COUNT: u64 = 1;
-        if max_page_count < MIN_SQLITE_PAGE_COUNT || max_page_count > MAX_SQLITE_PAGE_COUNT {
+        if !(MIN_SQLITE_PAGE_COUNT..=MAX_SQLITE_PAGE_COUNT).contains(&max_page_count) {
             return Err(MemoryError::StorageError(format!(
                 "Invalid max_page_count {}: must be between {} and {}",
                 max_page_count, MIN_SQLITE_PAGE_COUNT, MAX_SQLITE_PAGE_COUNT

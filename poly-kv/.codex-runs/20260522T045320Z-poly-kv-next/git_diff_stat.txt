@@ -1,0 +1,11 @@
+ .codex/hooks.json                     |  53 ------
+ .codex/hooks/post_tool_use_receipt.py |  34 ----
+ .codex/hooks/pre_tool_use_policy.py   |  47 -----
+ .codex/hooks/stop_final_gate.py       |  39 ----
+ .codex/hooks/user_prompt_submit.py    |  39 ----
+ BUNDLE_MANIFEST.json                  | 326 ++++------------------------------
+ README.md                             | 122 +++++++++----
+ codex/prompts/MASTER_PROMPT.md        | 134 ++++----------
+ docs/CODEX_INPUT_BRIEF.md             |  29 ---
+ docs/README_DRAFT.md                  |  13 +-
+ 10 files changed, 167 insertions(+), 669 deletions(-)

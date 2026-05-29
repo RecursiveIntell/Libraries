@@ -35,7 +35,7 @@ schemars = { workspace = true }
 
 # HNSW approximate nearest neighbor search (optional)
 hnsw_rs = { version = "0.3", optional = true }
-turbo-quant = { version = "0.2.0-alpha.1", path = "../turbo-quant", optional = true }
+turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
