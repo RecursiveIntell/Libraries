@@ -1,0 +1,1313 @@
+{
+  "created_utc": "2026-05-29T06:54:54Z",
+  "excluded": [
+    {
+      "path": "AiDENs/AiDENs 4\u204426.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065259Z.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065259Z.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065259Z.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065259Z.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065312Z.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065312Z.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065312Z.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065312Z.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065312Z.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065442Z.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065442Z.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065442Z.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065442Z.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065442Z.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/AiDENs-aidens-codex-context-20260529T065449Z.codex-archive.json",
+      "reason": "generated-output"
+    },
+    {
+      "path": "AiDENs/AiDENs.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/aidens_hostile_audit_finish_pack.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/02_P31_IMPLEMENTATION_BLUEPRINT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/03_P31_FIXTURE_AND_TEST_MATRIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/04_P31_ACCEPTANCE_AND_REVIEW_CHECKLIST.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/05_P31_REPORT_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/06_P32_FOLLOWUP_PASS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_CANONICAL_SEAM_MAP.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_COMMANDS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_EVIDENCE_AND_REPORTING.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_RUN_ORDER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_SOURCE_BASIS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_SUPPORT_PROFILE_TARGET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P24_VERIFIER_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_AGENTS_MD_APPENDIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_COMMANDS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_CURRENT_RUN_CLASSIFICATION_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_EVIDENCE_AND_REPORTING.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_FLAGSHIP_AGENT_DEMO_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_FLAGSHIP_DEMO_ACCEPTANCE_FIXTURES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_OPERATOR_QUICKSTART.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_PHASE_GATE_PROTOCOL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_RUN_ORDER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_SOURCE_BASIS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_SUPPORT_PROFILE_TARGET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_VERIFIER_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P25_ZPY_ROOT_MARKDOWN_ARCHIVER_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_ADVANCED_LOCAL_AGENT_RUNTIME_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_AGENT_SPEC_V1.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_CODING_AGENT_V1_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_COMMANDS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_EVIDENCE_AND_REPORTING.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_EXPECTED_FINAL_STATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_MEMORY_GROUNDED_AGENT_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_NON_GOALS_AND_DEFERRED_WORK.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_PHASE_GATE_PROTOCOL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_REPAIR_ABSTENTION_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_RUN_ORDER.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_SOURCE_BASIS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_SUPPORT_PROFILE_TARGET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_V10_READY_BOUNDARY_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_VERIFIER_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_11A_ALIGNMENT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_COMMANDS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_EVIDENCE_AND_REPORTING.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_KNOWN_LIMITATIONS_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_OPERATOR_PASTE_FIRST.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_PHASE_REPORT_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_REPO_OVERLAY_MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_SOURCE_BASIS_TARGET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_SUPPORT_PROFILE_TARGET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P27_VERIFIER_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_BUG_ABSORPTION_MATRIX.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_CODE_CHANGE_TARGETS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_COMMANDS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_CONFORMANCE_FIXTURE_PLAN.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_DOCSET_MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_KNOWN_LIMITATIONS_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_OPERATOR_PASTE_FIRST.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_PHASE_REPORT_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_SOURCE_BASIS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_STATUS_EVIDENCE_MANIFEST.template.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_SUPPORT_PROFILE_TARGET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_V11A_CONTRACT_TARGETS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P28_VERIFIER_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_ACCEPTANCE_GATES.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_AGENTS_MD_APPENDIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_CODE_CHANGE_TARGETS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_CURRENT_STATE_DIAGNOSIS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_EVIDENCE_PACKAGE_REPAIR_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_EXPECTED_FINAL_STATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_FORBIDDEN_FINAL_STATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_KNOWN_LIMITATIONS_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_MANUAL_PHASE_INJECTIONS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_OPERATOR_PASTE_FIRST.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_P28_FAILURE_POSTMORTEM.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_PHASE_REPORT_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_SCOPE_AND_NON_GOALS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_SOURCE_BASIS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_STATUS_EVIDENCE_MANIFEST.template.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_SUPPORT_LABEL_POLICY.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_V11A_LOCAL_RELEASE_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_V11B_EXECUTABLE_SEED_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_VERIFIER_SPEC.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/P31_CONTEXT_SUMMARY_FOR_CODEX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/P24_STATUS_EVIDENCE_MANIFEST.template.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p24_big_rust_files.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p24_duplicate_public_symbols.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p24_static_audit_snapshot.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p25_claude_audit_absorption.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p25_large_rust_files.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p25_phase_injection_findings.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p25_root_markdown_classification.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p25_static_hard_audit_snapshot.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_existing_command_inventory.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_expected_artifacts.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_large_file_risk.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_static_hard_audit_snapshot.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/handoff/P24_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/handoff/P25_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/handoff/P26_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-00_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-01_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-02_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-03_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-04_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-05_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-06_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-07_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-08_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-09_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P24_ISSUE_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P24_ISSUE_MATRIX.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P25_ISSUE_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P25_ISSUE_MATRIX.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_CAPABILITY_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_ISSUE_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_ISSUE_MATRIX.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_SOURCE_OF_TRUTH_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_AUDIT_BUG_ABSORPTION_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_MASTER_ISSUE_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_MASTER_ISSUE_MATRIX.json",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_PHASE_GATE_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_REQUIREMENTS_TRACEABILITY.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_SOURCE_OF_TRUTH_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_V11A_CONFORMANCE_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_V11B_SEED_MATRIX.csv",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P01_PUBLIC_API_HONESTY_AND_NOOP_REMOVAL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P04_CAPABILITY_GATE_PERMITS_AND_APPROVAL_SPINE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P06_BOUNDARY_COMPILER_SCHEMA_AND_CANONICALIZATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P09_EPISODE_FIRST_MEMORY_AND_BITEMPORAL_STORE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P10_CODING_AGENT_TOOLING_SANDBOX_AND_CODEX_PACKETS.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P11_QUEUE_SCHEDULE_WAKE_DAEMON_DUPLICATE_STORM_IMMUNITY.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P13_MULTI_VIEW_RUNTIME_DISCLOSURE_AND_QUERY_POLICY.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P15_REGIONAL_DECODER_KERNEL_AND_LOCAL_REPAIR_GEOMETRY.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P16_LAWFUL_SUBTRACTION_COMPACTION_AND_INVARIANT_PRESERVING_REDUCTION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P18_MECHANISM_THEORY_SEARCH_AND_EXPERIMENT_RUNTIME.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P25_GATE_AFTER_PHASE_01_BEFORE_PHASE_02.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P25_GATE_AFTER_PHASE_03_BEFORE_PHASE_04.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P25_GATE_AFTER_PHASE_05_BEFORE_PHASE_06.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P25_GATE_AFTER_PHASE_07_BEFORE_PHASE_08.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P25_GATE_AFTER_PHASE_09_BEFORE_FINAL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P25_GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_01_BEFORE_PHASE_02.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_03_BEFORE_PHASE_04.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_05_BEFORE_PHASE_06.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_07_BEFORE_PHASE_08.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_09_BEFORE_FINAL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_00_BEFORE_PHASE_01.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_01_BEFORE_PHASE_02.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_02_BEFORE_PHASE_03.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_03_BEFORE_PHASE_04.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_04_BEFORE_PHASE_05.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_05_BEFORE_PHASE_06.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_06_BEFORE_PHASE_07.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_07_BEFORE_PHASE_08.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_08_BEFORE_PHASE_09.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_09_BEFORE_PHASE_10.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_10_BEFORE_PHASE_11.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_11_BEFORE_PHASE_12.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_12_BEFORE_PHASE_13.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_13_BEFORE_PHASE_14.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_14_BEFORE_PHASE_15.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_15_BEFORE_PHASE_16.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_16_BEFORE_PHASE_17.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_17_BEFORE_PHASE_18.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_18_BEFORE_PHASE_19.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_19_BEFORE_PHASE_20.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GATE_AFTER_PHASE_20_BEFORE_PHASE_FINAL.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P27_GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/source_audits/AiDENs-aidens-next-codex-context-20260507.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/source_audits/AiDENs-aidens-next-codex-context-20260507.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/source_audits/AiDENs-aidens-next-codex-context-20260507.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/source_audits/AiDENs-aidens-next-codex-context-20260507.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "AiDENs/docs/root-markdown-archive/P31A_archive/source_audits/claude_AiDENs_P29_Hard_Audit_20260507.md",
+      "reason": "stale-codex-artifact-disabled"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260425.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260429.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "AiDENs/libraries-source-clean-20260430.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries(3-25-26).zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20442-2.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-4\u20443.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260528T080433Z.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260528T080433Z.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260528T080433Z.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260528T080433Z.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "Libraries-libraries-next-codex-context-20260528T080433Z.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "MASTER_AUDIT_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "MASTER_ISSUE_MATRIX.xlsx",
+      "reason": "doc-binary-disabled"
+    },
+    {
+      "path": "discovery-portfolio/tests/property_contracts.proptest-regressions",
+      "reason": "unsupported-extension-or-basename"
+    },
+    {
+      "path": "libraries 4\u204428.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-3.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442-4.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-4\u20442.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260323.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260324.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260326.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260328.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries-source-clean-20260330.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "libraries.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "schemas.7z",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_check_workspace.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_check_workspace_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_clippy_semantic_memory_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_clippy_turbo_quant.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_clippy_turbo_quant_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_fmt_check.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_test_semantic_memory_turbo.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_test_semantic_memory_turbo_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_test_turbo_quant.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/evidence/cargo_test_turbo_quant_offline.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-generic-rust-next-codex-context-20260507.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-generic-rust-next-codex-context-20260511.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260511.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260512.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "semantic-memory/semantic-memory-semantic-memory-next-codex-context-20260513.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-check.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-clippy.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-doc.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-fmt.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-package.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-publish-dry-run.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-semver-checks.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-test-doc.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/cargo-test.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/package-scope-gate.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/readme-gate.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/0.2.0/logs/semantic-memory-harness.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/v0.2.0/cargo-package.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/release-evidence/v0.2.0/cargo-publish-dry-run.log",
+      "reason": "log-disabled"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260506.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.excluded.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.findings.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.manifest.json",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.report.md",
+      "reason": "generated-sidecar"
+    },
+    {
+      "path": "turbo-quant/turbo-quant-generic-rust-next-codex-context-20260519.zip",
+      "reason": "archive-file"
+    },
+    {
+      "path": "zPYlibraries.7z",
+      "reason": "archive-file"
+    }
+  ],
+  "pruned_dirs": [
+    {
+      "path": "AiDENs/crates/aidens-app-kit/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-cli/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/aidens-runner/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/crates/boundary-compiler-core/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "AiDENs/docs/source-packages/archive",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "AiDENs/target",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "forge-memory-bridge/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "semantic-memory/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    },
+    {
+      "path": "stack-ids/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "turbo-quant/.claude",
+      "reason": "excluded-directory"
+    },
+    {
+      "path": "turbo-quant/codex",
+      "reason": "codex-artifacts-disabled"
+    },
+    {
+      "path": "turbo-quant/docs/codex-runs/archive",
+      "reason": "codex-archive-disabled"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "summary": {
+    "archive-file": 36,
+    "doc-binary-disabled": 2,
+    "generated-output": 1,
+    "generated-sidecar": 56,
+    "log-disabled": 24,
+    "stale-codex-artifact-disabled": 191,
+    "unsupported-extension-or-basename": 1
+  }
+}

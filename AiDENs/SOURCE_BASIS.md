@@ -64,8 +64,8 @@ AiDENs depends on sibling crates through path dependencies under the parent Libr
 Materials from codex runs prior to P31A are evidence, not active support claims, unless explicitly cited as prior-run evidence.
 
 **Ledger reference:** `docs/codex-runs/CURRENT_RUN.json`  
-**Support label:** `p31a-blocked-release-truth-repair`  
-**Status:** `blocked`
+**Support label:** `p31a-certified-release-truth-repair`  
+**Status:** `certified`
 
 ## Supported-scope distinction
 

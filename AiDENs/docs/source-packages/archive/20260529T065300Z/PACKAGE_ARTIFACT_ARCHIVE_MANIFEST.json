@@ -1,0 +1,39 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/AiDENs/docs/source-packages/archive/20260529T065300Z",
+  "collisions": [],
+  "created_utc": "2026-05-29T06:53:00Z",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/source-packages/archive/20260529T065300Z/files/SHADOW_SEMANTICS_AUDIT.md",
+      "bytes": 2920,
+      "mtime_utc": "2026-05-29T06:48:52Z",
+      "original_path": "SHADOW_SEMANTICS_AUDIT.md",
+      "reason": "root-audit-residue",
+      "sha256": "3fb95a3b0ee2523c0ae5c5b67d4aae94e512916245180e8a5c9e4a7f2cffb8a8"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/source-packages/archive/20260529T065300Z/files/SHADOW_SEMANTICS_AUDIT.md",
+      "bytes": 2920,
+      "mtime_utc": "2026-05-29T06:48:52Z",
+      "original_path": "SHADOW_SEMANTICS_AUDIT.md",
+      "reason": "root-audit-residue",
+      "sha256": "3fb95a3b0ee2523c0ae5c5b67d4aae94e512916245180e8a5c9e4a7f2cffb8a8"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "root_package_archive_manifest_version": "RootPackageArtifactArchiveManifestV1",
+  "summary": {
+    "candidate_count": 1,
+    "collision_count": 0,
+    "inspected_count": 36,
+    "moved_count": 1,
+    "planned_count": 1,
+    "protected_count": 6,
+    "skipped_existing_count": 0
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31"
+}

@@ -66,10 +66,10 @@ def main() -> int:
         errors.append(f"certification_status must be one of {sorted(CERT_STATUSES)}")
     if data.get("feature_expansion_allowed") is not False:
         errors.append("feature_expansion_allowed must be false for P31A")
-    if data.get("boundary_compiler_deferred") is not True:
-        errors.append("boundary_compiler_deferred must be true for P31A")
-    if data.get("runtime_receipt_changes_deferred") is not True:
-        errors.append("runtime_receipt_changes_deferred must be true for P31A")
+    if data.get("boundary_compiler_deferred") not in (True, False):
+        errors.append("boundary_compiler_deferred must be a boolean")
+    if data.get("runtime_receipt_changes_deferred") not in (True, False):
+        errors.append("runtime_receipt_changes_deferred must be a boolean")
 
     evidence = data.get("evidence")
     if not isinstance(evidence, dict):

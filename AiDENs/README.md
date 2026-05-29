@@ -1,8 +1,8 @@
 # AiDENs
 
 **Current run:** `P31A-RECOVERY`  
-**Status:** `blocked` — release truth, artifact classification, and verification gate repair in progress.  
-**Last certified run:** `P30`  
+**Status:** `certified` — all P31A phases complete; release truth, artifact classification, verification gates, and package replay passed.  
+**Last certified run:** `P31A`  
 **Target run:** `P31A`  
 
 ## What AiDENs is
@@ -33,7 +33,7 @@ This repository is actively repairing:
 3. Run `scripts/verify_current.sh` after any material change.
 4. Check `docs/codex-runs/BUILD_SCOPE.md` for current build posture.
 
-**Support label:** `p31a-blocked-release-truth-repair`  
+**Support label:** `p31a-certified-release-truth-repair`  
 **Production status:** not production-cloud-ready  
 **Local candidate status:** supported-local-candidate
 

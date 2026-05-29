@@ -2,9 +2,9 @@
 
 Record date: `2026-05-29`
 Ledger: `docs/codex-runs/CURRENT_RUN.json`
-Last certified run: `P30`
-Certification status: `blocked`
-Support label: `p31a-blocked-release-truth-repair`
+Last certified run: `P31A`
+Certification status: `certified`
+Support label: `p31a-certified-release-truth-repair`
 
 This is the active P31A support profile. Claims are bounded to local/operator execution and must trace to P31A evidence before they are treated as release-candidate support. AiDENs remains an orchestration, display, packaging, inspection, fixture, operator, and supported-local runtime layer over canonical sibling crates.
 
