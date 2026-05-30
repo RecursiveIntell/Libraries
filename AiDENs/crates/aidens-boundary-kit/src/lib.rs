@@ -2,6 +2,20 @@
 //!
 //! LLM structured output, patch payloads, generated manifests, and repaired
 //! JSON should pass through this crate before reaching tools or memory.
+//!
+//! Two compile paths are available:
+//!
+//! - `compile_json_boundary()` — the **lenient** path with repair, markdown
+//!   fence stripping, JSON substring extraction, and treatment-critical field
+//!   integrity checks.
+//!
+//! - `canonical_boundary::canonical_compile_json_boundary()` — the **strict**
+//!   path via the canonical `boundary-compiler-core` microkernel. Use this
+//!   when you need unforgiving RFC 8259 compliance with canonical digests.
+
+mod canonical_boundary;
+
+pub use canonical_boundary::canonical_compile_json_boundary;
 
 use aidens_contracts::{
     non_authoritative_json_display_digest, non_authoritative_text_display_digest, ArtifactId,

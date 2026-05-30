@@ -2,8 +2,8 @@
 //! through ConformanceRunReceiptV1.
 
 use aidens_contracts::{
-    ArtifactId, ConformanceEnvironmentV1, ConformanceFixtureResultV1,
-    ConformanceRunReceiptV1, DisplayDigestV1,
+    ArtifactId, ConformanceEnvironmentV1, ConformanceFixtureResultV1, ConformanceRunReceiptV1,
+    DisplayDigestV1,
 };
 use boundary_compiler_core::compile_json_boundary;
 use std::collections::{BTreeMap, BTreeSet};
@@ -18,10 +18,22 @@ fn base_profile() -> boundary_compiler_core::BoundaryCompilerProfileV1 {
     ]));
     profile.unknown_field_policy = boundary_compiler_core::UnknownFieldPolicy::Reject;
     profile.expected_field_types = BTreeMap::from([
-        ("id".to_string(), boundary_compiler_core::ExpectedJsonType::String),
-        ("kind".to_string(), boundary_compiler_core::ExpectedJsonType::String),
-        ("amount".to_string(), boundary_compiler_core::ExpectedJsonType::Number),
-        ("treatment".to_string(), boundary_compiler_core::ExpectedJsonType::Object),
+        (
+            "id".to_string(),
+            boundary_compiler_core::ExpectedJsonType::String,
+        ),
+        (
+            "kind".to_string(),
+            boundary_compiler_core::ExpectedJsonType::String,
+        ),
+        (
+            "amount".to_string(),
+            boundary_compiler_core::ExpectedJsonType::Number,
+        ),
+        (
+            "treatment".to_string(),
+            boundary_compiler_core::ExpectedJsonType::Object,
+        ),
     ]);
     profile
 }
@@ -45,7 +57,10 @@ fn conformance_run_receipt_records_all_fixture_results() {
     let mut results = Vec::new();
     for (fixture_id, input) in &fixtures {
         let result = compile_json_boundary(&profile, input, None, &[]);
-        let passed = matches!(result.decision, boundary_compiler_core::BoundaryDecisionV1::Accept);
+        let passed = matches!(
+            result.decision,
+            boundary_compiler_core::BoundaryDecisionV1::Accept
+        );
         let digest = result.parse_receipt.canonical_digest.clone();
         results.push(ConformanceFixtureResultV1 {
             fixture_id: fixture_id.to_string(),
@@ -71,7 +86,10 @@ fn conformance_run_receipt_records_all_fixture_results() {
     // Verify receipt structure, not specific pass/fail counts (those depend on profile config)
     assert_eq!(receipt.fixture_count, 6);
     assert!(receipt.passed_count + receipt.failed_count == receipt.fixture_count);
-    assert!(receipt.passed_count >= 1, "at least valid_minimal should pass");
+    assert!(
+        receipt.passed_count >= 1,
+        "at least valid_minimal should pass"
+    );
     assert!(receipt.receipt_id.0.starts_with("conformance-run:"));
 }
 
@@ -97,7 +115,9 @@ fn conformance_run_receipt_all_passes() {
     assert_eq!(receipt.fixture_count, 1);
     assert_eq!(receipt.passed_count, 1);
     assert_eq!(receipt.failed_count, 0);
-    assert!(receipt.reason_codes.contains(&"conformance-run-passed".to_string()));
+    assert!(receipt
+        .reason_codes
+        .contains(&"conformance-run-passed".to_string()));
 }
 
 #[test]

@@ -1,50 +1,53 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
-// TODO(P32 owner wiring): replace this local alias with the canonical digest
-// primitive from stack-ids or the artifact contract owner crate once this
-// standalone microkernel is wired into the larger workspace.
+// Internal microkernel convenience aliases.
+// These are NOT canonical artifact identity types. At the adapter boundary
+// (aidens-boundary-kit canonical_boundary module), DigestHex values are
+// wrapped in DisplayDigestV1::from_hex() for receipt emission.
 pub type DigestHex = String;
-// TODO(P32 owner wiring): replace this local alias with the canonical JSON
-// pointer/path contract type from the boundary/artifact owner crate.
+// Internal path representation — JSON Pointer-like strings used only inside
+// the microkernel. At the adapter boundary these are converted to plain
+// String for aidens-contracts receipt fields (which use String for paths).
 pub type JsonPointerLikePath = String;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum BoundaryLanguage {
     Json,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum CanonicalizationProfile {
     /// Stable sorted object keys and compact JSON. Not full RFC 8785/JCS.
     StableSortedJsonV1,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum AmbiguityPolicy {
     Reject,
     Quarantine,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum UnknownFieldPolicy {
     Allow,
     Reject,
     Quarantine,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum CoercionPolicy {
     RejectByDefault,
     AllowDeclared,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum RepairPolicy {
     NoRepair,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum TrustBoundary {
     Internal,
     External,
@@ -53,7 +56,7 @@ pub enum TrustBoundary {
     EvidenceImport,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum ExpectedJsonType {
     Null,
     Bool,
@@ -63,7 +66,7 @@ pub enum ExpectedJsonType {
     Object,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ResourceCeilingsV1 {
     pub max_bytes: Option<usize>,
     pub max_nesting_depth: Option<usize>,
@@ -80,7 +83,7 @@ impl Default for ResourceCeilingsV1 {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct BoundaryCompilerProfileV1 {
     pub profile_id: String,
     pub language: BoundaryLanguage,
@@ -125,14 +128,14 @@ impl BoundaryCompilerProfileV1 {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum ParseStatus {
     Accepted,
     Rejected,
     Quarantined,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum BoundaryErrorKind {
     MalformedJson,
     DuplicateKey,
@@ -144,14 +147,14 @@ pub enum BoundaryErrorKind {
     UnsupportedLanguage,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct BoundaryErrorRecordV1 {
     pub kind: BoundaryErrorKind,
     pub path: Option<JsonPointerLikePath>,
     pub message: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ParseReceiptV1 {
     pub receipt_id: String,
     pub raw_digest: DigestHex,
@@ -165,7 +168,7 @@ pub struct ParseReceiptV1 {
     pub resource_ceiling_triggered: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum SemanticImpact {
     None,
     NonTreatmentChanging,
@@ -173,7 +176,7 @@ pub enum SemanticImpact {
     Unknown,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum TreatmentIntegrityDecision {
     NotApplicable,
     Preserved,
@@ -182,7 +185,7 @@ pub enum TreatmentIntegrityDecision {
     ChangedWithWaiver,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct TreatmentDifferenceV1 {
     pub path: JsonPointerLikePath,
     pub before_digest: Option<DigestHex>,
@@ -190,7 +193,7 @@ pub struct TreatmentDifferenceV1 {
     pub description: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct RepairReceiptV1 {
     pub receipt_id: String,
     pub repair_operator: String,
@@ -204,7 +207,7 @@ pub struct RepairReceiptV1 {
     pub treatment_integrity_status: TreatmentIntegrityDecision,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct TreatmentIntegrityReceiptV1 {
     pub receipt_id: String,
     pub treatment_critical_paths: Vec<JsonPointerLikePath>,
@@ -215,7 +218,7 @@ pub struct TreatmentIntegrityReceiptV1 {
     pub waiver: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum BoundaryDecisionV1 {
     Accept,
     Reject,
@@ -223,7 +226,7 @@ pub enum BoundaryDecisionV1 {
     RepairedAccept,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct BoundaryCompileResultV1 {
     pub decision: BoundaryDecisionV1,
     pub value: Option<serde_json::Value>,

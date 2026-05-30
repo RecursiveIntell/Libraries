@@ -1,0 +1,183 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/AiDENs/docs/source-packages/archive/20260530T003644Z",
+  "collisions": [],
+  "created_utc": "2026-05-30T00:36:44Z",
+  "errors": [],
+  "files": [
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.codex-archive.json",
+      "bytes": 524,
+      "mtime_utc": "2026-05-29T08:45:35Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "f0384d4604a2c4dfdcfa1180818ebbaa2e445aac2854da947d00e8ffeec42dda"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.excluded.json",
+      "bytes": 53573,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.excluded.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "b48eec083ff2f71ef86c7f706cf25474b50b2807f248041229dcceaebbdb6944"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.findings.json",
+      "bytes": 156,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.findings.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "244cb09e1ab1c919bb4c7da171486f8b3274815b4bc5846b325bf9e270d12f9e"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.manifest.json",
+      "bytes": 1018029,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.manifest.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "d2d0c105a216d290d064286bdc3769a36345c5f386a364ce1dd4a84c3308f783"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.report.md",
+      "bytes": 6782,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.report.md",
+      "reason": "prior-generated-sidecar",
+      "sha256": "81eae35aef782dcbe8dc5eaa07ce48836795fd34437d7f2a4accb322a4b12592"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.zip",
+      "bytes": 3521990,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.zip",
+      "reason": "prior-context-archive",
+      "sha256": "0b78f7826df55c80114d67f948b70b50d4ec67fba24ded27daa5d1b5b8c3c2b3"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-release-context-20260530T003326Z.codex-archive.json",
+      "bytes": 521,
+      "mtime_utc": "2026-05-30T00:33:26Z",
+      "original_path": "AiDENs-aidens-release-context-20260530T003326Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "dcf5f77ec7aa3c0fbb4ec3cd0f02f39adf1566dc64e9f62c6db7740244167a6f"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-release-context-20260530T003427Z.codex-archive.json",
+      "bytes": 521,
+      "mtime_utc": "2026-05-30T00:34:27Z",
+      "original_path": "AiDENs-aidens-release-context-20260530T003427Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "99ee4bb08c6f8bdbde3b7015c58dd54f9f4e413d659c880b891f310e8c0e23ce"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-release-context-20260530T003529Z.codex-archive.json",
+      "bytes": 521,
+      "mtime_utc": "2026-05-30T00:35:29Z",
+      "original_path": "AiDENs-aidens-release-context-20260530T003529Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "1635b08d04c3ca05137dce0b1406138e2b05588694dae0f0d0f03ef6a8b3499c"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/SHADOW_SEMANTICS_AUDIT.md",
+      "bytes": 2920,
+      "mtime_utc": "2026-05-29T18:48:53Z",
+      "original_path": "SHADOW_SEMANTICS_AUDIT.md",
+      "reason": "root-audit-residue",
+      "sha256": "3fb95a3b0ee2523c0ae5c5b67d4aae94e512916245180e8a5c9e4a7f2cffb8a8"
+    }
+  ],
+  "planned": [
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.codex-archive.json",
+      "bytes": 524,
+      "mtime_utc": "2026-05-29T08:45:35Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "f0384d4604a2c4dfdcfa1180818ebbaa2e445aac2854da947d00e8ffeec42dda"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.excluded.json",
+      "bytes": 53573,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.excluded.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "b48eec083ff2f71ef86c7f706cf25474b50b2807f248041229dcceaebbdb6944"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.findings.json",
+      "bytes": 156,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.findings.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "244cb09e1ab1c919bb4c7da171486f8b3274815b4bc5846b325bf9e270d12f9e"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.manifest.json",
+      "bytes": 1018029,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.manifest.json",
+      "reason": "prior-generated-sidecar",
+      "sha256": "d2d0c105a216d290d064286bdc3769a36345c5f386a364ce1dd4a84c3308f783"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.report.md",
+      "bytes": 6782,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.report.md",
+      "reason": "prior-generated-sidecar",
+      "sha256": "81eae35aef782dcbe8dc5eaa07ce48836795fd34437d7f2a4accb322a4b12592"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-next-codex-context-20260529T084535Z.zip",
+      "bytes": 3521990,
+      "mtime_utc": "2026-05-29T08:45:39Z",
+      "original_path": "AiDENs-aidens-next-codex-context-20260529T084535Z.zip",
+      "reason": "prior-context-archive",
+      "sha256": "0b78f7826df55c80114d67f948b70b50d4ec67fba24ded27daa5d1b5b8c3c2b3"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-release-context-20260530T003326Z.codex-archive.json",
+      "bytes": 521,
+      "mtime_utc": "2026-05-30T00:33:26Z",
+      "original_path": "AiDENs-aidens-release-context-20260530T003326Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "dcf5f77ec7aa3c0fbb4ec3cd0f02f39adf1566dc64e9f62c6db7740244167a6f"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-release-context-20260530T003427Z.codex-archive.json",
+      "bytes": 521,
+      "mtime_utc": "2026-05-30T00:34:27Z",
+      "original_path": "AiDENs-aidens-release-context-20260530T003427Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "99ee4bb08c6f8bdbde3b7015c58dd54f9f4e413d659c880b891f310e8c0e23ce"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/AiDENs-aidens-release-context-20260530T003529Z.codex-archive.json",
+      "bytes": 521,
+      "mtime_utc": "2026-05-30T00:35:29Z",
+      "original_path": "AiDENs-aidens-release-context-20260530T003529Z.codex-archive.json",
+      "reason": "prior-codex-archive-report",
+      "sha256": "1635b08d04c3ca05137dce0b1406138e2b05588694dae0f0d0f03ef6a8b3499c"
+    },
+    {
+      "archived_path": "docs/source-packages/archive/20260530T003644Z/files/SHADOW_SEMANTICS_AUDIT.md",
+      "bytes": 2920,
+      "mtime_utc": "2026-05-29T18:48:53Z",
+      "original_path": "SHADOW_SEMANTICS_AUDIT.md",
+      "reason": "root-audit-residue",
+      "sha256": "3fb95a3b0ee2523c0ae5c5b67d4aae94e512916245180e8a5c9e4a7f2cffb8a8"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+  "root_package_archive_manifest_version": "RootPackageArtifactArchiveManifestV1",
+  "summary": {
+    "candidate_count": 10,
+    "collision_count": 0,
+    "inspected_count": 113,
+    "moved_count": 10,
+    "planned_count": 10,
+    "protected_count": 6,
+    "skipped_existing_count": 0
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31"
+}

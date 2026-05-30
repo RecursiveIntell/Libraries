@@ -78,6 +78,7 @@ version = "0.1.0"
 dependencies = [
  "aidens-contracts",
  "aidens-testkit",
+ "boundary-compiler-core",
  "chrono",
  "serde",
  "serde_json",
@@ -667,6 +668,7 @@ name = "boundary-compiler-core"
 version = "0.1.0"
 dependencies = [
  "pretty_assertions",
+ "schemars",
  "serde",
  "serde_json",
  "sha2",
