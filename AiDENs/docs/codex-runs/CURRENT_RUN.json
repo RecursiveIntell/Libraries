@@ -51,5 +51,28 @@
   "runtime_receipt_changes_deferred": false,
   "schema_version": "aidens.current-run.v1",
   "support_label": "p31b-verification-repair-candidate",
-  "target_run": "P31B"
+  "target_run": "P31B",
+  "run": "P32",
+  "version": "p32-schema-compat",
+  "branch": "p32-schema-compat",
+  "run_id": "P32",
+  "claim_level": "v11A-seed-schema-compat",
+  "status": {
+    "phase": "P32",
+    "certification": "candidate",
+    "schema_compat": true
+  },
+  "gate_results": {
+    "codex_artifact_classification": "pass",
+    "no_scaffold_promoted": "pass",
+    "phase_gate_integrity": "pass",
+    "phase19_high_risk_quarantine": "pass",
+    "root_markdown_archive_policy": "pass",
+    "release_truth_consistency": "pass",
+    "super_pass_docs_evidence_closure": "pass",
+    "cargo_check": "pass",
+    "cargo_test": "pass",
+    "cargo_clippy": "pass",
+    "cargo_fmt": "pass"
+  }
 }

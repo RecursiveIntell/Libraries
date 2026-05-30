@@ -1,16 +1,15 @@
-# AiDENs — P31B Verification Repair
+# AiDENs — P32 Schema Compatibility
 
-**Run**: P31B | **Role**: verification-repair | **Status**: candidate | **Label**: p31b-verification-repair-candidate
+**Run**: P32 | **Role**: schema-compatibility | **Status**: candidate | **Label**: p32-schema-compat-candidate
 
-All 17 verification gates pass. P31B repaired 12 audit findings from hostile P31A decertification.
+All 17 verification gates pass. P32 completed schema compatibility work: ConformanceRunReceiptV1, boundary compiler wiring, and fixture corpus.
 
 **Last certified run**: P30 — see `docs/codex-runs/CURRENT_RUN.json`.
 
 ## Quick Links
 
-- Evidence receipts: `docs/codex-runs/P31B_VERIFICATION/COMMAND_EXECUTION_RECEIPTS.jsonl`
 - Current run state: `docs/codex-runs/CURRENT_RUN.json`
-- Package: `AiDENs-aidens-codex-context-20260529T082611Z.zip`
+- Phase completion: `COMPLETION_BLUEPRINT_P32.md`
 
 ## Gate Results
 
