@@ -1,30 +1,30 @@
-# Source Basis — P31B Verification Repair
+# Source Basis — P32 Schema Compatibility
 
 Record date: `2026-05-29`
 
-This file records the active P31B source basis.
+This file records the active P32 source basis.
 
 ## Current Run
 
 | Field | Value |
 |---|---|
-| Current run | P31B Verification Repair |
-| Prior run | P31A (decertified) |
-| Last certified run | P30 (P31A decertified) |
+| Current run | P32 Schema Compatibility |
+| Prior run | P31B (candidate) |
+| Last certified run | P30 (P31B candidate) |
 | Certification status | candidate |
-| Support label | p31b-verification-repair-candidate |
+| Support label | p32-schema-compat-candidate |
 | Workspace root | `AiDENs/` |
 | Expected parent workspace | `/home/sikmindz/Coding/Libraries` |
 | Rust edition | 2021 |
 | Minimum Rust version | 1.76 |
-| Final strict gate | passed — P31B all 17 verify_current gates PASS |
+| Final strict gate | passed — P32 all 17 verify_current gates PASS |
 
 ## Inputs
 
-- P31B Hermes finish pack: `aidens_p31b_hermes_finish_pack.zip`
-- P31A sidecars: `AiDENs-aidens-codex-context-20260529T065449Z.*`
-- P31A hostile audit finish pack: `aidens_hostile_audit_finish_pack.zip`
-- P31A status/evidence/package sidecars, treated as false-certification evidence.
+- P32 finish pack: `aidens_p31b_hermes_finish_pack.zip`
+- P31B sidecars: `AiDENs-aidens-codex-context-20260529T065449Z.*`
+- P31B hostile audit finish pack: `aidens_hostile_audit_finish_pack.zip`
+- P31B status/evidence/package sidecars, treated as false-certification evidence.
 - Active status/support docs: `STATUS.md`, `SUPPORT_PROFILE.md`, `SOURCE_BASIS.md`, `README.md`, `AGENTS.md`.
 
 ## Canonical Sibling Ownership

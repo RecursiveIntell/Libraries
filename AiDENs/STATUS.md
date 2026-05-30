@@ -75,11 +75,11 @@ All 17 verification gates pass. P32 completed schema compatibility work: Conform
 
 ## Key Repairs
 
-1. Decertified P31A false claims; set P31B candidate
-2. Fixed z.py `normalize_codex_run_id` regex for letter-suffix run IDs (P31B)
+1. Decertified prior false claims; set P31B candidate
+2. Fixed z.py `normalize_codex_run_id` regex for letter-suffix run IDs
 3. Added manifest `run` field; updated validation script for normalized comparison
 4. Fixed `GENERATED_PACKAGE_RE` timestamp regex and `FINISH_PACK_RE` exclusion
-5. Classifying 659 P31A artifacts as run-evidence
+5. Classifying 659 prior artifacts as run-evidence
 6. Restored `SHADOW_SEMANTICS_AUDIT.md` to root; added sibling deps to `SOURCE_BASIS.md`
 7. Self-replay script: added `PermissionError` environmental blocker classification
 

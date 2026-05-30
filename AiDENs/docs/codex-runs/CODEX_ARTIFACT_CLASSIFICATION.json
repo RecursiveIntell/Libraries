@@ -4066,21 +4066,21 @@
     {
       "archive_location": null,
       "archived_by": null,
-      "classification": "active",
+      "classification": "run-evidence",
       "path": "docs/codex-runs/P31B_VERIFICATION/final_verify_log.txt",
       "run": "P31B"
     },
     {
       "archive_location": null,
       "archived_by": null,
-      "classification": "active",
+      "classification": "run-evidence",
       "path": "docs/codex-runs/P31B_VERIFICATION/package_self_replay_receipt.json",
       "run": "P31B"
     },
     {
       "archive_location": null,
       "archived_by": null,
-      "classification": "active",
+      "classification": "run-evidence",
       "path": "docs/codex-runs/P31B_VERIFICATION/HOSTILE_AUDITOR_HANDOFF.md",
       "run": "P31B"
     },

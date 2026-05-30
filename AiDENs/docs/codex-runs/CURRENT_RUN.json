@@ -1,6 +1,6 @@
 {
-  "active_run": "P31B",
-  "active_run_role": "verification-repair",
+  "active_run": "P32",
+  "active_run_role": "schema-compatibility",
   "blockers": [],
   "boundary_compiler_deferred": false,
   "build_certified": true,
@@ -32,7 +32,7 @@
     "extracted_replay_certified=false: self-replay blocked by environmental PermissionError in temp dir (not a code defect)."
   ],
   "package_certified": true,
-  "parent_run": "P31A",
+  "parent_run": "P31B",
   "project": "AiDENs",
   "resolved_blockers": [
     "AIDENS-P31B-S0-001: False certification state \u2014 RESOLVED: decertified, now candidate after all gates pass",
@@ -50,8 +50,8 @@
   ],
   "runtime_receipt_changes_deferred": false,
   "schema_version": "aidens.current-run.v1",
-  "support_label": "p31b-verification-repair-candidate",
-  "target_run": "P31B",
+  "support_label": "p32-schema-compat-candidate",
+  "target_run": "P32",
   "run": "P32",
   "version": "p32-schema-compat",
   "branch": "p32-schema-compat",

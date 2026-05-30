@@ -1,6 +1,6 @@
 # SUPPORT_PROFILE.md
 
-**Project**: AiDENs | **Run**: P31B | **Role**: verification-repair-candidate | **Label**: p31b-verification-repair-candidate
+**Project**: AiDENs | **Run**: P32 | **Role**: schema-compat-candidate | **Label**: p32-schema-compat-candidate
 
 This profile cites `docs/codex-runs/CURRENT_RUN.json` as the single source of truth for run state.
 **Last certified run**: P30.
@@ -13,7 +13,7 @@ This profile cites `docs/codex-runs/CURRENT_RUN.json` as the single source of tr
 | Boundary compiler | 28 tests pass, strict parse + sandbox enforcement | proven |
 | Tool dispatch receipt | repo_read test emits receipt with tool_id + success | proven |
 | Package validates | assert_package_validation.py PASS (1 non-fatal warning) | proven |
-| Artifact classification | 659 P31A artifacts classified, active_run=P31B | proven |
+| Artifact classification | 659 P31B artifacts classified, active_run=P32 | proven |
 | No hard p30_guard findings | 0 hard, 1842 broad (documented) | proven |
 
 ## Non-Claims
@@ -27,4 +27,4 @@ This profile cites `docs/codex-runs/CURRENT_RUN.json` as the single source of tr
 
 ## Support Level
 
-P31B verification-repair-candidate. Not release-certified until full release gate passes.
+P32 schema-compat-candidate. Not release-certified until full release gate passes.

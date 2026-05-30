@@ -1,9 +1,9 @@
 # AiDENs
 
-**Current run:** `P31B-VERIFICATION-REPAIR`  
-**Status:** `candidate` — all 17 verification gates pass; P31B repair complete.  
+**Current run:** `P32-SCHEMA-COMPAT`  
+**Status:** `candidate` — all 17 verification gates pass; P32 schema compat in progress.  
 **Last certified run:** `P30`  
-**Target run:** `P31B`  
+**Target run:** `P32`  
 
 ## What AiDENs is
 
@@ -11,22 +11,22 @@ AiDENs is an orchestration, display, packaging, inspection, fixture, operator, a
 
 ## Current scope
 
-This repository completed P31B verification repair of P31A false-certification drift:
+This repository completed P32 schema-compatibility work building on P31B verification repair:
 
-- Release/run truth ledger recertified: P31B candidate, all gates pass
+- Release/run truth ledger recertified: P32 candidate, all gates pass
 - Artifact classification and verifier self-poisoning repaired
 - Static safety hardening: p30_guard 0 hard findings (child.kill already replaced)
 - Build/test/package replay evidence established (15 command receipts)
-- z.py normalize bug fixed for letter-suffix run IDs (P31B)
+- z.py normalize bug fixed for letter-suffix run IDs (P32)
 - Supported-local vertical slice proven (boundary compiler + tool dispatch)
 
 ## What is not claimed
 
 - v11B, v11C, production, broad autonomy, or cloud readiness
-- Boundary compiler runtime integration (deferred to post-P31B)
+- Boundary compiler runtime integration (deferred to post-P32)
 - Canonical ownership of sibling-crate semantics
 - Full test certification until command bar passes
-- Certified status — current status is `blocked` / `verification-repair-candidate`
+- Certified status — current status is `blocked` / `schema-compat-candidate`
 
 ## Quick start
 
@@ -35,9 +35,9 @@ This repository completed P31B verification repair of P31A false-certification d
 3. Run `scripts/verify_current.sh .` after any material change.
 4. Check `docs/codex-runs/BUILD_SCOPE.md` for current build posture.
 
-**Support label:** `p31b-verification-repair-candidate` (`supported-local-candidate`)
+**Support label:** `p32-schema-compat-candidate` (`supported-local-candidate`)
 **Production status:** not production-cloud-ready  
-**Local candidate status:** repair-in-progress (do not claim certified)
+**Local candidate status:** schema-compat-in-progress (do not claim certified)
 
 ## Directory guide
 
