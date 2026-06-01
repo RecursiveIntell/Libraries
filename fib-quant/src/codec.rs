@@ -214,7 +214,8 @@ impl FibQuantizer {
         for v in vectors {
             if v.len() != d {
                 return Err(FibQuantError::CorruptPayload(format!(
-                    "input dimension {}, expected {d}", v.len()
+                    "input dimension {}, expected {d}",
+                    v.len()
                 )));
             }
             check_finite(v)?;
@@ -232,9 +233,13 @@ impl FibQuantizer {
         #[cfg(feature = "gpu")]
         {
             if let Some(_ctx) = gpu_backend::GpuContext::init() {
-                if n >= gpu_backend::GpuContext::GPU_MIN_BATCH_SIZE && d >= gpu_backend::GpuContext::GPU_MIN_DIM {
+                if n >= gpu_backend::GpuContext::GPU_MIN_BATCH_SIZE
+                    && d >= gpu_backend::GpuContext::GPU_MIN_DIM
+                {
                     gpu_backend::hadamard_batch(&mut flat, n, d, self.profile.rotation_seed)
-                        .map_err(|e| FibQuantError::NumericalFailure(format!("gpu hadamard: {}", e)))?;
+                        .map_err(|e| {
+                            FibQuantError::NumericalFailure(format!("gpu hadamard: {}", e))
+                        })?;
                     return self.finish_batch_encode(&flat, &norms_f64, n, d, k);
                 }
             }
@@ -260,7 +265,12 @@ impl FibQuantizer {
         k: usize,
     ) -> Result<Vec<FibCodeV1>> {
         let block_count = self.profile.block_count() as usize;
-        let codewords_f64: Vec<f64> = self.codebook.codewords.iter().map(|v| f64::from(*v)).collect();
+        let codewords_f64: Vec<f64> = self
+            .codebook
+            .codewords
+            .iter()
+            .map(|v| f64::from(*v))
+            .collect();
 
         let mut codes = Vec::with_capacity(n);
         for vec_idx in 0..n {

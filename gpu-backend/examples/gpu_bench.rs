@@ -14,8 +14,11 @@ fn main() {
     ];
 
     for (name, dim, num_docs) in &configs {
-        println!("{:-^70}", format!(" {} — {} dim, {} docs ", name, dim, num_docs));
-        
+        println!(
+            "{:-^70}",
+            format!(" {} — {} dim, {} docs ", name, dim, num_docs)
+        );
+
         // Generate realistic vectors
         let vectors = generate_vectors(*dim, *num_docs);
         let k: usize = 4;
@@ -44,42 +47,68 @@ fn main() {
             .expect("hadamard failed");
         let elapsed = start.elapsed();
         println!("  {} vectors × {} dim: {:?}", num_docs, dim, elapsed);
-        println!("  throughput: {:.0} vectors/sec", *num_docs as f64 / elapsed.as_secs_f64());
+        println!(
+            "  throughput: {:.0} vectors/sec",
+            *num_docs as f64 / elapsed.as_secs_f64()
+        );
 
         // ── Lloyd-Max encode benchmark ──
         println!("\n  ── Lloyd-Max Encode (k={}, N={}) ──", k, n_levels);
         let start = Instant::now();
-        let (indices, norms) = gpu_backend::lloyd_max_batch(
-            &hadamard_data, *num_docs, *dim, k, n_levels, seed
-        ).expect("lloyd_max encode failed");
+        let (indices, norms) =
+            gpu_backend::lloyd_max_batch(&hadamard_data, *num_docs, *dim, k, n_levels, seed)
+                .expect("lloyd_max encode failed");
         let elapsed = start.elapsed();
         let blocks_per_vector = dim / k;
         println!("  {} vectors encoded: {:?}", num_docs, elapsed);
-        println!("  indices: {} bytes, norms: {} f32s", indices.len(), norms.len());
-        println!("  throughput: {:.0} vectors/sec", *num_docs as f64 / elapsed.as_secs_f64());
-        println!("  per-vector: {:.1}ms", elapsed.as_secs_f64() * 1000.0 / *num_docs as f64);
+        println!(
+            "  indices: {} bytes, norms: {} f32s",
+            indices.len(),
+            norms.len()
+        );
+        println!(
+            "  throughput: {:.0} vectors/sec",
+            *num_docs as f64 / elapsed.as_secs_f64()
+        );
+        println!(
+            "  per-vector: {:.1}ms",
+            elapsed.as_secs_f64() * 1000.0 / *num_docs as f64
+        );
 
         // ── Lloyd-Max decode benchmark ──
         println!("\n  ── Lloyd-Max Decode ──");
         let start = Instant::now();
         let decoded = gpu_backend::lloyd_max_decode_batch(
-            &indices, &norms, *num_docs, *dim, k, n_levels, seed
-        ).expect("lloyd_max decode failed");
+            &indices, &norms, *num_docs, *dim, k, n_levels, seed,
+        )
+        .expect("lloyd_max decode failed");
         let elapsed = start.elapsed();
         println!("  {} vectors decoded: {:?}", num_docs, elapsed);
-        
+
         // ── Fidelity check ──
         let mut total_cos = 0.0f64;
         let mut total_mse = 0.0f64;
         for i in 0..*num_docs {
             let orig = &vectors[i * dim..(i + 1) * dim];
             let dec = &decoded[i * dim..(i + 1) * dim];
-            let dot: f64 = orig.iter().zip(dec.iter()).map(|(a,b)| (*a as f64) * (*b as f64)).sum();
+            let dot: f64 = orig
+                .iter()
+                .zip(dec.iter())
+                .map(|(a, b)| (*a as f64) * (*b as f64))
+                .sum();
             let mag_o: f64 = orig.iter().map(|v| (*v as f64).powi(2)).sum::<f64>().sqrt();
             let mag_d: f64 = dec.iter().map(|v| (*v as f64).powi(2)).sum::<f64>().sqrt();
-            total_cos += if mag_o > 0.0 && mag_d > 0.0 { dot / (mag_o * mag_d) } else { 0.0 };
-            total_mse += orig.iter().zip(dec.iter())
-                .map(|(a,b)| ((*a as f64) - (*b as f64)).powi(2)).sum::<f64>() / *dim as f64;
+            total_cos += if mag_o > 0.0 && mag_d > 0.0 {
+                dot / (mag_o * mag_d)
+            } else {
+                0.0
+            };
+            total_mse += orig
+                .iter()
+                .zip(dec.iter())
+                .map(|(a, b)| ((*a as f64) - (*b as f64)).powi(2))
+                .sum::<f64>()
+                / *dim as f64;
         }
         println!("  avg cosine fidelity: {:.6}", total_cos / *num_docs as f64);
         println!("  avg MSE: {:.6}", total_mse / *num_docs as f64);
@@ -116,7 +145,9 @@ fn generate_vectors(dim: usize, num_docs: usize) -> Vec<f32> {
         // Normalize to unit length (matching real embedding vectors)
         let norm = norm_sq.sqrt() as f32;
         if norm > 0.0 {
-            for v in &mut vec { *v /= norm; }
+            for v in &mut vec {
+                *v /= norm;
+            }
         }
         data.extend(vec);
     }

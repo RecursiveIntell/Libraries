@@ -10,9 +10,9 @@
 
 use std::sync::OnceLock;
 
-pub mod error;
 #[cfg(feature = "gpu")]
 pub mod cuda;
+pub mod error;
 pub mod fallback;
 
 pub use error::GpuError;
@@ -112,7 +112,8 @@ pub fn lloyd_max_batch(
     }
     if dim % k != 0 {
         return Err(GpuError::InvalidConfig(format!(
-            "dim ({}) must be divisible by k ({})", dim, k
+            "dim ({}) must be divisible by k ({})",
+            dim, k
         )));
     }
 
@@ -152,7 +153,9 @@ pub fn lloyd_max_decode_batch(
     {
         if let Some(ctx) = GpuContext::init() {
             if n >= GpuContext::GPU_MIN_BATCH_SIZE {
-                return cuda::lloyd_max_decode_batch_gpu(ctx, indices, norms, n, dim, k, n_levels, seed);
+                return cuda::lloyd_max_decode_batch_gpu(
+                    ctx, indices, norms, n, dim, k, n_levels, seed,
+                );
             }
         }
     }
@@ -167,7 +170,8 @@ pub fn lloyd_max_decode_batch(
 pub fn bitpack(indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
     if bits_per_index == 0 || bits_per_index > 8 {
         return Err(GpuError::InvalidConfig(format!(
-            "bits_per_index must be 1-8, got {}", bits_per_index
+            "bits_per_index must be 1-8, got {}",
+            bits_per_index
         )));
     }
 

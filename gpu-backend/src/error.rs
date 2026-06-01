@@ -6,15 +6,9 @@ pub enum GpuError {
     /// No CUDA device available.
     GpuUnavailable,
     /// Device memory insufficient.
-    OutOfMemory {
-        requested: usize,
-        available: usize,
-    },
+    OutOfMemory { requested: usize, available: usize },
     /// Input dimension mismatch.
-    DimensionMismatch {
-        expected: usize,
-        got: usize,
-    },
+    DimensionMismatch { expected: usize, got: usize },
     /// Invalid configuration parameter.
     InvalidConfig(String),
     /// CUDA runtime error.
@@ -26,9 +20,19 @@ pub enum GpuError {
 impl fmt::Display for GpuError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::GpuUnavailable => write!(f, "GPU unavailable — CUDA device not found or feature disabled"),
-            Self::OutOfMemory { requested, available } => {
-                write!(f, "GPU out of memory: requested {} bytes, available {} bytes", requested, available)
+            Self::GpuUnavailable => write!(
+                f,
+                "GPU unavailable — CUDA device not found or feature disabled"
+            ),
+            Self::OutOfMemory {
+                requested,
+                available,
+            } => {
+                write!(
+                    f,
+                    "GPU out of memory: requested {} bytes, available {} bytes",
+                    requested, available
+                )
             }
             Self::DimensionMismatch { expected, got } => {
                 write!(f, "dimension mismatch: expected {}, got {}", expected, got)

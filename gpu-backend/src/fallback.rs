@@ -4,8 +4,8 @@
 //! for GPU launch overhead to be worthwhile.
 
 // CPU fallback — no CUDA imports needed
-use crate::Result;
 use crate::error::GpuError;
+use crate::Result;
 
 /// In-place Walsh-Hadamard Transform on CPU.
 /// dim must be a power of 2. Pads to next power of 2 if not.
@@ -64,7 +64,10 @@ pub fn hadamard_batch_cpu(data: &mut [f32], n: usize, dim: usize, seed: u64) -> 
 
 /// Generate deterministic ±1 signs from seed (as f32).
 fn generate_signs(dim: usize, seed: u64) -> Vec<f32> {
-    generate_signs_impl(dim, seed).into_iter().map(|s| s as f32).collect()
+    generate_signs_impl(dim, seed)
+        .into_iter()
+        .map(|s| s as f32)
+        .collect()
 }
 
 /// Generate deterministic ±1 i32 signs from seed.
@@ -76,7 +79,9 @@ fn generate_signs_impl(dim: usize, seed: u64) -> Vec<i32> {
     let mut state = seed;
     let mut signs = Vec::with_capacity(dim);
     for _ in 0..dim {
-        state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         signs.push(if (state >> 32) & 1 == 0 { -1 } else { 1 });
     }
     signs
@@ -174,14 +179,13 @@ fn gaussian_centroids(n_levels: usize) -> Vec<f32> {
         4 => vec![-1.510, -0.453, 0.453, 1.510],
         8 => vec![-2.152, -1.344, -0.756, -0.245, 0.245, 0.756, 1.344, 2.152],
         16 => vec![
-            -2.637, -2.028, -1.579, -1.212, -0.891, -0.599, -0.327, -0.067,
-            0.067, 0.327, 0.599, 0.891, 1.212, 1.579, 2.028, 2.637,
+            -2.637, -2.028, -1.579, -1.212, -0.891, -0.599, -0.327, -0.067, 0.067, 0.327, 0.599,
+            0.891, 1.212, 1.579, 2.028, 2.637,
         ],
         32 => vec![
-            -3.109, -2.643, -2.305, -2.029, -1.790, -1.577, -1.383, -1.204,
-            -1.036, -0.878, -0.727, -0.582, -0.441, -0.304, -0.169, -0.036,
-            0.036, 0.169, 0.304, 0.441, 0.582, 0.727, 0.878, 1.036,
-            1.204, 1.383, 1.577, 1.790, 2.029, 2.305, 2.643, 3.109,
+            -3.109, -2.643, -2.305, -2.029, -1.790, -1.577, -1.383, -1.204, -1.036, -0.878, -0.727,
+            -0.582, -0.441, -0.304, -0.169, -0.036, 0.036, 0.169, 0.304, 0.441, 0.582, 0.727,
+            0.878, 1.036, 1.204, 1.383, 1.577, 1.790, 2.029, 2.305, 2.643, 3.109,
         ],
         _ => {
             // Generate approximate centroids for arbitrary N
@@ -207,7 +211,11 @@ fn probit(p: f64) -> f64 {
     let num = c[0] + c[1] * t + c[2] * t * t;
     let denom = 1.0 + d[0] * t + d[1] * t * t + d[2] * t * t * t;
     let z = t - num / denom;
-    if p < 0.5 { -SQRT_2 * z } else { SQRT_2 * z }
+    if p < 0.5 {
+        -SQRT_2 * z
+    } else {
+        SQRT_2 * z
+    }
 }
 
 /// Bit-pack on CPU.
@@ -243,14 +251,22 @@ mod tests {
         let dim = 8;
         let n = 2;
         let mut data = vec![0.0f32; n * dim];
-        for v in 0..n { data[v * dim] = 1.0; }
+        for v in 0..n {
+            data[v * dim] = 1.0;
+        }
         hadamard_batch_cpu(&mut data, n, dim, 42).unwrap();
         let expected_mag = 1.0 / (dim as f32).sqrt();
         for i in 0..n {
             for j in 0..dim {
                 let val = data[i * dim + j].abs();
-                assert!((val - expected_mag).abs() < 1e-5,
-                    "vector {} element {}: expected {}, got {}", i, j, expected_mag, val);
+                assert!(
+                    (val - expected_mag).abs() < 1e-5,
+                    "vector {} element {}: expected {}, got {}",
+                    i,
+                    j,
+                    expected_mag,
+                    val
+                );
             }
         }
     }
@@ -297,7 +313,8 @@ mod tests {
         assert_eq!(indices.len(), n * dim); // k indices per block, dim/k blocks = dim indices total
         assert_eq!(norms.len(), n * dim / k);
 
-        let decoded = lloyd_max_decode_batch_cpu(&indices, &norms, n, dim, k, n_levels, 42).unwrap();
+        let decoded =
+            lloyd_max_decode_batch_cpu(&indices, &norms, n, dim, k, n_levels, 42).unwrap();
         assert_eq!(decoded.len(), n * dim);
 
         // Check non-zero reconstruction

@@ -5,8 +5,8 @@
 //! Falls back to CPU if no CUDA device or PTX unavailable.
 
 use crate::error::GpuError;
-use crate::Result;
 use crate::GpuContext;
+use crate::Result;
 use std::sync::{Arc, OnceLock};
 
 use cudarc::driver::PushKernelArg;
@@ -41,7 +41,10 @@ pub fn init_context() -> Result<GpuContext> {
 /// Initialize PTX module.
 fn init_cuda_state(ctx: &Arc<cudarc::driver::CudaContext>) -> Option<CudaState> {
     let ptx = load_ptx()?;
-    let module = match ctx.load_module(ptx) { Ok(m) => m, Err(_) => return None };
+    let module = match ctx.load_module(ptx) {
+        Ok(m) => m,
+        Err(_) => return None,
+    };
     let stream = ctx.default_stream();
     Some(CudaState { stream, module })
 }
@@ -80,21 +83,22 @@ pub fn hadamard_batch_gpu(
     hadamard_batch_cuda(data, n, dim, seed)
 }
 
-fn hadamard_batch_cuda(
-    data: &mut [f32],
-    n: usize,
-    dim: usize,
-    seed: u64,
-) -> Result<()> {
+fn hadamard_batch_cuda(data: &mut [f32], n: usize, dim: usize, seed: u64) -> Result<()> {
     let state = CUDA_STATE.get().and_then(|s| s.as_ref()).unwrap();
     let signs = crate::fallback::generate_signs_i32(dim, seed);
 
-    let dev_signs = state.stream.clone_htod(signs.as_slice())
+    let dev_signs = state
+        .stream
+        .clone_htod(signs.as_slice())
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    let mut dev_data = state.stream.clone_htod(data)
+    let mut dev_data = state
+        .stream
+        .clone_htod(data)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
-    let f = state.module.load_function("hadamard_wht_batch")
+    let f = state
+        .module
+        .load_function("hadamard_wht_batch")
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
     let block_dim = dim.min(1024);
@@ -112,12 +116,15 @@ fn hadamard_batch_cuda(
     args.arg(&dev_signs);
     args.arg(&ni);
     args.arg(&di);
-    unsafe { args.launch(cfg) }
-        .map_err(|e| GpuError::CudaError(format!("hadamard: {}", e)))?;
+    unsafe { args.launch(cfg) }.map_err(|e| GpuError::CudaError(format!("hadamard: {}", e)))?;
 
-    state.stream.memcpy_dtoh(&dev_data, data)
+    state
+        .stream
+        .memcpy_dtoh(&dev_data, data)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    state.stream.synchronize()
+    state
+        .stream
+        .synchronize()
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
     Ok(())
@@ -153,14 +160,22 @@ fn lloyd_max_batch_cuda(
     let total_blocks = n * blocks_per_vector;
     let total_scalars = total_blocks * k;
 
-    let dev_input = state.stream.clone_htod(vectors)
+    let dev_input = state
+        .stream
+        .clone_htod(vectors)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    let mut dev_indices = state.stream.alloc_zeros::<u8>(total_scalars)
+    let mut dev_indices = state
+        .stream
+        .alloc_zeros::<u8>(total_scalars)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    let mut dev_norms = state.stream.alloc_zeros::<f32>(total_blocks)
+    let mut dev_norms = state
+        .stream
+        .alloc_zeros::<f32>(total_blocks)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
-    let f = state.module.load_function("lloyd_max_encode")
+    let f = state
+        .module
+        .load_function("lloyd_max_encode")
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
     let shared = (k * std::mem::size_of::<f32>()) as u32;
     let cfg = cudarc::driver::LaunchConfig {
@@ -181,16 +196,21 @@ fn lloyd_max_batch_cuda(
     args.arg(&di);
     args.arg(&ki);
     args.arg(&li);
-    unsafe { args.launch(cfg) }
-        .map_err(|e| GpuError::CudaError(format!("lloyd encode: {}", e)))?;
+    unsafe { args.launch(cfg) }.map_err(|e| GpuError::CudaError(format!("lloyd encode: {}", e)))?;
 
     let mut indices = vec![0u8; total_scalars];
     let mut norms = vec![0.0f32; total_blocks];
-    state.stream.memcpy_dtoh(&dev_indices, &mut indices)
+    state
+        .stream
+        .memcpy_dtoh(&dev_indices, &mut indices)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    state.stream.memcpy_dtoh(&dev_norms, &mut norms)
+    state
+        .stream
+        .memcpy_dtoh(&dev_norms, &mut norms)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    state.stream.synchronize()
+    state
+        .stream
+        .synchronize()
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
     Ok((indices, norms))
@@ -207,7 +227,9 @@ pub fn lloyd_max_decode_batch_gpu(
     seed: u64,
 ) -> Result<Vec<f32>> {
     if !cuda_ready() {
-        return crate::fallback::lloyd_max_decode_batch_cpu(indices, norms, n, dim, k, n_levels, seed);
+        return crate::fallback::lloyd_max_decode_batch_cpu(
+            indices, norms, n, dim, k, n_levels, seed,
+        );
     }
     lloyd_max_decode_cuda(indices, norms, n, dim, k, n_levels, seed)
 }
@@ -226,14 +248,22 @@ fn lloyd_max_decode_cuda(
     let total_blocks = n * blocks_per_vector;
     let total_out = n * dim;
 
-    let dev_indices = state.stream.clone_htod(indices)
+    let dev_indices = state
+        .stream
+        .clone_htod(indices)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    let dev_norms = state.stream.clone_htod(norms)
+    let dev_norms = state
+        .stream
+        .clone_htod(norms)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    let mut dev_out = state.stream.alloc_zeros::<f32>(total_out)
+    let mut dev_out = state
+        .stream
+        .alloc_zeros::<f32>(total_out)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
-    let f = state.module.load_function("lloyd_max_decode")
+    let f = state
+        .module
+        .load_function("lloyd_max_decode")
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
     let cfg = cudarc::driver::LaunchConfig {
         grid_dim: (total_blocks as u32, 1, 1),
@@ -253,13 +283,16 @@ fn lloyd_max_decode_cuda(
     args.arg(&di);
     args.arg(&ki);
     args.arg(&li);
-    unsafe { args.launch(cfg) }
-        .map_err(|e| GpuError::CudaError(format!("lloyd decode: {}", e)))?;
+    unsafe { args.launch(cfg) }.map_err(|e| GpuError::CudaError(format!("lloyd decode: {}", e)))?;
 
     let mut output = vec![0.0f32; total_out];
-    state.stream.memcpy_dtoh(&dev_out, &mut output)
+    state
+        .stream
+        .memcpy_dtoh(&dev_out, &mut output)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    state.stream.synchronize()
+    state
+        .stream
+        .synchronize()
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
     Ok(output)
@@ -267,28 +300,25 @@ fn lloyd_max_decode_cuda(
 
 // ── Bit Pack ──
 
-pub fn bitpack_gpu(
-    _ctx: &GpuContext,
-    indices: &[u8],
-    bits_per_index: usize,
-) -> Result<Vec<u8>> {
+pub fn bitpack_gpu(_ctx: &GpuContext, indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
     if !cuda_ready() {
         return crate::fallback::bitpack_cpu(indices, bits_per_index);
     }
     bitpack_cuda(indices, bits_per_index)
 }
 
-fn bitpack_cuda(
-    indices: &[u8],
-    bits_per_index: usize,
-) -> Result<Vec<u8>> {
+fn bitpack_cuda(indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
     let state = CUDA_STATE.get().and_then(|s| s.as_ref()).unwrap();
     let num_indices = indices.len();
     let packed_len = (num_indices * bits_per_index + 7) / 8;
 
-    let dev_indices = state.stream.clone_htod(indices)
+    let dev_indices = state
+        .stream
+        .clone_htod(indices)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    let mut dev_packed = state.stream.alloc_zeros::<u8>(packed_len)
+    let mut dev_packed = state
+        .stream
+        .alloc_zeros::<u8>(packed_len)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
     let threads: u32 = 256;
@@ -299,7 +329,9 @@ fn bitpack_cuda(
         shared_mem_bytes: 0,
     };
 
-    let f = state.module.load_function("bitpack_batch")
+    let f = state
+        .module
+        .load_function("bitpack_batch")
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
     let ni = num_indices as i32;
     let bi = bits_per_index as i32;
@@ -309,13 +341,16 @@ fn bitpack_cuda(
     args.arg(&mut dev_packed);
     args.arg(&ni);
     args.arg(&bi);
-    unsafe { args.launch(cfg) }
-        .map_err(|e| GpuError::CudaError(format!("bitpack: {}", e)))?;
+    unsafe { args.launch(cfg) }.map_err(|e| GpuError::CudaError(format!("bitpack: {}", e)))?;
 
     let mut packed = vec![0u8; packed_len];
-    state.stream.memcpy_dtoh(&dev_packed, &mut packed)
+    state
+        .stream
+        .memcpy_dtoh(&dev_packed, &mut packed)
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
-    state.stream.synchronize()
+    state
+        .stream
+        .synchronize()
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
     Ok(packed)
