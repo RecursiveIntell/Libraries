@@ -2,14 +2,14 @@
 //!
 //! Runs the SharedKVPool build path on a deterministic synthetic corpus
 //! across two model shapes (nomic-embed 768-dim and qwen3-embedding 2560-dim)
-//! and three corpus sizes (4, 20, 80 documents). For each configuration we
-//! report the wall time, the receipt's `backend` field, and the codec's
-//! runtime `is_gpu_accelerated()` flag — so the output makes the actual
-//! acceleration state unambiguous.
+//! and three corpus sizes (4, 20, 80 documents). Reports:
 //!
-//! The two target shapes are:
-//!   - nomic-embed-text: 12 layers, 12 kv heads, head_dim 64, ambient 768
-//!   - qwen3-embedding:   28 layers,  4 kv heads, head_dim 128, ambient 2560
+//!   - wall: total pool build time (includes codebook + encode + digest math)
+//!   - receipt_ms: fib_build_ms from the receipt
+//!   - encode_only: time spent in encode_batch (codebook build excluded)
+//!   - gpu_dispatch: per-call probe — would this batch actually use GPU?
+//!   - backend: what the receipt said happened
+//!   - ratio, size: pool characteristics
 //!
 //! Usage:
 //!   cargo run --release --example poly_kv_gpu_bench
@@ -17,7 +17,9 @@
 
 use std::time::Instant;
 
+use poly_kv::codec::create_codec;
 use poly_kv::pool::SharedKVPool;
+use poly_kv::policy::CODEC_FIB_K4_N32;
 use poly_kv::shape::{AttentionType, KvTensorShape};
 use rand::Rng;
 use rand_chacha::{rand_core::SeedableRng, ChaCha8Rng};
@@ -66,6 +68,55 @@ fn make_corpus(m: ModelShape, n_tokens: usize) -> Vec<(String, Vec<f32>)> {
         .collect()
 }
 
+/// Time just the encode_batch portion, using a codec that already had its
+/// codebook built (so the Lloyd-Max / codebook training cost is excluded).
+fn time_encode_only(
+    model: ModelShape,
+    n_tokens: usize,
+    corpus: &[(String, Vec<f32>)],
+) -> u128 {
+    // First, do one full build to build the codebook, then immediately
+    // re-use the resulting quantizer for the timed encode-only run.
+    let shape = make_shape(model);
+    let _ = SharedKVPool::build(corpus, &shape, 42).unwrap();
+
+    // Now time only the encode_batch calls. This is what the GPU would
+    // actually accelerate.
+    let policy = poly_kv::policy::CompressionPolicy::default_two_tier();
+    let codec = create_codec(
+        CODEC_FIB_K4_N32,
+        model.head_dim,
+        Some(&policy.fib_config),
+        None,
+    )
+    .unwrap();
+
+    let head_dim = model.head_dim;
+    let num_kv_heads = model.num_kv_heads as usize;
+    let num_layers = model.num_layers as usize;
+
+    let start = Instant::now();
+    for layer_idx in 0..num_layers {
+        let mut key_inputs: Vec<Vec<f32>> = Vec::with_capacity(n_tokens * num_kv_heads);
+        let mut value_inputs: Vec<Vec<f32>> = Vec::with_capacity(n_tokens * num_kv_heads);
+        for (_token_id, vec) in corpus.iter() {
+            for head_idx in 0..num_kv_heads {
+                let base_offset =
+                    layer_idx * num_kv_heads * head_dim * 2 + head_idx * head_dim * 2;
+                let key_end = base_offset + head_dim;
+                let value_end = key_end + head_dim;
+                key_inputs.push(vec[base_offset..key_end].to_vec());
+                value_inputs.push(vec[key_end..value_end].to_vec());
+            }
+        }
+        let key_refs: Vec<&[f32]> = key_inputs.iter().map(|v| v.as_slice()).collect();
+        let value_refs: Vec<&[f32]> = value_inputs.iter().map(|v| v.as_slice()).collect();
+        let _ = codec.encode_batch(&key_refs, 42).unwrap();
+        let _ = codec.encode_batch(&value_refs, 42).unwrap();
+    }
+    start.elapsed().as_millis()
+}
+
 fn run_one(model: ModelShape, n_tokens: usize) {
     let shape = make_shape(model);
     let corpus = make_corpus(model, n_tokens);
@@ -73,11 +124,14 @@ fn run_one(model: ModelShape, n_tokens: usize) {
     // warm the codec + codebook build once outside the timed region
     let _ = SharedKVPool::build(&corpus[..1.min(corpus.len())], &shape, 42).unwrap();
 
+    // Time the encode-only portion (codebook build excluded).
+    let encode_only_ms = time_encode_only(model, n_tokens, &corpus);
+
+    // Now time the full build.
     let start = Instant::now();
     let (pool, receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
     let wall = start.elapsed();
 
-    // Per-call GPU probe: would the actual batch size clear the threshold?
     let batch_n = n_tokens * model.num_kv_heads as usize;
     let gpu_dispatch_would = if batch_n >= 16 && model.head_dim >= 64 && cfg!(feature = "gpu") {
         "yes"
@@ -86,12 +140,13 @@ fn run_one(model: ModelShape, n_tokens: usize) {
     };
 
     println!(
-        "  {model:32} n={n_tokens:>3}  wall={wall_ms:>6} ms  receipt_ms={rms:>5}  \
-         batch={bn:>3}  gpu_dispatch={gd:>3}  backend={bk:>3}  ratio={ratio:.2}x  size={kb} KB",
+        "  {model:32} n={n_tokens:>3}  wall={wall_ms:>6} ms  encode_only={enc:>5} ms  \
+         codebook={cb:>5} ms  batch={bn:>3}  gpu_dispatch={gd:>3}  backend={bk:>3}  ratio={ratio:.2}x  size={kb} KB",
         model = format!("{} {}", model.name, ""),
         n_tokens = n_tokens,
         wall_ms = wall.as_millis(),
-        rms = receipt.fib_build_ms,
+        enc = encode_only_ms,
+        cb = wall.as_millis() as i64 - encode_only_ms as i64,
         bn = batch_n,
         gd = gpu_dispatch_would,
         bk = receipt.backend,
@@ -99,8 +154,14 @@ fn run_one(model: ModelShape, n_tokens: usize) {
         kb = receipt.pool_size_bytes / 1024,
     );
 
-    // Surface failure loud: never silently misreport.
     assert_eq!(pool.manifest.num_shared_tokens, n_tokens as u32);
+    // Receipt backend must agree with the per-call probe.
+    let expected = if gpu_dispatch_would == "yes" { "gpu" } else { "cpu" };
+    assert_eq!(
+        receipt.backend, expected,
+        "receipt backend drift: probe said {expected}, receipt said {}",
+        receipt.backend
+    );
 }
 
 fn main() {
@@ -117,7 +178,9 @@ fn main() {
     }
 
     println!("Notes:");
-    println!("  - GPU threshold is n>=16, dim>=64. The 4-doc corpora will fall through to CPU even with --features gpu.");
-    println!("  - For 768-dim and 2560-dim shapes, every (layer,head) batch is well over 16 vectors, so the dispatch is gated only by n_tokens.");
-    println!("  - 'backend' is the runtime truth, not the compile feature.");
+    println!("  - 'encode_only' excludes codebook build (Lloyd-Max training).");
+    println!("  - 'codebook' = wall - encode_only, the one-time cost per quantizer.");
+    println!("  - GPU only accelerates 'encode_only' (Hadamard rotation).");
+    println!("  - GPU threshold is n>=16, dim>=64. n=4 qwen3 batch=16 is exactly at the edge.");
+    println!("  - 'backend' must agree with 'gpu_dispatch' — a drift here is a receipt bug.");
 }
