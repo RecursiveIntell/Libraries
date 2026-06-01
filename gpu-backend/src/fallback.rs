@@ -5,41 +5,58 @@
 
 // CPU fallback — no CUDA imports needed
 use crate::Result;
+use crate::error::GpuError;
 
 /// In-place Walsh-Hadamard Transform on CPU.
-/// dim must be a power of 2.
+/// dim must be a power of 2. Pads to next power of 2 if not.
 pub fn hadamard_batch_cpu(data: &mut [f32], n: usize, dim: usize, seed: u64) -> Result<()> {
+    // Round up to next power of 2
+    let padded_dim = dim.next_power_of_two();
+    let orig_dim = dim;
+
+    if data.len() != n * orig_dim {
+        return Err(GpuError::DimensionMismatch {
+            expected: n * orig_dim,
+            got: data.len(),
+        });
+    }
+
     // Generate deterministic signs from seed
-    let signs = generate_signs(dim, seed);
+    let signs = generate_signs(padded_dim, seed);
 
     for vec_idx in 0..n {
-        let offset = vec_idx * dim;
-        let slice = &mut data[offset..offset + dim];
+        let offset = vec_idx * orig_dim;
+        // Copy to padded buffer
+        let mut padded = vec![0.0f32; padded_dim];
+        padded[..orig_dim].copy_from_slice(&data[offset..offset + orig_dim]);
 
         // In-place WHT: O(d log d)
         let mut step = 1;
-        while step < dim {
-            for i in (0..dim).step_by(step * 2) {
+        while step < padded_dim {
+            for i in (0..padded_dim).step_by(step * 2) {
                 for j in 0..step {
-                    let a = slice[i + j];
-                    let b = slice[i + j + step];
-                    slice[i + j] = a + b;
-                    slice[i + j + step] = a - b;
+                    let a = padded[i + j];
+                    let b = padded[i + j + step];
+                    padded[i + j] = a + b;
+                    padded[i + j + step] = a - b;
                 }
             }
             step *= 2;
         }
 
         // Apply random signs
-        for i in 0..dim {
-            slice[i] *= signs[i] as f32;
+        for i in 0..padded_dim {
+            padded[i] *= signs[i] as f32;
         }
 
-        // Scale by 1/sqrt(dim)
-        let scale = 1.0 / (dim as f32).sqrt();
-        for v in slice.iter_mut() {
-            *v *= scale;
+        // Scale by 1/sqrt(padded_dim)
+        let scale = 1.0 / (padded_dim as f32).sqrt();
+        for i in 0..padded_dim {
+            padded[i] *= scale;
         }
+
+        // Copy back (truncate to original dim)
+        data[offset..offset + orig_dim].copy_from_slice(&padded[..orig_dim]);
     }
 
     Ok(())
@@ -222,17 +239,12 @@ mod tests {
 
     #[test]
     fn test_hadamard_batch() {
+        // Test with power-of-2 dim
         let dim = 8;
         let n = 2;
         let mut data = vec![0.0f32; n * dim];
-        // Set impulse at first element of each vector
-        for v in 0..n {
-            data[v * dim] = 1.0;
-        }
-
+        for v in 0..n { data[v * dim] = 1.0; }
         hadamard_batch_cpu(&mut data, n, dim, 42).unwrap();
-
-        // After WHT of an impulse, all entries should have equal magnitude
         let expected_mag = 1.0 / (dim as f32).sqrt();
         for i in 0..n {
             for j in 0..dim {
@@ -241,6 +253,20 @@ mod tests {
                     "vector {} element {}: expected {}, got {}", i, j, expected_mag, val);
             }
         }
+    }
+
+    #[test]
+    fn test_hadamard_non_power_of_two() {
+        // 768-dim (not power of 2) — should pad to 1024
+        let dim = 768;
+        let n = 1;
+        let mut data = vec![0.0f32; n * dim];
+        data[0] = 1.0;
+        hadamard_batch_cpu(&mut data, n, dim, 42).unwrap();
+        // After padding and truncation, data should not be all zeros
+        let all_zero = data.iter().all(|&v| v == 0.0);
+        assert!(!all_zero, "padded hadamard should produce non-zero output");
+        assert_eq!(data.len(), n * dim, "output length preserved");
     }
 
     #[test]
