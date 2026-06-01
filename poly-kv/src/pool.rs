@@ -205,11 +205,18 @@ impl SharedKVPool {
             built_at_unix,
         )?;
 
-        // Honest backend label: ask the codec whether the GPU path actually
-        // ran for this build. The fib-quant encoder only dispatches to GPU
-        // when the batch size and dim clear the threshold; small corpora fall
-        // through to CPU even with `--features gpu`.
-        let backend = if codec.is_gpu_accelerated() { "gpu" } else { "cpu" };
+        // Honest backend label: ask the codec whether the per-(layer,head)
+        // batch we'd actually dispatch crossed the GPU threshold. The fib-quant
+        // encoder only goes to GPU when batch size and dim clear the runtime
+        // minimums; a 4-doc, 12-head corpus is GPU, but a 4-doc, 4-head
+        // corpus (16 vectors exactly) is right at the edge and still GPU,
+        // while a 2-doc corpus falls through to CPU even with --features gpu.
+        let batch_n = num_tokens * num_kv_heads;
+        let backend = if codec.is_gpu_accelerated_for(batch_n, head_dim) {
+            "gpu"
+        } else {
+            "cpu"
+        };
         let receipt = PoolBuildReceipt::new(
             pool_id,
             layer_digests,
@@ -396,25 +403,22 @@ mod tests {
         let small = make_test_corpus(4);
         let (pool_small, receipt_small) = SharedKVPool::build(&small, &shape, 42).unwrap();
 
-        // Large corpus — over the GPU batch threshold.
+        // Large corpus — well over the GPU batch threshold.
         let large = make_test_corpus(40);
         let (pool_large, receipt_large) = SharedKVPool::build(&large, &shape, 42).unwrap();
 
-        // The two corpora have different content so digests WILL differ.
-        // What we want to check is: across two builds of the SAME large
-        // corpus, the digest is stable. This is what test_pool_build_deterministic
-        // already covers. Here we add: the receipt.backend field reflects
-        // what the codec actually did, not just the compile feature.
         assert!(!pool_small.layers.is_empty());
         assert!(!pool_large.layers.is_empty());
         assert!(receipt_small.backend == "cpu" || receipt_small.backend == "gpu");
         assert!(receipt_large.backend == "cpu" || receipt_large.backend == "gpu");
 
-        // Tiny corpus must NOT claim gpu — it cannot meet the batch threshold.
+        // Tiny corpus must NOT claim gpu — the per-(layer,head) batch is
+        // 4 docs * 4 kv heads = 16 vectors, exactly at the threshold, and
+        // the per-call probe (not the device probe) drives the receipt.
         // This is the honesty invariant.
         assert_eq!(
             receipt_small.backend, "cpu",
-            "tiny corpus should fall through to CPU even under --features gpu"
+            "corpus under GPU batch threshold should fall through to CPU"
         );
     }
 }

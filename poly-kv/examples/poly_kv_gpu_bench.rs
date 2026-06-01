@@ -77,17 +77,23 @@ fn run_one(model: ModelShape, n_tokens: usize) {
     let (pool, receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
     let wall = start.elapsed();
 
-    // Independent timer: isolate the encode path by rebuilding from scratch.
-    // The "fib_build_ms" in the receipt is wall-clock including all the
-    // pre-checks and digest math, so we also report our own wall.
+    // Per-call GPU probe: would the actual batch size clear the threshold?
+    let batch_n = n_tokens * model.num_kv_heads as usize;
+    let gpu_dispatch_would = if batch_n >= 16 && model.head_dim >= 64 && cfg!(feature = "gpu") {
+        "yes"
+    } else {
+        "no"
+    };
+
     println!(
         "  {model:32} n={n_tokens:>3}  wall={wall_ms:>6} ms  receipt_ms={rms:>5}  \
-         pool_digest={pd:>10}  backend={bk:>3}  ratio={ratio:.2}x  size={kb} KB",
+         batch={bn:>3}  gpu_dispatch={gd:>3}  backend={bk:>3}  ratio={ratio:.2}x  size={kb} KB",
         model = format!("{} {}", model.name, ""),
         n_tokens = n_tokens,
         wall_ms = wall.as_millis(),
         rms = receipt.fib_build_ms,
-        pd = &receipt.pool_digest[..10],
+        bn = batch_n,
+        gd = gpu_dispatch_would,
         bk = receipt.backend,
         ratio = receipt.compression_ratio,
         kb = receipt.pool_size_bytes / 1024,

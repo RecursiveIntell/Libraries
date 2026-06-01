@@ -42,8 +42,19 @@ pub trait KVecCodec: Send + Sync {
     /// too small for the GPU's batch threshold will fall through to CPU even
     /// when the feature is on. The pool build receipt uses this to set the
     /// `backend` field honestly.
+    ///
+    /// The default probes device availability only. Codecs that gate on
+    /// batch size / dim should override [`Self::is_gpu_accelerated_for`].
     fn is_gpu_accelerated(&self) -> bool {
         false
+    }
+
+    /// True if a batch of `n` vectors at dimension `d` would actually
+    /// dispatch to GPU. Default falls back to the device-availability probe;
+    /// codecs with a runtime threshold should override.
+    fn is_gpu_accelerated_for(&self, n: usize, d: usize) -> bool {
+        let _ = (n, d);
+        self.is_gpu_accelerated()
     }
 }
 
@@ -390,12 +401,17 @@ impl KVecCodec for FibQuantAdapter {
     }
 
     fn is_gpu_accelerated(&self) -> bool {
-        // The fib-quant encoder decides at runtime whether the batch is large
-        // enough to dispatch to GPU. A shared quantizer answers truthfully.
-        // We probe with a minimal in-bounds batch to read the field without
-        // doing real work.
+        // Device-level probe — kept for trait compatibility. The pool build
+        // uses is_gpu_accelerated_for(n, d) for honest per-batch reporting.
         match self.build_quantizer(0) {
             Ok(q) => q.is_gpu_accelerated(),
+            Err(_) => false,
+        }
+    }
+
+    fn is_gpu_accelerated_for(&self, n: usize, d: usize) -> bool {
+        match self.build_quantizer(0) {
+            Ok(q) => q.is_gpu_accelerated_for(n, d),
             Err(_) => false,
         }
     }

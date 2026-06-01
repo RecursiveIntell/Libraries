@@ -295,7 +295,14 @@ impl FibQuantizer {
         codes.iter().map(|c| self.decode(c)).collect()
     }
 
-    /// Check if GPU acceleration is active.
+    /// Check if GPU acceleration is available.
+    ///
+    /// This is a **device-availability** probe: it returns true if a CUDA
+    /// device was found at init time. Whether an *individual* encode_batch
+    /// call actually dispatches to GPU depends on the call's batch size and
+    /// vector dimension crossing the runtime thresholds.
+    ///
+    /// Use [`Self::is_gpu_accelerated_for`] for an honest per-call check.
     pub fn is_gpu_accelerated(&self) -> bool {
         #[cfg(feature = "gpu")]
         {
@@ -303,6 +310,31 @@ impl FibQuantizer {
         }
         #[cfg(not(feature = "gpu"))]
         {
+            false
+        }
+    }
+
+    /// Check if a batch of `n` vectors of dimension `d` would actually
+    /// dispatch to GPU. Returns true only when:
+    ///   - the `gpu` feature is compiled in,
+    ///   - a CUDA device is available at runtime, AND
+    ///   - `n >= GPU_MIN_BATCH_SIZE` and `d >= GPU_MIN_DIM`.
+    ///
+    /// This is the honest gate for receipts: a 4-doc corpus with dim 64
+    /// returns false even with `--features gpu`, because the batch is too
+    /// small to overcome GPU launch overhead.
+    pub fn is_gpu_accelerated_for(&self, n: usize, d: usize) -> bool {
+        #[cfg(feature = "gpu")]
+        {
+            if !gpu_backend::GpuContext::is_available() {
+                return false;
+            }
+            n >= gpu_backend::GpuContext::GPU_MIN_BATCH_SIZE
+                && d >= gpu_backend::GpuContext::GPU_MIN_DIM
+        }
+        #[cfg(not(feature = "gpu"))]
+        {
+            let _ = (n, d);
             false
         }
     }
