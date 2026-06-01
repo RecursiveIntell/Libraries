@@ -224,7 +224,6 @@ fn lloyd_max_decode_cuda(
     let state = CUDA_STATE.get().and_then(|s| s.as_ref()).unwrap();
     let blocks_per_vector = dim / k;
     let total_blocks = n * blocks_per_vector;
-    let total_scalars = total_blocks * k;
     let total_out = n * dim;
 
     let dev_indices = state.stream.clone_htod(indices)

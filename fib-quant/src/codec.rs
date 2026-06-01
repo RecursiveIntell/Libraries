@@ -234,7 +234,7 @@ impl FibQuantizer {
             if let Some(_ctx) = gpu_backend::GpuContext::init() {
                 if n >= gpu_backend::GpuContext::GPU_MIN_BATCH_SIZE && d >= gpu_backend::GpuContext::GPU_MIN_DIM {
                     gpu_backend::hadamard_batch(&mut flat, n, d, self.profile.rotation_seed)
-                        .map_err(|e| FibQuantError::Internal(format!("gpu hadamard: {}", e)))?;
+                        .map_err(|e| FibQuantError::NumericalFailure(format!("gpu hadamard: {}", e)))?;
                     return self.finish_batch_encode(&flat, &norms_f64, n, d, k);
                 }
             }

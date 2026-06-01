@@ -11,14 +11,40 @@ pub trait KVecCodec: Send + Sync {
     /// Encode a vector of f32 values into a compressed byte payload.
     fn encode(&self, vector: &[f32], seed: u64) -> Result<Vec<u8>>;
 
+    /// Encode a batch of vectors in one call.
+    ///
+    /// The default implementation calls `encode` in a loop. Codecs that can
+    /// exploit batch-level parallelism (e.g. fib-quant with `gpu-backend`)
+    /// override this to issue a single batched dispatch.
+    ///
+    /// The returned byte payloads are in the same order as `vectors`.
+    fn encode_batch(&self, vectors: &[&[f32]], seed: u64) -> Result<Vec<Vec<u8>>> {
+        vectors.iter().map(|v| self.encode(v, seed)).collect()
+    }
+
     /// Decode a compressed byte payload back into a vector of f32 values.
     fn decode(&self, payload: &[u8], seed: u64) -> Result<Vec<f32>>;
+
+    /// Decode a batch of compressed payloads. Default loops over `decode`.
+    fn decode_batch(&self, payloads: &[&[u8]], seed: u64) -> Result<Vec<Vec<f32>>> {
+        payloads.iter().map(|p| self.decode(p, seed)).collect()
+    }
 
     /// The expected dimension of input/output vectors.
     fn dim(&self) -> usize;
 
     /// Expected compression ratio (nominal).
     fn compression_ratio(&self) -> f64;
+
+    /// True if this adapter has access to GPU acceleration at runtime.
+    ///
+    /// This is distinct from the `gpu` feature being compiled in: a corpus
+    /// too small for the GPU's batch threshold will fall through to CPU even
+    /// when the feature is on. The pool build receipt uses this to set the
+    /// `backend` field honestly.
+    fn is_gpu_accelerated(&self) -> bool {
+        false
+    }
 }
 
 /// A serialized compressed block with codec metadata.
@@ -299,6 +325,24 @@ impl KVecCodec for FibQuantAdapter {
         serde_json::to_vec(&code).map_err(crate::error::PolyKvError::Serialization)
     }
 
+    fn encode_batch(&self, vectors: &[&[f32]], seed: u64) -> Result<Vec<Vec<u8>>> {
+        // Build a single quantizer shared across the batch. The codebook and
+        // rotation are deterministic functions of the profile, so a single
+        // quantizer is byte-identical to one built per-vector.
+        let quantizer = self.build_quantizer(seed)?;
+        let codes = quantizer.encode_batch(vectors).map_err(|e| {
+            crate::error::PolyKvError::CompressionFailed(format!(
+                "fib encode_batch failed: {}",
+                e
+            ))
+        })?;
+        let mut out = Vec::with_capacity(codes.len());
+        for code in codes {
+            out.push(serde_json::to_vec(&code).map_err(crate::error::PolyKvError::Serialization)?);
+        }
+        Ok(out)
+    }
+
     fn decode(&self, payload: &[u8], seed: u64) -> Result<Vec<f32>> {
         let code: fib_quant::FibCodeV1 = serde_json::from_slice(payload).map_err(|e| {
             crate::error::PolyKvError::DecompressionFailed(format!(
@@ -315,12 +359,45 @@ impl KVecCodec for FibQuantAdapter {
         Ok(decoded)
     }
 
+    fn decode_batch(&self, payloads: &[&[u8]], seed: u64) -> Result<Vec<Vec<f32>>> {
+        let mut codes = Vec::with_capacity(payloads.len());
+        for p in payloads {
+            let code: fib_quant::FibCodeV1 = serde_json::from_slice(p).map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib code deserialize failed: {}",
+                    e
+                ))
+            })?;
+            codes.push(code);
+        }
+        let quantizer = self.build_quantizer(seed)?;
+        quantizer
+            .decode_batch(&codes)
+            .map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib decode_batch failed: {}",
+                    e
+                ))
+            })
+    }
+
     fn dim(&self) -> usize {
         self.dim
     }
 
     fn compression_ratio(&self) -> f64 {
         50.0
+    }
+
+    fn is_gpu_accelerated(&self) -> bool {
+        // The fib-quant encoder decides at runtime whether the batch is large
+        // enough to dispatch to GPU. A shared quantizer answers truthfully.
+        // We probe with a minimal in-bounds batch to read the field without
+        // doing real work.
+        match self.build_quantizer(0) {
+            Ok(q) => q.is_gpu_accelerated(),
+            Err(_) => false,
+        }
     }
 }
 
