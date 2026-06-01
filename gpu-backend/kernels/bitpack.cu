@@ -1,7 +1,9 @@
 // CUDA kernel: bit packing
 //
 // Compile: nvcc -ptx -o bitpack.ptx bitpack.cu
-//
+
+#include <stdint.h>
+
 // Packs n indices into (n * bits_per_index / 8) bytes.
 // Each thread handles ~8 indices for coalesced memory access.
 

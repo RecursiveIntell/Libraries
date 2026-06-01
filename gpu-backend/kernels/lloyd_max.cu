@@ -2,6 +2,8 @@
 //
 // Compile: nvcc -ptx -o lloyd_max.ptx lloyd_max.cu
 
+#include <stdint.h>
+
 // Pre-computed Gaussian centroids — constant memory
 __constant__ float centroids_4[4];
 __constant__ float centroids_8[8];
