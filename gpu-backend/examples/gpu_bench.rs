@@ -104,14 +104,21 @@ fn generate_vectors(dim: usize, num_docs: usize) -> Vec<f32> {
     let std_dev = 1.0 / (dim as f64).sqrt() as f32;
     let mut data = Vec::with_capacity(num_docs * dim);
     for _ in 0..num_docs {
+        let mut vec = Vec::with_capacity(dim);
+        let mut norm_sq = 0.0f64;
         for _ in 0..dim {
             state = state * Wrapping(6364136223846793005) + Wrapping(1442695040888963407);
             let u = (state.0 as f64) / (u64::MAX as f64);
-            // Box-Muller transform
-            let r = (-2.0 * (1.0 - u).ln()).sqrt();
-            let v = r * std_dev as f64;
-            data.push(v as f32);
+            let v = ((-2.0 * (1.0 - u).ln()).sqrt() * std_dev as f64) as f32;
+            norm_sq += (v as f64).powi(2);
+            vec.push(v);
         }
+        // Normalize to unit length (matching real embedding vectors)
+        let norm = norm_sq.sqrt() as f32;
+        if norm > 0.0 {
+            for v in &mut vec { *v /= norm; }
+        }
+        data.extend(vec);
     }
     data
 }
