@@ -141,9 +141,9 @@ pub fn lloyd_max_decode_batch(
     seed: u64,
 ) -> Result<Vec<f32>> {
     let blocks_per_vector = dim / k;
-    if indices.len() != n * blocks_per_vector {
+    if indices.len() != n * blocks_per_vector * k {
         return Err(GpuError::DimensionMismatch {
-            expected: n * blocks_per_vector,
+            expected: n * blocks_per_vector * k,
             got: indices.len(),
         });
     }
