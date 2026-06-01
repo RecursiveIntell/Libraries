@@ -45,14 +45,22 @@ pub fn hadamard_batch_cpu(data: &mut [f32], n: usize, dim: usize, seed: u64) -> 
     Ok(())
 }
 
-/// Generate deterministic ±1 signs from seed.
+/// Generate deterministic ±1 signs from seed (as f32).
 fn generate_signs(dim: usize, seed: u64) -> Vec<f32> {
-    // Simple LCG for reproducibility
+    generate_signs_impl(dim, seed).into_iter().map(|s| s as f32).collect()
+}
+
+/// Generate deterministic ±1 i32 signs from seed.
+pub fn generate_signs_i32(dim: usize, seed: u64) -> Vec<i32> {
+    generate_signs_impl(dim, seed)
+}
+
+fn generate_signs_impl(dim: usize, seed: u64) -> Vec<i32> {
     let mut state = seed;
     let mut signs = Vec::with_capacity(dim);
     for _ in 0..dim {
         state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
-        signs.push(if (state >> 32) & 1 == 0 { -1.0 } else { 1.0 });
+        signs.push(if (state >> 32) & 1 == 0 { -1 } else { 1 });
     }
     signs
 }
