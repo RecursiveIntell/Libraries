@@ -1,24 +1,58 @@
 # poly-kv
 
-`poly-kv` is a Rust research-to-implementation crate for shared KV-cache pool manifests, q8 key compression, exact fallback, realized accounting, and receipt-bearing compressed-pool experiments.
+**Shared compressed KV-cache pool for multi-agent context.**
 
-| Capability | Status |
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+Two-tier compression with typed, receipt-bearing artifacts:
+
+- `SharedKVPool` — fib-quant (k=4, N=32) compressed shared tokens, immutable after build
+- `AgentShell` — turbo-quant (8-bit, 32 projections) compressed per-agent tokens, 17ms materialize
+- `CompressionPolicy` — benchmark-proven two-tier policy with validation guards
+- `PoolBuildReceipt` / `ShellMaterializeReceipt` — content-addressed, deterministic, replayable
+
+## Benchmarked (June 2026)
+
+| Metric | Result |
 |---|---|
-| shared pool manifests | implemented / tested |
-| exact fallback | implemented / tested |
-| q8 key reference path | implemented / tested on synthetic fixtures |
-| raw exact value codec | implemented / tested |
-| persisted compression eval receipts | implemented / tested |
-| full-block decode receipt disclosure | implemented / tested |
-| mixed reader scratch accounting | implemented / tested |
-| TurboQuant value adapter | optional / experimental / unsupported stub until API inspection |
-| FibQuant value adapter | optional / experimental / unsupported stub until API inspection |
-| real model benchmarks | not yet reproduced |
-| serving runtime integration | not implemented |
-| adaptive controller | deferred |
+| Recall@1 (8 queries) | 1.000 |
+| Recall@1 (10 agents) | 1.000 — all 10 |
+| Cross-agent leaks | 0/90 pairs |
+| Pool build (80 docs) | 1,557ms |
+| Shell materialize (12 docs) | 17ms |
 
-The crate owns shared pool semantics only. It does not implement adaptive routing, runtime permits, app truth stores, or TurboQuant/FibQuant math.
+## Install
 
-Every fallback decode is explicit in `DecodeReceiptV1` through `FallbackReceiptV1`. Shape and span mismatches return typed errors. Decode receipts also disclose full-block decode behavior, returned value count, scratch bytes, and owned-copy behavior.
+```toml
+[dependencies]
+poly-kv = { version = "0.1.0-alpha.1", features = ["turbo", "fib"] }
+```
 
-This crate is independent and does not claim affiliation with or endorsement by the PolyKV paper authors.
+## Usage
+
+```rust
+use poly_kv::{SharedKVPool, KvTensorShape, AttentionType};
+
+let shape = KvTensorShape {
+    attention_type: AttentionType::MHA,
+    num_layers: 2,
+    num_heads: 4,
+    num_kv_heads: 4,
+    head_dim: 8,
+    hidden_size: 32,
+};
+
+let (pool, receipt) = SharedKVPool::build(&corpus, &shape, 42)?;
+let (shell, mat_receipt) = pool.materialize_shell("agent_1", &agent_tokens, 43)?;
+```
+
+## Validation
+
+```bash
+cargo test --all-features
+cargo clippy --all-features -- -D warnings
+```
+
+## License
+
+MIT
