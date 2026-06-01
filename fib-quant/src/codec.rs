@@ -191,6 +191,124 @@ impl FibQuantizer {
         metrics::cosine_similarity(x, &decoded)
     }
 
+    // ── Batch encode/decode ──
+
+    /// Encode a batch of vectors. Uses gpu-backend for the Hadamard + Lloyd-Max
+    /// portions when available, keeping the FibCodeV1 format identical to single encode.
+    pub fn encode_batch(&self, vectors: &[&[f32]]) -> Result<Vec<FibCodeV1>> {
+        let d = self.profile.ambient_dim as usize;
+        let k = self.profile.block_dim as usize;
+        let n = vectors.len();
+        if n == 0 {
+            return Ok(vec![]);
+        }
+
+        // Fall back to single encode for small batches
+        if n < 4 {
+            return vectors.iter().map(|v| self.encode(v)).collect();
+        }
+
+        // Flatten input
+        let mut flat = Vec::with_capacity(n * d);
+        let mut norms_f64 = Vec::with_capacity(n);
+        for v in vectors {
+            if v.len() != d {
+                return Err(FibQuantError::CorruptPayload(format!(
+                    "input dimension {}, expected {d}", v.len()
+                )));
+            }
+            check_finite(v)?;
+            let norm = l2_norm(v);
+            if norm == 0.0 {
+                return Err(FibQuantError::ZeroNorm);
+            }
+            norms_f64.push(norm);
+            for &x in *v {
+                flat.push((x as f64 / norm) as f32);
+            }
+        }
+
+        // Apply Hadamard batch rotation (uses gpu-backend when available)
+        #[cfg(feature = "gpu")]
+        {
+            if let Some(_ctx) = gpu_backend::GpuContext::init() {
+                if n >= gpu_backend::GpuContext::GPU_MIN_BATCH_SIZE && d >= gpu_backend::GpuContext::GPU_MIN_DIM {
+                    gpu_backend::hadamard_batch(&mut flat, n, d, self.profile.rotation_seed)
+                        .map_err(|e| FibQuantError::Internal(format!("gpu hadamard: {}", e)))?;
+                    return self.finish_batch_encode(&flat, &norms_f64, n, d, k);
+                }
+            }
+        }
+
+        // CPU fallback: use StoredRotation on each vector
+        let mut rotated_flat = Vec::with_capacity(n * d);
+        for chunk in flat.chunks_exact(d) {
+            let f64_chunk: Vec<f64> = chunk.iter().map(|&v| v as f64).collect();
+            let rot = self.rotation.apply(&f64_chunk)?;
+            rotated_flat.extend(rot.iter().map(|&v| v as f32));
+        }
+
+        self.finish_batch_encode(&rotated_flat, &norms_f64, n, d, k)
+    }
+
+    fn finish_batch_encode(
+        &self,
+        rotated: &[f32],
+        norms: &[f64],
+        n: usize,
+        d: usize,
+        k: usize,
+    ) -> Result<Vec<FibCodeV1>> {
+        let block_count = self.profile.block_count() as usize;
+        let codewords_f64: Vec<f64> = self.codebook.codewords.iter().map(|v| f64::from(*v)).collect();
+
+        let mut codes = Vec::with_capacity(n);
+        for vec_idx in 0..n {
+            let start = vec_idx * d;
+            let chunk = &rotated[start..start + d];
+            let mut indices = Vec::with_capacity(block_count);
+            for block in chunk.chunks_exact(k) {
+                let block_f64: Vec<f64> = block.iter().map(|&v| v as f64).collect();
+                indices.push(nearest_index(&block_f64, &codewords_f64, k).0 as u32);
+            }
+
+            codes.push(FibCodeV1 {
+                schema_version: CODE_SCHEMA.into(),
+                profile_digest: self.profile.digest()?,
+                codebook_digest: self.codebook.codebook_digest.clone(),
+                rotation_digest: self.rotation.digest()?,
+                ambient_dim: self.profile.ambient_dim,
+                block_dim: self.profile.block_dim,
+                norm_format: self.profile.norm_format.clone(),
+                norm_payload: encode_norm(norms[vec_idx], &self.profile.norm_format)?,
+                wire_index_bits: self.profile.wire_index_bits,
+                block_count: self.profile.block_count(),
+                indices: pack_indices(&indices, self.profile.wire_index_bits)?,
+            });
+        }
+
+        Ok(codes)
+    }
+
+    /// Decode a batch of codes.
+    pub fn decode_batch(&self, codes: &[FibCodeV1]) -> Result<Vec<Vec<f32>>> {
+        codes.iter().map(|c| self.decode(c)).collect()
+    }
+
+    /// Check if GPU acceleration is active.
+    pub fn is_gpu_accelerated(&self) -> bool {
+        #[cfg(feature = "gpu")]
+        {
+            gpu_backend::GpuContext::is_available()
+        }
+        #[cfg(not(feature = "gpu"))]
+        {
+            false
+        }
+    }
+
+    // ── End batch methods ──
+
     fn validate_code_header(&self, code: &FibCodeV1) -> Result<()> {
         if code.schema_version != CODE_SCHEMA {
             return Err(FibQuantError::CorruptPayload(format!(

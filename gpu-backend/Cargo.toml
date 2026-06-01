@@ -1,0 +1,20 @@
+[package]
+name = "gpu-backend"
+version = "0.1.0-alpha.1"
+edition = "2021"
+description = "Shared CUDA GPU backend for fib-quant and turbo-quant vector quantization"
+license = "MIT"
+rust-version = "1.75"
+
+[dependencies]
+cudarc = { version = "0.19", features = ["cuda-13010", "dynamic-loading"], optional = true }
+blake3 = "1"
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+
+[features]
+default = []
+gpu = ["cudarc"]
+
+[dev-dependencies]
+tempfile = "3"

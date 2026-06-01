@@ -1,13 +1,32 @@
 [workspace]
-members = [
-  "crates/quant-codec-core",
-  "crates/poly-kv",
-  "crates/poly-kv-python",
-]
-resolver = "2"
+# Standalone crate — not part of the parent Libraries workspace.
 
-[workspace.package]
+[package]
+name = "poly-kv"
+version = "0.1.0-alpha.1"
 edition = "2021"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/recursiveintell/poly-kv"
 rust-version = "1.75"
+description = "Shared compressed KV-cache pool for multi-agent context. Two-tier codec policy (fib-quant cold + turbo-quant hot) with typed receipts."
+license = "MIT"
+repository = "https://github.com/RecursiveIntell/poly-kv"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+blake3 = "1"
+rand = "0.8"
+rand_chacha = "0.3"
+thiserror = "2"
+
+turbo-quant = { path = "../../Libraries/turbo-quant", optional = true }
+fib-quant = { path = "../../Libraries/fib-quant", optional = true }
+gpu-backend = { path = "../../Libraries/gpu-backend", optional = true }
+
+[features]
+default = ["turbo", "fib"]
+turbo = ["turbo-quant"]
+fib = ["fib-quant"]
+gpu = ["gpu-backend/gpu", "turbo-quant?/gpu", "fib-quant?/gpu"]
+
+[dev-dependencies]
+proptest = "1"

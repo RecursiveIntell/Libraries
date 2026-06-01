@@ -23,6 +23,7 @@ serde = ["dep:serde", "quant-codec-core/serde"]
 turbo-quant-adapter = []
 fibquant-adapter = []
 bench = ["dep:criterion"]
+gpu = []
 
 [[bench]]
 name = "synthetic_pool"
