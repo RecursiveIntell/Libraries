@@ -3,7 +3,7 @@
 //! These are used when CUDA is unavailable or batch size is too small
 //! for GPU launch overhead to be worthwhile.
 
-use crate::error::GpuError;
+// CPU fallback — no CUDA imports needed
 use crate::Result;
 
 /// In-place Walsh-Hadamard Transform on CPU.
@@ -64,7 +64,7 @@ pub fn lloyd_max_batch_cpu(
     dim: usize,
     k: usize,
     n_levels: usize,
-    seed: u64,
+    _seed: u64,
 ) -> Result<(Vec<u8>, Vec<f32>)> {
     let blocks_per_vector = dim / k;
     let total_blocks = n * blocks_per_vector;
@@ -119,7 +119,7 @@ pub fn lloyd_max_decode_batch_cpu(
     dim: usize,
     k: usize,
     n_levels: usize,
-    _seed: u64,
+    __seed: u64,
 ) -> Result<Vec<f32>> {
     let blocks_per_vector = dim / k;
     let centroids = gaussian_centroids(n_levels);
