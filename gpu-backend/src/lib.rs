@@ -186,3 +186,63 @@ pub fn bitpack(indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
 
     fallback::bitpack_cpu(indices, bits_per_index)
 }
+
+/// Nearest-codeword index lookup for fib-quant / vector quantization.
+///
+/// For each (vector, sub-block) pair in `input` (shape `[n × d]`, row-major
+/// f32), finds the index of the codeword in `codebook` (shape `[N × k]`,
+/// row-major f32) that minimizes the squared L2 distance. Returns
+/// `n * (d / k)` u32 indices in row-major (vector, sub-block) order.
+///
+/// Uses GPU when available and the codebook size `N <= 32` (the kernel
+/// is one warp wide). Falls back to CPU for larger codebooks.
+///
+/// This is the operation that dominates fib-quant's `encode_batch` after
+/// the Hadamard rotation — for k=4, N=32, d=128, n=80 it runs ~1.5M
+/// argmin computations and is the bottleneck of the poly-kv pool build.
+pub fn codebook_lookup_batch(
+    input: &[f32],
+    codebook: &[f32],
+    n: usize,
+    d: usize,
+    k: usize,
+) -> Result<Vec<u32>> {
+    if input.len() != n * d {
+        return Err(GpuError::DimensionMismatch {
+            expected: n * d,
+            got: input.len(),
+        });
+    }
+    if d % k != 0 {
+        return Err(GpuError::InvalidConfig(format!(
+            "dim ({}) must be divisible by k ({})",
+            d, k
+        )));
+    }
+    let n_codewords = codebook.len() / k;
+    if n_codewords > 32 {
+        // GPU kernel hard-codes 32-thread warp; fall back to CPU.
+        return fallback::codebook_lookup_cpu(input, codebook, n, d, k);
+    }
+
+    #[cfg(feature = "gpu")]
+    {
+        if let Some(ctx) = GpuContext::init() {
+            if n >= GpuContext::GPU_MIN_BATCH_SIZE && d >= GpuContext::GPU_MIN_DIM {
+                return cuda::codebook_lookup_batch_gpu(ctx, input, codebook, n, d, k);
+            }
+        }
+    }
+
+    fallback::codebook_lookup_cpu(input, codebook, n, d, k)
+}
+
+/// True if a specific call to [`codebook_lookup_batch`] would dispatch
+/// to GPU. Requires the codebook size to fit in a single warp (N <= 32)
+/// and the standard batch/dim thresholds.
+pub fn codebook_lookup_supports_gpu(n: usize, d: usize, n_codewords: usize) -> bool {
+    n_codewords <= 32
+        && n >= GpuContext::GPU_MIN_BATCH_SIZE
+        && d >= GpuContext::GPU_MIN_DIM
+        && GpuContext::is_available()
+}

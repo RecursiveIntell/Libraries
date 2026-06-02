@@ -355,3 +355,98 @@ fn bitpack_cuda(indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
 
     Ok(packed)
 }
+
+// ── Codebook Lookup ──
+
+/// Find the nearest codeword index for each (vector, sub-block) pair.
+///
+/// `input` is `[n × d]` rotated f32 vectors. `codebook` is `[N × k]`
+/// row-major f32. Returns a `Vec<u32>` of length `n * (d / k)` in
+/// row-major (vector, sub-block) order.
+///
+/// One CUDA block per (vector, sub-block); one thread per codeword.
+/// N must be <= 32 to fit in a single warp.
+pub fn codebook_lookup_batch_gpu(
+    _ctx: &GpuContext,
+    input: &[f32],
+    codebook: &[f32],
+    n: usize,
+    d: usize,
+    k: usize,
+) -> Result<Vec<u32>> {
+    if !cuda_ready() {
+        return crate::fallback::codebook_lookup_cpu(input, codebook, n, d, k);
+    }
+    codebook_lookup_cuda(input, codebook, n, d, k)
+}
+
+fn codebook_lookup_cuda(
+    input: &[f32],
+    codebook: &[f32],
+    n: usize,
+    d: usize,
+    k: usize,
+) -> Result<Vec<u32>> {
+    let state = CUDA_STATE.get().and_then(|s| s.as_ref()).unwrap();
+    let blocks_per_vector = d / k;
+    let total_blocks = n * blocks_per_vector;
+    let n_codewords = codebook.len() / k;
+
+    if n_codewords > 32 {
+        // Kernel hard-codes 32-thread block; for larger codebooks we'd
+        // need a different launch shape. Fall back to CPU.
+        return crate::fallback::codebook_lookup_cpu(input, codebook, n, d, k);
+    }
+
+    let dev_input = state
+        .stream
+        .clone_htod(input)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    let dev_codebook = state
+        .stream
+        .clone_htod(codebook)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    let mut dev_out = state
+        .stream
+        .alloc_zeros::<u32>(total_blocks)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+
+    let f = state
+        .module
+        .load_function("codebook_lookup_kernel")
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+
+    let shared_bytes = (k * std::mem::size_of::<f32>()) as u32;
+    let cfg = cudarc::driver::LaunchConfig {
+        grid_dim: (total_blocks as u32, 1, 1),
+        block_dim: (n_codewords as u32, 1, 1),
+        shared_mem_bytes: shared_bytes,
+    };
+    let ni = n as i32;
+    let di = d as i32;
+    let ki = k as i32;
+    let li = n_codewords as i32;
+
+    let mut args = state.stream.launch_builder(&f);
+    args.arg(&dev_input);
+    args.arg(&dev_codebook);
+    args.arg(&mut dev_out);
+    args.arg(&ni);
+    args.arg(&di);
+    args.arg(&ki);
+    args.arg(&li);
+    unsafe { args.launch(cfg) }
+        .map_err(|e| GpuError::CudaError(format!("codebook_lookup: {}", e)))?;
+
+    let mut out = vec![0u32; total_blocks];
+    state
+        .stream
+        .memcpy_dtoh(&dev_out, &mut out)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    state
+        .stream
+        .synchronize()
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+
+    Ok(out)
+}

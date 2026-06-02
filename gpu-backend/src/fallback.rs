@@ -241,6 +241,69 @@ pub fn bitpack_cpu(indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
     Ok(packed)
 }
 
+/// Nearest-codeword index lookup on CPU.
+///
+/// For each (vector, sub-block) pair in `input` (shape `[n × d]`), finds
+/// the index of the codeword in `codebook` (shape `[N × k]`, row-major)
+/// that minimizes the squared L2 distance. The returned `Vec<u32>` is
+/// length `n * (d / k)` in row-major (vector, sub-block) order.
+///
+/// Uses `f32` throughout to match the GPU kernel's precision; this
+/// differs from `fib_quant::nearest_index` which uses `f64` and may
+/// produce different argmins at edge cases (very close codewords).
+pub fn codebook_lookup_cpu(
+    input: &[f32],
+    codebook: &[f32],
+    n: usize,
+    d: usize,
+    k: usize,
+) -> Result<Vec<u32>> {
+    if input.len() != n * d {
+        return Err(GpuError::DimensionMismatch {
+            expected: n * d,
+            got: input.len(),
+        });
+    }
+    if d % k != 0 {
+        return Err(GpuError::InvalidConfig(format!(
+            "dim ({}) must be divisible by k ({})",
+            d, k
+        )));
+    }
+    let blocks_per_vector = d / k;
+    let n_codewords = codebook.len() / k;
+    if codebook.len() != n_codewords * k {
+        return Err(GpuError::DimensionMismatch {
+            expected: n_codewords * k,
+            got: codebook.len(),
+        });
+    }
+
+    let mut out = Vec::with_capacity(n * blocks_per_vector);
+    for vec_idx in 0..n {
+        let vec_base = vec_idx * d;
+        for sub_idx in 0..blocks_per_vector {
+            let sub_base = vec_base + sub_idx * k;
+            let mut best_idx: u32 = 0;
+            let mut best_dist: f32 = f32::INFINITY;
+            for c in 0..n_codewords {
+                let cw_base = c * k;
+                let mut dist: f32 = 0.0;
+                for j in 0..k {
+                    let delta = input[sub_base + j] - codebook[cw_base + j];
+                    dist += delta * delta;
+                }
+                if dist < best_dist {
+                    best_dist = dist;
+                    best_idx = c as u32;
+                }
+            }
+            out.push(best_idx);
+        }
+    }
+    Ok(out)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -340,5 +403,54 @@ mod tests {
         assert_eq!(gaussian_centroids(16).len(), 16);
         assert_eq!(gaussian_centroids(32).len(), 32);
         assert_eq!(gaussian_centroids(7).len(), 7); // arbitrary
+    }
+
+    #[test]
+    fn test_codebook_lookup_basic() {
+        // 2 vectors of dim 8, k=4, N=4 codewords
+        // Vector 0: first sub-block [1,0,0,0] should match codeword 0 exactly
+        //           second sub-block [0,0,0,1] should match codeword 1 exactly
+        // Vector 1: first sub-block [0,1,0,0] should match codeword 2 exactly
+        //           second sub-block [0,0,1,0] should match codeword 3 exactly
+        let input: Vec<f32> = vec![
+            1.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 1.0,  // vector 0
+            0.0, 1.0, 0.0, 0.0,   0.0, 0.0, 1.0, 0.0,  // vector 1
+        ];
+        let codebook: Vec<f32> = vec![
+            1.0, 0.0, 0.0, 0.0,  // codeword 0
+            0.0, 0.0, 0.0, 1.0,  // codeword 1
+            0.0, 1.0, 0.0, 0.0,  // codeword 2
+            0.0, 0.0, 1.0, 0.0,  // codeword 3
+        ];
+        let n = 2;
+        let d = 8;
+        let k = 4;
+        let indices = codebook_lookup_cpu(&input, &codebook, n, d, k).unwrap();
+        assert_eq!(indices, vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn test_codebook_lookup_nearest_wins() {
+        // When the exact match isn't available, the closest codeword wins.
+        // Input sub-block [1, 1, 0, 0] (norm sqrt(2)) is equidistant from
+        // codewords [1, 0, 0, 0] and [0, 1, 0, 0] — both with squared
+        // distance 1.0. The argmin should pick the first (lowest index)
+        // since we use strict `<` comparison.
+        let input: Vec<f32> = vec![1.0, 1.0, 0.0, 0.0];
+        let codebook: Vec<f32> = vec![
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+        ];
+        let indices = codebook_lookup_cpu(&input, &codebook, 1, 4, 4).unwrap();
+        assert_eq!(indices, vec![0], "tie should resolve to lowest index");
+    }
+
+    #[test]
+    fn test_codebook_lookup_dimension_mismatch() {
+        // input length doesn't match n*d
+        let input = vec![0.0f32; 4];
+        let codebook = vec![0.0f32; 16];
+        let result = codebook_lookup_cpu(&input, &codebook, 1, 8, 4);
+        assert!(result.is_err(), "input length mismatch should error");
     }
 }
