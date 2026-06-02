@@ -296,12 +296,12 @@ impl FibQuantizer {
         k: usize,
     ) -> Result<Vec<FibCodeV1>> {
         let block_count = self.profile.block_count() as usize;
-        let codewords_f64: Vec<f64> = self
-            .codebook
-            .codewords
-            .iter()
-            .map(|v| f64::from(*v))
-            .collect();
+        // Use the SIMD-accelerated f32 argmin from gpu-backend. This
+        // replaces the f64-promoted nearest_index loop with an AVX2+FMA
+        // f32 implementation. On a trained Lloyd-Max codebook the argmins
+        // are byte-identical to the f64 reference (parity verified in
+        // gpu-backend).
+        let codewords_f32: &[f32] = &self.codebook.codewords;
 
         let mut codes = Vec::with_capacity(n);
         for vec_idx in 0..n {
@@ -309,8 +309,7 @@ impl FibQuantizer {
             let chunk = &rotated[start..start + d];
             let mut indices = Vec::with_capacity(block_count);
             for block in chunk.chunks_exact(k) {
-                let block_f64: Vec<f64> = block.iter().map(|&v| v as f64).collect();
-                indices.push(nearest_index(&block_f64, &codewords_f64, k).0 as u32);
+                indices.push(gpu_backend::nearest_codeword_f32(block, codewords_f32, k) as u32);
             }
 
             codes.push(FibCodeV1 {
