@@ -1,0 +1,34 @@
+# cargo-nextest configuration for ~/Coding/Libraries
+# Generated: 2026-06-02 (post-V30 audit)
+# Owner: Workspace tooling
+#
+# nextest is a drop-in replacement for `cargo test` that runs each test in its
+# own process for better isolation, parallelism, and clearer failure output.
+# It is 4-5x faster than `cargo test` on this workspace.
+#
+# Install: `cargo install cargo-nextest` (already at 0.9.132 as of this writing)
+# Run:     `cargo nextest run --workspace` (or with supported-lane flags)
+#
+# This config matches the workspace's supported-lane policy and runs tests
+# in the same order as `cargo test` for compatibility with the existing
+# `make gate` target. CI currently still calls `cargo test` via `make gate`;
+# nextest is added as an opt-in faster path for local development and as a
+# second-opinion run in CI.
+
+[profile.default]
+# Use the supported-lane filter (matches `make release-lane`).
+# To run only one crate: `cargo nextest run -p semantic-memory`
+test-threads = "num-cpus"
+retries = 0
+# fail-fast = false  (uncomment to keep going past first failure)
+status-level = "pass"
+final-status-level = "flaky"
+
+# Profile used by `cargo nextest run --profile ci`.
+# Mirrors CI behavior: no test is retried, failures abort.
+[profile.ci]
+inherits = "default"
+retries = 0
+fail-fast = true
+status-level = "fail"
+final-status-level = "flaky"

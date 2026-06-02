@@ -18,6 +18,19 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: make gate
 
+  # Security gate: fails on vulnerability-grade advisories (CVEs, soundness
+  # issues) and yanked crate versions. Tauri/webkit2gtk transitive
+  # unmaintained-warnings are explicitly tolerated per deny.toml policy.
+  # Runs in parallel with hardening-gate so it doesn't gate regular builds.
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          # Use deny.toml at the workspace root.
+          arguments: --workspace --manifest-path Cargo.toml
+
   v25-production-closure:
     runs-on: ubuntu-latest
     needs: hardening-gate
