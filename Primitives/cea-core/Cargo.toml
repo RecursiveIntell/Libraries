@@ -2,10 +2,11 @@
 name = "cea-core"
 version = "0.1.0"
 edition = "2021"
-# bincode 2.x requires Rust 1.85.0+ (was 1.75 when on bincode 1.x). The
-# 1.75 -> 1.85 bump is self-contained: this crate is a leaf in
-# Primitives/ and doesn't pin MSRV for any downstream consumer.
-rust-version = "1.85"
+# MSRV: cea-core is a leaf crate in Primitives/ and has no MSRV
+# constraints from postcard (the serializer; no rust-version declared).
+# The previous 1.85 bump was from bincode 2.x; the original MSRV was
+# 1.75. With postcard we can restore the original MSRV.
+rust-version = "1.75"
 license = "MIT"
 readme = "README.md"
 publish = false
