@@ -246,3 +246,69 @@ pub fn codebook_lookup_supports_gpu(n: usize, d: usize, n_codewords: usize) -> b
         && d >= GpuContext::GPU_MIN_DIM
         && GpuContext::is_available()
 }
+
+#[cfg(all(test, feature = "gpu"))]
+mod gpu_parity_tests {
+    use super::*;
+    use crate::fallback::codebook_lookup_cpu;
+
+    /// When the GPU is available and the kernel can be reached, the GPU
+    /// result must be byte-identical to the CPU fallback. This is the
+    /// receipt-honesty test: if it fails, the GPU path is silently
+    /// producing different codebook indices and pool digests will drift.
+    #[test]
+    fn test_codebook_lookup_gpu_matches_cpu() {
+        if !GpuContext::is_available() {
+            // Skip — GPU not present in this build environment
+            eprintln!("GPU not available, skipping parity test");
+            return;
+        }
+
+        // Build a deterministic test case.
+        let n: usize = 32;
+        let d: usize = 128;
+        let k: usize = 4;
+        let n_codewords: usize = 32;
+        let mut seed: u64 = 0xDEAD_BEEF;
+        let next = |s: &mut u64| {
+            *s = s.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            *s
+        };
+
+        // Random codebook and inputs.
+        let codebook: Vec<f32> = (0..n_codewords * k)
+            .map(|_| {
+                let v = (next(&mut seed) >> 32) as i32;
+                (v as f32 / i32::MAX as f32) * 0.5
+            })
+            .collect();
+        let input: Vec<f32> = (0..n * d)
+            .map(|_| {
+                let v = (next(&mut seed) >> 32) as i32;
+                (v as f32 / i32::MAX as f32) * 0.5
+            })
+            .collect();
+
+        let cpu = codebook_lookup_cpu(&input, &codebook, n, d, k).expect("cpu fallback failed");
+        let gpu = codebook_lookup_batch(&input, &codebook, n, d, k).expect("gpu dispatch failed");
+
+        assert_eq!(
+            cpu.len(),
+            gpu.len(),
+            "GPU returned {} indices, CPU returned {}",
+            gpu.len(),
+            cpu.len()
+        );
+        let mismatches = cpu
+            .iter()
+            .zip(gpu.iter())
+            .filter(|(a, b)| a != b)
+            .count();
+        assert_eq!(
+            mismatches, 0,
+            "GPU codebook lookup produced {} differing indices out of {}",
+            mismatches,
+            cpu.len()
+        );
+    }
+}
