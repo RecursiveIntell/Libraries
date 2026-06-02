@@ -164,17 +164,23 @@ fn main() {
                 .build_quantizer(seed)
                 .expect("create quantizer");
             let layer = &pool.layers[layer_idx];
-            // Deserialize all K and V codes for this layer.
-            let k_codes: Vec<fib_quant::FibCodeV1> = layer
-                .key_blocks
-                .iter()
-                .map(|b| serde_json::from_slice(&b.encoded_payload).expect("decode K FibCodeV1"))
-                .collect();
-            let v_codes: Vec<fib_quant::FibCodeV1> = layer
-                .value_blocks
-                .iter()
-                .map(|b| serde_json::from_slice(&b.encoded_payload).expect("decode V FibCodeV1"))
-                .collect();
+            // Deserialize all K and V codes for this layer. The pool
+            // stores compact binary bytes (per the new wire format
+            // introduced for fib_k4_n32), with a JSON fallback for
+            // pools written by older poly-kv versions.
+            let decode_one = |b: &poly_kv::codec::CompressedBlock| -> fib_quant::FibCodeV1 {
+                let bytes = &b.encoded_payload;
+                if bytes.len() >= 3 && bytes[0..3] == fib_quant::COMPACT_MAGIC {
+                    fib_quant::FibCodeV1::from_compact_bytes(bytes, quantizer.profile())
+                        .expect("decode K/V FibCodeV1 compact")
+                } else {
+                    serde_json::from_slice(bytes).expect("decode K/V FibCodeV1 json fallback")
+                }
+            };
+            let k_codes: Vec<fib_quant::FibCodeV1> =
+                layer.key_blocks.iter().map(decode_one).collect();
+            let v_codes: Vec<fib_quant::FibCodeV1> =
+                layer.value_blocks.iter().map(decode_one).collect();
 
             // Fast batch decode. Each result has one Vec<f32> per code,
             // each of length head_dim.
