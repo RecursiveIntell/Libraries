@@ -120,15 +120,16 @@ impl SharedKVPool {
         let mut layers: Vec<PoolLayer> = Vec::with_capacity(num_layers);
         let mut total_compressed_bytes: u64 = 0;
 
-        for layer_idx in 0..num_layers {
+        // Build a closure that builds one layer. Each layer is independent
+        // (different head/data ranges in the corpus), so we can dispatch
+        // them in parallel via Rayon when the feature is enabled.
+        let build_layer = |layer_idx: usize| -> Result<(PoolLayer, u64)> {
             // Collect every (token, head) key vector and every (token, head)
             // value vector for this layer up front, then dispatch two batched
             // encode calls (one for keys, one for values). This is what lets
             // fib-quant reach its GPU batch threshold.
             let mut key_inputs: Vec<Vec<f32>> = Vec::with_capacity(num_tokens * num_kv_heads);
             let mut value_inputs: Vec<Vec<f32>> = Vec::with_capacity(num_tokens * num_kv_heads);
-            // Map each (token, head) slot to its position in the flat batch so
-            // we can reconstruct key_blocks / value_blocks in stable order.
             for (_token_id, vec) in corpus.iter() {
                 for head_idx in 0..num_kv_heads {
                     let base_offset =
@@ -166,8 +167,8 @@ impl SharedKVPool {
                 key_blocks.push(CompressedBlock::new(codec.codec_id(), k_payload, head_dim));
                 value_blocks.push(CompressedBlock::new(codec.codec_id(), v_payload, head_dim));
             }
-            total_compressed_bytes += key_blocks.iter().map(|b| b.compressed_bytes as u64).sum::<u64>();
-            total_compressed_bytes += value_blocks.iter().map(|b| b.compressed_bytes as u64).sum::<u64>();
+            let layer_bytes: u64 = key_blocks.iter().map(|b| b.compressed_bytes as u64).sum::<u64>()
+                + value_blocks.iter().map(|b| b.compressed_bytes as u64).sum::<u64>();
 
             let mut layer = PoolLayer {
                 layer_index: layer_idx as u32,
@@ -176,6 +177,25 @@ impl SharedKVPool {
                 block_digest: String::new(),
             };
             layer.block_digest = layer.compute_digest()?;
+            Ok((layer, layer_bytes))
+        };
+
+        // Layer build: serial or parallel. Both paths preserve layer order
+        // in the output (we collect by index, not by completion time).
+        let layer_results: Vec<Result<(PoolLayer, u64)>> = {
+            #[cfg(feature = "parallel_pool")]
+            {
+                use rayon::prelude::*;
+                (0..num_layers).into_par_iter().map(build_layer).collect()
+            }
+            #[cfg(not(feature = "parallel_pool"))]
+            {
+                (0..num_layers).map(build_layer).collect()
+            }
+        };
+        for r in layer_results {
+            let (layer, layer_bytes) = r?;
+            total_compressed_bytes += layer_bytes;
             layers.push(layer);
         }
 
