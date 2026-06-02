@@ -240,6 +240,28 @@ impl FibQuantizer {
                         .map_err(|e| {
                             FibQuantError::NumericalFailure(format!("gpu hadamard: {}", e))
                         })?;
+
+                    // GPU codebook lookup: the dominant cost in encode_batch
+                    // for k=4, N=32. Falls back to CPU if N > 32 or other
+                    // gates fail; the indices produced are byte-identical to
+                    // the CPU path (verified by gpu-backend parity test).
+                    let block_count = self.profile.block_count() as usize;
+                    if let Ok(indices) = gpu_backend::codebook_lookup_batch(
+                        &flat,
+                        &self.codebook.codewords,
+                        n,
+                        d,
+                        k,
+                    ) {
+                        if indices.len() == n * block_count {
+                            return self.finish_batch_encode_with_indices(
+                                &flat, &norms_f64, &indices, n, d, k,
+                            );
+                        }
+                        // Length mismatch — fall through to CPU for safety.
+                    }
+
+                    // CPU fallback for the codebook lookup (Hadamard already on GPU).
                     return self.finish_batch_encode(&flat, &norms_f64, n, d, k);
                 }
             }
@@ -300,6 +322,51 @@ impl FibQuantizer {
         Ok(codes)
     }
 
+    /// Build `FibCodeV1` records from a pre-computed index array. Used by
+    /// the GPU path after `codebook_lookup_batch` returns the per-block
+    /// nearest-codeword indices. Length of `indices` must be `n * (d / k)`.
+    #[cfg(feature = "gpu")]
+    fn finish_batch_encode_with_indices(
+        &self,
+        _rotated: &[f32], // not used; indices are already computed
+        norms: &[f64],
+        indices: &[u32],
+        n: usize,
+        _d: usize,
+        _k: usize,
+    ) -> Result<Vec<FibCodeV1>> {
+        let block_count = self.profile.block_count() as usize;
+        if indices.len() != n * block_count {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "indices length {} != n * block_count {}",
+                indices.len(),
+                n * block_count
+            )));
+        }
+
+        let mut codes = Vec::with_capacity(n);
+        for vec_idx in 0..n {
+            let start = vec_idx * block_count;
+            let end = start + block_count;
+            let vec_indices: Vec<u32> = indices[start..end].to_vec();
+
+            codes.push(FibCodeV1 {
+                schema_version: CODE_SCHEMA.into(),
+                profile_digest: self.profile.digest()?,
+                codebook_digest: self.codebook.codebook_digest.clone(),
+                rotation_digest: self.rotation.digest()?,
+                ambient_dim: self.profile.ambient_dim,
+                block_dim: self.profile.block_dim,
+                norm_format: self.profile.norm_format.clone(),
+                norm_payload: encode_norm(norms[vec_idx], &self.profile.norm_format)?,
+                wire_index_bits: self.profile.wire_index_bits,
+                block_count: self.profile.block_count(),
+                indices: pack_indices(&vec_indices, self.profile.wire_index_bits)?,
+            });
+        }
+        Ok(codes)
+    }
+
     /// Decode a batch of codes.
     pub fn decode_batch(&self, codes: &[FibCodeV1]) -> Result<Vec<Vec<f32>>> {
         codes.iter().map(|c| self.decode(c)).collect()
@@ -327,12 +394,15 @@ impl FibQuantizer {
     /// Check if a batch of `n` vectors of dimension `d` would actually
     /// dispatch to GPU. Returns true only when:
     ///   - the `gpu` feature is compiled in,
-    ///   - a CUDA device is available at runtime, AND
-    ///   - `n >= GPU_MIN_BATCH_SIZE` and `d >= GPU_MIN_DIM`.
+    ///   - a CUDA device is available at runtime,
+    ///   - `n >= GPU_MIN_BATCH_SIZE` and `d >= GPU_MIN_DIM`, AND
+    ///   - the codebook size `N` is <= 32 (the codebook_lookup kernel
+    ///     is one warp wide and falls back to CPU otherwise).
     ///
     /// This is the honest gate for receipts: a 4-doc corpus with dim 64
     /// returns false even with `--features gpu`, because the batch is too
-    /// small to overcome GPU launch overhead.
+    /// small to overcome GPU launch overhead. A corpus with a codebook
+    /// larger than 32 also returns false.
     pub fn is_gpu_accelerated_for(&self, n: usize, d: usize) -> bool {
         #[cfg(feature = "gpu")]
         {
@@ -341,6 +411,7 @@ impl FibQuantizer {
             }
             n >= gpu_backend::GpuContext::GPU_MIN_BATCH_SIZE
                 && d >= gpu_backend::GpuContext::GPU_MIN_DIM
+                && (self.profile.codebook_size as usize) <= 32
         }
         #[cfg(not(feature = "gpu"))]
         {
