@@ -21,23 +21,24 @@ thiserror = "2"
 turbo-quant = { path = "../../Libraries/turbo-quant", optional = true }
 fib-quant = { path = "../../Libraries/fib-quant", optional = true }
 gpu-backend = { path = "../../Libraries/gpu-backend", optional = true }
-rayon = { version = "1.10", optional = true }
+rayon = "1.10"
 
 [features]
-default = ["turbo", "fib"]
+# Default features: turbo + fib codec adapters + parallel pool build.
+# The parallel_pool path gives 15-40x speedup on multi-core machines
+# (SIMD + Rayon over vectors + Rayon over layers). Disable parallel
+# (set default-features = false) to pin to single-threaded for embedded.
+default = ["turbo", "fib", "parallel_pool"]
 turbo = ["turbo-quant"]
 fib = ["fib-quant"]
 gpu = ["gpu-backend/gpu", "turbo-quant?/gpu", "fib-quant?/gpu"]
 # Enable fib-quant's GPU codebook_lookup path. Off by default; see fib-quant
 # Cargo.toml for the rationale on per-call H2D/D2H overhead.
 gpu_codebook_lookup = ["fib-quant?/gpu_codebook_lookup", "gpu"]
-# Enable fib-quant's Rayon-parallel finish_batch_encode. Strong win on
-# 8+ core machines; wash on 4-core machines.
-parallel = ["fib-quant?/parallel"]
 # Parallelize the poly-kv outer layer loop using Rayon. The 28 layers
 # in qwen3 are independent; spreading them across cores compounds the
-# fib-quant Rayon wins. Adds its own Rayon thread pool.
-parallel_pool = ["rayon", "fib-quant?/parallel"]
+# fib-quant Rayon wins.
+parallel_pool = ["fib-quant?/parallel"]
 
 [dev-dependencies]
 proptest = "1"

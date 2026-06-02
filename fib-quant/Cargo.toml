@@ -28,13 +28,13 @@ include = [
 ]
 
 [features]
-default = []
+default = ["parallel"]
 kv = []
 gpu = ["gpu-backend/gpu"]
-# Parallelize the per-vector loop in finish_batch_encode using Rayon.
-# Off by default because the dispatch overhead exceeds the savings for
-# very small corpora (n < 16 or so); for larger batches this gives
-# near-linear multi-core scaling.
+# The Rayon-parallel finish_batch_encode path. ON by default — the
+# per-batch dispatch overhead is negligible and the multi-core win
+# dominates on 4+ core machines. Disable to pin to a single thread
+# (e.g., for embedded use).
 parallel = ["rayon"]
 # Enables the GPU codebook_lookup path inside encode_batch. Off by default
 # because the per-call H2D/D2H overhead is currently higher than the tight
