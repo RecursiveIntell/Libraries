@@ -19,6 +19,7 @@ members = [
     "effect-runtime",
     "fib-quant",
     "gpu-backend",
+    "hnsw-bench",
     "federated-settlement",
     "forge-memory-bridge",
     "forge-pilot",

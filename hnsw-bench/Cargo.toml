@@ -1,0 +1,53 @@
+[package]
+name = "hnsw-bench"
+version = "0.1.0"
+edition = "2021"
+description = "HNSW backend benchmark: hnsw_rs 0.3 vs usearch 2.25. Generates a receipt-bench receipt."
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+keywords = ["benchmark", "hnsw", "usearch", "vector-search"]
+categories = ["development-tools", "benchmarking", "database"]
+publish = false
+
+[[bin]]
+name = "hnsw-bench"
+path = "src/main.rs"
+
+[dependencies]
+# Local Libraries (semantic-memory's vector_backend trait + types).
+# The active backend is selected at compile time via the `hnsw` or
+# `usearch-backend` features below. hnsw_rs and usearch are NOT direct
+# dependencies of this crate — they're transitive via semantic-memory.
+#
+# IMPORTANT: default-features = false is required. semantic-memory's
+# default features include `hnsw`, and `default-features = false` in the
+# features below is *not* enough — cargo merges features of the same
+# crate across the entire resolution. Without this, the hnsw backend
+# is always active regardless of which feature this crate enables.
+semantic-memory = { path = "../semantic-memory", default-features = false }
+
+# Benchmark substrate (reproducible receipts)
+receipt-bench = { path = "../receipt-bench" }
+
+# Utilities
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.8"
+rand_distr = "0.4"
+tempfile = "3.27"
+anyhow = "1.0"
+
+[features]
+# This binary must be compiled with EXACTLY ONE of these features.
+# `make bench-hnsw` and `make bench-usearch` will do that. Compiling with
+# both or neither is an error (semantic-memory's compile_error! guard
+# rejects neither, and dispatch will prefer hnsw if both are enabled —
+# making a single-binary benchmark unfair).
+#
+# IMPORTANT: pass --no-default-features to cargo because semantic-memory's
+# default features include 'hnsw' — without --no-default-features the
+# hnsw backend will always be active regardless of which feature this
+# crate enables.
+hnsw = ["semantic-memory/hnsw"]
+usearch-backend = ["semantic-memory/usearch-backend"]

@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-06-02T18:08:13.499558939Z",
+  "commit_hash": "56461101b63b1a45f3903db8037c0ad42a08144b",
+  "machine_fingerprint": "d42cbb8b1a4e3120e5ce759a1818fd9d994686129765071e36103bea6b2a9082",
+  "results": [
+    {
+      "name": "usearch-D256",
+      "iterations": 1,
+      "elapsed_ns": 4373000000,
+      "ns_per_iter": 4373000000,
+      "throughput": 2286.75966155957,
+      "error": "payload={\"backend\":\"usearch\",\"dimensions\":256,\"n_vectors\":10000,\"insert_total_ms\":4373,\"insert_vec_per_sec\":2286.75966155957,\"search_p50_us\":269.0,\"search_p99_us\":385.0,\"search_mean_us\":275.273,\"recall_at_10\":0.9724999999999966,\"save_ms\":10,\"load_ms\":8,\"sidecar_bytes\":12018092,\"rss_before_mb\":4.9609375,\"rss_after_mb_mid_insert\":27.27734375,\"rss_after_mb_post_insert\":31.82421875}"
+    },
+    {
+      "name": "usearch-D1024",
+      "iterations": 1,
+      "elapsed_ns": 16901000000,
+      "ns_per_iter": 16901000000,
+      "throughput": 591.6809656233359,
+      "error": "payload={\"backend\":\"usearch\",\"dimensions\":1024,\"n_vectors\":10000,\"insert_total_ms\":16901,\"insert_vec_per_sec\":591.6809656233359,\"search_p50_us\":622.0,\"search_p99_us\":862.0,\"search_mean_us\":636.437,\"recall_at_10\":0.9152999999999918,\"save_ms\":25,\"load_ms\":13,\"sidecar_bytes\":42738093,\"rss_before_mb\":44.36328125,\"rss_after_mb_mid_insert\":77.640625,\"rss_after_mb_post_insert\":94.703125}"
+    },
+    {
+      "name": "usearch-D768",
+      "iterations": 1,
+      "elapsed_ns": 12980000000,
+      "ns_per_iter": 12980000000,
+      "throughput": 770.4160246533128,
+      "error": "payload={\"backend\":\"usearch\",\"dimensions\":768,\"n_vectors\":10000,\"insert_total_ms\":12980,\"insert_vec_per_sec\":770.4160246533128,\"search_p50_us\":529.0,\"search_p99_us\":692.0,\"search_mean_us\":538.037,\"recall_at_10\":0.9251999999999931,\"save_ms\":20,\"load_ms\":11,\"sidecar_bytes\":32498092,\"rss_before_mb\":21.25,\"rss_after_mb_mid_insert\":60.89453125,\"rss_after_mb_post_insert\":73.95703125}"
+    }
+  ],
+  "note": null
+}
