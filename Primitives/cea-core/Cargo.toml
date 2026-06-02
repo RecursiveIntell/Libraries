@@ -2,13 +2,27 @@
 name = "cea-core"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.75"
+# bincode 2.x requires Rust 1.85.0+ (was 1.75 when on bincode 1.x). The
+# 1.75 -> 1.85 bump is self-contained: this crate is a leaf in
+# Primitives/ and doesn't pin MSRV for any downstream consumer.
+rust-version = "1.85"
 license = "MIT"
 readme = "README.md"
 publish = false
 
 [dependencies]
-bincode = "1"
+# postcard 1.1.1 replaces bincode (which is project-wide unmaintained
+# per RUSTSEC-2025-0141; the advisory applies to all versions 1.x/2.x/3.x
+# because the bincode team stepped down in 2025). postcard is actively
+# maintained, has a stable serde-based API, and the migration from
+# bincode 1.x is trivial: `bincode::serialize` → `postcard::to_stdvec`,
+# `bincode::deserialize` → `postcard::from_bytes`. The `use-std` feature
+# pulls in `std::io::Read`/`Write` adapters and the `to_stdvec` helper;
+# `alloc` is implicit because postcard needs `Vec<u8>` for stdvec output.
+# MSRV note: postcard has no MSRV constraint. This crate's MSRV is now
+# 1.85 (was 1.75 with bincode 1.x, then 1.85 with bincode 2.x — same
+# MSRV constraint either way).
+postcard = { version = "1.1", default-features = false, features = ["use-std"] }
 blake3 = "1"
 check-runner = { version = "0.1.0", path = "../check-runner" }
 petgraph = "0.6"

@@ -15,6 +15,12 @@ pub enum CeaCoreError {
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
 
+    /// Persistence-layer error. Wraps `postcard::Error` (which is a
+    /// single enum type covering both serialize and deserialize
+    /// failures — much cleaner than bincode 2's split EncodeError /
+    /// DecodeError design). The bincode 1.3.3 source this replaced
+    /// had a similar `#[from] bincode::Error` design; the API is
+    /// effectively identical at the call site.
     #[error("persistence error: {0}")]
-    Persistence(#[from] bincode::Error),
+    Persistence(#[from] postcard::Error),
 }

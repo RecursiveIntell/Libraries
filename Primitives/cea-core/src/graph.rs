@@ -253,14 +253,28 @@ impl CausalGraph {
 
     pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), CeaCoreError> {
         let snapshot = GraphSnapshot::from_graph(self)?;
-        let bytes = bincode::serialize(&snapshot)?;
+        // postcard 1.1 with the use-std feature: to_stdvec replaces
+        // bincode 1.x's `bincode::serialize`. The error type is
+        // postcard::Error (single enum, vs bincode 2.x's split
+        // EncodeError/DecodeError), which converts via #[from] in
+        // CeaCoreError::Persistence.
+        let bytes = postcard::to_stdvec(&snapshot)?;
         std::fs::write(path, bytes)?;
         Ok(())
     }
 
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, CeaCoreError> {
         let bytes = std::fs::read(path)?;
-        let snapshot: GraphSnapshot = bincode::deserialize(&bytes)?;
+        // postcard 1.1: from_bytes replaces bincode 1.x's
+        // `bincode::deserialize`. Decode failures propagate as
+        // postcard::Error → CeaCoreError::Persistence via #[from].
+        // Prior code (bincode 1.x) surfaced decode failures as
+        // CeaCoreError::GraphCorruption. That was a domain-level
+        // decision (load failures mean the file is corrupt or
+        // wrong-version) — preserved here by mapping Persistence →
+        // GraphCorruption in the call site.
+        let snapshot: GraphSnapshot = postcard::from_bytes(&bytes)
+            .map_err(|e| CeaCoreError::GraphCorruption(e.to_string()))?;
         snapshot.into_graph()
     }
 
