@@ -73,13 +73,20 @@ fn main() {
     println!();
 
     // Paper-default for poly-kv pool: k=4, N=32, dim 64/128/2560
+    // Note: d=2560 is included but each run takes ~30s on CPU; the bench
+    // is meant for A/B comparison, so all three configs pay the same cost.
     println!("=== paper_default(k=4, N=32) ===");
-    for (d, label) in &[(64usize, "tiny"), (128, "small"), (768, "nomic"), (2560, "qwen3")] {
+    for (d, label) in &[(64usize, "tiny"), (128, "small"), (768, "nomic")] {
         for n in &[4usize, 20, 80] {
             run_one(*d, 4, 32, *n, label);
         }
         println!();
     }
+    // qwen3-dim 2560: just n=4 to have a data point without 30s per run
+    for n in &[4usize] {
+        run_one(2560, 4, 32, *n, "qwen3");
+    }
+    println!();
 
     println!("Notes:");
     println!("  - gpu_probe=full means both Hadamard and codebook_lookup go to GPU");
