@@ -97,6 +97,10 @@ pub enum MemoryError {
     #[error("HNSW index error: {0}")]
     HnswError(String),
 
+    /// Vector backend not yet implemented (e.g. usearch stub during migration).
+    #[error("Not implemented: {0}")]
+    NotImplemented(String),
+
     /// Invalid HNSW key format.
     #[error("Invalid HNSW key format: {0}")]
     InvalidKey(String),
@@ -258,6 +262,7 @@ impl MemoryError {
             Self::EmbedderUnavailable(_) => "embedder_unavailable",
             Self::MigrationFailed { .. } => "migration_failed",
             Self::HnswError(_) => "hnsw_error",
+            Self::NotImplemented(_) => "not_implemented",
             Self::InvalidKey(_) => "invalid_key",
             Self::QuantizationError(_) => "quantization_error",
             Self::StorageError(_) => "storage_error",

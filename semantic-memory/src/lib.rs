@@ -54,8 +54,10 @@
 //!   including reranking from exact f32 cosine similarity when configured.
 
 // At least one search backend must be enabled.
-#[cfg(not(any(feature = "hnsw", feature = "brute-force")))]
-compile_error!("At least one search backend feature must be enabled: 'hnsw' or 'brute-force'");
+#[cfg(not(any(feature = "hnsw", feature = "brute-force", feature = "usearch-backend")))]
+compile_error!(
+    "At least one search backend feature must be enabled: 'hnsw', 'usearch-backend', or 'brute-force'"
+);
 
 pub mod chunker;
 pub mod config;
@@ -69,7 +71,12 @@ mod graph;
 #[cfg(feature = "hnsw")]
 pub mod hnsw;
 #[cfg(feature = "hnsw")]
+mod hnsw_backend;
+#[cfg(feature = "hnsw")]
 mod hnsw_ops;
+#[cfg(feature = "usearch-backend")]
+mod usearch_backend;
+pub mod vector_backend;
 mod json_compat_import;
 pub(crate) mod knowledge;
 mod pool;
@@ -106,6 +113,9 @@ pub use embedder::{Embedder, MockEmbedder, OllamaEmbedder};
 pub use error::MemoryError;
 #[cfg(feature = "hnsw")]
 pub use hnsw::{HnswConfig, HnswHit, HnswIndex};
+// Type aliases for the new VectorBackend trait. The Hnsw* names are kept
+// for source compatibility; new code should prefer the Vector* names.
+pub use vector_backend::{VectorBackend, VectorHit, VectorIndex, VectorIndexConfig};
 pub(crate) use projection_lane::projection_import_failure_id;
 pub use projection_lane::{
     ProjectionImportFailureReceiptEntry, ProjectionImportLogEntry, ProjectionImportResult,
