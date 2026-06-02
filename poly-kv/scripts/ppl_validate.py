@@ -371,6 +371,11 @@ def phase1_compressed(args, state: dict) -> None:
 
     fresh_cache = DynamicCache()
     if hasattr(fresh_cache, "layers"):
+        # Pre-allocate the per-layer DynamicLayer objects (transformers 5.x
+        # DynamicCache starts with 0 layers and grows them on update()).
+        from transformers.cache_utils import DynamicLayer
+        while len(fresh_cache.layers) < cfg["num_layers"]:
+            fresh_cache.layers.append(DynamicLayer())
         for i in range(cfg["num_layers"]):
             # new_keys/new_vals are already on args.device as fp16
             fresh_cache.layers[i].keys = new_keys[i]
