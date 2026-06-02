@@ -10,7 +10,7 @@ readme = "README.md"
 repository = "https://github.com/nousresearch/Libraries/tree/main/stack-ids"
 homepage = "https://github.com/nousresearch/Libraries/tree/main/stack-ids"
 documentation = "https://docs.rs/stack-ids"
-keywords = ["ids", "scope", "trace-context", "w3c-traceparent", "blake3", "schema"]
+keywords = ['ids', 'scope', 'trace-context', 'blake3', 'schema']
 
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }

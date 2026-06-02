@@ -1590,7 +1590,7 @@ dependencies = [
 
 [[package]]
 name = "fib-quant"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 dependencies = [
  "blake3",
  "criterion 0.7.0",
@@ -4837,7 +4837,7 @@ dependencies = [
 
 [[package]]
 name = "semantic-memory"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "bitemporal-runtime",
  "blake3",
@@ -6174,7 +6174,7 @@ dependencies = [
 
 [[package]]
 name = "turbo-quant"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "criterion 0.5.1",
  "nalgebra 0.33.3",

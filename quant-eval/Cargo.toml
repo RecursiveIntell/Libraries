@@ -10,8 +10,8 @@ readme = "README.md"
 repository = "https://github.com/RecursiveIntell/Libraries"
 homepage = "https://github.com/RecursiveIntell/Libraries"
 documentation = "https://docs.rs/quant-eval"
-keywords = ["benchmark", "compression", "semantic-search", "quantization", "evaluation", "codec"]
-categories = ["development-tools", "performance", "testing"]
+keywords = ['benchmark', 'compression', 'semantic-search', 'quantization', 'evaluation']
+categories = ['development-tools']
 
 [dependencies]
 thiserror = "2.0.18"

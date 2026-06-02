@@ -10,7 +10,7 @@ readme = "README.md"
 repository = "https://github.com/nousresearch/Libraries/tree/main/semantic-memory-forge"
 homepage = "https://github.com/nousresearch/Libraries/tree/main/semantic-memory-forge"
 documentation = "https://docs.rs/semantic-memory-forge"
-keywords = ["forge", "evidence", "export", "causal-estimation", "receipts", "verification"]
+keywords = ['forge', 'evidence', 'export', 'receipts', 'verification']
 
 [dependencies]
 stack-ids = { version = "0.1.1", path = "../stack-ids" }

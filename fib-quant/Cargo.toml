@@ -1,6 +1,6 @@
 [package]
 name = "fib-quant"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 edition = "2021"
 rust-version = "1.75"
 description = "Experimental Rust implementation of the FibQuant radial-angular vector quantization core"
@@ -9,7 +9,7 @@ readme = "README.md"
 repository = "https://github.com/RecursiveIntell/Libraries"
 homepage = "https://github.com/RecursiveIntell/Libraries"
 documentation = "https://docs.rs/fib-quant"
-keywords = ["quantization", "vector", "kv-cache", "llm", "compression"]
+keywords = ['quantization', 'vector', 'fibonacci', 'codebook', 'kv-cache']
 categories = ["compression", "science", "algorithms"]
 include = [
     "Cargo.toml",

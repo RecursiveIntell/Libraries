@@ -1,6 +1,6 @@
 [package]
 name = "semantic-memory"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 rust-version = "1.75"
 description = "Local-first hybrid semantic search (SQLite + FTS5 + usearch 2.25) with bitemporal truth and typed receipts"
@@ -10,7 +10,7 @@ readme = "README.md"
 repository = "https://github.com/RecursiveIntell/Libraries/tree/main/semantic-memory"
 homepage = "https://github.com/RecursiveIntell/Libraries/tree/main/semantic-memory"
 documentation = "https://docs.rs/semantic-memory"
-keywords = ["search", "semantic", "sqlite", "vector", "fts5", "usearch", "hnsw", "embeddings", "bitemporal", "rag"]
+keywords = ['search', 'semantic', 'sqlite', 'vector', 'usearch']
 categories = ["database", "text-processing", "data-structures"]
 
 [features]
@@ -65,7 +65,7 @@ bitemporal-runtime = { version = "0.1.0", path = "../bitemporal-runtime" }
 # allowed but the runtime will pick the first that matches the feature gate).
 hnsw_rs = { version = "0.3", optional = true }
 usearch = { version = "2.25", default-features = false, optional = true }
-turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
+turbo-quant = { version = "0.2.1", path = "../turbo-quant", optional = true }
 quant-governor = { version = "0.1.0", path = "../quant-governor", optional = true }
 scr-runtime-compression = { version = "0.1.0", path = "../scr-runtime-compression", optional = true }
 

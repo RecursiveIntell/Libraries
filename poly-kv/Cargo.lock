@@ -183,7 +183,7 @@ checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
 
 [[package]]
 name = "fib-quant"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 dependencies = [
  "blake3",
  "gpu-backend",
@@ -923,7 +923,7 @@ dependencies = [
 
 [[package]]
 name = "turbo-quant"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "nalgebra 0.33.3",
  "rand 0.8.6",

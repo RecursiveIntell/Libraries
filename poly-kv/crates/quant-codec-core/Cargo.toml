@@ -10,7 +10,7 @@ readme = "README.md"
 repository = "https://github.com/RecursiveIntell/Libraries"
 homepage = "https://github.com/RecursiveIntell/Libraries/tree/main/crates/quant-codec-core"
 documentation = "https://docs.rs/quant-codec-core"
-keywords = ["codec", "profile", "traits", "shape", "ids", "quantization"]
+keywords = ['quantization', 'codec', 'vector', 'trait', 'profile']
 
 [dependencies]
 serde = { version = "1", features = ["derive"], optional = true }

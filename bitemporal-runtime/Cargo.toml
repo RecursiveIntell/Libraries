@@ -10,8 +10,8 @@ readme = "README.md"
 repository = "https://github.com/sikmindz/bitemporal-runtime"
 homepage = "https://github.com/sikmindz/bitemporal-runtime"
 documentation = "https://docs.rs/bitemporal-runtime"
-keywords = ["bitemporal", "temporal", "audit", "as-of", "append-only"]
-categories = ["data-structures", "database", "encoding"]
+keywords = ['bitemporal', 'temporal', 'versioning', 'audit', 'as-of']
+categories = ['data-structures', 'database']
 
 [dependencies]
 chrono = { version = "0.4.44", features = ["serde"] }
