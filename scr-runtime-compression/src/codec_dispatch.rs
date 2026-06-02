@@ -252,26 +252,57 @@ fn turbo_quant_encode(vector: &[f32], seed: u64) -> Result<Vec<u8>, CompressionE
 }
 
 #[cfg(feature = "turbo")]
+/// Decode a previously encoded TurboQuant vector.
+///
+/// Round-trip is now real: the wire format carries the quantizer profile
+/// (dim, bits, projections, seed, mode) in its 44-byte header, so we can
+/// rebuild a `TurboQuantizer` from the wire bytes alone and call
+/// `decode_approximate` to reconstruct the original vector.
+#[cfg(feature = "turbo")]
 fn turbo_quant_decode(compressed: &[u8]) -> Result<Vec<u8>, DecompressError> {
-    let seed = 42u64;
-    // Decode the wire format to a TurboCode
-    let quantizer = turbo_quant_quantizer(0, seed).map_err(|e| {
-        DecompressError::DecodeFailed(format!("turbo_quant quantizer placeholder: {e}"))
+    use turbo_quant::{TurboCodeWireV1, TurboMode, TurboQuantizer};
+
+    // Parse the header to extract the quantizer profile. This is the
+    // part that was missing in v1: dim, bits, projections, seed are all
+    // embedded in the wire format.
+    let header = TurboCodeWireV1::parse_header(compressed).map_err(|e| {
+        DecompressError::DecodeFailed(format!("turbo_quant header parse: {e}"))
     })?;
-    let _code: TurboCode = quantizer
-        .decode_code_from_bytes(compressed)
-        .map_err(|e| DecompressError::DecodeFailed(format!("turbo_quant deserialize: {e}")))?;
-    // For decode we need the dim, which lives in the code. Re-decode
-    // using the same seed once we have the dim. For v1 we just pass
-    // through; proper decode reconstruction needs the full TurboCode
-    // round-trip.
-    //
-    // Note: this is a known limitation — the encode path is real but the
-    // decode-approximate path requires the dim to be known at quantizer
-    // construction time, and the wire format alone doesn't carry it.
-    // TODO: surface dim in the wire format or pass it in alongside the
-    // compressed bytes.
-    Ok(compressed.to_vec())
+
+    // Rebuild the quantizer from the wire-derived profile. PolarWithQjl
+    // mode is implied by qjl_sign_count > 0; PolarOnly by 0.
+    let mode = if header.qjl_sign_count > 0 {
+        TurboMode::PolarWithQjl
+    } else {
+        TurboMode::PolarOnly
+    };
+    let quantizer = TurboQuantizer::new_with_mode(
+        header.dim,
+        // polar_bits is the b-1 value for PolarWithQjl. The total bit
+        // budget = polar_bits + 1 for Qjl mode, or just polar_bits for
+        // PolarOnly.
+        match mode {
+            TurboMode::PolarWithQjl => header.polar_bits + 1,
+            TurboMode::PolarOnly => header.polar_bits,
+        },
+        header.qjl_projections,
+        header.seed,
+        mode,
+    )
+    .map_err(|e| {
+        DecompressError::DecodeFailed(format!("turbo_quant quantizer rebuild: {e}"))
+    })?;
+
+    // Now decode the full TurboCode against the rebuilt quantizer.
+    let code = TurboCodeWireV1::decode(compressed, &quantizer)
+        .map_err(|e| DecompressError::DecodeFailed(format!("turbo_quant wire decode: {e}")))?;
+
+    // Approximate decode to recover the original vector.
+    let decoded = quantizer
+        .decode_approximate(&code)
+        .map_err(|e| DecompressError::DecodeFailed(format!("turbo_quant decode: {e}")))?;
+
+    Ok(bytemuck::cast_slice::<f32, u8>(&decoded).to_vec())
 }
 
 // ── polar encode (asymmetric) ──
@@ -368,6 +399,46 @@ mod tests {
         assert_eq!(decoded_vec.len(), v.len());
         // Decoded must be finite (no NaN/Inf from lossy round-trip).
         assert!(decoded_vec.iter().all(|x| x.is_finite()));
+    }
+
+    #[test]
+    #[cfg(feature = "turbo")]
+    fn turbo_quant_round_trip_reconstructs_approximate_vector() {
+        // TurboQuant is lossy by design. The invariant we test is that
+        // the round-trip recovers a finite f32 vector of the right length
+        // and that decode uses the wire-embedded profile (not a hard-coded
+        // seed=42 like v1 used to).
+        let v = make_vector(128, 7);
+        let encoded = encode(CodecId::TurboQuant, &v, 7).expect("turbo encode failed");
+        let decoded_bytes = decode(CodecId::TurboQuant, &encoded).expect("turbo decode failed");
+        let decoded_vec: Vec<f32> = bytemuck::cast_slice(&decoded_bytes).to_vec();
+        assert_eq!(decoded_vec.len(), v.len());
+        // Decoded must be finite (no NaN/Inf).
+        assert!(decoded_vec.iter().all(|x| x.is_finite()));
+        // L2 distance from input is bounded by quantization error; we
+        // don't assert exact equality (lossy), just that the decode path
+        // ran end-to-end and produced a valid vector.
+    }
+
+    #[test]
+    #[cfg(feature = "turbo")]
+    fn turbo_quant_round_trip_uses_wire_embedded_profile() {
+        // Encode with seed 1, verify decode doesn't use a hard-coded seed.
+        // If decode silently falls back to the v1 seed=42 path, the
+        // TurboCodeWireV1::decode would fail because the wire's
+        // embedded seed (1) wouldn't match the quantizer built with
+        // hard-coded seed 42. So a successful round-trip with
+        // different seeds is the proof that we're using the wire profile.
+        let v = make_vector(64, 1);
+        let encoded_seed1 = encode(CodecId::TurboQuant, &v, 1).expect("encode seed=1");
+        let _decoded = decode(CodecId::TurboQuant, &encoded_seed1)
+            .expect("decode with wire-embedded seed must succeed");
+
+        let v_seed99 = make_vector(64, 99);
+        let encoded_seed99 = encode(CodecId::TurboQuant, &v_seed99, 99)
+            .expect("encode seed=99");
+        let _decoded_99 = decode(CodecId::TurboQuant, &encoded_seed99)
+            .expect("decode with wire-embedded seed must succeed");
     }
 
     #[test]
