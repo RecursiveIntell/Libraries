@@ -301,6 +301,117 @@ impl SharedKVPool {
                 .into(),
         ))
     }
+
+    /// Decompress all shared-pool blocks for a single layer, returning the
+    /// reconstructed K and V tensors in the original model layout.
+    ///
+    /// Output shape: `keys[head_idx]` is a flat `Vec<f32>` of length
+    /// `num_tokens * head_dim` containing all tokens' K vectors for that
+    /// head, in token order. Same for `values`. Lossy (fib-quant) but
+    /// reproducible: same corpus + same seed + same codec yields the same
+    /// reconstructed floats.
+    ///
+    /// This is the inverse of `build` and the symmetric counterpart of
+    /// `materialize_shell`'s per-agent shell decompression. It's the
+    /// path HuggingFace `DynamicCache.update()` and similar KV-cache
+    /// integrations use to populate a fresh cache from the pool.
+    pub fn decompress_layer(&self, layer_idx: usize) -> Result<DecompressedLayer> {
+        if layer_idx >= self.layers.len() {
+            return Err(PolyKvError::Internal(format!(
+                "decompress_layer: layer_idx {layer_idx} out of range (have {})",
+                self.layers.len()
+            )));
+        }
+        let layer = &self.layers[layer_idx];
+        let head_dim = self.manifest.shape.head_dim;
+        let num_heads = self.manifest.shape.num_kv_heads as usize;
+        let num_tokens = layer.key_blocks.len() / num_heads;
+        if layer.value_blocks.len() != layer.key_blocks.len() {
+            return Err(PolyKvError::Internal(format!(
+                "layer {}: key/value block count mismatch ({} vs {})",
+                layer_idx,
+                layer.key_blocks.len(),
+                layer.value_blocks.len()
+            )));
+        }
+        if layer.key_blocks.len() != num_tokens * num_heads {
+            return Err(PolyKvError::Internal(format!(
+                "layer {}: block count {} != num_tokens * num_heads {}",
+                layer_idx,
+                layer.key_blocks.len(),
+                num_tokens * num_heads
+            )));
+        }
+        // All shared-pool blocks use the same codec (manifest.shared_codec).
+        // Build a single codec and reuse for the whole layer.
+        let shared_codec: crate::policy::CodecId = self.manifest.shared_codec.clone();
+        let codec = create_codec(
+            &shared_codec,
+            head_dim,
+            Some(&self.manifest.policy.fib_config),
+            Some(&self.manifest.policy.turbo_config),
+        )?;
+        let seed = self.manifest.build_seed;
+        // Block ordering: [token_0_head_0, token_0_head_1, ..., token_0_head_{H-1},
+        //                  token_1_head_0, ..., token_{T-1}_head_{H-1}]
+        // i.e. flat index = token_idx * num_heads + head_idx.
+        // Per-head output: keys[head_idx] = concatenation of every token's K for that head.
+        let mut keys_per_head: Vec<Vec<f32>> = vec![Vec::with_capacity(num_tokens * head_dim); num_heads];
+        let mut values_per_head: Vec<Vec<f32>> = vec![Vec::with_capacity(num_tokens * head_dim); num_heads];
+        for token_idx in 0..num_tokens {
+            for head_idx in 0..num_heads {
+                let block_idx = token_idx * num_heads + head_idx;
+                let k_payload = &layer.key_blocks[block_idx].encoded_payload;
+                let v_payload = &layer.value_blocks[block_idx].encoded_payload;
+                let k_decoded = codec.decode(k_payload, seed)?;
+                let v_decoded = codec.decode(v_payload, seed)?;
+                if k_decoded.len() != head_dim {
+                    return Err(PolyKvError::Internal(format!(
+                        "decoded key length {} != head_dim {} (layer {}, token {}, head {})",
+                        k_decoded.len(),
+                        head_dim,
+                        layer_idx,
+                        token_idx,
+                        head_idx
+                    )));
+                }
+                keys_per_head[head_idx].extend_from_slice(&k_decoded);
+                values_per_head[head_idx].extend_from_slice(&v_decoded);
+            }
+        }
+        Ok(DecompressedLayer {
+            layer_index: layer_idx as u32,
+            num_tokens,
+            num_heads,
+            head_dim,
+            keys: keys_per_head,
+            values: values_per_head,
+        })
+    }
+}
+
+/// Reconstructed K/V tensors for one layer of the shared pool.
+///
+/// All vectors are in the original (head × token × head_dim) layout but
+/// flat per head: `keys[head_idx][token_idx * head_dim + j]`. This matches
+/// the HuggingFace `DynamicCache` per-layer access pattern
+/// (`cache.layers[layer_idx].keys[:, head_idx, :, :]` flattened along the
+/// last two dims).
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct DecompressedLayer {
+    /// Original layer index in the model.
+    pub layer_index: u32,
+    /// Number of tokens in this layer (= pool's `num_shared_tokens`).
+    pub num_tokens: usize,
+    /// Number of KV heads (= pool's `num_kv_heads`).
+    pub num_heads: usize,
+    /// Per-head dimension.
+    pub head_dim: usize,
+    /// Decoded K vectors: `keys[head_idx]` is a flat `Vec<f32>` of length
+    /// `num_tokens * head_dim` in token order.
+    pub keys: Vec<Vec<f32>>,
+    /// Decoded V vectors, same layout as `keys`.
+    pub values: Vec<Vec<f32>>,
 }
 
 /// Trait for KV cache targets that can receive injected blocks.
@@ -399,6 +510,53 @@ mod tests {
         let (_pool2, receipt2) = SharedKVPool::build(&corpus, &shape, 12345).unwrap();
 
         assert_ne!(receipt1.pool_digest, receipt2.pool_digest);
+    }
+
+    #[test]
+    fn test_decompress_layer_recovers_finite_floats() {
+        // Round-trip integrity: build a pool, decompress every layer,
+        // verify the output is finite, the right shape, and per-head
+        // lengths match num_tokens * head_dim.
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(8);
+        let (pool, _) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+
+        for layer_idx in 0..shape.num_layers as usize {
+            let decompressed = pool.decompress_layer(layer_idx).unwrap();
+            assert_eq!(decompressed.num_tokens, 8);
+            assert_eq!(decompressed.num_heads, shape.num_kv_heads as usize);
+            assert_eq!(decompressed.head_dim, shape.head_dim);
+            assert_eq!(decompressed.keys.len(), shape.num_kv_heads as usize);
+            assert_eq!(decompressed.values.len(), shape.num_kv_heads as usize);
+            for h in 0..decompressed.num_heads {
+                assert_eq!(decompressed.keys[h].len(), 8 * shape.head_dim);
+                assert_eq!(decompressed.values[h].len(), 8 * shape.head_dim);
+                assert!(decompressed.keys[h].iter().all(|v| v.is_finite()));
+                assert!(decompressed.values[h].iter().all(|v| v.is_finite()));
+            }
+        }
+    }
+
+    #[test]
+    fn test_decompress_layer_is_deterministic() {
+        // Same corpus + same seed must produce byte-identical decompressed
+        // output. This is the core invariant for HuggingFaceDynamicCache
+        // round-trip: a fresh DynamicCache populated from the pool must
+        // see the same K/V tensors across runs.
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(6);
+        let (pool_a, _) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+        let (pool_b, _) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+        for layer_idx in 0..shape.num_layers as usize {
+            let a = pool_a.decompress_layer(layer_idx).unwrap();
+            let b = pool_b.decompress_layer(layer_idx).unwrap();
+            assert_eq!(
+                a.keys, b.keys,
+                "decompressed K tensors must be deterministic across builds (layer {})",
+                layer_idx
+            );
+            assert_eq!(a.values, b.values);
+        }
     }
 
     #[test]
