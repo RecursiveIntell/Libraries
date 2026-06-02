@@ -392,10 +392,14 @@ def phase1_compressed(args, state: dict) -> None:
 
     # 6) Load the model FRESH, pre-populate a fresh DynamicCache with our K/V, forward
     print(f"[phase1] loading model fresh: {args.model}", flush=True)
+    # NOTE: low_cpu_mem_usage=True uses a streaming loader that keeps
+    # intermediate fp32 copies on GPU during materialization — it eats
+    # ~4GB of extra VRAM on the 7.91GB msi host and OOMs at the .to(cuda)
+    # step. Default loading puts the model in CPU RAM first then moves to
+    # GPU in one shot. We have 64GB RAM on msi so this is fine.
     model = AutoModelForCausalLM.from_pretrained(
         args.model,
         torch_dtype=torch.float16,
-        low_cpu_mem_usage=True,
     ).to(args.device)
     model.eval()
 
