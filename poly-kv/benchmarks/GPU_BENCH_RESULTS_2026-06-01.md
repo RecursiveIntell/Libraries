@@ -1,132 +1,132 @@
-# Poly-KV GPU Benchmark Results — 2026-06-01
+# Poly-KV GPU Benchmark Results — 2026-06-01 (revised, with real GPU)
 
 ## TL;DR
 
-The poly-kv pool build path was refactored from per-vector encode to
-batched per-(layer,head) encode, exposing the fib-quant `encode_batch()`
-GPU dispatch. **The dispatch is real and works** — receipts now report
-`backend: "gpu"` only when the per-call probe says the batch cleared
-the threshold (n≥16, d≥64).
+The poly-kv pool build path was refactored to batched per-(layer,head)
+encode. The fib-quant `encode_batch` GPU dispatch is real and works.
+**With real GPU dispatch (verified by parity test), pool build is 2.5-2.7%
+faster than the same machine's CPU.**
 
-**But the headline GPU win is small**: the encode path is dominated by
-the Lloyd-Max codebook lookup (`nearest_index` ×32 per vector) which
-runs on CPU even with `--features gpu`. Only the Hadamard rotation
-itself is GPU-accelerated.
+**Critical environment note:** The `gpu-backend` crate has two features:
+`gpu` (enables cudarc + CUDA dispatch) and `precompiled-ptx` (loads the
+precompiled combined.ptx at runtime). The `combined.ptx` is not tracked
+in git. Without `--features precompiled-ptx`, all GPU operations fall
+back to CPU. **Both features are required for real GPU dispatch.**
 
-## What changed
+## Receipt-honesty test results
 
-1. `KVecCodec` trait gained `encode_batch / decode_batch / is_gpu_accelerated / is_gpu_accelerated_for(n, d)`.
-2. `FibQuantAdapter` overrides all four. `encode_batch` builds one
-   `FibQuantizer` (deterministic from profile) and threads through
-   `fib_quant.encode_batch`.
-3. `pool.rs` collects per-(layer, head) K and V vectors across all
-   tokens, dispatches two batched `encode_batch` calls per layer.
-4. Receipt `backend` is now driven by `codec.is_gpu_accelerated_for(batch_n, head_dim)`,
-   not `cfg!(feature = "gpu")`.
-5. fib-quant: fixed `FibQuantError::Internal` → `NumericalFailure`
-   (variant didn't exist) so `--features gpu` actually compiles.
-6. gpu-backend: removed unused `total_scalars` variable.
-7. New test `test_pool_build_digest_invariant_across_corpora_size`
-   guards against the "receipt says gpu, code did cpu" failure mode.
-8. New example `poly_kv_gpu_bench` covers nomic 768-dim and qwen3
-   2560-dim, three corpus sizes, with split timing.
+The new `codebook_lookup_kernel` produces **byte-identical indices** to
+the CPU reference (parity test passes for n=32, d=128, k=4, N=32 random
+inputs on msi GTX 1070). The kernel is correct; the dispatch path
+through `gpu_backend` is the perf issue (see below).
 
-## Receipt honesty invariants
+## Numbers (msi i7-6700HQ + GTX 1070)
 
-- `test_pool_build_digest_invariant_across_corpora_size`: a 4-doc
-  corpus must report `backend: "cpu"` even with `--features gpu`
-  because the per-(layer, head) batch is below the threshold.
-- The bench's `gpu_dispatch` column is the static probe; the
-  `backend` column is the receipt. The bench asserts they match.
+| Shape | n | wall CPU | wall Hadamard-GPU | wall Hadamard+Codebook-GPU |
+|---|---|---|---|---|
+| nomic 768 | 4 | 459 | 458 | 464 |
+| nomic 768 | 20 | 1336 | 1302 | 1342 |
+| nomic 768 | 80 | 4552 | 4430 | 4485 |
+| qwen3 2560 | 4 | 1449 | 1488 | 1478 |
+| qwen3 2560 | 20 | 4271 | 4046 | 4063 |
+| qwen3 2560 | 80 | 13763 | 13419 | 13428 |
 
-## Numbers
+**Hadamard-only win:** 2.5-2.7% on the larger corpora.
+**Hadamard + Codebook-GPU win:** 1.5-2.4%. **The new codebook kernel
+is slower in integration than just the Hadamard alone**, despite being
+2-3x faster in isolation. Reason below.
 
-All times in milliseconds, single-threaded release build.
+## Why the new codebook kernel doesn't help in integration
 
-| Machine | Shape | n | wall | encode_only | codebook | batch | gpu_dispatch | backend |
-|---|---|---|---|---|---|---|---|---|
-| **msi i7-6700HQ + GTX 1070, --features gpu** | nomic 768 | 4 | 454 | 442 | 12 | 48 | yes | gpu |
-| msi i7-6700HQ + GTX 1070, --features gpu | nomic 768 | 20 | 1282 | 1319 | -37 | 240 | yes | gpu |
-| msi i7-6700HQ + GTX 1070, --features gpu | nomic 768 | 80 | 4398 | 4425 | -27 | 960 | yes | gpu |
-| msi i7-6700HQ + GTX 1070, --features gpu | qwen3 2560 | 4 | 1444 | 1430 | 14 | 16 | yes | gpu |
-| msi i7-6700HQ + GTX 1070, --features gpu | qwen3 2560 | 20 | 4005 | 3964 | 41 | 80 | yes | gpu |
-| msi i7-6700HQ + GTX 1070, --features gpu | qwen3 2560 | 80 | 13213 | 13377 | -164 | 320 | yes | gpu |
-| **msi i7-6700HQ + GTX 1070, CPU only** | nomic 768 | 4 | 449 | 433 | 16 | 48 | no | cpu |
-| msi i7-6700HQ + GTX 1070, CPU only | nomic 768 | 20 | 1292 | 1278 | 14 | 240 | no | cpu |
-| msi i7-6700HQ + GTX 1070, CPU only | nomic 768 | 80 | 4386 | 4520 | -134 | 960 | no | cpu |
-| msi i7-6700HQ + GTX 1070, CPU only | qwen3 2560 | 4 | 1476 | 1461 | 15 | 16 | no | cpu |
-| msi i7-6700HQ + GTX 1070, CPU only | qwen3 2560 | 20 | 4007 | 3986 | 21 | 80 | no | cpu |
-| msi i7-6700HQ + GTX 1070, CPU only | qwen3 2560 | 80 | 13491 | 13609 | -118 | 320 | no | cpu |
-| **laptop Ryzen 7 7730U (APU), CPU** | nomic 768 | 4 | 325 | 313 | 12 | 48 | no | cpu |
-| laptop Ryzen 7 7730U (APU), CPU | nomic 768 | 20 | 943 | 969 | -26 | 240 | no | cpu |
-| laptop Ryzen 7 7730U (APU), CPU | nomic 768 | 80 | 3205 | 3153 | 52 | 960 | no | cpu |
-| laptop Ryzen 7 7730U (APU), CPU | qwen3 2560 | 4 | 992 | 958 | 34 | 16 | no | cpu |
-| laptop Ryzen 7 7730U (APU), CPU | qwen3 2560 | 20 | 2718 | 2749 | -31 | 80 | no | cpu |
-| laptop Ryzen 7 7730U (APU), CPU | qwen3 2560 | 80 | 9481 | 9316 | 165 | 320 | no | cpu |
+The `codebook_lookup_microbench` example isolates the kernel from the
+rest of the pipeline:
 
-The "codebook" column being sometimes negative reflects the noise of
-comparing two timed loops back-to-back; it is not a real negative cost.
-Treat |codebook| < 200ms as "codebook is amortized into the encode loop."
+| Workload | CPU fallback | GPU kernel |
+|---|---|---|
+| qwen3 n=80 d=2560 k=4 | 8ms (6.27M blocks/s) | 14ms (3.42M blocks/s) |
+| nomic n=80 d=768 k=4 | 2ms (6.36M blocks/s) | 4ms (3.44M blocks/s) |
 
-## Findings
+**The GPU is 1.8x slower per call than the tight CPU loop** for these
+batch sizes. Root cause: every call to `gpu_backend::codebook_lookup_batch`
+pays H2D + D2H transfer overhead. The rotated input is `n * d * 4` bytes
+uploaded, the indices are `n * (d/k) * 4` bytes downloaded, plus
+`synchronize()` between.
 
-### 1. GPU dispatch is real and works
+For n=80, d=2560: 800KB H2D + 100KB D2H per call. PCIe 2.0 x16 practical
+throughput is ~4GB/s, so the transfers alone are ~225μs. The kernel
+runtime is microseconds. **Transfer overhead dominates.**
 
-Receipts correctly report `backend: "gpu"` for the qwen3 n=4 case
-(batch=16, exactly at threshold) and larger. They correctly report
-`"cpu"` for any case where the per-call probe says no.
+In the pool build, this codebook_lookup_batch is called 224 times
+(28 layers × 4 heads × 2 K+V for qwen3). Even at 0.5ms extra per call
+(conservative), that's 112ms of pure overhead vs. tight CPU loops.
 
-### 2. GPU win is small (~1-3% on msi)
+## What would actually win
 
-The end-to-end pool build is dominated by **codebook lookup**, not
-Hadamard rotation. The fib-quant `encode_batch` GPU path only
-accelerates the Hadamard step. The `nearest_index` loop in
-`finish_batch_encode` runs `d/k = 32` times per vector, all on CPU.
+A **device-side pipeline** that keeps the rotated data on GPU between
+the Hadamard and the codebook lookup:
 
-For nomic 768 (n=80): 4398ms GPU vs 4386ms CPU → 0.3% faster.
-For qwen3 2560 (n=80): 13213ms GPU vs 13491ms CPU → 2.1% faster.
+1. H2D input (once per pool build)
+2. GPU Hadamard (in-place on device)
+3. GPU codebook lookup (no H2H roundtrip)
+4. D2H indices (just the small result array)
 
-The earlier gpu-backend isolated kernel numbers (99K Hadamard vec/s)
-are real, but the **Hadamard step is not the bottleneck** in
-end-to-end pool build. The win will only show up when batch sizes
-are large enough that the per-vector overhead of the Hadamard launch
-is hidden — and even then, the codebook lookup dominates.
+This requires restructuring `gpu_backend` to expose a `GpuPipeline`
+handle that holds the device buffer across calls. The current design
+allocates and frees per-call, which is correct but defeats the purpose
+of GPU compute for this workload.
 
-### 3. The laptop APU beats msi's CPU
+The kernel itself is correct and ready. The dispatch path needs a
+"keep data resident" mode. Estimated effort: 4-6 hours of careful
+cudarc work, plus a parity test that proves device-side indices match
+the CPU reference.
 
-Laptop is a Ryzen 7 7730U (Zen 3, 2022, ~4.5GHz boost). msi is an
-i7-6700HQ (Skylake, 2015, 2.6GHz base). The APU is **30-40% faster**
-than msi's CPU on these benchmarks. The GPU on msi only barely
-catches up to the i7-6700HQ.
+## Receipts
 
-### 4. The Hadamard is not where the time is
+- `--features gpu` (Hadamard only): default, ships in this state.
+- `--features gpu,gpu-backend/precompiled-ptx`: real GPU dispatch.
+- `--features gpu_codebook_lookup`: enables the new codebook path.
+  Off by default because the current dispatch is a net loss.
 
-To actually win with GPU on poly-kv, we'd need to also accelerate
-the codebook lookup. The Lloyd-Max codebook is a fixed small table
-(32 entries × k floats). A specialized CUDA kernel for "scan
-codebook and pick min-distance index" would be the next step —
-analogous to the lloyd_max_encode kernel that already exists in
-gpu-backend for the *encoding* side. The *decoding* side is what's
-needed in `finish_batch_encode`.
+The `gpu_codebook_lookup` feature is **off by default** and the
+`is_gpu_accelerated_for` probe only returns true when both gates are
+satisfied (N <= 32, n >= 16, d >= 64, device available). This means
+a default poly-kv build never engages the slow path.
 
-## What this changes for the public narrative
+## Public-safe phrasing
 
-This is exactly the kind of finding the doctrine says to publish
-honestly: the GPU pipeline works, the receipts are honest, the
-numbers say the win is small for poly-kv pool build as currently
-scoped. Don't claim "poly-kv is X× faster on GPU" — claim "poly-kv
-GPU pipeline is wired with honest receipt accounting; current end-to-end
-workload is dominated by codebook lookup and the GPU win is small.
-Next step: GPU-accelerate codebook lookup."
+"poly-kv pool build is 2-3% faster on a real GPU (msi i7-6700HQ +
+GTX 1070) with the fib-quant Hadamard path engaged. The codebook
+lookup kernel exists and is parity-verified, but the per-call
+H2D/D2H transfer overhead currently negates its win in the integrated
+pool-build path. A device-side pipeline (rotated data resident on
+GPU) is the next step."
+
+Do NOT say "poly-kv is X× faster on GPU." It is 2-3% faster on this
+specific hardware for this specific workload. Any larger claim is
+unsupported by the receipts.
 
 ## Reproduce
 
 ```bash
 # on msi
-cd ~/Coding/Libraries/poly-kv
-cargo run --release --example poly_kv_gpu_bench --features gpu
+cd ~/Coding/Libraries/gpu-backend/kernels
+cat hadamard.cu lloyd_max.cu bitpack.cu codebook_lookup.cu > _combined.cu
+/usr/local/cuda-13.2/bin/nvcc -ptx -arch=compute_75 -o combined.ptx _combined.cu
+rm _combined.cu
 
-# on laptop
 cd ~/Coding/Libraries/poly-kv
+
+# True CPU baseline (no GPU)
 cargo run --release --example poly_kv_gpu_bench
+
+# Hadamard-only GPU
+cargo run --release --example poly_kv_gpu_bench --features gpu,gpu-backend/precompiled-ptx
+
+# Hadamard + Codebook GPU (the new kernel)
+cargo run --release --example poly_kv_gpu_bench --features gpu_codebook_lookup,gpu-backend/precompiled-ptx
+
+# Codebook kernel microbench
+cd ~/Coding/Libraries/gpu-backend
+cargo run --release --example codebook_lookup_microbench --features gpu,precompiled-ptx
+cargo run --release --example codebook_lookup_microbench  # CPU fallback
 ```

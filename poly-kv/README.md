@@ -130,6 +130,48 @@ cargo run --release --example multi_agent_contention --features poly
 - **GPU cache adapter** — HuggingFace DynamicCache or vLLM block manager
 - **Thousands of agents** — tested 10, scales linearly
 
+## GPU Acceleration
+
+poly-kv supports GPU acceleration through the `fib-quant` and
+`gpu-backend` crates. The fib-quant encoder dispatches the Hadamard
+rotation to GPU when the per-call probe (`is_gpu_accelerated_for`) says
+yes: codebook size <= 32, batch >= 16, dim >= 64, and a CUDA device
+is available.
+
+**Critical:** the gpu-backend has two features, and you need BOTH for
+real GPU dispatch:
+
+```bash
+# Real GPU dispatch — required flag combo
+cargo build --release --features gpu,gpu-backend/precompiled-ptx
+
+# Without precompiled-ptx, gpu_backend::load_ptx returns None and
+# every GPU call falls back to CPU. The build succeeds, the run
+# succeeds, the receipt says "gpu", but no GPU work happened.
+```
+
+The `precompiled-ptx` feature expects `kernels/combined.ptx` in the
+gpu-backend crate. This file is not tracked in git (it depends on the
+local CUDA toolkit version). To build it on a new machine:
+
+```bash
+cd Libraries/gpu-backend/kernels
+cat hadamard.cu lloyd_max.cu bitpack.cu codebook_lookup.cu > _combined.cu
+nvcc -ptx -arch=compute_75 -o combined.ptx _combined.cu
+rm _combined.cu
+```
+
+**Measured GPU win on msi (i7-6700HQ + GTX 1070):** 2.5-2.7% on the
+nomic-768 and qwen3-2560 pool builds. See
+[`benchmarks/GPU_BENCH_RESULTS_2026-06-01.md`](benchmarks/GPU_BENCH_RESULTS_2026-06-01.md)
+for the full numbers and the codebook-lookup microbench analysis.
+
+There is also a `gpu_codebook_lookup` feature that enables GPU
+nearest-codeword index lookup inside `fib_quant.encode_batch`. The
+kernel is parity-verified against the CPU reference, but the per-call
+H2D/D2H transfer overhead makes it a net loss for the batch sizes
+poly-kv currently uses. Off by default.
+
 ## Dependencies
 
 - [`fib-quant`](https://crates.io/crates/fib-quant) — cold-tier codec, 50× compression
