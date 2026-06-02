@@ -33,6 +33,10 @@ pub enum CodecId {
     TurboQuant,
     /// FibQuant radial-angular codec.
     FibQuant,
+    /// Polar-only quantization (asymmetric, no reconstruction).
+    Polar,
+    /// QJL random-projection sketch (asymmetric inner-product).
+    Qjl,
     /// Uncompressed representation (identity pass-through).
     Uncompressed,
 }
@@ -49,6 +53,8 @@ impl std::fmt::Display for CodecId {
         match self {
             Self::TurboQuant => write!(f, "turbo_quant"),
             Self::FibQuant => write!(f, "fib_quant"),
+            Self::Polar => write!(f, "polar"),
+            Self::Qjl => write!(f, "qjl"),
             Self::Uncompressed => write!(f, "uncompressed"),
         }
     }
