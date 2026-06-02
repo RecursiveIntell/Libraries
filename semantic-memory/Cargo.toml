@@ -3,13 +3,15 @@ name = "semantic-memory"
 version = "0.5.0"
 edition = "2021"
 rust-version = "1.75"
-description = "Hybrid semantic search with SQLite, FTS5, and HNSW — built for AI agents"
+description = "Local-first hybrid semantic search (SQLite + FTS5 + usearch 2.25) with bitemporal truth and typed receipts"
 license = "Apache-2.0"
-repository = "https://www.github.com/recursiveintell/semantic-memory"
-homepage = "https://www.github.com/recursiveintell/semantic-memory"
-keywords = ["search", "semantic", "sqlite", "hnsw", "embeddings"]
-categories = ["database", "text-processing"]
+authors = ["sikmindz"]
 readme = "README.md"
+repository = "https://github.com/RecursiveIntell/Libraries/tree/main/semantic-memory"
+homepage = "https://github.com/RecursiveIntell/Libraries/tree/main/semantic-memory"
+documentation = "https://docs.rs/semantic-memory"
+keywords = ["search", "semantic", "sqlite", "vector", "fts5", "usearch", "hnsw", "embeddings", "bitemporal", "rag"]
+categories = ["database", "text-processing", "data-structures"]
 
 [features]
 # Default backend: usearch 2.25 (high-performance single-file vector search,
@@ -64,8 +66,8 @@ bitemporal-runtime = { version = "0.1.0", path = "../bitemporal-runtime" }
 hnsw_rs = { version = "0.3", optional = true }
 usearch = { version = "2.25", default-features = false, optional = true }
 turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
-quant-governor = { path = "../quant-governor", optional = true }
-scr-runtime-compression = { path = "../scr-runtime-compression", optional = true }
+quant-governor = { version = "0.1.0", path = "../quant-governor", optional = true }
+scr-runtime-compression = { version = "0.1.0", path = "../scr-runtime-compression", optional = true }
 
 [build-dependencies]
 # cxx-build is only needed when the usearch backend is enabled (it triggers
