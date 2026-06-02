@@ -142,17 +142,22 @@ impl FibCodeV1 {
             )));
         }
 
-        // We have the profile — derive the digests so validate_code_header passes.
-        let codebook = FibCodebookV1::build(profile.clone())?;
-        let rotation = StoredRotation::new(profile.ambient_dim as usize, profile.rotation_seed)?;
+        // The compact wire format omits codebook_digest and
+        // rotation_digest because they're derivable from the profile.
+        // The decoder re-derives them itself and skips the mismatch check
+        // (see validate_code_header's empty-string short-circuit). We
+        // still need profile_digest because the decode path uses it
+        // to verify the code matches the decoder's profile.
         let profile_digest = profile.digest()?;
-        let codebook_digest = codebook.codebook_digest.clone();
-        let rotation_digest = rotation.digest()?;
         Ok(FibCodeV1 {
             schema_version: CODE_SCHEMA.into(),
             profile_digest,
-            codebook_digest,
-            rotation_digest,
+            // Leave these empty — see validate_code_header for the
+            // short-circuit. The cost of building a FibCodebookV1
+            // per from_compact_bytes call is prohibitive (~6ms each,
+            // 10s of seconds for a real pool).
+            codebook_digest: String::new(),
+            rotation_digest: String::new(),
             ambient_dim: profile.ambient_dim,
             block_dim: profile.block_dim,
             norm_format: profile.norm_format.clone(),
@@ -679,15 +684,24 @@ impl FibQuantizer {
                 actual: code.profile_digest.clone(),
             });
         }
-        if code.codebook_digest != self.codebook.codebook_digest {
+        // Codebook and rotation digests are skipped if empty — the
+        // compact wire format omits them because they're derivable from
+        // the profile. The decoder trusts its own codebook/rotation in
+        // that case. (Re-deriving the codebook just to compute the
+        // digest cost ~6ms per call, which is prohibitive for batch
+        // decode of 1.5M+ blocks.)
+        if !code.codebook_digest.is_empty()
+            && code.codebook_digest != self.codebook.codebook_digest
+        {
             return Err(FibQuantError::CodebookDigestMismatch {
                 expected: self.codebook.codebook_digest.clone(),
                 actual: code.codebook_digest.clone(),
             });
         }
         let expected_rotation = self.rotation.digest()?;
-        if code.rotation_digest != expected_rotation
-            || code.rotation_digest != self.codebook.rotation_digest
+        if !code.rotation_digest.is_empty()
+            && (code.rotation_digest != expected_rotation
+                || code.rotation_digest != self.codebook.rotation_digest)
         {
             return Err(FibQuantError::RotationDigestMismatch {
                 expected: expected_rotation,
