@@ -423,7 +423,7 @@ of any quantization change.
 The migration was attempted in the same session the research was
 written. Status:
 
-**Completed (commits `181c882`, `578e9d3`, and `1c2179f`):**
+**Completed (commits `181c882`, `578e9d3`, `1c2179f`, and `121d940`):**
 - Cargo.toml: `usearch = "2.25"` + `cxx-build` + `cxx` declared as
   optional deps, gated on `usearch-backend` feature. **NOT vendored** —
   used crates.io direct dep (simpler, but breaks the "match Gloss
@@ -470,37 +470,50 @@ written. Status:
 - `HNSW_BENCH_RESULTS_2026-06-02.md`: the full benchmark results,
   including the verdict (usearch wins by 2-78× on every metric that
   matters). **The "wait for benchmark" gate is now passed.**
+- **Default switch** (commit `121d940`): `default = ["usearch-backend"]`
+  in `semantic-memory/Cargo.toml`. Hnsw remains opt-in via
+  `default-features = false, features = ["hnsw"]`. The hnsw_rs dep
+  is no longer pulled in by the workspace root. **The original
+  "no path off bincode 1.3.3" blocker is unblocked** by the switch.
+- `deny.toml`: bincode 1.3.3 (RUSTSEC-2025-0141) ignore is updated
+  with a comment that hnsw_rs is no longer the source — bincode
+  1.3.3 now arrives transitively via cea-core v0.1.0, a separate
+  remediation.
 
-**Verification (all green, post `1c2179f`):**
-- `cargo check -p semantic-memory` (default hnsw): 0 errors
-- `cargo check -p semantic-memory --features usearch-backend`: 0
-  errors, C++ bridge compiles (usearch cxx bridge built successfully)
+**Verification (all green, post `121d940`):**
+- `cargo check -p semantic-memory` (default usearch): 0 errors
+- `cargo check -p semantic-memory --features hnsw` (hnsw opt-in): 0
+  errors
 - `cargo check --workspace` (semantic-memory + 16 transitively): 0
   errors
-- 21 lib tests pass on `--features usearch-backend` (9 new
-  usearch_backend tests + 5 vector_backend + 7 pre-existing)
-- The critical `save_then_load_round_trips` test passes — proves the
-  full persistence cycle (insert → save → load → search) works
-  end-to-end on usearch.
-- Default hnsw still works, all 65 existing tests still pass.
-- hnsw-bench binary builds and runs cleanly on both backends.
+- 141 tests pass across 10 semantic-memory test binaries
+- `cargo deny check`: Exit 0, all 4 sections ok
+- Default hnsw still works (via opt-in)
+- hnsw-bench binary builds and runs cleanly on both backends
 - **Benchmark (10k vectors, D=768):** usearch is 2.9× faster on
   insert, 19× faster on p50 search, **78× faster on p99 search**,
   +4pp better recall, **3,134× faster on load**, 4× faster on save.
   hnsw_rs has pathological p99 jitter (5.4× p50 vs usearch's 1.3×).
   Full numbers in `HNSW_BENCH_RESULTS_2026-06-02.md`.
 
-**Recommendation update (post-benchmark):**
-The benchmark gate is now passed. usearch is the clear winner. The
-next commit should:
-1. **`default = ["usearch-backend"]`** in `semantic-memory/Cargo.toml`.
-2. **Update downstream consumers** (forge-pilot, llm-pipeline,
-   kernel-conformance) — likely a no-op since the sidecar dispatch is
-   a one-line check on the manifest's `backend_kind` field.
-3. **Delete hnsw.rs / hnsw_ops.rs** + **remove bincode 1.3.3 deny
-   ignore** in a single atomic commit.
-4. **Float8 (ScalarKind::F8) trial** as a separate, well-instrumented
-   spike.
+**Final status:**
+- ✅ `default = ["usearch-backend"]` switch landed
+- ✅ Hnsw migration's original blocker (bincode 1.3.3) is unblocked
+- ✅ Benchmark gate passed
+- ✅ All downstream consumers compile unchanged
+- ✅ 141 tests pass
+- ✅ `cargo deny check` clean (4/4 sections)
+
+**Still pending (per the original HNSW_RESEARCH plan, lower priority
+now that the main migration is done):**
+- **Delete hnsw.rs / hnsw_ops.rs**: still in the tree as opt-in.
+  Removing it is a breaking change. Should wait for explicit sign-off
+  that no caller needs the hnsw path anymore.
+- **Float8 (ScalarKind::F8) trial**: SCALAR_KIND const is F32.
+  Switching to F8 is a recall-vs-memory tradeoff decision, deferred
+  to a separate spike.
+- **cea-core migration off bincode 1.3.3**: separate work item,
+  separate crate. Tracked here for reference.
 
 ---
 
