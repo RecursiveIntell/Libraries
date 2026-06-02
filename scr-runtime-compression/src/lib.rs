@@ -16,7 +16,7 @@ mod compressed_search_path;
 mod error;
 mod exact_fallback_adapter;
 
-pub use codec_dispatch::{build_adapter, select_codec, CodecDispatch};
+pub use codec_dispatch::{build_adapter, decode, encode, select_codec, CodecDispatch};
 pub use compressed_search_path::CompressedSearchPath;
 pub use error::{CompressionError, DecompressError};
 pub use exact_fallback_adapter::ExactFallbackAdapter;

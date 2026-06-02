@@ -11,7 +11,9 @@ keywords = ["compression", "runtime", "semantic-memory", "quantization", "adapte
 categories = ["compression", "runtime", "memory"]
 
 [dependencies]
+bytemuck = { version = "1", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 thiserror = "1"
 chrono = { version = "0.4", features = ["serde"] }
 quant-governor = { path = "../quant-governor" }
