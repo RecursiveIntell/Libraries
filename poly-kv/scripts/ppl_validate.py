@@ -353,6 +353,36 @@ def phase1_compressed(args, state: dict) -> None:
         torch.cuda.empty_cache()
 
     # 5) Reconstruct input_ids for the same prefix
+    # Free everything we don't need before re-loading the model. The
+    # roundtrip.bin JSON parse leaves a ~1GB Python list of dicts
+    # around that we have to release before the second model load.
+    import gc
+    gc.collect()
+    if args.device == "cuda":
+        torch.cuda.empty_cache()
+        # Print current GPU usage for diagnostics
+        mem_alloc = torch.cuda.memory_allocated() / 1e9
+        mem_reserved = torch.cuda.memory_reserved() / 1e9
+        print(
+            f"[phase1] pre-second-model-load: GPU alloc={mem_alloc:.2f}GB reserved={mem_reserved:.2f}GB",
+            flush=True,
+        )
+
+    # 5b) Move the new_keys/new_vals to CPU temporarily so the second
+    # model load has room. We'll move them back before the forward pass.
+    # (The cache is only 200MB so this is cheap.)
+    new_keys_cpu = [k.cpu() for k in new_keys]
+    new_vals_cpu = [v.cpu() for v in new_vals]
+    del new_keys, new_vals
+    gc.collect()
+    if args.device == "cuda":
+        torch.cuda.empty_cache()
+        mem_alloc = torch.cuda.memory_allocated() / 1e9
+        print(
+            f"[phase1] after-cache-offload: GPU alloc={mem_alloc:.2f}GB",
+            flush=True,
+        )
+
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     ds = load_dataset("Salesforce/wikitext", "wikitext-2-raw-v1", split="test")
     text = "\n\n".join(ds["text"])
@@ -377,9 +407,9 @@ def phase1_compressed(args, state: dict) -> None:
         while len(fresh_cache.layers) < cfg["num_layers"]:
             fresh_cache.layers.append(DynamicLayer())
         for i in range(cfg["num_layers"]):
-            # new_keys/new_vals are already on args.device as fp16
-            fresh_cache.layers[i].keys = new_keys[i]
-            fresh_cache.layers[i].values = new_vals[i]
+            # new_keys_cpu/new_vals_cpu are on CPU; move to GPU now
+            fresh_cache.layers[i].keys = new_keys_cpu[i].to(args.device)
+            fresh_cache.layers[i].values = new_vals_cpu[i].to(args.device)
         t0 = time.time()
         with torch.no_grad():
             out2 = model(
@@ -392,7 +422,7 @@ def phase1_compressed(args, state: dict) -> None:
         print(f"[phase1] forward with pre-populated cache done in {fwd2_s:.1f}s", flush=True)
     else:
         legacy = tuple(
-            (new_keys[i], new_vals[i])
+            (new_keys_cpu[i].to(args.device), new_vals_cpu[i].to(args.device))
             for i in range(cfg["num_layers"])
         )
         t0 = time.time()
