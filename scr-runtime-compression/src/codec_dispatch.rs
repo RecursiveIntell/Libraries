@@ -100,6 +100,8 @@ pub fn select_codec(
         quant_governor::CodecProfile::Q4 => CodecId::Uncompressed, // Q4 not yet implemented
         quant_governor::CodecProfile::Turbo => CodecId::TurboQuant,
         quant_governor::CodecProfile::Fib => CodecId::FibQuant,
+        quant_governor::CodecProfile::Polar => CodecId::Polar,
+        quant_governor::CodecProfile::Qjl => CodecId::Qjl,
     })
 }
 

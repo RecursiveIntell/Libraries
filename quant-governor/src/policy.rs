@@ -198,6 +198,17 @@ impl GovernancePolicy {
             Ok(CodecProfile::Raw)
         } else if request.size_bytes > 1_000_000 {
             Ok(CodecProfile::Turbo)
+        } else if request.latency_tolerance_ms < 50 {
+            // Low-latency text workloads (search, retrieval, RAG re-rank)
+            // benefit from QJL's constant-size sketches and Polar's
+            // asymmetric inner-product scoring. Pick the right one based
+            // on the size budget: tiny vectors use Polar for finer
+            // granularity, large vectors use QJL for fixed-cost sketches.
+            if request.size_bytes > 50_000 {
+                Ok(CodecProfile::Qjl)
+            } else {
+                Ok(CodecProfile::Polar)
+            }
         } else {
             Ok(CodecProfile::Q8)
         }

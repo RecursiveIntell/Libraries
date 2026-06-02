@@ -66,6 +66,8 @@ pub mod governed {
             CodecProfile::Q4 => scr_runtime_compression::CodecId::Uncompressed,
             CodecProfile::Turbo => scr_runtime_compression::CodecId::TurboQuant,
             CodecProfile::Fib => scr_runtime_compression::CodecId::FibQuant,
+            CodecProfile::Polar => scr_runtime_compression::CodecId::Polar,
+            CodecProfile::Qjl => scr_runtime_compression::CodecId::Qjl,
         };
 
         // Encode through the real codec path. (Previously this called
@@ -168,7 +170,9 @@ mod tests {
         // with the codec the policy chose.
         let codec_id = match decision.codec {
             CodecProfile::Fib => scr_runtime_compression::CodecId::FibQuant,
-            _ => panic!("expected Fib"),
+            CodecProfile::Polar => scr_runtime_compression::CodecId::Polar,
+            CodecProfile::Qjl => scr_runtime_compression::CodecId::Qjl,
+            _ => panic!("expected Fib / Polar / Qjl"),
         };
         let compressed = scr_runtime_compression::encode(codec_id, &embedding, 42)
             .expect("fib_quant encode failed");
@@ -180,6 +184,72 @@ mod tests {
             "compressed ({} bytes) should be smaller than raw ({} bytes)",
             compressed.len(),
             raw_size
+        );
+    }
+
+    /// Verifies that the policy correctly routes low-latency text with
+    /// small size to Polar (asymmetric inner-product codec, smaller codes
+    /// than Turbo for short vectors).
+    #[test]
+    fn encode_governed_routes_to_polar_for_low_latency_text() {
+        use quant_governor::{ContentType, GovernanceRequest};
+        // 128 dims * 4 bytes = 512 bytes; above the 256-byte
+        // small_content_threshold so the bypass-to-Raw doesn't trigger.
+        let embedding: Vec<f32> = (0..128).map(|i| (i as f32 * 0.01) - 0.5).collect();
+        let request = GovernanceRequest {
+            content_type: ContentType::Text,
+            size_bytes: (embedding.len() * std::mem::size_of::<f32>()) as u64,
+            accuracy_requirement: 0.95, // < 0.98 to avoid Raw
+            latency_tolerance_ms: 10,    // < 50ms
+            admissibility: quant_governor::AdmissibilityClass::Standard,
+        };
+        let policy = GovernancePolicy::default();
+        let decision = policy.evaluate(request).expect("policy evaluate");
+        assert_eq!(decision.codec, quant_governor::CodecProfile::Polar);
+
+        // Verify the dispatch path lands on Polar.
+        let codec_id = match decision.codec {
+            quant_governor::CodecProfile::Polar => scr_runtime_compression::CodecId::Polar,
+            other => panic!("expected Polar, got {other:?}"),
+        };
+        let compressed = scr_runtime_compression::encode(codec_id, &embedding, 42)
+            .expect("polar encode failed");
+        // Polar is asymmetric — decode is identity pass-through.
+        let decoded = scr_runtime_compression::decode(codec_id, &compressed)
+            .expect("polar decode failed");
+        assert_eq!(compressed, decoded);
+    }
+
+    /// Verifies that the policy correctly routes low-latency text with
+    /// large size to QJL (constant-size sketch for memory-efficient ANN).
+    #[test]
+    fn encode_governed_routes_to_qjl_for_large_low_latency_text() {
+        use quant_governor::{ContentType, GovernanceRequest};
+        // Use a size above 50_000 to trigger QJL (and above the
+        // 256-byte small_content_threshold so bypass-to-Raw doesn't fire).
+        let embedding: Vec<f32> = (0..16384).map(|i| (i as f32 * 0.0001) - 0.5).collect();
+        let request = GovernanceRequest {
+            content_type: ContentType::Text,
+            size_bytes: (embedding.len() * std::mem::size_of::<f32>()) as u64,
+            accuracy_requirement: 0.95,
+            latency_tolerance_ms: 10,
+            admissibility: quant_governor::AdmissibilityClass::Standard,
+        };
+        let policy = GovernancePolicy::default();
+        let decision = policy.evaluate(request).expect("policy evaluate");
+        assert_eq!(decision.codec, quant_governor::CodecProfile::Qjl);
+
+        let codec_id = match decision.codec {
+            quant_governor::CodecProfile::Qjl => scr_runtime_compression::CodecId::Qjl,
+            other => panic!("expected Qjl, got {other:?}"),
+        };
+        let compressed = scr_runtime_compression::encode(codec_id, &embedding, 42)
+            .expect("qjl encode failed");
+        // QJL is dim-independent (~120 bytes for any dim).
+        assert!(
+            compressed.len() < 200,
+            "qjl sketch ({} bytes) should be ~120 bytes regardless of dim",
+            compressed.len()
         );
     }
 
