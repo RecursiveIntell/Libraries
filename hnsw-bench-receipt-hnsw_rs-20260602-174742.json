@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-06-02T17:47:42.804839550Z",
+  "commit_hash": "d4b539f4bfdf213abb05d534c1e1e680227dc709",
+  "machine_fingerprint": "d42cbb8b1a4e3120e5ce759a1818fd9d994686129765071e36103bea6b2a9082",
+  "results": [
+    {
+      "name": "hnsw_rs-D256",
+      "iterations": 1,
+      "elapsed_ns": 15474000000,
+      "ns_per_iter": 15474000000,
+      "throughput": 646.2453147214683,
+      "error": "payload={\"backend\":\"hnsw_rs\",\"dimensions\":256,\"n_vectors\":10000,\"insert_total_ms\":15474,\"insert_vec_per_sec\":646.2453147214683,\"search_p50_us\":5273.0,\"search_p99_us\":6130.0,\"search_mean_us\":5336.831,\"recall_at_10\":0.9256999999999932,\"save_ms\":46,\"load_ms\":15481,\"sidecar_bytes\":10400570,\"rss_before_mb\":6.54296875,\"rss_after_mb_mid_insert\":48.16796875,\"rss_after_mb_post_insert\":69.0859375}"
+    },
+    {
+      "name": "hnsw_rs-D768",
+      "iterations": 1,
+      "elapsed_ns": 40524000000,
+      "ns_per_iter": 40524000000,
+      "throughput": 246.76734774454644,
+      "error": "payload={\"backend\":\"hnsw_rs\",\"dimensions\":768,\"n_vectors\":10000,\"insert_total_ms\":40524,\"insert_vec_per_sec\":246.76734774454644,\"search_p50_us\":9574.0,\"search_p99_us\":10536.0,\"search_mean_us\":9651.874,\"recall_at_10\":0.8835999999999926,\"save_ms\":79,\"load_ms\":34039,\"sidecar_bytes\":30880570,\"rss_before_mb\":126.1015625,\"rss_after_mb_mid_insert\":128.1171875,\"rss_after_mb_post_insert\":149.46484375}"
+    },
+    {
+      "name": "hnsw_rs-D1024",
+      "iterations": 1,
+      "elapsed_ns": 44064000000,
+      "ns_per_iter": 44064000000,
+      "throughput": 226.9426289034132,
+      "error": "payload={\"backend\":\"hnsw_rs\",\"dimensions\":1024,\"n_vectors\":10000,\"insert_total_ms\":44064,\"insert_vec_per_sec\":226.9426289034132,\"search_p50_us\":11544.0,\"search_p99_us\":13076.0,\"search_mean_us\":11621.464,\"recall_at_10\":0.8741999999999936,\"save_ms\":96,\"load_ms\":43933,\"sidecar_bytes\":41120571,\"rss_before_mb\":265.31640625,\"rss_after_mb_mid_insert\":265.3203125,\"rss_after_mb_post_insert\":266.0703125}"
+    }
+  ],
+  "note": null
+}

@@ -619,6 +619,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "serde",
+ "serde_json",
  "sha2",
  "thiserror 2.0.18",
 ]
@@ -1246,6 +1247,7 @@ dependencies = [
  "authority-delegation",
  "blake3",
  "chrono",
+ "claim-ledger",
  "constitutional-memory",
  "constraint-compiler",
  "continuity-runtime",
@@ -2528,6 +2530,7 @@ name = "semantic-memory"
 version = "0.5.0"
 dependencies = [
  "bitemporal-runtime",
+ "blake3",
  "boundary-compiler",
  "bytemuck",
  "chrono",

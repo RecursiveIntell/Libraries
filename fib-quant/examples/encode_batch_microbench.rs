@@ -43,7 +43,7 @@ fn run_one(d: usize, k: usize, n_codewords: usize, n: usize, label: &str) {
     let _ = q.encode_batch(&refs).unwrap();
 
     let start = Instant::now();
-    let codes = q.encode_batch(&refs).unwrap();
+    let _codes = q.encode_batch(&refs).unwrap();
     let wall = start.elapsed();
 
     let per_vec_us = wall.as_micros() as f64 / n as f64;
@@ -83,6 +83,7 @@ fn main() {
         println!();
     }
     // qwen3-dim 2560: just n=4 to have a data point without 30s per run
+    #[allow(clippy::single_element_loop)]
     for n in &[4usize] {
         run_one(2560, 4, 32, *n, "qwen3");
     }

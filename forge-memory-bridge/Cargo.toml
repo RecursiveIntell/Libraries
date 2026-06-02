@@ -5,7 +5,12 @@ edition = "2021"
 rust-version = "1.75.0"
 description = "Transform Forge export envelopes into projection import batches for semantic-memory"
 license = "Apache-2.0"
+authors = ["sikmindz"]
 readme = "README.md"
+repository = "https://github.com/nousresearch/Libraries/tree/main/forge-memory-bridge"
+homepage = "https://github.com/nousresearch/Libraries/tree/main/forge-memory-bridge"
+documentation = "https://docs.rs/forge-memory-bridge"
+keywords = ["forge", "memory", "projection", "import", "transform", "bitemporal"]
 
 [dependencies]
 semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }

@@ -87,7 +87,6 @@ unsafe fn nearest_codeword_f32_avx2_k4(sample: &[f32], codebook: &[f32]) -> usiz
             dist += delta * delta;
         }
         if dist < best_dist {
-            best_dist = dist;
             best_idx = i;
         }
     }

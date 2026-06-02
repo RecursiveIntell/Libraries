@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-06-02T17:57:04.780986686Z",
+  "commit_hash": "56461101b63b1a45f3903db8037c0ad42a08144b",
+  "machine_fingerprint": "d42cbb8b1a4e3120e5ce759a1818fd9d994686129765071e36103bea6b2a9082",
+  "results": [
+    {
+      "name": "hnsw_rs-D768",
+      "iterations": 1,
+      "elapsed_ns": 35483000000,
+      "ns_per_iter": 35483000000,
+      "throughput": 281.8250993433475,
+      "error": "payload={\"backend\":\"hnsw_rs\",\"dimensions\":768,\"n_vectors\":10000,\"insert_total_ms\":35483,\"insert_vec_per_sec\":281.8250993433475,\"search_p50_us\":9545.0,\"search_p99_us\":10544.0,\"search_mean_us\":9615.795,\"recall_at_10\":0.8868999999999924,\"save_ms\":80,\"load_ms\":34310,\"sidecar_bytes\":30880570,\"rss_before_mb\":122.953125,\"rss_after_mb_mid_insert\":124.96484375,\"rss_after_mb_post_insert\":150.41796875}"
+    },
+    {
+      "name": "hnsw_rs-D1024",
+      "iterations": 1,
+      "elapsed_ns": 43961000000,
+      "ns_per_iter": 43961000000,
+      "throughput": 227.47435226678192,
+      "error": "payload={\"backend\":\"hnsw_rs\",\"dimensions\":1024,\"n_vectors\":10000,\"insert_total_ms\":43961,\"insert_vec_per_sec\":227.47435226678192,\"search_p50_us\":11522.0,\"search_p99_us\":12606.0,\"search_mean_us\":11584.977,\"recall_at_10\":0.8750999999999926,\"save_ms\":94,\"load_ms\":44579,\"sidecar_bytes\":41120571,\"rss_before_mb\":267.12109375,\"rss_after_mb_mid_insert\":267.35546875,\"rss_after_mb_post_insert\":267.35546875}"
+    },
+    {
+      "name": "hnsw_rs-D256",
+      "iterations": 1,
+      "elapsed_ns": 15779000000,
+      "ns_per_iter": 15779000000,
+      "throughput": 633.7537233031244,
+      "error": "payload={\"backend\":\"hnsw_rs\",\"dimensions\":256,\"n_vectors\":10000,\"insert_total_ms\":15779,\"insert_vec_per_sec\":633.7537233031244,\"search_p50_us\":5226.0,\"search_p99_us\":6483.0,\"search_mean_us\":5319.39,\"recall_at_10\":0.9317999999999924,\"save_ms\":45,\"load_ms\":15685,\"sidecar_bytes\":10400570,\"rss_before_mb\":6.6796875,\"rss_after_mb_mid_insert\":48.0546875,\"rss_after_mb_post_insert\":68.54296875}"
+    }
+  ],
+  "note": null
+}

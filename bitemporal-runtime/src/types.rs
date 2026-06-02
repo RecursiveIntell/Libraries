@@ -1,5 +1,7 @@
 //! Core bitemporal types.
 
+#[cfg(feature = "schema")]
+use schemars::JsonSchema;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -14,6 +16,8 @@ pub type RecordId = String;
 /// - `valid_time`: when the value is true in the domain (business time)
 /// - `recorded_time`: when the system captured the value (system time)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(bound = "T: ::schemars::JsonSchema + Default"))]
 pub struct BitemporalRecord<T = ()> {
     /// Unique identifier for this record (stable across versions).
     /// Used to link superseding records.
@@ -27,7 +31,10 @@ pub struct BitemporalRecord<T = ()> {
     /// Forward-bounded (recorded_time is the moment of system insertion).
     pub recorded_time: DateTime<Utc>,
 
-    /// The domain value this record captures.
+    /// The domain value this record captures. Defaults to `T::default()`
+    /// when missing from the wire format — both with and without the
+    /// `schema` feature. The schema feature adds `T: Default` to the
+    /// schemars bound, which is also the bound `serde(default)` requires.
     #[serde(default)]
     pub value: T,
 }
@@ -61,6 +68,7 @@ impl<T> BitemporalRecord<T> {
 
 /// Reference to the record that was superseded by a supersession event.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct SupersessionTarget {
     /// ID of the record that was superseded.
     pub superseded_id: RecordId,
@@ -73,6 +81,7 @@ pub struct SupersessionTarget {
 /// Cryptographically identifies both the superseded record and the superseding record,
 /// providing an auditable chain of custody.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct SupersessionReceipt {
     /// ID of the record that superseded another.
     pub superseding_id: RecordId,
@@ -90,7 +99,17 @@ pub struct SupersessionReceipt {
 
 impl SupersessionReceipt {
     /// Create a new supersession receipt from superseded and superseding records.
-    pub fn new(superseded: BitemporalRecord, superseding: BitemporalRecord) -> Self {
+    ///
+    /// The receipt is the cryptographic audit handle for a supersession
+    /// event. The digests bind **all** content of both records (id,
+    /// temporal fields, AND the JSON-serialized value) so that two
+    /// records differing only in their value produce different digests.
+    /// The receipt_digest additionally binds the two record digests so
+    /// the supersession relationship is itself tamper-evident.
+    pub fn new<T>(superseded: BitemporalRecord<T>, superseding: BitemporalRecord<T>) -> Self
+    where
+        T: Serialize,
+    {
         let superseded_digest = Self::digest_record(&superseded);
         let superseding_digest = Self::digest_record(&superseding);
 
@@ -118,12 +137,17 @@ impl SupersessionReceipt {
         }
     }
 
-    fn digest_record<T>(record: &BitemporalRecord<T>) -> String {
+    /// Compute the SHA-256 digest of a record's full content (id,
+    /// temporal fields, and JSON-serialized value). Two records with
+    /// different values produce different digests.
+    fn digest_record<T: Serialize>(record: &BitemporalRecord<T>) -> String {
+        let value_json = serde_json::to_string(&record.value).unwrap_or_default();
         let content = format!(
-            "record:v1:{}:{}:{}",
+            "record:v1:{}:{}:{}:{}",
             record.id,
             record.valid_time.timestamp(),
-            record.recorded_time.timestamp()
+            record.recorded_time.timestamp(),
+            value_json
         );
         format!("{:x}", Sha256::digest(content.as_bytes()))
     }

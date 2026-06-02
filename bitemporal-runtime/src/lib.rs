@@ -21,10 +21,16 @@
 
 mod error;
 mod queries;
+#[cfg(feature = "schema")]
+pub mod schema;
+#[cfg(feature = "sqlite")]
+mod sqlite;
 mod types;
 
 pub use error::BitemporalError;
 pub use queries::{append_supersede, as_of_query, temporal_snapshot};
+#[cfg(feature = "sqlite")]
+pub use sqlite::SqliteDb;
 pub use types::{BitemporalRecord, RecordId, SupersessionReceipt, SupersessionTarget};
 
 use chrono::{DateTime, Utc};

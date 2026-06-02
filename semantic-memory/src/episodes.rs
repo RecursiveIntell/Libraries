@@ -807,7 +807,7 @@ impl MemoryStore {
             confidence,
             verification_status: verification_status.clone(),
             experiment_id: experiment_id_owned.clone().or(current_meta.experiment_id),
-            valid_time: current_meta.valid_time.clone(),
+            valid_time: current_meta.valid_time,
             fact_digest: current_meta.fact_digest.clone(),
         };
 
@@ -872,7 +872,7 @@ impl MemoryStore {
             confidence,
             verification_status: verification_status.clone(),
             experiment_id: experiment_id_owned.clone().or(current_meta.experiment_id),
-            valid_time: current_meta.valid_time.clone(),
+            valid_time: current_meta.valid_time,
             fact_digest: current_meta.fact_digest.clone(),
         };
 

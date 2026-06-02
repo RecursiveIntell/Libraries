@@ -548,6 +548,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "quant-codec-core"
+version = "0.1.0-alpha.1"
+dependencies = [
+ "blake3",
+ "proptest",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -914,7 +925,6 @@ dependencies = [
 name = "turbo-quant"
 version = "0.2.0"
 dependencies = [
- "gpu-backend",
  "nalgebra 0.33.3",
  "rand 0.8.6",
  "rand_chacha 0.3.1",

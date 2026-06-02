@@ -3,9 +3,14 @@ name = "stack-ids"
 version = "0.1.1"
 edition = "2021"
 rust-version = "1.75.0"
-description = "Shared identity, scope, and trace primitives for the local-first AI systems stack"
+description = "Shared identity, scope, trace, and digest primitives for the local-first AI systems stack"
 license = "Apache-2.0"
+authors = ["sikmindz"]
 readme = "README.md"
+repository = "https://github.com/nousresearch/Libraries/tree/main/stack-ids"
+homepage = "https://github.com/nousresearch/Libraries/tree/main/stack-ids"
+documentation = "https://docs.rs/stack-ids"
+keywords = ["ids", "scope", "trace-context", "w3c-traceparent", "blake3", "schema"]
 
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }

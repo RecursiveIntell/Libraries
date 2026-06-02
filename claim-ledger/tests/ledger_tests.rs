@@ -125,7 +125,6 @@ fn ledger_verification_detects_tampering() {
     assert!(verification.valid);
 
     // Tamper with entry2's previous digest — chain is broken
-    use chrono::Utc;
     let tampered_entry2 = claim_ledger::LedgerEntry {
         sequence: 2,
         previous_entry_digest: Some("invalid_digest".to_string()),

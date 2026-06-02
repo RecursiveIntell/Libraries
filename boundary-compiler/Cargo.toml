@@ -5,10 +5,13 @@ edition = "2021"
 rust-version = "1.75"
 description = "RFC 8785 JSON Canonicalization (JCS) with boundary profiles and duplicate-key rejection"
 license = "Apache-2.0"
-repository = "https://github.com/recursiveintell/boundary-compiler"
-keywords = ["json", "canonicalization", "rfc8785", "jcs", "blake3"]
-categories = ["cryptography", "encoding", "validation"]
+authors = ["sikmindz"]
 readme = "README.md"
+repository = "https://github.com/recursiveintell/boundary-compiler"
+homepage = "https://github.com/recursiveintell/boundary-compiler"
+documentation = "https://docs.rs/boundary-compiler"
+keywords = ["json", "canonicalization", "rfc8785", "jcs", "blake3", "content-hash"]
+categories = ["cryptography", "encoding", "validation", "data-structures"]
 
 [dependencies]
 blake3 = { workspace = true }

@@ -71,6 +71,80 @@ impl AgentGraph {
         result
     }
 
+    /// Execute the graph and emit a `GraphExecutionReceiptV1` describing the run.
+    ///
+    /// Returns the final state, the run summary, and a structured receipt
+    /// suitable for audit persistence and replay. The receipt's
+    /// `GraphExecutionReceiptV1.steps` vector is empty in this initial
+    /// implementation — per-step receipts require instrumenting
+    /// `execute_single_node`, which is a follow-up. The top-level
+    /// graph-level receipt closes the P1-3 gap (V30 hostile audit) and
+    /// gives downstream consumers a stable, serializable handle on the
+    /// execution.
+    pub async fn execute_with_receipt(
+        &self,
+        start_node: &str,
+        state: AgentState,
+        config: GraphConfig,
+    ) -> (Result<AgentState>, GraphExecutionReceiptV1) {
+        let started_at = chrono::Utc::now();
+        let (result, summary) = self.execute_with_summary(start_node, state, config).await;
+        let finished_at = summary.finished_at.unwrap_or_else(chrono::Utc::now);
+
+        let outcome = match summary.status {
+            crate::checkpoint_store::RunStatus::Completed => ExecutionOutcome::Completed,
+            crate::checkpoint_store::RunStatus::Cancelled => ExecutionOutcome::Cancelled,
+            crate::checkpoint_store::RunStatus::Interrupted => {
+                // Interruptions produce a Partial outcome; the failed step
+                // index is the count of nodes executed so far (best
+                // available signal without per-step receipts).
+                ExecutionOutcome::Partial {
+                    failed_step: summary.total_nodes_executed,
+                }
+            }
+            crate::checkpoint_store::RunStatus::Failed => ExecutionOutcome::InternalError {
+                message: format!(
+                    "graph execution failed (run_id={}, attempts={}, failed_attempts={})",
+                    summary.run_id, summary.total_attempts, summary.failed_attempts
+                ),
+            },
+            // Any other status (Pending, Running, etc.) is treated as
+            // an internal error since execute_with_summary only returns
+            // terminal summaries.
+            other => ExecutionOutcome::InternalError {
+                message: format!("unexpected non-terminal run status: {other:?}"),
+            },
+        };
+
+        // The summary itself is a partial step receipt: one entry that
+        // records the run-level metadata. This is a deliberate
+        // placeholder until per-step instrumentation lands.
+        let step = StepExecutionReceiptV1 {
+            step_index: 0,
+            agent_id: summary.graph_name.clone(),
+            started_at,
+            finished_at,
+            input_digest: "graph-root".to_string(),
+            output_digest: format!("nodes_executed={}", summary.total_nodes_executed),
+            tool_calls: vec![],
+            error: match &outcome {
+                ExecutionOutcome::InternalError { message } => Some(message.clone()),
+                _ => None,
+            },
+        };
+
+        let receipt = GraphExecutionReceiptV1 {
+            graph_id: summary.graph_name.clone(),
+            execution_id: summary.run_id.clone(),
+            started_at,
+            finished_at,
+            steps: vec![step],
+            outcome,
+        };
+
+        (result, receipt)
+    }
+
     /// Execute the graph with interrupt support.
     pub async fn execute_with_interrupt(
         &self,

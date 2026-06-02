@@ -46,13 +46,13 @@ pub fn hadamard_batch_cpu(data: &mut [f32], n: usize, dim: usize, seed: u64) -> 
 
         // Apply random signs
         for i in 0..padded_dim {
-            padded[i] *= signs[i] as f32;
+            padded[i] *= signs[i];
         }
 
         // Scale by 1/sqrt(padded_dim)
         let scale = 1.0 / (padded_dim as f32).sqrt();
-        for i in 0..padded_dim {
-            padded[i] *= scale;
+        for item in padded.iter_mut().take(padded_dim) {
+            *item *= scale;
         }
 
         // Copy back (truncate to original dim)
@@ -221,7 +221,7 @@ fn probit(p: f64) -> f64 {
 /// Bit-pack on CPU.
 pub fn bitpack_cpu(indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
     let total_bits = indices.len() * bits_per_index;
-    let packed_len = (total_bits + 7) / 8;
+    let packed_len = total_bits.div_ceil(8);
     let mut packed = vec![0u8; packed_len];
 
     for (i, &idx) in indices.iter().enumerate() {

@@ -4,10 +4,14 @@ version = "0.2.0"
 edition = "2021"
 rust-version = "1.75.0"
 description = "Experimental vector compression sidecars with PolarQuant, TurboQuant, QJL sketches, wire formats, and benchmark receipts"
-license = "MIT"
+license = "MIT OR Apache-2.0"
+authors = ["sikmindz"]
+readme = "README.md"
 repository = "https://github.com/RecursiveIntell/turbo-quant"
-keywords = ["quantization", "vector-search", "compression", "embeddings", "machine-learning"]
-categories = ["science", "algorithms", "compression", "mathematics"]
+homepage = "https://github.com/RecursiveIntell/turbo-quant"
+documentation = "https://docs.rs/turbo-quant"
+keywords = ["quantization", "vector-search", "compression", "embeddings", "machine-learning", "sidecar"]
+categories = ["science", "algorithms", "compression", "mathematics", "database"]
 exclude = [
     ".codex/",
     ".github/",
@@ -50,11 +54,9 @@ rand = "0.8"
 rand_chacha = "0.3"
 rand_distr = "0.4"
 nalgebra = { version = "0.33", features = ["serde-serialize"] }
-gpu-backend = { path = "../gpu-backend", optional = true }
 
 [features]
 default = []
-gpu = ["gpu-backend/gpu"]
 
 [dev-dependencies]
 criterion = "0.5"

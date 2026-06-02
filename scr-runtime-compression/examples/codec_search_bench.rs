@@ -1,6 +1,7 @@
 //! Codec A/B benchmark: search recall@K and storage size across
 //! TurboQuant, PolarQuant, QjlSketch, and Uncompressed.
 //!
+#![allow(clippy::expect_used)] // benchmark code — expect() on Result/Option is the idiomatic pattern
 //! For a synthetic corpus of N vectors at dim D, this benchmark:
 //! 1. Generates N random unit-normalized query vectors and a deterministic
 //!    corpus of M unit-normalized candidate vectors.

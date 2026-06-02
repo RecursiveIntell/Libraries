@@ -59,7 +59,6 @@ fn main() {
             gpu_backend::lloyd_max_batch(&hadamard_data, *num_docs, *dim, k, n_levels, seed)
                 .expect("lloyd_max encode failed");
         let elapsed = start.elapsed();
-        let blocks_per_vector = dim / k;
         println!("  {} vectors encoded: {:?}", num_docs, elapsed);
         println!(
             "  indices: {} bytes, norms: {} f32s",

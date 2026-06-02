@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-06-02T18:07:15.026469037Z",
+  "commit_hash": "56461101b63b1a45f3903db8037c0ad42a08144b",
+  "machine_fingerprint": "d42cbb8b1a4e3120e5ce759a1818fd9d994686129765071e36103bea6b2a9082",
+  "results": [
+    {
+      "name": "usearch-D768",
+      "iterations": 1,
+      "elapsed_ns": 13179000000,
+      "ns_per_iter": 13179000000,
+      "throughput": 758.782912208817,
+      "error": "payload={\"backend\":\"usearch\",\"dimensions\":768,\"n_vectors\":10000,\"insert_total_ms\":13179,\"insert_vec_per_sec\":758.782912208817,\"search_p50_us\":536.0,\"search_p99_us\":698.0,\"search_mean_us\":545.406,\"recall_at_10\":0.9251999999999931,\"save_ms\":19,\"load_ms\":12,\"sidecar_bytes\":32498092,\"rss_before_mb\":21.25,\"rss_after_mb_mid_insert\":60.89453125,\"rss_after_mb_post_insert\":73.95703125}"
+    },
+    {
+      "name": "usearch-D1024",
+      "iterations": 1,
+      "elapsed_ns": 16831000000,
+      "ns_per_iter": 16831000000,
+      "throughput": 594.1417622244668,
+      "error": "payload={\"backend\":\"usearch\",\"dimensions\":1024,\"n_vectors\":10000,\"insert_total_ms\":16831,\"insert_vec_per_sec\":594.1417622244668,\"search_p50_us\":635.0,\"search_p99_us\":883.0,\"search_mean_us\":648.611,\"recall_at_10\":0.9152999999999918,\"save_ms\":25,\"load_ms\":13,\"sidecar_bytes\":42738093,\"rss_before_mb\":44.36328125,\"rss_after_mb_mid_insert\":77.640625,\"rss_after_mb_post_insert\":94.703125}"
+    },
+    {
+      "name": "usearch-D256",
+      "iterations": 1,
+      "elapsed_ns": 4276000000,
+      "ns_per_iter": 4276000000,
+      "throughput": 2338.6342376052385,
+      "error": "payload={\"backend\":\"usearch\",\"dimensions\":256,\"n_vectors\":10000,\"insert_total_ms\":4276,\"insert_vec_per_sec\":2338.6342376052385,\"search_p50_us\":294.0,\"search_p99_us\":415.0,\"search_mean_us\":299.542,\"recall_at_10\":0.9724999999999966,\"save_ms\":9,\"load_ms\":6,\"sidecar_bytes\":12018092,\"rss_before_mb\":5.0234375,\"rss_after_mb_mid_insert\":27.33984375,\"rss_after_mb_post_insert\":31.88671875}"
+    }
+  ],
+  "note": null
+}

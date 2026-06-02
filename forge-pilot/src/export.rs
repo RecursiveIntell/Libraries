@@ -30,13 +30,18 @@ pub struct ImportBootstrapReport {
 }
 
 /// Build a `claim_ledger::ExportReceipt` that binds the bundle hash and
-/// envelope hash of a canonical roundtrip. No-op when the `governance`
-/// feature is disabled — call site must not rely on the receipt.
+/// envelope hash of a canonical roundtrip. The receipt starts in
+/// `pending` state; callers must update `status` to `"success"` or
+/// `"failure"` based on the operation outcome. The receipt must be
+/// emitted on every path — including failures — so audit consumers can
+/// reconstruct the full history.
+///
+/// No-op when the `governance` feature is disabled — call site must not
+/// rely on the receipt.
 #[cfg(feature = "governance")]
-fn build_export_receipt(
+fn build_pending_export_receipt(
     bundle_id: &str,
     envelope: &ExportEnvelopeV3,
-    import_result: &ProjectionImportResult,
 ) -> ExportReceipt {
     let envelope_json = serde_json::to_string(envelope).unwrap_or_default();
     let envelope_digest = ids::sha256_text(&envelope_json);
@@ -46,14 +51,14 @@ fn build_export_receipt(
         envelope.envelope_id.to_string(),
     );
     receipt.input_digests.insert("bundle".to_string(), envelope_digest.clone());
+    // The output is the envelope itself, which exists before the
+    // import step. Bind it here so both success and failure receipts
+    // carry the envelope as a recoverable artifact.
     receipt.bind_output(
-        format!(
-            "projection_import:{}",
-            import_result.source_envelope_id
-        ),
-        ids::sha256_text(&envelope_json),
+        format!("export_envelope:{}", envelope.envelope_id),
+        envelope_digest,
     );
-    receipt.mark_success();
+    receipt.status = "pending".to_string();
     receipt
 }
 
@@ -65,13 +70,36 @@ pub async fn canonical_roundtrip(
 ) -> Result<RoundtripResult, PilotError> {
     let envelope = export_bundle(bundle, namespace, forge_store).await?;
     let batch = transform_envelope_v3(&envelope)?;
-    let import_result = memory_store.import_projection_batch(&batch).await?;
+
+    // Build the receipt in `pending` state *before* the import so we
+    // can mark it `success` or `failure` based on the outcome, and
+    // return it on either path. This is the doctrinal fix for the
+    // audit-trail gap: every material operation must produce a
+    // receipt, including failures.
     #[cfg(feature = "governance")]
-    let export_receipt = Some(build_export_receipt(
+    let mut export_receipt = Some(build_pending_export_receipt(
         &bundle.bundle_id,
         &envelope,
-        &import_result,
     ));
+
+    let import_outcome = memory_store.import_projection_batch(&batch).await;
+    let import_result = match import_outcome {
+        Ok(r) => {
+            #[cfg(feature = "governance")]
+            if let Some(ref mut r) = export_receipt {
+                r.status = "success".to_string();
+            }
+            r
+        }
+        Err(e) => {
+            #[cfg(feature = "governance")]
+            if let Some(ref mut r) = export_receipt {
+                r.status = "failure".to_string();
+                r.degradation.push(format!("import_error: {e}"));
+            }
+            return Err(PilotError::from(e));
+        }
+    };
     Ok(RoundtripResult {
         envelope,
         import_result,

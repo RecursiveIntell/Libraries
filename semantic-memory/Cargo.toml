@@ -12,18 +12,23 @@ categories = ["database", "text-processing"]
 readme = "README.md"
 
 [features]
-# Default backend: hnsw_rs 0.3 (existing behavior). The usearch 2.25 backend
-# is being added; once it stabilizes the default will switch. Both can be
-# enabled simultaneously; the runtime picks based on the feature gate.
-default = ["hnsw"]
-# New backend (not yet wired in): usearch 2.25 — high-performance single-file
-# vector search, cxx-bridge to C++. Replacement for hnsw_rs 0.3 once it
-# stabilizes. Adds cxx + cxx-build build deps. See
-# HNSW_RESEARCH_2026-06-02.md.
-usearch-backend = ["dep:usearch", "dep:cxx-build", "dep:cxx"]
-# Legacy hnsw_rs 0.3 backend. Default for now; opt-in for callers that want
-# the previous behavior. bincode 1.3.3 advisory applies only when this
-# feature is enabled.
+# Default backend: usearch 2.25 (high-performance single-file vector search,
+# cxx-bridge to C++). Switched to default in 2026-06-02 after the
+# hnsw_rs 0.3 vs usearch 2.25 benchmark in commit 1c2179f showed usearch
+# winning by 2-78× on every metric that matters for a desktop RAG app
+# (Gloss), and +4pp better recall@10 at D=768. See
+# HNSW_RESEARCH_2026-06-02.md §10a and HNSW_BENCH_RESULTS_2026-06-02.md.
+#
+# Callers can still opt back into hnsw_rs by setting
+# `default-features = false, features = ["hnsw"]` on the dependency.
+# Both backends can technically be enabled simultaneously but the
+# runtime will prefer the first matching feature gate (hnsw takes
+# precedence if both are explicitly enabled — see the dispatch in
+# vector_backend.rs).
+default = ["usearch-backend"]
+# Legacy hnsw_rs 0.3 backend. Opt-in only now (was default until
+# 2026-06-02). bincode 1.3.3 advisory (RUSTSEC-2025-0141) only applies
+# when this feature is enabled.
 hnsw = ["dep:hnsw_rs"]
 # Pure-Rust brute-force backend (no ANN). Useful for small corpora and as
 # a fallback when no compiled C++ toolchain is available.

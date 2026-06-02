@@ -4,10 +4,17 @@ version = "0.1.0-alpha.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 rust-version = "1.75"
-description = "Shared compressed KV-cache pool infrastructure for Rust experiments."
+description = "Shared compressed KV-cache pool for Rust: two-tier codec policy (fib-quant cold + turbo-quant hot) with typed receipts"
+authors = ["sikmindz"]
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/poly-kv"
+homepage = "https://github.com/RecursiveIntell/poly-kv"
+documentation = "https://docs.rs/poly-kv"
+keywords = ["kv-cache", "compression", "llm", "multi-agent", "pool", "fib-quant", "turbo-quant"]
+categories = ["compression", "data-structures", "memory-management"]
 
 [dependencies]
-quant-codec-core = { path = "../quant-codec-core" }
+quant-codec-core = { version = "0.1.0-alpha.1", path = "../quant-codec-core" }
 serde = { version = "1", features = ["derive"], optional = true }
 thiserror = "1"
 blake3 = "1"

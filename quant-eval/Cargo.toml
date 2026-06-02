@@ -3,10 +3,14 @@ name = "quant-eval"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
-description = "Compression and semantic search evaluation benchmark suite"
+description = "Compression and semantic search evaluation benchmark suite — codec admissibility, compression ratios, and retrieval quality"
 license = "MIT"
-repository = "https://github.com/NousResearch/quant-eval"
-keywords = ["benchmark", "compression", "semantic-search", "quantization", "evaluation"]
+authors = ["sikmindz"]
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/Libraries"
+homepage = "https://github.com/RecursiveIntell/Libraries"
+documentation = "https://docs.rs/quant-eval"
+keywords = ["benchmark", "compression", "semantic-search", "quantization", "evaluation", "codec"]
 categories = ["development-tools", "performance", "testing"]
 
 [dependencies]

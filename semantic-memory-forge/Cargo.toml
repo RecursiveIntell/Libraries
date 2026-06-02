@@ -5,7 +5,12 @@ edition = "2021"
 rust-version = "1.75.0"
 description = "Forge verification truth: evidence bundles, export envelopes, and causal estimation substrate"
 license = "Apache-2.0"
+authors = ["sikmindz"]
 readme = "README.md"
+repository = "https://github.com/nousresearch/Libraries/tree/main/semantic-memory-forge"
+homepage = "https://github.com/nousresearch/Libraries/tree/main/semantic-memory-forge"
+documentation = "https://docs.rs/semantic-memory-forge"
+keywords = ["forge", "evidence", "export", "causal-estimation", "receipts", "verification"]
 
 [dependencies]
 stack-ids = { version = "0.1.1", path = "../stack-ids" }

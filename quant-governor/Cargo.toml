@@ -3,13 +3,14 @@ name = "quant-governor"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
-description = "Governance policy routing for governed compression"
+description = "Governance policy routing for governed compression — codec selection with admissibility classes and degradation receipts"
 license = "MIT"
-authors = [" Libraries Authors"]
+authors = ["sikmindz"]
+readme = "README.md"
 repository = "https://github.com/nousresearch/Libraries"
-homepage = "https://github.com/nousresearch/Libraries"
-keywords = ["quantization", "governance", "compression", "policy"]
-categories = ["compression", "policy", "encoding"]
+homepage = "https://github.com/nousresearch/Libraries/tree/main/quant-governor"
+documentation = "https://docs.rs/quant-governor"
+keywords = ["quantization", "governance", "compression", "policy", "routing", "receipts"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

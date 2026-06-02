@@ -357,6 +357,7 @@ fn qjl_sketch_encode(vector: &[f32], seed: u64) -> Result<Vec<u8>, CompressionEr
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)] // test code — expect() on Result/Option is the idiomatic pattern
 mod tests {
     use super::*;
     use crate::CompressionError;
