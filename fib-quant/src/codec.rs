@@ -447,8 +447,11 @@ impl FibQuantizer {
                 false
             }
         };
-        let clears_thresholds = n >= gpu_backend::GpuContext::GPU_MIN_BATCH_SIZE
-            && d >= gpu_backend::GpuContext::GPU_MIN_DIM;
+        // Thresholds are the same as gpu_backend::GpuContext's. Hard-code
+        // them here to avoid requiring the gpu feature for the probe.
+        const MIN_BATCH: usize = 16;
+        const MIN_DIM: usize = 64;
+        let clears_thresholds = n >= MIN_BATCH && d >= MIN_DIM;
         let codebook_fits = (self.profile.codebook_size as usize) <= 32;
         GpuStepReport {
             hadamard: device_available && clears_thresholds,
