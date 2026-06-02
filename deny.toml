@@ -1,0 +1,103 @@
+# cargo-deny baseline for ~/Coding/Libraries
+# Generated: 2026-06-02 (post-V30 audit)
+# Owner: Workspace tooling
+#
+# This config is intentionally permissive on its first commit. It will:
+#   - FAIL on known security advisories (CVEs / RUSTSEC)  ← non-negotiable
+#   - FAIL on yanked crate versions
+#   - WARN on unmaintained crates, multiple versions, copyleft licenses, etc.
+#
+# Tighten incrementally as cleanup happens. Do NOT remove the [advisories] or
+# [yanked] sections — those are the only hard gates.
+
+[graph]
+all-features = false
+
+[advisories]
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+yanked = "warn"
+# Ignored advisories (with rationale):
+#
+# --- Unmaintained transitive crates (HARDENING, not exploitable) ---
+# All RUSTSEC-2024-0411..0420: gtk3-rs / gtk-rs GTK3 bindings
+#   Transitive from tauri-runtime-wry → webkit2gtk-gtk3. Tauri 2.x still
+#   targets GTK3 on Linux. Fix requires Tauri upstream to ship a webkit2gtk-gtk4
+#   backend; tracked in tauri-apps/tauri issue tracker.
+# RUSTSEC-2024-0370 (proc-macro-error 1.0.4): transitive from glib-macros →
+#   glib → gtk → Tauri 2.x. The active fork is `proc-macro-error2`, but Tauri
+#   has not migrated the gtk-rs bindings to it.
+# RUSTSEC-2024-0436 (paste): transitive from rav1e → ravif → image (Tauri bundler
+#   image pipeline). No safe upgrade available on the affected version range.
+# RUSTSEC-2025-0075 / -0080 / -0081 / -0098 / -0100 (unic-*): transitive from
+#   urlpattern → tauri-utils. No upstream migration planned by Tauri as of 2.11.2.
+#
+# Reference: Tauri 2.11.2 release notes acknowledge all of the above as known
+# "unmaintained warnings" in their own cargo-audit output.
+#
+# --- Genuine unmaintained (no upstream path) ---
+# RUSTSEC-2025-0141 (bincode 1.3.3): transitive from hnsw_rs 0.3, which still
+#   depends on bincode 1.x. hnsw_rs has not migrated. No safe upgrade path
+#   without forking hnsw_rs. Revisit when hnsw_rs publishes a version on
+#   bincode 2.x or a different serializer.
+ignore = [
+    # gtk3-rs GTK3 binding family (transitive via Tauri → webkit2gtk)
+    "RUSTSEC-2024-0411", "RUSTSEC-2024-0412", "RUSTSEC-2024-0413",
+    "RUSTSEC-2024-0414", "RUSTSEC-2024-0415", "RUSTSEC-2024-0416",
+    "RUSTSEC-2024-0417", "RUSTSEC-2024-0418", "RUSTSEC-2024-0419",
+    "RUSTSEC-2024-0420",
+    # proc-macro-error (transitive via glib-macros → gtk → Tauri 2.x)
+    "RUSTSEC-2024-0370",
+    # paste (transitive via Tauri bundler image pipeline)
+    "RUSTSEC-2024-0436",
+    # unic-* family (transitive via tauri-utils urlpattern)
+    "RUSTSEC-2025-0075", "RUSTSEC-2025-0080", "RUSTSEC-2025-0081",
+    "RUSTSEC-2025-0098", "RUSTSEC-2025-0100",
+    # bincode 1.3.3 unmaintained (transitive via hnsw_rs 0.3, no upgrade path)
+    "RUSTSEC-2025-0141",
+]
+# Vulnerability-grade advisories (soundness issues, RCE, etc.) are NOT ignored
+# under any circumstance. As of this config's authoring, RUSTSEC-2026-0097
+# (rand 0.9.2 unsound) and RUSTSEC-2026-0104 (rustls-webpki CRL panic) had
+# been fixed via `cargo update -p rand` and `cargo update -p rustls-webpki`.
+
+[licenses]
+version = 2
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "Unicode-3.0",
+    "CC0-1.0",
+    "Zlib",
+    "OpenSSL",
+    "MPL-2.0",
+    "0BSD",
+    "BSL-1.0",
+    "BlueOak-1.0.0",
+    "CDLA-Permissive-2.0",
+]
+confidence-threshold = 0.8
+# Note: cargo-deny 0.19 removed the top-level `copyleft` key. Copyleft is now
+# controlled per-license via the `allow` list. If a copyleft crate slips
+# in, it'll appear in the warnings section under licenses.
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"
+highlight = "all"
+workspace-default-features = "allow"
+external-default-features = "allow"
+# Common legitimate skip tree; extend as needed.
+skip = []
+skip-tree = []
+
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

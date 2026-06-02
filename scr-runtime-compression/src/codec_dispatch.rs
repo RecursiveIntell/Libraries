@@ -33,7 +33,7 @@ use quant_governor::{evaluate, GovernancePolicy, GovernanceRequest};
 #[cfg(feature = "fib")]
 use fib_quant::{FibCodeV1, FibQuantProfileV1, FibQuantizer};
 #[cfg(feature = "turbo")]
-use turbo_quant::{TurboCode, TurboQuantizer};
+use turbo_quant::TurboQuantizer;
 
 /// Codec dispatch strategy.
 #[derive(Debug, Clone)]

@@ -3,6 +3,7 @@ name = "check-runner-sys"
 version = "0.1.0"
 edition = "2021"
 description = "Unsafe syscall wrappers for check-runner process-group operations"
+license = "Apache-2.0"
 [package.metadata.unsafe_justification]
 reason = [
     "killpg() for process-group termination — no safe Rust wrapper exists",
