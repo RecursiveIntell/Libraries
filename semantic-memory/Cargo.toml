@@ -26,6 +26,10 @@ readme = "README.md"
 # precedence if both are explicitly enabled — see the dispatch in
 # vector_backend.rs).
 default = ["usearch-backend"]
+# usearch 2.25 — high-performance single-file vector search, cxx-bridge
+# to C++. The default backend. Adds cxx + cxx-build build deps. See
+# HNSW_RESEARCH_2026-06-02.md.
+usearch-backend = ["dep:usearch", "dep:cxx-build", "dep:cxx"]
 # Legacy hnsw_rs 0.3 backend. Opt-in only now (was default until
 # 2026-06-02). bincode 1.3.3 advisory (RUSTSEC-2025-0141) only applies
 # when this feature is enabled.

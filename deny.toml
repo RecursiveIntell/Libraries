@@ -35,11 +35,16 @@ yanked = "warn"
 # Reference: Tauri 2.11.2 release notes acknowledge all of the above as known
 # "unmaintained warnings" in their own cargo-audit output.
 #
-# --- Genuine unmaintained (no upstream path) ---
-# RUSTSEC-2025-0141 (bincode 1.3.3): transitive from hnsw_rs 0.3, which still
-#   depends on bincode 1.x. hnsw_rs has not migrated. No safe upgrade path
-#   without forking hnsw_rs. Revisit when hnsw_rs publishes a version on
-#   bincode 2.x or a different serializer.
+# --- bincode 1.3.3: NOW from cea-core, not hnsw_rs ---
+# hnsw_rs 0.3 was the *original* source of bincode 1.3.3 (RUSTSEC-2025-0141)
+# in this tree. After commit 1c2179f and the default switch in
+# semantic-memory to usearch 2.25, hnsw_rs is no longer pulled in by
+# default. However, bincode 1.3.3 now arrives transitively via
+# cea-core v0.1.0 → cea-sqlite → forge-engine → forge-pilot. This is a
+# separate remediation that needs cea-core to migrate to bincode 2.x
+# (or a different serializer like wincode/postcard/bitcode). Tracked
+# in HNSW_RESEARCH_2026-06-02.md §10a (the original bincode tracking
+# section has been moved there).
 ignore = [
     # gtk3-rs GTK3 binding family (transitive via Tauri → webkit2gtk)
     "RUSTSEC-2024-0411", "RUSTSEC-2024-0412", "RUSTSEC-2024-0413",
@@ -53,7 +58,8 @@ ignore = [
     # unic-* family (transitive via tauri-utils urlpattern)
     "RUSTSEC-2025-0075", "RUSTSEC-2025-0080", "RUSTSEC-2025-0081",
     "RUSTSEC-2025-0098", "RUSTSEC-2025-0100",
-    # bincode 1.3.3 unmaintained (transitive via hnsw_rs 0.3, no upgrade path)
+    # bincode 1.3.3 unmaintained (transitive via cea-core; no safe
+    # upgrade available, separate remediation from the hnsw migration)
     "RUSTSEC-2025-0141",
 ]
 # Vulnerability-grade advisories (soundness issues, RCE, etc.) are NOT ignored
