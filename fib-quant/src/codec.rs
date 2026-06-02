@@ -5,7 +5,6 @@ use crate::{
     bitpack::{pack_indices, unpack_indices},
     codebook::FibCodebookV1,
     digest::{bytes_digest, json_digest},
-    lloyd::nearest_index,
     metrics,
     profile::{FibQuantProfileV1, NormFormat},
     receipt::FibQuantCompressionReceiptV1,
@@ -94,18 +93,15 @@ impl FibQuantizer {
         if norm == 0.0 {
             return Err(FibQuantError::ZeroNorm);
         }
+        // Convert to f64 for the rotation (it expects f64 internally),
+        // then back to f32 for the SIMD-accelerated argmin loop.
         let normalized: Vec<f64> = x.iter().map(|value| f64::from(*value) / norm).collect();
-        let rotated = self.rotation.apply(&normalized)?;
-        let codewords_f64: Vec<f64> = self
-            .codebook
-            .codewords
-            .iter()
-            .map(|value| f64::from(*value))
-            .collect();
+        let rotated_f64 = self.rotation.apply(&normalized)?;
+        let rotated_f32: Vec<f32> = rotated_f64.iter().map(|&v| v as f32).collect();
         let block_count = self.profile.block_count() as usize;
         let mut indices = Vec::with_capacity(block_count);
-        for block in rotated.chunks_exact(k) {
-            indices.push(nearest_index(block, &codewords_f64, k).0 as u32);
+        for block in rotated_f32.chunks_exact(k) {
+            indices.push(gpu_backend::nearest_codeword_f32(block, &self.codebook.codewords, k) as u32);
         }
         Ok(FibCodeV1 {
             schema_version: CODE_SCHEMA.into(),
