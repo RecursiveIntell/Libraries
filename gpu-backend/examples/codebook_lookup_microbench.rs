@@ -16,9 +16,7 @@ use rand_chacha::{rand_core::SeedableRng, ChaCha8Rng};
 
 fn make_inputs(n: usize, d: usize, n_codewords: usize, k: usize) -> (Vec<f32>, Vec<f32>) {
     let mut rng = ChaCha8Rng::seed_from_u64(42);
-    let input: Vec<f32> = (0..n * d)
-        .map(|_| rng.gen_range(-1.0..1.0))
-        .collect();
+    let input: Vec<f32> = (0..n * d).map(|_| rng.gen_range(-1.0..1.0)).collect();
     let codebook: Vec<f32> = (0..n_codewords * k)
         .map(|_| rng.gen_range(-1.0..1.0))
         .collect();

@@ -271,7 +271,9 @@ mod gpu_parity_tests {
         let n_codewords: usize = 32;
         let mut seed: u64 = 0xDEAD_BEEF;
         let next = |s: &mut u64| {
-            *s = s.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            *s = s
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
             *s
         };
 
@@ -299,13 +301,10 @@ mod gpu_parity_tests {
             gpu.len(),
             cpu.len()
         );
-        let mismatches = cpu
-            .iter()
-            .zip(gpu.iter())
-            .filter(|(a, b)| a != b)
-            .count();
+        let mismatches = cpu.iter().zip(gpu.iter()).filter(|(a, b)| a != b).count();
         assert_eq!(
-            mismatches, 0,
+            mismatches,
+            0,
             "GPU codebook lookup produced {} differing indices out of {}",
             mismatches,
             cpu.len()

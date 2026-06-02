@@ -413,14 +413,14 @@ mod tests {
         // Vector 1: first sub-block [0,1,0,0] should match codeword 2 exactly
         //           second sub-block [0,0,1,0] should match codeword 3 exactly
         let input: Vec<f32> = vec![
-            1.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 1.0,  // vector 0
-            0.0, 1.0, 0.0, 0.0,   0.0, 0.0, 1.0, 0.0,  // vector 1
+            1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, // vector 0
+            0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, // vector 1
         ];
         let codebook: Vec<f32> = vec![
-            1.0, 0.0, 0.0, 0.0,  // codeword 0
-            0.0, 0.0, 0.0, 1.0,  // codeword 1
-            0.0, 1.0, 0.0, 0.0,  // codeword 2
-            0.0, 0.0, 1.0, 0.0,  // codeword 3
+            1.0, 0.0, 0.0, 0.0, // codeword 0
+            0.0, 0.0, 0.0, 1.0, // codeword 1
+            0.0, 1.0, 0.0, 0.0, // codeword 2
+            0.0, 0.0, 1.0, 0.0, // codeword 3
         ];
         let n = 2;
         let d = 8;
@@ -437,10 +437,7 @@ mod tests {
         // distance 1.0. The argmin should pick the first (lowest index)
         // since we use strict `<` comparison.
         let input: Vec<f32> = vec![1.0, 1.0, 0.0, 0.0];
-        let codebook: Vec<f32> = vec![
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-        ];
+        let codebook: Vec<f32> = vec![1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0];
         let indices = codebook_lookup_cpu(&input, &codebook, 1, 4, 4).unwrap();
         assert_eq!(indices, vec![0], "tie should resolve to lowest index");
     }
