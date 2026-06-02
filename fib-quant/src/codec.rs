@@ -245,20 +245,29 @@ impl FibQuantizer {
                     // for k=4, N=32. Falls back to CPU if N > 32 or other
                     // gates fail; the indices produced are byte-identical to
                     // the CPU path (verified by gpu-backend parity test).
-                    let block_count = self.profile.block_count() as usize;
-                    if let Ok(indices) = gpu_backend::codebook_lookup_batch(
-                        &flat,
-                        &self.codebook.codewords,
-                        n,
-                        d,
-                        k,
-                    ) {
-                        if indices.len() == n * block_count {
-                            return self.finish_batch_encode_with_indices(
-                                &flat, &norms_f64, &indices, n, d, k,
-                            );
+                    //
+                    // The `gpu_codebook_lookup` cfg switches this on. When
+                    // off, the rotated data goes back to the CPU for the
+                    // codebook loop. The current dispatch path through
+                    // gpu_backend pays H2D + D2H per call, which can be
+                    // slower than a tight CPU loop for small batches.
+                    #[cfg(feature = "gpu_codebook_lookup")]
+                    {
+                        let block_count = self.profile.block_count() as usize;
+                        if let Ok(indices) = gpu_backend::codebook_lookup_batch(
+                            &flat,
+                            &self.codebook.codewords,
+                            n,
+                            d,
+                            k,
+                        ) {
+                            if indices.len() == n * block_count {
+                                return self.finish_batch_encode_with_indices(
+                                    &flat, &norms_f64, &indices, n, d, k,
+                                );
+                            }
+                            // Length mismatch — fall through to CPU for safety.
                         }
-                        // Length mismatch — fall through to CPU for safety.
                     }
 
                     // CPU fallback for the codebook lookup (Hadamard already on GPU).
@@ -325,7 +334,7 @@ impl FibQuantizer {
     /// Build `FibCodeV1` records from a pre-computed index array. Used by
     /// the GPU path after `codebook_lookup_batch` returns the per-block
     /// nearest-codeword indices. Length of `indices` must be `n * (d / k)`.
-    #[cfg(feature = "gpu")]
+    #[cfg(all(feature = "gpu", feature = "gpu_codebook_lookup"))]
     fn finish_batch_encode_with_indices(
         &self,
         _rotated: &[f32], // not used; indices are already computed

@@ -31,6 +31,11 @@ include = [
 default = []
 kv = []
 gpu = ["gpu-backend/gpu"]
+# Enables the GPU codebook_lookup path inside encode_batch. Off by default
+# because the per-call H2D/D2H overhead is currently higher than the tight
+# CPU loop for the (n, d) sizes we benchmark. Will be re-enabled once a
+# device-side pipeline keeps the rotated data resident on GPU.
+gpu_codebook_lookup = []
 
 [dependencies]
 blake3 = "1.8.3"
