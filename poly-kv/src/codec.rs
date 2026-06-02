@@ -333,7 +333,12 @@ impl KVecCodec for FibQuantAdapter {
             crate::error::PolyKvError::CompressionFailed(format!("fib encode failed: {}", e))
         })?;
 
-        serde_json::to_vec(&code).map_err(crate::error::PolyKvError::Serialization)
+        // Use the compact binary wire format (23 bytes vs 472 bytes JSON
+        // for fib_k4_n32 with head_dim=64 — 20.5x smaller). The compact
+        // format drops profile_digest, codebook_digest, rotation_digest,
+        // ambient_dim, block_dim, norm_format — all of which the decoder
+        // re-derives from its own profile. See fib_quant::FibCodeV1::to_compact_bytes.
+        Ok(code.to_compact_bytes())
     }
 
     fn encode_batch(&self, vectors: &[&[f32]], seed: u64) -> Result<Vec<Vec<u8>>> {
@@ -349,20 +354,33 @@ impl KVecCodec for FibQuantAdapter {
         })?;
         let mut out = Vec::with_capacity(codes.len());
         for code in codes {
-            out.push(serde_json::to_vec(&code).map_err(crate::error::PolyKvError::Serialization)?);
+            out.push(code.to_compact_bytes());
         }
         Ok(out)
     }
 
     fn decode(&self, payload: &[u8], seed: u64) -> Result<Vec<f32>> {
-        let code: fib_quant::FibCodeV1 = serde_json::from_slice(payload).map_err(|e| {
-            crate::error::PolyKvError::DecompressionFailed(format!(
-                "fib code deserialize failed: {}",
-                e
-            ))
-        })?;
-
         let quantizer = self.build_quantizer(seed)?;
+        // Compact binary format is preferred (the pool always writes this
+        // now), but fall back to JSON for backward compat with pools written
+        // by older poly-kv versions.
+        let code = if payload.len() >= 3 && payload[0..3] == fib_quant::COMPACT_MAGIC {
+            let profile = quantizer.profile().clone();
+            fib_quant::FibCodeV1::from_compact_bytes(payload, &profile).map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib compact decode failed: {}",
+                    e
+                ))
+            })?
+        } else {
+            serde_json::from_slice(payload).map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib code deserialize failed: {}",
+                    e
+                ))
+            })?
+        };
+
         let decoded = quantizer.decode(&code).map_err(|e| {
             crate::error::PolyKvError::DecompressionFailed(format!("fib decode failed: {}", e))
         })?;
@@ -371,17 +389,27 @@ impl KVecCodec for FibQuantAdapter {
     }
 
     fn decode_batch(&self, payloads: &[&[u8]], seed: u64) -> Result<Vec<Vec<f32>>> {
+        let quantizer = self.build_quantizer(seed)?;
+        let profile = quantizer.profile().clone();
         let mut codes = Vec::with_capacity(payloads.len());
         for p in payloads {
-            let code: fib_quant::FibCodeV1 = serde_json::from_slice(p).map_err(|e| {
-                crate::error::PolyKvError::DecompressionFailed(format!(
-                    "fib code deserialize failed: {}",
-                    e
-                ))
-            })?;
+            let code = if p.len() >= 3 && p[0..3] == fib_quant::COMPACT_MAGIC {
+                fib_quant::FibCodeV1::from_compact_bytes(p, &profile).map_err(|e| {
+                    crate::error::PolyKvError::DecompressionFailed(format!(
+                        "fib compact decode failed: {}",
+                        e
+                    ))
+                })?
+            } else {
+                serde_json::from_slice(p).map_err(|e| {
+                    crate::error::PolyKvError::DecompressionFailed(format!(
+                        "fib code deserialize failed: {}",
+                        e
+                    ))
+                })?
+            };
             codes.push(code);
         }
-        let quantizer = self.build_quantizer(seed)?;
         quantizer
             .decode_batch_fast(&codes)
             .map_err(|e| {

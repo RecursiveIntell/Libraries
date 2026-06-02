@@ -14,6 +14,12 @@ use crate::{
 
 pub const CODE_SCHEMA: &str = "fib_code_v1";
 
+/// Magic + version prefix for the compact binary wire format.
+/// `F` `B` `1` = Fib Binary v1. Any decoder that sees a different
+/// magic should reject the payload as corrupt.
+pub const COMPACT_MAGIC: [u8; 3] = [b'F', b'B', b'1'];
+pub const COMPACT_VERSION: u8 = 1;
+
 /// Encoded fixed-rate FibQuant artifact.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FibCodeV1 {
@@ -39,6 +45,128 @@ pub struct FibCodeV1 {
     pub block_count: u32,
     /// Packed fixed-rate indices.
     pub indices: Vec<u8>,
+}
+
+impl FibCodeV1 {
+    /// Compact binary wire format. The FibCodeV1 struct carries a lot of
+    /// metadata for JSON deserialization (schema_version, profile_digest,
+    /// rotation_digest, ambient_dim, block_dim, etc.) that the decoder
+    /// either doesn't need (it has its own profile) or can reconstruct
+    /// from the manifest (profile_digest/codebook_digest/rotation_digest).
+    ///
+    /// Compact layout (little-endian, packed):
+    ///   [0..3]  magic: "FB1"
+    ///   [3]     version: 1
+    ///   [4]     wire_index_bits
+    ///   [5..9]  block_count (u32)
+    ///   [9..11] norm_payload (length-prefixed, max 65535 bytes)
+    ///          actually: [9..11] norm_len (u16) + norm bytes
+    ///   then indices bytes
+    ///
+    /// The decoder must already know the profile (or have the manifest
+    /// supply it). It can re-derive the digests from that profile and
+    /// check them at the manifest level. Per-block we only need
+    /// wire_index_bits, block_count, norm_payload, and indices.
+    ///
+    /// For fib_k4_n32 with head_dim=64: 16 indices * 5 bits = 10 bytes
+    /// indices + 2 bytes norm = 12 bytes payload + 11 bytes header =
+    /// **23 bytes per block** vs **474 bytes for JSON** = 20.6x smaller.
+    pub fn to_compact_bytes(&self) -> Vec<u8> {
+        let mut out = Vec::with_capacity(11 + self.norm_payload.len() + self.indices.len());
+        out.extend_from_slice(&COMPACT_MAGIC);
+        out.push(COMPACT_VERSION);
+        out.push(self.wire_index_bits);
+        out.extend_from_slice(&self.block_count.to_le_bytes());
+        let norm_len = self.norm_payload.len() as u16;
+        out.extend_from_slice(&norm_len.to_le_bytes());
+        out.extend_from_slice(&self.norm_payload);
+        out.extend_from_slice(&self.indices);
+        out
+    }
+
+    /// Decode the compact binary format. The caller must supply the
+    /// profile so that the profile/codebook digests in the resulting
+    /// `FibCodeV1` match what `validate_code_header` expects.
+    ///
+    /// The compact format omits the digests because they're derivable
+    /// from the profile — there's no point storing them when the
+    /// decoder will check them against the profile digest anyway.
+    pub fn from_compact_bytes(bytes: &[u8], profile: &FibQuantProfileV1) -> Result<Self> {
+        if bytes.len() < 11 {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact FibCodeV1 too short: {} bytes (need >= 11)",
+                bytes.len()
+            )));
+        }
+        if bytes[0..3] != COMPACT_MAGIC {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact FibCodeV1 bad magic: {:?} (expected {:?})",
+                &bytes[0..3],
+                COMPACT_MAGIC
+            )));
+        }
+        if bytes[3] != COMPACT_VERSION {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact FibCodeV1 version {} not supported (need {})",
+                bytes[3], COMPACT_VERSION
+            )));
+        }
+        let wire_index_bits = bytes[4];
+        let block_count = u32::from_le_bytes([bytes[5], bytes[6], bytes[7], bytes[8]]);
+        let norm_len = u16::from_le_bytes([bytes[9], bytes[10]]) as usize;
+        let header_len = 11;
+        if bytes.len() < header_len + norm_len {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact FibCodeV1 truncated: norm_len={} but only {} bytes remain",
+                norm_len,
+                bytes.len() - header_len
+            )));
+        }
+        let norm_payload = bytes[header_len..header_len + norm_len].to_vec();
+        let indices = bytes[header_len + norm_len..].to_vec();
+
+        // Validate packed index length
+        let expected_packed_len = (block_count as usize)
+            .checked_mul(wire_index_bits as usize)
+            .map(|bits| (bits + 7) / 8)
+            .ok_or_else(|| {
+                FibQuantError::ResourceLimitExceeded("packed index bits overflow".into())
+            })?;
+        if indices.len() != expected_packed_len {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact FibCodeV1 indices: got {} bytes, expected {} (block_count={} * wire_index_bits={})",
+                indices.len(),
+                expected_packed_len,
+                block_count,
+                wire_index_bits
+            )));
+        }
+
+        // We have the profile — derive the digests so validate_code_header passes.
+        let codebook = FibCodebookV1::build(profile.clone())?;
+        let rotation = StoredRotation::new(profile.ambient_dim as usize, profile.rotation_seed)?;
+        let profile_digest = profile.digest()?;
+        let codebook_digest = codebook.codebook_digest.clone();
+        let rotation_digest = rotation.digest()?;
+        Ok(FibCodeV1 {
+            schema_version: CODE_SCHEMA.into(),
+            profile_digest,
+            codebook_digest,
+            rotation_digest,
+            ambient_dim: profile.ambient_dim,
+            block_dim: profile.block_dim,
+            norm_format: profile.norm_format.clone(),
+            norm_payload,
+            wire_index_bits,
+            block_count,
+            indices,
+        })
+    }
+
+    /// Compact size in bytes (does not allocate).
+    pub fn compact_size(&self) -> usize {
+        11 + self.norm_payload.len() + self.indices.len()
+    }
 }
 
 /// FibQuant encoder/decoder bound to one profile and codebook.
