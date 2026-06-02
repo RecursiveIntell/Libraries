@@ -293,7 +293,7 @@ impl FibQuantAdapter {
     }
 
     /// Build a FibQuantizer for the given seed.
-    fn build_quantizer(
+    pub fn build_quantizer(
         &self,
         seed: u64,
     ) -> std::result::Result<fib_quant::FibQuantizer, crate::error::PolyKvError> {
@@ -383,10 +383,10 @@ impl KVecCodec for FibQuantAdapter {
         }
         let quantizer = self.build_quantizer(seed)?;
         quantizer
-            .decode_batch(&codes)
+            .decode_batch_fast(&codes)
             .map_err(|e| {
                 crate::error::PolyKvError::DecompressionFailed(format!(
-                    "fib decode_batch failed: {}",
+                    "fib decode_batch_fast failed: {}",
                     e
                 ))
             })

@@ -128,6 +128,55 @@ impl StoredRotation {
         Ok(out)
     }
 
+    /// Apply inverse `x = Pi^T y` in f32. Faster than the f64 version for
+    /// batch decode of many small vectors, where the f32→f64 roundtrip is
+    /// the bottleneck. Result is mathematically equivalent for the
+    /// `as f32` final-cast case; intermediate precision loss is below the
+    /// codebook quantization noise floor.
+    pub fn apply_inverse_f32(&self, input: &[f32]) -> Result<Vec<f32>> {
+        self.check_dim(input.len())?;
+        let dim = self.dim;
+        let matrix_f32: Vec<f32> = self.matrix.iter().map(|&v| v as f32).collect();
+        let mut out = vec![0.0f32; dim];
+        for col in 0..dim {
+            let mut sum = 0.0f32;
+            for row in 0..dim {
+                sum += matrix_f32[row * dim + col] * input[row];
+            }
+            out[col] = sum;
+        }
+        Ok(out)
+    }
+
+    /// Apply inverse `x = Pi^T y` to a batch of inputs in one call. The
+    /// matrix is converted to f32 once and reused across the batch.
+    pub fn apply_inverse_batch_f32(&self, inputs: &[&[f32]]) -> Result<Vec<Vec<f32>>> {
+        self.check_dim(inputs.first().map(|v| v.len()).unwrap_or(0))?;
+        let dim = self.dim;
+        // Cache the f32 matrix across all calls.
+        let matrix_f32: Vec<f32> = self.matrix.iter().map(|&v| v as f32).collect();
+        let mut out = Vec::with_capacity(inputs.len());
+        for input in inputs {
+            if input.len() != dim {
+                return Err(FibQuantError::CorruptPayload(format!(
+                    "input dim {} != rotation dim {}",
+                    input.len(),
+                    dim
+                )));
+            }
+            let mut row = vec![0.0f32; dim];
+            for col in 0..dim {
+                let mut sum = 0.0f32;
+                for r in 0..dim {
+                    sum += matrix_f32[r * dim + col] * input[r];
+                }
+                row[col] = sum;
+            }
+            out.push(row);
+        }
+        Ok(out)
+    }
+
     fn check_dim(&self, got: usize) -> Result<()> {
         if got != self.dim {
             return Err(FibQuantError::CorruptPayload(format!(

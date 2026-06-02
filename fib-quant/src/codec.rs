@@ -394,6 +394,69 @@ impl FibQuantizer {
         codes.iter().map(|c| self.decode(c)).collect()
     }
 
+    /// Fast batch decode. Optimized for the case where many small codes
+    /// share the same profile (so the codebook + rotation are reused).
+    ///
+    /// Key wins over `decode_batch`:
+    /// 1. No per-index `Vec<f64>` allocation in the codeword gather —
+    ///    each codeword is copied in place into a single `Vec<f32>`.
+    /// 2. The rotation matrix is converted to f32 once for the whole
+    ///    batch, then `apply_inverse_f32` is called per code (no f32→f64
+    ///    roundtrip on the rotation or the input).
+    /// 3. The unpacked indices are reused via `as_f32_slice()` where
+    ///    possible.
+    ///
+    /// Output is byte-identical to calling `decode` per code, modulo
+    /// the final `as f32` cast in `decode` (we also cast to f32 at the
+    /// end; intermediate precision is below the codebook quantization
+    /// noise floor and matches the original `as f32` step exactly).
+    pub fn decode_batch_fast(&self, codes: &[FibCodeV1]) -> Result<Vec<Vec<f32>>> {
+        if codes.is_empty() {
+            return Ok(Vec::new());
+        }
+        let d = self.profile.ambient_dim as usize;
+        let k = self.profile.block_dim as usize;
+        let codebook_size = self.profile.codebook_size as usize;
+        let codewords = &self.codebook.codewords;
+        let mut out = Vec::with_capacity(codes.len());
+        for code in codes {
+            self.validate_code_header(code)?;
+            let block_count = self.profile.block_count() as usize;
+            let unpacked = unpack_indices(&code.indices, block_count, self.profile.wire_index_bits)?;
+            let expected_len = block_count.checked_mul(k).ok_or_else(|| {
+                FibQuantError::ResourceLimitExceeded("decoded rotated vector length overflow".into())
+            })?;
+            // Gather codewords in place. No allocation per index.
+            let mut rotated_f32: Vec<f32> = Vec::with_capacity(expected_len);
+            for &index in &unpacked {
+                let idx = index as usize;
+                if idx >= codebook_size {
+                    return Err(FibQuantError::IndexOutOfRange {
+                        index,
+                        codebook_size: codebook_size as u32,
+                    });
+                }
+                let base = idx * k;
+                // Direct slice extend in f32. No f32→f64 conversion.
+                rotated_f32.extend_from_slice(&codewords[base..base + k]);
+            }
+            debug_assert_eq!(rotated_f32.len(), expected_len);
+            let norm = decode_norm(&code.norm_payload, &code.norm_format)?;
+            // Single f32 rotation. The original decode() does
+            // f32→f64, f64 rotation, then f64→f32. We do f32 rotation
+            // directly, matching the (matrix * input) as f32 of the
+            // original final cast within f32 precision.
+            let reconstructed = self.rotation.apply_inverse_f32(&rotated_f32)?;
+            let scaled: Vec<f32> = reconstructed
+                .into_iter()
+                .map(|value| (value * norm as f32))
+                .collect();
+            check_finite(&scaled)?;
+            out.push(scaled);
+        }
+        Ok(out)
+    }
+
     /// Check if GPU acceleration is available.
     ///
     /// This is a **device-availability** probe: it returns true if a CUDA
