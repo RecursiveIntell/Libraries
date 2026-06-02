@@ -429,6 +429,33 @@ impl FibQuantizer {
         }
     }
 
+    /// Per-step GPU dispatch report. `hadamard` is true if a batch of size
+    /// `n` at dim `d` would dispatch the Hadamard rotation to GPU.
+    /// `codebook_lookup` is true only if both the Hadamard AND the
+    /// codebook-lookup step would dispatch (additionally requires codebook
+    /// size <= 32). The latter is independent of the `gpu_codebook_lookup`
+    /// feature gate — the feature controls whether the dispatch is enabled
+    /// in `encode_batch`, not whether the kernel would be a win.
+    pub fn gpu_steps_for(&self, n: usize, d: usize) -> GpuStepReport {
+        let device_available = {
+            #[cfg(feature = "gpu")]
+            {
+                gpu_backend::GpuContext::is_available()
+            }
+            #[cfg(not(feature = "gpu"))]
+            {
+                false
+            }
+        };
+        let clears_thresholds = n >= gpu_backend::GpuContext::GPU_MIN_BATCH_SIZE
+            && d >= gpu_backend::GpuContext::GPU_MIN_DIM;
+        let codebook_fits = (self.profile.codebook_size as usize) <= 32;
+        GpuStepReport {
+            hadamard: device_available && clears_thresholds,
+            codebook_lookup: device_available && clears_thresholds && codebook_fits,
+        }
+    }
+
     // ── End batch methods ──
 
     fn validate_code_header(&self, code: &FibCodeV1) -> Result<()> {
@@ -582,4 +609,13 @@ mod tests {
         .unwrap_err();
         assert!(matches!(err, FibQuantError::CorruptPayload(message) if message.contains("f32")));
     }
+}
+
+/// Per-step GPU dispatch report.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct GpuStepReport {
+    /// Hadamard rotation would dispatch to GPU.
+    pub hadamard: bool,
+    /// Nearest-codebook index lookup would also dispatch to GPU.
+    pub codebook_lookup: bool,
 }

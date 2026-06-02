@@ -47,20 +47,13 @@ fn run_one(d: usize, k: usize, n_codewords: usize, n: usize, label: &str) {
     let wall = start.elapsed();
 
     let per_vec_us = wall.as_micros() as f64 / n as f64;
-    let gpu_avail = {
-        #[cfg(feature = "gpu")]
-        {
-            fib_quant_gpu_probe(&q, n, d)
-        }
-        #[cfg(not(feature = "gpu"))]
-        {
-            "no-gpu-feature"
-        }
-    };
+    let report = q.gpu_steps_for(n, d);
+    let hadamard_str = if report.hadamard { "gpu" } else { "cpu" };
+    let codebook_str = if report.codebook_lookup { "gpu" } else { "cpu" };
 
     println!(
         "  {label:24} n={n:>4} d={d:>4} k={k} N={n_codewords:>2}  wall={w:>5} ms  \
-         per_vec={pv:>5.1} us  vec/s={vs:>9.0}  codes={c}  gpu_probe={gpu}",
+         per_vec={pv:>5.1} us  vec/s={vs:>9.0}  hadamard={h:>3}  codebook={cb:>3}",
         label = label,
         n = n,
         d = d,
@@ -69,20 +62,9 @@ fn run_one(d: usize, k: usize, n_codewords: usize, n: usize, label: &str) {
         w = wall.as_millis(),
         pv = per_vec_us,
         vs = n as f64 / wall.as_secs_f64(),
-        c = codes.len(),
-        gpu = gpu_avail,
+        h = hadamard_str,
+        cb = codebook_str,
     );
-}
-
-#[cfg(feature = "gpu")]
-fn fib_quant_gpu_probe(q: &FibQuantizer, n: usize, d: usize) -> &'static str {
-    if q.is_gpu_accelerated_for(n, d) {
-        "gpu-fully"
-    } else if q.is_gpu_accelerated() {
-        "gpu-device-only"
-    } else {
-        "cpu"
-    }
 }
 
 fn main() {
