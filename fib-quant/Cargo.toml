@@ -31,6 +31,11 @@ include = [
 default = []
 kv = []
 gpu = ["gpu-backend/gpu"]
+# Parallelize the per-vector loop in finish_batch_encode using Rayon.
+# Off by default because the dispatch overhead exceeds the savings for
+# very small corpora (n < 16 or so); for larger batches this gives
+# near-linear multi-core scaling.
+parallel = ["rayon"]
 # Enables the GPU codebook_lookup path inside encode_batch. Off by default
 # because the per-call H2D/D2H overhead is currently higher than the tight
 # CPU loop for the (n, d) sizes we benchmark. Will be re-enabled once a
@@ -49,6 +54,7 @@ serde_json = "1.0.149"
 statrs = "0.17"
 thiserror = "2.0.18"
 gpu-backend = { path = "../gpu-backend" }
+rayon = { version = "1.10", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.7", features = ["html_reports"] }

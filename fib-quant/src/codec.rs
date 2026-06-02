@@ -295,38 +295,56 @@ impl FibQuantizer {
         d: usize,
         k: usize,
     ) -> Result<Vec<FibCodeV1>> {
-        let block_count = self.profile.block_count() as usize;
-        // Use the SIMD-accelerated f32 argmin from gpu-backend. This
-        // replaces the f64-promoted nearest_index loop with an AVX2+FMA
-        // f32 implementation. On a trained Lloyd-Max codebook the argmins
-        // are byte-identical to the f64 reference (parity verified in
-        // gpu-backend).
+        // Precompute digest fields that are identical for every code in
+        // this batch. Saves a digest call per vector (the profile digest
+        // is the same for all codes).
+        let profile_digest = self.profile.digest()?;
+        let codebook_digest = self.codebook.codebook_digest.clone();
+        let rotation_digest = self.rotation.digest()?;
+        let profile = &self.profile;
         let codewords_f32: &[f32] = &self.codebook.codewords;
 
-        let mut codes = Vec::with_capacity(n);
-        for vec_idx in 0..n {
+        // Per-vector work. Independent across vec_idx, so we can either
+        // run it serially or via Rayon. The Rayon threshold is set so
+        // that small batches don't pay the parallel-dispatch tax.
+        let per_vec = |vec_idx: usize| -> Result<FibCodeV1> {
             let start = vec_idx * d;
             let chunk = &rotated[start..start + d];
-            let mut indices = Vec::with_capacity(block_count);
+            let mut indices = Vec::with_capacity(profile.block_count() as usize);
             for block in chunk.chunks_exact(k) {
                 indices.push(gpu_backend::nearest_codeword_f32(block, codewords_f32, k) as u32);
             }
-
-            codes.push(FibCodeV1 {
+            Ok(FibCodeV1 {
                 schema_version: CODE_SCHEMA.into(),
-                profile_digest: self.profile.digest()?,
-                codebook_digest: self.codebook.codebook_digest.clone(),
-                rotation_digest: self.rotation.digest()?,
-                ambient_dim: self.profile.ambient_dim,
-                block_dim: self.profile.block_dim,
-                norm_format: self.profile.norm_format.clone(),
-                norm_payload: encode_norm(norms[vec_idx], &self.profile.norm_format)?,
-                wire_index_bits: self.profile.wire_index_bits,
-                block_count: self.profile.block_count(),
-                indices: pack_indices(&indices, self.profile.wire_index_bits)?,
-            });
+                profile_digest: profile_digest.clone(),
+                codebook_digest: codebook_digest.clone(),
+                rotation_digest: rotation_digest.clone(),
+                ambient_dim: profile.ambient_dim,
+                block_dim: profile.block_dim,
+                norm_format: profile.norm_format.clone(),
+                norm_payload: encode_norm(norms[vec_idx], &profile.norm_format)?,
+                wire_index_bits: profile.wire_index_bits,
+                block_count: profile.block_count(),
+                indices: pack_indices(&indices, profile.wire_index_bits)?,
+            })
+        };
+
+        // Heuristic: only parallelize when the per-vector work is large
+        // enough to amortize Rayon's dispatch overhead. Empirically,
+        // d=128 k=4 with n >= 16 sees a win on 4-core machines.
+        #[cfg(feature = "parallel")]
+        {
+            const RAYON_MIN_N: usize = 16;
+            if n >= RAYON_MIN_N {
+                use rayon::prelude::*;
+                return (0..n).into_par_iter().map(per_vec).collect();
+            }
         }
 
+        let mut codes = Vec::with_capacity(n);
+        for vec_idx in 0..n {
+            codes.push(per_vec(vec_idx)?);
+        }
         Ok(codes)
     }
 
