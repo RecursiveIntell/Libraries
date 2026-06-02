@@ -19,6 +19,7 @@ governance = [
     "dep:assurance-runtime",
     "dep:attestation-exchange",
     "dep:authority-delegation",
+    "dep:claim-ledger",
     "dep:constitutional-memory",
     "dep:continuity-runtime",
     "dep:effect-runtime",
@@ -29,6 +30,7 @@ governance = [
 assurance-runtime = { path = "../assurance-runtime", optional = true }
 attestation-exchange = { path = "../attestation-exchange", optional = true }
 authority-delegation = { path = "../authority-delegation", optional = true }
+claim-ledger = { path = "../claim-ledger", optional = true }
 constitutional-memory = { path = "../constitutional-memory", optional = true }
 continuity-runtime = { path = "../continuity-runtime", optional = true }
 effect-runtime = { path = "../effect-runtime", optional = true }
