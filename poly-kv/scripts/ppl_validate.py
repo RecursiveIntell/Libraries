@@ -309,6 +309,9 @@ def phase1_compressed(args, state: dict) -> None:
     )
 
     # 4) Reconstruct a DynamicCache from the decompressed layer blobs
+    # Build new_keys/new_vals directly on GPU as fp16 (cuts memory in half
+    # vs fp32-on-CPU + move-to-GPU).
+    print(f"[phase1] rebuilding {cfg['num_layers']} layer tensors directly on {args.device}", flush=True)
     new_keys: list[torch.Tensor] = []
     new_vals: list[torch.Tensor] = []
     for i in range(cfg["num_layers"]):
@@ -320,21 +323,34 @@ def phase1_compressed(args, state: dict) -> None:
         D = layer_data["head_dim"]
         k_per_head = layer_data["keys"]   # length H, each of length T*D
         v_per_head = layer_data["values"]
-        k = torch.zeros((1, H, T, D), dtype=torch.float32)
-        v = torch.zeros((1, H, T, D), dtype=torch.float32)
+        # Allocate destination directly on target device, fp16
+        k = torch.empty((1, H, T, D), dtype=torch.float16, device=args.device)
+        v = torch.empty((1, H, T, D), dtype=torch.float16, device=args.device)
         for h in range(H):
-            kh = torch.tensor(k_per_head[h], dtype=torch.float32).reshape(T, D)
-            vh = torch.tensor(v_per_head[h], dtype=torch.float32).reshape(T, D)
+            # Build per-head slice on CPU as fp16 (small), then move+copy to GPU
+            kh = torch.tensor(k_per_head[h], dtype=torch.float32).reshape(T, D).to(
+                args.device, dtype=torch.float16, non_blocking=True
+            )
+            vh = torch.tensor(v_per_head[h], dtype=torch.float32).reshape(T, D).to(
+                args.device, dtype=torch.float16, non_blocking=True
+            )
             k[0, h, :, :] = kh
             v[0, h, :, :] = vh
         new_keys.append(k)
         new_vals.append(v)
+        # Free the per-layer dict (large Python list of lists)
+        del layer_data, k_per_head, v_per_head, kh, vh
     assert offset == len(data), f"read {offset} of {len(data)} bytes"
-    print(f"[phase1] rebuilt {len(new_keys)} layer tensors", flush=True)
+    print(f"[phase1] rebuilt {len(new_keys)} layer tensors on {args.device}", flush=True)
     print(
         f"[phase1] shape per layer: K={tuple(new_keys[0].shape)} V={tuple(new_vals[0].shape)}",
         flush=True,
     )
+    # Free the raw binary blob
+    del data
+    import gc; gc.collect()
+    if args.device == "cuda":
+        torch.cuda.empty_cache()
 
     # 5) Reconstruct input_ids for the same prefix
     tokenizer = AutoTokenizer.from_pretrained(args.model)
@@ -356,8 +372,9 @@ def phase1_compressed(args, state: dict) -> None:
     fresh_cache = DynamicCache()
     if hasattr(fresh_cache, "layers"):
         for i in range(cfg["num_layers"]):
-            fresh_cache.layers[i].keys = new_keys[i].to(args.device, dtype=torch.float16)
-            fresh_cache.layers[i].values = new_vals[i].to(args.device, dtype=torch.float16)
+            # new_keys/new_vals are already on args.device as fp16
+            fresh_cache.layers[i].keys = new_keys[i]
+            fresh_cache.layers[i].values = new_vals[i]
         t0 = time.time()
         with torch.no_grad():
             out2 = model(
@@ -370,8 +387,7 @@ def phase1_compressed(args, state: dict) -> None:
         print(f"[phase1] forward with pre-populated cache done in {fwd2_s:.1f}s", flush=True)
     else:
         legacy = tuple(
-            (new_keys[i].to(args.device, dtype=torch.float16),
-             new_vals[i].to(args.device, dtype=torch.float16))
+            (new_keys[i], new_vals[i])
             for i in range(cfg["num_layers"])
         )
         t0 = time.time()
