@@ -142,12 +142,39 @@ fn provekv_pool_builder_materializes_non_empty_poly_kv_payload() {
     assert_eq!(item_map[0].pool_index, 0);
     assert_eq!(item_map[1].pool_index, 1);
 
-    let payload_json: serde_json::Value = serde_json::from_slice(&payload).unwrap();
+    assert_eq!(&payload[0..4], b"SMP1");
+    assert_eq!(generation.vector_dim, 4);
+}
+
+#[cfg(feature = "poly-kv-pool")]
+#[test]
+fn provekv_pool_builder_writes_compact_binary_payload_not_json_envelope() {
+    let rows = (0..128)
+        .map(|i| EmbeddingSnapshotRow {
+            item_id: format!("fact-{i}"),
+            source_type: "fact".to_string(),
+            embedding: (0..384)
+                .map(|j| (((i * 17 + j * 31) % 997) as f32 / 997.0) - 0.5)
+                .collect(),
+        })
+        .collect();
+    let snapshot = build_embedding_snapshot(rows, 384).unwrap();
+    let (_generation, payload, _item_map) = build_provekv_pool_generation(snapshot, 42).unwrap();
+
     assert_eq!(
-        payload_json["schema_version"],
-        "semantic_memory_provekv_pool_payload_v1"
+        &payload[0..4],
+        b"SMP1",
+        "payload must be semantic-memory compact binary v1"
     );
-    assert_eq!(payload_json["vector_dim"], 4);
-    assert_eq!(payload_json["manifest"]["num_shared_tokens"], 2);
-    assert_eq!(payload_json["receipt"]["total_tokens"], 2);
+    assert!(
+        serde_json::from_slice::<serde_json::Value>(&payload).is_err(),
+        "payload must not be the old serde_json block envelope"
+    );
+    let raw_f32_bytes = 128 * 384 * std::mem::size_of::<f32>();
+    let ratio = raw_f32_bytes as f64 / payload.len() as f64;
+    assert!(
+        ratio > 15.0,
+        "compact payload should use real FB2 economics, not the old ~2.46x JSON envelope; ratio={ratio:.2}, payload={} bytes",
+        payload.len()
+    );
 }

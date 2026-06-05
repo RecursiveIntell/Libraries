@@ -143,28 +143,46 @@ impl SharedKVPool {
             let key_refs: Vec<&[f32]> = key_inputs.iter().map(|v| v.as_slice()).collect();
             let value_refs: Vec<&[f32]> = value_inputs.iter().map(|v| v.as_slice()).collect();
 
-            let encoded_keys = codec.encode_batch(&key_refs, seed)?;
-            let encoded_values = codec.encode_batch(&value_refs, seed)?;
+            let mut key_blocks: Vec<CompressedBlock>;
+            let mut value_blocks: Vec<CompressedBlock>;
+            if let (Some(key_payload), Some(value_payload)) = (
+                codec.encode_batch_compact(&key_refs, seed)?,
+                codec.encode_batch_compact(&value_refs, seed)?,
+            ) {
+                key_blocks = vec![CompressedBlock::new(
+                    codec.codec_id(),
+                    key_payload,
+                    head_dim,
+                )];
+                value_blocks = vec![CompressedBlock::new(
+                    codec.codec_id(),
+                    value_payload,
+                    head_dim,
+                )];
+            } else {
+                let encoded_keys = codec.encode_batch(&key_refs, seed)?;
+                let encoded_values = codec.encode_batch(&value_refs, seed)?;
 
-            if encoded_keys.len() != num_tokens * num_kv_heads
-                || encoded_values.len() != num_tokens * num_kv_heads
-            {
-                return Err(PolyKvError::Internal(format!(
-                    "encode_batch returned {} keys / {} values, expected {} (layer {})",
-                    encoded_keys.len(),
-                    encoded_values.len(),
-                    num_tokens * num_kv_heads,
-                    layer_idx
-                )));
-            }
+                if encoded_keys.len() != num_tokens * num_kv_heads
+                    || encoded_values.len() != num_tokens * num_kv_heads
+                {
+                    return Err(PolyKvError::Internal(format!(
+                        "encode_batch returned {} keys / {} values, expected {} (layer {})",
+                        encoded_keys.len(),
+                        encoded_values.len(),
+                        num_tokens * num_kv_heads,
+                        layer_idx
+                    )));
+                }
 
-            let mut key_blocks: Vec<CompressedBlock> =
-                Vec::with_capacity(num_tokens * num_kv_heads);
-            let mut value_blocks: Vec<CompressedBlock> =
-                Vec::with_capacity(num_tokens * num_kv_heads);
-            for (k_payload, v_payload) in encoded_keys.into_iter().zip(encoded_values.into_iter()) {
-                key_blocks.push(CompressedBlock::new(codec.codec_id(), k_payload, head_dim));
-                value_blocks.push(CompressedBlock::new(codec.codec_id(), v_payload, head_dim));
+                key_blocks = Vec::with_capacity(num_tokens * num_kv_heads);
+                value_blocks = Vec::with_capacity(num_tokens * num_kv_heads);
+                for (k_payload, v_payload) in
+                    encoded_keys.into_iter().zip(encoded_values.into_iter())
+                {
+                    key_blocks.push(CompressedBlock::new(codec.codec_id(), k_payload, head_dim));
+                    value_blocks.push(CompressedBlock::new(codec.codec_id(), v_payload, head_dim));
+                }
             }
             let layer_bytes: u64 = key_blocks
                 .iter()
@@ -325,7 +343,11 @@ impl SharedKVPool {
         let layer = &self.layers[layer_idx];
         let head_dim = self.manifest.shape.head_dim;
         let num_heads = self.manifest.shape.num_kv_heads as usize;
-        let num_tokens = layer.key_blocks.len() / num_heads;
+        let num_tokens = if layer.key_blocks.len() == 1 && layer.value_blocks.len() == 1 {
+            self.manifest.num_shared_tokens as usize
+        } else {
+            layer.key_blocks.len() / num_heads
+        };
         if layer.value_blocks.len() != layer.key_blocks.len() {
             return Err(PolyKvError::Internal(format!(
                 "layer {}: key/value block count mismatch ({} vs {})",
@@ -334,7 +356,7 @@ impl SharedKVPool {
                 layer.value_blocks.len()
             )));
         }
-        if layer.key_blocks.len() != num_tokens * num_heads {
+        if layer.key_blocks.len() != num_tokens * num_heads && layer.key_blocks.len() != 1 {
             return Err(PolyKvError::Internal(format!(
                 "layer {}: block count {} != num_tokens * num_heads {}",
                 layer_idx,
@@ -360,25 +382,70 @@ impl SharedKVPool {
             vec![Vec::with_capacity(num_tokens * head_dim); num_heads];
         let mut values_per_head: Vec<Vec<f32>> =
             vec![Vec::with_capacity(num_tokens * head_dim); num_heads];
-        for token_idx in 0..num_tokens {
-            for head_idx in 0..num_heads {
-                let block_idx = token_idx * num_heads + head_idx;
-                let k_payload = &layer.key_blocks[block_idx].encoded_payload;
-                let v_payload = &layer.value_blocks[block_idx].encoded_payload;
-                let k_decoded = codec.decode(k_payload, seed)?;
-                let v_decoded = codec.decode(v_payload, seed)?;
-                if k_decoded.len() != head_dim {
+        if layer.key_blocks.len() == 1 && layer.value_blocks.len() == 1 {
+            if let (Some(decoded_keys), Some(decoded_values)) = (
+                codec.decode_batch_compact(&layer.key_blocks[0].encoded_payload, seed)?,
+                codec.decode_batch_compact(&layer.value_blocks[0].encoded_payload, seed)?,
+            ) {
+                if decoded_keys.len() != num_tokens * num_heads
+                    || decoded_values.len() != num_tokens * num_heads
+                {
                     return Err(PolyKvError::Internal(format!(
-                        "decoded key length {} != head_dim {} (layer {}, token {}, head {})",
-                        k_decoded.len(),
-                        head_dim,
-                        layer_idx,
-                        token_idx,
-                        head_idx
+                        "FB2 decoded {} keys / {} values, expected {} (layer {})",
+                        decoded_keys.len(),
+                        decoded_values.len(),
+                        num_tokens * num_heads,
+                        layer_idx
                     )));
                 }
-                keys_per_head[head_idx].extend_from_slice(&k_decoded);
-                values_per_head[head_idx].extend_from_slice(&v_decoded);
+                for token_idx in 0..num_tokens {
+                    for head_idx in 0..num_heads {
+                        let block_idx = token_idx * num_heads + head_idx;
+                        let k_decoded = &decoded_keys[block_idx];
+                        let v_decoded = &decoded_values[block_idx];
+                        if k_decoded.len() != head_dim || v_decoded.len() != head_dim {
+                            return Err(PolyKvError::Internal(format!(
+                                "FB2 decoded vector length mismatch (layer {}, token {}, head {})",
+                                layer_idx, token_idx, head_idx
+                            )));
+                        }
+                        keys_per_head[head_idx].extend_from_slice(k_decoded);
+                        values_per_head[head_idx].extend_from_slice(v_decoded);
+                    }
+                }
+            } else {
+                if num_tokens != 1 || num_heads != 1 {
+                    return Err(PolyKvError::Internal(format!(
+                        "single non-compact block cannot decode shape tokens={} heads={} (layer {})",
+                        num_tokens, num_heads, layer_idx
+                    )));
+                }
+                let k_decoded = codec.decode(&layer.key_blocks[0].encoded_payload, seed)?;
+                let v_decoded = codec.decode(&layer.value_blocks[0].encoded_payload, seed)?;
+                keys_per_head[0].extend_from_slice(&k_decoded);
+                values_per_head[0].extend_from_slice(&v_decoded);
+            }
+        } else {
+            for token_idx in 0..num_tokens {
+                for head_idx in 0..num_heads {
+                    let block_idx = token_idx * num_heads + head_idx;
+                    let k_payload = &layer.key_blocks[block_idx].encoded_payload;
+                    let v_payload = &layer.value_blocks[block_idx].encoded_payload;
+                    let k_decoded = codec.decode(k_payload, seed)?;
+                    let v_decoded = codec.decode(v_payload, seed)?;
+                    if k_decoded.len() != head_dim {
+                        return Err(PolyKvError::Internal(format!(
+                            "decoded key length {} != head_dim {} (layer {}, token {}, head {})",
+                            k_decoded.len(),
+                            head_dim,
+                            layer_idx,
+                            token_idx,
+                            head_idx
+                        )));
+                    }
+                    keys_per_head[head_idx].extend_from_slice(&k_decoded);
+                    values_per_head[head_idx].extend_from_slice(&v_decoded);
+                }
             }
         }
         Ok(DecompressedLayer {
@@ -569,6 +636,35 @@ mod tests {
         bad_corpus[0].1.truncate(10);
         let result = SharedKVPool::build(&bad_corpus, &shape, 42);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_pool_build_writes_single_fb2_payload_per_layer_side() {
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(32);
+        let (pool, receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+
+        assert_eq!(pool.layers.len(), shape.num_layers as usize);
+        for layer in &pool.layers {
+            assert_eq!(
+                layer.key_blocks.len(),
+                1,
+                "pool layer keys must be stored as one FB2 batched payload, not per-vector FB1 blocks"
+            );
+            assert_eq!(
+                layer.value_blocks.len(),
+                1,
+                "pool layer values must be stored as one FB2 batched payload, not per-vector FB1 blocks"
+            );
+            assert_eq!(&layer.key_blocks[0].encoded_payload[0..3], b"FB2");
+            assert_eq!(&layer.value_blocks[0].encoded_payload[0..3], b"FB2");
+        }
+        let raw_bytes = shape.total_kv_bytes(corpus.len()) as f64;
+        let ratio = raw_bytes / receipt.pool_size_bytes as f64;
+        assert!(
+            ratio > 5.0,
+            "FB2 batched pool should clear tiny-test JSON/FB1 bloat; ratio={ratio:.2}"
+        );
     }
 
     /// The pool build must produce the same `pool_digest` and `block_digest`

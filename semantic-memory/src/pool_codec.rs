@@ -247,9 +247,22 @@ impl VectorCodec for PoolCodec {
         )
         .map_err(|e| MemoryError::QuantizationError(format!("pool decode codec: {e}")))?;
 
-        let decoded = codec
-            .decode(&artifact.encoded, self.seed)
-            .map_err(|e| MemoryError::QuantizationError(format!("pool decode: {e}")))?;
+        let decoded = if let Some(mut batch) = codec
+            .decode_batch_compact(&artifact.encoded, self.seed)
+            .map_err(|e| MemoryError::QuantizationError(format!("pool decode compact: {e}")))?
+        {
+            if batch.len() != 1 {
+                return Err(MemoryError::QuantizationError(format!(
+                    "pool decode compact: expected 1 vector, got {}",
+                    batch.len()
+                )));
+            }
+            batch.remove(0)
+        } else {
+            codec
+                .decode(&artifact.encoded, self.seed)
+                .map_err(|e| MemoryError::QuantizationError(format!("pool decode: {e}")))?
+        };
 
         if decoded.len() != dim {
             return Err(MemoryError::QuantizationError(format!(

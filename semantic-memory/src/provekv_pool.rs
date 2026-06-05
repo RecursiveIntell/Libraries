@@ -9,35 +9,9 @@ use crate::error::MemoryError;
 use crate::types::{ProveKvPoolGenerationV1, ProveKvPoolItemMapEntryV1};
 use crate::vector_snapshot::{embedding_row_digest, EmbeddingSnapshotV1};
 use chrono::Utc;
-use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "poly-kv-pool")]
-use poly_kv_core::{
-    AttentionType, CompressedBlock, KvTensorShape, PoolBuildReceipt, PoolManifest, SharedKVPool,
-};
-
-#[cfg(feature = "poly-kv-pool")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct SerializablePoolLayer {
-    layer_index: u32,
-    key_blocks: Vec<CompressedBlock>,
-    value_blocks: Vec<CompressedBlock>,
-    block_digest: String,
-}
-
-#[cfg(feature = "poly-kv-pool")]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct SerializablePoolPayload {
-    schema_version: String,
-    embedding_snapshot_digest: String,
-    source_digest: String,
-    vector_dim: usize,
-    padded_vector_dim: usize,
-    shape: KvTensorShape,
-    manifest: PoolManifest,
-    receipt: PoolBuildReceipt,
-    layers: Vec<SerializablePoolLayer>,
-}
+use poly_kv_core::{AttentionType, KvTensorShape, PoolBuildReceipt, SharedKVPool};
 
 #[cfg(feature = "poly-kv-pool")]
 fn padded_vector_dim_for_poly_kv(vector_dim: usize) -> usize {
@@ -81,6 +55,56 @@ fn semantic_embedding_corpus(snapshot: &EmbeddingSnapshotV1) -> Vec<(String, Vec
         .collect()
 }
 
+#[cfg(feature = "poly-kv-pool")]
+fn push_len_prefixed_bytes(out: &mut Vec<u8>, bytes: &[u8]) {
+    out.extend_from_slice(&(bytes.len() as u64).to_le_bytes());
+    out.extend_from_slice(bytes);
+}
+
+#[cfg(feature = "poly-kv-pool")]
+fn compact_pool_payload(
+    snapshot: &EmbeddingSnapshotV1,
+    shape: &KvTensorShape,
+    pool: &SharedKVPool,
+    receipt: &PoolBuildReceipt,
+) -> Result<Vec<u8>, MemoryError> {
+    let metadata = serde_json::json!({
+        "schema_version": "semantic_memory_provekv_pool_payload_v1",
+        "embedding_snapshot_digest": snapshot.embedding_snapshot_digest,
+        "source_digest": snapshot.source_digest,
+        "vector_dim": snapshot.vector_dim,
+        "padded_vector_dim": shape.kv_elements_per_token_per_layer(),
+        "shape": shape,
+        "manifest": pool.manifest,
+        "receipt": receipt,
+    });
+    let metadata = serde_json::to_vec(&metadata).map_err(|err| {
+        MemoryError::Other(format!(
+            "failed to serialize proveKV compact payload metadata: {err}"
+        ))
+    })?;
+    let mut payload = Vec::new();
+    payload.extend_from_slice(b"SMP1");
+    payload.push(1);
+    payload.extend_from_slice(&(pool.layers.len() as u32).to_le_bytes());
+    push_len_prefixed_bytes(&mut payload, &metadata);
+    for layer in &pool.layers {
+        payload.extend_from_slice(&layer.layer_index.to_le_bytes());
+        push_len_prefixed_bytes(&mut payload, layer.block_digest.hex().as_bytes());
+        payload.extend_from_slice(&(layer.key_blocks.len() as u32).to_le_bytes());
+        for block in &layer.key_blocks {
+            push_len_prefixed_bytes(&mut payload, block.codec.as_bytes());
+            push_len_prefixed_bytes(&mut payload, &block.encoded_payload);
+        }
+        payload.extend_from_slice(&(layer.value_blocks.len() as u32).to_le_bytes());
+        for block in &layer.value_blocks {
+            push_len_prefixed_bytes(&mut payload, block.codec.as_bytes());
+            push_len_prefixed_bytes(&mut payload, &block.encoded_payload);
+        }
+    }
+    Ok(payload)
+}
+
 /// Build a proveKV/poly-kv generation envelope from an authoritative embedding snapshot.
 #[cfg(feature = "poly-kv-pool")]
 pub fn build_provekv_pool_generation(
@@ -122,32 +146,7 @@ pub fn build_provekv_pool_generation(
     let (pool, receipt) = SharedKVPool::build(&corpus, &shape, seed).map_err(|err| {
         MemoryError::Other(format!("failed to build proveKV/poly-kv pool: {err}"))
     })?;
-    let serializable_layers = pool
-        .layers
-        .iter()
-        .map(|layer| SerializablePoolLayer {
-            layer_index: layer.layer_index,
-            key_blocks: layer.key_blocks.clone(),
-            value_blocks: layer.value_blocks.clone(),
-            block_digest: layer.block_digest.hex().to_string(),
-        })
-        .collect::<Vec<_>>();
-    let payload_envelope = SerializablePoolPayload {
-        schema_version: "semantic_memory_provekv_pool_payload_v1".to_string(),
-        embedding_snapshot_digest: snapshot.embedding_snapshot_digest.clone(),
-        source_digest: snapshot.source_digest.clone(),
-        vector_dim: snapshot.vector_dim,
-        padded_vector_dim: shape.kv_elements_per_token_per_layer(),
-        shape,
-        manifest: pool.manifest,
-        receipt,
-        layers: serializable_layers,
-    };
-    let payload = serde_json::to_vec(&payload_envelope).map_err(|err| {
-        MemoryError::Other(format!(
-            "failed to serialize proveKV/poly-kv pool payload envelope: {err}"
-        ))
-    })?;
+    let payload = compact_pool_payload(&snapshot, &shape, &pool, &receipt)?;
 
     let mut manifest_hasher = blake3::Hasher::new();
     manifest_hasher.update(b"semantic-memory.provekv_pool_manifest.v1");
