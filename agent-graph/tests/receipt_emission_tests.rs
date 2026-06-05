@@ -69,12 +69,12 @@ async fn graph_execution_receipts_roundtrip_json() {
         started_at: chrono::Utc::now(),
         finished_at: chrono::Utc::now(),
         steps: vec![],
+        memory_generations: vec![],
         outcome: ExecutionOutcome::Completed,
     };
 
     let json = serde_json::to_string(&receipt).expect("serialize");
-    let restored: GraphExecutionReceiptV1 =
-        serde_json::from_str(&json).expect("deserialize");
+    let restored: GraphExecutionReceiptV1 = serde_json::from_str(&json).expect("deserialize");
     assert_eq!(restored.graph_id, "test-graph");
     assert_eq!(restored.execution_id, "exec-1");
     assert!(matches!(restored.outcome, ExecutionOutcome::Completed));

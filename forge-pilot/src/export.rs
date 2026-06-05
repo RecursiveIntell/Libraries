@@ -39,10 +39,7 @@ pub struct ImportBootstrapReport {
 /// No-op when the `governance` feature is disabled — call site must not
 /// rely on the receipt.
 #[cfg(feature = "governance")]
-fn build_pending_export_receipt(
-    bundle_id: &str,
-    envelope: &ExportEnvelopeV3,
-) -> ExportReceipt {
+fn build_pending_export_receipt(bundle_id: &str, envelope: &ExportEnvelopeV3) -> ExportReceipt {
     let envelope_json = serde_json::to_string(envelope).unwrap_or_default();
     let envelope_digest = ids::sha256_text(&envelope_json);
     let mut receipt = ExportReceipt::new(
@@ -50,7 +47,9 @@ fn build_pending_export_receipt(
         vec![bundle_id.to_string()],
         envelope.envelope_id.to_string(),
     );
-    receipt.input_digests.insert("bundle".to_string(), envelope_digest.clone());
+    receipt
+        .input_digests
+        .insert("bundle".to_string(), envelope_digest.clone());
     // The output is the envelope itself, which exists before the
     // import step. Bind it here so both success and failure receipts
     // carry the envelope as a recoverable artifact.
@@ -77,10 +76,7 @@ pub async fn canonical_roundtrip(
     // audit-trail gap: every material operation must produce a
     // receipt, including failures.
     #[cfg(feature = "governance")]
-    let mut export_receipt = Some(build_pending_export_receipt(
-        &bundle.bundle_id,
-        &envelope,
-    ));
+    let mut export_receipt = Some(build_pending_export_receipt(&bundle.bundle_id, &envelope));
 
     let import_outcome = memory_store.import_projection_batch(&batch).await;
     let import_result = match import_outcome {

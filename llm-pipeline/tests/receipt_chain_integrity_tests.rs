@@ -16,8 +16,8 @@
 #![allow(clippy::expect_used)]
 
 use llm_pipeline::{
-    BudgetDebitV1, ExecutionOutcome, PipelineExecutionReceiptV1, ProviderCallReceiptV1,
-    RetryCause, RetryDecision, RetryDecisionReceiptV1,
+    BudgetDebitV1, ExecutionOutcome, PipelineExecutionReceiptV1, ProviderCallReceiptV1, RetryCause,
+    RetryDecision, RetryDecisionReceiptV1,
 };
 
 fn make_budget() -> BudgetDebitV1 {
@@ -38,6 +38,7 @@ fn make_provider_call(seed: u32) -> ProviderCallReceiptV1 {
         latency_ms: 100 + u64::from(seed),
         tokens_in: 50,
         tokens_out: 25,
+        retrieved_context: vec![],
     }
 }
 

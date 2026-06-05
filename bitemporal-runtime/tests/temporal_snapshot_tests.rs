@@ -114,8 +114,14 @@ fn temporal_snapshot_handles_duplicate_id_with_advancing_recorded_times() {
     );
 
     let as_of_1700 = temporal_snapshot(&records, Utc.timestamp_opt(1700, 0).unwrap());
-    assert_eq!(as_of_1700[0].recorded_time, Utc.timestamp_opt(1500, 0).unwrap());
+    assert_eq!(
+        as_of_1700[0].recorded_time,
+        Utc.timestamp_opt(1500, 0).unwrap()
+    );
 
     let as_of_2500 = temporal_snapshot(&records, Utc.timestamp_opt(2500, 0).unwrap());
-    assert_eq!(as_of_2500[0].recorded_time, Utc.timestamp_opt(2000, 0).unwrap());
+    assert_eq!(
+        as_of_2500[0].recorded_time,
+        Utc.timestamp_opt(2000, 0).unwrap()
+    );
 }

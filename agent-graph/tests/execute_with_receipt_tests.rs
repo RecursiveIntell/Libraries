@@ -82,10 +82,7 @@ async fn execute_with_receipt_receipt_serializes_to_json_round_trip() {
         serde_json::from_str(&json).expect("receipt must deserialize");
     assert_eq!(restored.execution_id, receipt.execution_id);
     assert_eq!(restored.graph_id, receipt.graph_id);
-    assert!(matches!(
-        restored.outcome,
-        ExecutionOutcome::Completed
-    ));
+    assert!(matches!(restored.outcome, ExecutionOutcome::Completed));
 }
 
 #[tokio::test]

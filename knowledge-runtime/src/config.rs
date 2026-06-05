@@ -2,6 +2,23 @@ use crate::error::RuntimeError;
 use crate::ids::Scope;
 use serde::{Deserialize, Serialize};
 
+/// Runtime-level hint for semantic-memory candidate backend selection.
+///
+/// This is intentionally a hint/trace value only. Knowledge Runtime does not
+/// construct or depend on proveKV/poly-kv backends directly.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RuntimeCandidateBackendHint {
+    SemanticMemoryDefault,
+    ProveKvPoolCandidate,
+}
+
+impl Default for RuntimeCandidateBackendHint {
+    fn default() -> Self {
+        Self::SemanticMemoryDefault
+    }
+}
+
 /// Top-level runtime configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RuntimeConfig {
@@ -61,6 +78,12 @@ pub struct QueryConfig {
     pub max_route_legs: usize,
     /// Default result limit when caller does not specify.
     pub default_limit: usize,
+    /// Semantic-memory candidate backend hint to disclose in runtime traces.
+    ///
+    /// The owning semantic-memory store remains authoritative for actual
+    /// backend configuration and exact rerank enforcement.
+    #[serde(default)]
+    pub candidate_backend_hint: RuntimeCandidateBackendHint,
 }
 
 impl Default for QueryConfig {
@@ -69,6 +92,7 @@ impl Default for QueryConfig {
             max_results_per_leg: 20,
             max_route_legs: 4,
             default_limit: 10,
+            candidate_backend_hint: RuntimeCandidateBackendHint::default(),
         }
     }
 }

@@ -24,6 +24,7 @@
 //! | [`ledger`] | Append-only hash-chained ledger |
 //! | [`receipt`] | Export and admission receipt types |
 
+pub mod candidate;
 pub mod error;
 pub mod ids;
 pub mod ledger;
@@ -31,6 +32,10 @@ pub mod receipt;
 pub mod types;
 
 // Re-export commonly used types at the crate root for ergonomic access.
+pub use candidate::{
+    ProofPacketCandidateProvenanceV1, SimilarClaimCandidateV1,
+    PROOF_PACKET_CANDIDATE_PROVENANCE_V1_SCHEMA, SIMILAR_CLAIM_CANDIDATE_V1_SCHEMA,
+};
 pub use error::ClaimLedgerError;
 pub use ids::{normalize_text, sha256_bytes, sha256_text, stable_id, ulid};
 pub use ledger::{

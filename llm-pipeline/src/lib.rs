@@ -142,6 +142,6 @@ pub use pipeline::{Pipeline, PipelineBuilder};
 pub use stage::{Stage, StageBuilder};
 pub use types::{
     BudgetDebitV1, ExecutionOutcome, PipelineContext, PipelineExecutionReceiptV1, PipelineInput,
-    PipelineProgress, PipelineResult, ProviderCallReceiptV1, RetryCause, RetryDecision,
-    RetryDecisionReceiptV1, StageOutput,
+    PipelineProgress, PipelineResult, ProviderCallReceiptV1, RetrievedContextProvenanceV1,
+    RetryCause, RetryDecision, RetryDecisionReceiptV1, StageOutput,
 };

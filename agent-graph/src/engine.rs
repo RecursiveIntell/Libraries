@@ -139,6 +139,7 @@ impl AgentGraph {
             started_at,
             finished_at,
             steps: vec![step],
+            memory_generations: Vec::new(),
             outcome,
         };
 

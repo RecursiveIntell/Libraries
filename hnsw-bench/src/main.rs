@@ -147,7 +147,7 @@ fn make_index(backend: BackendKind, dim: usize) -> VectorIndex {
         flush_interval_secs: None,
     };
     let _ = backend; // Backend selection is via semantic-memory's feature
-                      // flags in Cargo.toml — both backends are compiled in.
+                     // flags in Cargo.toml — both backends are compiled in.
     VectorIndex::new(config).expect("VectorIndex::new")
 }
 
@@ -228,7 +228,9 @@ fn timed_search_with_recall(
             .iter()
             .filter_map(|h| {
                 // The key is "vec:N" — extract N.
-                h.key.strip_prefix("vec:").and_then(|n| n.parse::<usize>().ok())
+                h.key
+                    .strip_prefix("vec:")
+                    .and_then(|n| n.parse::<usize>().ok())
             })
             .collect();
         let overlap = ground_set.intersection(&hit_keys).count();
@@ -251,7 +253,11 @@ fn latency_stats(mut latencies: Vec<Duration>) -> (f64, f64, f64) {
 // Save / load timing
 // =====================================================================
 
-fn timed_save_load(idx: &VectorIndex, dir: &std::path::Path, dim: usize) -> (Duration, Duration, u64) {
+fn timed_save_load(
+    idx: &VectorIndex,
+    dir: &std::path::Path,
+    dim: usize,
+) -> (Duration, Duration, u64) {
     let t_save = Instant::now();
     idx.save(dir, "bench").expect("save");
     let save_ms = t_save.elapsed();
@@ -318,9 +324,7 @@ fn run_one(backend: BackendKind, dim: usize) -> Row {
     // Search + recall.
     let (latencies, recall) = timed_search_with_recall(&idx, &queries, &corpus, TOP_K);
     let (p50, p99, mean) = latency_stats(latencies);
-    println!(
-        "  search: p50={p50:.1}us p99={p99:.1}us mean={mean:.1}us, recall@10={recall:.3}"
-    );
+    println!("  search: p50={p50:.1}us p99={p99:.1}us mean={mean:.1}us, recall@10={recall:.3}");
 
     // Save / load.
     let tmp = TempDir::new().expect("tmpdir");
@@ -405,7 +409,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for &dim in DIMENSIONS {
         let row = run_one(active, dim);
         let row_clone = row.clone();
-        suite.register(format!("{active}-D{dim}"), move || Ok(row_clone.to_result()));
+        suite.register(
+            format!("{active}-D{dim}"),
+            move || Ok(row_clone.to_result()),
+        );
         rows.push(row);
     }
 
@@ -416,15 +423,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Also dump the raw rows table.
     println!("\n=== results table ===");
-    println!("{:<12} {:>5} {:>10} {:>8} {:>8} {:>8} {:>9} {:>9} {:>7}",
-             "backend", "D", "vec/s", "p50us", "p99us", "meanus", "recall@10", "save_ms", "MB");
+    println!(
+        "{:<12} {:>5} {:>10} {:>8} {:>8} {:>8} {:>9} {:>9} {:>7}",
+        "backend", "D", "vec/s", "p50us", "p99us", "meanus", "recall@10", "save_ms", "MB"
+    );
     for r in &rows {
         let mb = r.rss_after_mb_post_insert - r.rss_before_mb;
         println!(
             "{:<12} {:>5} {:>10.0} {:>8.0} {:>8.0} {:>8.0} {:>9.3} {:>9} {:>7.1}",
-            r.backend, r.dimensions, r.insert_vec_per_sec,
-            r.search_p50_us, r.search_p99_us, r.search_mean_us,
-            r.recall_at_10, r.save_ms, mb
+            r.backend,
+            r.dimensions,
+            r.insert_vec_per_sec,
+            r.search_p50_us,
+            r.search_p99_us,
+            r.search_mean_us,
+            r.recall_at_10,
+            r.save_ms,
+            mb
         );
     }
 

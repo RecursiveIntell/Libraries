@@ -40,6 +40,19 @@ pub struct BudgetDebitV1 {
     pub remaining: f64,
 }
 
+/// Retrieved context provenance preserved on provider-call receipts.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct RetrievedContextProvenanceV1 {
+    pub retrieval_system: String,
+    pub candidate_backend: Option<String>,
+    pub generation_id: Option<String>,
+    pub embedding_snapshot_digest: Option<String>,
+    pub manifest_digest: Option<String>,
+    pub exact_rerank: bool,
+    pub result_count: usize,
+    pub fallback: Option<String>,
+}
+
 /// Provider call receipt — one per LLM call made during pipeline execution.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderCallReceiptV1 {
@@ -51,6 +64,8 @@ pub struct ProviderCallReceiptV1 {
     pub latency_ms: u64,
     pub tokens_in: u64,
     pub tokens_out: u64,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub retrieved_context: Vec<RetrievedContextProvenanceV1>,
 }
 
 /// Retry decision receipt — one per retry attempt.
@@ -150,6 +165,8 @@ pub struct PipelineProgress {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PipelineContext {
     pub data: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub retrieved_context: Vec<RetrievedContextProvenanceV1>,
 }
 
 impl PipelineContext {
@@ -159,6 +176,11 @@ impl PipelineContext {
 
     pub fn insert(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.data.insert(key.into(), value.into());
+        self
+    }
+
+    pub fn with_retrieved_context(mut self, provenance: RetrievedContextProvenanceV1) -> Self {
+        self.retrieved_context.push(provenance);
         self
     }
 

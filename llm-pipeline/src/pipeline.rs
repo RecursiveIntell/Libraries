@@ -192,6 +192,7 @@ where
                 latency_ms,
                 tokens_in: 0, // Backend doesn't expose token counts in LlmResponse metadata
                 tokens_out: 0,
+                retrieved_context: self.context.retrieved_context.clone(),
             });
 
             // Emit RetryDecisionReceiptV1 entries from diagnostics if present.

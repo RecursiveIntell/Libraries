@@ -23,9 +23,7 @@ use std::time::Instant;
 use rand::Rng;
 use rand_chacha::{rand_core::SeedableRng, ChaCha8Rng};
 use scr_runtime_compression::{decode, encode, CodecId};
-use turbo_quant::{
-    PolarQuantizer, QjlQuantizer, TurboMode, TurboQuantizer,
-};
+use turbo_quant::{PolarQuantizer, QjlQuantizer, TurboMode, TurboQuantizer};
 
 const NUM_CORPUS: usize = 1000;
 const NUM_QUERIES: usize = 50;
@@ -94,12 +92,7 @@ impl Quantizers {
     }
 }
 
-fn score_candidate(
-    codec: CodecId,
-    q: &Quantizers,
-    encoded: &[u8],
-    query: &[f32],
-) -> f32 {
+fn score_candidate(codec: CodecId, q: &Quantizers, encoded: &[u8], query: &[f32]) -> f32 {
     match codec {
         CodecId::Uncompressed => {
             let bytes = decode(CodecId::Uncompressed, encoded).expect("decode raw");
@@ -113,16 +106,14 @@ fn score_candidate(
         }
         CodecId::Polar => {
             use turbo_quant::PolarCode;
-            let code: PolarCode =
-                serde_json::from_slice(encoded).expect("polar deserialize");
+            let code: PolarCode = serde_json::from_slice(encoded).expect("polar deserialize");
             let pq = q.polar.as_ref().expect("polar quantizer");
             pq.inner_product_estimate(&code, query)
                 .expect("polar score")
         }
         CodecId::Qjl => {
             use turbo_quant::QjlSketch;
-            let sketch: QjlSketch =
-                serde_json::from_slice(encoded).expect("qjl deserialize");
+            let sketch: QjlSketch = serde_json::from_slice(encoded).expect("qjl deserialize");
             let qq = q.qjl.as_ref().expect("qjl quantizer");
             qq.inner_product_estimate(&sketch, query)
                 .expect("qjl score")
@@ -160,9 +151,7 @@ fn run_codec(codec: CodecId, corpus: &[Vec<f32>], queries: &[Vec<f32>]) -> (f32,
             .enumerate()
             .map(|(i, enc)| (i, score_candidate(codec, &q, enc, query)))
             .collect();
-        scores.sort_by(|a, b| {
-            b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-        });
+        scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         let predicted: Vec<usize> = scores.into_iter().take(TOP_K).map(|(i, _)| i).collect();
         total_recall += recall_at_k(&predicted, &ground);
     }
@@ -210,8 +199,12 @@ fn main() {
     println!("  - recall@10: mean across {NUM_QUERIES} queries, K=10");
     println!("  - 'uncompressed' is the upper bound on recall (1.0 by definition)");
     println!("  - 'bytes_per_vec' is the wire format size for a single {DIM}-dim vector");
-    println!("  - QJL is dim-independent (~120 bytes for any dim); dominant for memory-efficient ANN");
-    println!("  - Turbo and Polar are asymmetric-friendly; both use score_inner_product on the wire");
+    println!(
+        "  - QJL is dim-independent (~120 bytes for any dim); dominant for memory-efficient ANN"
+    );
+    println!(
+        "  - Turbo and Polar are asymmetric-friendly; both use score_inner_product on the wire"
+    );
     println!("  - Search-time quantizers are built ONCE per codec and reused across all queries");
     println!("    (in a real production pipeline this is amortized across millions of queries)");
 }

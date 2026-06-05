@@ -33,8 +33,9 @@ pub struct SqliteDb {
 impl SqliteDb {
     /// Open (or create) a SQLite-backed bitemporal store at the given path.
     pub fn open(path: impl AsRef<Path>) -> Result<Self, BitemporalError> {
-        let conn = Connection::open(path)
-            .map_err(|e| BitemporalError::DatabaseError(format!("failed to open sqlite db: {e}")))?;
+        let conn = Connection::open(path).map_err(|e| {
+            BitemporalError::DatabaseError(format!("failed to open sqlite db: {e}"))
+        })?;
         let db = Self { conn };
         db.migrate()?;
         Ok(db)
@@ -145,20 +146,18 @@ impl SqliteDb {
                 let valid_ts: i64 = row.get(1)?;
                 let recorded_ts: i64 = row.get(2)?;
                 let value_bytes: Vec<u8> = row.get(3)?;
-                let value: serde_json::Value = serde_json::from_slice(&value_bytes).map_err(
-                    |e| {
+                let value: serde_json::Value =
+                    serde_json::from_slice(&value_bytes).map_err(|e| {
                         rusqlite::Error::FromSqlConversionFailure(
                             3,
                             rusqlite::types::Type::Blob,
                             Box::new(e),
                         )
-                    },
-                )?;
+                    })?;
                 let valid_time = chrono::DateTime::<chrono::Utc>::from_timestamp(valid_ts, 0)
                     .ok_or_else(|| rusqlite::Error::InvalidQuery)?;
-                let recorded_time =
-                    chrono::DateTime::<chrono::Utc>::from_timestamp(recorded_ts, 0)
-                        .ok_or_else(|| rusqlite::Error::InvalidQuery)?;
+                let recorded_time = chrono::DateTime::<chrono::Utc>::from_timestamp(recorded_ts, 0)
+                    .ok_or_else(|| rusqlite::Error::InvalidQuery)?;
                 Ok(crate::BitemporalRecord {
                     id,
                     valid_time,
@@ -169,8 +168,10 @@ impl SqliteDb {
             .map_err(|e| BitemporalError::DatabaseError(format!("snapshot query failed: {e}")))?;
 
         // Dedup: keep only the latest recorded_time per record_id.
-        let mut by_id: std::collections::BTreeMap<String, crate::BitemporalRecord<serde_json::Value>> =
-            std::collections::BTreeMap::new();
+        let mut by_id: std::collections::BTreeMap<
+            String,
+            crate::BitemporalRecord<serde_json::Value>,
+        > = std::collections::BTreeMap::new();
         for row in rows {
             let r = row.map_err(|e| BitemporalError::DatabaseError(format!("row decode: {e}")))?;
             by_id

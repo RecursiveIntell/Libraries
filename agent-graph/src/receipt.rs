@@ -6,6 +6,18 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+/// Reference to semantic-memory generation/candidate provenance that influenced graph context.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct GraphMemoryGenerationRefV1 {
+    pub memory_backend: String,
+    pub candidate_backend: Option<String>,
+    pub generation_id: Option<String>,
+    pub embedding_snapshot_digest: Option<String>,
+    pub manifest_digest: Option<String>,
+    pub exact_rerank: bool,
+    pub fallback: Option<String>,
+}
+
 /// Digests the full state of a graph execution step for auditability.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StepExecutionReceiptV1 {
@@ -34,6 +46,8 @@ pub struct GraphExecutionReceiptV1 {
     pub started_at: DateTime<Utc>,
     pub finished_at: DateTime<Utc>,
     pub steps: Vec<StepExecutionReceiptV1>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub memory_generations: Vec<GraphMemoryGenerationRefV1>,
     pub outcome: ExecutionOutcome,
 }
 

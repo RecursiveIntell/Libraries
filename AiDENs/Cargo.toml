@@ -80,6 +80,7 @@ verification-adjudication = { version = "0.1.0", path = "../verification-adjudic
 verification-calibration = { version = "0.1.0", path = "../verification-calibration" }
 verification-control = { version = "0.1.0", path = "../verification-control" }
 verification-policy = { version = "0.1.0", path = "../verification-policy" }
+aidens-memory-kit = { version = "0.1.0", path = "crates/aidens-memory-kit" }
 
 [workspace.lints.rust]
 unsafe_code = "deny"

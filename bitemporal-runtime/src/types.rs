@@ -1,8 +1,8 @@
 //! Core bitemporal types.
 
+use chrono::{DateTime, Utc};
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -17,7 +17,10 @@ pub type RecordId = String;
 /// - `recorded_time`: when the system captured the value (system time)
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[cfg_attr(feature = "schema", schemars(bound = "T: ::schemars::JsonSchema + Default"))]
+#[cfg_attr(
+    feature = "schema",
+    schemars(bound = "T: ::schemars::JsonSchema + Default")
+)]
 pub struct BitemporalRecord<T = ()> {
     /// Unique identifier for this record (stable across versions).
     /// Used to link superseding records.

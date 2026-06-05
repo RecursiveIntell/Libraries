@@ -21,7 +21,10 @@ fn bitemporal_record_schema_round_trips_to_valid_json() {
     let json = serde_json::to_value(&s).expect("schema must serialize");
     let props = properties(&json);
     assert!(props.get("id").is_some(), "must expose `id`");
-    assert!(props.get("valid_time").is_some(), "must expose `valid_time`");
+    assert!(
+        props.get("valid_time").is_some(),
+        "must expose `valid_time`"
+    );
     assert!(
         props.get("recorded_time").is_some(),
         "must expose `recorded_time`"

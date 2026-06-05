@@ -1,3 +1,4 @@
+pub use crate::ToolError as ToolRuntimeError;
 use crate::{
     validate_arguments_against_schema, ApprovalGrantEffectClass, ToolApprovalKind,
     ToolApprovalState, ToolCall, ToolDescriptor, ToolError, ToolErrorClass, ToolExecutionPermit,

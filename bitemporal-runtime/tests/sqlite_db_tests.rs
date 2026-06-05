@@ -6,7 +6,12 @@
 use bitemporal_runtime::{BitemporalRecord, SqliteDb};
 use chrono::TimeZone;
 
-fn record(id: &str, valid: i64, recorded: i64, value: serde_json::Value) -> BitemporalRecord<serde_json::Value> {
+fn record(
+    id: &str,
+    valid: i64,
+    recorded: i64,
+    value: serde_json::Value,
+) -> BitemporalRecord<serde_json::Value> {
     BitemporalRecord {
         id: id.to_string(),
         valid_time: chrono::Utc.timestamp_opt(valid, 0).unwrap(),
@@ -19,12 +24,7 @@ fn record(id: &str, valid: i64, recorded: i64, value: serde_json::Value) -> Bite
 fn sqlite_db_insert_first_version_returns_zero_superseded() {
     let db = SqliteDb::open_in_memory().unwrap();
     let superseded = db
-        .insert(record(
-            "alpha",
-            100,
-            1000,
-            serde_json::json!({"v": 1}),
-        ))
+        .insert(record("alpha", 100, 1000, serde_json::json!({"v": 1})))
         .unwrap();
     assert_eq!(superseded, 0, "first version supersedes nothing");
 }

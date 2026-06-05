@@ -11,6 +11,38 @@ const FULL_CONFIDENCE_MICROS: u64 = 1_000_000;
 const DEFAULT_FIXED_POINT_TOLERANCE_MICROS: u64 = 1_000;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct CandidateEvidenceRetrievalRefV1 {
+    pub retrieval_system: String,
+    pub candidate_backend: Option<String>,
+    pub generation_id: Option<String>,
+    pub evidence_ref: String,
+    pub candidate_only: bool,
+    pub exact_rerank: bool,
+    pub verified_by_oracle: bool,
+}
+
+impl CandidateEvidenceRetrievalRefV1 {
+    pub fn new_candidate(
+        retrieval_system: impl Into<String>,
+        evidence_ref: impl Into<String>,
+    ) -> Self {
+        Self {
+            retrieval_system: retrieval_system.into(),
+            candidate_backend: None,
+            generation_id: None,
+            evidence_ref: evidence_ref.into(),
+            candidate_only: true,
+            exact_rerank: true,
+            verified_by_oracle: false,
+        }
+    }
+
+    pub fn is_verified_premise(&self) -> bool {
+        !self.candidate_only && self.verified_by_oracle
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecutionMode {
     AcyclicBaseline,

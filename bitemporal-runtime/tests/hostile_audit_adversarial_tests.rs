@@ -32,14 +32,37 @@ fn receipt_digest_is_deterministic_for_same_inputs() {
     use bitemporal_runtime::SupersessionReceipt;
     let now = chrono::Utc.timestamp_opt(1000, 0).unwrap();
     let a = SupersessionReceipt::new(
-        BitemporalRecord { id: "x".into(), valid_time: now, recorded_time: now, value: () },
-        BitemporalRecord { id: "y".into(), valid_time: now, recorded_time: now, value: () },
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: now,
+            recorded_time: now,
+            value: (),
+        },
+        BitemporalRecord {
+            id: "y".into(),
+            valid_time: now,
+            recorded_time: now,
+            value: (),
+        },
     );
     let b = SupersessionReceipt::new(
-        BitemporalRecord { id: "x".into(), valid_time: now, recorded_time: now, value: () },
-        BitemporalRecord { id: "y".into(), valid_time: now, recorded_time: now, value: () },
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: now,
+            recorded_time: now,
+            value: (),
+        },
+        BitemporalRecord {
+            id: "y".into(),
+            valid_time: now,
+            recorded_time: now,
+            value: (),
+        },
     );
-    assert_eq!(a.receipt_digest, b.receipt_digest, "receipt_digest must be deterministic");
+    assert_eq!(
+        a.receipt_digest, b.receipt_digest,
+        "receipt_digest must be deterministic"
+    );
     assert_eq!(a.superseding_digest, b.superseding_digest);
     assert_eq!(a.superseded_digest, b.superseded_digest);
 }
@@ -52,19 +75,55 @@ fn receipt_digest_changes_when_any_input_changes() {
     let t0 = chrono::Utc.timestamp_opt(1000, 0).unwrap();
     let t1 = chrono::Utc.timestamp_opt(2000, 0).unwrap();
     let r1 = SupersessionReceipt::new(
-        BitemporalRecord { id: "x".into(), valid_time: t0, recorded_time: t0, value: () },
-        BitemporalRecord { id: "y".into(), valid_time: t0, recorded_time: t0, value: () },
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: t0,
+            recorded_time: t0,
+            value: (),
+        },
+        BitemporalRecord {
+            id: "y".into(),
+            valid_time: t0,
+            recorded_time: t0,
+            value: (),
+        },
     );
     let r2 = SupersessionReceipt::new(
-        BitemporalRecord { id: "x".into(), valid_time: t0, recorded_time: t0, value: () },
-        BitemporalRecord { id: "y".into(), valid_time: t0, recorded_time: t1, value: () }, // recorded_time differs
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: t0,
+            recorded_time: t0,
+            value: (),
+        },
+        BitemporalRecord {
+            id: "y".into(),
+            valid_time: t0,
+            recorded_time: t1,
+            value: (),
+        }, // recorded_time differs
     );
-    assert_ne!(r1.receipt_digest, r2.receipt_digest, "changing recorded_time must change digest");
+    assert_ne!(
+        r1.receipt_digest, r2.receipt_digest,
+        "changing recorded_time must change digest"
+    );
     let r3 = SupersessionReceipt::new(
-        BitemporalRecord { id: "X".into(), valid_time: t0, recorded_time: t0, value: () }, // uppercase X
-        BitemporalRecord { id: "y".into(), valid_time: t0, recorded_time: t0, value: () },
+        BitemporalRecord {
+            id: "X".into(),
+            valid_time: t0,
+            recorded_time: t0,
+            value: (),
+        }, // uppercase X
+        BitemporalRecord {
+            id: "y".into(),
+            valid_time: t0,
+            recorded_time: t0,
+            value: (),
+        },
     );
-    assert_ne!(r1.receipt_digest, r3.receipt_digest, "changing id case must change digest");
+    assert_ne!(
+        r1.receipt_digest, r3.receipt_digest,
+        "changing id case must change digest"
+    );
 }
 
 #[test]
@@ -74,8 +133,18 @@ fn receipt_digest_is_sha256_hex() {
     use bitemporal_runtime::SupersessionReceipt;
     let now = chrono::Utc.timestamp_opt(1000, 0).unwrap();
     let r = SupersessionReceipt::new(
-        BitemporalRecord { id: "x".into(), valid_time: now, recorded_time: now, value: () },
-        BitemporalRecord { id: "y".into(), valid_time: now, recorded_time: now, value: () },
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: now,
+            recorded_time: now,
+            value: (),
+        },
+        BitemporalRecord {
+            id: "y".into(),
+            valid_time: now,
+            recorded_time: now,
+            value: (),
+        },
     );
     assert_eq!(r.receipt_digest.len(), 64, "SHA-256 produces 64 hex chars");
     assert!(
@@ -104,8 +173,18 @@ fn receipt_carries_correct_superseded_and_superseding_ids() {
     let t1 = chrono::Utc.timestamp_opt(2000, 0).unwrap();
     let t2 = chrono::Utc.timestamp_opt(3000, 0).unwrap();
     let r1 = SupersessionReceipt::new(
-        BitemporalRecord { id: "v1".into(), valid_time: t0, recorded_time: t0, value: () },
-        BitemporalRecord { id: "v2".into(), valid_time: t0, recorded_time: t1, value: () },
+        BitemporalRecord {
+            id: "v1".into(),
+            valid_time: t0,
+            recorded_time: t0,
+            value: (),
+        },
+        BitemporalRecord {
+            id: "v2".into(),
+            valid_time: t0,
+            recorded_time: t1,
+            value: (),
+        },
     );
     assert_eq!(r1.superseded.superseded_id, "v1");
     assert_eq!(r1.superseding_id, "v2");
@@ -113,8 +192,18 @@ fn receipt_carries_correct_superseded_and_superseding_ids() {
     assert_eq!(r1.superseding_recorded_time, t1);
 
     let r2 = SupersessionReceipt::new(
-        BitemporalRecord { id: "v2".into(), valid_time: t0, recorded_time: t1, value: () },
-        BitemporalRecord { id: "v3".into(), valid_time: t0, recorded_time: t2, value: () },
+        BitemporalRecord {
+            id: "v2".into(),
+            valid_time: t0,
+            recorded_time: t1,
+            value: (),
+        },
+        BitemporalRecord {
+            id: "v3".into(),
+            valid_time: t0,
+            recorded_time: t2,
+            value: (),
+        },
     );
     assert_eq!(r2.superseded.superseded_id, "v2");
     assert_eq!(r2.superseding_id, "v3");
@@ -227,7 +316,11 @@ fn as_of_query_with_valid_time_equals_recorded_time() {
     let records = vec![r("a", 1000, 1000)];
     let t = chrono::Utc.timestamp_opt(1000, 0).unwrap();
     let result = as_of_query(&records, t, t);
-    assert_eq!(result.len(), 1, "valid_time == recorded_time == query must include the record");
+    assert_eq!(
+        result.len(),
+        1,
+        "valid_time == recorded_time == query must include the record"
+    );
 }
 
 #[test]
@@ -268,7 +361,11 @@ fn as_of_query_with_identical_recorded_times_takes_one() {
     ];
     let t = chrono::Utc.timestamp_opt(3000, 0).unwrap();
     let result = as_of_query(&records, t, t);
-    assert_eq!(result.len(), 1, "duplicate recorded_time at same id dedupes to one");
+    assert_eq!(
+        result.len(),
+        1,
+        "duplicate recorded_time at same id dedupes to one"
+    );
 }
 
 #[test]
@@ -310,7 +407,10 @@ fn temporal_snapshot_at_distant_future_returns_all() {
     // recorded_time is in the past; querying at year 3000 must
     // see everything.
     let records = vec![r("a", 100, 1000), r("b", 200, 1500), r("c", 300, 2000)];
-    let result = temporal_snapshot(&records, chrono::Utc.timestamp_opt(32_503_680_000, 0).unwrap());
+    let result = temporal_snapshot(
+        &records,
+        chrono::Utc.timestamp_opt(32_503_680_000, 0).unwrap(),
+    );
     assert_eq!(result.len(), 3);
 }
 
@@ -321,7 +421,11 @@ fn temporal_snapshot_query_equals_recorded_time_keeps_record() {
     // is included.
     let records = vec![r("a", 100, 1000)];
     let result = temporal_snapshot(&records, chrono::Utc.timestamp_opt(1000, 0).unwrap());
-    assert_eq!(result.len(), 1, "as_of_time == recorded_time must include the record");
+    assert_eq!(
+        result.len(),
+        1,
+        "as_of_time == recorded_time must include the record"
+    );
 }
 
 // =========================================================================
@@ -456,7 +560,11 @@ fn each_prior_row_yields_exactly_one_receipt_in_append_supersede() {
     }
     assert_eq!(records.len(), 5);
     let receipts = append_supersede(&mut records, r("chain", 100, 2000)).unwrap();
-    assert_eq!(receipts.len(), 5, "one receipt per prior version, no more, no less");
+    assert_eq!(
+        receipts.len(),
+        5,
+        "one receipt per prior version, no more, no less"
+    );
     assert_eq!(records.len(), 6, "new row is appended");
     // Each receipt's superseded_recorded_time should be one of the
     // prior recorded_times.

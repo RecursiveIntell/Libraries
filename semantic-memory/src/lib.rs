@@ -93,6 +93,8 @@ pub mod projection_import;
 mod projection_lane;
 mod projection_legacy_compat;
 pub(crate) mod projection_storage;
+#[cfg(feature = "poly-kv-pool")]
+pub mod provekv_pool;
 pub mod quantize;
 pub mod quantize_governed;
 pub mod search;
@@ -104,6 +106,7 @@ pub mod types;
 mod usearch_backend;
 pub mod vector_backend;
 pub mod vector_codec;
+pub mod vector_snapshot;
 
 // Re-export primary public types.
 pub use config::{
@@ -123,17 +126,21 @@ pub(crate) use projection_lane::projection_import_failure_id;
 pub use projection_lane::{
     ProjectionImportFailureReceiptEntry, ProjectionImportLogEntry, ProjectionImportResult,
 };
+#[cfg(feature = "poly-kv-pool")]
+pub use provekv_pool::build_provekv_pool_generation;
 pub use quantize::{pack_quantized, unpack_quantized, QuantizedVector, Quantizer};
 pub use storage::StoragePaths;
 pub use tokenizer::{EstimateTokenCounter, TokenCounter};
 pub use types::{
     ChunkManifestChunkMapping, ChunkManifestEntry, ChunkManifestIngestOptions,
-    ChunkManifestIngestResult, Document, EmbeddingDisplacement, EpisodeAsOfReceiptV1, EpisodeMeta,
-    EpisodeOutcome, ExactnessProfile, ExplainedResult, ExplainedResultAnswerV1,
-    ExplainedSearchResponse, Fact, GraphDirection, GraphEdge, GraphEdgeType, GraphView,
-    MemoryStats, Message, NamespaceDeleteReport, ProjectionClaimVersion, ProjectionEntityAlias,
-    ProjectionEpisode, ProjectionEvidenceRef, ProjectionQuery, ProjectionRelationVersion,
-    ReceiptMode, Role, ScoreBreakdown, SearchContext, SearchReceiptAnswersV1, SearchReplayReportV1,
+    ChunkManifestIngestResult, DerivedCandidateReceiptV1, Document, EmbeddingDisplacement,
+    EpisodeAsOfReceiptV1, EpisodeMeta, EpisodeOutcome, ExactnessProfile, ExplainedResult,
+    ExplainedResultAnswerV1, ExplainedSearchResponse, Fact, GraphDirection, GraphEdge,
+    GraphEdgeType, GraphView, MemoryStats, Message, NamespaceDeleteReport, ProjectionClaimVersion,
+    ProjectionEntityAlias, ProjectionEpisode, ProjectionEvidenceRef, ProjectionQuery,
+    ProjectionRelationVersion, ProveKvPoolArtifactBuildReceiptV1, ProveKvPoolArtifactStatusV1,
+    ProveKvPoolGenerationStatus, ProveKvPoolGenerationV1, ProveKvPoolItemMapEntryV1, ReceiptMode,
+    Role, ScoreBreakdown, SearchContext, SearchReceiptAnswersV1, SearchReplayReportV1,
     SearchResponse, SearchResult, SearchSource, SearchSourceType, Session, TextChunk,
     VectorArtifactBuildReceiptV1, VectorSearchReceiptV1, VerificationStatus,
 };
@@ -143,6 +150,7 @@ pub use vector_codec::TurboQuantCodec;
 pub use vector_codec::{
     RawF32Codec, Sq8Codec, VectorArtifactV1, VectorCodec, VectorCodecProfileV1,
 };
+pub use vector_snapshot::{build_embedding_snapshot, EmbeddingSnapshotRow, EmbeddingSnapshotV1};
 
 use std::sync::Arc;
 
@@ -764,6 +772,42 @@ impl MemoryStore {
             )
         })
         .await
+    }
+
+    /// Rebuild feature-gated proveKV/poly-kv pool artifact from authoritative SQLite f32 embeddings.
+    #[cfg(feature = "poly-kv-pool")]
+    pub async fn rebuild_provekv_pool_artifacts(
+        &self,
+    ) -> Result<ProveKvPoolArtifactBuildReceiptV1, MemoryError> {
+        let dim = self.inner.config.embedding.dimensions;
+        let seed = self.inner.config.search.turbo_quant_seed;
+        self.with_write_conn(move |conn| {
+            let snapshot = crate::vector_snapshot::load_embedding_snapshot_from_db(conn, dim)?;
+            let (generation, payload, item_map) =
+                crate::provekv_pool::build_provekv_pool_generation(snapshot, seed)?;
+            db::insert_provekv_pool_generation(conn, &generation, &payload, &item_map)?;
+            Ok(ProveKvPoolArtifactBuildReceiptV1 {
+                schema_version: "semantic_memory_provekv_pool_build_receipt_v1".to_string(),
+                generation_id: generation.generation_id,
+                embedding_snapshot_digest: generation.embedding_snapshot_digest,
+                source_digest: generation.source_digest,
+                pool_manifest_digest: generation.pool_manifest_digest,
+                codec_family: generation.codec_family,
+                codec_profile: generation.codec_profile,
+                vector_dim: generation.vector_dim,
+                item_count: generation.item_count,
+                payload_bytes: generation.payload_bytes,
+                exact_rerank_required: true,
+                created_at: generation.created_at,
+            })
+        })
+        .await
+    }
+
+    pub async fn provekv_pool_artifact_status(
+        &self,
+    ) -> Result<ProveKvPoolArtifactStatusV1, MemoryError> {
+        self.with_read_conn(db::provekv_pool_artifact_status).await
     }
 
     /// Rebuild the HNSW index from SQLite f32 embeddings.

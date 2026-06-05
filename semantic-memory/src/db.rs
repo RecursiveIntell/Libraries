@@ -5,7 +5,11 @@ use crate::error::MemoryError;
 use crate::quantize::unpack_quantized;
 #[cfg(feature = "turbo-quant-codec")]
 use crate::types::{DerivedVectorArtifactGenerationV1, VectorArtifactBuildReceiptV1};
-use crate::types::{EpisodeOutcome, Role, VectorSearchReceiptV1, VerificationStatus};
+use crate::types::{
+    EpisodeOutcome, ProveKvPoolArtifactStatusV1, ProveKvPoolGenerationStatus,
+    ProveKvPoolGenerationV1, ProveKvPoolItemMapEntryV1, Role, VectorSearchReceiptV1,
+    VerificationStatus,
+};
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, OpenFlags, OptionalExtension};
 use serde::{Deserialize, Serialize};
@@ -337,6 +341,41 @@ CREATE INDEX IF NOT EXISTS idx_episodes_superseded ON episodes(superseded_by) WH
 UPDATE episodes SET recorded_time = updated_at WHERE recorded_time IS NULL OR recorded_time = '';
 "#;
 
+/// V24 migration: proveKV/poly-kv generation-level derived candidate pool metadata.
+const MIGRATION_V24: &str = r#"
+CREATE TABLE IF NOT EXISTS provekv_pool_generations (
+  generation_id TEXT PRIMARY KEY,
+  embedding_snapshot_digest TEXT NOT NULL,
+  source_digest TEXT NOT NULL,
+  pool_manifest_digest TEXT NOT NULL,
+  codec_family TEXT NOT NULL,
+  codec_profile TEXT NOT NULL,
+  vector_dim INTEGER NOT NULL,
+  item_count INTEGER NOT NULL,
+  payload_bytes INTEGER NOT NULL,
+  payload BLOB NOT NULL,
+  status TEXT NOT NULL,
+  failure_reason TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS provekv_pool_item_map (
+  generation_id TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  source_type TEXT NOT NULL,
+  pool_index INTEGER NOT NULL,
+  embedding_digest TEXT NOT NULL,
+  PRIMARY KEY (generation_id, item_id),
+  FOREIGN KEY (generation_id) REFERENCES provekv_pool_generations(generation_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_provekv_pool_item_map_generation_index
+  ON provekv_pool_item_map(generation_id, pool_index);
+
+CREATE INDEX IF NOT EXISTS idx_provekv_pool_generations_status_created
+  ON provekv_pool_generations(status, created_at DESC);
+"#;
+
 /// Ordered list of migrations.
 #[allow(deprecated)]
 const MIGRATIONS: &[(u32, &str)] = &[
@@ -363,10 +402,11 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (21, MIGRATION_V21),
     (22, MIGRATION_V22),
     (23, MIGRATION_V23),
+    (24, MIGRATION_V24),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 23;
+pub const MAX_SCHEMA_VERSION: u32 = 24;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {
@@ -1727,6 +1767,7 @@ fn search_receipt_from_stored(
             })
             .transpose()?,
         fallback_reason: stored.fallback_reason,
+        derived_candidate: None,
         approximate: stored.approximate,
         requested_candidates: receipt_count_to_usize(
             stored.requested_candidates,
@@ -2809,4 +2850,303 @@ fn verify_episode_rows(conn: &Connection, issues: &mut Vec<String>) -> Result<()
         }
     }
     Ok(())
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct ProveKvPoolGenerationRow {
+    pub generation: ProveKvPoolGenerationV1,
+}
+
+fn parse_provekv_status(value: &str) -> ProveKvPoolGenerationStatus {
+    match value {
+        "disabled" => ProveKvPoolGenerationStatus::Disabled,
+        "missing" => ProveKvPoolGenerationStatus::Missing,
+        "building" => ProveKvPoolGenerationStatus::Building,
+        "ready" => ProveKvPoolGenerationStatus::Ready,
+        "stale" => ProveKvPoolGenerationStatus::Stale,
+        "failed" => ProveKvPoolGenerationStatus::Failed,
+        _ => ProveKvPoolGenerationStatus::Failed,
+    }
+}
+
+fn provekv_generation_from_row(
+    row: &rusqlite::Row<'_>,
+) -> rusqlite::Result<ProveKvPoolGenerationRow> {
+    let created_at: String = row.get(9)?;
+    Ok(ProveKvPoolGenerationRow {
+        generation: ProveKvPoolGenerationV1 {
+            schema_version: "semantic_memory_provekv_pool_generation_v1".to_string(),
+            generation_id: row.get(0)?,
+            embedding_snapshot_digest: row.get(1)?,
+            source_digest: row.get(2)?,
+            pool_manifest_digest: row.get(3)?,
+            codec_family: row.get(4)?,
+            codec_profile: row.get(5)?,
+            vector_dim: row.get::<_, i64>(6)? as usize,
+            item_count: row.get::<_, i64>(7)? as usize,
+            payload_bytes: row.get::<_, i64>(8)? as u64,
+            created_at: DateTime::parse_from_rfc3339(&created_at)
+                .map(|dt| dt.with_timezone(&Utc))
+                .map_err(|err| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        9,
+                        rusqlite::types::Type::Text,
+                        Box::new(err),
+                    )
+                })?,
+        },
+    })
+}
+
+#[allow(dead_code)]
+pub(crate) fn insert_provekv_pool_generation(
+    conn: &Connection,
+    generation: &ProveKvPoolGenerationV1,
+    payload: &[u8],
+    item_map: &[ProveKvPoolItemMapEntryV1],
+) -> Result<(), MemoryError> {
+    let tx = conn.unchecked_transaction()?;
+    tx.execute(
+        "INSERT OR REPLACE INTO provekv_pool_generations
+         (generation_id, embedding_snapshot_digest, source_digest, pool_manifest_digest,
+          codec_family, codec_profile, vector_dim, item_count, payload_bytes, payload,
+          status, failure_reason, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 'ready', NULL, ?11)",
+        params![
+            generation.generation_id,
+            generation.embedding_snapshot_digest,
+            generation.source_digest,
+            generation.pool_manifest_digest,
+            generation.codec_family,
+            generation.codec_profile,
+            generation.vector_dim as i64,
+            generation.item_count as i64,
+            generation.payload_bytes as i64,
+            payload,
+            generation.created_at.to_rfc3339(),
+        ],
+    )?;
+    tx.execute(
+        "DELETE FROM provekv_pool_item_map WHERE generation_id = ?1",
+        params![generation.generation_id],
+    )?;
+    for entry in item_map {
+        tx.execute(
+            "INSERT INTO provekv_pool_item_map
+             (generation_id, item_id, source_type, pool_index, embedding_digest)
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![
+                entry.generation_id,
+                entry.item_id,
+                entry.source_type,
+                entry.pool_index as i64,
+                entry.embedding_digest,
+            ],
+        )?;
+    }
+    tx.commit()?;
+    Ok(())
+}
+
+pub(crate) fn latest_ready_provekv_pool_generation(
+    conn: &Connection,
+) -> Result<Option<ProveKvPoolGenerationRow>, MemoryError> {
+    conn.query_row(
+        "SELECT generation_id, embedding_snapshot_digest, source_digest, pool_manifest_digest,
+                codec_family, codec_profile, vector_dim, item_count, payload_bytes, created_at
+         FROM provekv_pool_generations
+         WHERE status = 'ready'
+         ORDER BY created_at DESC
+         LIMIT 1",
+        [],
+        provekv_generation_from_row,
+    )
+    .optional()
+    .map_err(MemoryError::from)
+}
+
+pub(crate) fn load_provekv_pool_payload(
+    conn: &Connection,
+    generation_id: &str,
+) -> Result<Vec<u8>, MemoryError> {
+    conn.query_row(
+        "SELECT payload FROM provekv_pool_generations WHERE generation_id = ?1",
+        params![generation_id],
+        |row| row.get(0),
+    )
+    .map_err(MemoryError::from)
+}
+
+pub(crate) fn load_provekv_pool_item_map(
+    conn: &Connection,
+    generation_id: &str,
+) -> Result<Vec<ProveKvPoolItemMapEntryV1>, MemoryError> {
+    let mut stmt = conn.prepare(
+        "SELECT generation_id, item_id, source_type, pool_index, embedding_digest
+         FROM provekv_pool_item_map
+         WHERE generation_id = ?1
+         ORDER BY pool_index ASC",
+    )?;
+    let rows = stmt.query_map(params![generation_id], |row| {
+        Ok(ProveKvPoolItemMapEntryV1 {
+            generation_id: row.get(0)?,
+            item_id: row.get(1)?,
+            source_type: row.get(2)?,
+            pool_index: row.get::<_, i64>(3)? as usize,
+            embedding_digest: row.get(4)?,
+        })
+    })?;
+    let mut entries = Vec::new();
+    for row in rows {
+        entries.push(row?);
+    }
+    Ok(entries)
+}
+
+#[allow(dead_code)]
+pub(crate) fn mark_provekv_pool_generation_failed(
+    conn: &Connection,
+    generation_id: &str,
+    reason: &str,
+) -> Result<(), MemoryError> {
+    conn.execute(
+        "UPDATE provekv_pool_generations SET status = 'failed', failure_reason = ?2 WHERE generation_id = ?1",
+        params![generation_id, reason],
+    )?;
+    Ok(())
+}
+
+pub(crate) fn provekv_pool_artifact_status(
+    conn: &Connection,
+) -> Result<ProveKvPoolArtifactStatusV1, MemoryError> {
+    let row = conn
+        .query_row(
+            "SELECT generation_id, embedding_snapshot_digest, pool_manifest_digest,
+                    item_count, payload_bytes, status, failure_reason
+             FROM provekv_pool_generations
+             ORDER BY created_at DESC
+             LIMIT 1",
+            [],
+            |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, i64>(3)?,
+                    row.get::<_, i64>(4)?,
+                    row.get::<_, String>(5)?,
+                    row.get::<_, Option<String>>(6)?,
+                ))
+            },
+        )
+        .optional()?;
+    Ok(match row {
+        Some((
+            generation_id,
+            snapshot_digest,
+            manifest_digest,
+            item_count,
+            payload_bytes,
+            status,
+            reason,
+        )) => ProveKvPoolArtifactStatusV1 {
+            status: parse_provekv_status(&status),
+            generation_id: Some(generation_id),
+            embedding_snapshot_digest: Some(snapshot_digest),
+            pool_manifest_digest: Some(manifest_digest),
+            item_count: item_count as usize,
+            payload_bytes: payload_bytes as u64,
+            reason,
+        },
+        None => ProveKvPoolArtifactStatusV1 {
+            status: ProveKvPoolGenerationStatus::Missing,
+            generation_id: None,
+            embedding_snapshot_digest: None,
+            pool_manifest_digest: None,
+            item_count: 0,
+            payload_bytes: 0,
+            reason: Some("provekv_pool_generation_not_materialized".into()),
+        },
+    })
+}
+
+#[cfg(test)]
+mod provekv_pool_generation_db_tests {
+    use super::*;
+
+    fn test_conn() -> Connection {
+        let conn = Connection::open_in_memory().expect("in-memory db opens");
+        conn.execute_batch(MIGRATION_V24)
+            .expect("proveKV schema migration applies");
+        conn
+    }
+
+    fn generation(id: &str) -> ProveKvPoolGenerationV1 {
+        ProveKvPoolGenerationV1 {
+            schema_version: "semantic_memory_provekv_pool_generation_v1".to_string(),
+            generation_id: id.to_string(),
+            embedding_snapshot_digest: "blake3:snapshot".to_string(),
+            source_digest: "blake3:source".to_string(),
+            pool_manifest_digest: "blake3:manifest".to_string(),
+            codec_family: "provekv_pool".to_string(),
+            codec_profile: "semantic-memory-f32-derived-candidate-v1".to_string(),
+            vector_dim: 4,
+            item_count: 2,
+            payload_bytes: 3,
+            created_at: Utc::now(),
+        }
+    }
+
+    #[test]
+    fn provekv_pool_generation_roundtrips_and_cascades_item_map() {
+        let conn = test_conn();
+        let gen = generation("gen-1");
+        let item_map = vec![
+            ProveKvPoolItemMapEntryV1 {
+                generation_id: gen.generation_id.clone(),
+                item_id: "fact-1".to_string(),
+                source_type: "fact".to_string(),
+                pool_index: 0,
+                embedding_digest: "blake3:item-1".to_string(),
+            },
+            ProveKvPoolItemMapEntryV1 {
+                generation_id: gen.generation_id.clone(),
+                item_id: "fact-2".to_string(),
+                source_type: "fact".to_string(),
+                pool_index: 1,
+                embedding_digest: "blake3:item-2".to_string(),
+            },
+        ];
+        insert_provekv_pool_generation(&conn, &gen, &[1, 2, 3], &item_map).unwrap();
+
+        let latest = latest_ready_provekv_pool_generation(&conn)
+            .unwrap()
+            .expect("latest ready generation");
+        assert_eq!(latest.generation.generation_id, gen.generation_id);
+        assert_eq!(
+            load_provekv_pool_payload(&conn, "gen-1").unwrap(),
+            vec![1, 2, 3]
+        );
+        assert_eq!(
+            load_provekv_pool_item_map(&conn, "gen-1").unwrap(),
+            item_map
+        );
+
+        mark_provekv_pool_generation_failed(&conn, "gen-1", "boom").unwrap();
+        let status = provekv_pool_artifact_status(&conn).unwrap();
+        assert_eq!(status.status, ProveKvPoolGenerationStatus::Failed);
+        assert_eq!(status.reason.as_deref(), Some("boom"));
+
+        conn.execute(
+            "DELETE FROM provekv_pool_generations WHERE generation_id = 'gen-1'",
+            [],
+        )
+        .unwrap();
+        let count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM provekv_pool_item_map", [], |row| {
+                row.get(0)
+            })
+            .unwrap();
+        assert_eq!(count, 0);
+    }
 }

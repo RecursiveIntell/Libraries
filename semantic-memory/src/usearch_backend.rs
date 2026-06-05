@@ -48,9 +48,8 @@
 
 use std::collections::HashMap;
 use std::fs;
-use std::hash::{BuildHasher, Hasher};
+use std::hash::Hasher;
 use std::path::Path;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::RwLock;
 
 use serde::{Deserialize, Serialize};
@@ -109,11 +108,6 @@ pub struct UsearchBackend {
     key_to_id: RwLock<HashMap<String, u64>>,
     id_to_key: RwLock<HashMap<u64, String>>,
 
-    /// Monotonically increasing counter for the hash seed. (Not actually
-    /// needed for SipHash stability, but kept for future migration if
-    /// we want per-process key rotation.)
-    next_hash_seed: AtomicU64,
-
     /// Index config, frozen at construction.
     config: VectorIndexConfig,
 
@@ -145,7 +139,6 @@ impl UsearchBackend {
             index: RwLock::new(index),
             key_to_id: RwLock::new(HashMap::new()),
             id_to_key: RwLock::new(HashMap::new()),
-            next_hash_seed: AtomicU64::new(0),
             config,
             dirty: std::sync::atomic::AtomicBool::new(false),
         })
@@ -233,7 +226,6 @@ impl UsearchBackend {
             index: RwLock::new(index),
             key_to_id: RwLock::new(key_to_id),
             id_to_key: RwLock::new(id_to_key),
-            next_hash_seed: AtomicU64::new(0),
             config,
             dirty: std::sync::atomic::AtomicBool::new(false),
         })
@@ -365,10 +357,12 @@ impl UsearchBackend {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn config(&self) -> &VectorIndexConfig {
         &self.config
     }
 
+    #[allow(dead_code)]
     pub fn is_dirty(&self) -> bool {
         self.dirty.load(std::sync::atomic::Ordering::SeqCst)
     }

@@ -906,12 +906,30 @@ fn provekv_pool_vector_outcome(
         session_ids,
     )?;
     outcome.candidate_backend = "provekv_pool_candidate_then_exact_f32".to_string();
-    outcome.fallback = Some("provekv_pool_generation_not_materialized".to_string());
-    outcome.degradations.push(
-        "proveKV pool backend requested; using authoritative f32 exact path until a pool generation is materialized"
-            .to_string(),
-    );
     outcome.receipt_metadata.codec_family = Some("provekv_pool".to_string());
+    match crate::db::latest_ready_provekv_pool_generation(conn)? {
+        Some(row) => {
+            let item_map =
+                crate::db::load_provekv_pool_item_map(conn, &row.generation.generation_id)?;
+            let _payload =
+                crate::db::load_provekv_pool_payload(conn, &row.generation.generation_id)?;
+            outcome.receipt_metadata.artifact_generation_id = Some(row.generation.generation_id);
+            outcome.receipt_metadata.vector_artifact_manifest_digest =
+                Some(row.generation.pool_manifest_digest);
+            outcome.receipt_metadata.vector_artifact_count = Some(item_map.len());
+            outcome.degradations.push(
+                "proveKV pool generation materialized for candidate provenance; authoritative f32 exact rerank remains final"
+                    .to_string(),
+            );
+        }
+        None => {
+            outcome.fallback = Some("provekv_pool_generation_not_materialized".to_string());
+            outcome.degradations.push(
+                "proveKV pool backend requested; using authoritative f32 exact path until a pool generation is materialized"
+                    .to_string(),
+            );
+        }
+    }
     Ok(outcome)
 }
 
@@ -1683,8 +1701,8 @@ fn build_receipt_with_metadata(
         artifact_count: metadata.artifact_count,
         artifact_corruption_count: metadata.artifact_corruption_count,
         artifact_missing_count: metadata.artifact_missing_count,
-        vector_artifact_manifest_digest: metadata.vector_artifact_manifest_digest,
-        artifact_generation_id: metadata.artifact_generation_id,
+        vector_artifact_manifest_digest: metadata.vector_artifact_manifest_digest.clone(),
+        artifact_generation_id: metadata.artifact_generation_id.clone(),
         approximate_scanned_count: metadata.approximate_scanned_count,
         approximate_returned_count: metadata.approximate_returned_count,
         raw_rows_loaded_count: metadata.raw_rows_loaded_count,
@@ -1706,6 +1724,23 @@ fn build_receipt_with_metadata(
         returned_candidates,
         post_filter_candidates,
         fallback_reason: fallback.clone(),
+        derived_candidate: if candidate_backend == "provekv_pool_candidate_then_exact_f32" {
+            Some(crate::types::DerivedCandidateReceiptV1 {
+                candidate_backend: candidate_backend.to_string(),
+                codec_family: metadata.codec_family.clone(),
+                generation_id: metadata.artifact_generation_id.clone(),
+                embedding_snapshot_digest: None,
+                pool_manifest_digest: metadata.vector_artifact_manifest_digest.clone(),
+                exact_rerank,
+                approximate: false,
+                fallback: fallback.clone(),
+                raw_candidate_count: returned_candidates,
+                post_filter_count: post_filter_candidates,
+                final_result_count: results.len(),
+            })
+        } else {
+            None
+        },
         fallback,
         exact_rerank,
         result_ids: results

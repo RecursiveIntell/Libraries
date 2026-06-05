@@ -76,7 +76,12 @@ where
             CodecId::Polar => Ok(T::from(data.to_vec())),
             #[cfg(feature = "qjl")]
             CodecId::Qjl => Ok(T::from(data.to_vec())),
-            #[cfg(not(any(feature = "turbo", feature = "fib", feature = "polar", feature = "qjl")))]
+            #[cfg(not(any(
+                feature = "turbo",
+                feature = "fib",
+                feature = "polar",
+                feature = "qjl"
+            )))]
             _ => Err(DecompressError::DecodeFailed(
                 "No codec features enabled".to_string(),
             )),
@@ -113,7 +118,10 @@ pub fn select_codec(
 /// the same codebook. Decode requires a quantizer built from the same
 /// profile — so the seed is the round-trip key.
 #[cfg(feature = "fib")]
-pub fn fib_quant_profile(dim: usize, seed: u64) -> std::result::Result<FibQuantProfileV1, fib_quant::FibQuantError> {
+pub fn fib_quant_profile(
+    dim: usize,
+    seed: u64,
+) -> std::result::Result<FibQuantProfileV1, fib_quant::FibQuantError> {
     // paper_default: k=4, N=32. These match what poly-kv uses for its
     // fib_k4_n32 codec. To use other (k, N) combinations, build the
     // profile directly with FibQuantProfileV1::paper_default or
@@ -203,40 +211,34 @@ pub fn decode(codec_id: CodecId, compressed: &[u8]) -> Result<Vec<u8>, Decompres
 #[cfg(feature = "fib")]
 fn fib_quant_encode(vector: &[f32], seed: u64) -> Result<Vec<u8>, CompressionError> {
     let dim = vector.len();
-    let profile = fib_quant_profile(dim, seed).map_err(|e| {
-        CompressionError::EncodeFailed(format!("fib_quant profile build: {e}"))
-    })?;
-    let quantizer = FibQuantizer::new(profile).map_err(|e| {
-        CompressionError::EncodeFailed(format!("fib_quant quantizer build: {e}"))
-    })?;
-    let code = quantizer.encode(vector).map_err(|e| {
-        CompressionError::EncodeFailed(format!("fib_quant encode: {e}"))
-    })?;
-    serde_json::to_vec(&code).map_err(|e| {
-        CompressionError::EncodeFailed(format!("fib_quant serialize: {e}"))
-    })
+    let profile = fib_quant_profile(dim, seed)
+        .map_err(|e| CompressionError::EncodeFailed(format!("fib_quant profile build: {e}")))?;
+    let quantizer = FibQuantizer::new(profile)
+        .map_err(|e| CompressionError::EncodeFailed(format!("fib_quant quantizer build: {e}")))?;
+    let code = quantizer
+        .encode(vector)
+        .map_err(|e| CompressionError::EncodeFailed(format!("fib_quant encode: {e}")))?;
+    serde_json::to_vec(&code)
+        .map_err(|e| CompressionError::EncodeFailed(format!("fib_quant serialize: {e}")))
 }
 
 #[cfg(feature = "fib")]
 fn fib_quant_decode(compressed: &[u8]) -> Result<Vec<u8>, DecompressError> {
-    let code: FibCodeV1 = serde_json::from_slice(compressed).map_err(|e| {
-        DecompressError::DecodeFailed(format!("fib_quant deserialize: {e}"))
-    })?;
+    let code: FibCodeV1 = serde_json::from_slice(compressed)
+        .map_err(|e| DecompressError::DecodeFailed(format!("fib_quant deserialize: {e}")))?;
     // Rebuild the quantizer. The wire format does not currently carry the
     // seed, so we use a v1 convention: a fixed seed. This is sufficient
     // for round-trip parity within a single scr-runtime-compression build;
     // it is NOT sufficient for cross-build interoperability. Future work:
     // extend the wire format to carry seed + dim alongside FibCodeV1.
     let seed = 42u64;
-    let profile = fib_quant_profile(code.ambient_dim as usize, seed).map_err(|e| {
-        DecompressError::DecodeFailed(format!("fib_quant profile build: {e}"))
-    })?;
-    let quantizer = FibQuantizer::new(profile).map_err(|e| {
-        DecompressError::DecodeFailed(format!("fib_quant quantizer build: {e}"))
-    })?;
-    let decoded = quantizer.decode(&code).map_err(|e| {
-        DecompressError::DecodeFailed(format!("fib_quant decode: {e}"))
-    })?;
+    let profile = fib_quant_profile(code.ambient_dim as usize, seed)
+        .map_err(|e| DecompressError::DecodeFailed(format!("fib_quant profile build: {e}")))?;
+    let quantizer = FibQuantizer::new(profile)
+        .map_err(|e| DecompressError::DecodeFailed(format!("fib_quant quantizer build: {e}")))?;
+    let decoded = quantizer
+        .decode(&code)
+        .map_err(|e| DecompressError::DecodeFailed(format!("fib_quant decode: {e}")))?;
     Ok(bytemuck::cast_slice::<f32, u8>(&decoded).to_vec())
 }
 
@@ -245,12 +247,11 @@ fn fib_quant_decode(compressed: &[u8]) -> Result<Vec<u8>, DecompressError> {
 #[cfg(feature = "turbo")]
 fn turbo_quant_encode(vector: &[f32], seed: u64) -> Result<Vec<u8>, CompressionError> {
     let dim = vector.len();
-    let quantizer = turbo_quant_quantizer(dim, seed).map_err(|e| {
-        CompressionError::EncodeFailed(format!("turbo_quant quantizer build: {e}"))
-    })?;
-    quantizer.encode_to_bytes(vector).map_err(|e| {
-        CompressionError::EncodeFailed(format!("turbo_quant encode: {e}"))
-    })
+    let quantizer = turbo_quant_quantizer(dim, seed)
+        .map_err(|e| CompressionError::EncodeFailed(format!("turbo_quant quantizer build: {e}")))?;
+    quantizer
+        .encode_to_bytes(vector)
+        .map_err(|e| CompressionError::EncodeFailed(format!("turbo_quant encode: {e}")))
 }
 
 #[cfg(feature = "turbo")]
@@ -267,9 +268,8 @@ fn turbo_quant_decode(compressed: &[u8]) -> Result<Vec<u8>, DecompressError> {
     // Parse the header to extract the quantizer profile. This is the
     // part that was missing in v1: dim, bits, projections, seed are all
     // embedded in the wire format.
-    let header = TurboCodeWireV1::parse_header(compressed).map_err(|e| {
-        DecompressError::DecodeFailed(format!("turbo_quant header parse: {e}"))
-    })?;
+    let header = TurboCodeWireV1::parse_header(compressed)
+        .map_err(|e| DecompressError::DecodeFailed(format!("turbo_quant header parse: {e}")))?;
 
     // Rebuild the quantizer from the wire-derived profile. PolarWithQjl
     // mode is implied by qjl_sign_count > 0; PolarOnly by 0.
@@ -291,9 +291,7 @@ fn turbo_quant_decode(compressed: &[u8]) -> Result<Vec<u8>, DecompressError> {
         header.seed,
         mode,
     )
-    .map_err(|e| {
-        DecompressError::DecodeFailed(format!("turbo_quant quantizer rebuild: {e}"))
-    })?;
+    .map_err(|e| DecompressError::DecodeFailed(format!("turbo_quant quantizer rebuild: {e}")))?;
 
     // Now decode the full TurboCode against the rebuilt quantizer.
     let code = TurboCodeWireV1::decode(compressed, &quantizer)
@@ -320,15 +318,13 @@ fn polar_quant_encode(vector: &[f32], seed: u64) -> Result<Vec<u8>, CompressionE
     let dim = vector.len();
     // 8-bit is the v1 default; matches poly-kv's turbo_8bit budget.
     let bits = 8u8;
-    let quantizer = PolarQuantizer::new_with_stored_rotation(dim, bits, seed).map_err(|e| {
-        CompressionError::EncodeFailed(format!("polar_quant build: {e}"))
-    })?;
-    let code = quantizer.encode(vector).map_err(|e| {
-        CompressionError::EncodeFailed(format!("polar_quant encode: {e}"))
-    })?;
-    serde_json::to_vec(&code).map_err(|e| {
-        CompressionError::EncodeFailed(format!("polar_quant serialize: {e}"))
-    })
+    let quantizer = PolarQuantizer::new_with_stored_rotation(dim, bits, seed)
+        .map_err(|e| CompressionError::EncodeFailed(format!("polar_quant build: {e}")))?;
+    let code = quantizer
+        .encode(vector)
+        .map_err(|e| CompressionError::EncodeFailed(format!("polar_quant encode: {e}")))?;
+    serde_json::to_vec(&code)
+        .map_err(|e| CompressionError::EncodeFailed(format!("polar_quant serialize: {e}")))
 }
 
 // ── qjl sketch encode (asymmetric) ──
@@ -345,15 +341,13 @@ fn qjl_sketch_encode(vector: &[f32], seed: u64) -> Result<Vec<u8>, CompressionEr
     // 32 projections is the v1 default; matches the typical sweet spot
     // for 128-2560 dim embeddings in the literature.
     let projections = 32usize;
-    let quantizer = QjlQuantizer::new(dim, projections, seed).map_err(|e| {
-        CompressionError::EncodeFailed(format!("qjl_quant build: {e}"))
-    })?;
-    let sketch = quantizer.sketch(vector).map_err(|e| {
-        CompressionError::EncodeFailed(format!("qjl_quant sketch: {e}"))
-    })?;
-    serde_json::to_vec(&sketch).map_err(|e| {
-        CompressionError::EncodeFailed(format!("qjl_quant serialize: {e}"))
-    })
+    let quantizer = QjlQuantizer::new(dim, projections, seed)
+        .map_err(|e| CompressionError::EncodeFailed(format!("qjl_quant build: {e}")))?;
+    let sketch = quantizer
+        .sketch(vector)
+        .map_err(|e| CompressionError::EncodeFailed(format!("qjl_quant sketch: {e}")))?;
+    serde_json::to_vec(&sketch)
+        .map_err(|e| CompressionError::EncodeFailed(format!("qjl_quant serialize: {e}")))
 }
 
 #[cfg(test)]
@@ -367,7 +361,9 @@ mod tests {
         let mut s = seed;
         (0..dim)
             .map(|_| {
-                s = s.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+                s = s
+                    .wrapping_mul(6364136223846793005)
+                    .wrapping_add(1442695040888963407);
                 ((s >> 32) as f32 / u32::MAX as f32) - 0.5
             })
             .collect()
@@ -438,8 +434,7 @@ mod tests {
             .expect("decode with wire-embedded seed must succeed");
 
         let v_seed99 = make_vector(64, 99);
-        let encoded_seed99 = encode(CodecId::TurboQuant, &v_seed99, 99)
-            .expect("encode seed=99");
+        let encoded_seed99 = encode(CodecId::TurboQuant, &v_seed99, 99).expect("encode seed=99");
         let _decoded_99 = decode(CodecId::TurboQuant, &encoded_seed99)
             .expect("decode with wire-embedded seed must succeed");
     }

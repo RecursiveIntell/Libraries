@@ -328,6 +328,9 @@ pub struct VectorSearchReceiptV1 {
     /// Explicit fallback reason, mirrored from fallback for evidence readers.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fallback_reason: Option<String>,
+    /// Structured receipt for derived candidate backends such as proveKV pool.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub derived_candidate: Option<DerivedCandidateReceiptV1>,
     /// Whether approximate codec/index scoring contributed to candidate generation.
     pub approximate: bool,
     /// Number of vector candidates requested from the backend.
@@ -379,6 +382,89 @@ pub struct DerivedVectorArtifactGenerationV1 {
     pub status: String,
     /// Structured or human-readable degradation markers.
     pub degradations: Vec<String>,
+}
+
+/// Stable generation-level manifest for derived proveKV/poly-kv pool candidate artifacts.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ProveKvPoolGenerationV1 {
+    pub schema_version: String,
+    pub generation_id: String,
+    pub embedding_snapshot_digest: String,
+    pub source_digest: String,
+    pub pool_manifest_digest: String,
+    pub codec_family: String,
+    pub codec_profile: String,
+    pub vector_dim: usize,
+    pub item_count: usize,
+    pub payload_bytes: u64,
+    pub created_at: DateTime<Utc>,
+}
+
+/// Durable item-to-pool-index mapping for a proveKV/poly-kv pool generation.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ProveKvPoolItemMapEntryV1 {
+    pub generation_id: String,
+    pub item_id: String,
+    pub source_type: String,
+    pub pool_index: usize,
+    pub embedding_digest: String,
+}
+
+/// Lifecycle status for a proveKV/poly-kv pool generation.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum ProveKvPoolGenerationStatus {
+    Disabled,
+    Missing,
+    Building,
+    Ready,
+    Stale,
+    Failed,
+}
+
+/// Current proveKV/poly-kv pool artifact status.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ProveKvPoolArtifactStatusV1 {
+    pub status: ProveKvPoolGenerationStatus,
+    pub generation_id: Option<String>,
+    pub embedding_snapshot_digest: Option<String>,
+    pub pool_manifest_digest: Option<String>,
+    pub item_count: usize,
+    pub payload_bytes: u64,
+    pub reason: Option<String>,
+}
+
+/// Receipt-like summary for rebuilding proveKV/poly-kv pool artifacts.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ProveKvPoolArtifactBuildReceiptV1 {
+    pub schema_version: String,
+    pub generation_id: String,
+    pub embedding_snapshot_digest: String,
+    pub source_digest: String,
+    pub pool_manifest_digest: String,
+    pub codec_family: String,
+    pub codec_profile: String,
+    pub vector_dim: usize,
+    pub item_count: usize,
+    pub payload_bytes: u64,
+    pub exact_rerank_required: bool,
+    pub created_at: DateTime<Utc>,
+}
+
+/// Structured search receipt for derived candidate generation followed by exact f32 rerank.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DerivedCandidateReceiptV1 {
+    pub candidate_backend: String,
+    pub codec_family: Option<String>,
+    pub generation_id: Option<String>,
+    pub embedding_snapshot_digest: Option<String>,
+    pub pool_manifest_digest: Option<String>,
+    pub exact_rerank: bool,
+    pub approximate: bool,
+    pub fallback: Option<String>,
+    pub raw_candidate_count: usize,
+    pub post_filter_count: usize,
+    pub final_result_count: usize,
 }
 
 /// Receipt-like summary for rebuilding derived vector acceleration artifacts.

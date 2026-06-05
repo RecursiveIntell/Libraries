@@ -1,10 +1,10 @@
 use crate::adapters::semantic_memory::SemanticMemoryAdapter;
-use crate::config::RuntimeConfig;
+use crate::config::{RuntimeCandidateBackendHint, RuntimeConfig};
 use crate::entity::registry::{Entity, EntityRegistry};
 use crate::error::RuntimeError;
 use crate::ids::{ProjectionId, ProjectionKind, Scope, ScopeKey};
 use crate::inference::InferenceExplanation;
-use crate::obs::trace::{QueryTrace, QueryWarning};
+use crate::obs::trace::{QueryTrace, QueryWarning, RuntimeDerivedCandidateTraceV1};
 use crate::projection::lifecycle::{
     InvalidationEvent, ProjectionActionResult, ProjectionHealth, ProjectionTracker,
     ProjectionVersion, StaleCause,
@@ -284,7 +284,7 @@ impl KnowledgeRuntime {
         );
 
         // Phase 3: Execute legs
-        let (leg_results, leg_timings) = self
+        let (leg_results, leg_timings, derived_candidate_receipts) = self
             .execute_plan(
                 &plan,
                 &scope_key,
@@ -304,7 +304,7 @@ impl KnowledgeRuntime {
         let total_duration = start.elapsed();
 
         // Phase 5: Build trace
-        let trace = QueryTrace::from_pipeline(
+        let mut trace = QueryTrace::from_pipeline(
             trace_ctx,
             scope_key,
             classification,
@@ -314,6 +314,7 @@ impl KnowledgeRuntime {
             &merged,
             warnings,
         );
+        trace.derived_candidate_receipts = derived_candidate_receipts;
 
         let results = merged.results.into_iter().map(|m| m.result).collect();
         Ok((results, trace))
@@ -412,7 +413,7 @@ impl KnowledgeRuntime {
         );
 
         let explicit_temporal = Some((valid_at.to_string(), recorded_at_or_before.to_string()));
-        let (leg_results, leg_timings) = self
+        let (leg_results, leg_timings, derived_candidate_receipts) = self
             .execute_plan(
                 &plan,
                 &scope_key,
@@ -446,6 +447,7 @@ impl KnowledgeRuntime {
         trace.valid_as_of = Some(valid_at.to_string());
         trace.recorded_as_of = Some(recorded_at_or_before.to_string());
         trace.temporal_mode = Some(temporal_mode.to_string());
+        trace.derived_candidate_receipts = derived_candidate_receipts;
 
         let results = merged.results.into_iter().map(|m| m.result).collect();
         Ok((results, trace))
@@ -672,9 +674,17 @@ impl KnowledgeRuntime {
         has_projection_imports: bool,
         warnings: &mut Vec<QueryWarning>,
         explicit_temporal: Option<(String, String)>,
-    ) -> Result<(Vec<Vec<LegResult>>, Vec<u64>), RuntimeError> {
+    ) -> Result<
+        (
+            Vec<Vec<LegResult>>,
+            Vec<u64>,
+            Vec<RuntimeDerivedCandidateTraceV1>,
+        ),
+        RuntimeError,
+    > {
         let mut all_legs = Vec::with_capacity(plan.legs.len());
         let mut timings = Vec::with_capacity(plan.legs.len());
+        let mut derived_candidate_receipts = Vec::new();
         let scope_requires_pushdown = scope_has_extra_dimensions(&plan.scope);
         for (i, leg) in plan.legs.iter().enumerate() {
             let leg_start = Instant::now();
@@ -706,8 +716,12 @@ impl KnowledgeRuntime {
                                 projection_results
                             } else {
                                 let fallback = self
-                                    .adapter
-                                    .search(&plan.query, &plan.scope, Some(leg.limit), None)
+                                    .semantic_search_leg(
+                                        &plan.query,
+                                        &plan.scope,
+                                        leg.limit,
+                                        &mut derived_candidate_receipts,
+                                    )
                                     .await?;
                                 merge_leg_results(projection_results, fallback, leg.limit)
                             }
@@ -720,9 +734,13 @@ impl KnowledgeRuntime {
                                 warnings,
                             )?;
                         }
-                        self.adapter
-                            .search(&plan.query, &plan.scope, Some(leg.limit), None)
-                            .await?
+                        self.semantic_search_leg(
+                            &plan.query,
+                            &plan.scope,
+                            leg.limit,
+                            &mut derived_candidate_receipts,
+                        )
+                        .await?
                     }
                 }
                 RetrievalStrategy::EntitySearch { mention } => {
@@ -798,8 +816,12 @@ impl KnowledgeRuntime {
                                     .map(|e| e.canonical_name.as_str())
                                     .unwrap_or(mention);
                                 let fallback = self
-                                    .adapter
-                                    .search(search_term, &plan.scope, Some(leg.limit), None)
+                                    .semantic_search_leg(
+                                        search_term,
+                                        &plan.scope,
+                                        leg.limit,
+                                        &mut derived_candidate_receipts,
+                                    )
                                     .await?;
                                 merge_leg_results(projection_results, fallback, leg.limit)
                             }
@@ -816,9 +838,13 @@ impl KnowledgeRuntime {
                                 .as_ref()
                                 .map(|e| e.canonical_name.as_str())
                                 .unwrap_or(mention);
-                            self.adapter
-                                .search(search_term, &plan.scope, Some(leg.limit), None)
-                                .await?
+                            self.semantic_search_leg(
+                                search_term,
+                                &plan.scope,
+                                leg.limit,
+                                &mut derived_candidate_receipts,
+                            )
+                            .await?
                         }
                     } else {
                         if explicit_temporal.is_some() {
@@ -833,9 +859,13 @@ impl KnowledgeRuntime {
                             .as_ref()
                             .map(|e| e.canonical_name.as_str())
                             .unwrap_or(mention);
-                        self.adapter
-                            .search(search_term, &plan.scope, Some(leg.limit), None)
-                            .await?
+                        self.semantic_search_leg(
+                            search_term,
+                            &plan.scope,
+                            leg.limit,
+                            &mut derived_candidate_receipts,
+                        )
+                        .await?
                     }
                 }
                 RetrievalStrategy::TemporalSearch { temporal_expr } => {
@@ -862,15 +892,23 @@ impl KnowledgeRuntime {
                                 .await?
                         } else {
                             self.handle_temporal_fallback(temporal_expr, &plan.scope, warnings)?;
-                            self.adapter
-                                .search(&plan.query, &plan.scope, Some(leg.limit), None)
-                                .await?
+                            self.semantic_search_leg(
+                                &plan.query,
+                                &plan.scope,
+                                leg.limit,
+                                &mut derived_candidate_receipts,
+                            )
+                            .await?
                         }
                     } else {
                         self.handle_temporal_fallback(temporal_expr, &plan.scope, warnings)?;
-                        self.adapter
-                            .search(&plan.query, &plan.scope, Some(leg.limit), None)
-                            .await?
+                        self.semantic_search_leg(
+                            &plan.query,
+                            &plan.scope,
+                            leg.limit,
+                            &mut derived_candidate_receipts,
+                        )
+                        .await?
                     }
                 }
             };
@@ -887,7 +925,33 @@ impl KnowledgeRuntime {
             all_legs.push(leg_results);
         }
 
-        Ok((all_legs, timings))
+        Ok((all_legs, timings, derived_candidate_receipts))
+    }
+
+    async fn semantic_search_leg(
+        &self,
+        query: &str,
+        scope: &Scope,
+        limit: usize,
+        receipts: &mut Vec<RuntimeDerivedCandidateTraceV1>,
+    ) -> Result<Vec<SearchResult>, RuntimeError> {
+        let (results, receipt) = self
+            .adapter
+            .search_with_receipt(query, scope, Some(limit), None)
+            .await?;
+        if let Some(receipt) = receipt {
+            if matches!(
+                self.config.query.candidate_backend_hint,
+                RuntimeCandidateBackendHint::ProveKvPoolCandidate
+            ) || receipt.codec_family.as_deref() == Some("provekv_pool")
+                || receipt
+                    .candidate_backend
+                    .contains("provekv_pool_candidate_then_exact_f32")
+            {
+                receipts.push(receipt);
+            }
+        }
+        Ok(results)
     }
 
     fn handle_temporal_fallback(

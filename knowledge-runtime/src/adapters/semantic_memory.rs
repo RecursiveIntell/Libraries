@@ -1,10 +1,11 @@
 use crate::error::RuntimeError;
 use crate::ids::{EntityId, Scope, ScopeKey};
-use crate::obs::trace::{RuntimeQueryProvenanceV1, RuntimeView};
+use crate::obs::trace::{RuntimeDerivedCandidateTraceV1, RuntimeQueryProvenanceV1, RuntimeView};
 use semantic_memory::{
     ExplainedResult, MemoryStore, ProjectionClaimVersion, ProjectionEntityAlias, ProjectionEpisode,
     ProjectionEvidenceRef, ProjectionImportLogEntry, ProjectionQuery, ProjectionRelationVersion,
-    SearchResult, SearchSource, SearchSourceType,
+    ReceiptMode, SearchContext, SearchResult, SearchSource, SearchSourceType,
+    VectorSearchReceiptV1,
 };
 use stack_ids::{ClaimId, ClaimVersionId, TraceCtx};
 
@@ -76,6 +77,81 @@ impl SemanticMemoryAdapter {
         } else {
             Ok(results)
         }
+    }
+
+    /// Hybrid search that requests semantic-memory receipt metadata and returns
+    /// a runtime-safe derived candidate summary when available.
+    pub async fn search_with_receipt(
+        &self,
+        query: &str,
+        scope: &Scope,
+        limit: Option<usize>,
+        source_types: Option<&[SearchSourceType]>,
+    ) -> Result<(Vec<SearchResult>, Option<RuntimeDerivedCandidateTraceV1>), RuntimeError> {
+        let ns = scope.namespace.as_str();
+        let ns_slice: &[&str] = &[ns];
+        let scope_key = scope.key();
+        let filterable_scope =
+            scope.domain.is_some() || scope.workspace_id.is_some() || scope.repo_id.is_some();
+        let scoped_source_types = if filterable_scope {
+            Some(filterable_search_source_types(source_types))
+        } else {
+            source_types.map(|types| types.to_vec())
+        };
+        let requested_limit = limit.unwrap_or(10);
+        let candidate_limit = if filterable_scope {
+            requested_limit.saturating_mul(3).max(requested_limit)
+        } else {
+            requested_limit
+        };
+        let mut context = SearchContext::default_now();
+        context.receipt_mode = ReceiptMode::ReturnReceipt;
+
+        let response = self
+            .store
+            .search_explained_with_context(
+                query,
+                Some(candidate_limit),
+                Some(ns_slice),
+                scoped_source_types.as_deref(),
+                context,
+            )
+            .await
+            .map_err(RuntimeError::Memory)?;
+        let receipt = response.receipt.as_ref().map(runtime_trace_from_receipt);
+
+        let explained_results = if filterable_scope {
+            let filtered = self
+                .store
+                .filter_search_results_by_scope(
+                    response
+                        .results
+                        .iter()
+                        .map(|item| item.result.clone())
+                        .collect(),
+                    &scope_key,
+                )
+                .await
+                .map_err(RuntimeError::Memory)?;
+            let allowed: std::collections::BTreeSet<String> =
+                filtered.iter().map(search_identity).collect();
+            response
+                .results
+                .into_iter()
+                .filter(|item| allowed.contains(&search_identity(&item.result)))
+                .take(requested_limit)
+                .collect::<Vec<_>>()
+        } else {
+            response.results.into_iter().take(requested_limit).collect()
+        };
+
+        Ok((
+            explained_results
+                .into_iter()
+                .map(|item| item.result)
+                .collect(),
+            receipt,
+        ))
     }
 
     /// Hybrid search with explicit explained-score payloads and runtime-owned provenance.
@@ -663,4 +739,20 @@ impl std::fmt::Debug for SemanticMemoryAdapter {
 
 fn search_identity(result: &SearchResult) -> String {
     serde_json::to_string(&result.source).unwrap_or_else(|_| format!("{:?}", result.source))
+}
+
+fn runtime_trace_from_receipt(receipt: &VectorSearchReceiptV1) -> RuntimeDerivedCandidateTraceV1 {
+    RuntimeDerivedCandidateTraceV1 {
+        candidate_backend: receipt.candidate_backend.clone(),
+        codec_family: receipt.codec_family.clone(),
+        generation_id: receipt.artifact_generation_id.clone(),
+        embedding_snapshot_digest: None,
+        pool_manifest_digest: receipt.vector_artifact_manifest_digest.clone(),
+        exact_rerank: receipt.exact_rerank,
+        approximate: receipt.approximate,
+        fallback: receipt.fallback.clone(),
+        raw_candidate_count: receipt.returned_candidates,
+        post_filter_count: receipt.post_filter_candidates,
+        final_result_count: receipt.result_ids.len(),
+    }
 }

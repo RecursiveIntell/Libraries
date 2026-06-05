@@ -48,6 +48,65 @@ pub struct CanonicalMemoryAdapter {
     runtime: canonical_stack::KnowledgeRuntime,
 }
 
+#[derive(Debug, Error)]
+pub enum MemoryProfileError {
+    #[error("invalid memory backend profile: {0}")]
+    InvalidProfile(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SemanticMemoryBackendProfileV1 {
+    pub schema: String,
+    pub owner: String,
+    pub authoritative_store: String,
+    pub derived_candidate_backend: String,
+    pub exact_f32_rerank_required: bool,
+    pub direct_provekv_dependency_allowed: bool,
+    pub recall_integration_allowed: bool,
+    pub missing_generation_behavior: String,
+}
+
+impl SemanticMemoryBackendProfileV1 {
+    pub const SCHEMA: &'static str = "AiDENsSemanticMemoryBackendProfileV1";
+
+    pub fn provekv_derived_candidate() -> Self {
+        Self {
+            schema: Self::SCHEMA.into(),
+            owner: "semantic-memory".into(),
+            authoritative_store: "semantic-memory sqlite f32 embeddings".into(),
+            derived_candidate_backend: "provekv_pool_candidate_then_exact_f32".into(),
+            exact_f32_rerank_required: true,
+            direct_provekv_dependency_allowed: false,
+            recall_integration_allowed: false,
+            missing_generation_behavior: "receipted_f32_fallback".into(),
+        }
+    }
+
+    pub fn validate(&self) -> Result<(), MemoryProfileError> {
+        if self.schema != Self::SCHEMA {
+            return Err(MemoryProfileError::InvalidProfile(
+                "unexpected semantic memory backend profile schema".into(),
+            ));
+        }
+        if self.owner != "semantic-memory" {
+            return Err(MemoryProfileError::InvalidProfile(
+                "semantic-memory must own canonical memory truth".into(),
+            ));
+        }
+        if !self.exact_f32_rerank_required {
+            return Err(MemoryProfileError::InvalidProfile(
+                "proveKV/poly-kv candidate profiles must require exact f32 rerank".into(),
+            ));
+        }
+        if self.direct_provekv_dependency_allowed || self.recall_integration_allowed {
+            return Err(MemoryProfileError::InvalidProfile(
+                "AiDENs profiles must not directly depend on proveKV or wire Recall".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MemoryGroundingBackpointerV1 {
     pub owner_crate: String,

@@ -39,7 +39,10 @@ async fn canonical_roundtrip_emits_export_receipt() {
     assert_eq!(receipt.receipt_version, "ExportReceiptV1");
     assert!(!receipt.export_receipt_id.is_empty());
     assert!(receipt.output_ref.is_some(), "output must be bound");
-    assert!(receipt.output_digest.is_some(), "output digest must be bound");
+    assert!(
+        receipt.output_digest.is_some(),
+        "output digest must be bound"
+    );
     assert!(
         receipt.input_digests.contains_key("bundle"),
         "bundle digest must be recorded"

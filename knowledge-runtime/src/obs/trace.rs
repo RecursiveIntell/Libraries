@@ -68,6 +68,30 @@ pub struct WideningDisclosure {
     pub reason: String,
 }
 
+/// Runtime-level summary of a semantic-memory derived candidate receipt.
+///
+/// This mirrors semantic-memory receipt fields without depending on proveKV or
+/// compression crate APIs.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RuntimeDerivedCandidateTraceV1 {
+    pub candidate_backend: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub codec_family: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub generation_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub embedding_snapshot_digest: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pool_manifest_digest: Option<String>,
+    pub exact_rerank: bool,
+    pub approximate: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fallback: Option<String>,
+    pub raw_candidate_count: usize,
+    pub post_filter_count: usize,
+    pub final_result_count: usize,
+}
+
 /// Observability record for a single query execution.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryTrace {
@@ -105,6 +129,9 @@ pub struct QueryTrace {
     pub widenings: Vec<WideningDisclosure>,
     /// Warnings and degradation notices.
     pub warnings: Vec<QueryWarning>,
+    /// Semantic-memory derived candidate backend receipts observed while executing legs.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub derived_candidate_receipts: Vec<RuntimeDerivedCandidateTraceV1>,
     /// Kernel scheduler degradation surfaced by attached runtime inference, if any.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub kernel_degraded_reason: Option<String>,
@@ -193,6 +220,7 @@ impl QueryTrace {
             executed_views: collect_requested_views(&executed_views),
             widenings,
             warnings,
+            derived_candidate_receipts: Vec::new(),
             kernel_degraded_reason: None,
             valid_as_of: None,
             recorded_as_of: None,
