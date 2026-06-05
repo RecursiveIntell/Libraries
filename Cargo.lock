@@ -3964,12 +3964,13 @@ name = "poly-kv"
 version = "0.1.0-alpha.1"
 dependencies = [
  "blake3",
- "criterion 0.5.1",
- "proptest",
- "quant-codec-core",
+ "fib-quant",
+ "rand 0.8.6",
+ "rand_chacha 0.3.1",
+ "rayon",
  "serde",
  "serde_json",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -4848,6 +4849,7 @@ dependencies = [
  "cxx-build",
  "forge-memory-bridge",
  "hnsw_rs",
+ "poly-kv",
  "quant-governor",
  "reqwest 0.12.28",
  "rusqlite",

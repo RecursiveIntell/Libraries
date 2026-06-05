@@ -1,131 +1,166 @@
 # quant-eval
 
-Compression and semantic search evaluation benchmark suite.
+`quant-eval` is a Rust crate for compression and semantic-search evaluation scaffolding.
 
-`quant-eval` is the **measurement layer** for the governed
-compression workspace. It defines three benchmark harnesses:
+Current status: **prototype benchmark harnesses with synthetic data and simulated compression paths**. It is useful as a typed measurement substrate, but it does **not yet run real codec implementations** and should not be described as proving codec quality, production readiness, or workload-level benchmark performance.
 
-- **`admissibility`** — when is a codec admissible for a given
-  use case (admissibility classes: Exact, Lossless,
-  Approximate).
-- **`compression`** — what's the byte cost of encoding a
-  corpus with a given codec profile (raw bytes, encoded bytes,
-  ratio).
-- **`semantic`** — does the encoded representation preserve
-  retrieval quality (cosine similarity, NDCG@k, mean rank
-  drift, exact-rerank recovery rate).
+## What is implemented
 
-The output of every benchmark is a typed `EvalReport` that
-matches the `quant_codec_core::EvalReport` shape.
+### Admissibility harness
 
-## What's in the box
+File: `src/benchmarks/admissibility.rs` (346 lines)
 
-### `admissibility.rs` (346 lines)
+Implemented:
 
-Tests that a codec correctly classifies itself as
-`Admissibility::Exact`, `Admissibility::Lossless`, or
-`Admissibility::Approximate`. The classification is
-**enforced** — a codec that says "Exact" but is lossy gets
-rejected by the harness, not just warned.
+- `CodecProfile` presets: `fast`, `balanced`, and `high_compression`.
+- `AdmissibilityTest` over caller-provided `TestSetEntry` values.
+- Standard synthetic test vectors for zero, unit, and deterministic pseudo-random vectors.
+- Summary counts per profile.
 
-### `compression.rs` (460 lines)
+Important limitation:
 
-Measures the raw byte cost of encoding a corpus:
+- The current harness simulates codec behavior from `should_succeed` and profile quality targets. It does not call a codec trait or encode/decode real payloads yet.
 
-- **Raw bytes** — the corpus in f32, summed.
-- **Encoded bytes** — the corpus in the codec's wire format,
-  summed.
-- **Ratio** — raw / encoded.
-- **Per-block ratio** — min, max, mean, p50, p95, p99.
-- **Theoretical ratio** — the codec's expected ratio for the
-  given profile.
+### Compression benchmark scaffold
 
-The harness catches: codecs that claim a ratio better than
-theoretical, codecs that have outliers, codecs that have
-non-uniform block sizes.
+File: `src/benchmarks/compression.rs` (460 lines)
 
-### `semantic.rs` (398 lines)
+Implemented:
 
-Measures retrieval quality:
+- Deterministic synthetic corpus and query generation.
+- Raw nearest-neighbor computation with cosine similarity.
+- Recall@K and MRR calculations over exact-vs-estimated result sets.
+- Cosine-similarity-style summary statistics over result overlap.
 
-- **NDCG@k** — Normalized Discounted Cumulative Gain at
-  top-k. 1.0 = perfect ranking.
-- **Mean rank drift** — average position change between
-  raw-vector top-k and encoded-vector top-k.
-- **Cosine similarity** — inner product agreement.
-- **Exact-rerank recovery rate** — fraction of queries where
-  the encoded top-k, after exact rerank against the raw
-  vectors, equals the raw top-k.
+Important limitations:
 
-The harness uses synthetic corpora with known ground truth,
-so the metrics are reproducible and not workload-dependent.
+- Compression is simulated by returning the exact result set.
+- The benchmark does not currently measure encoded byte size, compression ratio, per-block ratios, wire formats, or codec theoretical ratios.
+- The reported cosine-similarity statistics are derived from top-K overlap, not from comparing raw vectors to decoded vectors.
 
-## Quick Start
+### Semantic memory benchmark scaffold
+
+File: `src/benchmarks/semantic.rs` (398 lines)
+
+Implemented:
+
+- Deterministic synthetic index and query generation.
+- Raw search baseline using cosine similarity.
+- Synthetic relevance judgments from the raw top-K results.
+- Precision@K, Recall@K, NDCG@K, MAP, and degradation-ratio calculations.
+
+Important limitation:
+
+- Compressed search currently delegates to raw search, so degradation is simulated/minimal by construction. It is not evidence of real codec preservation quality.
+
+### Benchmark receipts
+
+Files: `src/receipt.rs`, `src/fingerprint.rs`
+
+Implemented:
+
+- `BenchmarkReceipt` with timestamp, commit hash, machine fingerprint string, result list, and optional note.
+- `BenchmarkResult` timing fields.
+- Receipt JSON serialization/deserialization.
+- Receipt hash and receipt diff helpers.
+- `MachineFingerprint` derived from available host/user/arch/OS/CPU-count/machine-id inputs.
+
+## Public API
+
+The crate currently re-exports:
+
+- `AdmissibilityTest`
+- `CodecProfile`
+- `CompressionBenchmark`
+- `CompressionBenchmarkConfig`
+- `SemanticMemoryBenchmark`
+- `SemanticMemoryConfig`
+- `QuantEvalError`
+- `MachineFingerprint`
+- `BenchmarkReceipt`
+- `BenchmarkResult`
+- `ReceiptDiff`
+
+## Quick start
 
 ```rust
-use quant_eval::compression::measure_compression;
-use quant_eval::semantic::measure_retrieval;
-use quant_eval::EvalReport;
+use quant_eval::{CompressionBenchmark, CompressionBenchmarkConfig};
 
-fn main() {
-    // Build a synthetic corpus.
-    let corpus: Vec<Vec<f32>> = /* ... */;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let benchmark = CompressionBenchmark::with_config(CompressionBenchmarkConfig {
+        dim: 64,
+        db_size: 100,
+        queries: 10,
+        seed: 42,
+        top_k: 5,
+        iterations: 10,
+    });
 
-    // Measure the compression ratio.
-    let report: EvalReport = measure_compression(&corpus, /* profile */);
-    assert!(report.passed);
-    assert!(report.cosine_similarity.unwrap_or(0.0) > 0.99);
+    let report = benchmark.run()?;
+    println!("recall@{} = {}", report.top_k, report.recall_at_k);
+    Ok(())
 }
 ```
 
-Run it: `cargo test --release --test integration`.
+Run tests:
+
+```bash
+cargo test -p quant-eval
+cargo clippy -p quant-eval --all-targets -- -D warnings
+```
 
 ## Test coverage
 
-- **3 internal benchmarks** in `src/benchmarks/`
-  (admissibility.rs, compression.rs, semantic.rs).
-- **1 integration test** in `tests/integration.rs` (98 lines)
-  that runs the full evaluation pipeline on a synthetic
-  corpus and validates the report.
-- `cargo test` clean, `cargo clippy --all-targets -- -D warnings` clean.
+Current verified test surface:
+
+- 19 unit tests in the library modules.
+- 5 integration tests in `tests/integration.rs`.
+- `cargo test` passes.
+- `cargo clippy --all-targets -- -D warnings` passes.
 
 ## MSRV
 
-Rust 1.75 (2021 edition). Stable features only.
+Rust 1.75, 2021 edition.
 
 ## Dependencies
 
-- `serde` (with `derive`).
-- `thiserror`.
-- `serde_json`.
-- `chrono` (for receipt timestamps).
-- `sha2` (for digest computation).
-- `blake3` (for content-addressable digests).
-- `tempfile` (dev only, for test fixtures).
+Runtime dependencies:
 
-Zero platform-specific code, zero FFI, zero async.
+- `serde`
+- `serde_json`
+- `thiserror`
+- `chrono`
+- `sha2`
+- `blake3`
+
+Dev dependency:
+
+- `tempfile`
+
+The crate currently contains no platform-specific code, FFI, or async runtime dependency.
+
+## What this README does not claim
+
+This README intentionally does **not** claim that `quant-eval`:
+
+- proves real codec admissibility;
+- measures actual compression ratios;
+- enforces codec-reported admissibility classes;
+- integrates with `poly-kv`, `fib-quant`, `turbo-quant`, or `quant-governor`;
+- emits `quant_codec_core::EvalReport` values;
+- catches theoretical-ratio violations;
+- validates production performance.
+
+Those are reasonable next targets, but they need implementation evidence before they become public claims.
+
+## Next implementation targets
+
+1. Add a codec evaluation trait or adapter layer so the harness can call real encode/decode implementations.
+2. Replace simulated compression paths with actual compressed/decompressed vector comparisons.
+3. Add encoded-byte accounting and compression-ratio reports.
+4. Add a typed report shape that either depends on `quant-codec-core` or clearly defines a local `quant-eval` report schema.
+5. Add cross-crate integration tests once real codec adapters exist.
 
 ## License
 
-MIT. See `LICENSE-MIT` for the full text.
-
-## Changelog
-
-See `CHANGELOG.md` for the release history.
-
-## Where it's used
-
-`quant-eval` is the measurement layer for:
-
-- `poly-kv` — the pool build emits `EvalReport`s for the
-  shared pool and the per-agent shell.
-- `fib-quant` — every codec profile change is benchmarked
-  with `quant-eval` before being released.
-- `turbo-quant` — the experimental vector sidecar is
-  benchmarked the same way.
-- `quant-governor` — the policy layer uses the
-  `Admissibility` classifications produced by this crate.
-
-Any system that needs to **measure** a compression codec
-(ratio, quality, admissibility) can adopt `quant-eval`
-directly.
+MIT. See `LICENSE-MIT` for details.

@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 use crate::codec::{create_codec, CompressedBlock};
+use crate::digest_compat::Digest;
 use crate::error::{PolyKvError, Result};
 use crate::manifest::PoolManifest;
 use crate::policy::{CompressionPolicy, CODEC_FIB_K4_N32};
@@ -17,31 +18,29 @@ pub struct PoolLayer {
     /// Value blocks — one per token, fib-quant compressed.
     pub value_blocks: Vec<CompressedBlock>,
     /// Blake3 digest of all blocks in this layer (canonical JSON).
-    pub block_digest: String,
+    pub block_digest: Digest,
 }
 
 impl PoolLayer {
     /// Compute a content digest over the blocks in this layer.
-    fn compute_digest(&self) -> Result<String> {
+    fn compute_digest(&self) -> Result<Digest> {
         // Serialize key + value payloads to compute a deterministic digest
         let key_digests: Vec<&str> = self
             .key_blocks
             .iter()
-            .map(|b| b.payload_digest.as_str())
+            .map(|b| b.payload_digest.hex())
             .collect();
         let value_digests: Vec<&str> = self
             .value_blocks
             .iter()
-            .map(|b| b.payload_digest.as_str())
+            .map(|b| b.payload_digest.hex())
             .collect();
         let payload = serde_json::json!({
             "layer_index": self.layer_index,
             "key_digests": key_digests,
             "value_digests": value_digests,
         });
-        let json = serde_json::to_string(&payload)
-            .map_err(|e| PolyKvError::Internal(format!("layer digest serialization: {}", e)))?;
-        Ok(blake3::hash(json.as_bytes()).to_hex().to_string())
+        crate::digest_compat::compute_json(&payload)
     }
 }
 
@@ -167,14 +166,20 @@ impl SharedKVPool {
                 key_blocks.push(CompressedBlock::new(codec.codec_id(), k_payload, head_dim));
                 value_blocks.push(CompressedBlock::new(codec.codec_id(), v_payload, head_dim));
             }
-            let layer_bytes: u64 = key_blocks.iter().map(|b| b.compressed_bytes as u64).sum::<u64>()
-                + value_blocks.iter().map(|b| b.compressed_bytes as u64).sum::<u64>();
+            let layer_bytes: u64 = key_blocks
+                .iter()
+                .map(|b| b.compressed_bytes as u64)
+                .sum::<u64>()
+                + value_blocks
+                    .iter()
+                    .map(|b| b.compressed_bytes as u64)
+                    .sum::<u64>();
 
             let mut layer = PoolLayer {
                 layer_index: layer_idx as u32,
                 key_blocks,
                 value_blocks,
-                block_digest: String::new(),
+                block_digest: Digest::from_hex_unchecked(""),
             };
             layer.block_digest = layer.compute_digest()?;
             Ok((layer, layer_bytes))
@@ -204,14 +209,8 @@ impl SharedKVPool {
         let built_at_unix = now_unix();
 
         // Compute pool digest
-        let layer_digests: Vec<String> = layers.iter().map(|l| l.block_digest.clone()).collect();
-        let pool_id = blake3::hash(
-            serde_json::to_string(&layer_digests)
-                .map_err(|e| PolyKvError::Internal(format!("pool_id hash: {}", e)))?
-                .as_bytes(),
-        )
-        .to_hex()
-        .to_string();
+        let layer_digests: Vec<Digest> = layers.iter().map(|l| l.block_digest.clone()).collect();
+        let pool_id = crate::digest_compat::compute_json(&layer_digests)?;
 
         let manifest = PoolManifest::new(
             pool_id.clone(),
@@ -240,8 +239,8 @@ impl SharedKVPool {
         let receipt = PoolBuildReceipt::new(
             pool_id,
             layer_digests,
-            String::new(), // codebook_digest — not exposed at this level
-            String::new(), // rotation_digest — not exposed at this level
+            Digest::from_hex_unchecked(""), // codebook_digest — not exposed at this level
+            Digest::from_hex_unchecked(""), // rotation_digest — not exposed at this level
             num_tokens as u32,
             fib_build_ms,
             total_compressed_bytes,
@@ -249,7 +248,8 @@ impl SharedKVPool {
             policy.clone(),
             seed,
             built_at_unix,
-        ).with_backend(backend);
+        )
+        .with_backend(backend);
 
         Ok((
             Self {
@@ -356,8 +356,10 @@ impl SharedKVPool {
         //                  token_1_head_0, ..., token_{T-1}_head_{H-1}]
         // i.e. flat index = token_idx * num_heads + head_idx.
         // Per-head output: keys[head_idx] = concatenation of every token's K for that head.
-        let mut keys_per_head: Vec<Vec<f32>> = vec![Vec::with_capacity(num_tokens * head_dim); num_heads];
-        let mut values_per_head: Vec<Vec<f32>> = vec![Vec::with_capacity(num_tokens * head_dim); num_heads];
+        let mut keys_per_head: Vec<Vec<f32>> =
+            vec![Vec::with_capacity(num_tokens * head_dim); num_heads];
+        let mut values_per_head: Vec<Vec<f32>> =
+            vec![Vec::with_capacity(num_tokens * head_dim); num_heads];
         for token_idx in 0..num_tokens {
             for head_idx in 0..num_heads {
                 let block_idx = token_idx * num_heads + head_idx;

@@ -128,6 +128,39 @@ pub mod governed {
 // Re-export for convenience
 pub use governed::{encode_governed, encode_governed_default, GovernedEncodeResult};
 
+/// Pool-governed encoding — available when poly-kv-pool is enabled.
+#[cfg(feature = "poly-kv-pool")]
+pub mod pool_governed {
+    use crate::pool_codec::PoolCodec;
+
+    /// Build a pool codec from a corpus of embeddings.
+    ///
+    /// The pool receipt carries audit information. The codec
+    /// can subsequently encode/decode individual vectors from the pool.
+    pub fn encode_pool(
+        corpus: &[(String, Vec<f32>)],
+        dim: usize,
+        seed: u64,
+    ) -> Result<PoolCodec, String> {
+        PoolCodec::new(dim, corpus, seed).map_err(|e| format!("pool codec build failed: {e}"))
+    }
+}
+
+#[cfg(not(feature = "poly-kv-pool"))]
+pub mod pool_governed {
+    /// Stub — poly-kv-pool feature not enabled.
+    #[derive(Debug, Clone)]
+    pub struct PoolCodec;
+
+    pub fn encode_pool(
+        _corpus: &[(String, Vec<f32>)],
+        _dim: usize,
+        _seed: u64,
+    ) -> Result<(), String> {
+        Err("poly-kv-pool feature is not enabled".to_string())
+    }
+}
+
 #[cfg(all(test, feature = "turbo-quant-codec"))]
 mod tests {
     use super::governed::encode_governed;
@@ -147,9 +180,7 @@ mod tests {
         use quant_governor::{CodecProfile, ContentType, GovernanceRequest};
 
         // 128-dim embedding (multiple of 4, fits fib_quant k=4)
-        let embedding: Vec<f32> = (0..128)
-            .map(|i| (i as f32 / 128.0) - 0.5)
-            .collect();
+        let embedding: Vec<f32> = (0..128).map(|i| (i as f32 / 128.0) - 0.5).collect();
 
         // Build a request that lands on Fib (model content, accuracy 0.98 → Fib).
         // We bypass the default request construction in encode_governed by
@@ -200,7 +231,7 @@ mod tests {
             content_type: ContentType::Text,
             size_bytes: (embedding.len() * std::mem::size_of::<f32>()) as u64,
             accuracy_requirement: 0.95, // < 0.98 to avoid Raw
-            latency_tolerance_ms: 10,    // < 50ms
+            latency_tolerance_ms: 10,   // < 50ms
             admissibility: quant_governor::AdmissibilityClass::Standard,
         };
         let policy = GovernancePolicy::default();
@@ -212,11 +243,11 @@ mod tests {
             quant_governor::CodecProfile::Polar => scr_runtime_compression::CodecId::Polar,
             other => panic!("expected Polar, got {other:?}"),
         };
-        let compressed = scr_runtime_compression::encode(codec_id, &embedding, 42)
-            .expect("polar encode failed");
+        let compressed =
+            scr_runtime_compression::encode(codec_id, &embedding, 42).expect("polar encode failed");
         // Polar is asymmetric — decode is identity pass-through.
-        let decoded = scr_runtime_compression::decode(codec_id, &compressed)
-            .expect("polar decode failed");
+        let decoded =
+            scr_runtime_compression::decode(codec_id, &compressed).expect("polar decode failed");
         assert_eq!(compressed, decoded);
     }
 
@@ -243,8 +274,8 @@ mod tests {
             quant_governor::CodecProfile::Qjl => scr_runtime_compression::CodecId::Qjl,
             other => panic!("expected Qjl, got {other:?}"),
         };
-        let compressed = scr_runtime_compression::encode(codec_id, &embedding, 42)
-            .expect("qjl encode failed");
+        let compressed =
+            scr_runtime_compression::encode(codec_id, &embedding, 42).expect("qjl encode failed");
         // QJL is dim-independent (~120 bytes for any dim).
         assert!(
             compressed.len() < 200,
@@ -282,9 +313,7 @@ mod tests {
         // The default policy for Structured content with 0.99 accuracy
         // returns Raw (Uncompressed), so the encode is identity and the
         // round-trip is exact.
-        let embedding: Vec<f32> = (0..128)
-            .map(|i| ((i as f32 * 0.13).sin()) - 0.5)
-            .collect();
+        let embedding: Vec<f32> = (0..128).map(|i| ((i as f32 * 0.13).sin()) - 0.5).collect();
 
         // Manually call the encode path with a policy we know lands on Raw.
         let policy = GovernancePolicy::default();

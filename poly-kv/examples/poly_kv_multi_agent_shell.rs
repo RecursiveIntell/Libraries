@@ -90,7 +90,8 @@ struct AgentReceipt {
 fn write_kv_binary(path: &PathBuf, manifest: &serde_json::Value, layers: &[(Vec<f32>, Vec<f32>)]) {
     let manifest_bytes = serde_json::to_vec(manifest).expect("serialize manifest");
     let mut f = fs::File::create(path).expect("create output file");
-    f.write_all(&(manifest_bytes.len() as u64).to_le_bytes()).unwrap();
+    f.write_all(&(manifest_bytes.len() as u64).to_le_bytes())
+        .unwrap();
     f.write_all(&manifest_bytes).unwrap();
     for (k, v) in layers {
         f.write_all(&(k.len() as u32).to_le_bytes()).unwrap();
@@ -218,7 +219,7 @@ fn main() {
     eprintln!(
         "[multi-agent] shared pool built in {}ms: pool_id={} ratio={:.2}x size={}",
         build_ms,
-        &pool.manifest.pool_id[..12],
+        &pool.manifest.pool_id.hex()[..12],
         pool.manifest.compression_ratio,
         pool.manifest.pool_size_bytes
     );
@@ -232,11 +233,14 @@ fn main() {
     }
     if let Some(p) = shell_projections_override {
         pool.policy.turbo_config.projections = p;
-        eprintln!("[multi-agent] applied shell projections={} to pool policy", p);
+        eprintln!(
+            "[multi-agent] applied shell projections={} to pool policy",
+            p
+        );
     }
 
     let shared_pool_receipt = PoolReceipt {
-        pool_id: pool.manifest.pool_id.clone(),
+        pool_id: pool.manifest.pool_id.hex().to_string(),
         num_shared_tokens: pool.manifest.num_shared_tokens,
         num_layers: pool.manifest.num_layers,
         num_kv_heads: pool.manifest.shape.num_kv_heads,
@@ -340,7 +344,7 @@ fn main() {
             "[multi-agent] {} shell materialized in {}ms: digest={} size={} bytes",
             agent_id,
             mat_ms,
-            &mat_receipt.shell_digest[..12],
+            &mat_receipt.shell_digest.hex()[..12],
             mat_receipt.shell_size_bytes
         );
 
@@ -395,8 +399,8 @@ fn main() {
 
         agent_receipts.push(AgentReceipt {
             agent_id: agent_id.clone(),
-            pool_digest: pool.manifest.pool_id.clone(),
-            shell_digest: mat_receipt.shell_digest,
+            pool_digest: pool.manifest.pool_id.hex().to_string(),
+            shell_digest: mat_receipt.shell_digest.hex().to_string(),
             num_unique_tokens: mat_receipt.num_unique_tokens,
             num_layers: shell.unique_layers.len() as u32,
             shell_size_bytes: mat_receipt.shell_size_bytes,
@@ -414,9 +418,7 @@ fn main() {
 
     eprintln!(
         "[multi-agent] DONE: 1 shared pool ({} bytes, {:.2}x compression) + {} agent shells",
-        pool.manifest.pool_size_bytes,
-        pool.manifest.compression_ratio,
-        n_agents
+        pool.manifest.pool_size_bytes, pool.manifest.compression_ratio, n_agents
     );
     eprintln!(
         "[multi-agent] total wall: shared build {}ms + decompress {}ms + {} agent shell materializations",

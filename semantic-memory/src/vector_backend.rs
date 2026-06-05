@@ -144,7 +144,11 @@ impl VectorIndex {
     }
 
     /// Load a previously saved index. Dispatches to the active backend.
-    pub fn load(dir: &Path, basename: &str, config: VectorIndexConfig) -> Result<Self, MemoryError> {
+    pub fn load(
+        dir: &Path,
+        basename: &str,
+        config: VectorIndexConfig,
+    ) -> Result<Self, MemoryError> {
         let backend = load_active_backend(dir, basename, config)?;
         Ok(Self { inner: backend })
     }
@@ -195,16 +199,16 @@ impl VectorIndex {
 /// select between hnsw_rs and usearch at compile time. The dispatch is
 /// gated by `#[cfg(feature = ...)]` so the unused backend's code is not
 /// compiled.
-fn build_active_backend(
-    config: VectorIndexConfig,
-) -> Result<Arc<dyn VectorBackend>, MemoryError> {
+fn build_active_backend(config: VectorIndexConfig) -> Result<Arc<dyn VectorBackend>, MemoryError> {
     #[cfg(feature = "hnsw")]
     {
         return Ok(Arc::new(super::hnsw_backend::HnswBackend::new(config)?));
     }
     #[cfg(feature = "usearch-backend")]
     {
-        return Ok(Arc::new(super::usearch_backend::UsearchBackend::new(config)?));
+        return Ok(Arc::new(super::usearch_backend::UsearchBackend::new(
+            config,
+        )?));
     }
     // If neither feature is enabled, fall through to a stub that returns
     // an explicit error. The lib.rs compile_error! guard should prevent
@@ -250,19 +254,28 @@ mod tests {
 
     #[test]
     fn vector_hit_similarity_below_zero_clamps_to_zero() {
-        let h = VectorHit { key: "fact:1".to_string(), distance: 2.0 };
+        let h = VectorHit {
+            key: "fact:1".to_string(),
+            distance: 2.0,
+        };
         assert_eq!(h.similarity(), 0.0);
     }
 
     #[test]
     fn vector_hit_similarity_normal() {
-        let h = VectorHit { key: "fact:1".to_string(), distance: 0.3 };
+        let h = VectorHit {
+            key: "fact:1".to_string(),
+            distance: 0.3,
+        };
         assert!((h.similarity() - 0.7).abs() < 1e-6);
     }
 
     #[test]
     fn vector_hit_parse_key_valid() {
-        let h = VectorHit { key: "chunk:abc-123".to_string(), distance: 0.0 };
+        let h = VectorHit {
+            key: "chunk:abc-123".to_string(),
+            distance: 0.0,
+        };
         let (domain, id) = h.parse_key().unwrap();
         assert_eq!(domain, "chunk");
         assert_eq!(id, "abc-123");
@@ -270,7 +283,10 @@ mod tests {
 
     #[test]
     fn vector_hit_parse_key_invalid() {
-        let h = VectorHit { key: "no_colon".to_string(), distance: 0.0 };
+        let h = VectorHit {
+            key: "no_colon".to_string(),
+            distance: 0.0,
+        };
         assert!(h.parse_key().is_err());
     }
 

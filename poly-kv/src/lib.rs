@@ -29,8 +29,10 @@
 //! ```
 
 pub mod codec;
+pub mod digest_compat;
 pub mod error;
 pub mod fallback;
+pub mod ids_compat;
 pub mod manifest;
 pub mod policy;
 pub mod pool;
@@ -38,9 +40,14 @@ pub mod receipt;
 pub mod shape;
 pub mod shell;
 
+#[cfg(feature = "temporal-truth")]
+pub mod temporal;
+
 // Re-export core types
 pub use codec::{create_codec, CompressedBlock, KVecCodec};
+pub use digest_compat::Digest;
 pub use error::{PolyKvError, Result};
+pub use ids_compat::AgentId;
 pub use manifest::{PoolManifest, ShellManifest, POOL_MANIFEST_SCHEMA, SHELL_MANIFEST_SCHEMA};
 pub use policy::{
     CodecId, CompressionPolicy, FibConfig, TurboConfig, CODEC_EXACT_FALLBACK, CODEC_FIB_K4_N32,

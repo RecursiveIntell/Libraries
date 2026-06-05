@@ -865,7 +865,54 @@ fn vector_search_with_backend(
             source_types,
             session_ids,
         ),
+        DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly => provekv_pool_vector_outcome(
+            conn,
+            query_embedding,
+            pool_size,
+            min_similarity,
+            config,
+            namespaces,
+            source_types,
+            session_ids,
+        ),
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn provekv_pool_vector_outcome(
+    conn: &Connection,
+    query_embedding: &[f32],
+    pool_size: usize,
+    min_similarity: f64,
+    config: &SearchConfig,
+    namespaces: Option<&[&str]>,
+    source_types: Option<&[SearchSourceType]>,
+    session_ids: Option<&[&str]>,
+) -> Result<VectorSearchOutcome, MemoryError> {
+    if !config.turbo_quant_require_exact_rerank {
+        return Err(MemoryError::InvalidConfig {
+            field: "search.turbo_quant_require_exact_rerank",
+            reason: "proveKV pool candidate backend requires exact f32 rerank".to_string(),
+        });
+    }
+
+    let mut outcome = brute_force_vector_outcome(
+        conn,
+        query_embedding,
+        pool_size,
+        min_similarity,
+        namespaces,
+        source_types,
+        session_ids,
+    )?;
+    outcome.candidate_backend = "provekv_pool_candidate_then_exact_f32".to_string();
+    outcome.fallback = Some("provekv_pool_generation_not_materialized".to_string());
+    outcome.degradations.push(
+        "proveKV pool backend requested; using authoritative f32 exact path until a pool generation is materialized"
+            .to_string(),
+    );
+    outcome.receipt_metadata.codec_family = Some("provekv_pool".to_string());
+    Ok(outcome)
 }
 
 #[cfg(not(feature = "turbo-quant-codec"))]
@@ -1560,6 +1607,7 @@ pub(crate) fn query_embedding_digest(query_embedding: &[f32]) -> String {
     format!("blake3:{}", builder.finalize().hex())
 }
 
+#[cfg_attr(not(feature = "hnsw"), allow(dead_code))]
 #[allow(clippy::too_many_arguments)]
 fn build_receipt(
     context: &SearchContext,

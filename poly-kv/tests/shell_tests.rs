@@ -2,6 +2,7 @@
 
 use poly_kv::pool::SharedKVPool;
 use poly_kv::shape::{AttentionType, KvTensorShape};
+use poly_kv::AgentId;
 
 fn make_test_shape() -> KvTensorShape {
     KvTensorShape {
@@ -73,7 +74,7 @@ fn test_shell_empty_agent_produces_valid_shell() {
     let (pool, _receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
 
     let (shell, receipt) = pool.materialize_shell("empty_agent", &[], 42).unwrap();
-    assert_eq!(shell.agent_id, "empty_agent");
+    assert_eq!(shell.agent_id, AgentId::new("empty_agent"));
     assert_eq!(receipt.num_unique_tokens, 0);
     assert_eq!(receipt.shell_size_bytes, 0);
     assert_eq!(shell.pool_digest, pool.manifest.pool_id);

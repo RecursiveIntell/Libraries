@@ -74,12 +74,11 @@ pub mod hnsw;
 mod hnsw_backend;
 #[cfg(feature = "hnsw")]
 mod hnsw_ops;
-#[cfg(feature = "usearch-backend")]
-mod usearch_backend;
-pub mod vector_backend;
 mod json_compat_import;
 pub(crate) mod knowledge;
 mod pool;
+#[cfg(feature = "poly-kv-pool")]
+mod pool_codec;
 mod projection_batch;
 mod projection_derivation;
 /// Compatibility-only legacy import surface.
@@ -101,6 +100,9 @@ pub mod storage;
 mod store_support;
 pub mod tokenizer;
 pub mod types;
+#[cfg(feature = "usearch-backend")]
+mod usearch_backend;
+pub mod vector_backend;
 pub mod vector_codec;
 
 // Re-export primary public types.
@@ -115,7 +117,8 @@ pub use error::MemoryError;
 pub use hnsw::{HnswConfig, HnswHit, HnswIndex};
 // Type aliases for the new VectorBackend trait. The Hnsw* names are kept
 // for source compatibility; new code should prefer the Vector* names.
-pub use vector_backend::{VectorBackend, VectorHit, VectorIndex, VectorIndexConfig};
+#[cfg(feature = "poly-kv-pool")]
+pub use pool_codec::PoolCodec;
 pub(crate) use projection_lane::projection_import_failure_id;
 pub use projection_lane::{
     ProjectionImportFailureReceiptEntry, ProjectionImportLogEntry, ProjectionImportResult,
@@ -134,6 +137,7 @@ pub use types::{
     SearchResponse, SearchResult, SearchSource, SearchSourceType, Session, TextChunk,
     VectorArtifactBuildReceiptV1, VectorSearchReceiptV1, VerificationStatus,
 };
+pub use vector_backend::{VectorBackend, VectorHit, VectorIndex, VectorIndexConfig};
 #[cfg(feature = "turbo-quant-codec")]
 pub use vector_codec::TurboQuantCodec;
 pub use vector_codec::{

@@ -225,6 +225,12 @@ pub enum DerivedVectorBackendPolicy {
     Disabled,
     /// Use TurboQuant only to generate candidates, then exact rerank by default.
     TurboQuantCandidateOnly,
+    /// Use a generation-level proveKV/poly-kv shared pool only to generate candidates,
+    /// then exact-rerank against authoritative f32 embeddings.
+    ///
+    /// This is deliberately not a replacement for SQLite f32 storage or for prompt/KV
+    /// prefix reuse. It is a rebuildable derived artifact over an embedding snapshot.
+    ProveKvPoolCandidateOnly,
 }
 
 const fn default_turbo_quant_bits() -> u8 {
@@ -263,6 +269,14 @@ impl Default for SearchConfig {
 impl SearchConfig {
     pub(crate) fn uses_turbo_quant_backend(&self) -> bool {
         self.derived_vector_backend == DerivedVectorBackendPolicy::TurboQuantCandidateOnly
+    }
+
+    pub(crate) fn uses_provekv_pool_backend(&self) -> bool {
+        self.derived_vector_backend == DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly
+    }
+
+    pub(crate) fn uses_derived_vector_backend(&self) -> bool {
+        self.uses_turbo_quant_backend() || self.uses_provekv_pool_backend()
     }
 
     fn normalize_and_validate(&mut self, embedding_dimensions: usize) -> Result<(), MemoryError> {
@@ -346,14 +360,23 @@ impl SearchConfig {
                         reason: "TurboQuant bits must be within 2..=16".to_string(),
                     });
                 }
-                if !self.turbo_quant_require_exact_rerank {
-                    return Err(MemoryError::InvalidConfig {
-                        field: "search.turbo_quant_require_exact_rerank",
-                        reason: "TurboQuant candidate backend requires exact f32 rerank"
-                            .to_string(),
-                    });
-                }
             }
+        }
+        if self.uses_provekv_pool_backend() {
+            #[cfg(not(feature = "poly-kv-pool"))]
+            {
+                return Err(MemoryError::InvalidConfig {
+                    field: "search.derived_vector_backend",
+                    reason: "provekv_pool_candidate_only requires the poly-kv-pool feature"
+                        .to_string(),
+                });
+            }
+        }
+        if self.uses_derived_vector_backend() && !self.turbo_quant_require_exact_rerank {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.turbo_quant_require_exact_rerank",
+                reason: "derived vector candidate backends require exact f32 rerank".to_string(),
+            });
         }
         Ok(())
     }

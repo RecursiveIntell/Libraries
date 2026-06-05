@@ -135,9 +135,8 @@ impl UsearchBackend {
             expansion_search: config.ef_search,
             multi: false,
         };
-        let index = Index::new(&options).map_err(|e| {
-            MemoryError::HnswError(format!("usearch::Index::new failed: {e:?}"))
-        })?;
+        let index = Index::new(&options)
+            .map_err(|e| MemoryError::HnswError(format!("usearch::Index::new failed: {e:?}")))?;
         index.reserve(config.max_elements).map_err(|e| {
             MemoryError::HnswError(format!("usearch::Index::reserve failed: {e:?}"))
         })?;
@@ -168,9 +167,7 @@ impl UsearchBackend {
         })?;
         let manifest: UsearchSidecarManifestV1 =
             serde_json::from_slice(&manifest_bytes).map_err(|e| {
-                MemoryError::StorageError(format!(
-                    "usearch sidecar manifest parse failed: {e}"
-                ))
+                MemoryError::StorageError(format!("usearch sidecar manifest parse failed: {e}"))
             })?;
         if manifest.backend_kind != "usearch" {
             return Err(MemoryError::StorageError(format!(
@@ -257,10 +254,7 @@ impl UsearchBackend {
     /// Save the in-memory state to the sidecar format. Atomic replace.
     pub fn save_to_disk(&self, dir: &Path, basename: &str) -> Result<(), MemoryError> {
         fs::create_dir_all(dir).map_err(|e| {
-            MemoryError::StorageError(format!(
-                "usearch sidecar dir create failed: {:?}: {e}",
-                dir
-            ))
+            MemoryError::StorageError(format!("usearch sidecar dir create failed: {:?}: {e}", dir))
         })?;
 
         // Save the usearch bytes via save_to_buffer + atomic write.
@@ -351,9 +345,8 @@ impl UsearchBackend {
             created_at: chrono::Utc::now().to_rfc3339(),
         };
         let manifest_path = manifest_path(dir, basename);
-        let manifest_json = serde_json::to_vec_pretty(&manifest).map_err(|e| {
-            MemoryError::StorageError(format!("manifest serialize failed: {e}"))
-        })?;
+        let manifest_json = serde_json::to_vec_pretty(&manifest)
+            .map_err(|e| MemoryError::StorageError(format!("manifest serialize failed: {e}")))?;
         let manifest_tmp = dir.join(format!("{}.tmp", manifest_file_name(basename)));
         fs::write(&manifest_tmp, &manifest_json).map_err(|e| {
             MemoryError::StorageError(format!(
@@ -391,7 +384,10 @@ impl std::fmt::Debug for UsearchBackend {
             .field("m", &self.config.m)
             .field("ef_construction", &self.config.ef_construction)
             .field("ef_search", &self.config.ef_search)
-            .field("dirty", &self.dirty.load(std::sync::atomic::Ordering::SeqCst))
+            .field(
+                "dirty",
+                &self.dirty.load(std::sync::atomic::Ordering::SeqCst),
+            )
             .field("size", &{
                 let idx = self.index.read().unwrap_or_else(|e| e.into_inner());
                 idx.size()
@@ -423,9 +419,9 @@ impl VectorBackend for UsearchBackend {
             id_to_key.insert(id, key);
         }
         let index = self.index.read().unwrap_or_else(|e| e.into_inner());
-        index.add(id, vector).map_err(|e| {
-            MemoryError::HnswError(format!("usearch::Index::add failed: {e:?}"))
-        })?;
+        index
+            .add(id, vector)
+            .map_err(|e| MemoryError::HnswError(format!("usearch::Index::add failed: {e:?}")))?;
         drop(index);
         self.dirty.store(true, std::sync::atomic::Ordering::SeqCst);
         Ok(())
@@ -443,9 +439,9 @@ impl VectorBackend for UsearchBackend {
         }
         let index = self.index.read().unwrap_or_else(|e| e.into_inner());
         // usearch's remove returns the number of vectors removed; ignore.
-        let _ = index.remove(id).map_err(|e| {
-            MemoryError::HnswError(format!("usearch::Index::remove failed: {e:?}"))
-        })?;
+        let _ = index
+            .remove(id)
+            .map_err(|e| MemoryError::HnswError(format!("usearch::Index::remove failed: {e:?}")))?;
         drop(index);
         self.dirty.store(true, std::sync::atomic::Ordering::SeqCst);
         Ok(())
@@ -468,9 +464,9 @@ impl VectorBackend for UsearchBackend {
             return Ok(Vec::new());
         }
         let fetch_count = top_k.min(index.size());
-        let matches = index.search(query, fetch_count).map_err(|e| {
-            MemoryError::HnswError(format!("usearch::Index::search failed: {e:?}"))
-        })?;
+        let matches = index
+            .search(query, fetch_count)
+            .map_err(|e| MemoryError::HnswError(format!("usearch::Index::search failed: {e:?}")))?;
         let mut hits: Vec<VectorHit> = matches
             .keys
             .iter()
@@ -593,9 +589,12 @@ mod tests {
     #[test]
     fn insert_then_search_returns_match() {
         let b = UsearchBackend::new(test_config()).unwrap();
-        b.insert("fact:1".to_string(), &[1.0, 0.0, 0.0, 0.0]).unwrap();
-        b.insert("fact:2".to_string(), &[0.0, 1.0, 0.0, 0.0]).unwrap();
-        b.insert("fact:3".to_string(), &[0.0, 0.0, 1.0, 0.0]).unwrap();
+        b.insert("fact:1".to_string(), &[1.0, 0.0, 0.0, 0.0])
+            .unwrap();
+        b.insert("fact:2".to_string(), &[0.0, 1.0, 0.0, 0.0])
+            .unwrap();
+        b.insert("fact:3".to_string(), &[0.0, 0.0, 1.0, 0.0])
+            .unwrap();
         assert_eq!(b.len(), 3);
 
         let hits = b.search(&[1.0, 0.0, 0.0, 0.0], 2).unwrap();
@@ -621,7 +620,7 @@ mod tests {
         let b = UsearchBackend::new(test_config()).unwrap();
         b.insert("k".to_string(), &[1.0, 0.0, 0.0, 0.0]).unwrap();
         b.update("k".to_string(), &[0.0, 0.0, 0.0, 1.0]).unwrap();
-        assert_eq!(b.len(), 1);  // not 2: update is replace, not insert
+        assert_eq!(b.len(), 1); // not 2: update is replace, not insert
         let hits = b.search(&[0.0, 0.0, 0.0, 1.0], 1).unwrap();
         assert_eq!(hits[0].key, "k");
     }
@@ -646,9 +645,12 @@ mod tests {
         let dir = tmp.path();
 
         let b = UsearchBackend::new(test_config()).unwrap();
-        b.insert("fact:a".to_string(), &[1.0, 0.0, 0.0, 0.0]).unwrap();
-        b.insert("fact:b".to_string(), &[0.0, 1.0, 0.0, 0.0]).unwrap();
-        b.insert("fact:c".to_string(), &[0.0, 0.0, 1.0, 0.0]).unwrap();
+        b.insert("fact:a".to_string(), &[1.0, 0.0, 0.0, 0.0])
+            .unwrap();
+        b.insert("fact:b".to_string(), &[0.0, 1.0, 0.0, 0.0])
+            .unwrap();
+        b.insert("fact:c".to_string(), &[0.0, 0.0, 1.0, 0.0])
+            .unwrap();
         b.save(dir, "test").unwrap();
 
         // Verify the on-disk files exist
@@ -687,7 +689,11 @@ mod tests {
             "source_sqlite_epoch": null,
             "created_at": "2026-06-02T00:00:00Z"
         });
-        fs::write(dir.join("test.hnsw.manifest.json"), serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
+        fs::write(
+            dir.join("test.hnsw.manifest.json"),
+            serde_json::to_vec_pretty(&manifest).unwrap(),
+        )
+        .unwrap();
         fs::write(dir.join("test.hnsw.data"), []).unwrap();
         fs::write(dir.join("test.hnsw.keys"), "").unwrap();
 

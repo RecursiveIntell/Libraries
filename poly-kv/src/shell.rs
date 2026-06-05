@@ -1,7 +1,9 @@
 use std::time::Instant;
 
 use crate::codec::{create_codec, CompressedBlock};
+use crate::digest_compat::Digest;
 use crate::error::{PolyKvError, Result};
+use crate::ids_compat::AgentId;
 use crate::manifest::ShellManifest;
 use crate::policy::CODEC_TURBO_8BIT;
 use crate::pool::SharedKVPool;
@@ -17,7 +19,7 @@ pub struct ShellLayer {
     /// Value blocks unique to this agent (turbo-quant compressed).
     pub value_blocks: Vec<CompressedBlock>,
     /// Blake3 digest of all blocks in this layer.
-    pub block_digest: String,
+    pub block_digest: Digest,
 }
 
 /// A per-agent compressed context shell.
@@ -28,36 +30,34 @@ pub struct ShellLayer {
 #[derive(Debug, Clone)]
 pub struct AgentShell {
     /// Agent identifier.
-    pub agent_id: String,
+    pub agent_id: AgentId,
     /// Shell manifest.
     pub shell_manifest: ShellManifest,
     /// Per-layer unique token blocks (turbo-quant compressed).
     pub unique_layers: Vec<ShellLayer>,
     /// Reference to the parent pool digest.
-    pub pool_digest: String,
+    pub pool_digest: Digest,
 }
 
 impl ShellLayer {
     /// Compute a content digest over the blocks in this layer.
-    fn compute_digest(&self) -> Result<String> {
+    fn compute_digest(&self) -> Result<Digest> {
         let key_digests: Vec<&str> = self
             .key_blocks
             .iter()
-            .map(|b| b.payload_digest.as_str())
+            .map(|b| b.payload_digest.hex())
             .collect();
         let value_digests: Vec<&str> = self
             .value_blocks
             .iter()
-            .map(|b| b.payload_digest.as_str())
+            .map(|b| b.payload_digest.hex())
             .collect();
         let payload = serde_json::json!({
             "layer_index": self.layer_index,
             "key_digests": key_digests,
             "value_digests": value_digests,
         });
-        let json = serde_json::to_string(&payload)
-            .map_err(|e| PolyKvError::Internal(format!("shell layer digest: {}", e)))?;
-        Ok(blake3::hash(json.as_bytes()).to_hex().to_string())
+        crate::digest_compat::compute_json(&payload)
     }
 }
 
@@ -72,16 +72,18 @@ pub fn materialize_shell(
     seed: u64,
 ) -> Result<(AgentShell, ShellMaterializeReceipt)> {
     let start = Instant::now();
+    let agent_id = AgentId::new(agent_id);
 
     if agent_tokens.is_empty() {
         // Empty shell — agent uses only shared pool tokens
-        let shell_digest =
-            blake3::hash(format!("empty_shell:{}:{}", agent_id, pool.manifest.pool_id).as_bytes())
-                .to_hex()
-                .to_string();
+        let shell_digest = crate::digest_compat::compute_str(&format!(
+            "empty_shell:{}:{}",
+            agent_id,
+            pool.manifest.pool_id.hex()
+        ));
 
         let shell_manifest = ShellManifest::new(
-            agent_id.to_string(),
+            agent_id.clone(),
             pool.manifest.pool_id.clone(),
             0,
             pool.manifest.num_layers,
@@ -91,7 +93,7 @@ pub fn materialize_shell(
         )?;
 
         let receipt = ShellMaterializeReceipt::new(
-            agent_id.to_string(),
+            agent_id.clone(),
             pool.manifest.pool_id.clone(),
             shell_digest.clone(),
             0,
@@ -102,7 +104,7 @@ pub fn materialize_shell(
 
         return Ok((
             AgentShell {
-                agent_id: agent_id.to_string(),
+                agent_id,
                 shell_manifest,
                 unique_layers: Vec::new(),
                 pool_digest: pool.manifest.pool_id.clone(),
@@ -185,7 +187,7 @@ pub fn materialize_shell(
             layer_index: layer_idx as u32,
             key_blocks,
             value_blocks,
-            block_digest: String::new(),
+            block_digest: Digest::from_hex_unchecked(""),
         };
         layer.block_digest = layer.compute_digest()?;
         unique_layers.push(layer);
@@ -195,25 +197,20 @@ pub fn materialize_shell(
     let materialized_at_unix = now_unix();
 
     // Compute shell digest
-    let layer_digests: Vec<String> = unique_layers
+    let layer_digests: Vec<Digest> = unique_layers
         .iter()
         .map(|l| l.block_digest.clone())
         .collect();
-    let shell_digest = blake3::hash(
-        serde_json::to_string(&serde_json::json!({
-            "agent_id": agent_id,
-            "pool_digest": pool.manifest.pool_id,
-            "layer_digests": layer_digests,
-            "seed": seed,
-        }))
-        .map_err(|e| PolyKvError::Internal(format!("shell digest: {}", e)))?
-        .as_bytes(),
-    )
-    .to_hex()
-    .to_string();
+    let shell_digest_input = serde_json::json!({
+        "agent_id": agent_id,
+        "pool_digest": pool.manifest.pool_id.hex(),
+        "layer_digests": layer_digests.iter().map(|d| d.hex()).collect::<Vec<_>>(),
+        "seed": seed,
+    });
+    let shell_digest = crate::digest_compat::compute_json(&shell_digest_input)?;
 
     let shell_manifest = ShellManifest::new(
-        agent_id.to_string(),
+        agent_id.clone(),
         pool.manifest.pool_id.clone(),
         num_unique_tokens,
         num_layers as u32,
@@ -223,7 +220,7 @@ pub fn materialize_shell(
     )?;
 
     let receipt = ShellMaterializeReceipt::new(
-        agent_id.to_string(),
+        agent_id.clone(),
         pool.manifest.pool_id.clone(),
         shell_digest.clone(),
         num_unique_tokens,
@@ -234,7 +231,7 @@ pub fn materialize_shell(
 
     Ok((
         AgentShell {
-            agent_id: agent_id.to_string(),
+            agent_id,
             shell_manifest,
             unique_layers,
             pool_digest: pool.manifest.pool_id.clone(),
@@ -284,7 +281,7 @@ mod tests {
         let agent_tokens: Vec<(String, Vec<f32>)> = vec![];
         let (shell, mat_receipt) = materialize_shell(&pool, "agent_1", &agent_tokens, 42).unwrap();
 
-        assert_eq!(shell.agent_id, "agent_1");
+        assert_eq!(shell.agent_id, AgentId::new("agent_1"));
         assert_eq!(mat_receipt.num_unique_tokens, 0);
         assert_eq!(mat_receipt.shell_size_bytes, 0);
     }
@@ -298,7 +295,7 @@ mod tests {
         let agent_tokens = make_test_corpus(2);
         let (shell, mat_receipt) = materialize_shell(&pool, "agent_x", &agent_tokens, 42).unwrap();
 
-        assert_eq!(shell.agent_id, "agent_x");
+        assert_eq!(shell.agent_id, AgentId::new("agent_x"));
         assert_eq!(shell.unique_layers.len(), 2);
         assert_eq!(mat_receipt.num_unique_tokens, 2);
         assert!(mat_receipt.shell_size_bytes > 0);

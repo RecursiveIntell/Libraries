@@ -66,7 +66,7 @@ pub struct CompressedBlock {
     /// The compressed payload bytes.
     pub encoded_payload: Vec<u8>,
     /// Blake3 digest of the encoded payload.
-    pub payload_digest: String,
+    pub payload_digest: crate::digest_compat::Digest,
     /// Original (uncompressed) vector dimension.
     pub original_dim: usize,
     /// Size of the compressed payload in bytes.
@@ -77,7 +77,7 @@ impl CompressedBlock {
     /// Create a new CompressedBlock from encoded payload.
     pub fn new(codec: CodecId, encoded_payload: Vec<u8>, original_dim: usize) -> Self {
         let compressed_bytes = encoded_payload.len();
-        let payload_digest = blake3::hash(&encoded_payload).to_hex().to_string();
+        let payload_digest = crate::digest_compat::compute(&encoded_payload);
         Self {
             codec,
             encoded_payload,
@@ -224,35 +224,30 @@ impl KVecCodec for TurboQuantAdapter {
         // Compact binary format is preferred (header starts with TURBO_CODE_WIRE_MAGIC
         // = "TQW1", 4 bytes), but fall back to JSON for backward compat with shells
         // written by older poly-kv versions.
-        let code: turbo_quant::TurboCode = if payload.len() >= 4
-            && &payload[0..4] == turbo_quant::TURBO_CODE_WIRE_MAGIC
-        {
-            let quantizer = turbo_quant::TurboQuantizer::new(
-                self.dim,
-                self.bits,
-                self.projections,
-                seed,
-            )
-            .map_err(|e| {
-                crate::error::PolyKvError::DecompressionFailed(format!(
-                    "turbo quantizer init failed: {}",
-                    e
-                ))
-            })?;
-            turbo_quant::TurboCodeWireV1::decode(payload, &quantizer).map_err(|e| {
-                crate::error::PolyKvError::DecompressionFailed(format!(
-                    "turbo wire decode failed: {}",
-                    e
-                ))
-            })?
-        } else {
-            serde_json::from_slice(payload).map_err(|e| {
-                crate::error::PolyKvError::DecompressionFailed(format!(
-                    "turbo code deserialize failed: {}",
-                    e
-                ))
-            })?
-        };
+        let code: turbo_quant::TurboCode =
+            if payload.len() >= 4 && &payload[0..4] == turbo_quant::TURBO_CODE_WIRE_MAGIC {
+                let quantizer =
+                    turbo_quant::TurboQuantizer::new(self.dim, self.bits, self.projections, seed)
+                        .map_err(|e| {
+                        crate::error::PolyKvError::DecompressionFailed(format!(
+                            "turbo quantizer init failed: {}",
+                            e
+                        ))
+                    })?;
+                turbo_quant::TurboCodeWireV1::decode(payload, &quantizer).map_err(|e| {
+                    crate::error::PolyKvError::DecompressionFailed(format!(
+                        "turbo wire decode failed: {}",
+                        e
+                    ))
+                })?
+            } else {
+                serde_json::from_slice(payload).map_err(|e| {
+                    crate::error::PolyKvError::DecompressionFailed(format!(
+                        "turbo code deserialize failed: {}",
+                        e
+                    ))
+                })?
+            };
 
         // Reconstruct from polar component via independent PolarQuantizer.
         // QJL residual is lossy and not invertible, so we return the polar
@@ -381,10 +376,7 @@ impl KVecCodec for FibQuantAdapter {
         // quantizer is byte-identical to one built per-vector.
         let quantizer = self.build_quantizer(seed)?;
         let codes = quantizer.encode_batch(vectors).map_err(|e| {
-            crate::error::PolyKvError::CompressionFailed(format!(
-                "fib encode_batch failed: {}",
-                e
-            ))
+            crate::error::PolyKvError::CompressionFailed(format!("fib encode_batch failed: {}", e))
         })?;
         let mut out = Vec::with_capacity(codes.len());
         for code in codes {
@@ -444,14 +436,12 @@ impl KVecCodec for FibQuantAdapter {
             };
             codes.push(code);
         }
-        quantizer
-            .decode_batch_fast(&codes)
-            .map_err(|e| {
-                crate::error::PolyKvError::DecompressionFailed(format!(
-                    "fib decode_batch_fast failed: {}",
-                    e
-                ))
-            })
+        quantizer.decode_batch_fast(&codes).map_err(|e| {
+            crate::error::PolyKvError::DecompressionFailed(format!(
+                "fib decode_batch_fast failed: {}",
+                e
+            ))
+        })
     }
 
     fn dim(&self) -> usize {
@@ -488,7 +478,9 @@ pub fn create_codec(
     codec_id: &str,
     dim: usize,
     fib_config: Option<&crate::policy::FibConfig>,
-    turbo_config: Option<&crate::policy::TurboConfig>,
+    #[cfg_attr(not(feature = "turbo"), allow(unused_variables))] turbo_config: Option<
+        &crate::policy::TurboConfig,
+    >,
 ) -> Result<Box<dyn KVecCodec>> {
     match codec_id {
         crate::policy::CODEC_FIB_K4_N32 => {

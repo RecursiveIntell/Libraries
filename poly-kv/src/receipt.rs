@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+use crate::digest_compat::Digest;
+use crate::ids_compat::AgentId;
 use crate::policy::CompressionPolicy;
-
 /// Schema version for receipts.
 pub const RECEIPT_SCHEMA: &str = "poly_kv_receipt_v1";
 /// Schema version for pool build receipts.
@@ -19,13 +20,13 @@ pub struct PoolBuildReceipt {
     /// Stable schema marker.
     pub schema_version: String,
     /// Blake3 digest of the entire pool.
-    pub pool_digest: String,
+    pub pool_digest: Digest,
     /// Per-layer blake3 digests.
-    pub layer_digests: Vec<String>,
+    pub layer_digests: Vec<Digest>,
     /// Digest of the fib-quant codebook.
-    pub codebook_digest: String,
+    pub codebook_digest: Digest,
     /// Digest of the fib-quant rotation.
-    pub rotation_digest: String,
+    pub rotation_digest: Digest,
     /// Total number of tokens in the pool.
     pub total_tokens: u32,
     /// Milliseconds spent on fib-quant build.
@@ -55,10 +56,10 @@ impl PoolBuildReceipt {
     /// Create a new pool build receipt.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        pool_digest: String,
-        layer_digests: Vec<String>,
-        codebook_digest: String,
-        rotation_digest: String,
+        pool_digest: Digest,
+        layer_digests: Vec<Digest>,
+        codebook_digest: Digest,
+        rotation_digest: Digest,
         total_tokens: u32,
         fib_build_ms: u64,
         pool_size_bytes: u64,
@@ -105,7 +106,7 @@ impl PoolBuildReceipt {
                 POOL_BUILD_RECEIPT_SCHEMA, self.schema_version
             )));
         }
-        if self.pool_digest.is_empty() {
+        if self.pool_digest.hex().is_empty() {
             return Err(crate::error::PolyKvError::InvalidReceipt(
                 "pool_digest is empty".into(),
             ));
@@ -114,9 +115,8 @@ impl PoolBuildReceipt {
     }
 
     /// Compute the canonical digest of this receipt.
-    pub fn digest(&self) -> crate::error::Result<String> {
-        let json = serde_json::to_string(self)?;
-        Ok(blake3::hash(json.as_bytes()).to_hex().to_string())
+    pub fn digest(&self) -> crate::error::Result<Digest> {
+        crate::digest_compat::compute_json(self)
     }
 }
 
@@ -128,11 +128,11 @@ pub struct ShellMaterializeReceipt {
     /// Stable schema marker.
     pub schema_version: String,
     /// Agent identifier.
-    pub agent_id: String,
+    pub agent_id: AgentId,
     /// Digest of the parent pool.
-    pub pool_digest: String,
+    pub pool_digest: Digest,
     /// Digest of the materialized shell.
-    pub shell_digest: String,
+    pub shell_digest: Digest,
     /// Number of unique tokens in this shell.
     pub num_unique_tokens: u32,
     /// Total compressed shell size in bytes.
@@ -146,9 +146,9 @@ pub struct ShellMaterializeReceipt {
 impl ShellMaterializeReceipt {
     /// Create a new shell materialize receipt.
     pub fn new(
-        agent_id: String,
-        pool_digest: String,
-        shell_digest: String,
+        agent_id: AgentId,
+        pool_digest: Digest,
+        shell_digest: Digest,
         num_unique_tokens: u32,
         shell_size_bytes: u64,
         materialize_ms: u64,
@@ -179,12 +179,12 @@ impl ShellMaterializeReceipt {
                 "agent_id is empty".into(),
             ));
         }
-        if self.pool_digest.is_empty() {
+        if self.pool_digest.hex().is_empty() {
             return Err(crate::error::PolyKvError::InvalidReceipt(
                 "pool_digest is empty".into(),
             ));
         }
-        if self.shell_digest.is_empty() {
+        if self.shell_digest.hex().is_empty() {
             return Err(crate::error::PolyKvError::InvalidReceipt(
                 "shell_digest is empty".into(),
             ));
@@ -193,9 +193,8 @@ impl ShellMaterializeReceipt {
     }
 
     /// Compute the canonical digest of this receipt.
-    pub fn digest(&self) -> crate::error::Result<String> {
-        let json = serde_json::to_string(self)?;
-        Ok(blake3::hash(json.as_bytes()).to_hex().to_string())
+    pub fn digest(&self) -> crate::error::Result<Digest> {
+        crate::digest_compat::compute_json(self)
     }
 }
 
@@ -207,17 +206,21 @@ pub struct InjectionReceipt {
     /// Stable schema marker.
     pub schema_version: String,
     /// Agent identifier.
-    pub agent_id: String,
+    pub agent_id: AgentId,
     /// Digest of the parent pool.
-    pub pool_digest: String,
+    pub pool_digest: Digest,
     /// Digest of the injected shell.
-    pub shell_digest: String,
+    pub shell_digest: Digest,
     /// Number of injected blocks.
     pub blocks_injected: u32,
-    /// Per-block digest traces (source → target).
+    /// Per-block digest traces (source -> target).
     pub block_traces: Vec<BlockInjectionTrace>,
     /// Unix timestamp when injection occurred.
     pub injected_at_unix: i64,
+    /// Trace context for cross-boundary correlation (requires typed-ids).
+    #[cfg(feature = "typed-ids")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trace_ctx: Option<stack_ids::TraceCtx>,
 }
 
 /// Traces one block's injection from source (pool or shell) to target cache.
@@ -228,7 +231,7 @@ pub struct BlockInjectionTrace {
     /// Source: "pool" or "shell".
     pub source: String,
     /// Digest of the source block.
-    pub source_digest: String,
+    pub source_digest: Digest,
     /// Position in the target cache.
     pub target_position: u32,
 }
@@ -236,9 +239,9 @@ pub struct BlockInjectionTrace {
 impl InjectionReceipt {
     /// Create a new injection receipt.
     pub fn new(
-        agent_id: String,
-        pool_digest: String,
-        shell_digest: String,
+        agent_id: AgentId,
+        pool_digest: Digest,
+        shell_digest: Digest,
         blocks_injected: u32,
         block_traces: Vec<BlockInjectionTrace>,
         injected_at_unix: i64,
@@ -251,6 +254,8 @@ impl InjectionReceipt {
             blocks_injected,
             block_traces,
             injected_at_unix,
+            #[cfg(feature = "typed-ids")]
+            trace_ctx: None,
         }
     }
 
@@ -267,12 +272,12 @@ impl InjectionReceipt {
                 "agent_id is empty".into(),
             ));
         }
-        if self.pool_digest.is_empty() {
+        if self.pool_digest.hex().is_empty() {
             return Err(crate::error::PolyKvError::InvalidReceipt(
                 "pool_digest is empty".into(),
             ));
         }
-        if self.shell_digest.is_empty() {
+        if self.shell_digest.hex().is_empty() {
             return Err(crate::error::PolyKvError::InvalidReceipt(
                 "shell_digest is empty".into(),
             ));
@@ -281,9 +286,15 @@ impl InjectionReceipt {
     }
 
     /// Compute the canonical digest of this receipt.
-    pub fn digest(&self) -> crate::error::Result<String> {
-        let json = serde_json::to_string(self)?;
-        Ok(blake3::hash(json.as_bytes()).to_hex().to_string())
+    pub fn digest(&self) -> crate::error::Result<Digest> {
+        crate::digest_compat::compute_json(self)
+    }
+
+    /// Builder: set the trace context (requires typed-ids).
+    #[cfg(feature = "typed-ids")]
+    pub fn with_trace_ctx(mut self, ctx: stack_ids::TraceCtx) -> Self {
+        self.trace_ctx = Some(ctx);
+        self
     }
 }
 
@@ -304,10 +315,13 @@ mod tests {
     #[test]
     fn test_pool_build_receipt_round_trip() {
         let receipt = PoolBuildReceipt::new(
-            "abc123".into(),
-            vec!["layer0_digest".into(), "layer1_digest".into()],
-            "codebook_digest".into(),
-            "rotation_digest".into(),
+            Digest::from_hex_unchecked("abc123"),
+            vec![
+                Digest::from_hex_unchecked("layer0_digest"),
+                Digest::from_hex_unchecked("layer1_digest"),
+            ],
+            Digest::from_hex_unchecked("codebook_digest"),
+            Digest::from_hex_unchecked("rotation_digest"),
             100,
             42,
             10_000,
@@ -328,9 +342,9 @@ mod tests {
     #[test]
     fn test_shell_receipt_round_trip() {
         let receipt = ShellMaterializeReceipt::new(
-            "agent_1".into(),
-            "pool_abc".into(),
-            "shell_xyz".into(),
+            AgentId::new("agent_1"),
+            Digest::from_hex_unchecked("pool_abc"),
+            Digest::from_hex_unchecked("shell_xyz"),
             50,
             5_000,
             10,
@@ -349,20 +363,20 @@ mod tests {
             BlockInjectionTrace {
                 layer: 0,
                 source: "pool".into(),
-                source_digest: "abc".into(),
+                source_digest: Digest::from_hex_unchecked("abc"),
                 target_position: 0,
             },
             BlockInjectionTrace {
                 layer: 0,
                 source: "shell".into(),
-                source_digest: "def".into(),
+                source_digest: Digest::from_hex_unchecked("def"),
                 target_position: 1,
             },
         ];
         let receipt = InjectionReceipt::new(
-            "agent_1".into(),
-            "pool_abc".into(),
-            "shell_xyz".into(),
+            AgentId::new("agent_1"),
+            Digest::from_hex_unchecked("pool_abc"),
+            Digest::from_hex_unchecked("shell_xyz"),
             2,
             traces,
             now_unix(),

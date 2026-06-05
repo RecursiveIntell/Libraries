@@ -41,6 +41,7 @@ hnsw = ["dep:hnsw_rs"]
 brute-force = []
 testing = []
 turbo-quant-codec = ["dep:turbo-quant", "dep:quant-governor", "dep:scr-runtime-compression"]
+poly-kv-pool = ["dep:poly-kv-core", "poly-kv-core/fib"]
 
 [dependencies]
 bytemuck = { version = "1", features = ["derive"] }
@@ -68,6 +69,7 @@ usearch = { version = "2.25", default-features = false, optional = true }
 turbo-quant = { version = "0.2.1", path = "../turbo-quant", optional = true }
 quant-governor = { version = "0.1.0", path = "../quant-governor", optional = true }
 scr-runtime-compression = { version = "0.1.0", path = "../scr-runtime-compression", optional = true }
+poly-kv-core = { version = "0.1.0-alpha.1", package = "poly-kv", path = "../poly-kv", default-features = false, optional = true }
 
 [build-dependencies]
 # cxx-build is only needed when the usearch backend is enabled (it triggers

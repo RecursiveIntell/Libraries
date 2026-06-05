@@ -234,7 +234,8 @@ impl FibQuantizer {
         let block_count = self.profile.block_count() as usize;
         let mut indices = Vec::with_capacity(block_count);
         for block in rotated_f32.chunks_exact(k) {
-            indices.push(gpu_backend::nearest_codeword_f32(block, &self.codebook.codewords, k) as u32);
+            indices
+                .push(gpu_backend::nearest_codeword_f32(block, &self.codebook.codewords, k) as u32);
         }
         Ok(FibCodeV1 {
             schema_version: CODE_SCHEMA.into(),
@@ -547,7 +548,6 @@ impl FibQuantizer {
         if codes.is_empty() {
             return Ok(Vec::new());
         }
-        let d = self.profile.ambient_dim as usize;
         let k = self.profile.block_dim as usize;
         let codebook_size = self.profile.codebook_size as usize;
         let codewords = &self.codebook.codewords;
@@ -555,9 +555,12 @@ impl FibQuantizer {
         for code in codes {
             self.validate_code_header(code)?;
             let block_count = self.profile.block_count() as usize;
-            let unpacked = unpack_indices(&code.indices, block_count, self.profile.wire_index_bits)?;
+            let unpacked =
+                unpack_indices(&code.indices, block_count, self.profile.wire_index_bits)?;
             let expected_len = block_count.checked_mul(k).ok_or_else(|| {
-                FibQuantError::ResourceLimitExceeded("decoded rotated vector length overflow".into())
+                FibQuantError::ResourceLimitExceeded(
+                    "decoded rotated vector length overflow".into(),
+                )
             })?;
             // Gather codewords in place. No allocation per index.
             let mut rotated_f32: Vec<f32> = Vec::with_capacity(expected_len);
@@ -582,7 +585,7 @@ impl FibQuantizer {
             let reconstructed = self.rotation.apply_inverse_f32(&rotated_f32)?;
             let scaled: Vec<f32> = reconstructed
                 .into_iter()
-                .map(|value| (value * norm as f32))
+                .map(|value| value * norm as f32)
                 .collect();
             check_finite(&scaled)?;
             out.push(scaled);
@@ -690,8 +693,7 @@ impl FibQuantizer {
         // that case. (Re-deriving the codebook just to compute the
         // digest cost ~6ms per call, which is prohibitive for batch
         // decode of 1.5M+ blocks.)
-        if !code.codebook_digest.is_empty()
-            && code.codebook_digest != self.codebook.codebook_digest
+        if !code.codebook_digest.is_empty() && code.codebook_digest != self.codebook.codebook_digest
         {
             return Err(FibQuantError::CodebookDigestMismatch {
                 expected: self.codebook.codebook_digest.clone(),

@@ -75,8 +75,7 @@ fn main() {
     let output_path = PathBuf::from(&args[2]);
 
     let input_bytes = fs::read(&input_path).expect("read input");
-    let input: InputJson =
-        serde_json::from_slice(&input_bytes).expect("parse input json");
+    let input: InputJson = serde_json::from_slice(&input_bytes).expect("parse input json");
 
     let attn_type = match input.shape.attention_type.as_str() {
         "MHA" => AttentionType::MHA,
@@ -111,7 +110,7 @@ fn main() {
     let build_ms = t_build.elapsed().as_millis() as u64;
     eprintln!(
         "[fast] build ok in {build_ms}ms: pool_id={} backend={} codec={:?} ratio={:.2}x size={} bytes",
-        &pool.manifest.pool_id[..12],
+        &pool.manifest.pool_id.hex()[..12],
         receipt.backend,
         pool.manifest.shared_codec,
         pool.manifest.compression_ratio,
@@ -119,7 +118,7 @@ fn main() {
     );
 
     let manifest = OutputManifest {
-        pool_id: pool.manifest.pool_id.clone(),
+        pool_id: pool.manifest.pool_id.hex().to_string(),
         num_shared_tokens: pool.manifest.num_shared_tokens,
         num_layers: pool.manifest.num_layers,
         num_kv_heads: pool.manifest.shape.num_kv_heads,
@@ -160,9 +159,7 @@ fn main() {
     let layer_data: Vec<Vec<u8>> = (0..num_layers)
         .into_par_iter()
         .map(|layer_idx| {
-            let quantizer = adapter
-                .build_quantizer(seed)
-                .expect("create quantizer");
+            let quantizer = adapter.build_quantizer(seed).expect("create quantizer");
             let layer = &pool.layers[layer_idx];
             // Deserialize all K and V codes for this layer. The pool
             // stores compact binary bytes (per the new wire format

@@ -95,8 +95,7 @@ fn main() {
     fs::create_dir_all(&output_dir).expect("create output dir");
 
     let input_bytes = fs::read(&input_path).expect("read input");
-    let input: InputJson =
-        serde_json::from_slice(&input_bytes).expect("parse input json");
+    let input: InputJson = serde_json::from_slice(&input_bytes).expect("parse input json");
 
     let attn_type = match input.shape.attention_type.as_str() {
         "MHA" => AttentionType::MHA,
@@ -112,11 +111,8 @@ fn main() {
         head_dim: input.shape.head_dim,
         hidden_size: input.shape.hidden_size,
     };
-    let corpus: Vec<(String, Vec<f32>)> = input
-        .tokens
-        .into_iter()
-        .map(|t| (t.id, t.vector))
-        .collect();
+    let corpus: Vec<(String, Vec<f32>)> =
+        input.tokens.into_iter().map(|t| (t.id, t.vector)).collect();
     let seed = input.seed.unwrap_or(42);
 
     let policy = CompressionPolicy::default_two_tier();
@@ -131,7 +127,7 @@ fn main() {
     let (pool, receipt) = SharedKVPool::build(&corpus, &shape, seed).expect("build pool");
     eprintln!(
         "[poly-kv] build ok: pool_id={} backend={} codec={:?} compression_ratio={:.2}x size={} bytes",
-        &pool.manifest.pool_id[..12],
+        &pool.manifest.pool_id.hex()[..12],
         receipt.backend,
         pool.manifest.shared_codec,
         pool.manifest.compression_ratio,
@@ -140,7 +136,7 @@ fn main() {
 
     // Write the manifest
     let output_manifest = OutputManifest {
-        pool_id: pool.manifest.pool_id.clone(),
+        pool_id: pool.manifest.pool_id.hex().to_string(),
         num_shared_tokens: pool.manifest.num_shared_tokens,
         num_layers: pool.manifest.num_layers,
         num_kv_heads: pool.manifest.shape.num_kv_heads,
@@ -166,15 +162,10 @@ fn main() {
 
     // Decompress and write each layer
     for layer_idx in 0..pool.manifest.num_layers as usize {
-        let decompressed = pool
-            .decompress_layer(layer_idx)
-            .expect("decompress layer");
+        let decompressed = pool.decompress_layer(layer_idx).expect("decompress layer");
         let json = serde_json::to_vec(&decompressed).expect("serialize layer");
-        fs::write(
-            output_dir.join(format!("layer_{layer_idx:03}.json")),
-            json,
-        )
-        .expect("write layer");
+        fs::write(output_dir.join(format!("layer_{layer_idx:03}.json")), json)
+            .expect("write layer");
     }
     eprintln!(
         "[poly-kv] wrote {} layer files to {}",

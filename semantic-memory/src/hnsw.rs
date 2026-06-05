@@ -567,7 +567,10 @@ impl VectorBackend for HnswIndex {
         // The hnsw_rs search returns `Vec<Neighbour>`; convert to VectorHit.
         HnswIndex::search(self, query, top_k).map(|hits| {
             hits.into_iter()
-                .map(|h| VectorHit { key: h.key, distance: h.distance })
+                .map(|h| VectorHit {
+                    key: h.key,
+                    distance: h.distance,
+                })
                 .collect()
         })
     }

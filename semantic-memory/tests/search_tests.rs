@@ -1592,7 +1592,29 @@ async fn turbo_quant_candidate_backend_requires_safe_bits_and_exact_rerank() {
         Ok(_) => panic!("TurboQuant without exact rerank should be rejected"),
         Err(err) => err,
     };
-    assert!(err.to_string().contains("requires exact f32 rerank"));
+    assert!(err.to_string().contains("require exact f32 rerank"));
+}
+
+#[cfg(feature = "poly-kv-pool")]
+#[tokio::test]
+async fn provekv_pool_candidate_backend_requires_exact_f32_rerank() {
+    use semantic_memory::DerivedVectorBackendPolicy;
+
+    let tmp = TempDir::new().unwrap();
+    let config = MemoryConfig {
+        base_dir: tmp.path().to_path_buf(),
+        search: SearchConfig {
+            derived_vector_backend: DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly,
+            turbo_quant_require_exact_rerank: false,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let err = match MemoryStore::open_with_embedder(config, Box::new(MockEmbedder::new(768))) {
+        Ok(_) => panic!("proveKV pool candidate backend without exact rerank should be rejected"),
+        Err(err) => err,
+    };
+    assert!(err.to_string().contains("require exact f32 rerank"));
 }
 
 // ─── V2: Buffer Reuse Correctness (Fix 6 regression) ────────

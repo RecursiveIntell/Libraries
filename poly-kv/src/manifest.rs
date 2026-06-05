@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::digest_compat::Digest;
+use crate::ids_compat::AgentId;
 use crate::policy::{CodecId, CompressionPolicy};
 use crate::shape::KvTensorShape;
 
@@ -14,7 +16,7 @@ pub struct PoolManifest {
     /// Stable schema marker.
     pub schema_version: String,
     /// Unique pool identifier (blake3 of canonical JSON).
-    pub pool_id: String,
+    pub pool_id: Digest,
     /// Logical tensor shape of the underlying model.
     pub shape: KvTensorShape,
     /// The compression policy used.
@@ -33,13 +35,17 @@ pub struct PoolManifest {
     pub built_at_unix: i64,
     /// Seed used during pool construction.
     pub build_seed: u64,
+    /// Scope key for partition-aware pool resolution (requires typed-ids).
+    #[cfg(feature = "typed-ids")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scope: Option<stack_ids::ScopeKey>,
 }
 
 impl PoolManifest {
     /// Create and validate a pool manifest.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        pool_id: String,
+        pool_id: Digest,
         shape: KvTensorShape,
         policy: CompressionPolicy,
         num_shared_tokens: u32,
@@ -67,6 +73,8 @@ impl PoolManifest {
             compression_ratio,
             built_at_unix,
             build_seed,
+            #[cfg(feature = "typed-ids")]
+            scope: None,
         };
         manifest.validate()?;
         Ok(manifest)
@@ -80,7 +88,7 @@ impl PoolManifest {
                 POOL_MANIFEST_SCHEMA, self.schema_version
             )));
         }
-        if self.pool_id.is_empty() {
+        if self.pool_id.hex().is_empty() {
             return Err(crate::error::PolyKvError::InvalidManifest(
                 "pool_id is empty".into(),
             ));
@@ -90,10 +98,15 @@ impl PoolManifest {
         Ok(())
     }
 
-    /// Compute the canonical digest of this manifest.
-    pub fn digest(&self) -> crate::error::Result<String> {
-        let json = serde_json::to_string(self)?;
-        Ok(blake3::hash(json.as_bytes()).to_hex().to_string())
+    pub fn digest(&self) -> crate::error::Result<Digest> {
+        crate::digest_compat::compute_json(self)
+    }
+
+    /// Builder: set the scope key (requires typed-ids).
+    #[cfg(feature = "typed-ids")]
+    pub fn with_scope(mut self, scope: stack_ids::ScopeKey) -> Self {
+        self.scope = Some(scope);
+        self
     }
 }
 
@@ -103,9 +116,9 @@ pub struct ShellManifest {
     /// Stable schema marker.
     pub schema_version: String,
     /// Agent identifier.
-    pub agent_id: String,
+    pub agent_id: AgentId,
     /// Digest of the parent pool.
-    pub pool_digest: String,
+    pub pool_digest: Digest,
     /// Number of unique tokens in this shell.
     pub num_unique_tokens: u32,
     /// Number of layers with unique tokens.
@@ -123,8 +136,8 @@ pub struct ShellManifest {
 impl ShellManifest {
     /// Create and validate a shell manifest.
     pub fn new(
-        agent_id: String,
-        pool_digest: String,
+        agent_id: AgentId,
+        pool_digest: Digest,
         num_unique_tokens: u32,
         num_unique_layers: u32,
         shell_size_bytes: u64,
@@ -159,7 +172,7 @@ impl ShellManifest {
                 "agent_id is empty".into(),
             ));
         }
-        if self.pool_digest.is_empty() {
+        if self.pool_digest.hex().is_empty() {
             return Err(crate::error::PolyKvError::InvalidManifest(
                 "pool_digest is empty".into(),
             ));
@@ -168,9 +181,8 @@ impl ShellManifest {
     }
 
     /// Compute the canonical digest of this manifest.
-    pub fn digest(&self) -> crate::error::Result<String> {
-        let json = serde_json::to_string(self)?;
-        Ok(blake3::hash(json.as_bytes()).to_hex().to_string())
+    pub fn digest(&self) -> crate::error::Result<Digest> {
+        crate::digest_compat::compute_json(self)
     }
 }
 

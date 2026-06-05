@@ -4,14 +4,19 @@ use poly_kv::policy::CompressionPolicy;
 use poly_kv::receipt::{
     now_unix, BlockInjectionTrace, InjectionReceipt, PoolBuildReceipt, ShellMaterializeReceipt,
 };
+use poly_kv::AgentId;
+use poly_kv::Digest;
 
 #[test]
 fn test_pool_build_receipt_round_trip_serialize_deserialize() {
     let receipt = PoolBuildReceipt::new(
-        "abc123".into(),
-        vec!["layer0_digest".into(), "layer1_digest".into()],
-        "codebook_digest".into(),
-        "rotation_digest".into(),
+        Digest::from_hex_unchecked("abc123"),
+        vec![
+            Digest::from_hex_unchecked("layer0_digest"),
+            Digest::from_hex_unchecked("layer1_digest"),
+        ],
+        Digest::from_hex_unchecked("codebook_digest"),
+        Digest::from_hex_unchecked("rotation_digest"),
         100,
         42,
         10_000,
@@ -41,9 +46,9 @@ fn test_pool_build_receipt_round_trip_serialize_deserialize() {
 #[test]
 fn test_shell_materialize_receipt_round_trip() {
     let receipt = ShellMaterializeReceipt::new(
-        "agent_1".into(),
-        "pool_abc".into(),
-        "shell_xyz".into(),
+        AgentId::new("agent_1"),
+        Digest::from_hex_unchecked("pool_abc"),
+        Digest::from_hex_unchecked("shell_xyz"),
         50,
         5_000,
         10,
@@ -68,20 +73,20 @@ fn test_injection_receipt_round_trip() {
         BlockInjectionTrace {
             layer: 0,
             source: "pool".into(),
-            source_digest: "abc".into(),
+            source_digest: Digest::from_hex_unchecked("abc"),
             target_position: 0,
         },
         BlockInjectionTrace {
             layer: 0,
             source: "shell".into(),
-            source_digest: "def".into(),
+            source_digest: Digest::from_hex_unchecked("def"),
             target_position: 1,
         },
     ];
     let receipt = InjectionReceipt::new(
-        "agent_1".into(),
-        "pool_abc".into(),
-        "shell_xyz".into(),
+        AgentId::new("agent_1"),
+        Digest::from_hex_unchecked("pool_abc"),
+        Digest::from_hex_unchecked("shell_xyz"),
         2,
         traces,
         now_unix(),
@@ -101,10 +106,10 @@ fn test_injection_receipt_round_trip() {
 #[test]
 fn test_receipt_digest_is_content_addressed() {
     let receipt1 = PoolBuildReceipt::new(
-        "abc".into(),
-        vec!["l0".into()],
-        "cb".into(),
-        "rot".into(),
+        Digest::from_hex_unchecked("abc"),
+        vec![Digest::from_hex_unchecked("l0")],
+        Digest::from_hex_unchecked("cb"),
+        Digest::from_hex_unchecked("rot"),
         10,
         100,
         500,
@@ -114,10 +119,10 @@ fn test_receipt_digest_is_content_addressed() {
         now_unix(),
     );
     let receipt2 = PoolBuildReceipt::new(
-        "abc".into(),
-        vec!["l0".into()],
-        "cb".into(),
-        "rot".into(),
+        Digest::from_hex_unchecked("abc"),
+        vec![Digest::from_hex_unchecked("l0")],
+        Digest::from_hex_unchecked("cb"),
+        Digest::from_hex_unchecked("rot"),
         10,
         100,
         500,
@@ -133,10 +138,10 @@ fn test_receipt_digest_is_content_addressed() {
 
     // Different content produces different digest
     let receipt3 = PoolBuildReceipt::new(
-        "xyz".into(),
-        vec!["l0".into()],
-        "cb".into(),
-        "rot".into(),
+        Digest::from_hex_unchecked("xyz"),
+        vec![Digest::from_hex_unchecked("l0")],
+        Digest::from_hex_unchecked("cb"),
+        Digest::from_hex_unchecked("rot"),
         10,
         100,
         500,
@@ -152,10 +157,10 @@ fn test_receipt_digest_is_content_addressed() {
 #[test]
 fn test_invalid_receipt_schema_rejected() {
     let mut receipt = PoolBuildReceipt::new(
-        "abc".into(),
+        Digest::from_hex_unchecked("abc"),
         vec![],
-        "".into(),
-        "".into(),
+        Digest::from_hex_unchecked(""),
+        Digest::from_hex_unchecked(""),
         0,
         0,
         0,

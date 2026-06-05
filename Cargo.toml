@@ -32,7 +32,6 @@ members = [
     "llm-output-parser",
     "llm-pipeline",
     "poly-kv/crates/quant-codec-core",
-    "poly-kv/crates/poly-kv",
     "llm-tool-runtime",
     "mechanism-runtime",
     "ollama-vision",
@@ -70,6 +69,10 @@ exclude = [
     "tauri-react-hooks",
     # Demo subcrate that does not exist on disk
     "demo-tauri-libraries/src-tauri",
+    # Root poly-kv has its own [workspace] and [package] with the same name
+    # as poly-kv/crates/poly-kv; excluding prevents the name collision while
+    # still allowing poly-kv/crates/* as workspace members.
+    "poly-kv",
 ]
 default-members = [
     "agent-graph",
