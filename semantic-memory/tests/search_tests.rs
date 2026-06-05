@@ -1,12 +1,18 @@
 #![allow(clippy::expect_used)]
 
 use semantic_memory::search::{cosine_similarity, sanitize_fts_query, source_dedup_key};
-#[cfg(feature = "turbo-quant-codec")]
+#[cfg(any(feature = "turbo-quant-codec", feature = "poly-kv-pool"))]
 use semantic_memory::DerivedVectorBackendPolicy;
-use semantic_memory::SearchSource;
 #[cfg(any(feature = "testing", feature = "turbo-quant-codec"))]
-use semantic_memory::{ExactnessProfile, ReceiptMode, SearchContext};
+use semantic_memory::ExactnessProfile;
+use semantic_memory::SearchSource;
 use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder, SearchConfig, SearchSourceType};
+#[cfg(any(
+    feature = "testing",
+    feature = "turbo-quant-codec",
+    feature = "poly-kv-pool"
+))]
+use semantic_memory::{ReceiptMode, SearchContext};
 use tempfile::TempDir;
 
 fn test_store() -> (MemoryStore, TempDir) {
@@ -30,6 +36,20 @@ fn turbo_quant_test_store() -> (MemoryStore, TempDir) {
     config.search.derived_vector_backend = DerivedVectorBackendPolicy::TurboQuantCandidateOnly;
     config.search.turbo_quant_bits = 8;
     config.search.turbo_quant_projections = 64;
+    config.search.candidate_pool_size = 20;
+    let embedder = Box::new(MockEmbedder::new(768));
+    let store = MemoryStore::open_with_embedder(config, embedder).unwrap();
+    (store, tmp)
+}
+
+#[cfg(feature = "poly-kv-pool")]
+fn provekv_pool_test_store() -> (MemoryStore, TempDir) {
+    let tmp = TempDir::new().unwrap();
+    let mut config = MemoryConfig {
+        base_dir: tmp.path().to_path_buf(),
+        ..Default::default()
+    };
+    config.search.derived_vector_backend = DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly;
     config.search.candidate_pool_size = 20;
     let embedder = Box::new(MockEmbedder::new(768));
     let store = MemoryStore::open_with_embedder(config, embedder).unwrap();
@@ -1615,6 +1635,54 @@ async fn provekv_pool_candidate_backend_requires_exact_f32_rerank() {
         Err(err) => err,
     };
     assert!(err.to_string().contains("require exact f32 rerank"));
+}
+
+#[cfg(feature = "poly-kv-pool")]
+#[tokio::test]
+async fn provekv_pool_candidate_backend_receipt_declares_guarded_fallback() {
+    let (store, _tmp) = provekv_pool_test_store();
+    let fact_id = store
+        .add_fact(
+            "general",
+            "proveKV pool receipt candidate fixture",
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+
+    let mut context = SearchContext::default_now();
+    context.receipt_mode = ReceiptMode::ReturnReceipt;
+    let response = store
+        .search_vector_only_with_context(
+            "proveKV pool receipt candidate fixture",
+            Some(1),
+            None,
+            None,
+            context,
+        )
+        .await
+        .unwrap();
+    let receipt = response.receipt.expect("receipt should be returned");
+
+    assert_eq!(
+        receipt.candidate_backend,
+        "provekv_pool_candidate_then_exact_f32"
+    );
+    assert_eq!(
+        receipt.fallback.as_deref(),
+        Some("provekv_pool_generation_not_materialized")
+    );
+    assert_eq!(receipt.codec_family.as_deref(), Some("provekv_pool"));
+    assert!(receipt.exact_rerank);
+    assert!(!receipt.approximate);
+    assert_eq!(
+        receipt.fallback_reason.as_deref(),
+        receipt.fallback.as_deref()
+    );
+    assert!(receipt.result_ids.contains(&format!("fact:{fact_id}")));
+    assert!(receipt.degradations.iter().any(|reason| reason
+        .contains("using authoritative f32 exact path until a pool generation is materialized")));
 }
 
 // ─── V2: Buffer Reuse Correctness (Fix 6 regression) ────────
