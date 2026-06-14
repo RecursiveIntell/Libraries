@@ -9,7 +9,12 @@ use crate::types::{
 };
 use rusqlite::types::Value as SqlValue;
 use rusqlite::Connection;
-#[cfg(feature = "turbo-quant-codec")]
+// `OptionalExtension` provides `Result::optional()` for `rusqlite::query_row`.
+// Four unconditional call sites in this file use it; keep the import
+// always available. The trait is light (zero runtime cost) so the
+// `#[allow(unused_imports)]` is the only cost when no callsite is in
+// scope on a given feature set.
+#[allow(unused_imports)]
 use rusqlite::OptionalExtension;
 use stack_ids::DigestBuilder;
 #[cfg(feature = "turbo-quant-codec")]
