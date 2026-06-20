@@ -12,8 +12,13 @@ workspace = true
 aidens-agency-kit = { path = "../aidens-agency-kit" }
 aidens-app-kit = { path = "../aidens-app-kit" }
 aidens-contracts = { path = "../aidens-contracts" }
+aidens-governance-kit = { path = "../aidens-governance-kit" }
 aidens-kernel-kit = { path = "../aidens-kernel-kit" }
+aidens-memory-kit = { path = "../aidens-memory-kit" }
 aidens-profile-coding = { path = "../aidens-profile-coding" }
+aidens-provider-kit = { path = "../aidens-provider-kit" }
 aidens-runner = { path = "../aidens-runner" }
+aidens-security-kit = { path = "../aidens-security-kit" }
+aidens-tool-kit = { path = "../aidens-tool-kit" }
 serde.workspace = true
 thiserror.workspace = true
