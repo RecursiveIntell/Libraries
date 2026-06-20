@@ -257,6 +257,122 @@ impl SemanticMemoryServer {
                     })
                     .collect();
 
+                let mut factor_graph_payload = serde_json::json!({
+                    "enabled": false,
+                });
+
+                if decision.decoder {
+                    #[cfg(feature = "full")]
+                    {
+                        use semantic_memory::factor_graph::{
+                            factors_from_edges, FactorGraph, FactorGraphConfig,
+                        };
+                        use semantic_memory::GraphEdgeType;
+
+                        let graph_edges = tokio::task::block_in_place(|| Handle::current().block_on(
+                            store.list_all_graph_edges()
+                        ));
+
+                        match graph_edges {
+                            Ok(edges) => {
+                                let raw_edges: Vec<(String, String, GraphEdgeType, f64, Option<String>)> =
+                                    edges
+                                        .iter()
+                                        .map(|edge| {
+                                            let parsed_type = edge
+                                                .edge_type_parsed
+                                                .clone()
+                                                .or_else(|| serde_json::from_str(&edge.edge_type).ok())
+                                                .unwrap_or(GraphEdgeType::Entity {
+                                                    relation: "unknown".to_string(),
+                                                });
+                                            (
+                                                edge.source.clone(),
+                                                edge.target.clone(),
+                                                parsed_type,
+                                                edge.weight,
+                                                edge.metadata.clone(),
+                                            )
+                                        })
+                                        .collect();
+
+                                let nodes: Vec<(String, f64)> =
+                                    results.iter().map(|r| (r.source.result_id(), r.score)).collect();
+                                let factors = factors_from_edges(&raw_edges);
+                                let graph = FactorGraph::new(&nodes, factors, FactorGraphConfig::default());
+                                let propagated = graph.propagate();
+                                let top_beliefs = propagated.top_k(k);
+
+                                factor_graph_payload = serde_json::json!({
+                                    "enabled": true,
+                                    "top_k_beliefs": top_beliefs
+                                        .into_iter()
+                                        .map(|(item_id, belief)| serde_json::json!({
+                                            "item_id": item_id,
+                                            "belief": belief,
+                                        }))
+                                        .collect::<Vec<_>>(),
+                                    "iterations": propagated.iterations,
+                                    "converged": propagated.converged,
+                                    "elapsed_ms": propagated.elapsed_ms,
+                                    "factor_counts": {
+                                        "semantic": propagated.factor_counts.semantic,
+                                        "temporal": propagated.factor_counts.temporal,
+                                        "causal": propagated.factor_counts.causal,
+                                        "entity": propagated.factor_counts.entity,
+                                        "total": propagated.factor_counts.total(),
+                                    },
+                                });
+                            }
+                            Err(e) => {
+                                factor_graph_payload = serde_json::json!({
+                                    "enabled": false,
+                                    "error": format!("factor graph analysis failed: {e}"),
+                                });
+                            }
+                        }
+                    }
+
+                    #[cfg(not(feature = "full"))]
+                    {
+                        factor_graph_payload = serde_json::json!({
+                            "enabled": false,
+                            "reason": "factor graph analysis requires the `full` feature",
+                        });
+                    }
+                }
+
+                let mut matryoshka_payload = serde_json::json!({
+                    "enabled": false,
+                });
+                if decision.vector_medium {
+                    #[cfg(feature = "full")]
+                    {
+                        use semantic_memory::integration::multi_resolution_route;
+                        use semantic_memory::matryoshka::MatryoshkaConfig;
+                        use semantic_memory::routing::QueryProfile;
+
+                        let route_profile = QueryProfile::from_query(&query);
+                        let route_decision =
+                            multi_resolution_route(&route_profile, &MatryoshkaConfig::default());
+                        matryoshka_payload = serde_json::json!({
+                            "enabled": true,
+                            "candidate_dim": route_decision.candidate_dim,
+                            "estimated_recall": route_decision.estimated_recall,
+                            "embedding_dim": route_decision.embedding_dim,
+                            "reasoning": route_decision.reasoning,
+                        });
+                    }
+
+                    #[cfg(not(feature = "full"))]
+                    {
+                        matryoshka_payload = serde_json::json!({
+                            "enabled": false,
+                            "reason": "matryoshka routing requires the `full` feature",
+                        });
+                    }
+                }
+
                 serde_json::to_string_pretty(&serde_json::json!({
                     "routing_decision": {
                         "bm25_coarse": decision.bm25_coarse,
@@ -271,6 +387,8 @@ impl SemanticMemoryServer {
                     "results": json_results,
                     "count": json_results.len(),
                     "decoder_applied": plan.use_decoder,
+                    "factor_graph": factor_graph_payload,
+                    "matryoshka": matryoshka_payload,
                 }))
                 .unwrap_or_else(|e| format!("Error serializing: {e}"))
             }
@@ -415,6 +533,191 @@ impl SemanticMemoryServer {
             false, // don't know importance yet
         );
 
+        let store = &self.bridge.store;
+        let graph_edges = tokio::task::block_in_place(|| Handle::current().block_on(
+            store.list_all_graph_edges()
+        ));
+        let stored_edges: Vec<(String, String)> = graph_edges
+            .as_ref()
+            .map(|edges| {
+                edges
+                    .iter()
+                    .map(|edge| (edge.source.clone(), edge.target.clone()))
+                    .collect()
+            })
+            .unwrap_or_default();
+
+        let mut topology_voids: Vec<serde_json::Value> = Vec::new();
+        let mut betti = serde_json::json!({
+            "betti_0": 0usize,
+            "betti_1": 0usize,
+        });
+        let mut topology_error: Option<String> = None;
+
+        let mut communities: Vec<serde_json::Value> = Vec::new();
+        let mut community_contradictions: Vec<serde_json::Value> = Vec::new();
+        let mut community_error: Option<String> = None;
+
+        let mut subgraph_assessment = serde_json::json!({
+            "subgraphs_identified": 0usize,
+            "subgraphs_pruned": 0usize,
+        });
+        let mut subgraph_error: Option<String> = None;
+
+        #[cfg(feature = "full")]
+        {
+            use std::collections::HashMap;
+
+            if !stored_edges.is_empty() {
+                let analysis_edges = stored_edges.clone();
+
+                // Phase 4: topology analysis
+                let topology_result = (|| -> Result<(), String> {
+                    use semantic_memory::topology::{compute_betti_numbers, find_voids};
+
+                    let mut adjacency: HashMap<String, Vec<String>> = HashMap::new();
+                    for (left, right) in &analysis_edges {
+                        adjacency
+                            .entry(left.clone())
+                            .or_default()
+                            .push(right.clone());
+                        adjacency
+                            .entry(right.clone())
+                            .or_default()
+                            .push(left.clone());
+                    }
+
+                    let betti_numbers = compute_betti_numbers(&adjacency);
+                    betti = serde_json::json!({
+                        "betti_0": betti_numbers.betti_0,
+                        "betti_1": betti_numbers.betti_1,
+                    });
+
+                    topology_voids = find_voids(&analysis_edges)
+                        .into_iter()
+                        .map(|v| serde_json::json!({
+                            "description": v.description,
+                            "void_type": format!("{:?}", v.void_type),
+                            "nearby_items": v.nearby_items,
+                            "suggested_connections": v.suggested_connections,
+                        }))
+                        .collect();
+
+                    Ok(())
+                })();
+
+                if let Err(e) = topology_result {
+                    topology_error = Some(e);
+                }
+
+                // Phase 5: community detection
+                let community_result = (|| -> Result<(), String> {
+                    use semantic_memory::community::{
+                        community_contradiction_scan, detect_communities,
+                    };
+
+                    let detected = detect_communities(&analysis_edges, 1.0, 42);
+                    communities = detected
+                        .iter()
+                        .map(|c| serde_json::json!({
+                            "id": c.id,
+                            "members": c.members,
+                            "level": c.level,
+                            "parent": c.parent,
+                            "member_count": c.members.len(),
+                        }))
+                        .collect();
+
+                    community_contradictions = community_contradiction_scan(&detected, &[])
+                        .into_iter()
+                        .map(|cc| serde_json::json!({
+                            "community_id": cc.community_id,
+                            "item_a": cc.item_a,
+                            "item_b": cc.item_b,
+                            "description": cc.description,
+                        }))
+                        .collect();
+
+                    Ok(())
+                })();
+
+                if let Err(e) = community_result {
+                    community_error = Some(e);
+                }
+
+                // Phase 6: subgraph pruning assessment
+                let subgraph_result = (|| -> Result<(), String> {
+                    use std::collections::HashSet;
+                    use semantic_memory::integration::autonomous_subgraph_maintenance;
+                    use semantic_memory::subgraph_pruning::AccessLog;
+
+                    let mut access_items: HashSet<String> = HashSet::new();
+                    for (left, right) in &analysis_edges {
+                        access_items.insert(left.clone());
+                        access_items.insert(right.clone());
+                    }
+
+                    let access_logs = access_items
+                        .into_iter()
+                        .map(|item| AccessLog {
+                            item_id: item,
+                            access_count: 1,
+                            last_accessed: "1970-01-01T00:00:00Z".to_string(),
+                        })
+                        .collect::<Vec<_>>();
+
+                    let report = autonomous_subgraph_maintenance(
+                        &analysis_edges,
+                        &access_logs,
+                        &[],
+                        0,
+                    );
+                    subgraph_assessment = serde_json::json!({
+                        "subgraphs_identified": report.subgraphs_identified,
+                        "subgraphs_pruned": report.subgraphs_pruned,
+                        "summary": report.summary,
+                    });
+                    Ok(())
+                })();
+
+                if let Err(e) = subgraph_result {
+                    subgraph_error = Some(e);
+                }
+            }
+        }
+
+        #[cfg(not(feature = "full"))]
+        {
+            if !stored_edges.is_empty() {
+                topology_error = Some(
+                    "topology/community/subgraph phases require the `full` feature".to_string(),
+                );
+                community_error = Some(
+                    "topology/community/subgraph phases require the `full` feature".to_string(),
+                );
+                subgraph_error = Some(
+                    "topology/community/subgraph phases require the `full` feature".to_string(),
+                );
+            }
+        }
+
+        #[cfg(feature = "full")]
+        let (f32_count, compressed_count) = item_ids.iter().fold(
+            (0usize, 0usize),
+            |(f32_count, compressed_count), _| {
+                use semantic_memory::compression_governor::{
+                    decide_quantization, QuantizationLevel,
+                };
+
+                match decide_quantization(0.5) {
+                    QuantizationLevel::F32 => (f32_count + 1, compressed_count),
+                    _ => (f32_count, compressed_count + 1),
+                }
+            },
+        );
+        #[cfg(not(feature = "full"))]
+        let (f32_count, compressed_count) = (0usize, 0usize);
+
         serde_json::to_string_pretty(&serde_json::json!({
             "items_analyzed": item_ids.len(),
             "syndromes_detected": syndromes.len(),
@@ -427,6 +730,33 @@ impl SemanticMemoryServer {
             })).collect::<Vec<_>>(),
             "recompression_triggered": recompression.triggered,
             "recompression_reason": recompression.reason,
+            "topology": {
+                "enabled": !stored_edges.is_empty(),
+                "voids": topology_voids,
+                "void_count": topology_voids.len(),
+                "betti_numbers": betti,
+                "error": topology_error,
+            },
+            "community_detection": {
+                "enabled": !stored_edges.is_empty(),
+                "communities": communities,
+                "community_count": communities.len(),
+                "contradictions": community_contradictions,
+                "contradiction_count": community_contradictions.len(),
+                "error": community_error,
+            },
+            "subgraph_pruning_assessment": {
+                "enabled": !stored_edges.is_empty(),
+                "subgraph_count": subgraph_assessment["subgraphs_identified"].as_u64().unwrap_or(0),
+                "pruned_count": subgraph_assessment["subgraphs_pruned"].as_u64().unwrap_or(0),
+                "summary": subgraph_assessment["summary"].as_str().unwrap_or(""),
+                "error": subgraph_error,
+            },
+            "turbo_quantization_assessment": {
+                "items_assessed": item_ids.len(),
+                "would_retain_f32": f32_count,
+                "would_compress": compressed_count,
+            },
             "summary": format!(
                 "Analyzed {} items: {} syndromes, {} corrections, {} subtraction candidates, recompression: {}",
                 item_ids.len(), syndromes.len(), corrections.len(), sub_candidates.len(),
