@@ -1328,6 +1328,11 @@ impl TurnExecutorV1 {
                 });
             }
 
+            // Hoist dispatcher construction outside the per-tool-call loop
+            // to avoid cloning the entire ToolRegistryV1 on every tool invocation.
+            let dispatcher = ToolDispatcher::new(self.tools.clone())
+                .with_permit_policy(self.permit_policy.clone());
+
             for tool_call in tool_calls {
                 let call_signature = format!("{}:{}", tool_call.tool_id, tool_call.input_digest);
                 if !seen_tool_calls.insert(call_signature) {
@@ -1439,8 +1444,6 @@ impl TurnExecutorV1 {
                     }
                 }
 
-                let dispatcher = ToolDispatcher::new(self.tools.clone())
-                    .with_permit_policy(self.permit_policy.clone());
                 let invocation = match dispatcher
                     .invoke(&tool_call.tool_id, tool_call.input.clone())
                     .await

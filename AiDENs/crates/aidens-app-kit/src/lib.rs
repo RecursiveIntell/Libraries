@@ -205,6 +205,32 @@ impl AiDENsApp {
         AiDENsAppBuilder::default()
     }
 
+    /// One-liner quickstart: build a mock agent and run a prompt.
+    pub async fn chat(prompt: impl Into<String>) -> anyhow::Result<aidens_runner::AiDENsRunOutput> {
+        let plan = AiDENsProfile::ChatOnly
+            .expand("quickstart-chat")?;
+        let app = AiDENsApp::from_plan(plan)
+            .mock_provider("You are a helpful assistant.")
+            .build()
+            .await?;
+        app.run_once(prompt).await
+    }
+
+    /// One-liner with a real provider: build an agent with the given profile
+    /// and provider spec, run a prompt.
+    pub async fn run_with(
+        profile: AiDENsProfile,
+        provider: ProviderSpecV1,
+        prompt: impl Into<String>,
+    ) -> anyhow::Result<aidens_runner::AiDENsRunOutput> {
+        let plan = profile.expand("quickstart")?;
+        let app = AiDENsApp::from_plan(plan)
+            .provider_spec(provider)
+            .build()
+            .await?;
+        app.run_once(prompt).await
+    }
+
     pub async fn run(&self) -> anyhow::Result<()> {
         let output = self.run_once("doctor-run").await?;
         println!("{}", output.text);

@@ -5,9 +5,11 @@ use aidens_contracts::AiDENsAppPlanV1;
 
 #[tokio::test]
 async fn e2e_unified_agent_produces_receipt_chain() {
-    // Use from_plan with a mock provider to avoid the disabled default
+    // Use from_plan with a mock provider to avoid the disabled default.
+    // Use a unique app ID to avoid receipt ID collisions with other parallel tests.
+    let app_id = format!("e2e-receipt-{}", std::process::id());
     let plan = AiDENsProfile::CodingAgent
-        .expand("e2e-test-agent")
+        .expand(&app_id)
         .expect("expand plan");
     let app = AiDENsApp::from_plan(plan)
         .mock_provider("Test response from mock provider")
