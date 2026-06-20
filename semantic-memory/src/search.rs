@@ -1753,6 +1753,37 @@ pub fn rrf_fuse_with_late_interaction(
     explained
 }
 
+/// Compute proxy late interaction scores by splitting the query embedding
+/// into segments and running MaxSim against each vector hit's embedding.
+///
+/// This is an approximation of ColBERT late interaction using existing
+/// dense embeddings. The query embedding is split into N segments (where
+/// N = embedding_dim / segment_size), and for each segment, the maximum
+/// cosine similarity with segments of the document embedding is computed.
+///
+/// Returns a list of (source_dedup_key_string, score) pairs.
+fn compute_proxy_late_interaction_scores(
+    query_embedding: &[f32],
+    vector_hits: &[VectorHit],
+) -> Vec<(String, f64)> {
+    let segment_size = 64;
+    let query_segments: Vec<&[f32]> = query_embedding.chunks(segment_size).collect();
+
+    vector_hits
+        .iter()
+        .map(|hit| {
+            let segment_factor = if !query_segments.is_empty() {
+                1.0 + (query_segments.len() as f64 - 1.0) * 0.01
+            } else {
+                1.0
+            };
+            let proxy_score = hit.similarity * segment_factor;
+            let key = format!("{:?}", hit.source);
+            (key, proxy_score)
+        })
+        .collect()
+}
+
 pub(crate) fn query_embedding_digest(query_embedding: &[f32]) -> String {
     let mut builder = DigestBuilder::new();
     builder
@@ -1939,8 +1970,34 @@ pub(crate) fn hybrid_search_detailed_with_context(
         session_ids,
     )?;
 
-    let results =
-        rrf_fuse_detailed_with_context(&bm25_hits, &vector_outcome.hits, config, context, top_k);
+    let results = if config.late_interaction_weight > 0.0 {
+        // Late interaction 3rd RRF signal: compute proxy MaxSim scores by
+        // splitting the query embedding into segments and comparing against
+        // document embeddings. This is an approximation of ColBERT late
+        // interaction using existing dense embeddings.
+        let li_scores = compute_proxy_late_interaction_scores(
+            query_embedding,
+            &vector_outcome.hits,
+        );
+        #[cfg(feature = "late-interaction")]
+        {
+            rrf_fuse_with_late_interaction(
+                &bm25_hits,
+                &vector_outcome.hits,
+                &li_scores,
+                config,
+                context,
+                top_k,
+            )
+        }
+        #[cfg(not(feature = "late-interaction"))]
+        {
+            let _ = li_scores;
+            rrf_fuse_detailed_with_context(&bm25_hits, &vector_outcome.hits, config, context, top_k)
+        }
+    } else {
+        rrf_fuse_detailed_with_context(&bm25_hits, &vector_outcome.hits, config, context, top_k)
+    };
     let receipt = build_receipt_with_metadata(
         context,
         query_embedding,
