@@ -360,7 +360,7 @@ fn completion_request_serializes_tool_results_without_empty_substitution() {
     let result = ToolCallResultV1::from_invocation(&request_call, &invocation);
 
     let request =
-        completion_request("continue".into(), &empty_tool_exposure(), vec![result]).unwrap();
+        completion_request("continue".into(), &empty_tool_exposure(), &[result]).unwrap();
 
     assert_eq!(request.messages.len(), 2);
     assert_eq!(request.messages[1].role, "tool");

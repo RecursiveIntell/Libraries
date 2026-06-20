@@ -12,11 +12,11 @@ use boundary_compiler_core::{
 pub(super) fn completion_request(
     prompt: String,
     tool_exposure: &ToolExposureSetV1,
-    tool_results: Vec<ToolCallResultV1>,
+    tool_results: &[ToolCallResultV1],
 ) -> anyhow::Result<AiDENsCompletionRequestV1> {
     let mut request = AiDENsCompletionRequestV1::single_user(prompt);
     request.provider_tool_schemas = tool_exposure.provider_tool_schemas.clone();
-    request.tool_results = tool_results;
+    request.tool_results = tool_results.to_vec();
     if !request.tool_results.is_empty() {
         let content = serde_json::to_string(&request.tool_results)
             .map_err(|error| anyhow!("tool-result serialization failed: {error}"))?;

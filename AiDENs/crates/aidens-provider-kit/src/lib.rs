@@ -182,6 +182,7 @@ impl AiDENsProvider for DisabledProvider {
 #[derive(Debug, Clone)]
 pub struct MockProvider {
     response: String,
+    segments: Vec<String>,
     model: Option<String>,
 }
 
@@ -193,19 +194,21 @@ impl MockProvider {
         if response.trim().is_empty() {
             bail!("mock provider requires an explicit non-empty mock_response")
         }
-        Ok(Self { response, model })
+        // Pre-split response segments at construction time to avoid
+        // re-splitting on every completion call.
+        let segments = response
+            .split(MOCK_RESPONSE_DELIMITER)
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>();
+        Ok(Self { response, segments, model })
     }
 
     fn response_for_request(&self, request: &AiDENsCompletionRequestV1) -> String {
-        let segments = self
-            .response
-            .split(MOCK_RESPONSE_DELIMITER)
-            .collect::<Vec<_>>();
         let index = request
             .tool_results
             .len()
-            .min(segments.len().saturating_sub(1));
-        render_mock_response_template(segments[index], request)
+            .min(self.segments.len().saturating_sub(1));
+        render_mock_response_template(&self.segments[index], request)
     }
 }
 

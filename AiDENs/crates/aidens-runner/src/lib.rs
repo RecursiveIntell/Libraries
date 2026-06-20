@@ -406,10 +406,11 @@ impl PlanActVerifyLoopV1 {
         };
 
         let max_turns = self.spec.budget_policy.max_turns.max(1);
+        let run_input = AiDENsRunInput::new(prompt.clone());
         for step in 1..=max_turns {
             output.turns_used = step;
             let turn_output = match runner
-                .run_with_tool_policy(AiDENsRunInput::new(prompt.clone()), policy.clone())
+                .run_with_tool_policy(run_input.clone(), policy.clone())
                 .await
             {
                 Ok(run_output) => run_output,
@@ -1048,7 +1049,7 @@ impl TurnExecutorV1 {
             let request = match completion_request(
                 input.prompt.clone(),
                 &tool_exposure,
-                tool_results.clone(),
+                &tool_results,
             ) {
                 Ok(request) => request,
                 Err(error) => {

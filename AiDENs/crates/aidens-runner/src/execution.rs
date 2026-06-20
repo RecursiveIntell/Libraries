@@ -98,10 +98,7 @@ pub(super) async fn run_canonical_memory_grounding(
     if !query_trace.warnings.is_empty() {
         degradation.push(format!("warnings:{}", query_trace.warnings.len()));
     }
-    if format!("{:?}", query_trace.widenings)
-        .to_lowercase()
-        .contains("widen")
-    {
+    if !query_trace.widenings.is_empty() {
         widening.push("query-widened".into());
     }
 
@@ -176,10 +173,7 @@ pub(super) async fn run_canonical_memory_grounding(
         receipts.push("memory-grounding:view-disclosure:widened".into());
     }
 
-    if format!("{:?}", query_trace)
-        .to_lowercase()
-        .contains("degrad")
-    {
+    if query_trace.is_degraded() {
         receipts.push("memory-grounding:view-disclosure:degraded".into());
     }
 
