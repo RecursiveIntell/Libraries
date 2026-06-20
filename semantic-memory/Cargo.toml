@@ -39,6 +39,49 @@ hnsw = ["dep:hnsw_rs"]
 # Pure-Rust brute-force backend (no ANN). Useful for small corpora and as
 # a fallback when no compiled C++ toolchain is available.
 brute-force = []
+# Phase 2: semiring provenance — append-only provenance records backed by
+# Boolean/Tropical/Probability/Confidence semirings. Opt-in only; the
+# provenance table is created via migration V25 when this feature is enabled.
+provenance = []
+# Phase 3: temporal field provenance — computed temporal_weight score per
+# fact/chunk/message factoring age, supersession, support, and contradiction.
+# Depends on provenance for support/contradiction counts. Opt-in only; the
+# temporal_weight columns are added via migration V26.
+temporal = ["provenance"]
+# Multiscale retrieval scheduling pipeline (staged search with budgets and
+# confidence thresholds). Opt-in only; the existing search() surface works
+# without it.
+multiscale = []
+# Discord-structured second-order retrieval: surface graph neighbours of the
+# top-K direct results that are not themselves direct results. Opt-in only.
+discord = []
+# Phase 6: decoder architecture — treats contradictions as syndromes and
+# computes the smallest globally consistent correction. Opt-in only.
+decoder = []
+# Phase 7: lawful subtraction engine — determines what to forget, compress,
+# quarantine, or retire while preserving invariants. Opt-in only.
+subtraction = []
+# Phase 8: simplified compression governor — per-vector importance scoring
+# that determines quantization level. No turbo-quant dependency. Opt-in only.
+compression-governor = []
+# Phase 9: adaptive retrieval routing — query-aware stage selection.
+routing = []
+# Phase 9b: benchmark harness for routing — requires routing.
+benchmark = ["routing"]
+# Phase 10: cross-feature integration wiring — requires all constituent features.
+integration = ["provenance", "temporal", "multiscale", "discord", "decoder", "subtraction", "compression-governor", "routing"]
+# ColBERT-style late interaction multi-vector retrieval (3rd RRF signal).
+late-interaction = []
+# Persistent homology and topological void detection for knowledge graphs.
+topology = []
+# Matryoshka Representation Learning: multi-resolution embedding truncation.
+matryoshka = []
+# Leiden community detection with contradiction tracking.
+community = []
+# MemRL-style RL routing over receipts.
+rl-routing = ["routing"]
+# Reasoning subgraph pruning with lawful subtraction.
+subgraph-pruning = ["subtraction"]
 testing = []
 turbo-quant-codec = ["dep:turbo-quant", "dep:quant-governor", "dep:scr-runtime-compression"]
 poly-kv-pool = ["dep:poly-kv-core", "poly-kv-core/fib"]
