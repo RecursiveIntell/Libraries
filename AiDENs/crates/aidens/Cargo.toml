@@ -23,3 +23,16 @@ aidens-security-kit = { path = "../aidens-security-kit" }
 aidens-tool-kit = { path = "../aidens-tool-kit" }
 serde.workspace = true
 thiserror.workspace = true
+
+[dev-dependencies]
+aidens-boundary-kit = { path = "../aidens-boundary-kit" }
+aidens-receipts = { path = "../aidens-receipts" }
+anyhow.workspace = true
+serde_json.workspace = true
+semantic-memory.workspace = true
+tokio.workspace = true
+verification-policy.workspace = true
+
+[[example]]
+name = "the_auditor"
+path = "examples/the_auditor.rs"
