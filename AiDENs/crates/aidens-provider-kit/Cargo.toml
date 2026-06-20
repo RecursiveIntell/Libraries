@@ -4,6 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Provider construction, execution, and route truth — Ollama, Mock, Disabled"
 
 [lints]
 workspace = true

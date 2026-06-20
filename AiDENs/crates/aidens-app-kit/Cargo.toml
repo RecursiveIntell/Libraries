@@ -4,6 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Safe app builder and profile expansion with 5 built-in profiles"
 
 [lints]
 workspace = true

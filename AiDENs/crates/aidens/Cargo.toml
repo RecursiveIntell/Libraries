@@ -4,6 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Umbrella crate re-exporting all AiDENs capabilities with one-liner quickstart"
 
 [lints]
 workspace = true

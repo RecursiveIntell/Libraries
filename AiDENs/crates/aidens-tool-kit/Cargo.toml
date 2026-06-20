@@ -4,6 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Tool registry, exposure planning, and safe sandbox-validated dispatch"
 
 [lints]
 workspace = true

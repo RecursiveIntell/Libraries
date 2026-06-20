@@ -4,6 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "E2E integration tests proving the unified agent framework"
 
 [lints]
 workspace = true

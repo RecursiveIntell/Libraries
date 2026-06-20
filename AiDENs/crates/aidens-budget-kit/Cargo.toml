@@ -4,6 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Budget, retry, fanout, and stop-rule guards for agent execution"
 
 [lints]
 workspace = true

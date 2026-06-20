@@ -4,6 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Independent reference interpreters for semantic conformance tests"
 
 [lints]
 workspace = true
