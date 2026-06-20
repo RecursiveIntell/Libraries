@@ -13,6 +13,7 @@ aidens-agency-kit = { path = "../aidens-agency-kit" }
 aidens-memory-kit = { path = "../aidens-memory-kit" }
 aidens-receipts = { path = "../aidens-receipts" }
 aidens-governance-kit = { path = "../aidens-governance-kit" }
+aidens-kernel-kit = { path = "../aidens-kernel-kit" }
 aidens-provider-kit = { path = "../aidens-provider-kit" }
 aidens-contracts = { path = "../aidens-contracts" }
 aidens-tool-kit = { path = "../aidens-tool-kit" }

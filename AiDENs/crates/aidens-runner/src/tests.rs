@@ -820,6 +820,27 @@ async fn p26_plan_act_verify_loop_memory_disabled_skips_grounding_evidence() {
     assert!(output.finalization.is_some());
 }
 
+#[test]
+fn phase06_plan_act_verify_loop_with_memory_sets_accessor() {
+    let root = std::env::temp_dir().join(format!(
+        "aidens-phase06-runner-memory-accessor-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&root);
+    let memory = CanonicalMemoryAdapter::open_with_mock_embedder(
+        memory_config_for_root(&root),
+        runtime_config_for_namespace("phase06-runner-memory-accessor"),
+    )
+    .expect("memory adapter fixture");
+    let spec = p26_loop_spec(false, AgentMemoryModeV1::Fixture, false);
+    let loopv = PlanActVerifyLoopV1::new(spec).with_memory(memory);
+
+    assert!(loopv.has_memory());
+    assert!(!loopv.has_governance());
+    assert!(!loopv.has_kernel());
+    let _ = std::fs::remove_dir_all(&root);
+}
+
 #[tokio::test]
 async fn phase06_local_policy_mock_fixture_is_receipt_disclosed() {
     let spec = p26_loop_spec(false, AgentMemoryModeV1::Fixture, false);
