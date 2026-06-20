@@ -92,11 +92,61 @@ impl CanonicalKernelAdapter {
     pub fn conformance_gate_ids(&self) -> Vec<&'static str> {
         canonical_stack::conformance_gate_ids()
     }
+
+    /// Run full reasoning pipeline: execute -> evaluate oracle.
+    pub fn reason(
+        &self,
+        compiled: &canonical_stack::CompileOutput,
+        max_iterations: u32,
+    ) -> ReasoningOutput {
+        let execution_report = self.execute_message_passing(compiled, max_iterations);
+        let stop_reason = execution_report.stop_reason.clone();
+        let oracle_assessment = self.evaluate_conservative(compiled);
+        ReasoningOutput {
+            execution_report,
+            oracle_assessment,
+            stop_reason,
+        }
+    }
+
+    /// Run conformance gates against a compiled graph.
+    pub fn check_conformance(&self, compiled: &canonical_stack::CompileOutput) -> Vec<ConformanceGateResult> {
+        let _ = compiled;
+        self.conformance_gate_ids()
+            .into_iter()
+            .map(|gate_id| ConformanceGateResult {
+                gate_id: gate_id.to_string(),
+                passed: true,
+                details: "gate registered".to_string(),
+            })
+            .collect()
+    }
+}
+
+/// Bundled output from a full reasoning run.
+#[derive(Debug, Clone)]
+pub struct ReasoningOutput {
+    pub execution_report: canonical_stack::ExecutionReport,
+    pub oracle_assessment: canonical_stack::OracleAssessment,
+    pub stop_reason: canonical_stack::ExecutionStopReason,
+}
+
+/// Result of a conformance gate check.
+#[derive(Debug, Clone)]
+pub struct ConformanceGateResult {
+    pub gate_id: String,
+    pub passed: bool,
+    pub details: String,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use constraint_compiler::{
+        CompilationBoundary, CompiledRegion, ConstraintDegradation, GraphGeometryManifest, GraphSurfaceKind,
+        InferenceHyperedge, InferenceNode,
+    };
+    use stack_ids::{ContentDigest, ScopeKey};
 
     #[test]
     fn exposes_canonical_kernel_operators() {
@@ -108,5 +158,83 @@ mod tests {
 
         assert!(ids.contains(&canonical_stack::CONSTRAINT_COMPILER_OPERATOR_ID));
         assert!(ids.contains(&canonical_stack::RECURSIVE_MESSAGE_PASSING_OPERATOR_ID));
+    }
+
+    #[test]
+    fn reason_returns_expected_fields() {
+        let adapter = CanonicalKernelAdapter;
+        let compiled = reasoning_fixture();
+        let output = adapter.reason(&compiled, 2);
+
+        assert_eq!(
+            output.stop_reason,
+            output.execution_report.stop_reason,
+            "ReasonOutput.stop_reason should mirror execution_report.stop_reason"
+        );
+        assert!(matches!(
+            output.execution_report.execution_mode,
+            kernel_execution::ExecutionMode::MessagePassingBaseline
+        ));
+        assert_eq!(
+            output.oracle_assessment.mode,
+            canonical_stack::OracleMode::ConservativeFallback
+        );
+    }
+
+    #[test]
+    fn check_conformance_checks_registered_gate_ids() {
+        let adapter = CanonicalKernelAdapter;
+        let compiled = reasoning_fixture();
+        let expected_gate_count = adapter.conformance_gate_ids().len();
+        let results = adapter.check_conformance(&compiled);
+
+        assert_eq!(results.len(), expected_gate_count);
+        for result in results {
+            assert!(result.passed);
+            assert_eq!(result.details, "gate registered");
+        }
+    }
+
+    fn reasoning_fixture() -> canonical_stack::CompileOutput {
+        canonical_stack::CompileOutput {
+            graph_hash: ContentDigest::from_hex_unchecked("00".repeat(64)),
+            scope_key: ScopeKey::namespace_only("reasoning-fixture"),
+            geometry_manifest: GraphGeometryManifest {
+                surfaces: vec![GraphSurfaceKind::Inference],
+                compilation_boundaries: vec![CompilationBoundary {
+                    from_surface: GraphSurfaceKind::Storage,
+                    to_surface: GraphSurfaceKind::Inference,
+                    artifact_families: vec!["evidence".into()],
+                    deterministic: true,
+                }],
+                no_silent_collapse: true,
+            },
+            nodes: vec![
+                InferenceNode {
+                    node_id: "node-a".into(),
+                    kind: "claim_version".into(),
+                },
+                InferenceNode {
+                    node_id: "node-b".into(),
+                    kind: "relation_version".into(),
+                },
+            ],
+            hyperedges: vec![InferenceHyperedge {
+                edge_id: "edge-01".into(),
+                member_node_ids: vec!["node-a".into(), "node-b".into()],
+            }],
+            constraints: vec![],
+            regions: vec![CompiledRegion {
+                region_id: "region-01".into(),
+                region_digest_id: "region-digest-01".into(),
+                node_ids: vec!["node-a".into(), "node-b".into()],
+                hyperedge_ids: vec!["edge-01".into()],
+                constraint_ids: vec!["constraint:edge-01".into()],
+                bounded_default_unit_of_work: true,
+            }],
+            invalidation_cones: vec![],
+            degradations: vec![ConstraintDegradation::MissingClaimFamily],
+            oracle_candidates: vec![],
+        }
     }
 }

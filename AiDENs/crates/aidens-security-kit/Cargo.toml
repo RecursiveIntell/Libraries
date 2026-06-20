@@ -10,4 +10,7 @@ workspace = true
 
 [dependencies]
 llm-tool-runtime.workspace = true
+attestation-exchange.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true

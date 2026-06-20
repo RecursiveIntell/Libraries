@@ -18,8 +18,8 @@ pub mod canonical_stack {
     };
     pub use verification_policy::{
         ApprovalRecord, ApprovalRequirement, ApprovalScope, AutonomyCeiling,
-        DelegationPolicyProfileV1, EffectPolicyProfileV1, ExecutionPermit, MethodPolicy,
-        PolicyDecision, PolicySnapshot, ReleasePolicyProfileV1,
+        DelegationPolicyProfileV1, EffectPolicyProfileV1, ExecutionPermit,
+        MethodPolicy, PermitIssuanceError, PolicyDecision, PolicySnapshot, ReleasePolicyProfileV1,
     };
 }
 
@@ -244,6 +244,169 @@ impl CanonicalGovernanceAdapter {
             currently_promoted,
         )
     }
+
+    pub fn release_readiness_decision(
+        &self,
+        deployment_profile: &assurance_runtime::DeploymentProfileV1,
+        blocking_gaps: Vec<String>,
+        required_monitors: Vec<String>,
+        advisory_only: bool,
+    ) -> assurance_runtime::ReleaseReadinessDecisionV1 {
+        let decision_state = if !blocking_gaps.is_empty() {
+            assurance_runtime::ReleaseDecisionStateV1::Blocked
+        } else if !required_monitors.is_empty() {
+            assurance_runtime::ReleaseDecisionStateV1::ApprovedWithMonitoring
+        } else {
+            assurance_runtime::ReleaseDecisionStateV1::Approved
+        };
+
+        let decision_id = stack_ids::ArtifactId::generate().as_str().to_string();
+        let deployment_profile_id = deployment_profile.deployment_profile_id.clone();
+        let generated_at = chrono::Utc::now().to_rfc3339();
+
+        match assurance_runtime::ReleaseReadinessDecisionV1::new(
+            decision_id.clone(),
+            deployment_profile_id.clone(),
+            decision_state,
+            blocking_gaps,
+            required_monitors,
+            advisory_only,
+            generated_at.clone(),
+        ) {
+            Ok(decision) => decision,
+            Err(_) => assurance_runtime::ReleaseReadinessDecisionV1 {
+                schema_version: "ReleaseReadinessDecisionV1".to_string(),
+                release_readiness_decision_id: decision_id,
+                deployment_profile_id,
+                decision_state: assurance_runtime::ReleaseDecisionStateV1::Blocked,
+                blocking_gaps: vec!["construct-fallback".to_string()],
+                required_monitors: Vec::new(),
+                advisory_only,
+                generated_at,
+            },
+        }
+    }
+
+    pub fn authority_chain(
+        &self,
+        lease: &canonical_stack::AuthorityLeaseV1,
+        acting_on_behalf: &canonical_stack::ActingOnBehalfReceiptV1,
+    ) -> canonical_stack::DelegationBundleV1 {
+        let delegation_bundle_id = stack_ids::ArtifactId::generate().as_str().to_string();
+
+        let mut delegated_rights = vec![acting_on_behalf.delegated_action.clone()];
+        if delegated_rights.iter().all(|value| value.trim().is_empty()) {
+            delegated_rights = vec!["delegated-action:fallback".to_string()];
+        }
+
+        let mut replay_requirements = vec![acting_on_behalf.effect_execution_receipt_id.clone()];
+        if replay_requirements.iter().all(|value| value.trim().is_empty()) {
+            replay_requirements = vec!["replay-requirement:fallback".to_string()];
+        }
+
+        let authority_lease_id = if lease.authority_lease_id.is_empty() {
+            "authority-lease:unknown".to_string()
+        } else {
+            lease.authority_lease_id.clone()
+        };
+
+        match canonical_stack::DelegationBundleV1::new(
+            delegation_bundle_id.clone(),
+            authority_lease_id,
+            delegated_rights,
+            lease.hard_ceilings.clone(),
+            replay_requirements,
+            acting_on_behalf.within_lease,
+        ) {
+            Ok(bundle) => bundle,
+            Err(_) => canonical_stack::DelegationBundleV1 {
+            schema_version: "DelegationBundleV1".to_string(),
+            delegation_bundle_id,
+            authority_lease_id: lease.authority_lease_id.clone(),
+            delegated_rights: vec!["delegated-action:fallback".to_string()],
+            reduced_ceilings: lease.hard_ceilings.clone(),
+            replay_requirements: vec!["replay-requirement:fallback".to_string()],
+            further_delegation_permitted: false,
+            },
+        }
+    }
+
+}
+
+#[derive(Debug, Clone)]
+pub struct GovernanceContext {
+    adapter: CanonicalGovernanceAdapter,
+    policy_snapshot: canonical_stack::PolicySnapshot,
+}
+
+impl GovernanceContext {
+    pub fn new(policy: canonical_stack::PolicySnapshot) -> Self {
+        Self {
+            adapter: CanonicalGovernanceAdapter::default(),
+            policy_snapshot: policy,
+        }
+    }
+
+    pub fn open_case(
+        &self,
+        class: canonical_stack::VerificationCaseClass,
+        namespace: impl Into<String>,
+        target_key: impl Into<String>,
+        trace_ctx: canonical_stack::TraceCtx,
+        attempt_id: canonical_stack::AttemptId,
+    ) -> canonical_stack::VerificationCase {
+        self.adapter.verification_case(
+            class,
+            namespace,
+            target_key,
+            trace_ctx,
+            attempt_id,
+            chrono::Utc::now().to_rfc3339(),
+            false,
+            false,
+        )
+    }
+
+    pub fn check_permit(
+        &self,
+        case: &canonical_stack::VerificationCase,
+        plan: &canonical_stack::CheckPlan,
+    ) -> Result<canonical_stack::ExecutionPermit, canonical_stack::PermitIssuanceError> {
+        let decision = self.adapter.evaluate_policy(
+            &self.policy_snapshot,
+            case,
+            plan,
+            &[],
+            false,
+            false,
+        );
+        decision.issue_execution_permit(case, plan, &[])
+    }
+
+    pub fn adjudicate(
+        &self,
+        case: &canonical_stack::VerificationCase,
+        plan: &canonical_stack::CheckPlan,
+        attempt: &canonical_stack::VerificationAttempt,
+        control_receipt: &canonical_stack::ControlReceipt,
+        policy_decision: &canonical_stack::PolicyDecision,
+        calibration: &canonical_stack::CalibrationSnapshot,
+        refuted: bool,
+        budget_exhausted: bool,
+        currently_promoted: bool,
+    ) -> canonical_stack::AdjudicationResult {
+        self.adapter.adjudicate_case(
+            case,
+            plan,
+            attempt,
+            control_receipt,
+            policy_decision,
+            calibration,
+            refuted,
+            budget_exhausted,
+            currently_promoted,
+        )
+    }
 }
 
 #[cfg(test)]
@@ -294,5 +457,41 @@ mod tests {
         );
         assert_eq!(receipt.case_id, Some(case.case_id));
         assert_eq!(receipt.plan_id, Some(plan.plan_id));
+    }
+
+    #[test]
+    fn governance_context_open_case_and_issue_permit() {
+        let policy = canonical_stack::PolicySnapshot::permissive(
+            "policy:p30-permissive",
+            "2026-01-01T00:00:00Z",
+        );
+        let context = GovernanceContext::new(policy);
+
+        let case = context.open_case(
+            canonical_stack::VerificationCaseClass::UnverifiedClaimVersion,
+            "aidens",
+            "claim-version:governance",
+            canonical_stack::TraceCtx::from_trace_id("trace:governance"),
+            canonical_stack::AttemptId::new("attempt:governance"),
+        );
+        let plan = CanonicalGovernanceAdapter.check_plan(
+            &case,
+            canonical_stack::CheckMethod::CausalRefuter,
+            vec!["causal-refuter".into()],
+            canonical_stack::PromotionClass::P1,
+            canonical_stack::ReversibilityClass::RequiresSupersession,
+            true,
+            false,
+            false,
+            "permissive governance check plan",
+            serde_json::json!({"source": "aidens-governance-kit"}),
+        );
+
+        let permit = context
+            .check_permit(&case, &plan)
+            .expect("permissive policy should issue permit");
+
+        assert_eq!(permit.case_id(), &case.case_id);
+        assert_eq!(permit.plan_id(), &plan.plan_id);
     }
 }

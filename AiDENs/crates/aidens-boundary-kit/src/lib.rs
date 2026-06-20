@@ -15,6 +15,11 @@
 
 mod canonical_boundary;
 
+pub use boundary_compiler::{
+    BoundaryProfile, Canonicalizer, JcsError as CanonicalJcsError,
+    ContentDigest as CanonicalContentDigest,
+};
+
 pub use canonical_boundary::canonical_compile_json_boundary;
 
 use aidens_contracts::{
@@ -58,6 +63,27 @@ pub fn parse_strict_json(input: &str) -> Result<Value, BoundaryError> {
         .map_err(|error| BoundaryError::InvalidJson(error.to_string()))?;
     check_value_resource_limits(&value)?;
     Ok(value)
+}
+
+/// Compute a canonical RFC 8785 JSON digest for any value.
+pub fn canonical_digest(
+    value: &serde_json::Value,
+) -> Result<boundary_compiler::ContentDigest, boundary_compiler::JcsError> {
+    boundary_compiler::ContentDigest::compute(value)
+}
+
+/// Canonicalize a JSON value per RFC 8785.
+pub fn canonicalize_json(
+    value: &serde_json::Value,
+) -> Result<String, boundary_compiler::JcsError> {
+    boundary_compiler::Canonicalizer::new().canonicalize(value)
+}
+
+/// Parse JSON with strict duplicate-key detection (using the canonical boundary compiler).
+pub fn parse_strict_canonical(
+    input: &str,
+) -> Result<serde_json::Value, boundary_compiler::JcsError> {
+    boundary_compiler::parse_with_dup_check(input)
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -1319,6 +1345,32 @@ mod tests {
     #[test]
     fn strict_json_accepts_valid_input() {
         assert!(parse_strict_json(r#"{"ok":true}"#).is_ok());
+    }
+
+    #[test]
+    fn canonicalize_json_sorts_object_keys() {
+        let value = serde_json::json!({"b": 2, "a": 1});
+
+        assert_eq!(
+            canonicalize_json(&value).expect("canonicalization should succeed"),
+            r#"{"a":1,"b":2}"#
+        );
+    }
+
+    #[test]
+    fn canonical_digest_is_64_hex_characters() {
+        let value = serde_json::json!({"b": 2, "a": 1});
+        let digest = canonical_digest(&value).expect("digest computation should succeed");
+
+        let hex = digest.hex();
+        assert_eq!(hex.len(), 64);
+        assert!(hex.chars().all(|c| c.is_ascii_hexdigit()));
+    }
+
+    #[test]
+    fn parse_strict_canonical_rejects_duplicate_keys() {
+        let err = parse_strict_canonical(r#"{"a":1,"a":2}"#).unwrap_err();
+        assert!(matches!(err, CanonicalJcsError::DuplicateKey { .. }));
     }
 
     #[test]

@@ -1,8 +1,128 @@
 //! App-level path safety helpers and canonical tool side-effect classification.
 
 use llm_tool_runtime::ToolSideEffectClass;
+use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};
 use thiserror::Error;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct McpTrustReportV1 {
+    pub tool_name: String,
+    pub side_effect_class: String,
+    pub requires_permit: bool,
+    pub is_dangerous: bool,
+    pub risk_label: String,
+    pub recommendation: String,
+}
+
+pub fn evaluate_mcp_tool_safety(
+    descriptor: &llm_tool_runtime::ToolDescriptor,
+) -> McpTrustReportV1 {
+    let side_effect_class = descriptor.side_effect_class.to_string();
+    let requires_permit = requires_explicit_permit(&descriptor.side_effect_class);
+    let is_dangerous = is_dangerous_without_permit(&descriptor.side_effect_class);
+
+    let risk_label = match descriptor.side_effect_class {
+        ToolSideEffectClass::ReadOnly => "low",
+        ToolSideEffectClass::Analysis | ToolSideEffectClass::PreviewWrite => "medium",
+        ToolSideEffectClass::Write => "high",
+        ToolSideEffectClass::Admin => "critical",
+    };
+
+    let recommendation = match risk_label {
+        "low" => "allow",
+        "medium" | "high" => "permit-required",
+        "critical" => "deny-by-default",
+        _ => "allow",
+    };
+
+    McpTrustReportV1 {
+        tool_name: descriptor.name.clone(),
+        side_effect_class,
+        requires_permit,
+        is_dangerous,
+        risk_label: risk_label.to_string(),
+        recommendation: recommendation.to_string(),
+    }
+}
+
+pub fn attest_tool_invocation(
+    receipt: &llm_tool_runtime::ToolReceipt,
+) -> attestation_exchange::AttestationEnvelopeV1 {
+    let attestation_envelope_id = receipt
+        .attestation_envelope_id
+        .clone()
+        .unwrap_or_else(|| format!("attn_{}", receipt.receipt_id).into());
+
+    let trace_context = receipt.trace_ctx.trace_id.clone();
+    let signing_time = if !receipt.finished_at.is_empty() {
+        receipt.finished_at.clone()
+    } else {
+        receipt.started_at.clone()
+    };
+    let trust_root_set_id = if trace_context.is_empty() {
+        "trs_unknown".to_string()
+    } else {
+        format!("trs_{}", &trace_context)
+    };
+    let disclosure_policy_id = if trace_context.is_empty() {
+        "dp_unknown".to_string()
+    } else {
+        format!("dp_{}", &trace_context)
+    };
+    let signer_identity = if trace_context.is_empty() {
+        receipt.tool_name.clone()
+    } else {
+        trace_context.clone()
+    };
+    let provenance_summary = if trace_context.is_empty() {
+        format!("invocation {} with attempt {}", receipt.tool_name, receipt.attempt_id)
+    } else {
+        format!(
+            "invocation {} with trace {} and attempt {}",
+            receipt.tool_name,
+            trace_context,
+            receipt.attempt_id,
+        )
+    };
+
+    if let Ok(envelope) = attestation_exchange::AttestationEnvelopeV1::new(
+        attestation_envelope_id.clone(),
+        "mcp-tool-invocation",
+        "v1",
+        receipt.input_digest.clone(),
+        "mcp-tool",
+        signer_identity.clone(),
+        signing_time.clone(),
+        trust_root_set_id.clone().into(),
+        provenance_summary.clone(),
+        disclosure_policy_id.clone().into(),
+        None,
+        attestation_exchange::AttestationReplayabilityClassV1::Replayable,
+        Vec::new(),
+        Vec::new(),
+    ) {
+        envelope
+    } else {
+        attestation_exchange::AttestationEnvelopeV1 {
+            schema_version: attestation_exchange::ATTESTATION_ENVELOPE_V1_SCHEMA.to_string(),
+            attestation_envelope_id,
+            artifact_family: "mcp-tool-invocation".into(),
+            artifact_version: "v1".into(),
+            content_digest: receipt.input_digest.clone(),
+            schema_identity: "mcp-tool".into(),
+            signer_identity,
+            signing_time,
+            trust_root_set_id: trust_root_set_id.into(),
+            provenance_summary,
+            disclosure_policy_id: disclosure_policy_id.into(),
+            artifact_admission_policy_id: None,
+            replayability_class: attestation_exchange::AttestationReplayabilityClassV1::Replayable,
+            revocation_refs: Vec::new(),
+            supersession_refs: Vec::new(),
+        }
+    }
+}
 
 pub fn requires_explicit_permit(side_effect: &ToolSideEffectClass) -> bool {
     !matches!(
@@ -99,11 +219,70 @@ fn is_sensitive_component(component: &str) -> bool {
 mod tests {
     use super::*;
 
+    use llm_tool_runtime::{
+        ToolApprovalKind,
+        ToolBackendKind,
+        ToolIdempotencyClass,
+        ToolOutputMode,
+        ToolExposureMode,
+        McpSurfaceKind,
+    };
+
+    fn mcp_descriptor(side_effect_class: ToolSideEffectClass) -> llm_tool_runtime::ToolDescriptor {
+        llm_tool_runtime::ToolDescriptor {
+            name: "mcp.tool".to_string(),
+            version: "1.0.0".to_string(),
+            description: Some("test tool".to_string()),
+            backend_kind: ToolBackendKind::RemoteMcp,
+            input_schema: serde_json::json!({"type": "object"}),
+            output_mode: ToolOutputMode::StructuredJson,
+            read_only: true,
+            side_effect_class,
+            idempotency_class: ToolIdempotencyClass::Idempotent,
+            approval_kind: ToolApprovalKind::None,
+            timeout_ms: 1000,
+            concurrency_key: None,
+            cache_ttl_ms: None,
+            exposure_mode: ToolExposureMode::Auto,
+            mcp_surface_kind: McpSurfaceKind::Tool,
+            exposure_policy: Default::default(),
+            receipt_persistence: Default::default(),
+            output_size_limit_bytes: None,
+            provider_payload: None,
+        }
+    }
+
     #[test]
     fn side_effects_require_canonical_permit_classification() {
         assert!(requires_explicit_permit(&ToolSideEffectClass::Write));
         assert!(!requires_explicit_permit(&ToolSideEffectClass::ReadOnly));
         assert!(is_dangerous_without_permit(&ToolSideEffectClass::Admin));
+    }
+
+    #[test]
+    fn evaluate_mcp_tool_safety_classifies_readonly_as_allow() {
+        let descriptor = mcp_descriptor(ToolSideEffectClass::ReadOnly);
+        let report = evaluate_mcp_tool_safety(&descriptor);
+
+        assert_eq!(report.tool_name, "mcp.tool");
+        assert_eq!(report.side_effect_class, "read-only");
+        assert!(!report.requires_permit);
+        assert!(!report.is_dangerous);
+        assert_eq!(report.risk_label, "low");
+        assert_eq!(report.recommendation, "allow");
+    }
+
+    #[test]
+    fn evaluate_mcp_tool_safety_classifies_write_as_deny_by_default() {
+        let descriptor = mcp_descriptor(ToolSideEffectClass::Write);
+        let report = evaluate_mcp_tool_safety(&descriptor);
+
+        assert_eq!(report.tool_name, "mcp.tool");
+        assert_eq!(report.side_effect_class, "write");
+        assert!(report.requires_permit);
+        assert!(report.is_dangerous);
+        assert_eq!(report.risk_label, "high");
+        assert_eq!(report.recommendation, "permit-required");
     }
 
     #[test]

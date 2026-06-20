@@ -11,6 +11,7 @@ workspace = true
 [dependencies]
 assurance-runtime.workspace = true
 authority-delegation.workspace = true
+chrono.workspace = true
 serde_json.workspace = true
 stack-ids.workspace = true
 verification-adjudication.workspace = true
