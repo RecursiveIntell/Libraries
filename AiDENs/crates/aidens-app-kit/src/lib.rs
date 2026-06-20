@@ -95,6 +95,12 @@ impl AiDENsProfile {
             disabled_tool_bundles: plan.disabled_tool_bundles,
             permit_policy: "side-effect-tools-require-explicit-scoped-permits".into(),
             hidden_defaults: false,
+            memory_mode: match self {
+                Self::ChatOnly | Self::CodingAgent => aidens_contracts::MemoryModeV1::Disabled,
+                Self::MemoryAgent | Self::AutonomousDaemon | Self::ResearchWorkbench => aidens_contracts::MemoryModeV1::Optional,
+            },
+            governance_enabled: matches!(self, Self::AutonomousDaemon),
+            kernel_reasoning_enabled: matches!(self, Self::ResearchWorkbench),
         })
     }
 
@@ -181,6 +187,9 @@ pub struct AiDENsRuntimeDefaultsV1 {
     pub disabled_tool_bundles: Vec<String>,
     pub permit_policy: String,
     pub hidden_defaults: bool,
+    pub memory_mode: aidens_contracts::MemoryModeV1,
+    pub governance_enabled: bool,
+    pub kernel_reasoning_enabled: bool,
 }
 
 #[derive(Debug, Clone)]
