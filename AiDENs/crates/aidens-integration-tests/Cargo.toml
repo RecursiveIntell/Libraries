@@ -12,6 +12,7 @@ workspace = true
 aidens-agency-kit = { path = "../aidens-agency-kit" }
 aidens-boundary-kit = { path = "../aidens-boundary-kit" }
 aidens-budget-kit = { path = "../aidens-budget-kit" }
+aidens-app-kit = { path = "../aidens-app-kit" }
 aidens-cli = { path = "../aidens-cli" }
 aidens-contracts = { path = "../aidens-contracts" }
 aidens-daemon-kit = { path = "../aidens-daemon-kit" }
