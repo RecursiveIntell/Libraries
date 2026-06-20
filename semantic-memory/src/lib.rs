@@ -15,7 +15,7 @@
 //!
 //! `search()` targets facts, document chunks, and episodes by default. Message retrieval is
 //! available through `search_conversations()` or by opting into
-//! [`SearchSourceType::Messages`](crate::SearchSourceType::Messages).
+//! [`SearchSourceType::Messages`].
 //!
 //! Integrity tooling is strict about malformed stored data: invalid roles, JSON, enums, embedding
 //! blobs, quantized blobs, and sidecar drift are surfaced through `verify_integrity()` instead of
@@ -62,12 +62,21 @@ compile_error!(
 pub mod chunker;
 pub mod config;
 pub(crate) mod conversation;
-pub mod db;
+pub(crate) mod db;
+pub use db::{bytes_to_embedding, decode_f32_le, embedding_to_bytes};
 pub(crate) mod documents;
 pub mod embedder;
 pub(crate) mod episodes;
 pub mod error;
+/// Discord-structured second-order retrieval (graph-neighbour discovery).
+#[cfg(feature = "discord")]
+pub mod discord;
+/// Phase 6: decoder architecture (syndromes and corrections).
+#[cfg(feature = "decoder")]
+pub mod decoder;
 mod graph;
+/// First-class stored graph edges (durable, typed relationships).
+pub(crate) mod graph_edges;
 #[cfg(feature = "hnsw")]
 pub mod hnsw;
 #[cfg(feature = "hnsw")]
@@ -79,6 +88,12 @@ pub(crate) mod knowledge;
 mod pool;
 #[cfg(feature = "poly-kv-pool")]
 mod pool_codec;
+/// Phase 2: semiring provenance (Boolean/Tropical/Probability/Confidence).
+#[cfg(feature = "provenance")]
+pub mod provenance;
+/// Phase 3: temporal field provenance (computed temporal_weight scores).
+#[cfg(feature = "temporal")]
+pub mod temporal;
 mod projection_batch;
 mod projection_derivation;
 /// Compatibility-only legacy import surface.
@@ -95,8 +110,31 @@ mod projection_legacy_compat;
 pub(crate) mod projection_storage;
 #[cfg(feature = "poly-kv-pool")]
 pub mod provekv_pool;
+/// Multiscale retrieval scheduling pipeline (staged search with budgets).
+#[cfg(feature = "multiscale")]
+pub mod pipeline;
 pub mod quantize;
 pub mod quantize_governed;
+/// Phase 7: lawful subtraction engine.
+#[cfg(feature = "subtraction")]
+pub mod subtraction;
+/// Phase 8: simplified compression governor (importance scoring only).
+#[cfg(feature = "compression-governor")]
+pub mod compression_governor;
+/// Phase 9: adaptive retrieval routing (query-aware stage selection).
+#[cfg(feature = "routing")]
+pub mod routing;
+/// Phase 9b: benchmark harness for routing quality.
+#[cfg(feature = "benchmark")]
+pub mod benchmark;
+/// Phase 10: cross-feature integration wiring.
+#[cfg(feature = "integration")]
+pub mod integration;
+/// Factor graph unification of heterogeneous graph edges (semantic,
+/// temporal, causal, entity) with belief propagation. The single most
+/// novel combination: unified probabilistic reasoning over all edge types.
+#[cfg(feature = "integration")]
+pub mod factor_graph;
 pub mod search;
 pub mod storage;
 mod store_support;
@@ -144,6 +182,7 @@ pub use types::{
     SearchResponse, SearchResult, SearchSource, SearchSourceType, Session, TextChunk,
     VectorArtifactBuildReceiptV1, VectorSearchReceiptV1, VerificationStatus,
 };
+pub use graph_edges::{AddGraphEdgeParams, StoredGraphEdge};
 pub use vector_backend::{VectorBackend, VectorHit, VectorIndex, VectorIndexConfig};
 #[cfg(feature = "turbo-quant-codec")]
 pub use vector_codec::TurboQuantCodec;
@@ -1034,9 +1073,79 @@ impl MemoryStore {
     }
 
     /// View the store as a derived graph over documents, chunks, facts, sessions, messages,
-    /// episodes, namespaces, and semantic similarity edges.
+    /// episodes, namespaces, semantic similarity edges, and first-class stored graph edges.
     pub fn graph_view(&self) -> Arc<dyn GraphView> {
         graph::graph_view(self.inner.clone())
+    }
+
+    // ─── First-class stored graph edges ──────────────────────────
+
+    /// Add a durable, typed graph edge between two nodes.
+    ///
+    /// Nodes are identified by prefixed IDs (e.g. `fact:<uuid>`,
+    /// `namespace:<name>`, `document:<id>`). The edge type must be one of
+    /// `GraphEdgeType::Semantic`, `Temporal`, `Causal`, or `Entity`.
+    ///
+    /// Insertion is idempotent on content digest — inserting the same edge
+    /// twice returns the existing edge without creating a duplicate.
+    ///
+    /// Returns the stored edge including its assigned ID and recorded_at timestamp.
+    pub async fn add_graph_edge(
+        &self,
+        source: &str,
+        target: &str,
+        edge_type: GraphEdgeType,
+        weight: f64,
+        metadata: Option<serde_json::Value>,
+    ) -> Result<graph_edges::StoredGraphEdge, MemoryError> {
+        let params = graph_edges::AddGraphEdgeParams {
+            source: source.to_string(),
+            target: target.to_string(),
+            edge_type,
+            weight,
+            metadata,
+        };
+        self.with_write_conn(move |conn| graph_edges::insert_graph_edge(conn, &params))
+            .await
+    }
+
+    /// List all stored graph edges involving a given node (as source or target),
+    /// excluding invalidated edges.
+    pub async fn list_graph_edges_for_node(
+        &self,
+        node_id: &str,
+    ) -> Result<Vec<graph_edges::StoredGraphEdge>, MemoryError> {
+        let node_id = node_id.to_string();
+        self.with_read_conn(move |conn| graph_edges::list_graph_edges_for_node(conn, &node_id))
+            .await
+    }
+
+    /// List ALL stored graph edges, excluding invalidated ones.
+    pub async fn list_all_graph_edges(
+        &self,
+    ) -> Result<Vec<graph_edges::StoredGraphEdge>, MemoryError> {
+        self.with_read_conn(graph_edges::list_all_graph_edges)
+            .await
+    }
+
+    /// Invalidate a stored graph edge by ID. Append-only — the row is never deleted.
+    pub async fn invalidate_graph_edge(
+        &self,
+        edge_id: &str,
+        reason: &str,
+    ) -> Result<(), MemoryError> {
+        let edge_id = edge_id.to_string();
+        let reason = reason.to_string();
+        self.with_write_conn(move |conn| {
+            graph_edges::invalidate_graph_edge(conn, &edge_id, &reason)
+        })
+        .await
+    }
+
+    /// Count non-invalidated stored graph edges.
+    pub async fn count_graph_edges(&self) -> Result<usize, MemoryError> {
+        self.with_read_conn(graph_edges::count_graph_edges)
+            .await
     }
 
     // ─── Search ─────────────────────────────────────────────────
