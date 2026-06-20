@@ -221,6 +221,10 @@ struct RrfCandidate {
     vector_source_rank: Option<usize>,
     vector_source_score: Option<f64>,
     vector_reranked_from_f32: bool,
+    /// Late interaction (ColBERT MaxSim) rank — 3rd RRF signal.
+    late_interaction_rank: Option<usize>,
+    /// Late interaction raw score.
+    late_interaction_score: Option<f64>,
 }
 
 impl RrfCandidate {
@@ -231,6 +235,12 @@ impl RrfCandidate {
         let vector_contribution = self
             .vector_rank
             .map(|rank| config.vector_weight / (config.rrf_k + rank as f64));
+        // Late interaction contribution: uses same RRF formula with late_interaction_weight.
+        // Defaults to 0.0 weight when not configured (backward compatible).
+        let late_interaction_weight = config.late_interaction_weight;
+        let late_interaction_contribution = self
+            .late_interaction_rank
+            .map(|rank| late_interaction_weight / (config.rrf_k + rank as f64));
         let best_rank = match (self.bm25_rank, self.vector_rank) {
             (Some(a), Some(b)) => Some(a.min(b)),
             (Some(a), None) | (None, Some(a)) => Some(a),
@@ -240,6 +250,7 @@ impl RrfCandidate {
             recency_contribution(config, context, self.updated_at.as_deref(), best_rank);
         let rrf_score = bm25_contribution.unwrap_or(0.0)
             + vector_contribution.unwrap_or(0.0)
+            + late_interaction_contribution.unwrap_or(0.0)
             + recency_score.unwrap_or(0.0);
 
         let breakdown = ScoreBreakdown {
@@ -1531,6 +1542,8 @@ fn rrf_fuse_detailed_with_context(
                 vector_source_rank: None,
                 vector_source_score: None,
                 vector_reranked_from_f32: false,
+                late_interaction_rank: None,
+                late_interaction_score: None,
             });
     }
 
@@ -1560,6 +1573,8 @@ fn rrf_fuse_detailed_with_context(
                 vector_source_rank: hit.source_rank.or(Some(rank)),
                 vector_source_score: hit.source_similarity.or(Some(hit.similarity)),
                 vector_reranked_from_f32: hit.reranked_from_f32,
+                late_interaction_rank: None,
+                late_interaction_score: None,
             });
     }
 
@@ -1615,6 +1630,127 @@ pub fn rrf_fuse(
         .into_iter()
         .map(|result| result.result)
         .collect()
+}
+
+/// Fuse BM25, vector, and late interaction results via Reciprocal Rank
+/// Fusion. This is the 3-signal RRF pipeline: BM25 + dense vector +
+/// ColBERT-style late interaction.
+///
+/// `late_interaction_scores` is a list of (item_key, score) pairs where
+/// item_key is the dedup key string (same format as source_dedup_key).
+#[cfg(feature = "late-interaction")]
+pub fn rrf_fuse_with_late_interaction(
+    bm25_hits: &[Bm25Hit],
+    vector_hits: &[VectorHit],
+    late_interaction_scores: &[(String, f64)],
+    config: &SearchConfig,
+    context: &SearchContext,
+    top_k: usize,
+) -> Vec<ExplainedResult> {
+    let mut candidates: HashMap<(u8, String), RrfCandidate> = HashMap::new();
+
+    // Insert BM25 hits.
+    for (rank_0, hit) in bm25_hits.iter().enumerate() {
+        let key = source_dedup_key(&hit.source);
+        let rank = rank_0 + 1;
+        candidates
+            .entry(key)
+            .and_modify(|c| {
+                c.bm25_rank = Some(rank);
+                c.bm25_score = Some(hit.raw_score);
+                if c.updated_at.is_none() {
+                    c.updated_at = hit.updated_at.clone();
+                }
+            })
+            .or_insert_with(|| RrfCandidate {
+                content: hit.content.clone(),
+                source: hit.source.clone(),
+                updated_at: hit.updated_at.clone(),
+                bm25_score: Some(hit.raw_score),
+                bm25_rank: Some(rank),
+                vector_score: None,
+                vector_rank: None,
+                vector_source_rank: None,
+                vector_source_score: None,
+                vector_reranked_from_f32: false,
+                late_interaction_rank: None,
+                late_interaction_score: None,
+            });
+    }
+
+    // Insert vector hits.
+    for (rank_0, hit) in vector_hits.iter().enumerate() {
+        let key = source_dedup_key(&hit.source);
+        let rank = rank_0 + 1;
+        candidates
+            .entry(key)
+            .and_modify(|c| {
+                c.vector_rank = Some(rank);
+                c.vector_score = Some(hit.similarity);
+                c.vector_source_rank = hit.source_rank.or(Some(rank));
+                c.vector_source_score = hit.source_similarity.or(Some(hit.similarity));
+                c.vector_reranked_from_f32 = hit.reranked_from_f32;
+                if c.updated_at.is_none() {
+                    c.updated_at = hit.updated_at.clone();
+                }
+            })
+            .or_insert_with(|| RrfCandidate {
+                content: hit.content.clone(),
+                source: hit.source.clone(),
+                updated_at: hit.updated_at.clone(),
+                bm25_score: None,
+                bm25_rank: None,
+                vector_score: Some(hit.similarity),
+                vector_rank: Some(rank),
+                vector_source_rank: hit.source_rank.or(Some(rank)),
+                vector_source_score: hit.source_similarity.or(Some(hit.similarity)),
+                vector_reranked_from_f32: hit.reranked_from_f32,
+                late_interaction_rank: None,
+                late_interaction_score: None,
+            });
+    }
+
+    // Insert late interaction hits (ranked by score descending).
+    // Match against existing candidates by scanning for matching content/source.
+    let mut li_sorted: Vec<&(String, f64)> = late_interaction_scores.iter().collect();
+    li_sorted.sort_by(|a, b| {
+        b.1.partial_cmp(&a.1)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+    for (rank_0, (item_key, score)) in li_sorted.iter().enumerate() {
+        let rank = rank_0 + 1;
+        // Try to find an existing candidate whose content or source matches item_key.
+        // This is a simple string match — in production the caller would
+        // provide proper dedup keys matching the source_dedup_key format.
+        let matched = candidates.iter_mut().find(|(_, c)| {
+            c.content.contains(item_key.as_str())
+                || format!("{:?}", c.source).contains(item_key.as_str())
+        });
+        if let Some((_, c)) = matched {
+            c.late_interaction_rank = Some(rank);
+            c.late_interaction_score = Some(*score);
+        }
+        // If no match, the late interaction score doesn't contribute to
+        // any existing candidate. We don't create new candidates for
+        // late-interaction-only items since we don't have content/source info.
+    }
+
+    let mut explained: Vec<ExplainedResult> = candidates
+        .into_values()
+        .map(|c| c.explained(config, context))
+        .collect();
+
+    explained.sort_by(|a, b| {
+        b.result
+            .score
+            .partial_cmp(&a.result.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| {
+                source_dedup_key(&a.result.source).cmp(&source_dedup_key(&b.result.source))
+            })
+    });
+    explained.truncate(top_k);
+    explained
 }
 
 pub(crate) fn query_embedding_digest(query_embedding: &[f32]) -> String {

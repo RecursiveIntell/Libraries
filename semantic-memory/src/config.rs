@@ -165,6 +165,11 @@ pub struct SearchConfig {
     /// Weight for vector similarity in RRF fusion.
     pub vector_weight: f64,
 
+    /// Weight for late interaction (ColBERT MaxSim) in RRF fusion.
+    /// Defaults to 0.0 (disabled). Set to 1.0 to enable as 3rd RRF signal.
+    #[serde(default = "default_zero")]
+    pub late_interaction_weight: f64,
+
     /// RRF constant (k). Controls rank importance decay.
     pub rrf_k: f64,
 
@@ -245,11 +250,16 @@ const fn default_true() -> bool {
     true
 }
 
+const fn default_zero() -> f64 {
+    0.0
+}
+
 impl Default for SearchConfig {
     fn default() -> Self {
         Self {
             bm25_weight: 1.0,
             vector_weight: 1.0,
+            late_interaction_weight: 0.0,
             rrf_k: 60.0,
             candidate_pool_size: 50,
             default_top_k: 5,
