@@ -17,3 +17,6 @@ semantic-memory.workspace = true
 semantic-memory-forge.workspace = true
 stack-ids.workspace = true
 thiserror.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

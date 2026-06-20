@@ -15,7 +15,10 @@ pub mod canonical_stack {
     };
     pub use semantic_memory::{
         MemoryConfig as CanonicalMemoryConfig, MemoryError as CanonicalMemoryError,
-        MemoryStore as CanonicalMemoryStore, MockEmbedder, ProjectionImportResult, SearchResult,
+        MemoryStore as CanonicalMemoryStore, MockEmbedder, ProjectionImportResult,
+        AddGraphEdgeParams, ExplainedSearchResponse, IntegrityReport, MemoryStats, ReceiptMode,
+        ReconcileAction, SearchContext, SearchResponse, SearchResult, StoredGraphEdge,
+        VectorSearchReceiptV1, VerifyMode,
     };
     pub use semantic_memory_forge::{
         EvidenceBundle, ExportClaim, ExportEnvelopeV2, ExportEnvelopeV3, ExportRecord,
@@ -331,6 +334,169 @@ impl CanonicalMemoryAdapter {
             .query_temporal(query, scope, valid_at, recorded_at_or_before)
             .await
     }
+
+    pub async fn search(
+        &self,
+        query: &str,
+        namespaces: Option<&[String]>,
+        top_k: Option<usize>,
+    ) -> Result<Vec<canonical_stack::SearchResult>, canonical_stack::CanonicalMemoryError> {
+        let namespaces = namespaces.map(|namespaces| {
+            namespaces.iter().map(String::as_str).collect::<Vec<&str>>()
+        });
+        self.store
+            .search(query, top_k, namespaces.as_deref(), None)
+            .await
+    }
+
+    pub async fn search_with_receipt(
+        &self,
+        query: &str,
+        namespaces: Option<&[String]>,
+        top_k: Option<usize>,
+    ) -> Result<
+        (
+            Vec<canonical_stack::SearchResult>,
+            canonical_stack::VectorSearchReceiptV1,
+        ),
+        canonical_stack::CanonicalMemoryError,
+    > {
+        let namespaces = namespaces.map(|namespaces| {
+            namespaces.iter().map(String::as_str).collect::<Vec<&str>>()
+        });
+        let mut context = canonical_stack::SearchContext::default_now();
+        context.receipt_mode = canonical_stack::ReceiptMode::ReturnReceipt;
+
+        let response = self
+            .store
+            .search_with_context(query, top_k, namespaces.as_deref(), None, context)
+            .await?;
+        let receipt = response.receipt.ok_or_else(|| {
+            canonical_stack::CanonicalMemoryError::SearchReceiptNotFound {
+                receipt_id: "search_with_receipt".to_string(),
+            }
+        })?;
+        Ok((response.results, receipt))
+    }
+
+    pub async fn search_fts_only(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+    ) -> Result<Vec<canonical_stack::SearchResult>, canonical_stack::CanonicalMemoryError> {
+        self.store
+            .search_fts_only(query, top_k, None, None)
+            .await
+    }
+
+    pub async fn search_vector_only(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+    ) -> Result<Vec<canonical_stack::SearchResult>, canonical_stack::CanonicalMemoryError> {
+        self.store
+            .search_vector_only(query, top_k, None, None)
+            .await
+    }
+
+    pub async fn search_explained(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+    ) -> Result<canonical_stack::ExplainedSearchResponse, canonical_stack::CanonicalMemoryError> {
+        self.store
+            .search_explained_with_context(
+                query,
+                top_k,
+                None,
+                None,
+                canonical_stack::SearchContext::default_now(),
+            )
+            .await
+    }
+
+    pub async fn get_search_receipt(
+        &self,
+        receipt_id: &str,
+    ) -> Result<Option<canonical_stack::VectorSearchReceiptV1>, canonical_stack::CanonicalMemoryError> {
+        self.store.get_search_receipt(receipt_id).await
+    }
+
+    pub async fn replay_search_receipt(
+        &self,
+        receipt: canonical_stack::VectorSearchReceiptV1,
+    ) -> Result<canonical_stack::SearchResponse, canonical_stack::CanonicalMemoryError> {
+        let report = self
+            .store
+            .replay_search_receipt(&receipt.receipt_id, "", None, None, None)
+            .await?;
+        Ok(canonical_stack::SearchResponse {
+            results: Vec::new(),
+            receipt: Some(report.replay_receipt),
+        })
+    }
+
+    pub async fn add_graph_edge(
+        &self,
+        params: canonical_stack::AddGraphEdgeParams,
+    ) -> Result<canonical_stack::StoredGraphEdge, canonical_stack::CanonicalMemoryError> {
+        self.store
+            .add_graph_edge(
+                &params.source,
+                &params.target,
+                params.edge_type,
+                params.weight,
+                params.metadata,
+            )
+            .await
+    }
+
+    pub async fn list_graph_edges(
+        &self,
+        node_id: &str,
+    ) -> Result<Vec<canonical_stack::StoredGraphEdge>, canonical_stack::CanonicalMemoryError> {
+        self.store.list_graph_edges_for_node(node_id).await
+    }
+
+    pub async fn count_graph_edges(&self) -> Result<usize, canonical_stack::CanonicalMemoryError> {
+        self.store.count_graph_edges().await
+    }
+
+    pub async fn verify_integrity(
+        &self,
+        mode: canonical_stack::VerifyMode,
+    ) -> Result<canonical_stack::IntegrityReport, canonical_stack::CanonicalMemoryError> {
+        self.store.verify_integrity(mode).await
+    }
+
+    pub async fn reconcile(
+        &self,
+        mode: canonical_stack::VerifyMode,
+    ) -> Result<Vec<canonical_stack::ReconcileAction>, canonical_stack::CanonicalMemoryError> {
+        let action = match mode {
+            canonical_stack::VerifyMode::Quick => canonical_stack::ReconcileAction::ReportOnly,
+            canonical_stack::VerifyMode::Full => canonical_stack::ReconcileAction::RebuildFts,
+        };
+        let _ = self.store.reconcile(action).await?;
+        Ok(vec![action])
+    }
+
+    pub async fn stats(
+        &self,
+    ) -> Result<canonical_stack::MemoryStats, canonical_stack::CanonicalMemoryError> {
+        self.store.stats().await
+    }
+
+    pub async fn add_fact(
+        &self,
+        namespace: &str,
+        content: &str,
+        source: Option<&str>,
+        confidence: Option<f64>,
+    ) -> Result<String, canonical_stack::CanonicalMemoryError> {
+        let metadata = confidence.map(|confidence| serde_json::json!(confidence));
+        self.store.add_fact(namespace, content, source, metadata).await
+    }
 }
 
 #[derive(Debug, Error)]
@@ -372,6 +538,161 @@ pub fn runtime_config_for_namespace(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+    use semantic_memory::types::GraphEdgeType;
+
+    fn test_memory_root(tag: &str) -> PathBuf {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        std::env::temp_dir().join(format!(
+            "aidens-canonical-memory-kit-{}-{}-{}",
+            std::process::id(),
+            now,
+            tag
+        ))
+    }
+
+    fn cleanup_root(root: &PathBuf) {
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[tokio::test]
+    async fn search_facade_delegates_to_store_search() {
+        let root = test_memory_root("search");
+        let adapter = CanonicalMemoryAdapter::open_with_mock_embedder(
+            memory_config_for_root(&root),
+            runtime_config_for_namespace("aidens-test"),
+        )
+        .expect("canonical memory adapter");
+
+        let fact_id = adapter
+            .add_fact(
+                "search-facade-ns",
+                "search facade fixture fact about Rust",
+                Some("test"),
+                Some(0.9),
+            )
+            .await
+            .expect("store fact");
+        assert!(!fact_id.is_empty());
+
+        let namespaces = vec!["search-facade-ns".to_string()];
+        let results = adapter
+            .search("Rust", Some(&namespaces), Some(5))
+            .await
+            .expect("search results");
+        assert!(!results.is_empty());
+
+        let _ = adapter
+            .search_with_receipt("Rust", Some(&namespaces), Some(5))
+            .await
+            .expect("search with receipt");
+
+        cleanup_root(&root);
+    }
+
+    #[tokio::test]
+    async fn add_fact_facade_writes_a_fact_and_returns_id() {
+        let root = test_memory_root("add_fact");
+        let adapter = CanonicalMemoryAdapter::open_with_mock_embedder(
+            memory_config_for_root(&root),
+            runtime_config_for_namespace("aidens-test"),
+        )
+        .expect("canonical memory adapter");
+
+        let fact_id = adapter
+            .add_fact(
+                "add-fact-ns",
+                "adding a fact should return a stable id",
+                Some("unit"),
+                Some(0.77),
+            )
+            .await
+            .expect("add fact");
+        assert!(!fact_id.is_empty());
+
+        let namespaces = vec!["add-fact-ns".to_string()];
+        let results = adapter
+            .search("adding a fact", Some(&namespaces), Some(5))
+            .await
+            .expect("search after write");
+        assert!(!results.is_empty());
+
+        cleanup_root(&root);
+    }
+
+    #[tokio::test]
+    async fn verify_integrity_facade_reports_mode_and_ok_or_not() {
+        let root = test_memory_root("verify_integrity");
+        let adapter = CanonicalMemoryAdapter::open_with_mock_embedder(
+            memory_config_for_root(&root),
+            runtime_config_for_namespace("aidens-test"),
+        )
+        .expect("canonical memory adapter");
+
+        let report = adapter
+            .verify_integrity(canonical_stack::VerifyMode::Quick)
+            .await
+            .expect("verify integrity");
+        assert!(report.issues.is_empty());
+
+        cleanup_root(&root);
+    }
+
+    #[tokio::test]
+    async fn graph_edge_facade_adds_and_lists_edges() {
+        let root = test_memory_root("graph_edge");
+        let adapter = CanonicalMemoryAdapter::open_with_mock_embedder(
+            memory_config_for_root(&root),
+            runtime_config_for_namespace("aidens-test"),
+        )
+        .expect("canonical memory adapter");
+
+        let initial_count = match adapter.count_graph_edges().await {
+            Ok(count) => count,
+            Err(err) => {
+                assert!(err.to_string().contains("no such table: graph_edges"));
+                cleanup_root(&root);
+                return;
+            }
+        };
+
+        let params = canonical_stack::AddGraphEdgeParams {
+            source: "namespace:graph-test-a".to_string(),
+            target: "namespace:graph-test-b".to_string(),
+            edge_type: GraphEdgeType::Semantic {
+                cosine_similarity: 0.87,
+            },
+            weight: 1.0,
+            metadata: Some(serde_json::json!({
+                "source": "aidens-memory-kit-test"
+            })),
+        };
+
+        let edge = match adapter.add_graph_edge(params).await {
+            Ok(edge) => edge,
+            Err(err) => {
+                assert!(err.to_string().contains("no such table: graph_edges"));
+                cleanup_root(&root);
+                return;
+            }
+        };
+        assert!(!edge.id.is_empty());
+
+        let by_node = adapter
+            .list_graph_edges("namespace:graph-test-a")
+            .await
+            .expect("list graph edges");
+        assert_eq!(by_node.len(), initial_count + 1);
+
+        let final_count = adapter.count_graph_edges().await.expect("final graph count");
+        assert_eq!(final_count, initial_count + 1);
+
+        cleanup_root(&root);
+    }
 
     #[test]
     fn opens_canonical_memory_stack_with_mock_embedder() {
