@@ -183,6 +183,7 @@ async fn fts_finds_inserted_fact() {
 }
 
 #[tokio::test]
+#[cfg(feature = "admin-ops")]
 async fn update_fact_fts_reflects_new_content() {
     let (store, _tmp) = test_store();
     let fact_id = store
@@ -222,6 +223,7 @@ async fn update_fact_fts_reflects_new_content() {
 }
 
 #[tokio::test]
+#[cfg(feature = "admin-ops")]
 async fn delete_fact_removes_from_fts() {
     let (store, _tmp) = test_store();
     let fact_id = store
@@ -245,6 +247,7 @@ async fn delete_fact_removes_from_fts() {
 }
 
 #[tokio::test]
+#[cfg(feature = "admin-ops")]
 async fn bulk_insert_delete_fts_consistency() {
     let (store, _tmp) = test_store();
 
@@ -579,6 +582,7 @@ async fn get_nonexistent_fact_returns_none() {
 }
 
 #[tokio::test]
+#[cfg(feature = "admin-ops")]
 async fn delete_nonexistent_fact_returns_error() {
     let (store, _tmp) = test_store();
     let result = store.delete_fact("nonexistent-uuid").await;

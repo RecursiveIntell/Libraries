@@ -376,6 +376,81 @@ CREATE INDEX IF NOT EXISTS idx_provekv_pool_generations_status_created
   ON provekv_pool_generations(status, created_at DESC);
 "#;
 
+/// V25 migration: semiring provenance table (Phase 2).
+///
+/// Idempotent. The `provenance` table is append-only truth-bearing state keyed
+/// by (item_type, item_id). The Rust API is feature-gated behind `provenance`,
+/// but the table is always created so the schema version sequence stays
+/// monotonic.
+const MIGRATION_V25: &str = r#"
+CREATE TABLE IF NOT EXISTS provenance (
+    id                 TEXT PRIMARY KEY,
+    item_type          TEXT NOT NULL,
+    item_id            TEXT NOT NULL,
+    semiring_type      TEXT NOT NULL,
+    semiring_value     TEXT NOT NULL,
+    support_chain_json TEXT NOT NULL DEFAULT '[]',
+    recorded_at        TEXT NOT NULL DEFAULT (datetime('now')),
+    episode_id         TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_provenance_item
+    ON provenance(item_type, item_id);
+
+CREATE INDEX IF NOT EXISTS idx_provenance_episode
+    ON provenance(episode_id);
+"#;
+
+/// V26 migration: temporal weight columns (Phase 3).
+///
+/// Procedural migration — SQLite ALTER TABLE ADD COLUMN does not support
+/// IF NOT EXISTS, so we use `add_column_if_missing` for idempotency.
+/// `temporal_weight` is a COMPUTED SCORE (not truth) — the only column
+/// callers may UPDATE directly. The Rust API is feature-gated behind `temporal`.
+const MIGRATION_V26: &str = "";
+
+/// Run V26 migration procedurally: add temporal_weight columns if absent.
+fn run_migration_v26(conn: &Connection) -> Result<(), rusqlite::Error> {
+    add_column_if_missing(conn, "facts", "temporal_weight", "REAL NOT NULL DEFAULT 1.0")?;
+    add_column_if_missing(conn, "chunks", "temporal_weight", "REAL NOT NULL DEFAULT 1.0")?;
+    add_column_if_missing(conn, "messages", "temporal_weight", "REAL NOT NULL DEFAULT 1.0")?;
+    conn.execute_batch(
+        "CREATE INDEX IF NOT EXISTS idx_facts_temporal ON facts(temporal_weight);
+         CREATE INDEX IF NOT EXISTS idx_chunks_temporal ON chunks(temporal_weight);",
+    )?;
+    Ok(())
+}
+
+/// V27 migration: first-class stored graph edges table.
+///
+/// Idempotent. Stores durable, typed relationships between any two nodes.
+/// Append-only with invalidation (is_invalidated flag). Content digest
+/// (blake3) ensures idempotent insertion.
+const MIGRATION_V27: &str = r#"
+CREATE TABLE IF NOT EXISTS graph_edges (
+    id                  TEXT PRIMARY KEY,
+    source              TEXT NOT NULL,
+    target              TEXT NOT NULL,
+    edge_type           TEXT NOT NULL,
+    weight              REAL NOT NULL,
+    metadata            TEXT,
+    content_digest      TEXT NOT NULL,
+    recorded_at         TEXT NOT NULL,
+    is_invalidated      INTEGER NOT NULL DEFAULT 0,
+    invalidated_at      TEXT,
+    invalidation_reason TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_graph_edges_source
+    ON graph_edges(source) WHERE is_invalidated = 0;
+
+CREATE INDEX IF NOT EXISTS idx_graph_edges_target
+    ON graph_edges(target) WHERE is_invalidated = 0;
+
+CREATE INDEX IF NOT EXISTS idx_graph_edges_digest
+    ON graph_edges(content_digest) WHERE is_invalidated = 0;
+"#;
+
 /// Ordered list of migrations.
 #[allow(deprecated)]
 const MIGRATIONS: &[(u32, &str)] = &[
@@ -403,10 +478,13 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (22, MIGRATION_V22),
     (23, MIGRATION_V23),
     (24, MIGRATION_V24),
+    (25, MIGRATION_V25),
+    (26, MIGRATION_V26),
+    (27, MIGRATION_V27),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 24;
+pub const MAX_SCHEMA_VERSION: u32 = 27;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {
@@ -801,6 +879,10 @@ pub fn run_migrations(conn: &Connection) -> Result<(), MemoryError> {
                     reason: e.to_string(),
                 })?,
                 21 => run_migration_v21(tx).map_err(|e| MemoryError::MigrationFailed {
+                    version,
+                    reason: e.to_string(),
+                })?,
+                26 => run_migration_v26(tx).map_err(|e| MemoryError::MigrationFailed {
                     version,
                     reason: e.to_string(),
                 })?,

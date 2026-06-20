@@ -854,7 +854,11 @@ impl MemoryStore {
         Ok(fact_id)
     }
 
-    /// Update a fact's content. Re-embeds automatically.
+    /// **DANGER**: This physically mutates/deletes a truth-bearing row.
+    /// This is admin-only and gated behind the `admin-ops` feature.
+    /// Default agent-facing APIs should use supersession (add a new fact
+    /// with a supersession link) instead of hard delete/update.
+    #[cfg(feature = "admin-ops")]
     pub async fn update_fact(&self, fact_id: &str, content: &str) -> Result<(), MemoryError> {
         self.validate_content("fact.content", content)?;
         let embedding = self.embed_text_internal(content).await?;
@@ -879,7 +883,11 @@ impl MemoryStore {
         Ok(())
     }
 
-    /// Delete a fact by ID.
+    /// **DANGER**: This physically mutates/deletes a truth-bearing row.
+    /// This is admin-only and gated behind the `admin-ops` feature.
+    /// Default agent-facing APIs should use supersession (add a new fact
+    /// with a supersession link) instead of hard delete/update.
+    #[cfg(feature = "admin-ops")]
     pub async fn delete_fact(&self, fact_id: &str) -> Result<(), MemoryError> {
         let fid = fact_id.to_string();
         self.with_write_conn(move |conn| delete_fact_with_fts(conn, &fid))

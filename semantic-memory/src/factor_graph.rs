@@ -512,11 +512,8 @@ impl FactorGraphResult {
 /// Build a list of Factors from stored graph edges.
 ///
 /// `edges` is a list of (source, target, edge_type, weight, metadata_json).
-/// The metadata_json is parsed for type-specific information:
-/// - Temporal edges: {"delta_secs": N}
-/// - Causal edges: {"confidence": F}
-/// - Entity edges: {"relation": "..."}
-/// - Semantic edges: {"cosine_similarity": F}
+/// The edge metadata is derived from `GraphEdgeType`, and `metadata_json`
+/// can override type-specific fields when provided.
 pub fn factors_from_edges(
     edges: &[(String, String, GraphEdgeType, f64, Option<String>)],
 ) -> Vec<Factor> {
@@ -524,27 +521,71 @@ pub fn factors_from_edges(
         .iter()
         .map(|(source, target, edge_type, weight, metadata_json)| {
             let kind = FactorKind::from_edge_type(edge_type);
-            let metadata = metadata_json.as_ref().and_then(|json| {
-                let v: Option<serde_json::Value> = serde_json::from_str(json).ok();
-                v.and_then(|obj| match kind {
-                    FactorKind::Semantic => {
-                        let cos = obj.get("cosine_similarity").and_then(|c| c.as_f64());
-                        Some(FactorMetadata::Semantic { cosine_similarity: cos })
+            let mut metadata = match edge_type {
+                GraphEdgeType::Semantic { cosine_similarity } => {
+                    Some(FactorMetadata::Semantic {
+                        cosine_similarity: Some(*cosine_similarity as f64),
+                    })
+                }
+                GraphEdgeType::Temporal { delta_secs } => {
+                    Some(FactorMetadata::Temporal {
+                        delta_secs: *delta_secs as i64,
+                    })
+                }
+                GraphEdgeType::Causal {
+                    confidence,
+                    ..
+                } => Some(FactorMetadata::Causal {
+                    confidence: *confidence as f64,
+                }),
+                GraphEdgeType::Entity { relation } => {
+                    Some(FactorMetadata::Entity {
+                        relation: relation.clone(),
+                    })
+                }
+            };
+
+            if let Some(json) = metadata_json.as_ref() {
+                if let Ok(value) = serde_json::from_str::<serde_json::Value>(json) {
+                    if let Some(obj) = value.as_object() {
+                        match &mut metadata {
+                            Some(FactorMetadata::Semantic { cosine_similarity }) => {
+                                if let Some(override_cosine) = obj
+                                    .get("cosine_similarity")
+                                    .and_then(|v| v.as_f64())
+                                {
+                                    *cosine_similarity = Some(override_cosine);
+                                }
+                            }
+                            Some(FactorMetadata::Temporal { delta_secs }) => {
+                                if let Some(override_delta) = obj
+                                    .get("delta_secs")
+                                    .and_then(|v| v.as_i64().or_else(|| v.as_u64().map(|v| v as i64)))
+                                {
+                                    *delta_secs = override_delta;
+                                }
+                            }
+                            Some(FactorMetadata::Causal { confidence }) => {
+                                if let Some(override_confidence) = obj
+                                    .get("confidence")
+                                    .and_then(|v| v.as_f64())
+                                {
+                                    *confidence = override_confidence;
+                                }
+                            }
+                            Some(FactorMetadata::Entity { relation }) => {
+                                if let Some(override_relation) = obj
+                                    .get("relation")
+                                    .and_then(|v| v.as_str())
+                                {
+                                    *relation = override_relation.to_string();
+                                }
+                            }
+                            None => {}
+                        }
                     }
-                    FactorKind::Temporal => {
-                        let delta = obj.get("delta_secs").and_then(|d| d.as_i64()).unwrap_or(0);
-                        Some(FactorMetadata::Temporal { delta_secs: delta })
-                    }
-                    FactorKind::Causal => {
-                        let conf = obj.get("confidence").and_then(|c| c.as_f64()).unwrap_or(*weight);
-                        Some(FactorMetadata::Causal { confidence: conf })
-                    }
-                    FactorKind::Entity => {
-                        let rel = obj.get("relation").and_then(|r| r.as_str()).unwrap_or("").to_string();
-                        Some(FactorMetadata::Entity { relation: rel })
-                    }
-                })
-            });
+                }
+            }
 
             Factor {
                 source: source.clone(),

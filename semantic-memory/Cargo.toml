@@ -52,6 +52,9 @@ temporal = ["provenance"]
 # confidence thresholds). Opt-in only; the existing search() surface works
 # without it.
 multiscale = []
+# Admin-only operations: hard delete/update of truth-bearing rows.
+# NOT enabled by default — use supersession instead.
+admin-ops = []
 # Discord-structured second-order retrieval: surface graph neighbours of the
 # top-K direct results that are not themselves direct results. Opt-in only.
 discord = []

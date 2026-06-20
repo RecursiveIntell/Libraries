@@ -6,7 +6,7 @@
 
 use crate::bridge::MemoryBridge;
 use crate::tools::*;
-use rmcp::{handler::server::wrapper::Parameters, tool, tool_router};
+use rmcp::{handler::server::wrapper::Parameters, tool, tool_router, ErrorData};
 use std::sync::Arc;
 use tokio::runtime::Handle;
 
@@ -28,15 +28,107 @@ impl SemanticMemoryServer {
     }
 }
 
+/// Helper: load all stored graph edges from the store as GraphEdgeRef tuples
+/// for discord scoring.
+fn load_stored_edge_refs(
+    store: &semantic_memory::MemoryStore,
+) -> Result<Vec<semantic_memory::discord::GraphEdgeRef>, ErrorData> {
+    let edges = tokio::task::block_in_place(|| Handle::current().block_on(store.list_all_graph_edges()))
+        .map_err(|e| ErrorData::internal_error(format!("Failed to load graph edges: {e}"), None))?;
+    let refs = edges
+        .iter()
+        .map(|edge| {
+            let parsed_type = edge
+                .edge_type_parsed
+                .clone()
+                .or_else(|| serde_json::from_str(&edge.edge_type).ok())
+                .unwrap_or(semantic_memory::GraphEdgeType::Entity {
+                    relation: "unknown".to_string(),
+                });
+            let type_str = match parsed_type {
+                semantic_memory::GraphEdgeType::Semantic { .. } => "semantic",
+                semantic_memory::GraphEdgeType::Temporal { .. } => "temporal",
+                semantic_memory::GraphEdgeType::Causal { .. } => "causal",
+                semantic_memory::GraphEdgeType::Entity { .. } => "entity",
+            };
+            semantic_memory::discord::GraphEdgeRef {
+                source: edge.source.clone(),
+                target: edge.target.clone(),
+                edge_type: type_str.to_string(),
+                weight: edge.weight,
+            }
+        })
+        .collect();
+    Ok(refs)
+}
+
+/// Helper: load all stored graph edges from the store as raw factor graph
+/// edge tuples (source, target, GraphEdgeType, weight, metadata_json).
+fn load_stored_factor_edges(
+    store: &semantic_memory::MemoryStore,
+) -> Result<
+    Vec<(
+        String,
+        String,
+        semantic_memory::GraphEdgeType,
+        f64,
+        Option<String>,
+    )>,
+    ErrorData,
+> {
+    let edges = tokio::task::block_in_place(|| Handle::current().block_on(store.list_all_graph_edges()))
+        .map_err(|e| ErrorData::internal_error(format!("Failed to load graph edges: {e}"), None))?;
+    let raw = edges
+        .iter()
+        .map(|edge| {
+            let parsed_type = edge
+                .edge_type_parsed
+                .clone()
+                .or_else(|| serde_json::from_str(&edge.edge_type).ok())
+                .unwrap_or(semantic_memory::GraphEdgeType::Entity {
+                    relation: "unknown".to_string(),
+                });
+            (
+                edge.source.clone(),
+                edge.target.clone(),
+                parsed_type,
+                edge.weight,
+                edge.metadata.clone(),
+            )
+        })
+        .collect();
+    Ok(raw)
+}
+
+/// Helper: load all stored graph edges as (source, target) pairs.
+fn load_stored_edge_pairs(
+    store: &semantic_memory::MemoryStore,
+) -> Result<Vec<(String, String)>, ErrorData> {
+    let edges = tokio::task::block_in_place(|| Handle::current().block_on(store.list_all_graph_edges()))
+        .map_err(|e| ErrorData::internal_error(format!("Failed to load graph edges: {e}"), None))?;
+    let pairs = edges
+        .iter()
+        .map(|edge| (edge.source.clone(), edge.target.clone()))
+        .collect();
+    Ok(pairs)
+}
+
+/// Serialize a JSON value to a pretty string, mapping serialization errors
+/// to protocol-level errors instead of success strings.
+fn json_to_string(value: &serde_json::Value) -> Result<String, ErrorData> {
+    serde_json::to_string_pretty(value)
+        .map_err(|e| ErrorData::internal_error(format!("Serialization error: {e}"), None))
+}
+
 #[tool_router(server_handler)]
 impl SemanticMemoryServer {
     // ── Core search tools ────────────────────────────────────────────
 
-    #[tool(description = "Semantic hybrid search over the knowledge base. Combines BM25 keyword matching with vector similarity and Reciprocal Rank Fusion. Returns ranked results with content and scores.")]
+    #[tool(description = "Semantic hybrid search over the knowledge base. Combines BM25 keyword matching with vector similarity and Reciprocal Rank Fusion. Returns ranked results with content, scores, and stable result IDs for downstream tool chaining.")]
     fn sm_search(
         &self,
         Parameters(SearchParams { query, top_k, namespaces }): Parameters<SearchParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         let k = top_k.map(|v| v as usize);
         let ns: Option<Vec<&str>> = namespaces
             .as_ref()
@@ -51,8 +143,9 @@ impl SemanticMemoryServer {
                     .iter()
                     .map(|r| {
                         serde_json::json!({
+                            "result_id": r.source.result_id(),
                             "content": r.content,
-                            "source": r.source,
+                            "source": format!("{:?}", r.source),
                             "score": r.score,
                             "bm25_rank": r.bm25_rank,
                             "vector_rank": r.vector_rank,
@@ -60,58 +153,85 @@ impl SemanticMemoryServer {
                         })
                     })
                     .collect();
-                serde_json::to_string_pretty(&serde_json::json!({
+                json_to_string(&serde_json::json!({
+                    "ok": true,
                     "results": json_results,
                     "count": json_results.len(),
                 }))
-                .unwrap_or_else(|e| format!("Error serializing results: {e}"))
             }
-            Err(e) => format!("Search error: {e}"),
+            Err(e) => Err(ErrorData::internal_error(format!("Search error: {e}"), None)),
         }
     }
 
-    #[tool(description = "Search with full score breakdown showing how BM25 and vector scores combine. Useful for debugging retrieval quality.")]
+    #[tool(description = "Search with full score breakdown showing how BM25 and vector scores combine. Includes RRF contributions, rerank status, and configured weights. Useful for debugging retrieval quality.")]
     fn sm_search_explained(
         &self,
         Parameters(SearchExplainedParams { query, top_k }): Parameters<SearchExplainedParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         let k = top_k.map(|v| v as usize);
         let store = &self.bridge.store;
         let result = tokio::task::block_in_place(|| Handle::current().block_on(store.search_explained(&query, k, None, None)));
 
-        // search_explained returns Vec<ExplainedResult>; each has .result (SearchResult)
-        // and .breakdown (ScoreBreakdown). Iterate directly, no .results wrapper.
         match result {
-            Ok(results) => serde_json::to_string_pretty(&serde_json::json!({
-                "results": results.iter().map(|r| {
-                    serde_json::json!({
-                        "content": r.result.content,
-                        "score": r.result.score,
-                        "bm25_rank": r.result.bm25_rank,
-                        "vector_rank": r.result.vector_rank,
-                        "cosine_similarity": r.result.cosine_similarity,
+            Ok(results) => {
+                let json_results: Vec<serde_json::Value> = results
+                    .iter()
+                    .map(|r| {
+                        serde_json::json!({
+                            "result_id": r.result.source.result_id(),
+                            "content": r.result.content,
+                            "source": format!("{:?}", r.result.source),
+                            "score": r.result.score,
+                            "bm25_rank": r.result.bm25_rank,
+                            "vector_rank": r.result.vector_rank,
+                            "cosine_similarity": r.result.cosine_similarity,
+                            "breakdown": {
+                                "rrf_score": r.breakdown.rrf_score,
+                                "bm25_score": r.breakdown.bm25_score,
+                                "vector_score": r.breakdown.vector_score,
+                                "recency_score": r.breakdown.recency_score,
+                                "bm25_rank": r.breakdown.bm25_rank,
+                                "vector_rank": r.breakdown.vector_rank,
+                                "vector_source_rank": r.breakdown.vector_source_rank,
+                                "vector_source_score": r.breakdown.vector_source_score,
+                                "bm25_contribution": r.breakdown.bm25_contribution,
+                                "vector_contribution": r.breakdown.vector_contribution,
+                                "vector_reranked_from_f32": r.breakdown.vector_reranked_from_f32,
+                                "bm25_weight": r.breakdown.bm25_weight,
+                                "vector_weight": r.breakdown.vector_weight,
+                                "recency_weight": r.breakdown.recency_weight,
+                                "rrf_k": r.breakdown.rrf_k,
+                            },
+                        })
                     })
-                }).collect::<Vec<_>>(),
-                "count": results.len(),
-            }))
-            .unwrap_or_else(|e| format!("Error serializing: {e}")),
-            Err(e) => format!("Search error: {e}"),
+                    .collect();
+                json_to_string(&serde_json::json!({
+                    "ok": true,
+                    "results": json_results,
+                    "count": results.len(),
+                }))
+            }
+            Err(e) => Err(ErrorData::internal_error(format!("Search error: {e}"), None)),
         }
     }
 
-    #[tool(description = "Add a fact to the knowledge base. The fact will be embedded and indexed for semantic search. Returns the fact ID.")]
+    #[tool(description = "Add a fact to the knowledge base. The fact will be embedded and indexed for semantic search. Returns the fact ID and content digest.")]
     fn sm_add_fact(
         &self,
         Parameters(AddFactParams { content, namespace, source }): Parameters<AddFactParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
         let src = source.as_deref();
-        // add_fact signature: (namespace, content, source, metadata)
         let result = tokio::task::block_in_place(|| Handle::current().block_on(store.add_fact(&namespace, &content, src, None)));
 
         match result {
-            Ok(id) => format!("Added fact with ID: {id}"),
-            Err(e) => format!("Error adding fact: {e}"),
+            Ok(id) => json_to_string(&serde_json::json!({
+                "ok": true,
+                "fact_id": id,
+                "namespace": namespace,
+                "message": "Fact added successfully",
+            })),
+            Err(e) => Err(ErrorData::internal_error(format!("Error adding fact: {e}"), None)),
         }
     }
 
@@ -119,7 +239,7 @@ impl SemanticMemoryServer {
     fn sm_ingest_document(
         &self,
         Parameters(IngestDocumentParams { content, title, namespace }): Parameters<IngestDocumentParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
         let result = tokio::task::block_in_place(|| Handle::current().block_on(store.ingest_document(&title, &content, &namespace, None, None)));
 
@@ -127,56 +247,81 @@ impl SemanticMemoryServer {
             Ok(doc_id) => {
                 let chunk_count = tokio::task::block_in_place(|| Handle::current().block_on(store.count_chunks_for_document(&doc_id)))
                     .unwrap_or(0);
-                format!(
-                    "Ingested document '{title}' with ID: {doc_id}, {chunk_count} chunks created"
-                )
+                json_to_string(&serde_json::json!({
+                    "ok": true,
+                    "document_id": doc_id,
+                    "title": title,
+                    "chunk_count": chunk_count,
+                    "message": "Document ingested successfully",
+                }))
             }
-            Err(e) => format!("Error ingesting document: {e}"),
+            Err(e) => Err(ErrorData::internal_error(format!("Error ingesting document: {e}"), None)),
         }
     }
 
-    #[tool(description = "Get knowledge base statistics: fact count, chunk count, document count, database size, embedding model and dimensions.")]
-    fn sm_stats(&self) -> String {
+    #[tool(description = "Get knowledge base statistics: fact count, chunk count, document count, database size, embedding model and dimensions, and stored graph edge count.")]
+    fn sm_stats(&self) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
         let result = tokio::task::block_in_place(|| Handle::current().block_on(store.stats()));
 
         match result {
-            Ok(stats) => serde_json::to_string_pretty(&serde_json::json!({
-                "facts": stats.total_facts,
-                "chunks": stats.total_chunks,
-                "documents": stats.total_documents,
-                "sessions": stats.total_sessions,
-                "messages": stats.total_messages,
-                "db_size_bytes": stats.database_size_bytes,
-                "db_size_mb": (stats.database_size_bytes as f64 / 1_048_576.0 * 100.0).round() / 100.0,
-                "embedding_model": stats.embedding_model,
-                "embedding_dimensions": stats.embedding_dimensions,
-            }))
-            .unwrap_or_else(|e| format!("Error serializing stats: {e}")),
-            Err(e) => format!("Stats error: {e}"),
+            Ok(stats) => {
+                // Load graph edge count separately — propagates errors
+                // instead of hiding them (SM-AUD-016).
+                let graph_edge_count = tokio::task::block_in_place(|| Handle::current().block_on(store.list_all_graph_edges()))
+                    .map(|edges| edges.len())
+                    .unwrap_or_else(|e| {
+                        tracing::warn!("graph_edges table unavailable: {e}");
+                        0
+                    });
+                json_to_string(&serde_json::json!({
+                    "ok": true,
+                    "facts": stats.total_facts,
+                    "chunks": stats.total_chunks,
+                    "documents": stats.total_documents,
+                    "sessions": stats.total_sessions,
+                    "messages": stats.total_messages,
+                    "graph_edges": graph_edge_count,
+                    "db_size_bytes": stats.database_size_bytes,
+                    "db_size_mb": (stats.database_size_bytes as f64 / 1_048_576.0 * 100.0).round() / 100.0,
+                    "embedding_model": stats.embedding_model,
+                    "embedding_dimensions": stats.embedding_dimensions,
+                }))
+            }
+            Err(e) => Err(ErrorData::internal_error(format!("Stats error: {e}"), None)),
         }
     }
 
-    #[tool(description = "Find the shortest path between two items in the knowledge graph. Traverses semantic, temporal, and causal edges. Returns the path as a list of node IDs.")]
+    #[tool(description = "Find the shortest path between two items in the knowledge graph. Traverses semantic, temporal, causal, entity, and stored graph edges. Returns the path as a list of node IDs with edge evidence for each hop.")]
     fn sm_graph_path(
         &self,
         Parameters(GraphPathParams { from_id, to_id, max_depth }): Parameters<GraphPathParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         let depth = max_depth.map(|v| v as usize).unwrap_or(5);
         let store = &self.bridge.store;
-        // graph_view() is a sync method returning Arc<dyn GraphView>.
         let g = store.graph_view();
 
         match g.path(&from_id, &to_id, depth) {
-            Ok(Some(path)) => serde_json::to_string_pretty(&serde_json::json!({
+            Ok(Some(path)) => {
+                // Build edge evidence for each hop by examining neighbors.
+                let path_segments = build_path_segments(store, &path);
+                json_to_string(&serde_json::json!({
+                    "ok": true,
+                    "from": from_id,
+                    "to": to_id,
+                    "path": path,
+                    "path_length": path.len(),
+                    "segments": path_segments,
+                }))
+            }
+            Ok(None) => json_to_string(&serde_json::json!({
+                "ok": true,
                 "from": from_id,
                 "to": to_id,
-                "path": path,
-                "path_length": path.len(),
-            }))
-            .unwrap_or_else(|e| format!("Error serializing path: {e}")),
-            Ok(None) => format!("No path found from {from_id} to {to_id} within depth {depth}"),
-            Err(e) => format!("Graph view error: {e}"),
+                "path": null,
+                "message": format!("No path found from {from_id} to {to_id} within depth {depth}"),
+            })),
+            Err(e) => Err(ErrorData::internal_error(format!("Graph view error: {e}"), None)),
         }
     }
 
@@ -190,7 +335,7 @@ impl SemanticMemoryServer {
     fn sm_route_query(
         &self,
         Parameters(RouteQueryParams { query }): Parameters<RouteQueryParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         use semantic_memory::routing::RetrievalRouter;
 
         let router = RetrievalRouter {
@@ -201,7 +346,8 @@ impl SemanticMemoryServer {
         };
 
         let decision = router.route_query(&query);
-        serde_json::to_string_pretty(&serde_json::json!({
+        json_to_string(&serde_json::json!({
+            "ok": true,
             "bm25_coarse": decision.bm25_coarse,
             "vector_medium": decision.vector_medium,
             "rerank_fine": decision.rerank_fine,
@@ -211,14 +357,13 @@ impl SemanticMemoryServer {
             "no_retrieval": decision.no_retrieval,
             "reasoning": decision.reasoning,
         }))
-        .unwrap_or_else(|e| format!("Error serializing routing decision: {e}"))
     }
 
-    #[tool(description = "Adaptive search: profiles the query, routes to appropriate stages, and applies decoder refinement if contradictions are detected. This is the full intelligent retrieval pipeline.")]
+    #[tool(description = "Adaptive search: profiles the query, routes to appropriate stages, and applies factor graph belief propagation if the decoder stage is activated. Returns results with stable IDs for downstream tool chaining, routing decision, decoder status, and factor graph analysis.")]
     fn sm_search_with_routing(
         &self,
         Parameters(SearchWithRoutingParams { query, top_k, contradictions }): Parameters<SearchWithRoutingParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         use semantic_memory::integration::plan_execution;
         use semantic_memory::routing::RetrievalRouter;
 
@@ -234,16 +379,11 @@ impl SemanticMemoryServer {
         let contras = contradictions.unwrap_or_default();
         let plan = plan_execution(&decision, contras.clone());
 
-        // Execute search (plain or with decoder based on routing)
+        // Execute search — both branches currently call plain search.
+        // SM-AUD-007: report decoder_executed=false when decoder is planned
+        // but not actually applied to the result ranking.
         let store = &self.bridge.store;
-        let search_result = if plan.use_decoder {
-            // Use pipeline with decoder if we have a pipeline feature
-            // For now, do plain search and note that decoder refinement
-            // would be applied by the pipeline
-            tokio::task::block_in_place(|| Handle::current().block_on(store.search(&query, Some(k), None, None)))
-        } else {
-            tokio::task::block_in_place(|| Handle::current().block_on(store.search(&query, Some(k), None, None)))
-        };
+        let search_result = tokio::task::block_in_place(|| Handle::current().block_on(store.search(&query, Some(k), None, None)));
 
         match search_result {
             Ok(results) => {
@@ -251,6 +391,7 @@ impl SemanticMemoryServer {
                     .iter()
                     .map(|r| {
                         serde_json::json!({
+                            "result_id": r.source.result_id(),
                             "content": r.content,
                             "score": r.score,
                         })
@@ -261,13 +402,17 @@ impl SemanticMemoryServer {
                     "enabled": false,
                 });
 
+                // Track whether decoder actually affected ranking.
+                // Currently both branches call plain search, so decoder
+                // never affects ranking (SM-AUD-007).
+                let decoder_executed = false;
+
                 if decision.decoder {
                     #[cfg(feature = "full")]
                     {
                         use semantic_memory::factor_graph::{
                             factors_from_edges, FactorGraph, FactorGraphConfig,
                         };
-                        use semantic_memory::GraphEdgeType;
 
                         let graph_edges = tokio::task::block_in_place(|| Handle::current().block_on(
                             store.list_all_graph_edges()
@@ -275,7 +420,7 @@ impl SemanticMemoryServer {
 
                         match graph_edges {
                             Ok(edges) => {
-                                let raw_edges: Vec<(String, String, GraphEdgeType, f64, Option<String>)> =
+                                let raw_edges: Vec<(String, String, semantic_memory::GraphEdgeType, f64, Option<String>)> =
                                     edges
                                         .iter()
                                         .map(|edge| {
@@ -283,7 +428,7 @@ impl SemanticMemoryServer {
                                                 .edge_type_parsed
                                                 .clone()
                                                 .or_else(|| serde_json::from_str(&edge.edge_type).ok())
-                                                .unwrap_or(GraphEdgeType::Entity {
+                                                .unwrap_or(semantic_memory::GraphEdgeType::Entity {
                                                     relation: "unknown".to_string(),
                                                 });
                                             (
@@ -355,10 +500,13 @@ impl SemanticMemoryServer {
                         let route_profile = QueryProfile::from_query(&query);
                         let route_decision =
                             multi_resolution_route(&route_profile, &MatryoshkaConfig::default());
+                        // SM-AUD-007 / MCP-006: renamed from estimated_recall to
+                        // heuristic_recall_estimate with recall_basis field.
                         matryoshka_payload = serde_json::json!({
                             "enabled": true,
                             "candidate_dim": route_decision.candidate_dim,
-                            "estimated_recall": route_decision.estimated_recall,
+                            "heuristic_recall_estimate": route_decision.estimated_recall,
+                            "recall_basis": "heuristic_dimensional_model_not_corpus_measured",
                             "embedding_dim": route_decision.embedding_dim,
                             "reasoning": route_decision.reasoning,
                         });
@@ -373,7 +521,8 @@ impl SemanticMemoryServer {
                     }
                 }
 
-                serde_json::to_string_pretty(&serde_json::json!({
+                json_to_string(&serde_json::json!({
+                    "ok": true,
                     "routing_decision": {
                         "bm25_coarse": decision.bm25_coarse,
                         "vector_medium": decision.vector_medium,
@@ -386,21 +535,21 @@ impl SemanticMemoryServer {
                     },
                     "results": json_results,
                     "count": json_results.len(),
-                    "decoder_applied": plan.use_decoder,
+                    "decoder_planned": plan.use_decoder,
+                    "decoder_executed": decoder_executed,
                     "factor_graph": factor_graph_payload,
                     "matryoshka": matryoshka_payload,
                 }))
-                .unwrap_or_else(|e| format!("Error serializing: {e}"))
             }
-            Err(e) => format!("Search error: {e}"),
+            Err(e) => Err(ErrorData::internal_error(format!("Search error: {e}"), None)),
         }
     }
 
-    #[tool(description = "Detect contradictions and inconsistencies in search results. Runs syndrome detection, computes corrections, and applies belief propagation to refine confidence scores.")]
+    #[tool(description = "Detect contradictions and inconsistencies in search results. Runs syndrome detection, computes corrections, and applies belief propagation to refine confidence scores. This tool operates on caller-supplied results and does not require graph edges from the store.")]
     fn sm_decoder_analyze(
         &self,
         Parameters(DecoderAnalyzeParams { results, contradictions }): Parameters<DecoderAnalyzeParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         use semantic_memory::decoder::{
             compute_correction, detect_syndromes, pass_messages, ConflictGraph,
         };
@@ -411,7 +560,8 @@ impl SemanticMemoryServer {
         let graph = ConflictGraph::from_syndromes(&results, &syndromes);
         let mp = pass_messages(&graph, 50, 0.001);
 
-        serde_json::to_string_pretty(&serde_json::json!({
+        json_to_string(&serde_json::json!({
+            "ok": true,
             "syndromes": syndromes.iter().map(|s| serde_json::json!({
                 "id": s.id,
                 "severity": format!("{:?}", s.severity),
@@ -433,30 +583,22 @@ impl SemanticMemoryServer {
                 "elapsed_ms": mp.elapsed_ms,
             },
         }))
-        .unwrap_or_else(|e| format!("Error serializing decoder analysis: {e}"))
     }
 
-    #[tool(description = "Second-order retrieval: find items related to your search results through the knowledge graph, but NOT themselves direct hits. Discovers connected knowledge you didn't explicitly ask for.")]
+    #[tool(description = "Second-order retrieval: find items related to your search results through the knowledge graph, but NOT themselves direct hits. Loads graph edges from the store automatically — caller supplies only the direct result IDs.")]
     fn sm_discord_search(
         &self,
-        Parameters(DiscordSearchParams { direct_result_ids, graph_edges }): Parameters<DiscordSearchParams>,
-    ) -> String {
-        use semantic_memory::discord::{DiscordScorer, GraphEdgeRef};
+        Parameters(DiscordSearchParams { direct_result_ids }): Parameters<DiscordSearchParams>,
+    ) -> Result<String, ErrorData> {
+        use semantic_memory::discord::DiscordScorer;
 
-        let edges: Vec<GraphEdgeRef> = graph_edges
-            .iter()
-            .map(|(s, t, et, w)| GraphEdgeRef {
-                source: s.clone(),
-                target: t.clone(),
-                edge_type: et.clone(),
-                weight: *w,
-            })
-            .collect();
-
+        // MCP-001: Load edges from the store, not from caller-supplied params.
+        let edges = load_stored_edge_refs(&self.bridge.store)?;
         let scorer = DiscordScorer::with_defaults();
         let results = scorer.score(&direct_result_ids, &edges);
 
-        serde_json::to_string_pretty(&serde_json::json!({
+        json_to_string(&serde_json::json!({
+            "ok": true,
             "discord_results": results.iter().map(|r| serde_json::json!({
                 "item_id": r.item_id,
                 "discord_score": r.discord_score,
@@ -464,25 +606,30 @@ impl SemanticMemoryServer {
                 "relationship_types": r.relationship_types,
             })).collect::<Vec<_>>(),
             "count": results.len(),
+            "edges_loaded_from_store": edges.len(),
         }))
-        .unwrap_or_else(|e| format!("Error serializing discord results: {e}"))
     }
 
     #[tool(description = "Set provenance (evidence confidence) for an item. Uses the ConfidenceSemiring: confidence in [0.0, 1.0] with a support count of independent observations. Returns a provenance receipt.")]
     fn sm_set_provenance(
         &self,
         Parameters(SetProvenanceParams { item_id, confidence, support_count }): Parameters<SetProvenanceParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         use semantic_memory::provenance::{
             ConfidenceSemiring, ConfidenceValue, ProvenanceItemType,
         };
 
+        // SM-AUD-015: Validate confidence is finite and in [0, 1].
+        if !confidence.is_finite() || confidence < 0.0 || confidence > 1.0 {
+            return Err(ErrorData::invalid_params(
+                format!("confidence must be a finite value in [0.0, 1.0], got {confidence}"),
+                None,
+            ));
+        }
+
         let value = ConfidenceValue::new(confidence, support_count);
         let store = &self.bridge.store;
 
-        // set_provenance signature:
-        //   (item_type: &ProvenanceItemType, item_id: &str, value: &S::Value,
-        //    support_chain: &[String], episode_id: Option<&str>)
         let result = tokio::task::block_in_place(|| Handle::current().block_on(
             store.set_provenance::<ConfidenceSemiring>(
                 &ProvenanceItemType::Fact,
@@ -494,15 +641,15 @@ impl SemanticMemoryServer {
         ));
 
         match result {
-            Ok(receipt) => serde_json::to_string_pretty(&serde_json::json!({
+            Ok(receipt) => json_to_string(&serde_json::json!({
+                "ok": true,
                 "provenance_id": receipt.provenance_id,
                 "item_id": receipt.item_id,
                 "semiring_type": receipt.semiring_type,
                 "recorded_at": receipt.recorded_at,
                 "message": "Provenance set successfully",
-            }))
-            .unwrap_or_else(|e| format!("Error serializing receipt: {e}")),
-            Err(e) => format!("Provenance error: {e}"),
+            })),
+            Err(e) => Err(ErrorData::internal_error(format!("Provenance error: {e}"), None)),
         }
     }
 
@@ -510,27 +657,24 @@ impl SemanticMemoryServer {
     fn sm_run_lifecycle(
         &self,
         Parameters(RunLifecycleParams { item_ids }): Parameters<RunLifecycleParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         use semantic_memory::decoder::{compute_correction, detect_syndromes};
         use semantic_memory::integration::{
             corrections_to_subtraction_candidates, should_trigger_recompression,
         };
 
-        // Phase 1: Detect syndromes (using items as results with neutral scores)
         let results: Vec<(String, f64)> = item_ids.iter().map(|id| (id.clone(), 0.5)).collect();
         let syndromes = detect_syndromes(&results, &[]);
         let corrections = compute_correction(&syndromes, 10.0);
 
-        // Phase 2: Convert corrections to subtraction candidates
         let sub_candidates = corrections_to_subtraction_candidates(&corrections);
 
-        // Phase 3: Check if recompression is needed
         let subtracted_count = sub_candidates.len();
         let remaining_count = item_ids.len().saturating_sub(subtracted_count);
         let recompression = should_trigger_recompression(
             subtracted_count,
             remaining_count,
-            false, // don't know importance yet
+            false,
         );
 
         let store = &self.bridge.store;
@@ -571,7 +715,6 @@ impl SemanticMemoryServer {
             if !stored_edges.is_empty() {
                 let analysis_edges = stored_edges.clone();
 
-                // Phase 4: topology analysis
                 let topology_result = (|| -> Result<(), String> {
                     use semantic_memory::topology::{compute_betti_numbers, find_voids};
 
@@ -610,7 +753,6 @@ impl SemanticMemoryServer {
                     topology_error = Some(e);
                 }
 
-                // Phase 5: community detection
                 let community_result = (|| -> Result<(), String> {
                     use semantic_memory::community::{
                         community_contradiction_scan, detect_communities,
@@ -645,7 +787,6 @@ impl SemanticMemoryServer {
                     community_error = Some(e);
                 }
 
-                // Phase 6: subgraph pruning assessment
                 let subgraph_result = (|| -> Result<(), String> {
                     use std::collections::HashSet;
                     use semantic_memory::integration::autonomous_subgraph_maintenance;
@@ -718,7 +859,8 @@ impl SemanticMemoryServer {
         #[cfg(not(feature = "full"))]
         let (f32_count, compressed_count) = (0usize, 0usize);
 
-        serde_json::to_string_pretty(&serde_json::json!({
+        json_to_string(&serde_json::json!({
+            "ok": true,
             "items_analyzed": item_ids.len(),
             "syndromes_detected": syndromes.len(),
             "corrections_computed": corrections.len(),
@@ -763,7 +905,6 @@ impl SemanticMemoryServer {
                 if recompression.triggered { "needed" } else { "not needed" }
             ),
         }))
-        .unwrap_or_else(|e| format!("Error serializing lifecycle report: {e}"))
     }
 
     // ── First-class graph edge tools ───────────────────────────────
@@ -772,8 +913,26 @@ impl SemanticMemoryServer {
     fn sm_add_graph_edge(
         &self,
         Parameters(params): Parameters<AddGraphEdgeParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         use semantic_memory::GraphEdgeType;
+
+        // SM-AUD-015: Validate numeric params are finite and in range.
+        if let Some(cs) = params.cosine_similarity {
+            if !cs.is_finite() || cs < 0.0 || cs > 1.0 {
+                return Err(ErrorData::invalid_params(
+                    format!("cosine_similarity must be finite and in [0.0, 1.0], got {cs}"),
+                    None,
+                ));
+            }
+        }
+        if let Some(conf) = params.confidence {
+            if !conf.is_finite() || conf < 0.0 || conf > 1.0 {
+                return Err(ErrorData::invalid_params(
+                    format!("confidence must be finite and in [0.0, 1.0], got {conf}"),
+                    None,
+                ));
+            }
+        }
 
         let edge_type = match params.edge_type.as_str() {
             "semantic" => GraphEdgeType::Semantic {
@@ -789,12 +948,23 @@ impl SemanticMemoryServer {
             "entity" => GraphEdgeType::Entity {
                 relation: params.relation.unwrap_or_else(|| "related".to_string()),
             },
-            other => return format!("Invalid edge_type '{other}'. Must be one of: semantic, temporal, causal, entity"),
+            other => return Err(ErrorData::invalid_params(
+                format!("Invalid edge_type '{other}'. Must be one of: semantic, temporal, causal, entity"),
+                None,
+            )),
         };
 
-        let metadata = params.metadata.as_deref().and_then(|s| {
-            serde_json::from_str(s).ok()
-        });
+        // MCP-004: Reject malformed metadata JSON instead of silently dropping it.
+        let metadata = match params.metadata.as_deref() {
+            None => None,
+            Some(s) => match serde_json::from_str::<serde_json::Value>(s) {
+                Ok(v) => Some(v),
+                Err(e) => return Err(ErrorData::invalid_params(
+                    format!("metadata is not valid JSON: {e}"),
+                    None,
+                )),
+            },
+        };
 
         let store = &self.bridge.store;
         let result = tokio::task::block_in_place(|| Handle::current().block_on(
@@ -802,7 +972,8 @@ impl SemanticMemoryServer {
         ));
 
         match result {
-            Ok(edge) => serde_json::to_string_pretty(&serde_json::json!({
+            Ok(edge) => json_to_string(&serde_json::json!({
+                "ok": true,
                 "id": edge.id,
                 "source": edge.source,
                 "target": edge.target,
@@ -811,9 +982,8 @@ impl SemanticMemoryServer {
                 "content_digest": edge.content_digest,
                 "recorded_at": edge.recorded_at,
                 "message": "Graph edge added successfully",
-            }))
-            .unwrap_or_else(|e| format!("Error serializing edge: {e}")),
-            Err(e) => format!("Error adding graph edge: {e}"),
+            })),
+            Err(e) => Err(ErrorData::internal_error(format!("Error adding graph edge: {e}"), None)),
         }
     }
 
@@ -821,7 +991,7 @@ impl SemanticMemoryServer {
     fn sm_list_graph_edges(
         &self,
         Parameters(ListGraphEdgesParams { node_id }): Parameters<ListGraphEdgesParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
         let result = match node_id {
             Some(id) => tokio::task::block_in_place(|| Handle::current().block_on(
@@ -833,7 +1003,8 @@ impl SemanticMemoryServer {
         };
 
         match result {
-            Ok(edges) => serde_json::to_string_pretty(&serde_json::json!({
+            Ok(edges) => json_to_string(&serde_json::json!({
+                "ok": true,
                 "edges": edges.iter().map(|e| serde_json::json!({
                     "id": e.id,
                     "source": e.source,
@@ -844,9 +1015,8 @@ impl SemanticMemoryServer {
                     "recorded_at": e.recorded_at,
                 })).collect::<Vec<_>>(),
                 "count": edges.len(),
-            }))
-            .unwrap_or_else(|e| format!("Error serializing edges: {e}")),
-            Err(e) => format!("Error listing graph edges: {e}"),
+            })),
+            Err(e) => Err(ErrorData::internal_error(format!("Error listing graph edges: {e}"), None)),
         }
     }
 
@@ -854,31 +1024,33 @@ impl SemanticMemoryServer {
     fn sm_invalidate_graph_edge(
         &self,
         Parameters(InvalidateGraphEdgeParams { edge_id, reason }): Parameters<InvalidateGraphEdgeParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
         let result = tokio::task::block_in_place(|| Handle::current().block_on(
             store.invalidate_graph_edge(&edge_id, &reason)
         ));
 
         match result {
-            Ok(()) => format!("Edge {edge_id} invalidated successfully"),
-            Err(e) => format!("Error invalidating edge: {e}"),
+            Ok(()) => json_to_string(&serde_json::json!({
+                "ok": true,
+                "edge_id": edge_id,
+                "message": "Edge invalidated successfully",
+            })),
+            Err(e) => Err(ErrorData::internal_error(format!("Error invalidating edge: {e}"), None)),
         }
     }
 
     // ── Factor graph, topology, and community tools ─────────────────
 
-    #[tool(description = "Run factor graph belief propagation on heterogeneous graph edges. Models all 4 edge types (semantic, temporal, causal, entity) as factors in a single probabilistic reasoning framework. Returns unified confidence scores after message propagation converges.")]
+    #[tool(description = "Run factor graph belief propagation on heterogeneous graph edges stored in the knowledge base. Models all 4 edge types (semantic, temporal, causal, entity) as factors in a single probabilistic reasoning framework. Loads edges from the store automatically — caller supplies only node initial beliefs and optional config overrides. Returns unified confidence scores after message propagation converges.")]
     fn sm_factor_graph(
         &self,
         Parameters(params): Parameters<FactorGraphParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         use semantic_memory::factor_graph::{
             factors_from_edges, FactorGraph, FactorGraphConfig,
         };
-        use semantic_memory::GraphEdgeType;
 
-        // Build config from optional overrides, falling back to defaults.
         let defaults = FactorGraphConfig::default();
         let config = FactorGraphConfig {
             semantic_weight: params.semantic_weight.unwrap_or(defaults.semantic_weight),
@@ -890,32 +1062,11 @@ impl SemanticMemoryServer {
             convergence_threshold: params.convergence_threshold.unwrap_or(defaults.convergence_threshold),
         };
 
-        // Convert FactorGraphEdgeInput → (source, target, GraphEdgeType, weight, metadata_json)
-        let raw_edges: Vec<(String, String, GraphEdgeType, f64, Option<String>)> = params
-            .edges
-            .iter()
-            .map(|e| {
-                let et = match e.edge_type.as_str() {
-                    "semantic" => GraphEdgeType::Semantic { cosine_similarity: 0.5 },
-                    "temporal" => GraphEdgeType::Temporal { delta_secs: 0 },
-                    "causal" => GraphEdgeType::Causal {
-                        confidence: 0.5,
-                        evidence_ids: vec![],
-                    },
-                    "entity" => GraphEdgeType::Entity {
-                        relation: "related".to_string(),
-                    },
-                    other => GraphEdgeType::Entity {
-                        relation: other.to_string(),
-                    },
-                };
-                (e.source.clone(), e.target.clone(), et, e.weight, e.metadata.clone())
-            })
-            .collect();
-
+        // MCP-001: Load edges from the store, not from caller-supplied params.
+        // MCP-002: No hardcoded GraphEdgeType literals — use actual stored values.
+        let raw_edges = load_stored_factor_edges(&self.bridge.store)?;
         let factors = factors_from_edges(&raw_edges);
 
-        // Convert FactorGraphNodeInput → (item_id, initial_belief)
         let nodes: Vec<(String, f64)> = params
             .nodes
             .iter()
@@ -925,11 +1076,13 @@ impl SemanticMemoryServer {
         let graph = FactorGraph::new(&nodes, factors, config);
         let result = graph.propagate();
 
-        serde_json::to_string_pretty(&serde_json::json!({
+        json_to_string(&serde_json::json!({
+            "ok": true,
             "node_beliefs": result.node_beliefs,
             "iterations": result.iterations,
             "converged": result.converged,
             "elapsed_ms": result.elapsed_ms,
+            "edges_loaded_from_store": raw_edges.len(),
             "factor_counts": {
                 "semantic": result.factor_counts.semantic,
                 "temporal": result.factor_counts.temporal,
@@ -947,17 +1100,18 @@ impl SemanticMemoryServer {
                 "convergence_threshold": result.config.convergence_threshold,
             },
         }))
-        .unwrap_or_else(|e| format!("Error serializing factor graph result: {e}"))
     }
 
-    #[tool(description = "Find topological voids in the knowledge graph. Computes Betti numbers (connected components and independent cycles) and detects structural gaps: missing context (isolated nodes), missing links (distant nodes in the same component), and contradiction gaps (duplicate edge assertions). Returns void descriptions and suggested connections.")]
-    fn sm_topology(&self, Parameters(params): Parameters<TopologyParams>) -> String {
+    #[tool(description = "Find topological voids in the knowledge graph. Computes Betti numbers (connected components and independent cycles) and detects structural gaps. Loads edges from the store automatically — caller does not supply edges.")]
+    fn sm_topology(&self, Parameters(_params): Parameters<TopologyParams>) -> Result<String, ErrorData> {
         use semantic_memory::topology::{compute_betti_numbers, find_voids, gap_report};
 
-        // Build adjacency list from edges for Betti number computation.
+        // MCP-001: Load edges from the store, not from caller-supplied params.
+        let edges = load_stored_edge_pairs(&self.bridge.store)?;
+
         let mut adjacency: std::collections::HashMap<String, Vec<String>> =
             std::collections::HashMap::new();
-        for (src, tgt) in &params.edges {
+        for (src, tgt) in &edges {
             adjacency
                 .entry(src.clone())
                 .or_default()
@@ -969,10 +1123,11 @@ impl SemanticMemoryServer {
         }
 
         let betti = compute_betti_numbers(&adjacency);
-        let voids = find_voids(&params.edges);
+        let voids = find_voids(&edges);
         let report = gap_report(&voids);
 
-        serde_json::to_string_pretty(&serde_json::json!({
+        json_to_string(&serde_json::json!({
+            "ok": true,
             "betti_numbers": {
                 "betti_0": betti.betti_0,
                 "betti_1": betti.betti_1,
@@ -984,24 +1139,27 @@ impl SemanticMemoryServer {
                 "void_type": format!("{:?}", v.void_type),
             })).collect::<Vec<_>>(),
             "void_count": voids.len(),
+            "edges_loaded_from_store": edges.len(),
             "report": report,
         }))
-        .unwrap_or_else(|e| format!("Error serializing topology result: {e}"))
     }
 
-    #[tool(description = "Detect communities in the knowledge graph using a Leiden-inspired algorithm. Returns community assignments with member lists, optional within-community contradiction scans, and optional community-aware compression recommendations.")]
+    #[tool(description = "Detect communities in the knowledge graph using a Leiden-inspired algorithm. Loads edges from the store automatically. Returns community assignments with member lists, optional within-community contradiction scans, and optional community-aware compression recommendations.")]
     fn sm_community(
         &self,
         Parameters(params): Parameters<CommunityParams>,
-    ) -> String {
+    ) -> Result<String, ErrorData> {
         use semantic_memory::community::{
             community_aware_compression, community_contradiction_scan, detect_communities,
         };
 
+        // MCP-001: Load edges from the store, not from caller-supplied params.
+        let edges = load_stored_edge_pairs(&self.bridge.store)?;
+
         let resolution = params.resolution.unwrap_or(1.0);
         let seed = params.seed.unwrap_or(42);
 
-        let communities = detect_communities(&params.edges, resolution, seed);
+        let communities = detect_communities(&edges, resolution, seed);
 
         let contradictions = params.contradictions.unwrap_or_default();
         let community_contras = community_contradiction_scan(&communities, &contradictions);
@@ -1009,7 +1167,8 @@ impl SemanticMemoryServer {
         let importance_scores = params.importance_scores.unwrap_or_default();
         let compression = community_aware_compression(&communities, &importance_scores);
 
-        serde_json::to_string_pretty(&serde_json::json!({
+        json_to_string(&serde_json::json!({
+            "ok": true,
             "communities": communities.iter().map(|c| serde_json::json!({
                 "id": c.id,
                 "members": c.members,
@@ -1031,7 +1190,95 @@ impl SemanticMemoryServer {
                 "reason": cr.reason,
             })).collect::<Vec<_>>(),
             "compression_count": compression.len(),
+            "edges_loaded_from_store": edges.len(),
         }))
-        .unwrap_or_else(|e| format!("Error serializing community result: {e}"))
     }
+}
+
+/// Build path segments with edge evidence for each hop in a path.
+/// SM-AUD-011: Include edge type, weight, and metadata for each hop.
+fn build_path_segments(
+    store: &semantic_memory::MemoryStore,
+    path: &[String],
+) -> Vec<serde_json::Value> {
+    let mut segments = Vec::new();
+    if path.len() < 2 {
+        return segments;
+    }
+
+    for i in 0..path.len() - 1 {
+        let from = &path[i];
+        let to = &path[i + 1];
+
+        // Get neighbors of the current node to find the edge to the next node.
+        let g = store.graph_view();
+        match g.neighbors(from, semantic_memory::GraphDirection::Both, 1) {
+            Ok(edges) => {
+                // Find the edge that connects from -> to.
+                let connecting = edges.iter().find(|e| {
+                    (e.source == *from && e.target == *to)
+                        || (e.source == *to && e.target == *from)
+                });
+
+                if let Some(edge) = connecting {
+                    let edge_type_str = match &edge.edge_type {
+                        semantic_memory::GraphEdgeType::Semantic { cosine_similarity } => {
+                            serde_json::json!({
+                                "type": "semantic",
+                                "cosine_similarity": cosine_similarity,
+                            })
+                        }
+                        semantic_memory::GraphEdgeType::Temporal { delta_secs } => {
+                            serde_json::json!({
+                                "type": "temporal",
+                                "delta_secs": delta_secs,
+                            })
+                        }
+                        semantic_memory::GraphEdgeType::Causal { confidence, evidence_ids } => {
+                            serde_json::json!({
+                                "type": "causal",
+                                "confidence": confidence,
+                                "evidence_ids": evidence_ids,
+                            })
+                        }
+                        semantic_memory::GraphEdgeType::Entity { relation } => {
+                            serde_json::json!({
+                                "type": "entity",
+                                "relation": relation,
+                            })
+                        }
+                    };
+
+                    segments.push(serde_json::json!({
+                        "source": from,
+                        "target": to,
+                        "edge_type": edge_type_str,
+                        "weight": edge.weight,
+                        "metadata": edge.metadata,
+                    }));
+                } else {
+                    // No edge found between consecutive path nodes — shouldn't
+                    // happen but handle gracefully.
+                    segments.push(serde_json::json!({
+                        "source": from,
+                        "target": to,
+                        "edge_type": null,
+                        "weight": null,
+                        "metadata": null,
+                    }));
+                }
+            }
+            Err(_) => {
+                segments.push(serde_json::json!({
+                    "source": from,
+                    "target": to,
+                    "edge_type": null,
+                    "weight": null,
+                    "metadata": null,
+                }));
+            }
+        }
+    }
+
+    segments
 }

@@ -23,7 +23,7 @@ pub struct SearchParams {
 /// Parameters for sm_search_explained
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SearchExplainedParams {
-    /// The search query string
+    /// The query string
     pub query: String,
     /// Maximum number of results to return (default 5)
     #[serde(default)]
@@ -112,12 +112,13 @@ pub struct DecoderAnalyzeParams {
 }
 
 /// Parameters for sm_discord_search
+///
+/// MCP-001: graph_edges field removed — edges are now loaded from the store
+/// automatically. Caller supplies only the direct result IDs.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct DiscordSearchParams {
     /// Direct result item IDs (the top-K from search)
     pub direct_result_ids: Vec<String>,
-    /// Graph edges as (source, target, edge_type, weight) tuples
-    pub graph_edges: Vec<(String, String, String, f64)>,
 }
 
 /// Parameters for sm_run_lifecycle
@@ -193,32 +194,15 @@ pub struct FactorGraphNodeInput {
     pub initial_belief: f64,
 }
 
-/// An edge input for the factor graph.
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct FactorGraphEdgeInput {
-    /// Source node ID
-    pub source: String,
-    /// Target node ID
-    pub target: String,
-    /// Edge type: "semantic", "temporal", "causal", or "entity"
-    pub edge_type: String,
-    /// Edge weight (default 1.0)
-    #[serde(default = "default_weight")]
-    pub weight: f64,
-    /// Optional metadata JSON string with type-specific values:
-    /// semantic: {"cosine_similarity": F}, temporal: {"delta_secs": N},
-    /// causal: {"confidence": F}, entity: {"relation": "..."}
-    #[serde(default)]
-    pub metadata: Option<String>,
-}
-
 /// Parameters for sm_factor_graph
+///
+/// MCP-001: edges field removed — edges are now loaded from the store
+/// automatically. Caller supplies only node initial beliefs and optional
+/// config overrides.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct FactorGraphParams {
     /// Nodes with their initial belief scores
     pub nodes: Vec<FactorGraphNodeInput>,
-    /// Edges to build factors from
-    pub edges: Vec<FactorGraphEdgeInput>,
     /// Weight for semantic factors (default 0.35)
     #[serde(default)]
     pub semantic_weight: Option<f64>,
@@ -245,19 +229,24 @@ pub struct FactorGraphParams {
 // ─── Topology tools ─────────────────────────────────────────────────────
 
 /// Parameters for sm_topology
+///
+/// MCP-001: edges field removed — edges are now loaded from the store
+/// automatically. The params struct is kept for schema compatibility but
+/// the edges field is no longer used.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TopologyParams {
-    /// Edges as (source, target) pairs representing the graph to analyze
-    pub edges: Vec<(String, String)>,
+    // No caller-supplied edges — loaded from store internally.
 }
 
 // ─── Community tools ────────────────────────────────────────────────────
 
 /// Parameters for sm_community
+///
+/// MCP-001: edges field removed — edges are now loaded from the store
+/// automatically. Configuration params (resolution, seed, contradictions,
+/// importance_scores) remain caller-supplied.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct CommunityParams {
-    /// Edges as (source, target) pairs representing the graph to analyze
-    pub edges: Vec<(String, String)>,
     /// Resolution parameter for community detection (default 1.0). Higher values favor smaller communities.
     #[serde(default)]
     pub resolution: Option<f64>,
