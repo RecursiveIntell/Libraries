@@ -69,7 +69,7 @@ routing = []
 # Phase 9b: benchmark harness for routing — requires routing.
 benchmark = ["routing"]
 # Phase 10: cross-feature integration wiring — requires all constituent features.
-integration = ["provenance", "temporal", "multiscale", "discord", "decoder", "subtraction", "compression-governor", "routing"]
+integration = ["provenance", "temporal", "multiscale", "discord", "decoder", "subtraction", "compression-governor", "routing", "topology", "community", "subgraph-pruning", "matryoshka"]
 # ColBERT-style late interaction multi-vector retrieval (3rd RRF signal).
 late-interaction = []
 # Persistent homology and topological void detection for knowledge graphs.

@@ -135,6 +135,24 @@ pub mod integration;
 /// novel combination: unified probabilistic reasoning over all edge types.
 #[cfg(feature = "integration")]
 pub mod factor_graph;
+/// ColBERT-style late interaction multi-vector retrieval.
+#[cfg(feature = "late-interaction")]
+pub mod late_interaction;
+/// Persistent homology and topological void detection for knowledge graphs.
+#[cfg(feature = "topology")]
+pub mod topology;
+/// Matryoshka Representation Learning: multi-resolution embedding truncation.
+#[cfg(feature = "matryoshka")]
+pub mod matryoshka;
+/// Leiden community detection with contradiction tracking.
+#[cfg(feature = "community")]
+pub mod community;
+/// RL-trained retrieval routing on receipt replay data.
+#[cfg(feature = "rl-routing")]
+pub mod rl_routing;
+/// Reasoning subgraph pruning with lawful subtraction.
+#[cfg(feature = "subgraph-pruning")]
+pub mod subgraph_pruning;
 pub mod search;
 pub mod storage;
 mod store_support;

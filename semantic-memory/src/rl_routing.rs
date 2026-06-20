@@ -309,6 +309,8 @@ mod tests {
         let mut policy = RoutingPolicy::default();
 
         // Train with high outcome for decoder-enabled decisions.
+        // Use a high learning rate to ensure weights cross the 0.5 threshold.
+        policy.learning_rate = 0.1;
         let profile = QueryProfile::from_query("compare rust vs python");
         let decision = RoutingDecision {
             bm25_coarse: true,
@@ -320,7 +322,7 @@ mod tests {
             no_retrieval: false,
             reasoning: "test".to_string(),
         };
-        for _ in 0..20 {
+        for _ in 0..50 {
             let example = TrainingExample {
                 query_profile: profile.clone(),
                 decision: decision.clone(),
@@ -334,7 +336,8 @@ mod tests {
         let rl_decision = route_with_rl(&policy, &test_profile);
         assert!(
             rl_decision.decoder,
-            "trained policy should enable decoder for contradiction queries"
+            "trained policy should enable decoder for contradiction queries (decoder weight: {})",
+            policy.weights.get("decoder").unwrap_or(&0.0)
         );
     }
 
