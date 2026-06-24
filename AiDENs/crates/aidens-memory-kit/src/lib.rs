@@ -4,6 +4,12 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use thiserror::Error;
 
+#[cfg(feature = "semantic-memory-integration")]
+pub mod semantic_adapter;
+
+#[cfg(feature = "semantic-memory-integration")]
+pub use semantic_adapter::SemanticMemoryAdapter;
+
 pub mod canonical_stack {
     pub use forge_memory_bridge::{
         transform_envelope_v3, BridgeError, ProjectionImportBatchV3,
