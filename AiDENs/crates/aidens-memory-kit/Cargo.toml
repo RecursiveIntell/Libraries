@@ -6,6 +6,10 @@ rust-version = "1.76"
 license = "MIT OR Apache-2.0"
 description = "Memory facade — search, graph, integrity, receipts over semantic-memory"
 
+[features]
+# Enables SemanticMemoryAdapter with TurboQuant compressed search, graph traversal,
+# integrity verification, and receipt replay wired through semantic-memory's full API.
+semantic-memory-integration = ["semantic-memory/turbo-quant-codec"]
 
 [dependencies]
 forge-memory-bridge = { version = "0.1.0", path = "../../../forge-memory-bridge" }
