@@ -11,4 +11,5 @@ description = "Delegation status surface (quarantined — status interface only)
 aidens-contracts = { path = "../aidens-contracts" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
 thiserror = "2"

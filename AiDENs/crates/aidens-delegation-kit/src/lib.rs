@@ -5,6 +5,8 @@
 //! coupled to those local shadow fields, so it is intentionally not preserved
 //! as a compatibility adapter.
 
+pub mod federation;
+
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq, Eq)]

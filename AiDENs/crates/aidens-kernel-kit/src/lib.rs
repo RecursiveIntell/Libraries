@@ -1,10 +1,17 @@
 //! Thin kernel facade over canonical compiler, execution, oracle, and core crates.
 
 pub mod regional_decoder;
+pub mod lawful_subtraction;
+pub mod mechanism;
 
 pub use regional_decoder::{
     classify_convergence, ConvergenceState, ConvergenceStopReason, RegionConvergenceReportV1,
     RegionContractV1, ResidualEnvelopeV1, SyndromeEnvelopeV1,
+};
+
+pub use lawful_subtraction::{
+    BudgetType, CompactionReceiptV1, InvariantBudgetV1, RemovalFrontierV1, SubtractionOperation,
+    SubtractionPlanV1, SupportCoreV1,
 };
 
 pub mod canonical_stack {
