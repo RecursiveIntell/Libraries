@@ -67,7 +67,7 @@ pub(crate) fn scaffold_project_inner(
         ),
         (
             "Cargo.toml",
-            render_cargo_toml(&package_name, &workspace_aidens_crate_path()),
+            render_cargo_toml(&package_name, &workspace_aidens_crate_path()?),
         ),
         ("aidens.toml", cfg.to_toml_string()?),
         ("README.md", render_generated_readme(&package_name)),
@@ -208,13 +208,13 @@ pub(crate) fn scaffold_sandbox_root(app_dir: &Path) -> Result<PathBuf> {
     }
 }
 
-pub(crate) fn workspace_aidens_crate_path() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
+pub(crate) fn workspace_aidens_crate_path() -> Result<PathBuf> {
+    Ok(Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
         .nth(2)
-        .expect("workspace root")
+        .ok_or_else(|| anyhow::anyhow!("CARGO_MANIFEST_DIR has fewer than 2 ancestors"))?
         .join("crates")
-        .join("aidens")
+        .join("aidens"))
 }
 
 pub(crate) fn render_cargo_toml(package_name: &str, aidens_path: &Path) -> String {

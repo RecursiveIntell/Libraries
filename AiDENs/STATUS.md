@@ -49,7 +49,7 @@ All 17 verification gates pass. P32 completed schema compatibility work: Conform
 | `aidens-config` | implemented |
 | `aidens-contracts` | implemented |
 | `aidens-daemon-kit` | implemented |
-| `aidens-delegation-kit` | partial |
+| `aidens-delegation-kit` | implemented (quarantined) |
 | `aidens-governance-kit` | implemented |
 | `aidens-integration-tests` | implemented |
 | `aidens-kernel-kit` | implemented |
@@ -57,10 +57,10 @@ All 17 verification gates pass. P32 completed schema compatibility work: Conform
 | `aidens-permit-kit` | implemented |
 | `aidens-plan-kit` | implemented |
 | `aidens-profile-coding` | implemented |
-| `aidens-profile-daemon` | scaffold-only |
-| `aidens-profile-desktop` | scaffold-only |
-| `aidens-profile-memory` | scaffold-only |
-| `aidens-profile-research` | scaffold-only |
+| `aidens-profile-daemon` | scaffold-only (honest) |
+| `aidens-profile-desktop` | scaffold-only (honest) |
+| `aidens-profile-memory` | scaffold-only (honest) |
+| `aidens-profile-research` | scaffold-only (honest) |
 | `aidens-provider-kit` | implemented |
 | `aidens-queue-kit` | implemented |
 | `aidens-receipts` | implemented |
@@ -71,7 +71,7 @@ All 17 verification gates pass. P32 completed schema compatibility work: Conform
 | `aidens-testkit` | implemented |
 | `aidens-tool-kit` | implemented |
 | `aidens-wake-kit` | implemented |
-| `boundary-compiler-core` | partial |
+| `boundary-compiler-core` | implemented |
 
 ## Key Repairs
 
