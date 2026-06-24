@@ -11,6 +11,7 @@ description = "Governance facade — permit checking, release readiness, authori
 assurance-runtime = { version = "0.1.0", path = "../../../assurance-runtime" }
 authority-delegation = { version = "0.1.0", path = "../../../authority-delegation" }
 chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
 verification-adjudication = { version = "0.1.0", path = "../../../verification-adjudication" }

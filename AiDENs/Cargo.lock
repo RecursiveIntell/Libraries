@@ -207,6 +207,7 @@ dependencies = [
  "assurance-runtime",
  "authority-delegation",
  "chrono",
+ "serde",
  "serde_json",
  "stack-ids",
  "verification-adjudication",

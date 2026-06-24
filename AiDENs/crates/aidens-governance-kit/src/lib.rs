@@ -1,5 +1,12 @@
 //! Thin governance facade over canonical verification and policy crates.
 
+pub mod verification;
+
+pub use verification::{
+    evaluate_promotion, ClaimEvidenceBundleV1, GovernanceAction, GovernanceDecisionV1,
+    RiskClass, VerificationDisposition, VerificationPlanV1,
+};
+
 pub mod canonical_stack {
     pub use assurance_runtime;
     pub use authority_delegation::{
