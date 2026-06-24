@@ -1,6 +1,0 @@
-pattern,reason
-missing evals/p20_agency_eval_cases.jsonl,agency tests compile/runtime break
-production deps in aidens-testkit,reference crate impurity
-cloud provider supported without tests,capability dishonesty
-missing include_str target,compile/test target break
-manifest entry missing,release artifact dishonesty

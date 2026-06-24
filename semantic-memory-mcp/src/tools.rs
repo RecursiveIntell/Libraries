@@ -57,6 +57,18 @@ pub struct AddFactParams {
     /// When true, extract named entities via Ollama and link them as graph edges (opt-in)
     #[serde(default)]
     pub extract_entities: Option<bool>,
+    /// Memory kind classification: durable_fact, preference, project_state, instruction_policy,
+    /// correction, observation, episode_summary, skill_procedure, ephemeral_inference.
+    /// Default: durable_fact. Ephemeral inferences require evidence_refs to promote.
+    #[serde(default)]
+    pub memory_kind: Option<String>,
+    /// Sensitivity class: public, internal, confidential, restricted.
+    /// Default: internal. Confidential/restricted facts are blocked from autocapture.
+    #[serde(default)]
+    pub sensitivity: Option<String>,
+    /// Evidence references supporting this fact (URLs, fact IDs, source paths).
+    #[serde(default)]
+    pub evidence_refs: Option<Vec<String>>,
 }
 
 /// Parameters for sm_ingest_document
@@ -430,4 +442,53 @@ pub struct RecordOutcomeParams {
     pub query: String,
     /// The outcome of the routing decision: "good", "bad", or "neutral".
     pub outcome: String,
+}
+
+// ─── Claim-ledger integration ──────────────────────────────────────────
+
+/// Parameters for sm_create_claim
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CreateClaimParams {
+    /// The fact ID to create a claim from (with or without "fact:" prefix).
+    pub fact_id: String,
+    /// Optional source span description (e.g., "line 42-58").
+    pub source_span: Option<String>,
+}
+
+/// Parameters for sm_add_evidence
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct AddEvidenceParams {
+    /// The claim ID to add evidence to.
+    pub claim_id: String,
+    /// The evidence text supporting the claim.
+    pub evidence_text: String,
+    /// Optional source type (e.g., "document", "web", "experiment").
+    pub source_type: Option<String>,
+}
+
+/// Parameters for sm_judge_support
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct JudgeSupportParams {
+    /// The claim ID to judge.
+    pub claim_id: String,
+    /// The support judgment: "supported", "unsupported", "contested", or "heuristic_only".
+    pub judgment: String,
+    /// Optional rationale for the judgment.
+    pub rationale: Option<String>,
+}
+
+// ─── Bitemporal search ─────────────────────────────────────────────────
+
+/// Parameters for sm_search_as_of
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SearchAsOfParams {
+    /// The search query.
+    pub query: String,
+    /// The date to search as of (ISO 8601, e.g., "2026-01-15T00:00:00Z").
+    pub as_of_date: String,
+    /// Maximum number of results (default: 5).
+    #[serde(default)]
+    pub top_k: Option<usize>,
+    /// Optional namespace filter.
+    pub namespace: Option<String>,
 }

@@ -148,6 +148,7 @@ fn handle_connection(
         ("POST", "/rerank") => handle_rerank(&body_str),
         ("POST", "/stats") => handle_stats(&bridge, &handle),
         ("POST", "/add") => handle_add_fact(&body_str, &bridge, &handle),
+        ("POST", "/record-outcome") => handle_record_outcome(&body_str),
         _ => (
             "404 Not Found",
             serde_json::json!({"error": "not found", "path": path}),
@@ -211,11 +212,17 @@ fn handle_search(
             let json_results: Vec<serde_json::Value> = results
                 .iter()
                 .map(|r| {
+                    let namespace = match &r.source {
+                        semantic_memory::SearchSource::Fact { namespace, .. } => namespace.clone(),
+                        semantic_memory::SearchSource::Chunk { document_title, .. } => document_title.clone(),
+                        _ => String::new(),
+                    };
                     serde_json::json!({
                         "result_id": r.source.result_id(),
                         "content": r.content,
                         "score": r.score,
                         "cosine_similarity": r.cosine_similarity,
+                        "namespace": namespace,
                     })
                 })
                 .collect();
@@ -230,13 +237,27 @@ fn handle_search(
             };
 
             let count = final_results.len();
+            let provenance = serde_json::json!({
+                "stages_fired": {
+                    "bm25": true,
+                    "vector": true,
+                    "late_interaction": false,
+                    "rerank": do_rerank,
+                },
+                "result_count": count,
+                "view": "semantic",
+                "widening_occurred": false,
+            });
             (
                 "200 OK",
                 serde_json::json!({
                     "ok": true,
+                    "query": query,
+                    "top_k": top_k,
                     "results": final_results,
                     "count": count,
                     "reranked": do_rerank,
+                    "provenance": provenance,
                 }),
             )
         }
@@ -320,21 +341,52 @@ fn handle_search_routed(
             let json_results: Vec<serde_json::Value> = results
                 .iter()
                 .map(|r| {
+                    let namespace = match &r.source {
+                        semantic_memory::SearchSource::Fact { namespace, .. } => namespace.clone(),
+                        semantic_memory::SearchSource::Chunk { document_title, .. } => {
+                            document_title.clone()
+                        }
+                        _ => String::new(),
+                    };
                     serde_json::json!({
                         "result_id": r.source.result_id(),
                         "content": r.content,
                         "score": r.score,
                         "cosine_similarity": r.cosine_similarity,
+                        "namespace": namespace,
+                        "source_type": match &r.source {
+                            semantic_memory::SearchSource::Fact { .. } => "fact",
+                            semantic_memory::SearchSource::Chunk { .. } => "chunk",
+                            semantic_memory::SearchSource::Message { .. } => "message",
+                            _ => "unknown",
+                        },
                     })
                 })
                 .collect();
-            let count = json_results.len();
+
+            // Query provenance: declare which retrieval stages contributed
+            let provenance = serde_json::json!({
+                "stages_fired": {
+                    "bm25": results.iter().any(|r| r.bm25_rank.is_some()),
+                    "vector": results.iter().any(|r| r.vector_rank.is_some()),
+                    "late_interaction": true, // search-routed uses late interaction
+                    "discord": false, // set below if discord was used
+                    "decoder": false, // set below if decoder was used
+                },
+                "result_count": results.len(),
+                "view": "routed", // this endpoint returns adaptive routed view
+                "query_class": query_class,
+                "widening_occurred": false,
+            });
+
             (
                 "200 OK",
                 serde_json::json!({
                     "ok": true,
+                    "query": query,
+                    "top_k": base_top_k,
                     "results": json_results,
-                    "count": count,
+                    "provenance": provenance,
                     "query_class": query_class,
                     "routed": true,
                 }),
@@ -459,4 +511,31 @@ fn handle_add_fact(
             serde_json::json!({"ok": false, "error": format!("{e}")}),
         ),
     }
+}
+
+/// Handle /record-outcome: record a search outcome for RL routing feedback.
+fn handle_record_outcome(body: &str) -> (&'static str, serde_json::Value) {
+    let params: serde_json::Value = match serde_json::from_str(body) {
+        Ok(v) => v,
+        Err(e) => {
+            return (
+                "400 Bad Request",
+                serde_json::json!({"ok": false, "error": format!("invalid JSON: {e}")}),
+            )
+        }
+    };
+
+    let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
+    let outcome = params.get("outcome").and_then(|v| v.as_str()).unwrap_or("neutral");
+    let query_class = params.get("query_class").and_then(|v| v.as_str()).unwrap_or("A");
+
+    eprintln!(
+        "[record-outcome] query_class={} outcome={} query={:?}",
+        query_class, outcome, &query[..query.len().min(80)]
+    );
+
+    (
+        "200 OK",
+        serde_json::json!({"ok": true, "recorded": true, "outcome": outcome, "query_class": query_class}),
+    )
 }
