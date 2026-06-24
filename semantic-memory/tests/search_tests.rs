@@ -1,7 +1,7 @@
 #![allow(clippy::expect_used)]
 
 use semantic_memory::search::{cosine_similarity, sanitize_fts_query, source_dedup_key};
-#[cfg(any(feature = "turbo-quant-codec", feature = "poly-kv-pool"))]
+#[cfg(feature = "turbo-quant-codec")]
 use semantic_memory::DerivedVectorBackendPolicy;
 #[cfg(any(feature = "testing", feature = "turbo-quant-codec"))]
 use semantic_memory::ExactnessProfile;
@@ -9,8 +9,7 @@ use semantic_memory::SearchSource;
 use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder, SearchConfig, SearchSourceType};
 #[cfg(any(
     feature = "testing",
-    feature = "turbo-quant-codec",
-    feature = "poly-kv-pool"
+    feature = "turbo-quant-codec"
 ))]
 use semantic_memory::{ReceiptMode, SearchContext};
 use tempfile::TempDir;
@@ -36,20 +35,6 @@ fn turbo_quant_test_store() -> (MemoryStore, TempDir) {
     config.search.derived_vector_backend = DerivedVectorBackendPolicy::TurboQuantCandidateOnly;
     config.search.turbo_quant_bits = 8;
     config.search.turbo_quant_projections = 64;
-    config.search.candidate_pool_size = 20;
-    let embedder = Box::new(MockEmbedder::new(768));
-    let store = MemoryStore::open_with_embedder(config, embedder).unwrap();
-    (store, tmp)
-}
-
-#[cfg(feature = "poly-kv-pool")]
-fn provekv_pool_test_store() -> (MemoryStore, TempDir) {
-    let tmp = TempDir::new().unwrap();
-    let mut config = MemoryConfig {
-        base_dir: tmp.path().to_path_buf(),
-        ..Default::default()
-    };
-    config.search.derived_vector_backend = DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly;
     config.search.candidate_pool_size = 20;
     let embedder = Box::new(MockEmbedder::new(768));
     let store = MemoryStore::open_with_embedder(config, embedder).unwrap();
@@ -321,6 +306,8 @@ fn rrf_fusion_order() {
             source: make_fact_source("A"),
             raw_score: 0.1,
             updated_at: None,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
         Bm25Hit {
             id: "B".to_string(),
@@ -328,6 +315,8 @@ fn rrf_fusion_order() {
             source: make_fact_source("B"),
             raw_score: 0.2,
             updated_at: None,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
         Bm25Hit {
             id: "C".to_string(),
@@ -335,6 +324,8 @@ fn rrf_fusion_order() {
             source: make_fact_source("C"),
             raw_score: 0.3,
             updated_at: None,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
     ];
 
@@ -348,6 +339,8 @@ fn rrf_fusion_order() {
             source_rank: Some(1),
             source_similarity: Some(0.9),
             reranked_from_f32: false,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
         VectorHit {
             id: "D".to_string(),
@@ -358,6 +351,8 @@ fn rrf_fusion_order() {
             source_rank: Some(2),
             source_similarity: Some(0.8),
             reranked_from_f32: false,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
         VectorHit {
             id: "A".to_string(),
@@ -368,6 +363,8 @@ fn rrf_fusion_order() {
             source_rank: Some(3),
             source_similarity: Some(0.7),
             reranked_from_f32: false,
+            temporal_weight: None,
+            provenance_confidence: None,
         },
     ];
 
@@ -1558,6 +1555,10 @@ async fn recency_zero_half_life_is_rejected() {
     assert_eq!(err.kind(), "invalid_config");
 }
 
+// With the candle-embedder feature, Ollama URL validation is skipped
+// (CandleEmbedder doesn't use Ollama). This test only runs when
+// candle-embedder is NOT enabled.
+#[cfg(not(feature = "candle-embedder"))]
 #[tokio::test]
 async fn invalid_ollama_url_is_rejected() {
     let tmp = TempDir::new().unwrap();
@@ -1613,76 +1614,6 @@ async fn turbo_quant_candidate_backend_requires_safe_bits_and_exact_rerank() {
         Err(err) => err,
     };
     assert!(err.to_string().contains("require exact f32 rerank"));
-}
-
-#[cfg(feature = "poly-kv-pool")]
-#[tokio::test]
-async fn provekv_pool_candidate_backend_requires_exact_f32_rerank() {
-    use semantic_memory::DerivedVectorBackendPolicy;
-
-    let tmp = TempDir::new().unwrap();
-    let config = MemoryConfig {
-        base_dir: tmp.path().to_path_buf(),
-        search: SearchConfig {
-            derived_vector_backend: DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly,
-            turbo_quant_require_exact_rerank: false,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-    let err = match MemoryStore::open_with_embedder(config, Box::new(MockEmbedder::new(768))) {
-        Ok(_) => panic!("proveKV pool candidate backend without exact rerank should be rejected"),
-        Err(err) => err,
-    };
-    assert!(err.to_string().contains("require exact f32 rerank"));
-}
-
-#[cfg(feature = "poly-kv-pool")]
-#[tokio::test]
-async fn provekv_pool_candidate_backend_receipt_declares_guarded_fallback() {
-    let (store, _tmp) = provekv_pool_test_store();
-    let fact_id = store
-        .add_fact(
-            "general",
-            "proveKV pool receipt candidate fixture",
-            None,
-            None,
-        )
-        .await
-        .unwrap();
-
-    let mut context = SearchContext::default_now();
-    context.receipt_mode = ReceiptMode::ReturnReceipt;
-    let response = store
-        .search_vector_only_with_context(
-            "proveKV pool receipt candidate fixture",
-            Some(1),
-            None,
-            None,
-            context,
-        )
-        .await
-        .unwrap();
-    let receipt = response.receipt.expect("receipt should be returned");
-
-    assert_eq!(
-        receipt.candidate_backend,
-        "provekv_pool_candidate_then_exact_f32"
-    );
-    assert_eq!(
-        receipt.fallback.as_deref(),
-        Some("provekv_pool_generation_not_materialized")
-    );
-    assert_eq!(receipt.codec_family.as_deref(), Some("provekv_pool"));
-    assert!(receipt.exact_rerank);
-    assert!(!receipt.approximate);
-    assert_eq!(
-        receipt.fallback_reason.as_deref(),
-        receipt.fallback.as_deref()
-    );
-    assert!(receipt.result_ids.contains(&format!("fact:{fact_id}")));
-    assert!(receipt.degradations.iter().any(|reason| reason
-        .contains("using authoritative f32 exact path until a pool generation is materialized")));
 }
 
 // ─── V2: Buffer Reuse Correctness (Fix 6 regression) ────────

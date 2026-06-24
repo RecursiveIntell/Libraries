@@ -96,7 +96,9 @@ impl MemoryConfig {
 /// Embedding provider configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmbeddingConfig {
-    /// Ollama base URL.
+    /// Ollama base URL. Only required when using OllamaEmbedder.
+    /// When using CandleEmbedder (default with `candle-embedder` feature),
+    /// this field is ignored. Defaults to `http://localhost:11434`.
     pub ollama_url: String,
 
     /// Embedding model name.
@@ -138,19 +140,32 @@ impl EmbeddingConfig {
         if self.timeout_secs == 0 {
             self.timeout_secs = 1;
         }
-        let parsed =
-            reqwest::Url::parse(&self.ollama_url).map_err(|_| MemoryError::InvalidConfig {
-                field: "embedding.ollama_url",
-                reason: "must be an absolute http:// or https:// URL".to_string(),
-            })?;
-        match parsed.scheme() {
-            "http" | "https" if parsed.host_str().is_some() => {}
-            _ => {
-                return Err(MemoryError::InvalidConfig {
+        // Validate ollama_url only when it will be used. With the
+        // candle-embedder feature, the default embedder is CandleEmbedder
+        // which does not use Ollama, so a placeholder URL is fine.
+        #[cfg(not(feature = "candle-embedder"))]
+        {
+            let parsed =
+                reqwest::Url::parse(&self.ollama_url).map_err(|_| MemoryError::InvalidConfig {
                     field: "embedding.ollama_url",
                     reason: "must be an absolute http:// or https:// URL".to_string(),
-                })
+                })?;
+            match parsed.scheme() {
+                "http" | "https" if parsed.host_str().is_some() => {}
+                _ => {
+                    return Err(MemoryError::InvalidConfig {
+                        field: "embedding.ollama_url",
+                        reason: "must be an absolute http:// or https:// URL".to_string(),
+                    })
+                }
             }
+        }
+        // With candle-embedder, skip URL validation — the field is ignored
+        // by CandleEmbedder. If OllamaEmbedder is used explicitly via
+        // open_with_embedder, it does its own URL handling.
+        #[cfg(feature = "candle-embedder")]
+        {
+            let _ = &self.ollama_url; // suppress unused field warning
         }
         Ok(())
     }
@@ -169,6 +184,18 @@ pub struct SearchConfig {
     /// Defaults to 0.0 (disabled). Set to 1.0 to enable as 3rd RRF signal.
     #[serde(default = "default_zero")]
     pub late_interaction_weight: f64,
+
+    /// BM25 k1 parameter. Controls term frequency saturation.
+    /// Default: 1.2 (FTS5 standard). Lower (0.8-1.0) helps with technical content.
+    pub bm25_k1: f64,
+
+    /// BM25 b parameter. Controls document length normalization.
+    /// Default: 0.75 (FTS5 standard).
+    pub bm25_b: f64,
+
+    /// Optional per-namespace weight multipliers.
+    /// Empty = no weighting (all namespaces scored equally).
+    pub namespace_weights: std::collections::HashMap<String, f64>,
 
     /// RRF constant (k). Controls rank importance decay.
     pub rrf_k: f64,
@@ -259,7 +286,10 @@ impl Default for SearchConfig {
         Self {
             bm25_weight: 1.0,
             vector_weight: 1.0,
-            late_interaction_weight: 0.0,
+            late_interaction_weight: 0.15,
+            bm25_k1: 1.2,
+            bm25_b: 0.75,
+            namespace_weights: std::collections::HashMap::new(),
             rrf_k: 60.0,
             candidate_pool_size: 50,
             default_top_k: 5,
@@ -372,16 +402,6 @@ impl SearchConfig {
                 }
             }
         }
-        if self.uses_provekv_pool_backend() {
-            #[cfg(not(feature = "poly-kv-pool"))]
-            {
-                return Err(MemoryError::InvalidConfig {
-                    field: "search.derived_vector_backend",
-                    reason: "provekv_pool_candidate_only requires the poly-kv-pool feature"
-                        .to_string(),
-                });
-            }
-        }
         if self.uses_derived_vector_backend() && !self.turbo_quant_require_exact_rerank {
             return Err(MemoryError::InvalidConfig {
                 field: "search.turbo_quant_require_exact_rerank",
@@ -390,6 +410,22 @@ impl SearchConfig {
         }
         Ok(())
     }
+}
+
+/// Chunking strategy to use when splitting text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ChunkingStrategy {
+    /// Plain recursive splitting (current/default behavior).
+    #[default]
+    Plain,
+    /// Sentence-boundary-aware chunking with configurable overlap.
+    Sentence,
+    /// Code-aware chunking that avoids splitting inside function bodies.
+    /// Detects Rust, Python, and TypeScript blocks.
+    Code,
+    /// Markdown-header-based chunking that splits on header boundaries.
+    Markdown,
 }
 
 /// Text chunking parameters.
@@ -406,6 +442,11 @@ pub struct ChunkingConfig {
 
     /// Overlap between adjacent chunks in characters.
     pub overlap: usize,
+
+    /// Chunking strategy to use. Defaults to [`ChunkingStrategy::Plain`]
+    /// for backward compatibility.
+    #[serde(default)]
+    pub strategy: ChunkingStrategy,
 }
 
 impl Default for ChunkingConfig {
@@ -415,6 +456,7 @@ impl Default for ChunkingConfig {
             min_size: 100,
             max_size: 2000,
             overlap: 200,
+            strategy: ChunkingStrategy::default(),
         }
     }
 }

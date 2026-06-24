@@ -1327,6 +1327,10 @@ def common_archive_root(roots: Sequence[Path]) -> Path:
 
 def discover_cargo_path_roots(root: Path, policy: Policy) -> list[Path]:
     roots: list[Path] = [root.resolve()]
+    if policy.profile == "semantic-memory":
+        mcp_root = root.resolve().parent / "semantic-memory-mcp"
+        if (mcp_root / "Cargo.toml").exists() and not is_under_any(mcp_root, roots):
+            roots.append(mcp_root.resolve())
     scanned_manifests: set[Path] = set()
     index = 0
 
@@ -1577,15 +1581,20 @@ def check_script_refs(root: Path, included: Sequence[Path]) -> list[Finding]:
                         (project_root / ref).resolve(),
                         (root / ref).resolve(),
                     ]
-                    if any(candidate.exists() for candidate in candidates):
-                        for candidate in candidates:
-                            if candidate.exists() and is_relative_to(candidate, root) and candidate.resolve() not in included_resolved:
-                                findings.append(Finding(
-                                    code="script-ref-not-archived",
-                                    severity="error",
-                                    path=rel,
-                                    detail=f"Script reference exists but is not included: {ref}",
-                                ))
+                    existing_candidates = [
+                        candidate
+                        for candidate in candidates
+                        if candidate.exists() and is_relative_to(candidate, root)
+                    ]
+                    if existing_candidates:
+                        if any(candidate.resolve() in included_resolved for candidate in existing_candidates):
+                            continue
+                        findings.append(Finding(
+                            code="script-ref-not-archived",
+                            severity="error",
+                            path=rel,
+                            detail=f"Script reference exists but is not included: {ref}",
+                        ))
                         continue
                     findings.append(Finding(
                         code="script-ref-missing",
@@ -1703,25 +1712,140 @@ def table_dep(version: str, features: Sequence[str] | None = None) -> str:
     return f'{{ version = "{version}", features = [{rendered_features}] }}'
 
 
-def semantic_memory_workspace_manifest(archive_root: Path) -> bytes:
+def extract_toml_section_text(manifest: Path, section_names: set[str]) -> str | None:
+    text = read_text_lossy(manifest)
+    if text is None:
+        return None
+
+    lines = text.splitlines()
+    sections: list[str] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        match = re.match(r"^\s*\[([A-Za-z0-9_.-]+)\]\s*$", line)
+        if not match:
+            index += 1
+            continue
+        section_name = match.group(1)
+        start = index
+        index += 1
+        while index < len(lines) and not re.match(r"^\s*\[[A-Za-z0-9_.-]+\]\s*$", lines[index]):
+            index += 1
+        if section_name in section_names:
+            sections.append("\n".join(lines[start:index]).rstrip())
+
+    if not sections:
+        return None
+    return "\n\n".join(sections) + "\n"
+
+
+def cargo_manifest_tables(cargo_toml: Path) -> set[str]:
+    text = read_text_lossy(cargo_toml)
+    if text is None:
+        return set()
+    if tomllib is not None:
+        try:
+            parsed = tomllib.loads(text)
+        except tomllib.TOMLDecodeError:
+            parsed = None
+        if isinstance(parsed, dict):
+            return {key for key, value in parsed.items() if isinstance(value, dict)}
+    return {
+        match.group(1)
+        for match in re.finditer(r"^\s*\[([A-Za-z0-9_.-]+)\]\s*$", text, flags=re.MULTILINE)
+    }
+
+
+def strip_toml_sections(text: str, section_names: set[str]) -> tuple[str, bool]:
+    lines = text.splitlines()
+    output: list[str] = []
+    changed = False
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        match = re.match(r"^\s*\[([A-Za-z0-9_.-]+)\]\s*$", line)
+        if not match or match.group(1) not in section_names:
+            output.append(line)
+            index += 1
+            continue
+        changed = True
+        index += 1
+        while index < len(lines) and not re.match(r"^\s*\[[A-Za-z0-9_.-]+\]\s*$", lines[index]):
+            index += 1
+    if not changed:
+        return text, False
+    return "\n".join(output).lstrip("\n").rstrip() + "\n", True
+
+
+def cargo_path_dependency_manifests(archive_root: Path, included: Sequence[Path]) -> set[Path]:
+    manifests: set[Path] = set()
+    for cargo_toml in included:
+        if cargo_toml.name != "Cargo.toml":
+            continue
+        for ref in cargo_path_refs(cargo_toml):
+            dep_root = cargo_package_root((cargo_toml.parent / ref).resolve())
+            if dep_root is None or not is_relative_to(dep_root, archive_root):
+                continue
+            dep_manifest = (dep_root / "Cargo.toml").resolve()
+            if dep_manifest.exists():
+                manifests.add(dep_manifest)
+    return manifests
+
+
+def semantic_memory_member_paths(archive_root: Path, included: Sequence[Path]) -> list[str]:
+    cargo_manifests = sorted(
+        (path for path in included if path.name == "Cargo.toml"),
+        key=lambda path: to_posix(safe_relative(path, archive_root)),
+    )
+    workspace_roots: list[Path] = []
+    manifest_tables: dict[Path, set[str]] = {}
+
+    for manifest in cargo_manifests:
+        tables = cargo_manifest_tables(manifest)
+        manifest_tables[manifest] = tables
+        rel_dir = manifest.parent.resolve()
+        if "workspace" in tables and rel_dir != archive_root.resolve():
+            workspace_roots.append(rel_dir)
+
+    members: list[str] = []
+    for manifest in cargo_manifests:
+        tables = manifest_tables[manifest]
+        if "package" not in tables:
+            continue
+        crate_root = manifest.parent.resolve()
+        if any(crate_root == workspace_root or is_relative_to(crate_root, workspace_root) for workspace_root in workspace_roots):
+            continue
+        rel = to_posix(safe_relative(manifest.parent, archive_root))
+        if rel == ".":
+            continue
+        members.append(rel)
+
+    if "semantic-memory" in members:
+        members.remove("semantic-memory")
+        members.insert(0, "semantic-memory")
+    return members
+
+
+def fallback_workspace_dependency_sections(archive_root: Path) -> str:
     parent_manifest = archive_root / "Cargo.toml"
+    extracted = extract_toml_section_text(
+        parent_manifest,
+        {
+            "workspace.dependencies",
+            "workspace.lints.rust",
+            "workspace.lints.clippy",
+        },
+    )
+    if extracted is not None:
+        return extracted.rstrip()
 
     def version(name: str, fallback: str) -> str:
         return toml_workspace_version(parent_manifest, name, fallback)
 
-    body = f"""# Generated by semantic-memory/z.py for hermetic review archives.
-[workspace]
-resolver = "2"
-members = [
-  "semantic-memory",
-  "stack-ids",
-  "semantic-memory-forge",
-  "forge-memory-bridge",
-  "turbo-quant",
-]
-default-members = ["semantic-memory"]
-
-[workspace.dependencies]
+    return f"""[workspace.dependencies]
+async-trait = {table_dep(version("async-trait", "0.1.89"))}
+blake3 = {table_dep(version("blake3", "1.8.3"))}
+sha2 = {table_dep(version("sha2", "0.10"))}
 rusqlite = {table_dep(version("rusqlite", "0.32.1"), ["bundled", "blob"])}
 serde = {table_dep(version("serde", "1.0.228"), ["derive"])}
 serde_json = {table_dep(version("serde_json", "1.0.149"))}
@@ -1746,7 +1870,63 @@ unwrap_used = "warn"
 expect_used = "warn"
 panic = "warn"
 """
+
+
+def semantic_memory_workspace_manifest(archive_root: Path, member_paths: Sequence[str]) -> bytes:
+    members = list(member_paths) or ["semantic-memory"]
+    member_lines = "\n".join(f'  "{member}",' for member in members)
+    dependency_sections = fallback_workspace_dependency_sections(archive_root)
+
+    body = f"""# Generated by semantic-memory/z.py for hermetic review archives.
+[workspace]
+resolver = "2"
+members = [
+{member_lines}
+]
+default-members = ["semantic-memory"]
+
+{dependency_sections}
+"""
     return body.encode("utf-8")
+
+
+def rewrite_cargo_manifest_paths_for_archive(
+    cargo_toml: Path,
+    archive_root: Path,
+    path_dependency_manifests: set[Path],
+) -> bytes | None:
+    text = read_text_lossy(cargo_toml)
+    if text is None:
+        return None
+
+    changed = False
+    tables = cargo_manifest_tables(cargo_toml)
+    if (
+        cargo_toml.resolve() in path_dependency_manifests
+        and "package" in tables
+        and "workspace" in tables
+    ):
+        text, stripped = strip_toml_sections(text, {"workspace"})
+        changed = changed or stripped
+
+    def replace_path(match: re.Match[str]) -> str:
+        nonlocal changed
+        ref = match.group(1)
+        dep_root = cargo_package_root((cargo_toml.parent / ref).resolve())
+        if dep_root is None or not is_relative_to(dep_root, archive_root):
+            return match.group(0)
+        new_ref = os.path.relpath(dep_root, start=cargo_toml.parent).replace(os.sep, "/")
+        if new_ref == ".":
+            new_ref = "."
+        if new_ref == ref:
+            return match.group(0)
+        changed = True
+        return match.group(0).replace(f'"{ref}"', f'"{new_ref}"')
+
+    rewritten = CARGO_PATH_DEP_RE.sub(replace_path, text)
+    if not changed:
+        return None
+    return rewritten.encode("utf-8")
 
 
 def synthetic_files_for_profile(
@@ -1760,11 +1940,18 @@ def synthetic_files_for_profile(
     included_rels = {to_posix(safe_relative(path, archive_root)) for path in included}
     synthetic: list[SyntheticFile] = []
     if "Cargo.toml" not in included_rels:
-        synthetic.append(SyntheticFile("Cargo.toml", semantic_memory_workspace_manifest(archive_root)))
+        member_paths = semantic_memory_member_paths(archive_root, included)
+        synthetic.append(SyntheticFile("Cargo.toml", semantic_memory_workspace_manifest(archive_root, member_paths)))
 
     root_lock = archive_root / "Cargo.lock"
     if "Cargo.lock" not in included_rels and root_lock.exists():
         synthetic.append(SyntheticFile("Cargo.lock", root_lock.read_bytes()))
+
+    path_dependency_manifests = cargo_path_dependency_manifests(archive_root, included)
+    for cargo_toml in sorted((path for path in included if path.name == "Cargo.toml"), key=lambda p: to_posix(safe_relative(p, archive_root))):
+        rewritten = rewrite_cargo_manifest_paths_for_archive(cargo_toml, archive_root, path_dependency_manifests)
+        if rewritten is not None:
+            synthetic.append(SyntheticFile(to_posix(safe_relative(cargo_toml, archive_root)), rewritten))
 
     return synthetic
 
@@ -2956,21 +3143,14 @@ def build(args: argparse.Namespace) -> BuildResult:
 
     synthetic_files = synthetic_files_for_profile(archive_root, included, resolved_profile)
     synthetic_paths = {synthetic.path for synthetic in synthetic_files}
-    conflicting_paths = [
-        to_posix(safe_relative(path, archive_root))
+    included_for_archive = [
+        path
         for path in included
-        if to_posix(safe_relative(path, archive_root)) in synthetic_paths
+        if to_posix(safe_relative(path, archive_root)) not in synthetic_paths
     ]
-    for rel in conflicting_paths:
-        findings.append(Finding(
-            code="synthetic-file-conflict",
-            severity="error",
-            path=rel,
-            detail="Generated archive root file conflicts with an included file.",
-        ))
 
     file_entries = [file_entry_for_synthetic(synthetic) for synthetic in synthetic_files]
-    file_entries.extend(build_file_entries(archive_root, included))
+    file_entries.extend(build_file_entries(archive_root, included_for_archive))
     file_entry_payload = [asdict(entry) for entry in file_entries]
     content_manifest_sha256 = sha256_json_payload(file_entry_payload)
     included_bytes = sum(entry.bytes for entry in file_entries)
@@ -2983,7 +3163,7 @@ def build(args: argparse.Namespace) -> BuildResult:
         write_archive(
             archive_root,
             output_path,
-            included,
+            included_for_archive,
             deterministic=not args.preserve_mtime,
             compresslevel=args.compresslevel,
             synthetic_files=synthetic_files,

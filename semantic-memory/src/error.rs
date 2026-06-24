@@ -12,6 +12,11 @@ pub enum MemoryError {
     #[error("Embedding request failed: {0}")]
     EmbeddingRequest(#[from] reqwest::Error),
 
+    /// Error from the Candle ML framework (in-process embedder).
+    #[cfg(feature = "candle-embedder")]
+    #[error("Candle error: {0}")]
+    CandleError(#[from] candle_core::Error),
+
     /// Embedding vector has wrong number of dimensions.
     #[error("Embedding provider returned {actual} dimensions, expected {expected}")]
     DimensionMismatch { expected: usize, actual: usize },
@@ -242,6 +247,8 @@ impl MemoryError {
         match self {
             Self::Database(_) => "database",
             Self::EmbeddingRequest(_) => "embedding_request",
+            #[cfg(feature = "candle-embedder")]
+            Self::CandleError(_) => "candle_error",
             Self::DimensionMismatch { .. } => "dimension_mismatch",
             Self::EmbeddingBatchCountMismatch { .. } => "embedding_batch_count_mismatch",
             Self::EmbeddingDimensionMismatch { .. } => "embedding_dimension_mismatch",

@@ -1,14 +1,14 @@
 [package]
 name = "semantic-memory"
-version = "0.5.1"
+version = "0.5.3"
 edition = "2021"
 rust-version = "1.75"
 description = "Local-first hybrid semantic search (SQLite + FTS5 + usearch 2.25) with bitemporal truth and typed receipts"
 license = "Apache-2.0"
-authors = ["sikmindz"]
+authors = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
 readme = "README.md"
-repository = "https://github.com/RecursiveIntell/Libraries/tree/main/semantic-memory"
-homepage = "https://github.com/RecursiveIntell/Libraries/tree/main/semantic-memory"
+repository = "https://github.com/RecursiveIntell/semantic-memory"
+homepage = "https://github.com/RecursiveIntell/semantic-memory"
 documentation = "https://docs.rs/semantic-memory"
 keywords = ['search', 'semantic', 'sqlite', 'vector', 'usearch']
 categories = ["database", "text-processing", "data-structures"]
@@ -87,9 +87,15 @@ rl-routing = ["routing"]
 subgraph-pruning = ["subtraction"]
 testing = []
 turbo-quant-codec = ["dep:turbo-quant", "dep:quant-governor", "dep:scr-runtime-compression"]
-poly-kv-pool = ["dep:poly-kv-core", "poly-kv-core/fib"]
+# In-process Candle embedder (pure-Rust, CPU-only, no Ollama required).
+# When enabled, MemoryStore::open() defaults to CandleEmbedder instead of
+# OllamaEmbedder. Ollama remains available via MemoryStore::open_with_embedder
+# or by constructing OllamaEmbedder explicitly.
+candle-embedder = ["dep:candle-core", "dep:candle-nn", "dep:candle-transformers", "dep:hf-hub", "dep:tokenizers"]
+
 
 [dependencies]
+lru = "0.12"
 bytemuck = { version = "1", features = ["derive"] }
 blake3 = { workspace = true }
 rusqlite = { workspace = true, features = ["bundled", "blob"] }
@@ -115,7 +121,12 @@ usearch = { version = "2.25", default-features = false, optional = true }
 turbo-quant = { version = "0.2.1", path = "../turbo-quant", optional = true }
 quant-governor = { version = "0.1.0", path = "../quant-governor", optional = true }
 scr-runtime-compression = { version = "0.1.0", path = "../scr-runtime-compression", optional = true }
-poly-kv-core = { version = "0.1.0-alpha.1", package = "poly-kv", path = "../poly-kv", default-features = false, optional = true }
+# Candle in-process embedder deps (feature-gated, CPU-only)
+candle-core = { version = "0.10", optional = true }
+candle-nn = { version = "0.10", optional = true }
+candle-transformers = { version = "0.10", optional = true }
+hf-hub = { version = "1.0.0-rc.1", default-features = false, features = ["blocking"], optional = true }
+tokenizers = { version = "0.23", default-features = false, features = ["onig"], optional = true }
 
 [build-dependencies]
 # cxx-build is only needed when the usearch backend is enabled (it triggers

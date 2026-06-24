@@ -4,11 +4,56 @@
 //! are async (tokio). This bridge wraps the store and uses the current
 //! tokio runtime handle for async calls (no separate runtime).
 
-use semantic_memory::{MemoryStore, MemoryConfig, EmbeddingConfig, SearchConfig};
-use semantic_memory::embedder::{OllamaEmbedder, MockEmbedder, Embedder};
+#[cfg(feature = "candle-embedder")]
+use semantic_memory::embedder::CandleEmbedder;
+use semantic_memory::embedder::{Embedder, MockEmbedder, OllamaEmbedder};
+use semantic_memory::{EmbeddingConfig, MemoryConfig, MemoryStore, SearchConfig};
 use std::path::PathBuf;
 use tokio::runtime::Handle;
 
+/// Which embedding backend to use.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EmbedderBackend {
+    /// In-process Candle embedder (pure-Rust, CPU-only, no Ollama required).
+    /// Downloads the model from HuggingFace Hub on first use.
+    Candle,
+    /// External Ollama server (requires `ollama serve` running).
+    Ollama,
+    /// Mock embedder for testing (deterministic hash-based, no real embeddings).
+    Mock,
+}
+
+impl Default for EmbedderBackend {
+    fn default() -> Self {
+        // Candle is the default when the feature is enabled.
+        // Ollama is the default when it's not (backward compat).
+        #[cfg(feature = "candle-embedder")]
+        {
+            EmbedderBackend::Candle
+        }
+        #[cfg(not(feature = "candle-embedder"))]
+        {
+            EmbedderBackend::Ollama
+        }
+    }
+}
+
+impl std::str::FromStr for EmbedderBackend {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "candle" => Ok(EmbedderBackend::Candle),
+            "ollama" => Ok(EmbedderBackend::Ollama),
+            "mock" => Ok(EmbedderBackend::Mock),
+            other => Err(format!(
+                "unknown embedder '{other}', expected: candle, ollama, or mock"
+            )),
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct MemoryBridge {
     pub store: MemoryStore,
 }
@@ -18,25 +63,30 @@ pub struct BridgeConfig {
     /// not a SQLite file path. semantic-memory creates base_dir/memory.db
     /// inside it.
     pub memory_dir: PathBuf,
+    pub embedder_backend: EmbedderBackend,
+    /// Ollama URL — only used when backend is Ollama.
     pub embedding_url: String,
+    /// Embedding model name — used by both Candle (as HF model ID) and Ollama.
     pub embedding_model: String,
     pub embedding_dims: usize,
-    pub use_mock_embedder: bool,
 }
 
 impl BridgeConfig {
     pub fn from_args(
         memory_dir: &str,
+        embedder_backend: EmbedderBackend,
         embedding_url: Option<&str>,
         embedding_model: Option<&str>,
         embedding_dims: Option<usize>,
     ) -> Self {
         Self {
             memory_dir: PathBuf::from(memory_dir),
-            embedding_url: embedding_url.unwrap_or("http://localhost:11434").to_string(),
+            embedder_backend,
+            embedding_url: embedding_url
+                .unwrap_or("http://localhost:11434")
+                .to_string(),
             embedding_model: embedding_model.unwrap_or("nomic-embed-text").to_string(),
             embedding_dims: embedding_dims.unwrap_or(768),
-            use_mock_embedder: false,
         }
     }
 }
@@ -53,10 +103,35 @@ impl MemoryBridge {
             timeout_secs: 60,
         };
 
-        let embedder: Box<dyn Embedder> = if config.use_mock_embedder {
-            Box::new(MockEmbedder::new(config.embedding_dims))
-        } else {
-            Box::new(OllamaEmbedder::try_new(&embedding_config)?)
+        let embedder: Box<dyn Embedder> = match config.embedder_backend {
+            EmbedderBackend::Mock => Box::new(MockEmbedder::new(config.embedding_dims)),
+            EmbedderBackend::Ollama => Box::new(OllamaEmbedder::try_new(&embedding_config)?),
+            EmbedderBackend::Candle => {
+                #[cfg(feature = "candle-embedder")]
+                {
+                    // For Candle, the model field is the HuggingFace model ID.
+                    // Map common Ollama model names to HF model IDs.
+                    let hf_model_id = match embedding_config.model.as_str() {
+                        "nomic-embed-text" | "nomic-embed-text-v1.5" => {
+                            "nomic-ai/nomic-embed-text-v1.5"
+                        }
+                        other => other,
+                    };
+                    let candle_config = EmbeddingConfig {
+                        model: hf_model_id.to_string(),
+                        ..embedding_config.clone()
+                    };
+                    Box::new(CandleEmbedder::try_new(&candle_config)?)
+                }
+                #[cfg(not(feature = "candle-embedder"))]
+                {
+                    anyhow::bail!(
+                        "candle embedder requested but the 'candle-embedder' feature \
+                         is not enabled. Rebuild with --features candle-embedder \
+                         or use --embedder ollama"
+                    )
+                }
+            }
         };
 
         let mem_config = MemoryConfig {

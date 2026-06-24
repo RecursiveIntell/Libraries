@@ -128,39 +128,6 @@ pub mod governed {
 // Re-export for convenience
 pub use governed::{encode_governed, encode_governed_default, GovernedEncodeResult};
 
-/// Pool-governed encoding — available when poly-kv-pool is enabled.
-#[cfg(feature = "poly-kv-pool")]
-pub mod pool_governed {
-    use crate::pool_codec::PoolCodec;
-
-    /// Build a pool codec from a corpus of embeddings.
-    ///
-    /// The pool receipt carries audit information. The codec
-    /// can subsequently encode/decode individual vectors from the pool.
-    pub fn encode_pool(
-        corpus: &[(String, Vec<f32>)],
-        dim: usize,
-        seed: u64,
-    ) -> Result<PoolCodec, String> {
-        PoolCodec::new(dim, corpus, seed).map_err(|e| format!("pool codec build failed: {e}"))
-    }
-}
-
-#[cfg(not(feature = "poly-kv-pool"))]
-pub mod pool_governed {
-    /// Stub — poly-kv-pool feature not enabled.
-    #[derive(Debug, Clone)]
-    pub struct PoolCodec;
-
-    pub fn encode_pool(
-        _corpus: &[(String, Vec<f32>)],
-        _dim: usize,
-        _seed: u64,
-    ) -> Result<(), String> {
-        Err("poly-kv-pool feature is not enabled".to_string())
-    }
-}
-
 #[cfg(all(test, feature = "turbo-quant-codec"))]
 mod tests {
     use super::governed::encode_governed;
