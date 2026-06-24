@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P30_8/files/AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-08_REVALIDATION.md",
+      "bytes": 715,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/manual_injections/AFTER_P30-08_REVALIDATION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P30_8",
+      "sha256": "c818a29b35cf9ffadfaea322ed8eb7f27282d32568776ab8feed69be330e162f"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P30_8",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

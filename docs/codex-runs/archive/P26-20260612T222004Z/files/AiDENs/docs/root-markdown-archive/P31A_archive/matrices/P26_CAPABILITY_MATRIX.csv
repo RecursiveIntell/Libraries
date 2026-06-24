@@ -1,0 +1,9 @@
+Capability,P25 state,P26 target,Support target
+Agent specification,missing,AgentSpecV1 schema + validation,supported-local
+Plan/Act/Verify,implicit/demo,reusable bounded loop,supported-local
+Memory grounding,fixture seam,agent grounding primitive,fixture-backed/supported-local if verified
+Coding agent,flagship fixture,sandbox-root reusable profile,supported-local
+Run evidence,V2/P25 evidence,RunBundleV3 richer evidence,supported-local
+Repair/abstention,partial failure honesty,explicit artifacts in loop,supported-local
+Cloud provider,deferred,still deferred,deferred-cloud
+V10 graph runtime,design-only,still design-only,deferred

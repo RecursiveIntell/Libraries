@@ -1,0 +1,698 @@
+{
+  "schema": "P29StatusEvidenceManifestV1",
+  "run_id": "P29",
+  "created_utc": "2026-05-07T00:00:00Z",
+  "support_tier": "supported-local-package-replay-passed",
+  "semantic_status": "exact_check",
+  "final_labels": [
+    "p29-package-repaired",
+    "p29-supported-local-plus",
+    "v11A-local-release-candidate",
+    "v11B-executable-seed",
+    "v11C-reserved-only"
+  ],
+  "allowed_final_labels": [
+    "p29-package-repaired",
+    "p29-supported-local-plus",
+    "v11A-local-release-candidate",
+    "v11B-executable-seed",
+    "v11C-reserved-only"
+  ],
+  "forbidden_labels_absent": true,
+  "canonical_ownership": {
+    "status": "unchanged",
+    "statement": "AiDENs remains local operator/orchestration/display/package/runtime surface and does not replace canonical sibling truth systems."
+  },
+  "phase_reports": [
+    "handoffs/p29/PHASE_00_REPORT.md",
+    "handoffs/p29/PHASE_01_REPORT.md",
+    "handoffs/p29/PHASE_02_REPORT.md",
+    "handoffs/p29/PHASE_03_REPORT.md",
+    "handoffs/p29/PHASE_04_REPORT.md",
+    "handoffs/p29/PHASE_05_REPORT.md",
+    "handoffs/p29/PHASE_06_REPORT.md",
+    "handoffs/p29/PHASE_07_REPORT.md",
+    "handoffs/p29/PHASE_08_REPORT.md",
+    "handoffs/p29/PHASE_09_REPORT.md",
+    "handoffs/p29/PHASE_10_REPORT.md",
+    "handoffs/p29/PHASE_11_REPORT.md",
+    "handoffs/p29/PHASE_12_REPORT.md",
+    "handoffs/p29/PHASE_13_REPORT.md",
+    "handoffs/p29/PHASE_14_REPORT.md",
+    "handoffs/p29/PHASE_15_REPORT.md",
+    "handoffs/p29/PHASE_16_REPORT.md",
+    "handoffs/p29/PHASE_17_REPORT.md",
+    "handoffs/p29/PHASE_18_REPORT.md",
+    "handoffs/p29/PHASE_19_REPORT.md",
+    "handoffs/p29/PHASE_20_REPORT.md",
+    "handoffs/p29/PHASE_21_REPORT.md"
+  ],
+  "manual_gate_reports": [
+    "handoffs/p29/PHASE_03_MANUAL_GATE.md",
+    "handoffs/p29/PHASE_07_MANUAL_GATE.md",
+    "handoffs/p29/PHASE_11_MANUAL_GATE.md",
+    "handoffs/p29/PHASE_15_MANUAL_GATE.md",
+    "handoffs/p29/PHASE_19_MANUAL_GATE.md",
+    "handoffs/p29/PHASE_21_PRE_PACKAGE_MANUAL_GATE.md"
+  ],
+  "validation_results": [
+    {
+      "label": "p29_run_identity",
+      "command": "python3 scripts/assert_p29_run_identity.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase03_assert_p29_run_identity.log"
+    },
+    {
+      "label": "p29_no_archived_current_run",
+      "command": "python3 scripts/assert_p29_no_archived_current_run.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase03_assert_p29_no_archived_current_run.log"
+    },
+    {
+      "label": "p29_manifest_paths",
+      "command": "python3 scripts/assert_p29_manifest_paths.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase03_assert_p29_manifest_paths.log"
+    },
+    {
+      "label": "p29_current_docs_active",
+      "command": "python3 scripts/assert_p29_current_docs_active.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase03_assert_p29_current_docs_active.log"
+    },
+    {
+      "label": "p29_final_package_contains_verifier",
+      "command": "python3 scripts/assert_p29_final_package_contains_verifier.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase03_assert_p29_final_package_contains_verifier.log"
+    },
+    {
+      "label": "p29_audit_matrix_closure",
+      "command": "python3 scripts/assert_p29_audit_matrix_closure.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase03_assert_p29_audit_matrix_closure.log"
+    },
+    {
+      "label": "p29_archive_hygiene_dryrun",
+      "command": "python3 z.py --root . --profile aidens --mode codex-context --dry-run --no-strict --verify-codex-archive-hygiene --codex-current-run P29 -o target/p29/package/P29-archive-hygiene-dryrun.zip",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase03_archive_hygiene_dryrun.log"
+    },
+    {
+      "label": "p29_hnsw_lock_order",
+      "command": "python3 scripts/assert_p29_hnsw_lock_order.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase05_assert_p29_hnsw_lock_order.log"
+    },
+    {
+      "label": "p29_migration_atomicity",
+      "command": "python3 scripts/assert_p29_migration_atomicity.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase06_assert_p29_migration_atomicity.log"
+    },
+    {
+      "label": "semantic_memory_search_tests",
+      "command": "cargo test --test search_tests -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase07_semantic_search_tests.log"
+    },
+    {
+      "label": "knowledge_runtime_merge_classifier_tests",
+      "command": "cargo test --lib query::classify -- --nocapture; cargo test --lib query::merge -- --nocapture; cargo test --test invariant_tests -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase07_knowledge_invariant_tests.log"
+    },
+    {
+      "label": "aidens_cargo_check",
+      "command": "cargo check --workspace --all-targets",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase07_aidens_cargo_check.log"
+    },
+    {
+      "label": "semantic_memory_quantization_tests",
+      "command": "cargo test --test quantization -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase08_semantic_quantization_tests_rerun.log"
+    },
+    {
+      "label": "semantic_memory_quantization_pipeline",
+      "command": "cargo test --test quantization_pipeline -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase08_semantic_quantization_pipeline.log"
+    },
+    {
+      "label": "semantic_memory_chunker_tests",
+      "command": "cargo test --test chunker_tests -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase10_semantic_chunker_tests.log"
+    },
+    {
+      "label": "stack_ids_trace_tests",
+      "command": "cargo test --lib trace -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_stack_ids_trace_tests_rerun.log"
+    },
+    {
+      "label": "stack_ids_status_tests",
+      "command": "cargo test --lib status -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_stack_ids_status_tests_rerun.log"
+    },
+    {
+      "label": "aidens_contracts_phase11_tests",
+      "command": "cargo test -p aidens-contracts p29_ -- --nocapture; cargo test -p aidens-contracts p28_artifact_lifecycle -- --nocapture; cargo test -p aidens-contracts p28_proof -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_aidens_contracts_p29_tests.log"
+    },
+    {
+      "label": "boundary_duplicate_input_tests",
+      "command": "cargo test -p aidens-boundary-kit duplicate -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_boundary_duplicate_tests.log"
+    },
+    {
+      "label": "boundary_invalid_input_tests",
+      "command": "cargo test -p aidens-boundary-kit invalid_input -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_boundary_invalid_input_tests.log"
+    },
+    {
+      "label": "boundary_schema_invalid_tests",
+      "command": "cargo test -p aidens-boundary-kit schema_invalid -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_boundary_schema_invalid_tests.log"
+    },
+    {
+      "label": "p29_v11a_contract_markers",
+      "command": "python3 scripts/assert_p29_v11a_contracts.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_assert_p29_v11a_contracts.log"
+    },
+    {
+      "label": "p29_receipt_chain_markers",
+      "command": "python3 scripts/assert_p29_receipt_chain.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_assert_p29_receipt_chain.log"
+    },
+    {
+      "label": "p29_boundary_profile_markers",
+      "command": "python3 scripts/assert_p29_boundary_profiles.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_assert_p29_boundary_profiles.log"
+    },
+    {
+      "label": "p29_proof_debt_markers",
+      "command": "python3 scripts/assert_p29_proof_debt.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_assert_p29_proof_debt.log"
+    },
+    {
+      "label": "aidens_cargo_check_phase11",
+      "command": "cargo check --workspace --all-targets",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_aidens_cargo_check_final.log"
+    },
+    {
+      "label": "p29_manifest_paths_phase11",
+      "command": "python3 scripts/assert_p29_manifest_paths.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_assert_p29_manifest_paths.log"
+    },
+    {
+      "label": "p29_no_forbidden_claims_phase11",
+      "command": "python3 scripts/assert_p29_no_forbidden_claims.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_assert_p29_no_forbidden_claims.log"
+    },
+    {
+      "label": "p29_run_identity_phase11",
+      "command": "python3 scripts/assert_p29_run_identity.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase11_assert_p29_run_identity.log"
+    },
+    {
+      "label": "aidens_contracts_material_done_tests",
+      "command": "cargo test -p aidens-contracts p28_material_done -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase12_aidens_contracts_material_done_tests.log"
+    },
+    {
+      "label": "aidens_contracts_semantic_state_tests",
+      "command": "cargo test -p aidens-contracts p28_semantic_state -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase13_aidens_contracts_semantic_state_tests.log"
+    },
+    {
+      "label": "aidens_cli_run_coding_agent_tests",
+      "command": "cargo test -p aidens-cli run_coding_agent -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase14_aidens_cli_run_coding_agent_tests.log"
+    },
+    {
+      "label": "p29_v11a_contract_markers_phase15",
+      "command": "python3 scripts/assert_p29_v11a_contracts.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase15_assert_p29_v11a_contracts_rerun.log"
+    },
+    {
+      "label": "p29_cli_megafile_containment",
+      "command": "python3 scripts/assert_p29_cli_megafile_containment.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase15_assert_p29_cli_megafile_containment.log"
+    },
+    {
+      "label": "p29_contracts_megafile_containment",
+      "command": "python3 scripts/assert_p29_contracts_megafile_containment.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase15_assert_p29_contracts_megafile_containment.log"
+    },
+    {
+      "label": "p29_v11b_seed_no_completion_claim",
+      "command": "python3 scripts/assert_p29_v11b_seed_surfaces.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase15_assert_p29_v11b_seed_surfaces.log"
+    },
+    {
+      "label": "verify_current_phase15",
+      "command": "bash scripts/verify_current.sh",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase15_verify_current_second_rerun.log"
+    },
+    {
+      "label": "p29_manifest_paths_phase15",
+      "command": "python3 scripts/assert_p29_manifest_paths.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase15_assert_p29_manifest_paths_final.log"
+    },
+    {
+      "label": "p29_no_forbidden_claims_phase15",
+      "command": "python3 scripts/assert_p29_no_forbidden_claims.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase15_assert_p29_no_forbidden_claims_final.log"
+    },
+    {
+      "label": "phase16_adversarial_conformance",
+      "command": "cargo test -p aidens-integration-tests --test p28_adversarial_conformance -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase16_aidens_integration_p28_adversarial_target.log"
+    },
+    {
+      "label": "phase16_bitemporal_fixtures",
+      "command": "cargo test -p aidens-testkit p28_bitemporal -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase16_aidens_testkit_p28_bitemporal.log"
+    },
+    {
+      "label": "phase17_right_graph_reserved_tests",
+      "command": "cargo test -p aidens-contracts p28_v11b -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase17_aidens_contracts_p28_v11b_tests.log"
+    },
+    {
+      "label": "phase19_p29_v11b_seed_tests",
+      "command": "cargo test -p aidens-contracts p29_ -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase19_aidens_contracts_p29_v11b_tests.log"
+    },
+    {
+      "label": "phase19_subtraction_tests",
+      "command": "cargo test -p aidens-contracts p16_subtraction -- --nocapture",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase19_aidens_contracts_subtraction_tests.log"
+    },
+    {
+      "label": "phase19_v11b_seed_assertion",
+      "command": "python3 scripts/assert_p29_v11b_seed_surfaces.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase19_assert_p29_v11b_seed_surfaces.log"
+    },
+    {
+      "label": "phase19_no_forbidden_claims",
+      "command": "python3 scripts/assert_p29_no_forbidden_claims.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase19_assert_p29_no_forbidden_claims.log"
+    },
+    {
+      "label": "aidens_cargo_check_phase19",
+      "command": "cargo check --workspace --all-targets",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase19_aidens_cargo_check.log"
+    },
+    {
+      "label": "p29_manifest_paths_phase19",
+      "command": "python3 scripts/assert_p29_manifest_paths.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase19_assert_p29_manifest_paths_final.log"
+    },
+    {
+      "label": "p29_no_forbidden_claims_phase19",
+      "command": "python3 scripts/assert_p29_no_forbidden_claims.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase19_assert_p29_no_forbidden_claims_final.log"
+    },
+    {
+      "label": "p29_v11b_seed_assertion_phase19_final",
+      "command": "python3 scripts/assert_p29_v11b_seed_surfaces.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase19_assert_p29_v11b_seed_surfaces_final.log"
+    },
+    {
+      "label": "p29_run_identity_phase20",
+      "command": "python3 scripts/assert_p29_run_identity.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase20_assert_p29_run_identity.log"
+    },
+    {
+      "label": "p29_manifest_paths_phase20",
+      "command": "python3 scripts/assert_p29_manifest_paths.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase20_assert_p29_manifest_paths.log"
+    },
+    {
+      "label": "p29_current_docs_active_phase20",
+      "command": "python3 scripts/assert_p29_current_docs_active.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase20_assert_p29_current_docs_active.log"
+    },
+    {
+      "label": "p29_no_forbidden_claims_phase20",
+      "command": "python3 scripts/assert_p29_no_forbidden_claims.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase20_assert_p29_no_forbidden_claims.log"
+    },
+    {
+      "label": "phase21_cargo_fmt_check",
+      "command": "cargo fmt --all -- --check",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase21_cargo_fmt_check.log"
+    },
+    {
+      "label": "phase21_cargo_check",
+      "command": "cargo check --workspace --all-targets",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase21_cargo_check.log"
+    },
+    {
+      "label": "phase21_cargo_test",
+      "command": "cargo test --workspace --all-targets",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase21_cargo_test.log"
+    },
+    {
+      "label": "phase21_cargo_clippy",
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase21_cargo_clippy.log"
+    },
+    {
+      "label": "phase21_cargo_doc",
+      "command": "cargo doc --workspace --no-deps",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase21_cargo_doc.log"
+    },
+    {
+      "label": "phase21_p29_verify",
+      "command": "bash scripts/p29_verify.sh",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase21_p29_verify.log"
+    },
+    {
+      "label": "phase21_verify_current",
+      "command": "bash scripts/verify_current.sh",
+      "status": "pass",
+      "log": "external:target/p29/audit/phase21_verify_current.log"
+    },
+    {
+      "label": "injection6_p29_verify",
+      "command": "bash scripts/p29_verify.sh",
+      "status": "pass",
+      "log": "external:target/p29/audit/injection6_p29_verify.log"
+    },
+    {
+      "label": "injection6_verify_current",
+      "command": "bash scripts/verify_current.sh",
+      "status": "pass",
+      "log": "external:target/p29/audit/injection6_verify_current.log"
+    },
+    {
+      "label": "injection6_final_package_contains_verifier",
+      "command": "python3 scripts/assert_p29_final_package_contains_verifier.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/injection6_assert_p29_final_package_contains_verifier.log"
+    },
+    {
+      "label": "injection6_manifest_paths",
+      "command": "python3 scripts/assert_p29_manifest_paths.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/injection6_assert_p29_manifest_paths.log"
+    },
+    {
+      "label": "injection6_no_archived_current_run",
+      "command": "python3 scripts/assert_p29_no_archived_current_run.py",
+      "status": "pass",
+      "log": "external:target/p29/audit/injection6_assert_p29_no_archived_current_run.log"
+    },
+    {
+      "label": "injection6_package_self_replay",
+      "command": "TMPDIR=/home/sikmindz/.cache/aidens-replay-tmp CARGO_TARGET_DIR=/home/sikmindz/.cache/aidens-replay-target python3 scripts/assert_package_self_replay.py --package target/p29/package/AiDENs-p29-codex-context.zip --require-verifier --receipt-out target/super-pass/audit/phase20-package-self-replay-receipt.json",
+      "status": "pass",
+      "log": "external:target/super-pass/audit/phase20-package-self-replay-final.log",
+      "receipt": "external:target/super-pass/audit/phase20-package-self-replay-receipt.json"
+    },
+    {
+      "label": "super_pass_phase20_package_validation",
+      "command": "AIDENS_CURRENT_RUN=P29 python3 scripts/assert_package_validation.py",
+      "status": "pass",
+      "log": "external:target/super-pass/audit/phase20-package-validation-final.log"
+    },
+    {
+      "label": "super_pass_phase20_audit_log_hashes",
+      "command": "python3 scripts/hash_super_pass_audit_logs.py",
+      "status": "pass",
+      "log": "external:target/super-pass/audit/phase20-hash-super-pass-audit-logs.log",
+      "manifest": "external:target/super-pass/audit/PHASE_15_AUDIT_LOG_HASHES.json"
+    }
+  ],
+  "claim_evidence": [
+    {
+      "claim": "P29 package/evidence repair complete for supported-local scope",
+      "status": "package_sidecars_and_extracted_replay_passed",
+      "evidence": [
+        "P29_P28_FAILURE_POSTMORTEM.md",
+        "handoffs/p29/PHASE_01_REPORT.md",
+        "docs/p29/P29_FINAL_AUDIT_REPORT.md",
+        "external:target/p29/package/AiDENs-p29-codex-context.report.md",
+        "external:target/super-pass/audit/phase20-package-self-replay-receipt.json"
+      ]
+    },
+    {
+      "claim": "v11A local release candidate",
+      "status": "supported_local_candidate_with_package_replay_passed",
+      "evidence": [
+        "handoffs/p29/PHASE_12_REPORT.md",
+        "handoffs/p29/PHASE_13_REPORT.md",
+        "handoffs/p29/PHASE_14_REPORT.md",
+        "handoffs/p29/PHASE_15_MANUAL_GATE.md",
+        "docs/p29/P29_SUPPORT_TRACEABILITY.md",
+        "handoffs/super-pass/FINAL_AUDITOR_HANDOFF.md",
+        "external:target/super-pass/audit/phase20-p29-verify-final.log"
+      ]
+    },
+    {
+      "claim": "v11B executable seed only",
+      "status": "executable_seed_only_with_package_replay_passed",
+      "evidence": [
+        "handoffs/p29/PHASE_17_REPORT.md",
+        "handoffs/p29/PHASE_18_REPORT.md",
+        "handoffs/p29/PHASE_19_REPORT.md",
+        "handoffs/p29/PHASE_19_MANUAL_GATE.md",
+        "docs/p29/P29_SUPPORT_TRACEABILITY.md",
+        "docs/super-pass/SUPPORT_TRACEABILITY.md",
+        "external:target/super-pass/audit/phase20-package-self-replay-receipt.json"
+      ]
+    },
+    {
+      "claim": "v11C reserved only",
+      "status": "reserved_only_no_execution_claim",
+      "evidence": [
+        "SUPPORT_PROFILE.md",
+        "docs/p29/P29_SUPPORT_TRACEABILITY.md",
+        "docs/super-pass/SUPPORT_TRACEABILITY.md"
+      ]
+    }
+  ],
+  "unresolved_risks": [
+    "Some P29 BUG IDs remain quarantined pending broader redesign.",
+    "High-risk sibling/control layers are quarantined from AiDENs supported-local claims pending separate audits.",
+    "External research citations remain deferred unless reverified in a later research pass."
+  ],
+  "audit_bug_status_classification": {
+    "schema": "AiDENsAuditBugStatusClassificationV1",
+    "scope": "Residual P29 BUG IDs that are not represented as fixed rows in the P29 matrix are classified by status instead of carried as a flat open/quarantine list.",
+    "replaces_flat_open_bugs": true,
+    "status_buckets": [
+      "fixed",
+      "quarantined",
+      "deferred",
+      "open-blocking"
+    ],
+    "fixed": [],
+    "quarantined": [
+      "BUG-006",
+      "BUG-007",
+      "BUG-008",
+      "BUG-010",
+      "BUG-014",
+      "BUG-015",
+      "BUG-016",
+      "BUG-017",
+      "BUG-019",
+      "BUG-020",
+      "BUG-024",
+      "BUG-025",
+      "BUG-027",
+      "BUG-028",
+      "BUG-029",
+      "BUG-030",
+      "BUG-057",
+      "BUG-076",
+      "BUG-077",
+      "BUG-078",
+      "BUG-079",
+      "BUG-080",
+      "BUG-086",
+      "BUG-087",
+      "BUG-088",
+      "BUG-089",
+      "BUG-090",
+      "BUG-091",
+      "BUG-092",
+      "BUG-093",
+      "BUG-095",
+      "BUG-096",
+      "BUG-097",
+      "BUG-098",
+      "BUG-099",
+      "BUG-100",
+      "BUG-101",
+      "BUG-103",
+      "BUG-104",
+      "BUG-105",
+      "BUG-114",
+      "BUG-115",
+      "BUG-116",
+      "BUG-119",
+      "BUG-120",
+      "BUG-121",
+      "BUG-122",
+      "BUG-123",
+      "BUG-118",
+      "BUG-131",
+      "BUG-133",
+      "BUG-134",
+      "BUG-135",
+      "BUG-136",
+      "BUG-137",
+      "BUG-139",
+      "BUG-140",
+      "BUG-141",
+      "BUG-142",
+      "BUG-143",
+      "BUG-144",
+      "BUG-147",
+      "BUG-151",
+      "BUG-152",
+      "BUG-153",
+      "BUG-154",
+      "BUG-155",
+      "BUG-156",
+      "BUG-157",
+      "BUG-158",
+      "BUG-159",
+      "BUG-160",
+      "BUG-161",
+      "BUG-162",
+      "BUG-163",
+      "BUG-164",
+      "BUG-165",
+      "BUG-166",
+      "BUG-167",
+      "BUG-168",
+      "BUG-169",
+      "BUG-170",
+      "BUG-171",
+      "BUG-172",
+      "BUG-173",
+      "BUG-174",
+      "BUG-175",
+      "BUG-176",
+      "BUG-177",
+      "BUG-178",
+      "BUG-179",
+      "BUG-180",
+      "BUG-183",
+      "BUG-190",
+      "BUG-191",
+      "BUG-192",
+      "BUG-193",
+      "BUG-194",
+      "BUG-195",
+      "BUG-196",
+      "BUG-197",
+      "BUG-198",
+      "BUG-199",
+      "BUG-200"
+    ],
+    "deferred": [],
+    "open_blocking": [],
+    "evidence": [
+      "docs/p29/P29_PHASE04_AUDIT_TRIAGE.md",
+      "docs/p29/P29_KNOWN_LIMITATIONS_REGISTER.md",
+      "docs/super-pass/HIGH_RISK_LAYER_QUARANTINE.md",
+      "handoffs/super-pass/PHASE_19_REPORT.md",
+      "external:target/super-pass/audit/phase19-high-risk-quarantine.log"
+    ]
+  },
+  "high_risk_layer_quarantine": {
+    "schema": "AiDENsHighRiskLayerQuarantineV1",
+    "status": "quarantined_from_supported_local_claims",
+    "support_effect": "These sibling/control layers cannot widen AiDENs supported-local labels until each layer has separate audit evidence and an explicit activation gate.",
+    "layers": [
+      {
+        "surface": "forge-pilot",
+        "owner_path": "../forge-pilot",
+        "status": "quarantined"
+      },
+      {
+        "surface": "effect-runtime",
+        "owner_path": "../effect-runtime",
+        "status": "quarantined"
+      },
+      {
+        "surface": "verification pipeline",
+        "owner_path": "../verification-*",
+        "status": "quarantined"
+      },
+      {
+        "surface": "federation",
+        "owner_path": "../federated-settlement and ../remote-oracle-admission",
+        "status": "quarantined"
+      },
+      {
+        "surface": "attestation",
+        "owner_path": "../attestation-exchange",
+        "status": "quarantined"
+      },
+      {
+        "surface": "authority-delegation",
+        "owner_path": "../authority-delegation",
+        "status": "quarantined"
+      },
+      {
+        "surface": "recursive-kernel-core",
+        "owner_path": "../recursive-kernel-core",
+        "status": "quarantined"
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P17/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.md",
+      "bytes": 2711,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P17_ATTESTED_EXCHANGE_FEDERATION_AND_EXTERNAL_ADMISSION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P17",
+      "sha256": "959fcf922580f875ea31df904918e2caa91ccc8bccf0349eac5dc4dccdc17240"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P17",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

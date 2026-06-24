@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P14/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.md",
+      "bytes": 2526,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P14_RELEASE_PRODUCT_SURFACE_AND_OPERATOR_UX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P14",
+      "sha256": "194cf2e6199c9876cedda58f03c6139d73d1ffbab47bbde668765ba8b02ed6eb"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P14",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

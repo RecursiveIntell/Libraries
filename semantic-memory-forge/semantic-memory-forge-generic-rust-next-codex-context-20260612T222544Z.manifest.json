@@ -1,0 +1,2533 @@
+{
+  "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+  "archive_zip_byte_sha256": "cb17c0737bb7081324dc75217516e215f63560f8374437ed6ef333db2b4bb3be",
+  "codex_archive": {
+    "active_stale_after": [],
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/codex-runs/archive",
+    "collisions": [],
+    "current_run": "P30",
+    "dry_run": false,
+    "enabled": true,
+    "errors": [],
+    "manifest_paths": [],
+    "moved": [],
+    "planned": [],
+    "report_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.codex-archive.json",
+    "skipped_existing": [],
+    "stale_active_before": [],
+    "unclassified": [],
+    "verify_only": false
+  },
+  "content_manifest_sha256": "aadb4bbb5bea6075da969e336b7bfdbe61c66ddeb24be65687ac70b089e6f0cb",
+  "decisions": [
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": ".gitignore",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "00_START_HERE.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "01_MASTER_ISSUE_TENSOR.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "02_PHASE_PLAN.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "03_IMPLEMENTATION_PLAYBOOK.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "03_TARGET_API_SPEC.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "04_EXACT_FILE_TOUCH_MAP.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "04_MATH_CONFORMANCE.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "05_ACCEPTANCE_GATES.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "05_TEST_AND_CONFORMANCE_PLAN.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "06_VALIDATION_COMMANDS.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "07_ROLLBACK_AND_QUARANTINE.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "08_FINAL_AUDITOR_HANDOFF.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "09_CODEX_FEATURES_AND_INSTALL.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "10_HOSTILE_AUDIT_CLAUDE.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "11_HOSTILE_AUDIT_GPT.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "11_HOSTILE_AUDIT_GPT_TENSOR.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "AGENTS.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "AUDIT_2026-04-01.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "BITEMPORAL_RUNTIME_HOSTILE_AUDIT_2026-06-02.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "CANONICAL_STACK_SPEC_V25_EFFECTIVE_CONSTITUTION_PROFILE_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "CLAUDE.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "COMBINED_AUDIT_2026-04-01.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "CONFORMANCE_GATES.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "CONTRACT_AND_TEMPORAL_TRUTH_HARDENING.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "CRATE_HARDENING_MATRIX.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "Cargo.lock",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "Cargo.toml",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "EXECUTION_EVIDENCE_AND_REFERENCE_INTERPRETER_PLAN.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "HEARTBEAT.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "HNSW_BENCH_RESULTS_2026-06-02.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "HNSW_RESEARCH_2026-06-02.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "HOSTILE_AUDIT_SYNTHESIS_V5.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "IDENTITY.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "KERNEL_AND_REGION_RUNTIME_PLAN.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_AUDIT_2026-06-02.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_FINAL_REPORT_2026-06-02.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_FULL_STATE_DOSSIER_2026-05-27.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_HARDENING_AND_GAP_AUDIT_2026-05-27.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_HOSTILE_AUDIT_V30_CORRECTED_2026-05-29.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_IMPROVEMENT_DELTA_2026-05-27.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_MASTER_MATRIX_V8.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_MASTER_TENSOR_V8.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_PUBLISH_READY_2026-06-02.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_REMEDIATION_PLAN_2026-05-27.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIBRARIES_V30_HARDENING_ROADMAP.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "LIB_MASTER_ISSUE_TENSOR.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "Libraries(3-25-26).zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "Libraries-4\u20442-2.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "Libraries-4\u20443.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "Libraries-libraries-next-codex-context-20260612T222004Z.codex-archive.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "Libraries-libraries-next-codex-context-20260612T222004Z.excluded.json",
+      "reason": "generated-sidecar",
+      "source": "zpy-heuristic"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "Libraries-libraries-next-codex-context-20260612T222004Z.findings.json",
+      "reason": "generated-sidecar",
+      "source": "zpy-heuristic"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "Libraries-libraries-next-codex-context-20260612T222004Z.manifest.json",
+      "reason": "generated-sidecar",
+      "source": "zpy-heuristic"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "Libraries-libraries-next-codex-context-20260612T222004Z.report.md",
+      "reason": "generated-sidecar",
+      "source": "zpy-heuristic"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "Libraries-libraries-next-codex-context-20260612T222004Z.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "MASTER_AUDIT_MATRIX.xlsx",
+      "reason": "doc-binary-disabled",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "MASTER_ISSUE_MATRIX.xlsx",
+      "reason": "doc-binary-disabled",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "MASTER_ISSUE_TENSOR.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "MASTER_TENSOR.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "Makefile",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "OPERATOR_PASTE_FIRST.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "PACK_MANIFEST.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "PHASE_0_INVENTORY.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "PHASE_1_OWNERSHIP_LEDGER.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "PROMPT.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "README.md",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "RISK_REGISTER.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "SCOPE_NOTES.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "SNAPSHOT_2026-04-11.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "SOUL.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "SOURCE_BASIS.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "STATUS_DASHBOARD.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "SUB_WORKSPACES.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "SUPPORT_PROFILE.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "TEST_AND_CONFORMANCE_PLAN.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "TOOLS.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "USER.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "V9_IMPLEMENTATION_PLAYBOOK.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "claude_hard_audit_2026-03-30.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "deny.toml",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "gpt54_hard_audit_2026-03-30.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "gpt54_tensor_2026-03-30.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-174315.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-174742.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-175206.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-175704.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-180446.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "hnsw-bench-receipt-usearch-20260602-180715.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "hnsw-bench-receipt-usearch-20260602-180813.json",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries 4\u204428.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries-4\u20442-3.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries-4\u20442-4.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries-4\u20442.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries-source-clean-20260323.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries-source-clean-20260324.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries-source-clean-20260326.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries-source-clean-20260328.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries-source-clean-20260330.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "libraries.zip",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "publish.sh",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "schemas.7z",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/CHANGELOG.md",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/Cargo.toml",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/LICENSE",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/README.md",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/docs/codex-runs/ARCHIVAL_POLICY.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/docs/codex-runs/CODEX_RUN_INDEX.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/docs/codex-runs/CURRENT_RUN.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "prune-dir",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/docs/source-packages/archive",
+      "reason": "excluded-directory",
+      "source": "zpy-heuristic"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.codex-archive.json",
+      "reason": "generated-output",
+      "source": "zpy-heuristic"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/audit_candidate.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/bundle.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/envelope.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/envelope_tests.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/estimator.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/lib.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/tool_receipt.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/v11.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/v13.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/v14.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/src/v9.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/tests/audit_candidate_search.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "semantic-memory-forge/z.py",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "prune-dir",
+      "mode": "next-codex-context",
+      "path": "stack-ids/.claude",
+      "reason": "excluded-directory",
+      "source": "zpy-heuristic"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/.gitignore",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/AGENTS.md",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/CHANGELOG.md",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/Cargo.lock",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/Cargo.toml",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/LICENSE",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/README.md",
+      "reason": "included-basename",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/digest.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/ids.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/ids_tests.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/lib.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/receipt.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/scope.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/status.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/trace.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "stack-ids/src/v25.rs",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "support_lane.toml",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "z.py",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    },
+    {
+      "decision": "exclude",
+      "mode": "next-codex-context",
+      "path": "zPYlibraries.7z",
+      "reason": "archive-file",
+      "source": "hygiene-policy"
+    },
+    {
+      "decision": "include",
+      "mode": "next-codex-context",
+      "path": "zip.py",
+      "reason": "included-extension",
+      "source": "extension-basename-policy"
+    }
+  ],
+  "ecosystem_parity": [
+    {
+      "detected": true,
+      "dry_run_available": true,
+      "dry_run_command": "cargo package --list --allow-dirty",
+      "dry_run_status": "available-not-run",
+      "ecosystem": "rust",
+      "expected_files": [
+        "Cargo.toml",
+        "LICENSE",
+        "README.md"
+      ],
+      "extra_in_zpy_package": [],
+      "findings": [],
+      "manifests": [
+        "Cargo.toml"
+      ],
+      "missing_from_zpy_package": [
+        "LICENSE"
+      ]
+    },
+    {
+      "detected": false,
+      "dry_run_available": false,
+      "dry_run_command": "python -m build --sdist --wheel",
+      "dry_run_status": "not-applicable",
+      "ecosystem": "python",
+      "expected_files": [],
+      "extra_in_zpy_package": [],
+      "findings": [],
+      "manifests": [],
+      "missing_from_zpy_package": []
+    },
+    {
+      "detected": false,
+      "dry_run_available": false,
+      "dry_run_command": "npm pack --dry-run --json",
+      "dry_run_status": "not-applicable",
+      "ecosystem": "node",
+      "expected_files": [
+        "LICENSE",
+        "README.md"
+      ],
+      "extra_in_zpy_package": [],
+      "findings": [],
+      "manifests": [],
+      "missing_from_zpy_package": [
+        "LICENSE"
+      ]
+    },
+    {
+      "detected": false,
+      "dry_run_available": false,
+      "dry_run_command": "go list -m -json all",
+      "dry_run_status": "not-applicable",
+      "ecosystem": "go",
+      "expected_files": [],
+      "extra_in_zpy_package": [],
+      "findings": [],
+      "manifests": [],
+      "missing_from_zpy_package": []
+    },
+    {
+      "detected": false,
+      "dry_run_available": false,
+      "dry_run_command": "docker buildx build --progress=plain --dry-run .",
+      "dry_run_status": "not-applicable",
+      "ecosystem": "docker",
+      "expected_files": [],
+      "extra_in_zpy_package": [],
+      "findings": [],
+      "manifests": [],
+      "missing_from_zpy_package": []
+    },
+    {
+      "detected": false,
+      "dry_run_available": false,
+      "dry_run_command": "git archive --format=tar HEAD",
+      "dry_run_status": "not-applicable",
+      "ecosystem": "git",
+      "expected_files": [],
+      "extra_in_zpy_package": [],
+      "findings": [],
+      "manifests": [],
+      "missing_from_zpy_package": []
+    }
+  ],
+  "excluded": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.excluded.json",
+  "files": [
+    {
+      "bytes": 664,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "1980-01-01T00:00:00Z",
+      "path": ".zpy/COMMAND_RECEIPTS.jsonl",
+      "sha256": "42036d341ad82a36aabfa085138d11175db16bd01a74a719a33ffab81aa6910c"
+    },
+    {
+      "bytes": 42,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T20:33:39Z",
+      "path": ".gitignore",
+      "sha256": "0263bf840fa0560a0680bcf49e738116e5543d33449471e0c761a7eb8e692825"
+    },
+    {
+      "bytes": 3232,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:07:47Z",
+      "path": "00_START_HERE.md",
+      "sha256": "a02cc921b05c25af1f573095652aae10d6d616383d449a6ec1f7291e0b2a710d"
+    },
+    {
+      "bytes": 21108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:07:47Z",
+      "path": "01_MASTER_ISSUE_TENSOR.json",
+      "sha256": "0de5395942821a451a82ede56544bbce3850ce45a205cbec4db44179c26a9e23"
+    },
+    {
+      "bytes": 3276,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "02_PHASE_PLAN.md",
+      "sha256": "a233ba10f1a3ed79187ae183710b39a2efbb77a9750930e6deb03f8a8b76a890"
+    },
+    {
+      "bytes": 7129,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:07:47Z",
+      "path": "03_IMPLEMENTATION_PLAYBOOK.md",
+      "sha256": "03cc0d8013536466c4a265779b04710f3d3a5beed1fd8be895f0457658ae513a"
+    },
+    {
+      "bytes": 3456,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "03_TARGET_API_SPEC.md",
+      "sha256": "234da33a32ac34ea0175a465696cb3c09778e35472f5847296458cababff8be2"
+    },
+    {
+      "bytes": 7756,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:07:47Z",
+      "path": "04_EXACT_FILE_TOUCH_MAP.md",
+      "sha256": "9d5b6a388f5c356566dbce0e791b7febb77e1324f25aad3fb1bdd0a0943ea147"
+    },
+    {
+      "bytes": 2647,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "04_MATH_CONFORMANCE.md",
+      "sha256": "98c6892cd7de3d1ef0a7c15bcd317f10db176c565a55dc8787bac6136aa83785"
+    },
+    {
+      "bytes": 1722,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "05_ACCEPTANCE_GATES.md",
+      "sha256": "b2605bea34436967ac82573718bc6c69fce4e340c8ce0797842efca9b57f50a5"
+    },
+    {
+      "bytes": 3811,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:07:47Z",
+      "path": "05_TEST_AND_CONFORMANCE_PLAN.md",
+      "sha256": "e664e5d2b8ff8ee3ba032922a6626f85614bf081f28bd1eab5941178fd813ed8"
+    },
+    {
+      "bytes": 968,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "06_VALIDATION_COMMANDS.md",
+      "sha256": "ae6958695036befe5f421b480a38b81fdcfb9c3175196b74fe68ae007851f0da"
+    },
+    {
+      "bytes": 1428,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "07_ROLLBACK_AND_QUARANTINE.md",
+      "sha256": "e030c370af458c6939afa70a3fb7255e1baca9ea806bb081e7bbe2b4016e99dc"
+    },
+    {
+      "bytes": 1176,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "08_FINAL_AUDITOR_HANDOFF.md",
+      "sha256": "1fa60553744292b1210913cf73d4540b92257c1c993c0d09cf07788a387a203f"
+    },
+    {
+      "bytes": 1119,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "09_CODEX_FEATURES_AND_INSTALL.md",
+      "sha256": "3f34fdd2b7aa623148d51e56ee0e0a44226870d5b72dc01b5459e079257c1845"
+    },
+    {
+      "bytes": 9380,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:07:47Z",
+      "path": "10_HOSTILE_AUDIT_CLAUDE.md",
+      "sha256": "be0ecb6992452ddf795fd3ccd370086d0540c2f92afac4e3e3d42a5dfdd59df4"
+    },
+    {
+      "bytes": 11790,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:07:47Z",
+      "path": "11_HOSTILE_AUDIT_GPT.md",
+      "sha256": "9821e52e546b4a0f11ce9699083f592d5b445746eaabf90937a2b1ca3f6f3eed"
+    },
+    {
+      "bytes": 4697,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:09:04Z",
+      "path": "11_HOSTILE_AUDIT_GPT_TENSOR.json",
+      "sha256": "62955badd086043d62b612b9fed9fcfce69d95192f76aa0d4da9be8f724643bf"
+    },
+    {
+      "bytes": 1705,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-31T01:27:48Z",
+      "path": "AGENTS.md",
+      "sha256": "34b76097eb031a350429b432fdf14d61d22572279bc69adab8006af82739cb4c"
+    },
+    {
+      "bytes": 15256,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "AUDIT_2026-04-01.md",
+      "sha256": "c4bdaa277bf6e1744ab5adde85de687d8c6dfda9b68a9209327dc85fc0018ea9"
+    },
+    {
+      "bytes": 20925,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T16:37:20Z",
+      "path": "BITEMPORAL_RUNTIME_HOSTILE_AUDIT_2026-06-02.md",
+      "sha256": "8ef7cdba11d7c4e8bea459918d2d824c3a9d023a1a68bef2ad795b715af30e15"
+    },
+    {
+      "bytes": 617,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:09:04Z",
+      "path": "CANONICAL_STACK_SPEC_V25_EFFECTIVE_CONSTITUTION_PROFILE_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md",
+      "sha256": "2f6de6a3a2faafdfcd078e9ba1054e0a3f07df948fbe13c344a492d4a275b020"
+    },
+    {
+      "bytes": 616,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-13T18:09:04Z",
+      "path": "CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md",
+      "sha256": "c3f1544e879c75c01106d4aa63a64f6292fcdf9956b0ca914a3877041a072f5d"
+    },
+    {
+      "bytes": 1398,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "CLAUDE.md",
+      "sha256": "ad33625357ff0bdbfc43088417d23b48e79ef6aa321efe9c6c1fcd324058cb46"
+    },
+    {
+      "bytes": 16017,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "COMBINED_AUDIT_2026-04-01.md",
+      "sha256": "6be4d80f089997b6503b8b71068c74d74716da2f6f077b5becab987cff43c5a7"
+    },
+    {
+      "bytes": 1033,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-23T23:13:04Z",
+      "path": "CONFORMANCE_GATES.md",
+      "sha256": "333facacdbc77a0375574c0390e3ea857455df4c6a949852c4f5f78f9ec7a326"
+    },
+    {
+      "bytes": 1089,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "CONTRACT_AND_TEMPORAL_TRUTH_HARDENING.md",
+      "sha256": "2ce43d9fbe534a843d5789634b225255256bb01a8ab020c62201e114d7aeabfa"
+    },
+    {
+      "bytes": 3428,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "CRATE_HARDENING_MATRIX.md",
+      "sha256": "1a8966abc7693cfe138925920e18cf4bcd5054c265822e15bb0fba9ada4ce3aa"
+    },
+    {
+      "bytes": 176560,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-06-04T05:22:04Z",
+      "path": "Cargo.lock",
+      "sha256": "89bfcfeda2aff195d2da70ae050340c27ab5048f0360d31de147e92266c6d976"
+    },
+    {
+      "bytes": 4104,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-06-04T05:20:20Z",
+      "path": "Cargo.toml",
+      "sha256": "6cc6544abe931eb08f58ba749986615a4ac101fb6955de40361207517b467510"
+    },
+    {
+      "bytes": 1082,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "EXECUTION_EVIDENCE_AND_REFERENCE_INTERPRETER_PLAN.md",
+      "sha256": "1a3a14de8c4f32f1768b3859309550fea2e516f1ca210815eb1d76363e8712a9"
+    },
+    {
+      "bytes": 226,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-05T06:15:57Z",
+      "path": "HEARTBEAT.md",
+      "sha256": "5a840ad5adc7bb6140b955bfb7a9fa2f47365e1cb7087ac9197831fbfef79888"
+    },
+    {
+      "bytes": 6836,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T18:09:25Z",
+      "path": "HNSW_BENCH_RESULTS_2026-06-02.md",
+      "sha256": "a4f76a467e0d932d2c633cc637c498f1ceca47ffb8ae52ce2cf9489dc2fe6c54"
+    },
+    {
+      "bytes": 26516,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T18:22:30Z",
+      "path": "HNSW_RESEARCH_2026-06-02.md",
+      "sha256": "0752527d27499942f4dc66f9e7e3691d9428cf1b776874bf9c04f92f91c88c90"
+    },
+    {
+      "bytes": 4067,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "HOSTILE_AUDIT_SYNTHESIS_V5.md",
+      "sha256": "168ac09acbceda651dc8f1fa5100f804cf250b391fb6c9151a572545f8ead738"
+    },
+    {
+      "bytes": 696,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-05T06:15:57Z",
+      "path": "IDENTITY.md",
+      "sha256": "d93cd095ac3b8d8135110230bc6f09738fb8029ca6f270001a928a1c1614bffb"
+    },
+    {
+      "bytes": 849,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "KERNEL_AND_REGION_RUNTIME_PLAN.md",
+      "sha256": "7124681ac49624b64d26fa3318a40349b193f3ee991b46a87e21bdbb44e85c2f"
+    },
+    {
+      "bytes": 44800,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T13:27:34Z",
+      "path": "LIBRARIES_AUDIT_2026-06-02.md",
+      "sha256": "151b719983c5edafab9594c9908a7a72ca76ac03f7134d9071b0a6cfbe757d5e"
+    },
+    {
+      "bytes": 23644,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T14:47:49Z",
+      "path": "LIBRARIES_FINAL_REPORT_2026-06-02.md",
+      "sha256": "6ba24771a7f32a6947a286e9131051acab2a4a55bd6e9870f9b374e6bd4a3004"
+    },
+    {
+      "bytes": 22936,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "LIBRARIES_FULL_STATE_DOSSIER_2026-05-27.md",
+      "sha256": "b6e215fd4f04df29719d457cd02c492c52681455f747d8d6fc95d00a4a285289"
+    },
+    {
+      "bytes": 36590,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "LIBRARIES_HARDENING_AND_GAP_AUDIT_2026-05-27.md",
+      "sha256": "45a6f4eae3765b960372e3f53c44081d16ad1d402b1e317bdd57019ce98f879d"
+    },
+    {
+      "bytes": 17521,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "path": "LIBRARIES_HOSTILE_AUDIT_V30_CORRECTED_2026-05-29.md",
+      "sha256": "8d9fddb687b64e245f60581fb5f197b3f34faf346ebee31a86fc28a15e8b47cf"
+    },
+    {
+      "bytes": 14695,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "LIBRARIES_IMPROVEMENT_DELTA_2026-05-27.md",
+      "sha256": "03368bd4edb29a2043df90cec2403e9b31c20d784e07c2a669ad6badd303f2ef"
+    },
+    {
+      "bytes": 2233,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "LIBRARIES_MASTER_MATRIX_V8.md",
+      "sha256": "b26ee8525099885687ab14b07486b7c95cb9f744237c23e00df9fa6516fedb1e"
+    },
+    {
+      "bytes": 4648,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "LIBRARIES_MASTER_TENSOR_V8.json",
+      "sha256": "a756989d246b6b2832fdd8d252adf6bb8ecac75f6b0c0d300e92471bfcc07776"
+    },
+    {
+      "bytes": 7753,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T18:51:39Z",
+      "path": "LIBRARIES_PUBLISH_READY_2026-06-02.md",
+      "sha256": "4bee0122ea80408acc0aec3fe60e5d7bf2769b0ccdf2c6e30ccd432a2169fef1"
+    },
+    {
+      "bytes": 44060,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "LIBRARIES_REMEDIATION_PLAN_2026-05-27.md",
+      "sha256": "92f1731345810ade8fd44ea856dfa83ec6cda16bbce0cb1dc7126198c8d9a78c"
+    },
+    {
+      "bytes": 17870,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "LIBRARIES_V30_HARDENING_ROADMAP.md",
+      "sha256": "779109479ccd0aa7b5a5a9640e23af746256e055d8eca9e1ba2bd6f874515618"
+    },
+    {
+      "bytes": 8457,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "LIB_MASTER_ISSUE_TENSOR.json",
+      "sha256": "9203b11b9b32c178e75bfaac6c5ab20cee974bae692b6c539a02f7c35ddfabcb"
+    },
+    {
+      "bytes": 212067,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-12T22:20:06Z",
+      "path": "Libraries-libraries-next-codex-context-20260612T222004Z.codex-archive.json",
+      "sha256": "c5ae2b9128464851f7e0c3a17244a8cfe270b16fa8170ae01cbc6e38f1860bf9"
+    },
+    {
+      "bytes": 12092,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "MASTER_ISSUE_TENSOR.json",
+      "sha256": "b71473f63509e1bf555d75c020c5d108cc9c130474be3b50199ccb5585d11b28"
+    },
+    {
+      "bytes": 2915,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "MASTER_TENSOR.md",
+      "sha256": "244b4ca38d2cc6a09dcbce2a9f6630fd7ed67560beb555827e561431c4a9c4ef"
+    },
+    {
+      "bytes": 2112,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "Makefile",
+      "sha256": "b342b6db3108ac9c85757f159348e535ca18e013efffd74972ca4fdb8f30b72f"
+    },
+    {
+      "bytes": 2716,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "OPERATOR_PASTE_FIRST.md",
+      "sha256": "5d5ee95a3d718b6e9e4bc1e7a86bbd4a9ed742c84c4e10eff2a3a49ecd0ec034"
+    },
+    {
+      "bytes": 851,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T20:34:47Z",
+      "path": "PACK_MANIFEST.json",
+      "sha256": "efa1c07f28b19487c1838686926390f6f0903adf28de6908cb28047d827649d1"
+    },
+    {
+      "bytes": 5709,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "PHASE_0_INVENTORY.md",
+      "sha256": "a5061e780e438785358f9635b2a51c911f0b892e8659f775b8f0f0aaa1d8d4c6"
+    },
+    {
+      "bytes": 11586,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "PHASE_1_OWNERSHIP_LEDGER.md",
+      "sha256": "55767e8321c4b89428d0b8bb8c95f1695970c522cc38d59d266af301566e8461"
+    },
+    {
+      "bytes": 1898,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "PROMPT.md",
+      "sha256": "4ed7b69f0be51464cddb6cabef6bb11795fe16b9e5e6d1d18a88b38b44d734e0"
+    },
+    {
+      "bytes": 2346,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "README.md",
+      "sha256": "b8eaa662faa6644890ab12602cf0deff28a7747923c1bdd1c63eb467b69b5d16"
+    },
+    {
+      "bytes": 1108,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "RISK_REGISTER.md",
+      "sha256": "d9732b821d58c2a6e9728ee99c6f998484d2eb3c175717917db2b2d9f2699feb"
+    },
+    {
+      "bytes": 2651,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T21:09:23Z",
+      "path": "SCOPE_NOTES.md",
+      "sha256": "0a38a09fab347b4c1d7c0f17b5ea9335a0b86fd59290a9b1460bd5f568f58b5d"
+    },
+    {
+      "bytes": 18893,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "SNAPSHOT_2026-04-11.md",
+      "sha256": "01140a6fa08660b97c77e6bcd47c7c59b479235e07f57f156f4b6e9e4b24704d"
+    },
+    {
+      "bytes": 1806,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-05T06:15:57Z",
+      "path": "SOUL.md",
+      "sha256": "daab0d62045d0a00ea0f968f4463ea09fd06c71f59066f686b0e9b361f929b43"
+    },
+    {
+      "bytes": 729,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "SOURCE_BASIS.md",
+      "sha256": "859081241c25d08d29f25b981788d40b6a34fa5c07e45679dc4c28828803aae3"
+    },
+    {
+      "bytes": 5478,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T21:07:10Z",
+      "path": "STATUS_DASHBOARD.md",
+      "sha256": "4d5f06a26dda8ffdd4628261c36ed72df53ffce90148a537c1c7cf77063a64d9"
+    },
+    {
+      "bytes": 3141,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "STATUS_EVIDENCE_MANIFEST.json",
+      "sha256": "d025436d800277bef95d2d3066c95061f14a030276d79599765328af8b095f86"
+    },
+    {
+      "bytes": 4762,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T13:56:12Z",
+      "path": "SUB_WORKSPACES.md",
+      "sha256": "65e271e05b7925e8b239ab4de95f080beb835cbdbaeaf0a04c2c6dad93c28a6a"
+    },
+    {
+      "bytes": 1336,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-30T18:09:25Z",
+      "path": "SUPPORT_PROFILE.md",
+      "sha256": "72afa619f20ba8fee6438bed88d5161b88f1027043d5d18e015ea65136270d2e"
+    },
+    {
+      "bytes": 1342,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "TEST_AND_CONFORMANCE_PLAN.md",
+      "sha256": "daeddf0094cdcfa1f506f1fd185c6748a98f3a80d32d986260707e52397acca5"
+    },
+    {
+      "bytes": 920,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-05T06:15:57Z",
+      "path": "TOOLS.md",
+      "sha256": "15cdfe57fcfa6d83888e215176f40b415ff2b9a51afe96b4d4134f2f5a8cfe68"
+    },
+    {
+      "bytes": 537,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-05T06:15:57Z",
+      "path": "USER.md",
+      "sha256": "e418ca9a680553b3ad8f54aecb0d403330810bb77826ab5251cc1dc13368fe16"
+    },
+    {
+      "bytes": 932,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:50Z",
+      "path": "V9_IMPLEMENTATION_PLAYBOOK.md",
+      "sha256": "30747227eeac18d90f4cc4ee9dda639874187cd8110857ecb08bf887bd790f27"
+    },
+    {
+      "bytes": 11658,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "claude_hard_audit_2026-03-30.md",
+      "sha256": "59d281396bdf6e25bf652b402c9930b73d1ed2fa1faf36129b420c320e974313"
+    },
+    {
+      "bytes": 4119,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T18:51:21Z",
+      "path": "deny.toml",
+      "sha256": "a5594f7f44e03bf9a3545cd3dc8eb6a2efc8fd62c0246a8a539be9a3f43be2b0"
+    },
+    {
+      "bytes": 9451,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "gpt54_hard_audit_2026-03-30.md",
+      "sha256": "9266e7c6264c9f8cecafb08ff595aca24c06391bfca6d884b4967afde2133fd2"
+    },
+    {
+      "bytes": 4078,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "gpt54_tensor_2026-03-30.json",
+      "sha256": "a8d529489e60601254e9d46437666d3da92d14e60529e4165c922ebcfab4e4e5"
+    },
+    {
+      "bytes": 2075,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T17:43:15Z",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-174315.json",
+      "sha256": "f85df98a37fc86d338f40ca26755fa28c87bee917bdbef1f15567d9e66ba4808"
+    },
+    {
+      "bytes": 2090,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T17:47:42Z",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-174742.json",
+      "sha256": "c78b9f01790b7afa4a5f4d772bbdd3655144ea53a0dd0f40c9cbafba0033b0c4"
+    },
+    {
+      "bytes": 2090,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T17:52:06Z",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-175206.json",
+      "sha256": "20a0867e90ba06e94d74fa977decece53dd82a765cb81fc6319ba1a43ce66d9b"
+    },
+    {
+      "bytes": 2090,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T17:57:04Z",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-175704.json",
+      "sha256": "760883858b6c2062e60514e0ce76127821a3802e1f356afe28fc73326681d017"
+    },
+    {
+      "bytes": 2082,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T18:04:46Z",
+      "path": "hnsw-bench-receipt-hnsw_rs-20260602-180446.json",
+      "sha256": "16e98410eac1a2bc5f4da8f9e08a5a17bac238517c3a4d47ac8bd5f8dfe27ba8"
+    },
+    {
+      "bytes": 2049,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T18:07:15Z",
+      "path": "hnsw-bench-receipt-usearch-20260602-180715.json",
+      "sha256": "8418c7d5cfd3fbd000a8d322d78f16fc5f7fc490f2a658bd1969c728e2b1a160"
+    },
+    {
+      "bytes": 2048,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-02T18:08:13Z",
+      "path": "hnsw-bench-receipt-usearch-20260602-180813.json",
+      "sha256": "77eab6d5e478143cd26282cfe86590fd6169d9f5aedbdbc92a0af90d94dbfe13"
+    },
+    {
+      "bytes": 3069,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-06-02T18:44:24Z",
+      "path": "publish.sh",
+      "sha256": "ad079618c7204554e2c091f399b73701b17d5177e7ff841cb7a1053775276c7b"
+    },
+    {
+      "bytes": 209,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-26T13:13:17Z",
+      "path": "semantic-memory-forge/CHANGELOG.md",
+      "sha256": "0dd45b6a880e3170e0eb2c4f62b4ab34e1e0b22e6f1182246869510871fefac5"
+    },
+    {
+      "bytes": 1053,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-06-02T23:04:15Z",
+      "path": "semantic-memory-forge/Cargo.toml",
+      "sha256": "87dbe9f5f2c1899c3de1222f950a38c0098ce80500ee18da0fc1a2f9a3fd6af4"
+    },
+    {
+      "bytes": 10242,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "semantic-memory-forge/LICENSE",
+      "sha256": "2b994b1abaf7b6331d45c6494c4e9a91deeb83433638cb1cc28d7673f99740b7"
+    },
+    {
+      "bytes": 8281,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "semantic-memory-forge/README.md",
+      "sha256": "8f6dda6d122d2cedbd4b9d549a90c5bb67eaa63ca20d711da7af5bc04391e61a"
+    },
+    {
+      "bytes": 395,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-12T22:25:44Z",
+      "path": "semantic-memory-forge/docs/codex-runs/ARCHIVAL_POLICY.md",
+      "sha256": "f1e9546ca27f5d3c141db2d95b4e484ed29ce71b2257acbde7437ebe8563705e"
+    },
+    {
+      "bytes": 154,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-12T22:25:44Z",
+      "path": "semantic-memory-forge/docs/codex-runs/CODEX_RUN_INDEX.md",
+      "sha256": "580b4962c54e6b7f0000f296838fa86f21663f6ceadb1e5db5961457c572c14f"
+    },
+    {
+      "bytes": 168,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-12T22:25:44Z",
+      "path": "semantic-memory-forge/docs/codex-runs/CURRENT_RUN.md",
+      "sha256": "699704b21c27b88c68a35d1bb8c1ee3492fa61fd19d7fba80e8ff0e3d77ab239"
+    },
+    {
+      "bytes": 2088,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-05T09:14:37Z",
+      "path": "semantic-memory-forge/src/audit_candidate.rs",
+      "sha256": "6be938b009dd8fdc18c17bbbede8857076d6fe55dc25bd18dc4da22ea849de6c"
+    },
+    {
+      "bytes": 24604,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T20:55:25Z",
+      "path": "semantic-memory-forge/src/bundle.rs",
+      "sha256": "7100e73bd42f4ed6ca11b7ef785be31b6e4f0f07f68bf316ae3fc0919d3c671b"
+    },
+    {
+      "bytes": 56863,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "semantic-memory-forge/src/envelope.rs",
+      "sha256": "5ab56fc7e030ca2748fa06521532337faab4cfa262d94f86ff169600d9adc4d1"
+    },
+    {
+      "bytes": 29283,
+      "executable": false,
+      "mode": "000600",
+      "mtime_utc": "2026-03-30T21:20:43Z",
+      "path": "semantic-memory-forge/src/envelope_tests.rs",
+      "sha256": "78030958e36f89fe2f22fa4a635aa8c037a8364d2bbc3bc9979dd3cf7dc92f9e"
+    },
+    {
+      "bytes": 5775,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T20:55:28Z",
+      "path": "semantic-memory-forge/src/estimator.rs",
+      "sha256": "f04f14de64a330e13fb2190c8ef5f6b05ec582fe3fb81909f85f8d0573268484"
+    },
+    {
+      "bytes": 3972,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-06-05T09:14:47Z",
+      "path": "semantic-memory-forge/src/lib.rs",
+      "sha256": "e06604a5d9fcc725c7f47a7d6cbb659adafeb440865a959a571fd992855c88d8"
+    },
+    {
+      "bytes": 3367,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-12T06:25:38Z",
+      "path": "semantic-memory-forge/src/tool_receipt.rs",
+      "sha256": "67f7de2d07a8e5a82ad8e6174088bab5b39e50ba9773ece42f66574ad69f65ac"
+    },
+    {
+      "bytes": 42738,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-22T10:12:05Z",
+      "path": "semantic-memory-forge/src/v11.rs",
+      "sha256": "a518d546decbebc3c24a664557786828f0144497a82ee02077c1a75e81279c32"
+    },
+    {
+      "bytes": 11753,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-22T10:12:05Z",
+      "path": "semantic-memory-forge/src/v13.rs",
+      "sha256": "d076c6bf5e1149296ff9960323345601d18729613be770e2331e001b54146cdb"
+    },
+    {
+      "bytes": 3101,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-14T15:30:40Z",
+      "path": "semantic-memory-forge/src/v14.rs",
+      "sha256": "e286fc377706070e145d3f52a335be61e1026d6328480ec248194ed7ee142eaa"
+    },
+    {
+      "bytes": 4984,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T18:12:41Z",
+      "path": "semantic-memory-forge/src/v9.rs",
+      "sha256": "15418a958541ad601d81ccb3e2f718144175dfbd268c664904789b57053cede3"
+    },
+    {
+      "bytes": 1100,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-05T09:14:56Z",
+      "path": "semantic-memory-forge/tests/audit_candidate_search.rs",
+      "sha256": "cbfd83b80ec70e6bca8ec2b80cf230c9dd21c5bc437786d065541e46315529b3"
+    },
+    {
+      "bytes": 195965,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-30T01:56:17Z",
+      "path": "semantic-memory-forge/z.py",
+      "sha256": "a76e268a9d1474070bf34de32a77faa7fa909ff10ae123f6ea1b05905286fbd7"
+    },
+    {
+      "bytes": 19,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/.gitignore",
+      "sha256": "2ebe6cb6f5289849dce5a8a6cdd77e06b1385302c862982f8e181c4782d19214"
+    },
+    {
+      "bytes": 1626,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/AGENTS.md",
+      "sha256": "61adf85b84e9378161870b396673b8f981186be9e0c9b021b3f696a42604fc4a"
+    },
+    {
+      "bytes": 223,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/CHANGELOG.md",
+      "sha256": "8876f0f59fb44f858f35cbe2907a054e3d6674a94230754f1c82e5a92a194982"
+    },
+    {
+      "bytes": 16672,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-08T13:25:04Z",
+      "path": "stack-ids/Cargo.lock",
+      "sha256": "b54b9fbc65e296aa1b44415effbf08b71df0b9443a052787b547cba634882d38"
+    },
+    {
+      "bytes": 866,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-06-02T23:04:15Z",
+      "path": "stack-ids/Cargo.toml",
+      "sha256": "574d5b7c63ce26540c68a53d96bde46f7cb865cdea6a57f6cdded32b789f6fac"
+    },
+    {
+      "bytes": 10242,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/LICENSE",
+      "sha256": "2b994b1abaf7b6331d45c6494c4e9a91deeb83433638cb1cc28d7673f99740b7"
+    },
+    {
+      "bytes": 8637,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/README.md",
+      "sha256": "701b60cfd22eea39a8d9b55068f57c05fc64eaf2471595c4efa716ef6f74bb56"
+    },
+    {
+      "bytes": 11196,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/src/digest.rs",
+      "sha256": "fc8fe9a41431b0dc62dc73ccd7d7c51d1e4e18646c0e99344065f65247fbbae9"
+    },
+    {
+      "bytes": 28096,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/src/ids.rs",
+      "sha256": "0ecc6760b11f74d8c28d928e36e0948453f66ae18fbbca41b6aea11f3c8917c7"
+    },
+    {
+      "bytes": 51970,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/src/ids_tests.rs",
+      "sha256": "722381e35bc9ba0b2db2c553694fb323033bc996ad6e38db958b53bf7f1d185a"
+    },
+    {
+      "bytes": 1332,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/src/lib.rs",
+      "sha256": "536b099ac3aa357e9bce6ecffa0e19a88493c5e525d1ad31b42e5356a27fbbae"
+    },
+    {
+      "bytes": 1345,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "path": "stack-ids/src/receipt.rs",
+      "sha256": "a7e965e5fa18b7e87352a114458469d287bc45295e6c75d8ba0e36c3e0e4d8a8"
+    },
+    {
+      "bytes": 8333,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/src/scope.rs",
+      "sha256": "14312f89a1178dab172821f9ba0feb0834861febfd2f306468b0f45f42eb2f74"
+    },
+    {
+      "bytes": 1306,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/src/status.rs",
+      "sha256": "e6586130d31225f7e1e505e441c6faf7f4a7e5c44052053b7d77e7a8f22047be"
+    },
+    {
+      "bytes": 15903,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/src/trace.rs",
+      "sha256": "58e744e0472fe5b6688082dbf58f92e140a6df9df8c25f4bd8606eef0a67969a"
+    },
+    {
+      "bytes": 2348,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-29T04:35:51Z",
+      "path": "stack-ids/src/v25.rs",
+      "sha256": "c7c89d185be223bb4e1fdd549ea2c1948fd14454950f3549c6c136f22d857fae"
+    },
+    {
+      "bytes": 1439,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-03-29T02:03:38Z",
+      "path": "support_lane.toml",
+      "sha256": "9bb4f1a56c9d9fefba3d172702733122372367da75fbb991e6234975922b6e6f"
+    },
+    {
+      "bytes": 192748,
+      "executable": false,
+      "mode": "000644",
+      "mtime_utc": "2026-05-30T14:59:53Z",
+      "path": "z.py",
+      "sha256": "8de4c569c7e34b7f3422cfd61e2839010db44082585753705c9cae787ed29bb7"
+    },
+    {
+      "bytes": 3298,
+      "executable": true,
+      "mode": "000755",
+      "mtime_utc": "2026-03-30T21:04:42Z",
+      "path": "zip.py",
+      "sha256": "f628d7ec22d2e886828a5550d6473681905bb7b7d794c33c0cdc42dfc5d05347"
+    }
+  ],
+  "findings": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.findings.json",
+  "manifest": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.manifest.json",
+  "package": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.zip",
+  "policy": {
+    "allow_secret_like_names": false,
+    "allowed_basenames": [],
+    "allowed_extensions": [],
+    "codex_artifact_classification": {},
+    "codex_current_run": "P30",
+    "ecosystem_parity_adapters": {},
+    "ecosystem_parity_default_severity": "info",
+    "ecosystem_parity_enabled": true,
+    "emit_decision_log": false,
+    "fail_on_case_collision": false,
+    "fail_on_unicode_collision": true,
+    "fail_on_windows_reserved_name": true,
+    "follow_symlinks": false,
+    "include_codex_archive": false,
+    "include_codex_artifacts": false,
+    "include_doc_binaries": false,
+    "include_editor_config": false,
+    "include_external_path_deps": true,
+    "include_generated_schemas": true,
+    "include_images": false,
+    "include_logs": false,
+    "include_patch_artifacts": true,
+    "include_root_markdown_archive": false,
+    "include_root_package_archive": false,
+    "max_file_size_bytes": 26214400,
+    "mode": "next-codex-context",
+    "package_role": "next-codex-context",
+    "path_rules": [],
+    "policy_document": null,
+    "policy_path": null,
+    "profile": "generic-rust",
+    "required_files": [],
+    "root_markdown_archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/root-markdown-archive",
+    "root_markdown_archive_root_rel": "docs/root-markdown-archive",
+    "root_package_archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/source-packages/archive",
+    "root_package_archive_root_rel": "docs/source-packages/archive",
+    "secret_scan_max_bytes": 1048576,
+    "source_date_epoch": null
+  },
+  "report": {
+    "archive_root": "/home/sikmindz/Coding/Libraries",
+    "archive_sha256": "cb17c0737bb7081324dc75217516e215f63560f8374437ed6ef333db2b4bb3be",
+    "archive_sha256_semantics": "zip-byte-sha256-not-canonical-content-hash",
+    "archive_written": true,
+    "archive_zip_byte_sha256": "cb17c0737bb7081324dc75217516e215f63560f8374437ed6ef333db2b4bb3be",
+    "codex_archive": {
+      "active_stale_after_count": 0,
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/codex-runs/archive",
+      "collision_count": 0,
+      "current_run": "P30",
+      "dry_run": false,
+      "enabled": true,
+      "errors": [],
+      "manifest_paths": [],
+      "moved_count": 0,
+      "planned_count": 0,
+      "report_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.codex-archive.json",
+      "skipped_existing_count": 0,
+      "stale_active_before_count": 0,
+      "unclassified_count": 0,
+      "verify_only": false
+    },
+    "content_manifest_sha256": "aadb4bbb5bea6075da969e336b7bfdbe61c66ddeb24be65687ac70b089e6f0cb",
+    "created_utc": "2026-06-12T22:25:44Z",
+    "decision_log_path": null,
+    "deterministic_zip_timestamps": true,
+    "dry_run": false,
+    "ecosystem_parity": [
+      {
+        "detected": true,
+        "dry_run_available": true,
+        "dry_run_command": "cargo package --list --allow-dirty",
+        "dry_run_status": "available-not-run",
+        "ecosystem": "rust",
+        "expected_files": [
+          "Cargo.toml",
+          "LICENSE",
+          "README.md"
+        ],
+        "extra_in_zpy_package": [],
+        "findings": [],
+        "manifests": [
+          "Cargo.toml"
+        ],
+        "missing_from_zpy_package": [
+          "LICENSE"
+        ]
+      },
+      {
+        "detected": false,
+        "dry_run_available": false,
+        "dry_run_command": "python -m build --sdist --wheel",
+        "dry_run_status": "not-applicable",
+        "ecosystem": "python",
+        "expected_files": [],
+        "extra_in_zpy_package": [],
+        "findings": [],
+        "manifests": [],
+        "missing_from_zpy_package": []
+      },
+      {
+        "detected": false,
+        "dry_run_available": false,
+        "dry_run_command": "npm pack --dry-run --json",
+        "dry_run_status": "not-applicable",
+        "ecosystem": "node",
+        "expected_files": [
+          "LICENSE",
+          "README.md"
+        ],
+        "extra_in_zpy_package": [],
+        "findings": [],
+        "manifests": [],
+        "missing_from_zpy_package": [
+          "LICENSE"
+        ]
+      },
+      {
+        "detected": false,
+        "dry_run_available": false,
+        "dry_run_command": "go list -m -json all",
+        "dry_run_status": "not-applicable",
+        "ecosystem": "go",
+        "expected_files": [],
+        "extra_in_zpy_package": [],
+        "findings": [],
+        "manifests": [],
+        "missing_from_zpy_package": []
+      },
+      {
+        "detected": false,
+        "dry_run_available": false,
+        "dry_run_command": "docker buildx build --progress=plain --dry-run .",
+        "dry_run_status": "not-applicable",
+        "ecosystem": "docker",
+        "expected_files": [],
+        "extra_in_zpy_package": [],
+        "findings": [],
+        "manifests": [],
+        "missing_from_zpy_package": []
+      },
+      {
+        "detected": false,
+        "dry_run_available": false,
+        "dry_run_command": "git archive --format=tar HEAD",
+        "dry_run_status": "not-applicable",
+        "ecosystem": "git",
+        "expected_files": [],
+        "extra_in_zpy_package": [],
+        "findings": [],
+        "manifests": [],
+        "missing_from_zpy_package": []
+      }
+    ],
+    "error_count": 0,
+    "excluded_file_count": 23,
+    "excluded_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.excluded.json",
+    "external_path_dep_roots": [
+      "/home/sikmindz/Coding/Libraries/stack-ids"
+    ],
+    "findings_count": 2,
+    "findings_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.findings.json",
+    "include_roots": [
+      "/home/sikmindz/Coding/Libraries/semantic-memory-forge",
+      "/home/sikmindz/Coding/Libraries/stack-ids"
+    ],
+    "included_bytes": 1722148,
+    "included_count": 123,
+    "manifest_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.manifest.json",
+    "mode": "next-codex-context",
+    "output": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.zip",
+    "package_role": "next-codex-context",
+    "policy_path": null,
+    "profile_requested": "auto",
+    "profile_resolved": "generic-rust",
+    "pruned_dir_count": 2,
+    "report_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.report.md",
+    "root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge",
+    "root_markdown_archive": {
+      "ambiguous_count": 0,
+      "ambiguous_paths": [],
+      "archive_dir": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/root-markdown-archive",
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/root-markdown-archive",
+      "candidate_count": 0,
+      "candidate_paths": [],
+      "collision_count": 0,
+      "current_run": "P30",
+      "dry_run": false,
+      "enabled": false,
+      "errors": [],
+      "inspected_count": 2,
+      "manifest_path": null,
+      "moved_count": 0,
+      "planned_count": 0,
+      "protected_count": 2,
+      "skipped_existing_count": 0,
+      "verify_only": false
+    },
+    "root_package_archive": {
+      "archive_dir": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/source-packages/archive/20260612T222544Z",
+      "archive_only": false,
+      "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/source-packages/archive",
+      "candidate_count": 0,
+      "candidate_paths": [],
+      "collision_count": 0,
+      "dry_run": false,
+      "enabled": true,
+      "errors": [],
+      "inspected_count": 6,
+      "manifest_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/source-packages/archive/20260612T222544Z/PACKAGE_ARTIFACT_ARCHIVE_MANIFEST.json",
+      "moved": [],
+      "moved_count": 0,
+      "planned_count": 0,
+      "protected_count": 6,
+      "skipped_existing_count": 0,
+      "verify_only": false
+    },
+    "script": "z.py",
+    "script_version": "2026.05.22-p31",
+    "strict": true,
+    "warning_count": 2
+  },
+  "root_markdown_archive": {
+    "ambiguous_count": 0,
+    "ambiguous_paths": [],
+    "archive_dir": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/root-markdown-archive",
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/root-markdown-archive",
+    "candidate_count": 0,
+    "candidate_paths": [],
+    "collision_count": 0,
+    "collisions": [],
+    "current_run": "P30",
+    "dry_run": false,
+    "enabled": false,
+    "errors": [],
+    "inspected_count": 2,
+    "manifest_path": null,
+    "manifest_written": false,
+    "moved_count": 0,
+    "planned_count": 0,
+    "protected_count": 2,
+    "protected_paths": [
+      "CHANGELOG.md",
+      "README.md"
+    ],
+    "skipped_existing_count": 0,
+    "verify_only": false
+  },
+  "root_package_archive": {
+    "archive_dir": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/source-packages/archive/20260612T222544Z",
+    "archive_only": false,
+    "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/source-packages/archive",
+    "candidate_count": 0,
+    "candidate_paths": [],
+    "collision_count": 0,
+    "collisions": [],
+    "dry_run": false,
+    "enabled": true,
+    "errors": [],
+    "inspected_count": 6,
+    "manifest_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/source-packages/archive/20260612T222544Z/PACKAGE_ARTIFACT_ARCHIVE_MANIFEST.json",
+    "manifest_written": true,
+    "moved": [],
+    "moved_count": 0,
+    "planned_count": 0,
+    "protected_count": 6,
+    "protected_paths": [
+      "CHANGELOG.md",
+      "Cargo.toml",
+      "LICENSE",
+      "README.md",
+      "semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.codex-archive.json",
+      "z.py"
+    ],
+    "skipped_existing": [],
+    "skipped_existing_count": 0,
+    "verify_only": false
+  },
+  "run": "P30",
+  "sidecars": {
+    "codex_archive_report": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.codex-archive.json",
+    "decision_log": null,
+    "excluded": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.excluded.json",
+    "findings": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.findings.json",
+    "manifest": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.manifest.json",
+    "package": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.zip",
+    "report": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/semantic-memory-forge-generic-rust-next-codex-context-20260612T222544Z.report.md"
+  },
+  "summaries": {
+    "exclusion_reasons": {
+      "archive-file": 16,
+      "doc-binary-disabled": 2,
+      "generated-output": 1,
+      "generated-sidecar": 4
+    },
+    "extensions": {
+      ".json": 16,
+      ".jsonl": 1,
+      ".lock": 2,
+      ".md": 69,
+      ".py": 3,
+      ".rs": 21,
+      ".sh": 1,
+      ".toml": 5,
+      "<no-extension>": 5
+    },
+    "top_level_dirs": {
+      ".gitignore": 1,
+      ".zpy": 1,
+      "00_START_HERE.md": 1,
+      "01_MASTER_ISSUE_TENSOR.json": 1,
+      "02_PHASE_PLAN.md": 1,
+      "03_IMPLEMENTATION_PLAYBOOK.md": 1,
+      "03_TARGET_API_SPEC.md": 1,
+      "04_EXACT_FILE_TOUCH_MAP.md": 1,
+      "04_MATH_CONFORMANCE.md": 1,
+      "05_ACCEPTANCE_GATES.md": 1,
+      "05_TEST_AND_CONFORMANCE_PLAN.md": 1,
+      "06_VALIDATION_COMMANDS.md": 1,
+      "07_ROLLBACK_AND_QUARANTINE.md": 1,
+      "08_FINAL_AUDITOR_HANDOFF.md": 1,
+      "09_CODEX_FEATURES_AND_INSTALL.md": 1,
+      "10_HOSTILE_AUDIT_CLAUDE.md": 1,
+      "11_HOSTILE_AUDIT_GPT.md": 1,
+      "11_HOSTILE_AUDIT_GPT_TENSOR.json": 1,
+      "AGENTS.md": 1,
+      "AUDIT_2026-04-01.md": 1,
+      "BITEMPORAL_RUNTIME_HOSTILE_AUDIT_2026-06-02.md": 1,
+      "CANONICAL_STACK_SPEC_V25_EFFECTIVE_CONSTITUTION_PROFILE_COMPOSITION_AND_OBLIGATION_FOLDING_RUNTIME.md": 1,
+      "CANONICAL_STACK_SPEC_V26_ADVISORY_CONSTITUTIONAL_SEARCH_MINIMAL_EXCEPTION_SYNTHESIS_AND_POLICY_COUNTERFACTUAL_RUNTIME.md": 1,
+      "CLAUDE.md": 1,
+      "COMBINED_AUDIT_2026-04-01.md": 1,
+      "CONFORMANCE_GATES.md": 1,
+      "CONTRACT_AND_TEMPORAL_TRUTH_HARDENING.md": 1,
+      "CRATE_HARDENING_MATRIX.md": 1,
+      "Cargo.lock": 1,
+      "Cargo.toml": 1,
+      "EXECUTION_EVIDENCE_AND_REFERENCE_INTERPRETER_PLAN.md": 1,
+      "HEARTBEAT.md": 1,
+      "HNSW_BENCH_RESULTS_2026-06-02.md": 1,
+      "HNSW_RESEARCH_2026-06-02.md": 1,
+      "HOSTILE_AUDIT_SYNTHESIS_V5.md": 1,
+      "IDENTITY.md": 1,
+      "KERNEL_AND_REGION_RUNTIME_PLAN.md": 1,
+      "LIBRARIES_AUDIT_2026-06-02.md": 1,
+      "LIBRARIES_FINAL_REPORT_2026-06-02.md": 1,
+      "LIBRARIES_FULL_STATE_DOSSIER_2026-05-27.md": 1,
+      "LIBRARIES_HARDENING_AND_GAP_AUDIT_2026-05-27.md": 1,
+      "LIBRARIES_HOSTILE_AUDIT_V30_CORRECTED_2026-05-29.md": 1,
+      "LIBRARIES_IMPROVEMENT_DELTA_2026-05-27.md": 1,
+      "LIBRARIES_MASTER_MATRIX_V8.md": 1,
+      "LIBRARIES_MASTER_TENSOR_V8.json": 1,
+      "LIBRARIES_PUBLISH_READY_2026-06-02.md": 1,
+      "LIBRARIES_REMEDIATION_PLAN_2026-05-27.md": 1,
+      "LIBRARIES_V30_HARDENING_ROADMAP.md": 1,
+      "LIB_MASTER_ISSUE_TENSOR.json": 1,
+      "Libraries-libraries-next-codex-context-20260612T222004Z.codex-archive.json": 1,
+      "MASTER_ISSUE_TENSOR.json": 1,
+      "MASTER_TENSOR.md": 1,
+      "Makefile": 1,
+      "OPERATOR_PASTE_FIRST.md": 1,
+      "PACK_MANIFEST.json": 1,
+      "PHASE_0_INVENTORY.md": 1,
+      "PHASE_1_OWNERSHIP_LEDGER.md": 1,
+      "PROMPT.md": 1,
+      "README.md": 1,
+      "RISK_REGISTER.md": 1,
+      "SCOPE_NOTES.md": 1,
+      "SNAPSHOT_2026-04-11.md": 1,
+      "SOUL.md": 1,
+      "SOURCE_BASIS.md": 1,
+      "STATUS_DASHBOARD.md": 1,
+      "STATUS_EVIDENCE_MANIFEST.json": 1,
+      "SUB_WORKSPACES.md": 1,
+      "SUPPORT_PROFILE.md": 1,
+      "TEST_AND_CONFORMANCE_PLAN.md": 1,
+      "TOOLS.md": 1,
+      "USER.md": 1,
+      "V9_IMPLEMENTATION_PLAYBOOK.md": 1,
+      "claude_hard_audit_2026-03-30.md": 1,
+      "deny.toml": 1,
+      "gpt54_hard_audit_2026-03-30.md": 1,
+      "gpt54_tensor_2026-03-30.json": 1,
+      "hnsw-bench-receipt-hnsw_rs-20260602-174315.json": 1,
+      "hnsw-bench-receipt-hnsw_rs-20260602-174742.json": 1,
+      "hnsw-bench-receipt-hnsw_rs-20260602-175206.json": 1,
+      "hnsw-bench-receipt-hnsw_rs-20260602-175704.json": 1,
+      "hnsw-bench-receipt-hnsw_rs-20260602-180446.json": 1,
+      "hnsw-bench-receipt-usearch-20260602-180715.json": 1,
+      "hnsw-bench-receipt-usearch-20260602-180813.json": 1,
+      "publish.sh": 1,
+      "semantic-memory-forge": 20,
+      "stack-ids": 16,
+      "support_lane.toml": 1,
+      "z.py": 1,
+      "zip.py": 1
+    }
+  }
+}

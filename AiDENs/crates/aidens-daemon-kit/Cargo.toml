@@ -1,20 +1,18 @@
 [package]
 name = "aidens-daemon-kit"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Daemon facade for queue, schedule, wake, leases, and safe mode"
 
-[lints]
-workspace = true
 
 [dependencies]
 aidens-contracts = { path = "../aidens-contracts" }
 aidens-queue-kit = { path = "../aidens-queue-kit" }
 aidens-schedule-kit = { path = "../aidens-schedule-kit" }
 aidens-wake-kit = { path = "../aidens-wake-kit" }
-chrono.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-thiserror.workspace = true
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"

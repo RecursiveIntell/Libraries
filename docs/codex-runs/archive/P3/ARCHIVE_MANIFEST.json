@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P3/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.md",
+      "bytes": 2900,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P03_TURN_EXECUTOR_TOOL_LOOP_AND_BUDGET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P3",
+      "sha256": "6cd15794e26fffe1202780486c0fffb46223e4b6a0e56a82e6109ae48800c596"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P3",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

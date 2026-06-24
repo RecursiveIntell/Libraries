@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P7/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.md",
+      "bytes": 2505,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P07_SCHEMA_GENERATION_CONTRACT_REGISTRY_AND_MIGRATION_LAW.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P7",
+      "sha256": "81e2c8dc5c3795d699577eafa4d96a879b36865e8ac0c26ab910c2a884d4c209"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P7",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

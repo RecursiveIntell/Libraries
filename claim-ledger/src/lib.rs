@@ -24,6 +24,7 @@
 //! | [`ledger`] | Append-only hash-chained ledger |
 //! | [`receipt`] | Export and admission receipt types |
 
+pub mod budget;
 pub mod candidate;
 pub mod error;
 pub mod ids;
@@ -32,6 +33,12 @@ pub mod receipt;
 pub mod types;
 
 // Re-export commonly used types at the crate root for ergonomic access.
+pub use budget::{
+    budget_for_claim, evaluate_proof_debt_gate, evaluate_proof_debt_gate_with_config,
+    proof_debt_weight, total_proof_debt_weight, total_proof_debt_weight_with_config,
+    ProofDebtBudgetConfig, ProofDebtBudgetV1, ProofDebtCreditV1, ProofDebtDebitV1,
+    ProofDebtGateDecision, ProofDebtGateResult, ProofDebtSummaryV1, ProofDebtWaiverReceipt,
+};
 pub use candidate::{
     ProofPacketCandidateProvenanceV1, SimilarClaimCandidateV1,
     PROOF_PACKET_CANDIDATE_PROVENANCE_V1_SCHEMA, SIMILAR_CLAIM_CANDIDATE_V1_SCHEMA,

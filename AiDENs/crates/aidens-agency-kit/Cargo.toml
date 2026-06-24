@@ -1,16 +1,14 @@
 [package]
 name = "aidens-agency-kit"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "AiDENs agency policy engine — influence classification, nudge ledger, policy evaluation"
 
-[lints]
-workspace = true
 
 [dependencies]
-chrono.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-sha2.workspace = true
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"

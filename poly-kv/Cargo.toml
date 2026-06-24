@@ -10,7 +10,7 @@ resolver = "2"
 
 [package]
 name = "poly-kv"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 edition = "2021"
 rust-version = "1.75"
 description = "Shared compressed KV-cache pool for multi-agent context. Two-tier codec policy (fib-quant cold + turbo-quant hot) with typed receipts."

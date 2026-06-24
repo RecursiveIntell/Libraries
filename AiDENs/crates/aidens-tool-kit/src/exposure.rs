@@ -17,7 +17,7 @@ impl ToolExposurePolicyV1 {
         Self {
             allowed_tool_ids: None,
             allowed_risk_classes: BTreeSet::from([CanonicalToolSideEffectClass::ReadOnly]),
-            max_tools: Some(16),
+            max_tools: Some(64),
             native_tool_loop_available: false,
             permit_policy: PermitPolicyV1::default(),
             sandbox_root: None,
@@ -32,7 +32,7 @@ impl ToolExposurePolicyV1 {
                 CanonicalToolSideEffectClass::Write,
                 CanonicalToolSideEffectClass::Admin,
             ]),
-            max_tools: Some(16),
+            max_tools: Some(64),
             native_tool_loop_available: false,
             permit_policy: PermitPolicyV1::default(),
             sandbox_root: None,

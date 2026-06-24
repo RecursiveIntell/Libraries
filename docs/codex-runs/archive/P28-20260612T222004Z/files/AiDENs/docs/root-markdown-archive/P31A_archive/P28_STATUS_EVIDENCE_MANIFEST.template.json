@@ -1,0 +1,194 @@
+{
+  "schema": "P28StatusEvidenceManifestV1",
+  "run_id": "P28",
+  "created_utc": "FILL_AT_FINAL_PACKAGE_TIME",
+  "support_tier": "v11A-conformant-core-candidate",
+  "semantic_status": "pending",
+  "scope": {
+    "declared_conformant_path": "supported-local AgentSpecV1 -> runner Plan/Act/Verify -> repo tools/patch/check -> final bundle/package replay",
+    "non_claims": [
+      "production-cloud-ready",
+      "broad-autonomy-ready",
+      "full-v11plus-release-candidate",
+      "v11B-active-runtime",
+      "v11C-active-federation-or-mechanism",
+      "canonical-memory-truth-owner",
+      "canonical-governance-truth-owner",
+      "canonical-kernel-truth-owner",
+      "canonical-provider-tool-contract-owner",
+      "canonical-schema-generation-owner"
+    ]
+  },
+  "p0_bug_status": [
+    {
+      "id": "C05",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C07",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C11",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C24",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C25",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C32",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C53",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C54",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C55",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C59",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C66",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "C72",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "v11a_gates": [
+    {
+      "gate": "artifact_lifecycle",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "gate": "material_operation_registry",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "gate": "execution_evidence",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "gate": "boundary_compiler",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "gate": "proof_economy",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "gate": "view_disclosure",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "gate": "schema_contract",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "gate": "reference_conformance",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "validation_results": [
+    {
+      "label": "cargo_fmt_p28",
+      "command": "cargo fmt --all -- --check",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/cargo_fmt_p28_final.log"
+    },
+    {
+      "label": "cargo_check_p28",
+      "command": "cargo check --workspace --all-targets",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/cargo_check_p28_final.log"
+    },
+    {
+      "label": "cargo_test_p28",
+      "command": "cargo test --workspace --all-targets",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/cargo_test_p28_final.log"
+    },
+    {
+      "label": "cargo_clippy_p28",
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/cargo_clippy_p28_final.log"
+    },
+    {
+      "label": "cargo_doc_p28",
+      "command": "cargo doc --workspace --no-deps",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/cargo_doc_p28_final.log"
+    },
+    {
+      "label": "verify_current_p28",
+      "command": "P28_FINAL_STRICT=1 bash scripts/verify_current.sh",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/verify_current_p28_final.log"
+    },
+    {
+      "label": "package_strict_p28",
+      "command": "python3 z.py --root . --profile aidens --mode next-codex-context --strict --codex-current-run P28 --output target/p28/package/AiDENs-p28-codex-context.zip",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/zpy_package_p28_final.log"
+    },
+    {
+      "label": "package_validation_p28",
+      "command": "python3 scripts/assert_package_validation.py",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/package_validation_p28_final.log"
+    },
+    {
+      "label": "package_self_replay_p28_full",
+      "command": "python3 scripts/assert_package_self_replay.py --package target/p28/package/AiDENs-p28-codex-context.zip --verifier scripts/verify_current.sh --require-verifier --receipt-out target/p28/audit/package_self_replay_p28_final_receipt.json",
+      "status": "pending",
+      "semantic_status": "pending",
+      "log": "target/p28/audit/package_self_replay_p28_final.log"
+    }
+  ],
+  "aggregate_status_rule": "If any validation_result.semantic_status is degraded_exact_check or weaker, top-level semantic_status must be degraded or partial, not exact_check.",
+  "unresolved_risks": [],
+  "quarantines": []
+}

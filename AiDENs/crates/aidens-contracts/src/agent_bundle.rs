@@ -35,6 +35,7 @@ impl fmt::Display for AgentSpecSupportLabelV1 {
 pub enum AgentProviderModeV1 {
     Mock,
     Local,
+    Ollama,
 }
 
 impl fmt::Display for AgentProviderModeV1 {
@@ -42,6 +43,7 @@ impl fmt::Display for AgentProviderModeV1 {
         f.write_str(match self {
             Self::Mock => "mock",
             Self::Local => "local",
+            Self::Ollama => "ollama",
         })
     }
 }
@@ -174,6 +176,7 @@ impl AgentSpecV1 {
         if self.tool_policy.allowed_tools.is_empty() {
             reason_codes.push("tool-policy-must-list-tools".into());
         } else {
+            // Canonical coding tools (dotted names without namespace prefix).
             const ALLOWED_TOOLS: [&str; 8] = [
                 "repo.read",
                 "repo.list",
@@ -185,7 +188,11 @@ impl AgentSpecV1 {
                 "run.replay",
             ];
             for tool in &self.tool_policy.allowed_tools {
-                if !ALLOWED_TOOLS.contains(&tool.as_str()) {
+                // Accept namespaced tools (e.g. "kirsten:search:1") that are
+                // registered in the ToolRegistryV1 at runtime. Only reject
+                // bare names that aren't in the canonical coding set.
+                let is_namespaced = tool.contains(':');
+                if !is_namespaced && !ALLOWED_TOOLS.contains(&tool.as_str()) {
                     reason_codes.push(format!("unsupported-tool:{tool}"));
                 }
             }

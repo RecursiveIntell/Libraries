@@ -1,0 +1,108 @@
+{
+  "schema": "P24StatusEvidenceManifestV1",
+  "record_date": "2026-05-03",
+  "scope": "AiDENs P24 V9 seam-consuming product layer",
+  "package_hash_note": "The final package zip hash is reported with package sidecars after package emission to avoid circular package identity inside this in-repo manifest.",
+  "commands": [
+    {
+      "command": "cargo fmt --all --check",
+      "status": "pass",
+      "log": "target/p24/audit/cargo_fmt_all_check.final2.log"
+    },
+    {
+      "command": "cargo check --workspace --all-targets --all-features",
+      "status": "pass",
+      "log": "target/p24/audit/cargo_check_workspace_all_targets_all_features.final.log"
+    },
+    {
+      "command": "cargo test --workspace --all-targets --all-features",
+      "status": "pass",
+      "log": "target/p24/audit/cargo_test_workspace_all_targets_all_features.final2.log"
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets --all-features -- -D warnings",
+      "status": "pass",
+      "log": "target/p24/audit/cargo_clippy_workspace_all_targets_all_features.final.log"
+    },
+    {
+      "command": "cargo doc --workspace --all-features --no-deps",
+      "status": "pass",
+      "log": "target/p24/audit/cargo_doc_workspace_all_features_no_deps.final.log"
+    },
+    {
+      "command": "python3 scripts/assert_codex_artifact_classification.py .",
+      "status": "pass",
+      "log": "target/p24/audit/assert_codex_artifact_classification_p24.final.log"
+    },
+    {
+      "command": "bash scripts/p24_verify.sh .",
+      "status": "pass",
+      "log": "target/p24/audit/p24_verify.final.log"
+    },
+    {
+      "command": "python3 z.py --root . --profile aidens --mode codex-context --codex-current-run P24 --strict --check-script-refs --output target/p24/package/AiDENs-p24-codex-context.zip",
+      "status": "pass",
+      "log": "target/p24/audit/zpy_codex_context_strict.final_pass.log"
+    },
+    {
+      "command": "P24_PACKAGE_SELF_REPLAY=target/p24/package/AiDENs-p24-codex-context.zip bash scripts/p24_verify.sh .",
+      "status": "pass",
+      "log": "target/p24/audit/p24_verify_with_package_self_replay.final_pass.log"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "target/p24/test-agent/run-bundle.json",
+      "sha256": "763877897a2e70d7294c55365b94e73b24b418aed71046cbe96266fdf9261c41",
+      "role": "AiDENsRunBundleV2 test-agent example"
+    },
+    {
+      "path": "tests/fixtures/p24/aidens_run_bundle_v2.json",
+      "sha256": "763877897a2e70d7294c55365b94e73b24b418aed71046cbe96266fdf9261c41",
+      "role": "AiDENsRunBundleV2 schema fixture"
+    },
+    {
+      "path": "target/p24/coding-agent/run-bundle.json",
+      "sha256": "6cfc166f926ee2cdadae456a8043d52cd272b99d96d57226178e72982eb861c4",
+      "role": "supported-local coding-agent run bundle"
+    },
+    {
+      "path": "target/p24/coding-agent/coding-agent-report.json",
+      "sha256": "969a87d3d0209db7b0a8d0672217ccc5d124f6918e6347e7dc9efc45893026d1",
+      "role": "supported-local coding-agent operator report"
+    },
+    {
+      "path": "target/p24/memory-seam/export-envelope-v3.json",
+      "sha256": "9240fe5343d02041015d194503664839a961f503e80003c44d82cdd9b2530ca7",
+      "role": "canonical Forge export fixture"
+    },
+    {
+      "path": "target/p24/memory-seam/projection-import-batch-v3.json",
+      "sha256": "af925823512e05c24daab6e548277c0baee2b6d6bc62f2d7fc2e96064eeedd44",
+      "role": "forge-memory-bridge import projection"
+    },
+    {
+      "path": "target/p24/memory-seam/memory-runtime-seam-report.json",
+      "sha256": "78c271bd262987ce5caf27b8f258231321c4aed9a200b20a47d420d32028fcf3",
+      "role": "semantic-memory to knowledge-runtime query evidence"
+    },
+    {
+      "path": "target/p24/daemon-safe/queue.ndjson",
+      "sha256": "fcbd5aed791e9cfc605828e5574aac267b8bec965fd449161d7c370850c44fa7",
+      "role": "daemon-safe append-only queue evidence"
+    }
+  ],
+  "support_profile_delta": [
+    "run-coding-agent promoted to supported-local for local fixture repo workflows",
+    "inspect-run promoted to AiDENsRunBundleV2 inspection with event-log digest validation",
+    "memory seam fixture promoted to supported-local-fixture",
+    "daemon-safe queue promoted to supported-local for local append-only lifecycle only",
+    "cloud/native/autonomous broad provider paths remain deferred"
+  ],
+  "unresolved_risks": [
+    "Parent worktree remains dirty outside AiDENs package control.",
+    "Cloud provider execution and native provider tool loops remain deferred.",
+    "Memory/runtime seam evidence is fixture-backed and not broad memory product support.",
+    "Autonomous daemon behavior beyond local append-only queue lifecycle remains deferred."
+  ]
+}

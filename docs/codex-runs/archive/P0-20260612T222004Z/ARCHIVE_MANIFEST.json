@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P0-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.md",
+      "bytes": 2794,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P00_SOURCE_BASIS_AND_FAKE_READY_FREEZE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P0",
+      "sha256": "c674cfacf9f122926104f0ced3ebfbe25ce7f148d2a42464aec1cc5f7cc335ca"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P0",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

@@ -9,7 +9,7 @@
   "ollama": {
     "status": "partial-local-chat",
     "chat_completion": true,
-    "native_tool_calling": false,
+    "native_tool_calling": true,
     "cloud_support": false,
     "requires_test": true
   },

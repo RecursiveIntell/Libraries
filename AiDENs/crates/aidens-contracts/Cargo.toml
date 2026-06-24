@@ -1,29 +1,27 @@
 [package]
 name = "aidens-contracts"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Versioned base contracts — shared primitive artifact shapes for AiDENs"
 
-[lints]
-workspace = true
 
 [dependencies]
-attestation-exchange.workspace = true
-chrono.workspace = true
-federated-settlement.workspace = true
-kernel-execution.workspace = true
-kernel-oracles.workspace = true
-llm-tool-runtime.workspace = true
-mechanism-runtime.workspace = true
-recursive-kernel-core.workspace = true
-remote-oracle-admission.workspace = true
-schemars.workspace = true
-semantic-memory-forge.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-stack-ids.workspace = true
-uuid.workspace = true
-verification-adjudication.workspace = true
-verification-control.workspace = true
+attestation-exchange = { version = "0.1.0", path = "../../../attestation-exchange" }
+chrono = { version = "0.4", features = ["serde"] }
+federated-settlement = { version = "0.1.0", path = "../../../federated-settlement" }
+kernel-execution = { version = "0.1.0", path = "../../../kernel-execution" }
+kernel-oracles = { version = "0.1.0", path = "../../../kernel-oracles" }
+llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
+mechanism-runtime = { version = "0.1.0", path = "../../../mechanism-runtime" }
+recursive-kernel-core = { version = "0.1.0", path = "../../../recursive-kernel-core" }
+remote-oracle-admission = { version = "0.1.0", path = "../../../remote-oracle-admission" }
+schemars = { version = "0.8", features = ["chrono", "uuid1"] }
+semantic-memory-forge = { version = "0.1.0", path = "../../../semantic-memory-forge" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+verification-adjudication = { version = "0.1.0", path = "../../../verification-adjudication" }
+verification-control = { version = "0.1.0", path = "../../../verification-control" }

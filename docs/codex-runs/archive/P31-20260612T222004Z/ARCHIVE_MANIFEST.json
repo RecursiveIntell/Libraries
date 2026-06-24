@@ -1,0 +1,59 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/02_P31_IMPLEMENTATION_BLUEPRINT.md",
+      "bytes": 5586,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/02_P31_IMPLEMENTATION_BLUEPRINT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "0e5add1f1133091505de8908c2b4dfda62c595e79baf22747d63fe9525e0b5b4"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/03_P31_FIXTURE_AND_TEST_MATRIX.md",
+      "bytes": 2258,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/03_P31_FIXTURE_AND_TEST_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "9789060594922a675a409fefbfce9524f00295b8e394327199a6c24826bdf966"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/04_P31_ACCEPTANCE_AND_REVIEW_CHECKLIST.md",
+      "bytes": 2347,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/04_P31_ACCEPTANCE_AND_REVIEW_CHECKLIST.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "70657999bc75c955f2040a87b30f3aef053b2bed958e04d039c7d8797bdeb7b3"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/05_P31_REPORT_TEMPLATE.md",
+      "bytes": 2390,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/05_P31_REPORT_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "ada1370c7c86bcab62119252796bee0efd78f1333356de1a5e1ffab797992f1e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P31-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P31_CONTEXT_SUMMARY_FOR_CODEX.md",
+      "bytes": 1472,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P31_CONTEXT_SUMMARY_FOR_CODEX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P31",
+      "sha256": "74a2c4d127228ac81aa9b7196df8dc049652f533d62c86018be75c66605272ef"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P31",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

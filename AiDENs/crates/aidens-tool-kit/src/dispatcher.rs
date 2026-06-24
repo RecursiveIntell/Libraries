@@ -187,6 +187,28 @@ impl ToolDispatcher {
                     run_checks(sandbox_root, &input, permit_grant_id, permit_use_receipt_id)
                 })
             }
+            ToolExecutorV1::Custom(handle) => {
+                let result = handle.inner.execute(tool_id, input.clone()).await;
+                match result {
+                    Ok(output_text) => {
+                        let output_val = serde_json::json!({ "content": output_text });
+                        receipt = receipt.complete_success(output_val.clone());
+                        Ok(ToolInvocationOutcome {
+                            output: output_val,
+                            receipt,
+                            permit_use_receipt,
+                        })
+                    }
+                    Err(e) => {
+                        let failed = receipt.complete_failure(format!("custom-executor-failed: {e}"));
+                        Err(ToolInvocationError::new(
+                            format!("custom executor for '{tool_id}' failed: {e}"),
+                            failed,
+                        )
+                        .into())
+                    }
+                }
+            }
         }
     }
 
@@ -264,6 +286,7 @@ impl ToolDispatcher {
                 | ToolExecutorV1::PatchPropose { sandbox_root }
                 | ToolExecutorV1::PatchApply { sandbox_root }
                 | ToolExecutorV1::RunChecks { sandbox_root } => sandbox_root.display().to_string(),
+                ToolExecutorV1::Custom(_) => "custom-executor".to_string(),
             })
             .or_else(|| self.registry.sandbox_root_display())
             .unwrap_or_else(|| UNKNOWN_SANDBOX_SCOPE.into())

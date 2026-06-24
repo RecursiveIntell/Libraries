@@ -392,7 +392,9 @@ fn provider_capability_truth_rejects_fallback_as_support() -> Result<(), Box<dyn
         assert!(report.passed, "{:?}", report.findings);
 
         let route = route_receipt_v2_for_spec(&spec);
-        assert!(!route.native_tool_loop, "{provider_kind}");
+        if provider_kind != "ollama" {
+            assert!(!route.native_tool_loop, "{provider_kind}");
+        }
         if matches!(
             provider_kind.as_str(),
             "openai" | "openrouter" | "anthropic"
@@ -403,9 +405,11 @@ fn provider_capability_truth_rejects_fallback_as_support() -> Result<(), Box<dyn
     }
 
     let matrix = provider_backend_matrix();
+    // Ollama now supports native tool loop; mock and others don't
     assert!(matrix
         .entries
         .iter()
+        .filter(|e| e.provider_kind != "ollama")
         .all(|entry| !entry.native_tool_loop_ready()));
     assert_eq!(
         matrix.entry_for("mock").expect("mock provider").status,
@@ -419,10 +423,10 @@ fn provider_capability_truth_rejects_fallback_as_support() -> Result<(), Box<dyn
     );
     let ollama = matrix.entry_for("ollama").expect("ollama provider");
     assert_eq!(ollama.status, ProviderBackendStatusV1::Executable);
-    assert!(!ollama.native_tool_loop_executable);
+    assert!(ollama.native_tool_loop_executable);
     assert!(ollama
         .reason_codes
-        .contains(&"ollama-native-tool-loop-unimplemented".into()));
+        .contains(&"ollama-native-tool-loop-via-function-calling".into()));
     Ok(())
 }
 

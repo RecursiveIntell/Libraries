@@ -1,13 +1,11 @@
 [package]
 name = "aidens"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Umbrella crate re-exporting all AiDENs capabilities with one-liner quickstart"
 
-[lints]
-workspace = true
 
 [dependencies]
 aidens-agency-kit = { path = "../aidens-agency-kit" }
@@ -21,17 +19,17 @@ aidens-provider-kit = { path = "../aidens-provider-kit" }
 aidens-runner = { path = "../aidens-runner" }
 aidens-security-kit = { path = "../aidens-security-kit" }
 aidens-tool-kit = { path = "../aidens-tool-kit" }
-serde.workspace = true
-thiserror.workspace = true
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
 
 [dev-dependencies]
 aidens-boundary-kit = { path = "../aidens-boundary-kit" }
 aidens-receipts = { path = "../aidens-receipts" }
-anyhow.workspace = true
-serde_json.workspace = true
-semantic-memory.workspace = true
-tokio.workspace = true
-verification-policy.workspace = true
+anyhow = "1"
+serde_json = "1"
+semantic-memory = { version = "0.5.0", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+verification-policy = { version = "0.1.0", path = "../../../verification-policy" }
 
 [[example]]
 name = "the_auditor"

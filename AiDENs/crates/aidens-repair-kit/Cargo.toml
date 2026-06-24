@@ -1,17 +1,15 @@
 [package]
 name = "aidens-repair-kit"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Repair facade over canonical verification and Forge repair artifacts"
 
-[lints]
-workspace = true
 
 [dependencies]
-semantic-memory-forge.workspace = true
-serde_json.workspace = true
-verification-control.workspace = true
+semantic-memory-forge = { version = "0.1.0", path = "../../../semantic-memory-forge" }
+serde_json = "1"
+verification-control = { version = "0.1.0", path = "../../../verification-control" }
 
 [dev-dependencies]

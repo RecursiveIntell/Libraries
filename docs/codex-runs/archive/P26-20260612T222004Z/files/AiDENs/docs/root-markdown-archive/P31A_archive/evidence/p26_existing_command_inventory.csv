@@ -1,0 +1,12 @@
+command,state,role,P26_action
+run-test-agent,existing,fixture/test agent lane,should remain supported-local
+run-coding-agent,existing,local coding agent lane,must become more general than one fixture
+inspect-run,existing,run bundle inspection,must validate P26 bundle v3
+memory seam-fixture,existing,memory export/import/query fixture,must become grounding lane for agent runs
+coding repo-read/repo-list/repo-search,existing,read-only repo tools,must be callable through AgentSpecV1
+coding patch-propose,existing,patch proposal,must produce evidence-backed proposal
+coding patch-apply,existing,permit-gated write,must remain permit-gated
+coding run-checks,existing,permit-gated command checks,must produce command receipts
+permits request/approve/deny/revoke,existing,operator authority lane,must integrate into agent loop
+receipts list/inspect/export/verify-digest,existing,event log evidence,must be linked from agent runs
+daemon queue/schedule/wake safe-mode,existing,safe local scheduling primitives,deferred from advanced autonomy except safe-mode tests

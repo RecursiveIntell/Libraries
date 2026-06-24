@@ -1,0 +1,275 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_ACCEPTANCE_GATES.md",
+      "bytes": 1608,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "f8420c5589347d374a1f9cfe0b1418c0d9582781b0dfb01c12b66e128edd611d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_AGENTS_MD_APPENDIX.md",
+      "bytes": 527,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_AGENTS_MD_APPENDIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "440e845e42754a7ff810a48c114d9e03a24109c7a6c73c2a1951bcd65ae05605"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_CODE_CHANGE_TARGETS.md",
+      "bytes": 731,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_CODE_CHANGE_TARGETS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "285fb5fa46e2d596fb05129f8c36e1af834e190123444b351755fa6a241c1eca"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_CURRENT_STATE_DIAGNOSIS.md",
+      "bytes": 999,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_CURRENT_STATE_DIAGNOSIS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "aab9c95eeaae257321697bf82c9aea74c17dc98899d92b6688f0c67738978446"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_EVIDENCE_PACKAGE_REPAIR_SPEC.md",
+      "bytes": 827,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_EVIDENCE_PACKAGE_REPAIR_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "ccaee679176f5b258239f25822a21c9ae0b9f8ccdd5640b0c7a99eb2034b7975"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_EXPECTED_FINAL_STATE.md",
+      "bytes": 1196,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_EXPECTED_FINAL_STATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "3dac837a74f379756ce73f2a2ab8f77eb34c7fa66319da7c0961901810280ddc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_FORBIDDEN_FINAL_STATE.md",
+      "bytes": 723,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_FORBIDDEN_FINAL_STATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5be55ced82b87ae81eea8daa662e8ea86d9f32cb326d8574d9e6bf91243bbf7c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_KNOWN_LIMITATIONS_TEMPLATE.md",
+      "bytes": 222,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_KNOWN_LIMITATIONS_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "4425e6b20007eea8ad7e69fa104eb34d80b6f95c114e08cfc58f38ffad66f78c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_MANUAL_PHASE_INJECTIONS.md",
+      "bytes": 3763,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_MANUAL_PHASE_INJECTIONS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "85eccf704490ca3ffc54e85384e5687eb8b124c0b42d9c9f71a07c2eeace984a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_OPERATOR_PASTE_FIRST.md",
+      "bytes": 2320,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_OPERATOR_PASTE_FIRST.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "9322b4eb84639251187bb8af38e191f20cf25dd6581b8c0c160c0b32e04689c5"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_P28_FAILURE_POSTMORTEM.md",
+      "bytes": 1133,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_P28_FAILURE_POSTMORTEM.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "244df185d2f227bbc3fd56a7f8e98f47e7dfd92574041ad8c2801f107a442125"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_PHASE_REPORT_TEMPLATE.md",
+      "bytes": 230,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_PHASE_REPORT_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "154358aaafe29e267add9deb36fcb4c45b742b85939d4fa2482ed6e2313c3814"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_SCOPE_AND_NON_GOALS.md",
+      "bytes": 932,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_SCOPE_AND_NON_GOALS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "beb038518b8f5fbced6627ae32aa02a2ec8f476e0f8818035cf1aa65229595d0"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_SOURCE_BASIS.md",
+      "bytes": 1194,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_SOURCE_BASIS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5e275864bbb129fad6e282453ea55cc694940b15bb4cedec19dabbde7f1ba17b"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_STATUS_EVIDENCE_MANIFEST.json",
+      "bytes": 24865,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "9ffa4acc173792fc1a5eac993a6f5bee1733af2a466da6affbbb8c93b7130430"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_STATUS_EVIDENCE_MANIFEST.template.json",
+      "bytes": 3819,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_STATUS_EVIDENCE_MANIFEST.template.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "3c509f1d2f29cfcd8be64116a5831bd5d9905e32027f914ed80dbe0e8e5e1b49"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_SUPPORT_LABEL_POLICY.md",
+      "bytes": 667,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_SUPPORT_LABEL_POLICY.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "b7ca009271b2c59fb5334a6fb6c749d5f66bc6db82bab2d2abc9765f2403593c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_V11A_LOCAL_RELEASE_SPEC.md",
+      "bytes": 1063,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_V11A_LOCAL_RELEASE_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "f3e34eef47b54739af67c821c66d9b8540321a5fa047cf8a642a27cec6299ab2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_V11B_EXECUTABLE_SEED_SPEC.md",
+      "bytes": 805,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_V11B_EXECUTABLE_SEED_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "d2efb2cb8f585f1389ab1e2e5c7822fc00cddf37f2d9dd7c2962528fdceff625"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P29_VERIFIER_SPEC.md",
+      "bytes": 1211,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P29_VERIFIER_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "a0874b3255db106c42f23ebd814c3720e779f88c31e2553ecb0b85a8637617aa"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_AUDIT_BUG_ABSORPTION_MATRIX.csv",
+      "bytes": 1527,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_AUDIT_BUG_ABSORPTION_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "f19eb9209cc54fa046e0b0ad8183f982ada314c0ed02733ff063c6baa22c0bac"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_MASTER_ISSUE_MATRIX.csv",
+      "bytes": 59278,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_MASTER_ISSUE_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "f2b2c315752bfde3f39590880ff5671971e95c01a0afc26078b123ce99b1d531"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_MASTER_ISSUE_MATRIX.json",
+      "bytes": 86681,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_MASTER_ISSUE_MATRIX.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "5b68c83bb39f6ffaa3a3a7d1884237c5e41492c368f2ea1ba40f02b6d96e4134"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_PHASE_GATE_MATRIX.csv",
+      "bytes": 415,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_PHASE_GATE_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "759164fe1fe1079e7342c6bcb741463e538253a9fd10afc4175a837c4c5852d1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_REQUIREMENTS_TRACEABILITY.csv",
+      "bytes": 789,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_REQUIREMENTS_TRACEABILITY.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "cf776342f7296eaf6a7ba897579f2abcaf74dc0c52d5bca88426b5fa329af66d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_SOURCE_OF_TRUTH_MATRIX.csv",
+      "bytes": 658,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_SOURCE_OF_TRUTH_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "f6edd4a2346028aa1235c274c4137ee85dc7093290d528cc98d9264bcf13c481"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_V11A_CONFORMANCE_MATRIX.csv",
+      "bytes": 532,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_V11A_CONFORMANCE_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "0643019e606e80116f4e9c8900ca0fa2366743dcb40a6bdfc75e537f8a574c6d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_V11B_SEED_MATRIX.csv",
+      "bytes": 421,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P29_V11B_SEED_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "62baa3d14c2820e47a4253619ef6d95a5b5140c8389f143dcd653e5821941cf2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P29-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/source_audits/claude_AiDENs_P29_Hard_Audit_20260507.md",
+      "bytes": 24778,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/source_audits/claude_AiDENs_P29_Hard_Audit_20260507.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P29",
+      "sha256": "3fd63ac442a604363aadb1cdf8ca369911eb6a383cef66cefd041e6017769f46"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P29",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

@@ -1,17 +1,15 @@
 [package]
 name = "aidens-security-kit"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Path safety helpers and canonical tool side-effect classification"
 
-[lints]
-workspace = true
 
 [dependencies]
-llm-tool-runtime.workspace = true
-attestation-exchange.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-thiserror.workspace = true
+llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
+attestation-exchange = { version = "0.1.0", path = "../../../attestation-exchange" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"

@@ -223,20 +223,27 @@ pub(crate) fn patch_apply(
 
     for replacement in replacements {
         let path = resolve_target_sandboxed_path(sandbox_root, &replacement.path)?;
-        let before = std::fs::read_to_string(&path).map_err(|error| {
-            patch_apply_failure(
-                sandbox_root,
-                input,
-                format!(
-                    "failed to read patch target {} before applying: {error}",
-                    replacement.path
-                ),
-                "read-patch",
-                permit_grant_id.clone(),
-                permit_use_receipt_id.clone(),
-                vec![replacement.path.clone()],
-            )
-        })?;
+        // For new-file patches (no removed lines), the file may not exist yet.
+        // Read the before-content as empty string if the file doesn't exist.
+        let before = match std::fs::read_to_string(&path) {
+            Ok(content) => content,
+            Err(_) if replacement.removed.is_empty() => String::new(),
+            Err(error) => {
+                return Err(patch_apply_failure(
+                    sandbox_root,
+                    input,
+                    format!(
+                        "failed to read patch target {} before applying: {error}",
+                        replacement.path
+                    ),
+                    "read-patch",
+                    permit_grant_id.clone(),
+                    permit_use_receipt_id.clone(),
+                    vec![replacement.path.clone()],
+                )
+                .into());
+            }
+        };
         let after = apply_single_replacement(&before, &replacement).map_err(|error| {
             let failure_kind = if error.to_string().to_ascii_lowercase().contains("ambiguous") {
                 "ambiguous-patch"

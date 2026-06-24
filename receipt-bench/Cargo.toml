@@ -16,9 +16,18 @@ thiserror = "2.0"
 chrono = { version = "0.4", features = ["serde"] }
 sha2 = "0.10"
 flate2 = "1.0"
+reqwest = { version = "0.12", features = ["blocking", "json"], optional = true }
+
+[features]
+sm-adapter = ["dep:reqwest"]
 
 [dev-dependencies]
 tempfile = "3.27"
+
+[[bin]]
+name = "sm-bench"
+path = "src/bin/sm_bench.rs"
+required-features = ["sm-adapter"]
 
 [lints.rust]
 unsafe_code = "deny"

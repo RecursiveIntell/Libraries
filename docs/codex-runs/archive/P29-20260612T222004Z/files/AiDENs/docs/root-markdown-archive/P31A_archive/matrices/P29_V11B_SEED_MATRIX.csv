@@ -1,0 +1,6 @@
+Surface,Seed Evidence,Phase,Non-Claim
+RightGraphSurfaceV1,graph misuse tests,17,not v11B complete
+RegionContractV1,contract + boundary message tests,18,not production region runtime
+BoundaryReceiptV1,receipt fixture,18,not federation
+ResidualEnvelopeV1/SyndromeEnvelopeV1,fixture + degradation tests,19,not full repair runtime
+SupportCore/RemovalFrontier,subtraction seed fixture,19,not lawful subtraction complete

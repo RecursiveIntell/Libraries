@@ -1,0 +1,1865 @@
+[
+  {
+    "ID": "P28-PKG-001",
+    "Severity": "P0",
+    "Category": "P28 evidence/package failure",
+    "Issue": "Package/archive sidecar current_run was P27 while P28 docs existed",
+    "Phase": "Phase 00-03",
+    "Required Action": "Set P29 current-run identity everywhere and add run-identity assertion",
+    "Status": "superseded"
+  },
+  {
+    "ID": "P28-PKG-002",
+    "Severity": "P0",
+    "Category": "P28 evidence/package failure",
+    "Issue": "P28 docs/handoffs/scripts were archived as stale current-run artifacts",
+    "Phase": "Phase 02",
+    "Required Action": "Fix codex archive classifier and assert no current-run artifact is archived",
+    "Status": "superseded"
+  },
+  {
+    "ID": "P28-PKG-003",
+    "Severity": "P0",
+    "Category": "P28 evidence/package failure",
+    "Issue": "scripts/verify_current.sh delegated to missing p28_verify.sh in extracted package",
+    "Phase": "Phase 02",
+    "Required Action": "Ensure p29_verify.sh is active, included, executable, and delegated",
+    "Status": "superseded"
+  },
+  {
+    "ID": "P28-PKG-004",
+    "Severity": "P0",
+    "Category": "P28 evidence/package failure",
+    "Issue": "P28 evidence manifest referenced missing handoff/docs/target logs",
+    "Phase": "Phase 03",
+    "Required Action": "Manifest paths must resolve in package or be explicitly external/degraded",
+    "Status": "superseded"
+  },
+  {
+    "ID": "P28-PKG-005",
+    "Severity": "P0",
+    "Category": "P28 evidence/package failure",
+    "Issue": "Package validation passed despite broken extracted-package verifier",
+    "Phase": "Phase 03",
+    "Required Action": "Add extracted-package self-replay as mandatory final gate",
+    "Status": "superseded"
+  },
+  {
+    "ID": "P28-PKG-006",
+    "Severity": "P1",
+    "Category": "P28 evidence/package failure",
+    "Issue": "Manual phase-gate injections absent during P28",
+    "Phase": "All",
+    "Required Action": "Add only high-risk manual injection gates",
+    "Status": "superseded"
+  },
+  {
+    "ID": "P28-PKG-007",
+    "Severity": "P1",
+    "Category": "P28 evidence/package failure",
+    "Issue": "P28 implementation progress was useful but release claim contaminated",
+    "Phase": "Phase 01",
+    "Required Action": "Treat P28 as implementation candidate, not final release",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-001",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "`flush_hnsw` holds read lock, then acquires write lock in same call path without releasing",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-002",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "HNSW `search()` re-acquires `deleted_ids` after dropping it, races with concurrent deletes",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-003",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "`insert_with_id()` inserts the `(key, id)` mapping into `key_to_id`/`id_to_key` *before* inserting into the graph",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-004",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "`load_keymap()` does not validate that loaded `node_id` values are in-bounds for the HNSW graph",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-005",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "`HnswIndex::load()` ignores the `.hnsw.graph` file entirely during replay",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-006",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "`HnswIndex::update()` deletes then re-inserts, but the new `insert` uses `fetch_add` on `next_id`",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-007",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "`sync_pending_hnsw_sidecar` acquires a write lock on `hnsw_index` inside a `with_write_conn` closure",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-008",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "`rebuild_hnsw_index()` writes to `hnsw_index` RwLock with `new_index.clone()`, then immediately saves `new_index` (the uncloned copy)",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-009",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "HNSW `fetch_count` overflow if `deleted.len()` is huge",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-010",
+    "Severity": "Critical",
+    "Category": "HNSW integrity/concurrency",
+    "Issue": "`open_with_embedder()` calls `config.normalize_and_validate()` twice",
+    "Phase": "Phase 05",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-011",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`run_migrations` uses `unwrap_or(0)` on `PRAGMA user_version` read",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-012",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`run_migrations` checks `current_version` by querying `_schema_version` inside the loop, but the table is created *outside* the loop, not inside a transaction",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-013",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "Migrations V9, V16, V17 are applied *outside* `with_transaction`",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-014",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`with_transaction` uses `unchecked_transaction()`",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-015",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`delete_namespace` iterates sessions without a namespace filter",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-016",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`delete_namespace` calls `delete_session` for sessions that match namespace, but the session's messages have their FTS entries removed first, then the session is deleted via CASCADE",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-017",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`update_fact_with_fts` deletes the old FTS entry before updating the facts table",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-018",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`embedding_to_bytes` uses `bytemuck::cast_slice` on a f32 slice without validating alignment of the resulting byte slice for portability",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-019",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "The HNSW stale-detection count query in `open_with_embedder` is duplicated identically twice",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-020",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`verify_integrity` runs the embedding count query via `with_write_conn` when `use_writer = true`, but the query is read-only",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-021",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`sanitize_fts_query` joins tokens with `\" OR \"` but doesn't quote individual tokens",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-022",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`sanitize_fts_query` returns `None` when all tokens are filtered, but callers then skip FTS search entirely",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-023",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`recency_contribution` divides by `(config.rrf_k + 1.0)` instead of `(config.rrf_k + rank)` for the recency term",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-024",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`rank_vector_hits` sorts by `.similarity` but `scan_vector_rows` uses `cosine_similarity` cast from `f32` to `f64`",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-025",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`hybrid_search_with_hnsw` falls back to full brute-force scan if HNSW returns 0 hits, even when HNSW was successful (returned empty due to all entries being deleted/filtered)",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-026",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`source_dedup_key` for `SearchSource::Message` uses `message_id.to_string()` (an `i64`), which is fine, but the corresponding merge key in knowledge-runtime uses `format!(\"msg:{session_id}:{message_id}\")`",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-027",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`cosine_similarity` returns 0.0 for zero vectors instead of NaN or an error",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-028",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`bm25_search` for chunks uses `c.created_at` for `updated_at` but facts use `f.updated_at`",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-029",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "`build_filter_clause` parameter start index is hardcoded to 3 in `bm25_search`",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-030",
+    "Severity": "High",
+    "Category": "Search/ranking",
+    "Issue": "Vector search warn threshold `VECTOR_SCAN_WARN_THRESHOLD = 50_000` is per-table but the warning message says \"rows\" without specifying which table",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-031",
+    "Severity": "High",
+    "Category": "Quantization/vector",
+    "Issue": "`Quantizer::quantize` clamps `zero_point_f` to `[-127.0, 127.0]` but this range is wrong for i8",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-032",
+    "Severity": "High",
+    "Category": "Quantization/vector",
+    "Issue": "`dequantize` formula is `(q - zero_point) * scale` but `quantize` formula is `v / scale + zero_point`",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-033",
+    "Severity": "High",
+    "Category": "Quantization/vector",
+    "Issue": "`pack_quantized` writes `zero_point as u8` (casting i8 to u8 by bit reinterpretation via `as`)",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-034",
+    "Severity": "High",
+    "Category": "Quantization/vector",
+    "Issue": "`unpack_quantized` validates `bytes.len() == 5 + dimensions` but `pack_quantized` uses `Vec::with_capacity(5 + qv.data.len())`",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-035",
+    "Severity": "High",
+    "Category": "Pool/concurrency/reembed",
+    "Issue": "`SqlitePool::with_read_conn` releases the reader slot via RAII `ReaderGuard`, but the `ReaderGuard` is dropped *after* `f(&conn)` returns",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-036",
+    "Severity": "High",
+    "Category": "Pool/concurrency/reembed",
+    "Issue": "`ReaderGuard` stores `idx: Option<usize>` but `take()` is only called in `Drop`",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-037",
+    "Severity": "High",
+    "Category": "Pool/concurrency/reembed",
+    "Issue": "`SqlitePool` does not cap `reader_timeout` to a sane maximum",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-038",
+    "Severity": "High",
+    "Category": "Pool/concurrency/reembed",
+    "Issue": "The writer connection poison recovery path logs at `warn` level but continues using the poisoned connection",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-039",
+    "Severity": "High",
+    "Category": "Pool/concurrency/reembed",
+    "Issue": "`MemoryStoreInner::drop` calls `hnsw_ops::recover_hnsw_sidecar_sync` which uses `pool.with_read_conn` and then `with_write_conn` synchronously",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-040",
+    "Severity": "High",
+    "Category": "Pool/concurrency/reembed",
+    "Issue": "`reembed_all` fetches ALL facts/chunks/messages/episodes into memory at once before batching",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-041",
+    "Severity": "High",
+    "Category": "Pool/concurrency/reembed",
+    "Issue": "`reembed_all` progress logging condition `if fact_count % 100 < batch_size` is wrong",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-042",
+    "Severity": "High",
+    "Category": "Pool/concurrency/reembed",
+    "Issue": "`reembed_all` re-embeds ALL messages but only messages `WHERE embedding IS NOT NULL` are fetched",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-043",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`collect_neighbors` uses a `HashSet<String>` for `visited` but inserts the start node's ID before popping it from the queue",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-044",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`shortest_path` uses a `BTreeMap<String, String>` for `parents` but the reconstruction loop doesn't guard against infinite loops",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-045",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`direct_edges` for `GraphDirection::Incoming` reverses outgoing edges and extends with `cause_backlinks`",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-046",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`edge_dedup_key` serializes `edge.metadata` with `serde_json::to_string` for deduplication",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-047",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`SEMANTIC_EDGE_LIMIT = 5` for semantic similarity edges is hardcoded and not configurable",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-048",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`apply_overlap` computes overlap from the *previous chunk before overlapping*, not from the *previous chunk after overlapping",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-049",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`merge_small_chunks` condition: `(current.len() < min_size || chunk.len() < min_size) && current.len() + chunk.len() <= target_size`",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-050",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`chunk_text` returns the full text as a single chunk if `text.len() <= config.max_size`",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-051",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`recursive_split` does not preserve the separator when splitting",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-052",
+    "Severity": "High",
+    "Category": "Graph/chunker",
+    "Issue": "`force_split` will produce empty strings if `safe_split_at` returns `start` when `start + max_size > text.len()`",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-053",
+    "Severity": "High",
+    "Category": "knowledge-runtime merge/classifier",
+    "Issue": "`extract_entity_mention` only returns the *first* `@mention` or *first* quoted string",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-054",
+    "Severity": "High",
+    "Category": "knowledge-runtime merge/classifier",
+    "Issue": "`extract_temporal_expr` returns the *first matching keyword in the list*, not the most specific",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-055",
+    "Severity": "High",
+    "Category": "knowledge-runtime merge/classifier",
+    "Issue": "`merge` uses `BTreeMap` for fused results but then reconstitutes order via `insertion_order: Vec<String>`",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-056",
+    "Severity": "High",
+    "Category": "knowledge-runtime merge/classifier",
+    "Issue": "`MergePolicy::limit = 0` is not validated",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-057",
+    "Severity": "High",
+    "Category": "knowledge-runtime merge/classifier",
+    "Issue": "`result_identity_key` for `Projection` uses `format!(\"projection:{projection_kind}:{projection_id}\")`",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-058",
+    "Severity": "High",
+    "Category": "knowledge-runtime merge/classifier",
+    "Issue": "`ScoreNormalization::MinMax` uses `f64::MIN` as the initial `max_score`",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-059",
+    "Severity": "High",
+    "Category": "knowledge-runtime merge/classifier",
+    "Issue": "After `MinMax` normalization, boosted scores can exceed 1.0",
+    "Phase": "Phase 07",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-060",
+    "Severity": "High",
+    "Category": "stack-ids/TraceCtx",
+    "Issue": "`TraceCtx::generate()` produces a UUID v4 formatted as 32 hex chars via `as_simple()`",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-061",
+    "Severity": "High",
+    "Category": "stack-ids/TraceCtx",
+    "Issue": "`from_traceparent` ignores the `flags` field entirely",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-062",
+    "Severity": "High",
+    "Category": "stack-ids/TraceCtx",
+    "Issue": "`hash_to_w3c_trace_id` truncates BLAKE3 to 16 bytes but BLAKE3 output is 32 bytes",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-063",
+    "Severity": "High",
+    "Category": "stack-ids/TraceCtx",
+    "Issue": "`add_baggage` allows duplicate keys",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-064",
+    "Severity": "High",
+    "Category": "stack-ids/TraceCtx",
+    "Issue": "`BaggageEntry` limits are checked on insertion but not on deserialization",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-065",
+    "Severity": "High",
+    "Category": "stack-ids/TraceCtx",
+    "Issue": "`SurfaceStatus` in `status.rs` has no `Display` implementation",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-066",
+    "Severity": "High",
+    "Category": "AiDENs contracts v11A",
+    "Issue": "`ExecutionContextEnvelopeV1::local_started` uses `env!(\"CARGO_PKG_VERSION\")` for the environment fingerprint",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-067",
+    "Severity": "High",
+    "Category": "AiDENs contracts v11A",
+    "Issue": "`ExecutionContextEnvelopeV1::complete` mutates `reason_codes` by pushing, sorting, and deduplicating",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-068",
+    "Severity": "High",
+    "Category": "AiDENs contracts v11A",
+    "Issue": "`ToolCallReceiptV1::new` sets `started_at: context.started_at` and `completed_at: Utc::now()`",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-069",
+    "Severity": "High",
+    "Category": "AiDENs contracts v11A",
+    "Issue": "`ArtifactLifecycleStateV1::as_str()` is referenced in `apply_transition` but is not shown in the code excerpt",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-070",
+    "Severity": "High",
+    "Category": "AiDENs contracts v11A",
+    "Issue": "`ArtifactEnvelopeV1::is_promotable` does not check `lifecycle_state == Verified` exclusively \u2014 it also accepts `Promoted` artifacts for promotion",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-071",
+    "Severity": "High",
+    "Category": "AiDENs contracts v11A",
+    "Issue": "`generated_artifact_id_from_material` is referenced but not shown \u2014 if it uses timestamps, it's non-deterministic for the same material",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-072",
+    "Severity": "High",
+    "Category": "living-memory baseline",
+    "Issue": "`capture_baseline_provenance` uses `Command::new(\"git\")` without verifying `git` is on PATH",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-073",
+    "Severity": "High",
+    "Category": "living-memory baseline",
+    "Issue": "`BaselineDescriptor::fingerprint()` uses `serde_json::to_string(self).unwrap_or_default()`",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-074",
+    "Severity": "High",
+    "Category": "living-memory baseline",
+    "Issue": "`WorkspacePolicy::max_workspace_bytes` has no enforcement mechanism visible in the codebase",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-075",
+    "Severity": "High",
+    "Category": "living-memory baseline",
+    "Issue": "`ComparabilityPolicy::timing_admissible = false` by default, but no code enforces this",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-076",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`MIGRATION_V9` is an empty string `\"\"`",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-077",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`MIGRATION_V10` is accessed via `crate::projection_import::MIGRATION_V10` with `#[allow(deprecated)]`",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-078",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`MAX_SCHEMA_VERSION = 17` but the migrations array has indices 1-17",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-079",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`episodes_rowid_map` in `MIGRATION_V7` has column `document_id` but after `MIGRATION_V9`, episodes use `episode_id` as PK",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-080",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`MIGRATION_V6` defines `episodes.document_id TEXT PRIMARY KEY` but `MIGRATION_V9` creates `episodes_new` with `episode_id TEXT PRIMARY KEY` and `document_id TEXT NOT NULL`",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-081",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`MemoryLimits::validated()` silently swallows validation errors and returns defaults",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-082",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`EmbeddingConfig` has no URL format validation",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-083",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`ChunkingConfig::overlap` can be set to `max_size - 1` after normalization",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-084",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`SearchConfig::normalize_and_validate` does not validate `default_top_k <= candidate_pool_size`",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-085",
+    "Severity": "High",
+    "Category": "SQLite/migration/config",
+    "Issue": "`PoolConfig::max_read_connections = 0` validation error message says \"at least one reader connection is required\" but doesn't mention the fix",
+    "Phase": "Phase 06",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-086",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`define_id!` macro generates `impl AsRef<str>` for all ID types but not `impl Borrow<str>`",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-087",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`define_id!` generates `impl From<String>` and `impl From<&str>` but the `From<String>` does not validate the string",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-088",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`AttemptId` and `TrialId` have identical documentation except for one word",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-089",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`QueryMode::Mixed` can contain nested `Mixed` variants",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-090",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`classify()` produces `Mixed { components }` with components collected in classifier order, not query order",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-091",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`extract_entity_mention` uses `query.find('\"')` to find quoted strings, which doesn't handle escaped quotes",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-092",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`check_contradiction` is purely structural (time overlap) with no semantic check",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-093",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`TemporalClaim::overlaps` returns `true` if both intervals are unbounded (None, None)",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-094",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`merge_small_chunks` doesn't handle the case where all chunks are small",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-095",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`force_split` starts at `start = 0` and advances `start = end`, but `safe_split_at` can return `start` if the text at `start` is a multi-byte character sequence longer than `max_size`",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-096",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`scan_vector_rows` returns `Ok((hits, row_count))` even if 0 rows matched the min_similarity threshold",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-097",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`validate_confidence` in `MemoryStore` is a static method that takes `f32` but does not check for `-0.0`",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-098",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`list_scope_domains` uses `json_extract(metadata, '$.scope_domain')` which requires SQLite JSON1 extension",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-099",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`stats()` fetches `embedding_model` and `embedding_dimensions` via a query that can return `None` for both",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-100",
+    "Severity": "High",
+    "Category": "Misc logic",
+    "Issue": "`verify_integrity_sync` is not shown in full but is called with `VerifyMode::Full` via the write connection",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-101",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`days_since` parses timestamps with format `\"%Y-%m-%d %H:%M:%S\"` but `updated_at` fields are stored as `datetime('now')` which in SQLite produces exactly this format. However, if a row was inserted with a different timestamp format (e.g., via direct SQL insert with ISO8601), parsing fails silently (`ok()?` returns `None`), disabling recency scoring for that item.",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-102",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`store.chunk_text()` is a synchronous method that can be called from async contexts, but the `token_counter.count_tokens()` call has no time bound. A slow custom token counter will block the calling thread.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-103",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`embed_batch_internal` acquires only ONE semaphore permit for the entire batch, regardless of batch size. This means `max_embedding_concurrency = 8` allows 8 concurrent batches of `batch_size = 32` each, totaling 256 concurrent embedding items \u2014 not 8.",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-104",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`hnsw_search_blocking` returns an empty `Vec` if the blocking task panics (via `unwrap_or_else`). The panic is logged at ERROR level but the search continues as if HNSW is empty, silently degrading to brute-force without surfacing the error to the caller.",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-105",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`open_with_embedder` validates `embedder.dimensions() != config.embedding.dimensions` but this check is done BEFORE `config.hnsw.dimensions` is set. If HNSW is enabled and the config normalization sets `hnsw.dimensions = embedding.dimensions`, this is fine \u2014 but the order dependency is fragile.",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-106",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`with_write_conn` closure signature `FnOnce(&Connection)` does not prevent callers from passing a closure that `spawn`s async tasks that outlive the closure, potentially holding a reference to the connection after the write lock is released.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-107",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`projection_storage_query.rs` is included via `#[path = ...]` which bypasses Rust's module discovery. If the file is renamed, the compiler error will reference the `#[path]` directive line rather than the missing file, making the error less actionable.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-108",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`projection_import_log` has a `UNIQUE INDEX` on `(source_envelope_id, schema_version, content_digest)`, enforcing idempotency. But `projection_import_failures` (referenced in `MIGRATION_V16`) is not shown in the audit \u2014 if it doesn't have equivalent idempotency protection, duplicate failure entries can accumulate.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-109",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`EpisodeOutcome::as_str()` and `Role` parsing via `parse_role()` are used in `db.rs` but their implementations are in `types.rs` (not shown). If these return `\"\"` for unknown variants, SQLite `CHECK` constraints on `outcome TEXT NOT NULL` and `role TEXT NOT NULL CHECK (role IN (...))` will reject the insert with a confusing constraint violation.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-110",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`merge_trace_ctx` is re-exported from `store_support` but not shown. If it's implemented as a simple field overwrite (last-write-wins), concurrent trace context merges across async boundaries will lose one of the contexts.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-111",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`sanitize_fts_query` strips `\"_\"` handling is inconsistent: underscores are allowed through as-is (`c == '_'`), but FTS5 treats `_` as a word character \u2014 so `\"foo_bar\"` is treated as one token in FTS5 but would be two words in English. This is intentional but undocumented.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-112",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`bm25_search` for episodes queries `episodes_fts` but not via a JOIN to `episodes` for filtering \u2014 it joins through `episodes_rowid_map`. If `episodes_rowid_map` is out of sync with `episodes` (due to a partial migration or corruption), BM25 hits may reference non-existent episodes.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-113",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "The pool `reader_timeout` warning threshold is hardcoded at `> 100ms`. There's no way to configure this threshold, and 100ms may be too tight for high-latency storage or testing environments.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-114",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`load_vectors_from_sidecar` reads `id` as `u64` and casts to `usize`. On 32-bit platforms, IDs > `u32::MAX` will truncate silently. The HNSW sidecar format is not explicitly marked as platform-specific.",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-115",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`HNSW_DATA_MAGIC = 0xa67f0000` is checked once at the file header and once per vector entry. But the per-vector magic uses the same constant \u2014 if a file is truncated mid-vector, the partial bytes of the next entry might accidentally match the magic, causing a malformed read.",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-116",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`MemoryStore::vacuum()` does not sync HNSW or check for pending ops before running VACUUM. SQLite VACUUM rewrites the database file; running it while HNSW pending ops exist leaves the database consistent but HNSW ops still pending.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-117",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`MemoryStore::flush_hnsw()` acquires the writer connection after acquiring the HNSW read lock. This ordering (`hnsw_read` \u2192 `writer`) must be consistent everywhere to prevent deadlocks. `sync_pending_hnsw_sidecar` acquires writer first, then hnsw_write \u2014 a different order. If `flush_hnsw` and `sync_pending_hnsw_sidecar` run concurrently, there's a potential deadlock.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-118",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`compact_hnsw` calls `needs_compaction()` inside a `read().unwrap_or_else(|e| e.into_inner())` guard, then drops it, then calls `rebuild_hnsw_index()` which acquires a write lock. TOCTOU: between the read check and the rebuild, more deletions could push the ratio higher, or enough inserts could bring it back below the threshold. The second re-check happens inside `rebuild_hnsw_index` implicitly (by rebuilding unconditionally once called). This is acceptable but worth documenting.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-119",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`rebuild_hnsw_index` calls `hnsw_ops::rebuild_hnsw_from_sqlite` via `with_read_conn`, but the sqlite query for episodes uses `episode_id` while the HNSW key is formatted as `episode:{episode_id}` via `episodes::episode_item_key`. This is consistent, but adding a new embedding type (e.g., projection embeddings) would require updating rebuild in three places: `rebuild_hnsw_from_sqlite`, `sync_pending_hnsw_sidecar`, and the count queries in `open_with_embedder`. No single source of truth for \"all embeddable types.\"",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-120",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`SqlitePool::open` does not close reader connections if any reader connection fails to open. For a pool with `max_read_connections = 4`, if connection 3 fails, connections 0, 1, 2 are leaked (their `Mutex<Connection>` is in `readers` but the pool never fully constructed).",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-121",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`configure_connection` sets `PRAGMA synchronous = NORMAL` without documentation of the durability tradeoff. Under `NORMAL` synchronous mode, SQLite may lose the last transaction on power loss (though WAL mode provides additional protection). This should be documented as a known durability caveat.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-122",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`pool.with_read_conn` will block the calling OS thread indefinitely beyond the reader timeout if `available_cv.wait_timeout` returns spuriously and another wait loop iteration runs. The elapsed-time check uses `start.elapsed()` which correctly accumulates, so this eventually times out \u2014 but the check only happens after a `wait_timeout` call that may itself block for `reader_timeout` duration, meaning total wait can be `2 * reader_timeout`.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-123",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`days_since` computes time in UTC via `chrono::Utc::now().naive_utc()` but parses timestamps with `NaiveDateTime::parse_from_str` without timezone information. This is consistent (both use naive UTC), but if the database was populated by a process in a non-UTC timezone using SQLite's `datetime('now', 'localtime')`, the recency scores will be off by the timezone offset.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-124",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`bm25_search` for messages fetches `m.session_id` and `m.role` but `role` is never used in the returned `Bm25Hit` or `SearchSource::Message`. It's fetched but immediately discarded.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-125",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`knowledge_tests.rs`, `search_tests.rs`, and other test files (seen in the manifest) are in `/tests/` directories (integration tests), not `#[cfg(test)]` modules. This means any test helper that exposes test-only functionality (e.g., `raw_execute`) is gated by `#[cfg(any(test, feature = \"testing\"))]`. If the `\"testing\"` feature is accidentally enabled in a production build, `raw_execute` is publicly accessible \u2014 a security risk for SQL injection.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-126",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`TraceCtx::child()` clones the entire `baggage` Vec. For trace contexts with many baggage entries, this is O(N) in baggage entries on every child creation. Baggage is capped at 16 entries so this is bounded, but clone-heavy traces (deep span hierarchies) may accumulate non-trivial allocations.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-127",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`defined_id! macro` implements `PartialOrd` and `Ord` via `#[derive]` on a `String` wrapper. String ordering is lexicographic byte order, which for UUIDs produces non-chronological ordering. Callers expecting chronological ordering from sorted ID collections will be surprised.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-128",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "The `score: rrf_score` field of `SearchResult` can be `0.0` if both BM25 rank and vector rank are `None` and there is no recency score. A caller that filters `score > 0.0` will drop these results \u2014 but they shouldn't appear in the first place. The condition under which a result has no rank from either search path but still appears in output should be documented or guarded.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-129",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`ScoreBreakdown.vector_reranked_from_f32` is always `false` in the code paths shown. The field exists but the reranking path that sets it to `true` was not audited. If the flag is always false, the field adds confusion.",
+    "Phase": "Phase 12",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-130",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`apply_transition` on `ArtifactEnvelopeV1` calls `ArtifactTransitionReceiptV1::new(...)` which presumably validates the state transition. But `self.lifecycle_state = new_state` is set AFTER the receipt is created \u2014 if the receipt creation fails (returns `Err`), the lifecycle state is NOT updated. This is correct. But if the receipt creation succeeds and then a subsequent operation panics before the caller can persist the receipt, the in-memory envelope has a new state that doesn't match any stored receipt. No durability guarantee for in-memory transitions.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-131",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`ArtifactEnvelopeV1.reason_codes` is sorted and deduped in multiple mutation methods. Sorting strings is O(N log N) in the number of reason codes. For envelopes that go through many transitions, this becomes expensive relative to a HashSet approach.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-132",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`non_authoritative_json_display_digest` is called in `ArtifactManifestV1::new` but the function name implies it's not canonical. If two manifests are created with the same inputs/outputs but the JSON serialization order differs (e.g., due to HashMap iteration order), the digest will differ. The function uses `serde_json::json!({...})` which serializes objects in field-declaration order \u2014 this is deterministic for static structs but not for `BTreeMap` values (which serialize in sorted key order). Since `schema_identities: BTreeMap<String, String>` is sorted, the manifest digest IS deterministic for the same logical content.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-133",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`EffectRuntimeViewV1` and other view types in `knowledge-runtime/src/views.rs` are listed in the re-exports but not audited \u2014 they may contain similar issues.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-134",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`EntityRegistry` uses an in-memory store with no persistence. All entity registrations are lost on process restart. This is documented in the module, but callers that rely on entity resolution across restarts will silently get no results.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-135",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`query/route.rs` (not fully audited) creates `RouteLeg` structures. If the route planner creates legs for unsupported `QueryMode` variants (via future extension), the runtime's leg executor may panic or produce empty results with no error.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-136",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "The codex archive (`MIGRATION_V10` via deprecated module) references `projection_import::MIGRATION_V10`. If the deprecated module is compiled out in a future release before the migration constant is moved, existing databases at schema V10 will fail to migrate to V11+ because the migration runner can't find V10's SQL.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-137",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`projection_import_failures` table (referenced in V16 migration) may not exist on databases that were created after `projection_import` was deprecated. The `add_column_if_missing` call in V16 references this table but if the table itself doesn't exist, the `ALTER TABLE` fails.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-138",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`read_me` for `pool.rs`: `ReaderGuard` drops the reader slot on panic, but if `self.readers[reader_idx].lock()` panics (which shouldn't happen for `Mutex::lock` but could for a poisoned mutex with `unwrap`), the guard would already be constructed (slot taken) but the lock acquisition fails. Since `lock()` uses `unwrap_or_else`, it recovers and returns the poisoned conn \u2014 so this is handled.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-139",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "The `living-memory` `patch/apply.rs` delegates entirely to `typed_patch::apply_patch` with no pre- or post-validation in the AiDENs layer. If `typed_patch` has bugs, there's no AiDENs-level safety net.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-140",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`living-memory` `baseline.rs` runs multiple `git` subcommands sequentially (commit SHA, dirty check, untracked count, lockfile hash, rustc version, cargo version, submodule state). If any command hangs (e.g., `git` is waiting for user input on a locked repo), the `capture_baseline_provenance` function will hang indefinitely since there's no timeout on `Command::output()`.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-141",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`BaselineDescriptor.submodule_state: Vec<(String, String)>` \u2014 the serialization of this field via `serde_json::to_string(self)` in `fingerprint()` produces array-of-array format. If the submodule state is empty vs. not-present, the fingerprint differs. Two descriptors with identical states but one using `Vec::new()` vs. the other never setting the field would produce different fingerprints if the serde `#[serde(default)]` is not applied.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-142",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`WorkspacePolicy.retain_failed_workspaces: bool` has no mechanism to purge old failed workspaces if retention fills up disk. The `max_retained_workspaces` limit applies to total workspaces, not just successful ones \u2014 so failed workspace retention may crowd out successful ones.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-143",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`MemoryStore::query_claim_versions` accepts a `ProjectionQuery` struct (not shown in audit) which likely has filter fields. If the query struct allows SQL injection via unvalidated user input (e.g., in `scope_namespace` field passed directly to SQLite), this is a security vulnerability.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-144",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`MemoryStore::embed_batch` converts `&[&str]` to `Vec<String>` unnecessarily:",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-145",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`ArtifactEnvelopeV1::from_json` calls `Utc::now()` at construction time. If two envelopes are created in the same millisecond, they get the same `created_recorded_time`. The `material` used for `artifact_ref` generation includes the content digest but NOT the timestamp \u2014 so two envelopes with different content but the same digest would produce the same `artifact_ref`. (Content digest equality implies same content, so same `artifact_ref` is correct \u2014 but if `DisplayDigestV1::for_json_value` has a collision, this silently produces colliding IDs.)",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-146",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`display_digest_v1` (`DisplayDigestV1::for_json_value`) is referenced but not shown. If it uses non-canonical JSON serialization (e.g., object key ordering not guaranteed), two logically identical JSON values could produce different digests.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-147",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`ExecutionContextEnvelopeV1.budget_millis_allocated` is always set to `0` in `local_started`:",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-148",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`ToolCallReceiptV1.receipt_id` is generated from `(execution_id, tool_id, input_digest, output_digest)`. If the same tool is called twice with the same input and output (e.g., an idempotent tool), the receipts will have identical `receipt_id`s. This prevents distinguishing two separate calls to the same tool with the same result.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-149",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`ExecutionContextEnvelopeV1.retry_family_id` is generated from `format!(\"retry|{}|{}\", operation_id, attempt_family_id.0)`. This makes the retry family deterministic per (operation, attempt), which is correct. But if `attempt_family_id` is itself generated from material that changes each call, retry families won't be stable across crashes and replays.",
+    "Phase": "Phase 11",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-150",
+    "Severity": "Medium",
+    "Category": "Medium cross-cutting",
+    "Issue": "`MemoryStore::reembed_all` does not HNSW-queue pending ops for facts and chunks during the UPDATE loop \u2014 only for episodes. Looking at the UPDATE SQL for facts:",
+    "Phase": "Phase 08",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-151",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`define_id!` macro marks `pub struct $name(pub String)` \u2014 the inner `String` field is `pub`. This breaks the \"opaque ID\" guarantee \u2014 callers can directly access and mutate `.0` without using the provided API.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-152",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`ClaimFamilyId` and `AssertionGroupId` have nearly identical doc comments that differ only by one word. Copy-paste doc drift risk.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-153",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`stack-ids/src/status.rs` and `stack-ids/src/trace.rs` appear to be concatenated into a single read (the `cat` command showed `TraceCtx` and `SurfaceStatus` in one output). If this is intentional (combined file), the module structure is confusing. If unintentional (cat output concatenated two separate files), the crate structure may be misleading.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-154",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`MemoryConfig` has `#[serde(skip)]` on `token_counter` and `hnsw`, meaning these fields are not serialized. If a user serializes and deserializes a `MemoryConfig`, they lose their custom token counter and HNSW config \u2014 getting defaults instead. This is a silent data loss on round-trip.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-155",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`MemoryConfig::normalize_and_validate` caps `embedding.timeout_secs` to `limits.embedding_timeout.as_secs().max(1)` \u2014 the `max(1)` ensures at least 1 second. But if `limits.embedding_timeout` is exactly 0 (which is normalized to 1 second in `MemoryLimits::normalize_and_validate`), the cap applies correctly. However, if `open_with_embedder` is called twice (with re-validation), the timeout may be double-clamped.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-156",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`PoolConfig.enable_wal = true` default, but `configure_connection` will fail if the DB is on a networked filesystem that doesn't support WAL mode (e.g., NFS). The error message says \"SQLite journal mode mismatch\" which doesn't tell users they need to disable WAL for networked storage.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-157",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`MemoryStats::total_episodes` is missing from the stats struct. The `stats()` function queries facts, documents, chunks, sessions, and messages but not episodes. An operator monitoring the system has no way to see episode counts via the stats API.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-158",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`graph_view()` returns `Arc<dyn GraphView>`. The `GraphView` trait is defined in `types.rs` (implied). Returning `Arc<dyn GraphView>` prevents callers from using the concrete type's methods directly (if any exist beyond the trait). This is idiomatic but means concrete functionality added to `StoreGraphView` later is inaccessible without downcasting.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-159",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`collect_neighbors` returns edges sorted by `(source, target, weight)` \u2014 not by relevance or distance. Callers expecting nearest-first ordering will be surprised.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-160",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`shortest_path` returns `Vec<String>` of node IDs. If the path includes intermediate nodes that are not directly accessible to the caller (e.g., internal chunk IDs), the path is unreachable in the caller's domain.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-161",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`cause_backlinks` (called in `direct_edges`) is not shown in the audit. If it queries `episode_causes` but the table was not created (on fresh DBs that skipped V9 migration), it would fail with a \"no such table\" error.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-162",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`TemporalClaim::confidence: f32` is not validated. A confidence of 2.0 or -0.5 can be stored and retrieved without error.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-163",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`check_contradiction` formats the description as `\"overlapping claims on entity {}: {:?} vs {:?}\"` using `Debug` format for the claims. `{:?}` for strings includes surrounding quotes and escapes internal special chars. For log output this is fine; for user-facing explanations it produces ugly output.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-164",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`QueryMode::Mixed` components are `Vec<QueryMode>` \u2014 an unbounded Vec. A maliciously crafted query processor could produce deeply nested Mixed modes, exhausting stack depth during recursive processing.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-165",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`ClassifyResult::confidence` is set to `0.8` for SemanticLookup, `0.7` for single signal, and `0.6` for Mixed. These are hardcoded magic numbers with no justification or calibration.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-166",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`MergePolicy::limit: 10` default is not related to `SearchConfig::default_top_k: 5`. If knowledge-runtime uses the merge policy's limit without consulting the search config's default_top_k, the final result count differs from what the user configured.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-167",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`LegResult::leg_index: usize` \u2014 if more than `usize::MAX` legs are created (impossible in practice but architecturally unconstrained), overflow. Not a real bug but the type should probably be `u8` or `u16` to communicate the expected scale.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-168",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`FusedEntry::source_legs: Vec<usize>` uses `contains()` check (`if !entry.source_legs.contains(&lr.leg_index)`) \u2014 O(N) per insert for N legs. For large numbers of legs this is quadratic. Should use a `HashSet`.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-169",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`MergedResults::duplicates_fused` is computed as `total_raw - fused_map.len()`. If `total_raw < fused_map.len()` (impossible if fusing only reduces count, which it should \u2014 but could happen if insertion_order has more entries than fused_map due to a bug), this would underflow to a huge `usize` value. The subtraction should be checked.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-170",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`ranked.sort_by(|a, b| b.final_score.partial_cmp(&a.final_score).unwrap_or(Equal).then_with(...))` \u2014 `NaN` final scores compare as Equal, placing NaN-scored items at an arbitrary position in the sort order. This can happen if `max_score == min_score` in MinMax normalization (all results get `normalized = 1.0`, then `boosted = 1.0 * (1.0 + ...)`) \u2014 actually this always gives a defined result. But if `multi_leg_boost` is `f64::NAN` (not validated), all boosted scores become NaN.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-171",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`MergePolicy::multi_leg_boost` is not validated. A negative boost would penalize multi-leg results. A `NaN` or `Infinity` boost would corrupt all scores. The `Default` implementation uses `0.1` which is fine, but no validation is performed if users customize the policy.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-172",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`MemoryStore::with_read_conn` takes an `FnOnce + Send + 'static` closure. This means closures cannot borrow from the local scope (must be `'static`). Any data needed inside the closure must be cloned or owned. The code consistently clones queries and configs before passing them in \u2014 but this is a leaky abstraction that forces callers into unnecessary clones.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-173",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`add_fact` (not shown in full) presumably calls `validate_content` then `embed_text_internal` then `insert_fact_with_fts_q8`. If embedding fails after validation passes, the fact content is not stored. This is correct (atomic behavior). But if the embedding provider is down, `add_fact` always fails \u2014 there's no \"store without embedding, embed later\" path for callers that need offline capability.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-174",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`MIGRATION_V7` inserts into `episodes_fts` for all existing episodes. This could be extremely slow for large episode tables and runs in a single transaction \u2014 a very large migration could hit SQLite's write-ahead log size limits or cause WAL checkpoint stalls.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-175",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`VerificationStatus` (referenced in `types.rs`) has a default of `{\"status\":\"unverified\"}` in the migration SQL. If the `VerificationStatus` Rust enum's JSON representation changes (e.g., due to a serde rename), existing rows will fail to parse.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-176",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`define_id!` generates `PartialOrd + Ord` for all ID types, including `KernelRunId`, `RegionId`, etc. Ordering kernel runs or regions by string representation of their UUID is meaningless but compilable. Accidental use of `<` on ID types will compile without warning.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-177",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`AiDENs/crates/aidens-contracts/src/reserved_v11.rs` \u2014 reserved V11 types may define placeholder structures that accept any data. If these are accidentally used in production paths (since they're public via `pub use reserved_v11::*`), they could swallow data silently.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-178",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`pub(crate) use store_support::{as_str_slice, ...}` \u2014 these utilities are `pub(crate)` but `store_support` is not a public module. Any leakage through re-exports could expose internal utilities.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-179",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "`projection_lane::projection_import_failure_id` is re-exported as `pub(crate)`. If this function generates IDs from mutable state (e.g., a counter), it's not thread-safe without synchronization.",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-180",
+    "Severity": "Low",
+    "Category": "Low/code quality",
+    "Issue": "The `#[allow(deprecated)]` attribute is used at the crate level in `semantic-memory/src/lib.rs`:",
+    "Phase": "Phase 10",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-181",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`MemoryStore::open` constructs an `OllamaEmbedder` unconditionally. There is no way to open a store in a read-only mode without a running Ollama instance, even if the caller only wants to query existing data.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-182",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`hnsw_ops::save_hnsw_sidecar` wraps the save call in `std::panic::catch_unwind(AssertUnwindSafe(...))`. `AssertUnwindSafe` suppresses the compiler's check that the closure is unwind-safe. If the HNSW index is in an inconsistent state when a panic is caught here, returning `Ok(())` after catching would leave the on-disk sidecar corrupt with no error.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-183",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`recover_hnsw_sidecar_sync` calls `pool.with_read_conn(|conn| rebuild_hnsw_from_sqlite(conn, config))` then saves the sidecar, then uses `pool.with_write_conn` to flush the keymap. The read conn and write conn are different connections. The rebuild reads a snapshot of the database. Between the read snapshot and the write conn operations, new insertions could have modified the database \u2014 producing a sidecar that's slightly stale immediately after recovery.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-184",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`hnsw_ops::sync_pending_hnsw_sidecar` calls `save_hnsw_sidecar` while holding the HNSW write lock, then calls `flush_keymap` (also requires write conn), then `clear_pending_index_ops`. If `save_hnsw_sidecar` succeeds but `flush_keymap` fails, the sidecar is updated but the keymap is stale. On next open, the sidecar will be loaded with a stale keymap, producing incorrect search results.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-185",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`episode_item_key` and `episode_node_id` both produce `\"episode:{episode_id}\"` \u2014 identical output. This means HNSW keys and graph node IDs for episodes are in the same namespace. If any code mixes them up (treating an HNSW key as a graph node ID or vice versa), it works accidentally but is fragile.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-186",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`upsert_episode`'s legacy compat path uses `format!(\"{}-ep0\", document_id)` as the episode_id for new episodes. If `document_id` contains characters that are invalid in other contexts (e.g., `:`, which is used as a delimiter in HNSW keys), the episode HNSW key `\"episode:{document_id}-ep0\"` would contain a second `:`, breaking `parse_key()` which uses `split_once(':')` \u2014 returning `(\"{document_id}-ep0\", \"\")` instead of the intended split.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-187",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`sync_causal_edges` deletes all existing causal edges and reinserts. This is non-atomic relative to concurrent readers \u2014 readers may observe zero edges during the window between DELETE and INSERT. Should be done inside a transaction (it is called inside `with_transaction`, but the transaction covers the entire episode upsert \u2014 if the upsert is large, the window during the causal edge sync is long).",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-188",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`resolve_primary_episode_id_legacy` queries `ORDER BY created_at ASC LIMIT 1`. If two episodes have the same `created_at` (same-millisecond inserts), the ordering is non-deterministic and the \"primary\" episode may change between calls.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-189",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`list_document_episode_ids` queries `ORDER BY created_at ASC`. Same issue \u2014 identical-timestamp episodes have non-deterministic ordering.",
+    "Phase": "Phase 09",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-190",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "The `living-memory` `exec/host.rs` and `exec/container.rs` files were not deeply audited. These likely contain subprocess/container management code with significant security surface \u2014 file system isolation, capability constraints, PID namespace management. These should be separately audited.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-191",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`runtime/stabilizer.rs` (in living-memory) was not audited. Its name suggests it manages runtime stability under failures \u2014 a high-criticality path.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-192",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`runtime/novelty.rs` and `runtime/compiler.rs` were not audited. These sound like they deal with code generation or LLM-based novelty detection \u2014 both high-risk paths.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-193",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`cea/predictor.rs` and `cea/graph.rs` (causal effect attribution) were not audited. CEA is a core correctness component \u2014 bugs here propagate to episode quality.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-194",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`knowledge-runtime/src/runtime.rs` (the main `KnowledgeRuntime` impl) was not fully audited \u2014 only the module list was seen. The actual execution paths, scope enforcement, and error handling here are critical.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-195",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`forge-pilot` (92 files, second largest component) was not audited. It's the central orchestration layer and likely contains the highest bug density of any component.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-196",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`verification-policy`, `verification-control`, `verification-adjudication`, and `verification-calibration` were not audited. These implement the verification pipeline that determines whether claims are accepted or rejected \u2014 correctness here is paramount.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-197",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`attestation-exchange` was not audited. Attestation forgery or replay vulnerabilities in this layer could undermine the entire trust model.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-198",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`federated-settlement` and `authority-delegation` were not audited. Cross-runtime settlement bugs could allow unauthorized operations.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-199",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`effect-runtime` was not audited. Side-effect dispatch is the highest-risk operation in any AI agent \u2014 bugs here could cause unintended real-world effects.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  },
+  {
+    "ID": "BUG-200",
+    "Severity": "UnauditedHighRisk",
+    "Category": "Unaudited high-risk",
+    "Issue": "`constraint-compiler` and `recursive-kernel-core` were not audited. These are the formal verification layer \u2014 soundness bugs here mean the verification guarantees don't hold.",
+    "Phase": "Phase 04",
+    "Required Action": "Fix or quarantine with evidence and tests",
+    "Status": "superseded"
+  }
+]

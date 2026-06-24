@@ -1,0 +1,236 @@
+{
+  "created_utc": "2026-06-12T22:20:15Z",
+  "error_count": 0,
+  "findings": [
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/AI-Batch-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/ComfyUI-RS/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../living-memory/living-memory",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/Tauri-Queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/agent-graph/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/attestation-exchange/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../forge-memory-bridge",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../recursive-kernel-core",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../semantic-memory-forge",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../forge-memory-bridge",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../knowledge-runtime",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../semantic-memory",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../semantic-memory-forge",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/discovery-portfolio/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/federated-settlement/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/job-queue/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../assurance-runtime",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../authority-delegation",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../continuity-runtime",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../verification-policy",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/remote-oracle-admission/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "cargo-path-dep-missing",
+      "detail": "Cargo path dependency does not exist: ../stack-ids",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/spec-execution/Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "script-ref-missing",
+      "detail": "Possible script reference not found: .codex/tools/auto_phase_runner.py",
+      "path": "Libraries/scr-runtime/scripts/run_completion_checks.sh",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-content-named-secret-assignment",
+      "detail": "Potential secret-like content detected at line 1309; value intentionally not printed.",
+      "path": "AGENT-SYSTEM.md",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-content-named-secret-assignment",
+      "detail": "Potential secret-like content detected at line 152; value intentionally not printed.",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/docs/benchmarks/run_forge_bench.py",
+      "severity": "warning"
+    },
+    {
+      "code": "secret-like-filename",
+      "detail": "File excluded because of secret-like-filename.",
+      "path": "Libraries/_salvage_from_libraries2/Libraries2/docs/13_settings_persistence_and_secret_handling.md",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-expected-file-not-packaged",
+      "detail": "rust adapter expected this existing file to be included.",
+      "path": "Cargo.lock",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-expected-file-not-packaged",
+      "detail": "rust adapter expected this existing file to be included.",
+      "path": "Cargo.toml",
+      "severity": "warning"
+    },
+    {
+      "code": "rust-expected-file-not-packaged",
+      "detail": "rust adapter expected this existing file to be included.",
+      "path": "README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "poly-kv/python/poly_kv/_native.pyi",
+      "severity": "warning"
+    },
+    {
+      "code": "python-expected-file-not-packaged",
+      "detail": "python adapter expected this existing file to be included.",
+      "path": "poly-kv/python/poly_kv/py.typed",
+      "severity": "warning"
+    },
+    {
+      "code": "node-expected-file-not-packaged",
+      "detail": "node adapter expected this existing file to be included.",
+      "path": "README.md",
+      "severity": "warning"
+    },
+    {
+      "code": "git-expected-file-not-packaged",
+      "detail": "git adapter expected this existing file to be included.",
+      "path": ".gitignore",
+      "severity": "warning"
+    },
+    {
+      "code": "git-metadata-excluded",
+      "detail": "Git metadata detected and intentionally excluded from transferable package contents.",
+      "path": ".git/",
+      "severity": "info"
+    }
+  ],
+  "root": "/home/sikmindz/Coding/Libraries",
+  "warning_count": 37
+}

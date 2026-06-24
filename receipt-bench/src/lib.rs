@@ -8,6 +8,9 @@ mod fingerprint;
 mod receipt;
 mod suite;
 
+#[cfg(feature = "sm-adapter")]
+pub mod sm_adapter;
+
 pub use error::BenchError;
 pub use fingerprint::MachineFingerprint;
 pub use receipt::{BenchmarkReceipt, BenchmarkResult, ReceiptDiff};

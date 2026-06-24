@@ -5,7 +5,7 @@ use aidens_contracts::{
     ProviderCertificationFixtureDraftV1, ProviderCertificationFixtureV1,
     ProviderReadinessReportDraftV1, ProviderReadinessReportV1, ProviderRouteKindV1,
     ProviderRouteReportDraftV2, ProviderRouteReportV1, ProviderRouteReportV2, ToolCallRequestV1,
-    ToolCallResultV1, ToolProviderSchemaV1,
+    ToolCallResultV1, ToolCallSourceV1, ToolProviderSchemaV1,
 };
 use anyhow::{anyhow, bail, Context};
 use async_trait::async_trait;
@@ -181,6 +181,9 @@ impl AiDENsProvider for DisabledProvider {
 
 #[derive(Debug, Clone)]
 pub struct MockProvider {
+    /// Original response text. Retained for Debug display; segment dispatch
+    /// uses `segments` exclusively.
+    #[allow(dead_code)]
     response: String,
     segments: Vec<String>,
     model: Option<String>,
@@ -265,7 +268,7 @@ impl OllamaProvider {
         }
         let client = reqwest::Client::builder()
             .connect_timeout(Duration::from_secs(5))
-            .timeout(Duration::from_secs(120))
+            .timeout(Duration::from_secs(300))
             .build()
             .context("ollama provider unavailable: failed to build HTTP client")?;
         Ok(Self {
@@ -289,7 +292,7 @@ impl AiDENsProvider for OllamaProvider {
     fn capabilities(&self) -> ProviderCapabilitiesV1 {
         ProviderCapabilitiesV1 {
             chat_completion: true,
-            native_tool_calling: false,
+            native_tool_calling: true,
             streaming: false,
             structured_output: false,
         }
@@ -303,6 +306,26 @@ impl AiDENsProvider for OllamaProvider {
             .messages
             .iter()
             .map(|message| {
+                // If this is an assistant message containing tool_calls JSON, parse it and
+                // send it as native Ollama tool_calls field instead of content string.
+                if message.role == "assistant" && message.content.starts_with("{\"tool_calls\":") {
+                    if let Ok(tool_calls) = serde_json::from_str::<serde_json::Value>(&message.content) {
+                        if let Some(calls) = tool_calls["tool_calls"].as_array() {
+                            // Only use native tool_calls if the array is non-empty
+                            // and each entry has a function.name field.
+                            let valid = !calls.is_empty() && calls.iter().all(|c| {
+                                c["function"]["name"].as_str().is_some()
+                            });
+                            if valid {
+                                return serde_json::json!({
+                                    "role": "assistant",
+                                    "content": "",
+                                    "tool_calls": calls,
+                                });
+                            }
+                        }
+                    }
+                }
                 serde_json::json!({
                     "role": message.role,
                     "content": message.content,
@@ -313,12 +336,37 @@ impl AiDENsProvider for OllamaProvider {
         if let Some(temp) = request.temperature {
             options["temperature"] = serde_json::json!(temp);
         }
-        let body = serde_json::json!({
+
+        // Build tools array from provider_tool_schemas (Ollama uses OpenAI function format)
+        // Use the `name` field (simple name) as the function name, not the tool_id
+        // (which contains colons that confuse the model).
+        // We'll map back from name to tool_id when parsing the response.
+        let tools: Vec<serde_json::Value> = request
+            .provider_tool_schemas
+            .iter()
+            .map(|schema| {
+                serde_json::json!({
+                    "type": "function",
+                    "function": {
+                        "name": schema.name,
+                        "description": schema.description,
+                        "parameters": schema.input_schema,
+                    }
+                })
+            })
+            .collect();
+
+        let mut body = serde_json::json!({
             "model": self.model,
             "messages": messages,
             "stream": false,
             "options": options,
         });
+
+        if !tools.is_empty() {
+            body["tools"] = serde_json::json!(tools);
+        }
+
         let url = format!("{}/api/chat", self.base_url);
         let response = self
             .client
@@ -338,19 +386,50 @@ impl AiDENsProvider for OllamaProvider {
             .json::<serde_json::Value>()
             .await
             .context("ollama provider unavailable: response JSON parse failed")?;
+
         let text = json["message"]["content"]
             .as_str()
-            .ok_or_else(|| anyhow!("ollama provider unavailable: missing message.content"))?
+            .unwrap_or("")
             .to_string();
-        if text.is_empty() {
-            bail!("ollama provider unavailable: empty message.content")
+
+        // Parse tool_calls from Ollama response
+        // Map function names back to tool_ids (Ollama uses simple names, runner expects namespaced IDs)
+        let name_to_tool_id: std::collections::HashMap<String, String> = request
+            .provider_tool_schemas
+            .iter()
+            .map(|s| (s.name.clone(), s.tool_id.clone()))
+            .collect();
+        let tool_calls: Vec<ToolCallRequestV1> = json["message"]["tool_calls"]
+            .as_array()
+            .map(|calls| {
+                calls.iter().filter_map(|call| {
+                    let name = call["function"]["name"].as_str()?;
+                    let arguments = call["function"]["arguments"].clone();
+                    // Map simple name back to namespaced tool_id
+                    let tool_id = name_to_tool_id.get(name).cloned().unwrap_or_else(|| name.to_string());
+                    Some(ToolCallRequestV1::new(
+                        ToolCallSourceV1::NativeProvider,
+                        tool_id,
+                        arguments,
+                        None,
+                        vec![],
+                    ))
+                }).collect()
+            })
+            .unwrap_or_default();
+
+        // If we got tool_calls, text may be empty — that's OK.
+        // If text is empty AND no tool_calls, check if this was a follow-up
+        // after tool results (the model may return empty when it's done).
+        if text.is_empty() && tool_calls.is_empty() {
+            // Return empty text — the runner handles this as a normal (empty) response.
         }
 
         Ok(AiDENsCompletionResponseV1 {
             text,
             provider_kind: self.provider_kind().into(),
             model: Some(self.model.clone()),
-            tool_calls: Vec::new(),
+            tool_calls,
             prompt_eval_count: json["prompt_eval_count"].as_u64(),
             eval_count: json["eval_count"].as_u64(),
         })
@@ -483,13 +562,13 @@ pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
             route_label: ProviderRouteKindV1::OllamaChat.to_string(),
             api_key_required: false,
             chat_completion_executable: true,
-            native_tool_loop_executable: false,
+            native_tool_loop_executable: true,
             streaming_executable: false,
             structured_output_executable: false,
             reason_codes: vec![
                 "ollama-chat-boundary-implemented".into(),
                 "ollama-local-service-required".into(),
-                "ollama-native-tool-loop-unimplemented".into(),
+                "ollama-native-tool-loop-via-function-calling".into(),
             ],
         },
         ProviderBackendMatrixEntryV1 {
@@ -849,7 +928,7 @@ pub fn provider_readiness_receipt_for_spec(spec: &ProviderSpecV1) -> ProviderRea
             model: spec.model.clone(),
             configured: model_configured,
             executable: model_configured,
-            native_tool_loop_executable: false,
+            native_tool_loop_executable: true,
             route_label: if model_configured {
                 ProviderRouteKindV1::OllamaChat.to_string()
             } else {
@@ -859,7 +938,7 @@ pub fn provider_readiness_receipt_for_spec(spec: &ProviderSpecV1) -> ProviderRea
                 vec![
                     "ollama-chat-boundary-configured".into(),
                     "ollama-local-service-required".into(),
-                    "ollama-native-tool-loop-unimplemented".into(),
+                    "ollama-native-tool-loop-via-function-calling".into(),
                 ]
             } else {
                 vec!["ollama-model-missing".into()]
@@ -1195,7 +1274,7 @@ mod tests {
     }
 
     #[test]
-    fn ollama_chat_route_is_not_native_tool_loop() {
+    fn ollama_chat_route_supports_native_tool_loop() {
         let mut spec = ProviderSpecV1::new("ollama");
         spec.model = Some("llama3".into());
 
@@ -1203,14 +1282,14 @@ mod tests {
         let route = route_receipt_v2_for_spec(&spec);
 
         assert!(readiness.executable);
-        assert!(!readiness.native_tool_loop_executable);
+        assert!(readiness.native_tool_loop_executable);
         assert_eq!(route.route, ProviderRouteKindV1::OllamaChat);
         assert_eq!(route.route_label, "ollama-chat");
         assert!(route.chat_completion_executable);
-        assert!(!route.native_tool_loop);
+        assert!(route.native_tool_loop);
         assert!(route
             .reason_codes
-            .contains(&"ollama-native-tool-loop-unimplemented".into()));
+            .contains(&"ollama-native-tool-loop-via-function-calling".into()));
         assert!(route
             .reason_codes
             .contains(&"ollama-local-service-required".into()));
@@ -1249,7 +1328,7 @@ mod tests {
         assert_eq!(response.prompt_eval_count, Some(3));
         assert_eq!(response.eval_count, Some(5));
         assert!(response.tool_calls.is_empty());
-        assert!(!provider.capabilities().native_tool_calling);
+        assert!(provider.capabilities().native_tool_calling);
         server.join().unwrap();
     }
 
@@ -1270,7 +1349,7 @@ mod tests {
         }
         let ollama = matrix.entry_for("ollama").unwrap();
         assert!(ollama.chat_completion_executable);
-        assert!(!ollama.native_tool_loop_ready());
+        assert!(ollama.native_tool_loop_ready());
         assert!(ollama
             .reason_codes
             .contains(&"ollama-local-service-required".into()));

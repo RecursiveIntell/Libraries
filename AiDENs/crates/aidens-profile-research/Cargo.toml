@@ -1,12 +1,10 @@
 [package]
 name = "aidens-profile-research"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Research-workbench profile status (deferred/example-only surface)"
 
-[lints]
-workspace = true
 
 [dependencies]

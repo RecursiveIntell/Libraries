@@ -1,0 +1,21 @@
+{
+  "archive_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/docs/source-packages/archive/20260612T222544Z",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:25:44Z",
+  "errors": [],
+  "files": [],
+  "planned": [],
+  "repo_root": "/home/sikmindz/Coding/Libraries/semantic-memory-forge",
+  "root_package_archive_manifest_version": "RootPackageArtifactArchiveManifestV1",
+  "summary": {
+    "candidate_count": 0,
+    "collision_count": 0,
+    "inspected_count": 6,
+    "moved_count": 0,
+    "planned_count": 0,
+    "protected_count": 6,
+    "skipped_existing_count": 0
+  },
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31"
+}

@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P19/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+      "bytes": 2571,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P19_FINAL_INTEGRATION_RELEASE_BAR_AND_COMPLETION_AUDIT.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P19",
+      "sha256": "47baa66c4db200d4d859d226cf5509c1c9586d62b615272515f028fa6b3200d7"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P19",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

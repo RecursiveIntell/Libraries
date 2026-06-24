@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P8/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.md",
+      "bytes": 2701,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P08_REFERENCE_INTERPRETERS_AND_SEMANTIC_CONFORMANCE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P8",
+      "sha256": "fc2bee3b8dbe23e0b92f4d8f196187ada545627d5491c5c7e0021308ba567fdf"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P8",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

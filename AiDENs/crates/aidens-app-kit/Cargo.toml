@@ -1,13 +1,11 @@
 [package]
 name = "aidens-app-kit"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Safe app builder and profile expansion with 5 built-in profiles"
 
-[lints]
-workspace = true
 
 [dependencies]
 aidens-runner = { path = "../aidens-runner" }
@@ -17,7 +15,7 @@ aidens-plan-kit = { path = "../aidens-plan-kit" }
 aidens-provider-kit = { path = "../aidens-provider-kit" }
 aidens-receipts = { path = "../aidens-receipts" }
 aidens-tool-kit = { path = "../aidens-tool-kit" }
-serde.workspace = true
-thiserror.workspace = true
-anyhow.workspace = true
-tokio.workspace = true
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+anyhow = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }

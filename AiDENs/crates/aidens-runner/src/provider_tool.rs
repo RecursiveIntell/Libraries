@@ -13,17 +13,60 @@ pub(super) fn completion_request(
     prompt: String,
     tool_exposure: &ToolExposureSetV1,
     tool_results: &[ToolCallResultV1],
+    tool_call_requests: &[ToolCallRequestV1],
 ) -> anyhow::Result<AiDENsCompletionRequestV1> {
+    // Build a system prompt that tells the model it's an agent with tools.
+    let tool_list: Vec<String> = tool_exposure.provider_tool_schemas.iter()
+        .map(|s| format!("- {}: {}", s.name, s.description))
+        .collect();
+    let system_prompt = format!(
+        "You are Kirsten, an evidence-first AI agent running on a local model via Ollama.\n\
+         You have access to the following tools. Call them by their name to accomplish tasks.\n\
+         When you need information from memory, use the search tools.\n\
+         When you need to read or write files, use the file tools.\n\
+         When you need to run a command, use the shell tool.\n\
+         Always explain what you're doing before calling a tool.\n\n\
+         Available tools:\n{}\n\n\
+         To call a tool, use the function calling format. The tool name must match exactly.",
+        tool_list.join("\n")
+    );
+
     let mut request = AiDENsCompletionRequestV1::single_user(prompt);
+    // Prepend system message
+    request.messages.insert(0, AiDENsChatMessageV1 {
+        role: "system".into(),
+        content: system_prompt,
+    });
     request.provider_tool_schemas = tool_exposure.provider_tool_schemas.clone();
     request.tool_results = tool_results.to_vec();
     if !request.tool_results.is_empty() {
-        let content = serde_json::to_string(&request.tool_results)
-            .map_err(|error| anyhow!("tool-result serialization failed: {error}"))?;
+        // First, send the assistant's tool_call message so Ollama knows what was called.
+        let tool_calls_json: Vec<serde_json::Value> = tool_call_requests.iter().map(|req| {
+            // Extract the simple name from tool_id (kirsten:kirsten_search:1 -> kirsten_search)
+            let simple_name = req.tool_id.split(':')
+                .nth(1)
+                .unwrap_or(&req.tool_id)
+                .to_string();
+            serde_json::json!({
+                "function": {
+                    "name": simple_name,
+                    "arguments": req.input,
+                }
+            })
+        }).collect();
         request.messages.push(AiDENsChatMessageV1 {
-            role: "tool".into(),
-            content,
+            role: "assistant".into(),
+            content: format!("{{\"tool_calls\": {}}}", serde_json::to_string(&tool_calls_json).unwrap_or_default()),
         });
+
+        // Then send each tool result as a separate "tool" message.
+        for result in &request.tool_results {
+            let content = result.output_text();
+            request.messages.push(AiDENsChatMessageV1 {
+                role: "tool".into(),
+                content,
+            });
+        }
     }
     Ok(request)
 }

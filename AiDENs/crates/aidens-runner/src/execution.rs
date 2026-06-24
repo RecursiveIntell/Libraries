@@ -136,7 +136,10 @@ pub(super) async fn run_canonical_memory_grounding(
     ];
 
     if query_results.is_empty() {
-        return Err(anyhow!("memory-grounding-no-results"));
+        // Empty results is not an error — the KB may be fresh.
+        // Return a warning receipt instead of failing the entire agent run.
+        receipts.push("memory-grounding:no-results-empty-kb".into());
+        return Ok(receipts);
     }
 
     if normalized_query.contains("canonical seam fixture") {
@@ -199,6 +202,9 @@ pub(super) fn map_agent_tools_to_ids(tool_aliases: &[String]) -> AgentToolResolu
             "checks.run" => canonical.push("aidens:run-checks:1".into()),
             "run.inspect" => canonical.push("aidens:run-checks:1".into()),
             "run.replay" => unsupported.push(alias.clone()),
+            // Namespaced tools (e.g. kirsten:search:1) are already canonical IDs
+            // with a namespace prefix containing ':'. Accept them directly.
+            s if s.contains(':') => canonical.push(s.into()),
             _ => unsupported.push(alias.clone()),
         }
     }

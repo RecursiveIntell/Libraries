@@ -1,0 +1,7 @@
+Gate,AfterPhase,Purpose
+Injection 1,03,Stop run identity/package repair drift
+Injection 2,07,Stop HNSW/SQLite/search fixes before vector/runtime work
+Injection 3,11,Stop contract/receipt/proof drift before v11A finalization
+Injection 4,15,Confirm v11A local release before v11B seed
+Injection 5,19,Confirm v11B seed labels before final docs
+Injection 6,21,Stop final package until replay/evidence gates pass

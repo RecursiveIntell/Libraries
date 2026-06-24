@@ -81,6 +81,21 @@ pub enum LedgerEvent {
         output_ref: String,
         output_digest: String,
     },
+    /// Proof-debt budget was consumed.
+    ProofDebtConsumed {
+        budget_id: String,
+        debit_id: String,
+        amount_micros: u64,
+        source: String,
+        overdrawn: bool,
+    },
+    /// Proof-debt budget was replenished (evidence, admission, or waiver).
+    ProofDebtReplenished {
+        budget_id: String,
+        credit_id: String,
+        amount_micros: u64,
+        source: String,
+    },
 }
 
 impl LedgerEvent {
@@ -94,6 +109,8 @@ impl LedgerEvent {
             Self::ContradictionResolved { .. } => "contradiction_resolved",
             Self::EvidenceAttached { .. } => "evidence_attached",
             Self::BundleExported { .. } => "bundle_exported",
+            Self::ProofDebtConsumed { .. } => "proof_debt_consumed",
+            Self::ProofDebtReplenished { .. } => "proof_debt_replenished",
         }
     }
 }
@@ -222,6 +239,42 @@ impl LedgerEntryBuilder {
             contradiction_id: contradiction_id.to_string(),
             resolution: resolution.to_string(),
             affected_claim_refs,
+        };
+        self._build_entry(event)
+    }
+
+    /// Add a proof-debt consumption event.
+    pub fn add_proof_debt_consumed(
+        self,
+        budget_id: &str,
+        debit_id: &str,
+        amount_micros: u64,
+        source: &str,
+        overdrawn: bool,
+    ) -> LedgerEntry {
+        let event = LedgerEvent::ProofDebtConsumed {
+            budget_id: budget_id.to_string(),
+            debit_id: debit_id.to_string(),
+            amount_micros,
+            source: source.to_string(),
+            overdrawn,
+        };
+        self._build_entry(event)
+    }
+
+    /// Add a proof-debt replenishment event.
+    pub fn add_proof_debt_replenished(
+        self,
+        budget_id: &str,
+        credit_id: &str,
+        amount_micros: u64,
+        source: &str,
+    ) -> LedgerEntry {
+        let event = LedgerEvent::ProofDebtReplenished {
+            budget_id: budget_id.to_string(),
+            credit_id: credit_id.to_string(),
+            amount_micros,
+            source: source.to_string(),
         };
         self._build_entry(event)
     }

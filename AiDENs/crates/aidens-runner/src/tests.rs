@@ -360,17 +360,17 @@ fn completion_request_serializes_tool_results_without_empty_substitution() {
     let result = ToolCallResultV1::from_invocation(&request_call, &invocation);
 
     let request =
-        completion_request("continue".into(), &empty_tool_exposure(), &[result]).unwrap();
+        completion_request("continue".into(), &empty_tool_exposure(), &[result], &[request_call.clone()]).unwrap();
 
-    assert_eq!(request.messages.len(), 2);
-    assert_eq!(request.messages[1].role, "tool");
-    assert!(!request.messages[1].content.is_empty());
-    let tool_results: Vec<ToolCallResultV1> =
-        serde_json::from_str(&request.messages[1].content).unwrap();
-    assert_eq!(tool_results.len(), 1);
-    assert_eq!(tool_results[0].tool_id, "aidens:repo-read:1");
+    // messages: [system, user, assistant(tool_calls), tool(result)] = 4
+    assert_eq!(request.messages.len(), 4);
+    assert_eq!(request.messages[0].role, "system");
+    assert_eq!(request.messages[2].role, "assistant");
+    assert_eq!(request.messages[3].role, "tool");
+    assert!(!request.messages[3].content.is_empty());
+    assert_eq!(request.tool_results[0].tool_id, "aidens:repo-read:1");
     assert_eq!(
-        tool_results[0].output.as_ref().unwrap()["content"],
+        request.tool_results[0].output.as_ref().unwrap()["content"],
         serde_json::json!("readme")
     );
 }
@@ -833,7 +833,7 @@ fn phase06_plan_act_verify_loop_with_memory_sets_accessor() {
     )
     .expect("memory adapter fixture");
     let spec = p26_loop_spec(false, AgentMemoryModeV1::Fixture, false);
-    let loopv = PlanActVerifyLoopV1::new(spec).with_memory(memory);
+    let loopv = PlanActVerifyLoopV1::new(spec).with_memory(std::sync::Arc::new(memory));
 
     assert!(loopv.has_memory());
     assert!(!loopv.has_governance());
@@ -881,28 +881,20 @@ async fn p26_plan_act_verify_loop_provider_config_must_be_present() {
 }
 
 #[tokio::test]
-async fn p26_plan_act_verify_loop_canonical_memory_no_results_abstains() {
+async fn p26_plan_act_verify_loop_canonical_memory_no_results_continues_with_warning() {
     let spec = p26_loop_spec(true, AgentMemoryModeV1::CanonicalSeam, false);
     let loopv = PlanActVerifyLoopV1::new(spec).provider_mock_response("final");
     let output = loopv
         .execute("non-existent-memory-seam-query-phrase")
         .await
-        .expect("grounding should fail and return abstention output");
+        .expect("grounding should return warning and continue to provider");
 
-    assert!(matches!(output.outcome, PlanActVerifyOutcomeV1::Abstained));
-    assert!(output.abstention_receipt.is_some());
-    assert_eq!(
-        output
-            .abstention_receipt
-            .as_ref()
-            .expect("abstention receipt")
-            .reason_code,
-        "memory-grounding-failed"
-    );
+    // With empty KB, memory grounding returns a warning receipt instead of failing.
+    // The agent should continue to the provider rather than abstaining.
     assert!(output
         .memory_grounding_receipts
         .iter()
-        .any(|receipt| receipt.contains("memory-grounding-no-results")));
+        .any(|receipt| receipt.contains("no-results-empty-kb")));
 }
 
 #[tokio::test]

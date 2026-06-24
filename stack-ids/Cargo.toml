@@ -5,10 +5,10 @@ edition = "2021"
 rust-version = "1.75.0"
 description = "Shared identity, scope, trace, and digest primitives for the local-first AI systems stack"
 license = "Apache-2.0"
-authors = ["sikmindz"]
+authors = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
 readme = "README.md"
-repository = "https://github.com/nousresearch/Libraries/tree/main/stack-ids"
-homepage = "https://github.com/nousresearch/Libraries/tree/main/stack-ids"
+repository = "https://github.com/RecursiveIntell/stack-ids"
+homepage = "https://github.com/RecursiveIntell/stack-ids"
 documentation = "https://docs.rs/stack-ids"
 keywords = ['ids', 'scope', 'trace-context', 'blake3', 'schema']
 

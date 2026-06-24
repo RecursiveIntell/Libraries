@@ -145,6 +145,38 @@ pub fn contradiction_resolution_receipt_id(
     stable_id("crr", &[contradiction_id, prev_status, resolution], 20)
 }
 
+/// Build a proof-debt budget ID from a scope.
+pub fn proof_debt_budget_id(scope: &str) -> String {
+    stable_id("pdb", &[scope], 20)
+}
+
+/// Build a proof-debt debit ID from budget, source, and amount.
+pub fn proof_debt_debit_id(budget_id: &str, source: &str, amount_micros: u64) -> String {
+    stable_id(
+        "pdd",
+        &[budget_id, source, &amount_micros.to_string()],
+        20,
+    )
+}
+
+/// Build a proof-debt credit ID from budget, source, and amount.
+pub fn proof_debt_credit_id(budget_id: &str, source: &str, amount_micros: u64) -> String {
+    stable_id(
+        "pdc",
+        &[budget_id, source, &amount_micros.to_string()],
+        20,
+    )
+}
+
+/// Build a proof-debt waiver ID from budget, operator, and amount.
+pub fn proof_debt_waiver_id(budget_id: &str, operator_ref: &str, amount_micros: u64) -> String {
+    stable_id(
+        "pdw",
+        &[budget_id, operator_ref, &amount_micros.to_string()],
+        20,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

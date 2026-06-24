@@ -29,6 +29,7 @@ pub(crate) enum ToolExecutorV1 {
     PatchPropose { sandbox_root: PathBuf },
     PatchApply { sandbox_root: PathBuf },
     RunChecks { sandbox_root: PathBuf },
+    Custom(crate::custom::CustomExecutorHandle),
 }
 
 #[derive(Debug, Clone)]
@@ -182,6 +183,24 @@ impl ToolRegistryV1 {
         self.executors
             .insert(tool_id, ToolExecutorV1::RepoRead { sandbox_root });
         Ok(true)
+    }
+
+    /// Register a tool with a custom async executor.
+    /// The executor implements `CustomToolExecutor` and will be called
+    /// when the tool is dispatched during the agent loop.
+    pub fn register_enabled_with_custom_executor(
+        &mut self,
+        descriptor: ToolDescriptorV1,
+        enabled: bool,
+        executor: std::sync::Arc<dyn crate::custom::CustomToolExecutor>,
+    ) -> bool {
+        let tool_id = descriptor.tool_id();
+        if !self.register_enabled(descriptor, enabled) {
+            return false;
+        }
+        self.executors
+            .insert(tool_id, ToolExecutorV1::Custom(crate::custom::CustomExecutorHandle::new(executor)));
+        true
     }
 
     fn register_enabled_with_executor(

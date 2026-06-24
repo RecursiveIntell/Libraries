@@ -1,21 +1,19 @@
 [package]
 name = "aidens-governance-kit"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Governance facade — permit checking, release readiness, authority chains"
 
-[lints]
-workspace = true
 
 [dependencies]
-assurance-runtime.workspace = true
-authority-delegation.workspace = true
-chrono.workspace = true
-serde_json.workspace = true
-stack-ids.workspace = true
-verification-adjudication.workspace = true
-verification-calibration.workspace = true
-verification-control.workspace = true
-verification-policy.workspace = true
+assurance-runtime = { version = "0.1.0", path = "../../../assurance-runtime" }
+authority-delegation = { version = "0.1.0", path = "../../../authority-delegation" }
+chrono = { version = "0.4", features = ["serde"] }
+serde_json = "1"
+stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
+verification-adjudication = { version = "0.1.0", path = "../../../verification-adjudication" }
+verification-calibration = { version = "0.1.0", path = "../../../verification-calibration" }
+verification-control = { version = "0.1.0", path = "../../../verification-control" }
+verification-policy = { version = "0.1.0", path = "../../../verification-policy" }

@@ -1,0 +1,311 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_ACCEPTANCE_GATES.md",
+      "bytes": 2397,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_ACCEPTANCE_GATES.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "35f15e1217bd994a2d7e39d56e97367878fe11395f32b17fae0b2d77de22e79a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_ADVANCED_LOCAL_AGENT_RUNTIME_SPEC.md",
+      "bytes": 1094,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_ADVANCED_LOCAL_AGENT_RUNTIME_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "e45345ce12addaee4d33c25a768b3e4143229ee2a28069b2b9a234b2c264b1bb"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_AGENT_SPEC_V1.md",
+      "bytes": 1877,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_AGENT_SPEC_V1.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "c3cf86562b805677c6ff00a6c100c1d72406bf818331ee731b10cad371f5eb3c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_CODING_AGENT_V1_SPEC.md",
+      "bytes": 915,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_CODING_AGENT_V1_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "6d5755fef1039f6de14f6e68567e26e4a01edbaab7fc184bba6d8c9db94897b1"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_COMMANDS.md",
+      "bytes": 903,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_COMMANDS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "65c621e7064194a8f06e927b674351699b030dafd53c7dc9ee710db13fcd8203"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_EVIDENCE_AND_REPORTING.md",
+      "bytes": 676,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_EVIDENCE_AND_REPORTING.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "ba8f7f3b2a387d379db8245bdbc454e5595d55f9b7eafb607abb742a062c230f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_EXPECTED_FINAL_STATE.md",
+      "bytes": 570,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_EXPECTED_FINAL_STATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "8bb9f3b0e6ec2a4d7b60e7ab876d3d122a3c26c6a668a9cf81e5b20b7da31532"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_MEMORY_GROUNDED_AGENT_SPEC.md",
+      "bytes": 892,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_MEMORY_GROUNDED_AGENT_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "430fe65e13386bfdae4aaeae3cd9168ebabbb846fe217453a08c77c01cf8ebfe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_NON_GOALS_AND_DEFERRED_WORK.md",
+      "bytes": 473,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_NON_GOALS_AND_DEFERRED_WORK.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "77aaec862f25681926965b693ce6d6504154157fe4317aa6e5a64b384f013e0e"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_PHASE_GATE_PROTOCOL.md",
+      "bytes": 1029,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_PHASE_GATE_PROTOCOL.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "f9055f6082cbb6904a3e407e45300d3fcf60a20f555fc3531ee7f417e56b218c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_REPAIR_ABSTENTION_SPEC.md",
+      "bytes": 845,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_REPAIR_ABSTENTION_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "f8ccb361863319267eadfbef8961234e75dc96f8055d65db2962d283b20a18b2"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_RUN_ORDER.md",
+      "bytes": 763,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_RUN_ORDER.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "f2c3ae84f725d161dcb901237ef545a2b5d46dac5b5400d11a6cf25afc2a85fe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_SOURCE_BASIS.md",
+      "bytes": 2048,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_SOURCE_BASIS.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "e4a8bcddb529d6ad35fd240d8a2c76793e90655a0dee81c0c1dc710647530cd6"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_STATUS_EVIDENCE_MANIFEST.json",
+      "bytes": 6882,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_STATUS_EVIDENCE_MANIFEST.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "6d7b461abcaf8ee8145056e310dfd8fbd187c14005006716cdd7a7804a4e0fdc"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_SUPPORT_PROFILE_TARGET.md",
+      "bytes": 956,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_SUPPORT_PROFILE_TARGET.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "4e9b9a57db16412fdf5fa0b489e08757c6b579049c1cb57c9a7bcff72d989330"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_V10_READY_BOUNDARY_SPEC.md",
+      "bytes": 696,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_V10_READY_BOUNDARY_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "2e3543b9aff93420084e044eff84b84f16c097fe5c90e91759eb438a7772a34a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/P26_VERIFIER_SPEC.md",
+      "bytes": 901,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/P26_VERIFIER_SPEC.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "731f9250dfae113d581e31ed97d1a35decdc2599c80b279a3f7ef1ff27d2a14f"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_existing_command_inventory.csv",
+      "bytes": 1071,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_existing_command_inventory.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "ee3486d9a86f9752c311043e954d256e7cb115c021300868c2ee7c4c6fcd8dc7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_expected_artifacts.json",
+      "bytes": 357,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_expected_artifacts.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "115e1eba6425bd6b4c5b99339eb18ec3637cd8a524c115089a26a6a932c4133a"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_large_file_risk.csv",
+      "bytes": 761,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_large_file_risk.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "993963162c6b4d1115ee906086a4638268e76952d176e67ff33eced1ed12f0ab"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_static_hard_audit_snapshot.json",
+      "bytes": 5166,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/evidence/p26_static_hard_audit_snapshot.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "905d43f1c20c5f7048fef14a3646209cedb45583ea97142f387eadbeeb89b09c"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/handoff/P26_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "bytes": 657,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/handoff/P26_FINAL_AUDITOR_HANDOFF_TEMPLATE.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "0c9e460ad720b2aaa63603f3a14d432d9593549f4b06c89245fe6eac1a43d2f7"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_CAPABILITY_MATRIX.csv",
+      "bytes": 644,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_CAPABILITY_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "3374d941595a8280f65fff6c68ad4c49245fe50566c6e8266c62c83fb37c864d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_ISSUE_MATRIX.csv",
+      "bytes": 2397,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_ISSUE_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "713e7ce17794109f0e5f81f093f9aad4f27243926be735021750c2d01fce2967"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_ISSUE_MATRIX.json",
+      "bytes": 3733,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_ISSUE_MATRIX.json",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "e988fc99ee8fcd3f48e4021dd1326e68d9cc20352af0f3607560a0a5c697957d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_SOURCE_OF_TRUTH_MATRIX.csv",
+      "bytes": 827,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/matrices/P26_SOURCE_OF_TRUTH_MATRIX.csv",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "b1d91339f0aca80742e542828af17dcbfc79d6e31337e69b32ba32565037f310"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_01_BEFORE_PHASE_02.md",
+      "bytes": 514,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_01_BEFORE_PHASE_02.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "719bf547622b2648985d109e19b4ca7f490aa92a709bcb16294556c5ea8e0894"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_03_BEFORE_PHASE_04.md",
+      "bytes": 514,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_03_BEFORE_PHASE_04.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "e46b15724688e3d2ae83805ce2d94dfbd8121c7a9d5bd2a613f1d86dd8f7120d"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_05_BEFORE_PHASE_06.md",
+      "bytes": 514,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_05_BEFORE_PHASE_06.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "fddce0cd32e2787d30d1b9adda9298d95bd2e7189a8eb9df213359e388bd7316"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_07_BEFORE_PHASE_08.md",
+      "bytes": 514,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_07_BEFORE_PHASE_08.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "e1f26237a166d08243ce3de022bfa966645a9e3821ba619fd272fd004b0ad0ba"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_09_BEFORE_FINAL.md",
+      "bytes": 511,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GATE_AFTER_PHASE_09_BEFORE_FINAL.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "9015d8b9c331647610112cbc4ba7ce5e00370df81f760f12c3625b0b16a537fe"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "bytes": 500,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/phase_injections/P26_GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P26",
+      "sha256": "d1a89c9a5032f722e0863f3d0ae88587cc9673e1c69539b092453ab19edba493"
+    },
+    {
+      "archived_path": "docs/codex-runs/archive/P26-20260612T222004Z/files/turbo-quant/scripts/assert_p26_invariants.py",
+      "bytes": 7919,
+      "mtime_utc": "2026-06-11T02:55:13Z",
+      "original_path": "turbo-quant/scripts/assert_p26_invariants.py",
+      "reason": "stale-run-script",
+      "run_id": "P26",
+      "sha256": "9edee470b3c7284fb569af48a2ee6795abe1b860ed225432d05d6b9afc1be062"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P26",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

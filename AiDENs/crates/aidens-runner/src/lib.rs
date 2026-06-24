@@ -60,13 +60,16 @@ pub struct PlanActVerifyLoopV1 {
     tools: ToolRegistryV1,
     permit_policy: PermitPolicyV1,
     provider_mock_response: Option<String>,
+    provider_model: Option<String>,
+    provider_base_url: Option<String>,
+    sandbox_root: Option<String>,
     canonical_receipt_log_config: Option<CanonicalEventLogConfig>,
     budget_retries: u32,
     run_reports: RunReportLedger,
     receipt_level: ReportLevelV1,
     agency_policy: AgencyPolicyEngineV1,
     agency_nudges: Arc<Mutex<NudgeLedgerV1>>,
-    memory: Option<aidens_memory_kit::CanonicalMemoryAdapter>,
+    memory: Option<std::sync::Arc<aidens_memory_kit::CanonicalMemoryAdapter>>,
     governance: Option<aidens_governance_kit::GovernanceContext>,
     kernel: Option<aidens_kernel_kit::CanonicalKernelAdapter>,
 }
@@ -92,6 +95,9 @@ impl PlanActVerifyLoopV1 {
             tools: safe_coding_registry_for_current_dir(),
             permit_policy: PermitPolicyV1::default(),
             provider_mock_response: None,
+            provider_model: None,
+            provider_base_url: None,
+            sandbox_root: None,
             canonical_receipt_log_config: Some(default_plan_act_verify_receipt_log_config()),
             budget_retries: 2,
             run_reports: RunReportLedger::default(),
@@ -124,6 +130,21 @@ impl PlanActVerifyLoopV1 {
         self
     }
 
+    pub fn provider_model(mut self, model: impl Into<String>) -> Self {
+        self.provider_model = Some(model.into());
+        self
+    }
+
+    pub fn provider_base_url(mut self, base_url: impl Into<String>) -> Self {
+        self.provider_base_url = Some(base_url.into());
+        self
+    }
+
+    pub fn sandbox_root(mut self, sandbox_root: impl Into<String>) -> Self {
+        self.sandbox_root = Some(sandbox_root.into());
+        self
+    }
+
     pub fn canonical_receipt_log_config(mut self, config: CanonicalEventLogConfig) -> Self {
         self.canonical_receipt_log_config = Some(config);
         self
@@ -139,7 +160,7 @@ impl PlanActVerifyLoopV1 {
         self
     }
 
-    pub fn with_memory(mut self, memory: aidens_memory_kit::CanonicalMemoryAdapter) -> Self {
+    pub fn with_memory(mut self, memory: std::sync::Arc<aidens_memory_kit::CanonicalMemoryAdapter>) -> Self {
         self.memory = Some(memory);
         self
     }
@@ -315,14 +336,16 @@ impl PlanActVerifyLoopV1 {
 
         let provider_spec = ProviderSpecV1 {
             kind: match self.spec.provider_policy.provider {
-                AgentProviderModeV1::Mock | AgentProviderModeV1::Local => "mock".into(),
+                AgentProviderModeV1::Mock => "mock".into(),
+                AgentProviderModeV1::Local => "mock".into(),
+                AgentProviderModeV1::Ollama => "ollama".into(),
             },
-            model: None,
+            model: self.provider_model.clone(),
             api_key: None,
-            base_url: None,
+            base_url: self.provider_base_url.clone(),
             mock_response: self.provider_mock_response.clone(),
         };
-        if provider_spec.mock_response.as_deref().is_none() {
+        if provider_spec.kind == "mock" && provider_spec.mock_response.as_deref().is_none() {
             let mut output = PlanActVerifyLoopV1Output::abstention(
                 &self.spec,
                 1,
@@ -383,6 +406,8 @@ impl PlanActVerifyLoopV1 {
         let mut policy = ToolExposurePolicyV1::coding_agent_default();
         if let Some(root) = self.tools.sandbox_root() {
             policy = policy.with_sandbox_root(root.to_string_lossy().to_string());
+        } else if let Some(ref root) = self.sandbox_root {
+            policy = policy.with_sandbox_root(root.clone());
         }
         policy.allowed_tool_ids = Some(mapped_tools.canonical.iter().cloned().collect());
 
@@ -1019,6 +1044,7 @@ impl TurnExecutorV1 {
         }
 
         let mut tool_results = Vec::<ToolCallResultV1>::new();
+        let mut current_turn_tool_calls = Vec::<ToolCallRequestV1>::new();
         let mut agency_policy_reports = Vec::<AgencyPolicyReportV1>::new();
         let mut tool_calls_so_far = 0u32;
         let mut retries = 0u32;
@@ -1031,6 +1057,9 @@ impl TurnExecutorV1 {
             .collect::<BTreeSet<_>>();
 
         loop {
+            // Clear seen_tool_calls at the start of each turn so legitimate
+            // repeated calls across turns aren't blocked as "recursive".
+            seen_tool_calls.clear();
             let elapsed = elapsed_millis(started_at);
             if self.budget.deadline_exceeded(elapsed) {
                 return self.finish_budget_exhausted(BudgetStopInput {
@@ -1050,6 +1079,7 @@ impl TurnExecutorV1 {
                 input.prompt.clone(),
                 &tool_exposure,
                 &tool_results,
+                &current_turn_tool_calls,
             ) {
                 Ok(request) => request,
                 Err(error) => {
@@ -1177,6 +1207,10 @@ impl TurnExecutorV1 {
                 });
             }
             let tool_calls = completion_tool_calls.calls;
+            // Track only this turn's tool calls for the next completion_request
+            current_turn_tool_calls.clear();
+            current_turn_tool_calls.extend(tool_calls.iter().cloned());
+            
             if tool_calls.is_empty() {
                 let tool_result_texts = tool_results
                     .iter()

@@ -1,0 +1,10 @@
+path,stale_tokens,has_stop_wait,bytes
+AiDENs/phase_injections/GLOBAL_PRE_PHASE_INVARIANT_REVALIDATION.md,P22,True,966
+AiDENs/phase_injections/PHASE_00_TO_01_REVALIDATION.md,handoffs/p23;target/p23,True,740
+AiDENs/phase_injections/PHASE_01_TO_02_REVALIDATION.md,handoffs/p23;target/p23,True,740
+AiDENs/phase_injections/PHASE_02_TO_03_REVALIDATION.md,handoffs/p23;target/p23,True,740
+AiDENs/phase_injections/PHASE_03_TO_04_REVALIDATION.md,handoffs/p23;target/p23,True,740
+AiDENs/phase_injections/PHASE_04_TO_05_REVALIDATION.md,handoffs/p23;target/p23,True,740
+AiDENs/phase_injections/PHASE_05_TO_06_REVALIDATION.md,handoffs/p23;target/p23,True,740
+AiDENs/phase_injections/PHASE_06_TO_07_REVALIDATION.md,handoffs/p23;target/p23,True,740
+AiDENs/phase_injections/PHASE_07_TO_08_REVALIDATION.md,handoffs/p23;target/p23,True,740

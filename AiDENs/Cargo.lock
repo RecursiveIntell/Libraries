@@ -29,12 +29,24 @@ version = "0.1.0"
 dependencies = [
  "aidens-agency-kit",
  "aidens-app-kit",
+ "aidens-boundary-kit",
  "aidens-contracts",
+ "aidens-governance-kit",
  "aidens-kernel-kit",
+ "aidens-memory-kit",
  "aidens-profile-coding",
+ "aidens-provider-kit",
+ "aidens-receipts",
  "aidens-runner",
+ "aidens-security-kit",
+ "aidens-tool-kit",
+ "anyhow",
+ "semantic-memory",
  "serde",
+ "serde_json",
  "thiserror",
+ "tokio",
+ "verification-policy",
 ]
 
 [[package]]
@@ -78,6 +90,7 @@ version = "0.1.0"
 dependencies = [
  "aidens-contracts",
  "aidens-testkit",
+ "boundary-compiler",
  "boundary-compiler-core",
  "chrono",
  "serde",
@@ -193,6 +206,7 @@ version = "0.1.0"
 dependencies = [
  "assurance-runtime",
  "authority-delegation",
+ "chrono",
  "serde_json",
  "stack-ids",
  "verification-adjudication",
@@ -206,6 +220,7 @@ name = "aidens-integration-tests"
 version = "0.1.0"
 dependencies = [
  "aidens-agency-kit",
+ "aidens-app-kit",
  "aidens-boundary-kit",
  "aidens-budget-kit",
  "aidens-cli",
@@ -255,6 +270,7 @@ dependencies = [
  "kernel-execution",
  "kernel-oracles",
  "recursive-kernel-core",
+ "stack-ids",
 ]
 
 [[package]]
@@ -269,6 +285,7 @@ dependencies = [
  "serde_json",
  "stack-ids",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -380,6 +397,7 @@ dependencies = [
  "aidens-budget-kit",
  "aidens-contracts",
  "aidens-governance-kit",
+ "aidens-kernel-kit",
  "aidens-memory-kit",
  "aidens-permit-kit",
  "aidens-provider-kit",
@@ -408,7 +426,10 @@ dependencies = [
 name = "aidens-security-kit"
 version = "0.1.0"
 dependencies = [
+ "attestation-exchange",
  "llm-tool-runtime",
+ "serde",
+ "serde_json",
  "thiserror",
 ]
 
@@ -433,6 +454,7 @@ dependencies = [
  "aidens-security-kit",
  "aidens-testkit",
  "anyhow",
+ "async-trait",
  "llm-tool-runtime",
  "serde",
  "serde_json",
@@ -2340,7 +2362,7 @@ checksum = "d68f2ec51b097e4c1a75b681a8bec621909b5e91f15bb7b840c4f2f7b01148b2"
 
 [[package]]
 name = "semantic-memory"
-version = "0.5.1"
+version = "0.5.3"
 dependencies = [
  "bitemporal-runtime",
  "blake3",

@@ -69,11 +69,10 @@ pub(crate) fn parse_simple_unified_diff(diff: &str) -> anyhow::Result<Vec<FileRe
     if replacements.is_empty() {
         bail!("unsupported or empty unified diff")
     }
-    if replacements
-        .iter()
-        .any(|replacement| replacement.removed.is_empty())
-    {
-        bail!("ambiguous patch lacks removal context")
+    // Allow new-file patches (removed is empty) — these create files.
+    // Only reject patches that have no added lines at all.
+    if replacements.iter().all(|r| r.added.is_empty()) {
+        bail!("patch contains no added lines");
     }
     Ok(replacements)
 }
@@ -81,6 +80,8 @@ pub(crate) fn parse_simple_unified_diff(diff: &str) -> anyhow::Result<Vec<FileRe
 fn normalize_diff_path(path: &str) -> anyhow::Result<String> {
     let path = path.trim();
     let path = path.strip_prefix("b/").unwrap_or(path);
+    // Allow /dev/null as old path for new-file creation — the new path
+    // is what matters. Just don't use /dev/null as the target.
     if path == "/dev/null" {
         bail!("delete-only patch targets are not supported in P10")
     }

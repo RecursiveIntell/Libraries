@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P2/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.md",
+      "bytes": 2905,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P02_PROVIDER_RUNTIME_TRUTH_AND_BACKEND_MATRIX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P2",
+      "sha256": "1f034ae34ba49346850eb8f78084371cb8bcebef60b830357fb1b698aae99d24"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P2",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

@@ -5,10 +5,10 @@ edition = "2021"
 rust-version = "1.75.0"
 description = "Forge verification truth: evidence bundles, export envelopes, and causal estimation substrate"
 license = "Apache-2.0"
-authors = ["sikmindz"]
+authors = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
 readme = "README.md"
-repository = "https://github.com/nousresearch/Libraries/tree/main/semantic-memory-forge"
-homepage = "https://github.com/nousresearch/Libraries/tree/main/semantic-memory-forge"
+repository = "https://github.com/RecursiveIntell/semantic-memory-forge"
+homepage = "https://github.com/RecursiveIntell/semantic-memory-forge"
 documentation = "https://docs.rs/semantic-memory-forge"
 keywords = ['forge', 'evidence', 'export', 'receipts', 'verification']
 

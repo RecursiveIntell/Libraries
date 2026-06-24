@@ -1,15 +1,13 @@
 [package]
 name = "aidens-capability-kit"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Runtime capability truth surfaces and support tier reporting"
 
-[lints]
-workspace = true
 
 [dependencies]
 aidens-contracts = { path = "../aidens-contracts" }
-serde.workspace = true
-thiserror.workspace = true
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"

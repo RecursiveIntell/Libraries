@@ -1,0 +1,23 @@
+{
+  "archive_manifest_version": "CodexRunArchiveManifestV1",
+  "collisions": [],
+  "created_utc": "2026-06-12T22:20:05Z",
+  "files": [
+    {
+      "archived_path": "docs/codex-runs/archive/P5/files/AiDENs/docs/root-markdown-archive/P31A_archive/passes/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.md",
+      "bytes": 2594,
+      "mtime_utc": "2026-06-01T10:56:53Z",
+      "original_path": "AiDENs/docs/root-markdown-archive/P31A_archive/passes/P05_DURABLE_EXECUTION_EVIDENCE_LEDGER_AND_OUTBOX.md",
+      "reason": "stale-run-marked-artifact",
+      "run_id": "P5",
+      "sha256": "95cc6477be92f87ec08892866e3c91471d7e55c715aff6313a0cfacb7899e39a"
+    }
+  ],
+  "repo_root": "/home/sikmindz/Coding/Libraries",
+  "run_id": "P5",
+  "skipped_existing": [],
+  "superseded_by": "P30",
+  "tool": "z.py",
+  "tool_version": "2026.05.22-p31",
+  "unclassified": []
+}

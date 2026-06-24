@@ -923,7 +923,7 @@ api_key = "configured"
 }
 
 #[test]
-fn provider_check_reports_ollama_chat_without_native_tool_loop() {
+fn provider_check_reports_ollama_chat_with_native_tool_loop() {
     let root = temp_root();
     std::fs::create_dir_all(&root).unwrap();
     let path = root.join("aidens.toml");
@@ -946,7 +946,7 @@ model = "llama3"
 
     assert_eq!(report["executable"], true);
     assert_eq!(report["route"], "ollama-chat");
-    assert_eq!(report["native_tool_loop"], false);
+    assert_eq!(report["native_tool_loop"], true);
     assert_eq!(report["structured_output"], false);
     assert_eq!(report["support_label"], "partial-local-chat");
     assert_eq!(report["support_tier"], "partial");
@@ -957,7 +957,7 @@ model = "llama3"
     assert!(report["reason_codes"]
         .as_array()
         .unwrap()
-        .contains(&serde_json::json!("ollama-native-tool-loop-unimplemented")));
+        .contains(&serde_json::json!("ollama-native-tool-loop-via-function-calling")));
     assert_ne!(report["route"], "native-ollama");
     let _ = std::fs::remove_dir_all(&root);
 }

@@ -1,13 +1,11 @@
 [package]
 name = "aidens-runner"
 version = "0.1.0"
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
 description = "Run and turn executor — provider, tools, governance, memory, receipts"
 
-[lints]
-workspace = true
 
 [dependencies]
 aidens-agency-kit = { path = "../aidens-agency-kit" }
@@ -22,10 +20,10 @@ aidens-permit-kit = { path = "../aidens-permit-kit" }
 aidens-budget-kit = { path = "../aidens-budget-kit" }
 aidens-boundary-kit = { path = "../aidens-boundary-kit" }
 boundary-compiler-core = { path = "../boundary-compiler-core" }
-serde.workspace = true
-serde_json.workspace = true
-thiserror.workspace = true
-anyhow.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+anyhow = "1"
 
 [dev-dependencies]
-tokio.workspace = true
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
