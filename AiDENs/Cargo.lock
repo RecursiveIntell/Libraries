@@ -270,6 +270,8 @@ dependencies = [
  "kernel-execution",
  "kernel-oracles",
  "recursive-kernel-core",
+ "serde",
+ "serde_json",
  "stack-ids",
 ]
 

@@ -119,9 +119,7 @@ impl SemanticMemoryAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use semantic_memory::{
-        AddGraphEdgeParams, GraphEdgeType, MemoryConfig, ReceiptMode, SearchContext,
-    };
+    use semantic_memory::{GraphEdgeType, MemoryConfig, ReceiptMode, SearchContext};
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -429,7 +427,10 @@ mod tests {
             .add_graph_edge(
                 "namespace:hop-b",
                 "namespace:hop-c",
-                GraphEdgeType::Causal { lag_seconds: 0 },
+                GraphEdgeType::Causal {
+                    confidence: 0.9,
+                    evidence_ids: vec![],
+                },
                 1.0,
                 None,
             )

@@ -1,5 +1,12 @@
 //! Thin kernel facade over canonical compiler, execution, oracle, and core crates.
 
+pub mod regional_decoder;
+
+pub use regional_decoder::{
+    classify_convergence, ConvergenceState, ConvergenceStopReason, RegionConvergenceReportV1,
+    RegionContractV1, ResidualEnvelopeV1, SyndromeEnvelopeV1,
+};
+
 pub mod canonical_stack {
     pub use constraint_compiler::{
         compile_batch, CompileOutput, CompilerPolicy, ConstraintDegradation, GraphGeometryManifest,

@@ -14,6 +14,8 @@ kernel-conformance = { version = "0.1.0", path = "../../../kernel-conformance" }
 kernel-execution = { version = "0.1.0", path = "../../../kernel-execution" }
 kernel-oracles = { version = "0.1.0", path = "../../../kernel-oracles" }
 recursive-kernel-core = { version = "0.1.0", path = "../../../recursive-kernel-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
 [dev-dependencies]
 stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
