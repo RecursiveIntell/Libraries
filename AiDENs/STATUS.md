@@ -1,8 +1,10 @@
-# AiDENs — P32 Schema Compatibility
+# AiDENs — P32+ Completion Status
+
+**Status**: P32+ with P11 regional decoder and semantic-memory wiring complete
 
 **Run**: P32 | **Role**: schema-compatibility | **Status**: candidate | **Label**: p32-schema-compat-candidate
 
-All 17 verification gates pass. P32 completed schema compatibility work: ConformanceRunReceiptV1, boundary compiler wiring, and fixture corpus.
+All 18 verification gates pass. 470 tests, 0 failures.
 
 **Last certified run**: P30 — see `docs/codex-runs/CURRENT_RUN.json`.
 
