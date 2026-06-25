@@ -736,7 +736,7 @@ pub fn run(cli: Cli) -> Result<String> {
                         tokio::time::sleep(std::time::Duration::from_secs(5)).await;
                         let snap = state.lock().map(|s| s.clone()).unwrap_or_default();
                         eprintln!(
-                            "[autonomous] iter={} gaps={} tasks_gen={} tasks_done={} tasks_fail={} facts_cap={} facts_rej={} safe={} job={:?}",
+                            "[autonomous] iter={} gaps={} tasks_gen={} tasks_done={} tasks_fail={} facts_cap={} facts_rej={} safe={} job={:?} err={:?}",
                             snap.iteration,
                             snap.gaps_detected,
                             snap.tasks_generated,
@@ -746,6 +746,7 @@ pub fn run(cli: Cli) -> Result<String> {
                             snap.facts_rejected,
                             snap.safe_mode,
                             snap.current_job,
+                            snap.last_error,
                         );
                     }
                 });

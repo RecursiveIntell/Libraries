@@ -5,7 +5,10 @@ edition = "2021"
 description = "Deterministic, local-first claim/evidence/provenance ledger. Creates receipts for all material operations."
 license = "MIT"
 keywords = ["claims", "provenance", "evidence", "ledger"]
-categories = ["data-structures", "verification"]
+categories = ["data-structures"]
+repository = "https://github.com/RecursiveIntell/Libraries"
+homepage = "https://github.com/RecursiveIntell/Libraries"
+documentation = "https://docs.rs/claim-ledger"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }

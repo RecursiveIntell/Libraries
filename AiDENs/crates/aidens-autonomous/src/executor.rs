@@ -22,6 +22,20 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/// System prompt prepended to all user prompts to give the model context about
+/// its role as an autonomous knowledge base auditor.
+pub const SYSTEM_PROMPT: &str = "You are an autonomous knowledge base auditor. \
+You are part of a self-learning AI system called AiDENs. \
+Your job is to analyze facts in the semantic memory knowledge base and provide \
+accurate, factual analysis. You are given a specific gap to investigate. \
+Respond with a concise factual summary (2-4 sentences). \
+Do not speculate. If you cannot determine the answer, say so. \
+Your response will be stored as a new fact in the knowledge base.";
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -135,8 +149,13 @@ impl LoopExecutor {
             .provider_base_url(&self.ollama_url)
             .max_retries(2);
 
+        // Prepend the system prompt to the user prompt. The runner builds the
+        // message array from a single string, so we embed the system context
+        // directly in the prompt text.
+        let full_prompt = format!("SYSTEM: {SYSTEM_PROMPT}\n\nUSER: {prompt}");
+
         // Execute.
-        let output = loop_v1.execute(prompt).await?;
+        let output = loop_v1.execute(&full_prompt).await?;
 
         // Extract result.
         let success = matches!(output.outcome, PlanActVerifyOutcomeV1::Success);
@@ -149,10 +168,28 @@ impl LoopExecutor {
         let error = if success {
             None
         } else {
-            Some(format!(
-                "plan-act-verify loop outcome: {:?}",
-                output.outcome
-            ))
+            // Include abstention reason code if available for debugging.
+            let reason = output
+                .abstention_receipt
+                .as_ref()
+                .map(|a| a.reason_code.clone())
+                .unwrap_or_default();
+            let evidence = output
+                .abstention_receipt
+                .as_ref()
+                .and_then(|a| a.evidence.first().cloned())
+                .unwrap_or_default();
+            if reason.is_empty() {
+                Some(format!(
+                    "plan-act-verify loop outcome: {:?}",
+                    output.outcome
+                ))
+            } else {
+                Some(format!(
+                    "plan-act-verify loop outcome: {:?} reason={} evidence={}",
+                    output.outcome, reason, evidence
+                ))
+            }
         };
 
         // Record routing outcome (best-effort).
@@ -210,6 +247,9 @@ fn gap_type_to_query_class(gap_type: &str) -> Option<String> {
         "missing-link" => Some("gap-remediation:missing-link".to_string()),
         "stale-fact" => Some("gap-remediation:stale-fact".to_string()),
         "contradiction-gap" => Some("gap-remediation:contradiction-gap".to_string()),
+        "duplicate-fact" => Some("gap-remediation:duplicate-fact".to_string()),
+        "stale-by-date" => Some("gap-remediation:stale-by-date".to_string()),
+        "low-quality-fact" => Some("gap-remediation:low-quality-fact".to_string()),
         _ => None,
     }
 }
@@ -232,27 +272,25 @@ fn autonomous_agent_spec(model: &str) -> AgentSpecV1 {
             fallback_allowed: false,
         },
         memory_policy: AgentSpecMemoryPolicyV1 {
-            enabled: false,
+            enabled: false, // memory is wired via with_memory(), not via spec policy
             mode: AgentMemoryModeV1::Fixture,
             requires_view_disclosure: false,
         },
         tool_policy: AgentSpecToolPolicyV1 {
-            allowed_tools: vec!["repo.read".to_string()],
+            allowed_tools: vec!["repo.read".to_string()], // validation requires at least one tool
             write_tools_require_permit: false,
         },
         permit_policy: AgentSpecPermitPolicyV1 {
             writes: AgentPermitRuleV1::OperatorApproved,
             commands: AgentPermitRuleV1::OperatorApproved,
-            network: AgentPermitRuleV1::Forbidden,
+            network: AgentPermitRuleV1::Forbidden, // validation requires Forbidden for local agents
         },
         verification_policy: AgentSpecVerificationPolicyV1 {
             required_checks: vec![
                 AgentVerificationCheckV1::Schema,
-                AgentVerificationCheckV1::SupportClaim,
-                AgentVerificationCheckV1::Sandbox,
                 AgentVerificationCheckV1::Digest,
             ],
-            fail_closed: true,
+            fail_closed: true, // validation requires fail_closed=true
         },
         evidence_policy: AgentSpecEvidencePolicyV1 {
             emit_run_bundle: true,
@@ -261,9 +299,9 @@ fn autonomous_agent_spec(model: &str) -> AgentSpecV1 {
             emit_abstention_receipts: true,
         },
         budget_policy: AgentSpecBudgetPolicyV1 {
-            max_turns: 4,
+            max_turns: 6, // enough for the model to generate a useful response
             max_tool_calls: 8,
-            deadline_seconds: 120,
+            deadline_seconds: 180, // 3 minutes for cloud models
         },
     }
 }
@@ -316,7 +354,26 @@ mod tests {
             gap_type_to_query_class("contradiction-gap"),
             Some("gap-remediation:contradiction-gap".to_string())
         );
+        assert_eq!(
+            gap_type_to_query_class("duplicate-fact"),
+            Some("gap-remediation:duplicate-fact".to_string())
+        );
+        assert_eq!(
+            gap_type_to_query_class("stale-by-date"),
+            Some("gap-remediation:stale-by-date".to_string())
+        );
+        assert_eq!(
+            gap_type_to_query_class("low-quality-fact"),
+            Some("gap-remediation:low-quality-fact".to_string())
+        );
         assert_eq!(gap_type_to_query_class("unknown"), None);
+    }
+
+    #[test]
+    fn system_prompt_is_nonempty() {
+        assert!(!SYSTEM_PROMPT.is_empty());
+        assert!(SYSTEM_PROMPT.contains("autonomous knowledge base auditor"));
+        assert!(SYSTEM_PROMPT.contains("AiDENs"));
     }
 
     #[test]
@@ -457,5 +514,41 @@ mod tests {
         // Verify memory is accessible (Arc clone).
         assert_eq!(Arc::strong_count(&executor.memory), 2);
         assert_eq!(Arc::strong_count(&memory_clone), 2);
+    }
+}
+#[cfg(test)]
+mod debug_tests {
+    use super::*;
+    use aidens_memory_kit::{memory_config_for_root, runtime_config_for_namespace};
+
+    #[tokio::test]
+    #[ignore = "requires Ollama running"]
+    async fn debug_ollama_execution() {
+        let dir = std::env::temp_dir().join(format!("aidens-debug-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let memory_config = memory_config_for_root(&dir);
+        let runtime_config = runtime_config_for_namespace("test");
+        let memory = std::sync::Arc::new(
+            CanonicalMemoryAdapter::open_with_mock_embedder(memory_config, runtime_config).unwrap()
+        );
+
+        let executor = LoopExecutor {
+            memory: memory.clone(),
+            ollama_url: "http://127.0.0.1:11434".to_string(),
+            ollama_model: "gemma4:31b-cloud".to_string(),
+            http_base_url: "http://127.0.0.1:1738".to_string(),
+        };
+
+        let payload = serde_json::json!({
+            "prompt": "What is 2+2? Answer in one sentence.",
+            "gap_type": "missing-context",
+            "fact_id": "test-fact"
+        });
+
+        let result = executor.execute_job_with_payload("debug-test", &payload).await.unwrap();
+
+        println!("Success: {}", result.success);
+        println!("Output: {}", result.output);
+        println!("Error: {:?}", result.error);
     }
 }

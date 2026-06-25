@@ -34,7 +34,9 @@ members = [
     "crates/aidens-profile-desktop",
     "crates/aidens-profile-daemon",
     "crates/aidens-profile-memory",
-    "crates/boundary-compiler-core"
+    "crates/boundary-compiler-core",
+    "crates/aidens-autonomous",
+    "crates/aidens-tui"
 ]
 
 [workspace.package]

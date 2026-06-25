@@ -6,9 +6,7 @@
 //! through the daemon's normal lease/acquire/complete lifecycle.
 
 use crate::gap_detector::{DetectedGap, GapType};
-use aidens_contracts::{
-    CanonicalToolSideEffectClass as RiskClass, JobV1,
-};
+use aidens_contracts::{CanonicalToolSideEffectClass as RiskClass, JobV1};
 use aidens_daemon_kit::{DaemonControllerV1, DaemonError};
 use anyhow::Result;
 use sha2::{Digest, Sha256};
@@ -79,26 +77,63 @@ impl TaskGenerator {
 
 /// Build a remediation prompt for a detected gap based on its type.
 fn build_prompt(gap: &DetectedGap) -> String {
+    let snippet = gap.content_snippet.as_deref().unwrap_or(&gap.description);
+
     match gap.gap_type {
         GapType::MissingContext => format!(
-            "The knowledge base has a fact with no connections: {}. \
-             Search for related concepts and explain how it connects to the broader knowledge graph.",
-            gap.description
+            "The knowledge base has an isolated fact with no graph connections: '{}'. \
+             Analyze this fact and explain what it relates to in the context of the \
+             RecursiveIntell project ecosystem. Be specific about connections to other \
+             projects, crates, or concepts.",
+            snippet
         ),
-        GapType::MissingLink => format!(
-            "Two facts in the knowledge base are not connected: {}. \
-             Search for their relationship and explain how they relate.",
-            gap.description
-        ),
+        GapType::MissingLink => {
+            let fact_a = snippet;
+            let fact_b = gap
+                .fact_id_b
+                .as_deref()
+                .unwrap_or("another fact in the same namespace");
+            let ns = gap.namespace.as_deref().unwrap_or("the");
+            format!(
+                "Two facts in the '{}' namespace lack a graph edge: '{}' and '{}'. \
+                 Analyze their relationship and explain how they connect.",
+                ns, fact_a, fact_b
+            )
+        }
         GapType::StaleFact => format!(
-            "A fact may be outdated: {}. \
-             Search for current information and verify whether it's still accurate.",
+            "The semantic memory integrity check reported: {}. \
+             Analyze what might cause this and suggest how to verify and fix the issue.",
             gap.description
         ),
-        GapType::ContradictionGap => format!(
-            "A potential contradiction was detected: {}. \
-             Search for conflicting information and determine which version is correct.",
-            gap.description
+        GapType::ContradictionGap => {
+            let fact_a = snippet;
+            let fact_b = gap
+                .fact_id_b
+                .as_deref()
+                .unwrap_or("another fact with conflicting information");
+            format!(
+                "Two facts may contradict each other: '{}' vs '{}'. \
+                 Analyze whether this is a real contradiction or a scope/time difference.",
+                fact_a, fact_b
+            )
+        }
+        GapType::DuplicateFact => format!(
+            "A fact appears to duplicate another: '{}'. \
+             Determine which version is more complete and accurate.",
+            snippet
+        ),
+        GapType::StaleByDate => {
+            let date = gap.date.as_deref().unwrap_or("an old date");
+            format!(
+                "A fact references date {} which may be outdated: '{}'. \
+                 Check if the information is still current.",
+                date, snippet
+            )
+        }
+        GapType::LowQualityFact => format!(
+            "A fact appears to be low quality: '{}'. \
+             Determine if it should be kept, improved, or removed.",
+            snippet
         ),
     }
 }
@@ -121,60 +156,105 @@ mod tests {
     use super::*;
     use crate::gap_detector::{DetectedGap, GapType};
 
+    fn make_gap(gt: GapType, fact_id: &str, snippet: &str) -> DetectedGap {
+        DetectedGap {
+            gap_type: gt,
+            fact_id: fact_id.to_string(),
+            description: "description".to_string(),
+            suggested_task: "task".to_string(),
+            priority: 0.5,
+            content_snippet: Some(snippet.to_string()),
+            fact_id_b: None,
+            namespace: Some("general".to_string()),
+            date: None,
+        }
+    }
+
     #[test]
     fn prompt_for_missing_context() {
-        let gap = DetectedGap {
-            gap_type: GapType::MissingContext,
-            fact_id: "fact:abc".to_string(),
-            description: "Fact 'abc' is isolated".to_string(),
-            suggested_task: "connect it".to_string(),
-            priority: 0.8,
-        };
+        let gap = make_gap(
+            GapType::MissingContext,
+            "fact:abc",
+            "Rust is a systems programming language",
+        );
         let prompt = build_prompt(&gap);
-        assert!(prompt.contains("no connections"));
-        assert!(prompt.contains("Fact 'abc' is isolated"));
+        assert!(prompt.contains("isolated fact"));
+        assert!(prompt.contains("Rust is a systems programming language"));
+        assert!(prompt.contains("RecursiveIntell"));
     }
 
     #[test]
     fn prompt_for_missing_link() {
-        let gap = DetectedGap {
-            gap_type: GapType::MissingLink,
-            fact_id: "fact:a|fact:b".to_string(),
-            description: "Facts a and b are not connected".to_string(),
-            suggested_task: "find relationship".to_string(),
-            priority: 0.6,
-        };
+        let mut gap = make_gap(
+            GapType::MissingLink,
+            "fact:a|fact:b",
+            "Fact A content",
+        );
+        gap.fact_id_b = Some("fact:b".to_string());
+        gap.namespace = Some("research".to_string());
         let prompt = build_prompt(&gap);
-        assert!(prompt.contains("not connected"));
-        assert!(prompt.contains("Facts a and b are not connected"));
+        assert!(prompt.contains("research"));
+        assert!(prompt.contains("Fact A content"));
+        assert!(prompt.contains("fact:b"));
     }
 
     #[test]
     fn prompt_for_stale_fact() {
-        let gap = DetectedGap {
-            gap_type: GapType::StaleFact,
-            fact_id: "db-integrity".to_string(),
-            description: "Integrity check failed".to_string(),
-            suggested_task: "reconcile".to_string(),
-            priority: 0.9,
-        };
+        let gap = make_gap(GapType::StaleFact, "db-integrity", "some snippet");
         let prompt = build_prompt(&gap);
-        assert!(prompt.contains("outdated"));
-        assert!(prompt.contains("Integrity check failed"));
+        assert!(prompt.contains("integrity check"));
+        assert!(prompt.contains("description"));
     }
 
     #[test]
     fn prompt_for_contradiction_gap() {
-        let gap = DetectedGap {
-            gap_type: GapType::ContradictionGap,
-            fact_id: "fact:conflict".to_string(),
-            description: "Two facts disagree".to_string(),
-            suggested_task: "resolve".to_string(),
-            priority: 0.7,
-        };
+        let mut gap = make_gap(
+            GapType::ContradictionGap,
+            "fact:conflict",
+            "Rust has 49 tests",
+        );
+        gap.fact_id_b = Some("fact:other".to_string());
         let prompt = build_prompt(&gap);
-        assert!(prompt.contains("contradiction"));
-        assert!(prompt.contains("Two facts disagree"));
+        assert!(prompt.contains("contradict"));
+        assert!(prompt.contains("Rust has 49 tests"));
+        assert!(prompt.contains("fact:other"));
+    }
+
+    #[test]
+    fn prompt_for_duplicate_fact() {
+        let gap = make_gap(
+            GapType::DuplicateFact,
+            "fact:dup",
+            "Rust is a systems language",
+        );
+        let prompt = build_prompt(&gap);
+        assert!(prompt.contains("duplicate"));
+        assert!(prompt.contains("Rust is a systems language"));
+    }
+
+    #[test]
+    fn prompt_for_stale_by_date() {
+        let mut gap = make_gap(
+            GapType::StaleByDate,
+            "fact:stale",
+            "Released in 2023",
+        );
+        gap.date = Some("2023".to_string());
+        let prompt = build_prompt(&gap);
+        assert!(prompt.contains("2023"));
+        assert!(prompt.contains("outdated"));
+    }
+
+    #[test]
+    fn prompt_for_low_quality_fact() {
+        let gap = make_gap(
+            GapType::LowQualityFact,
+            "fact:low",
+            "short url heavy content",
+        );
+        let prompt = build_prompt(&gap);
+        assert!(prompt.contains("low quality"));
+        assert!(prompt.contains("short url heavy content"));
     }
 
     #[test]
@@ -201,13 +281,11 @@ mod tests {
 
     #[test]
     fn payload_contains_required_fields() {
-        let gap = DetectedGap {
-            gap_type: GapType::MissingContext,
-            fact_id: "fact:abc".to_string(),
-            description: "isolated fact".to_string(),
-            suggested_task: "connect".to_string(),
-            priority: 0.8,
-        };
+        let gap = make_gap(
+            GapType::MissingContext,
+            "fact:abc",
+            "some content snippet",
+        );
         let payload = serde_json::json!({
             "prompt": build_prompt(&gap),
             "gap_type": gap.gap_type.to_string(),
@@ -226,7 +304,7 @@ mod tests {
         );
         assert_eq!(
             payload.get("description").and_then(|v| v.as_str()),
-            Some("isolated fact")
+            Some("description")
         );
     }
 }

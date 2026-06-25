@@ -35,6 +35,7 @@ pub struct SearchParams {
 }
 
 /// Parameters for sm_search_explained
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SearchExplainedParams {
     /// The query string
@@ -104,6 +105,16 @@ pub struct GraphPathParams {
 pub struct RouteQueryParams {
     /// The query string to profile and route
     pub query: String,
+}
+
+/// Parameters for sm_detect_contradictions
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct DetectContradictionsParams {
+    /// The query whose top results are scanned for content contradictions
+    pub query: String,
+    /// How many top results to scan (default 10)
+    #[serde(default)]
+    pub top_k: Option<u32>,
 }
 
 /// Parameters for sm_search_with_routing
@@ -346,6 +357,7 @@ pub struct SupersedeFactParams {
 // ─── Conversation / session tools (v0.3.0) ──────────────────────────────
 
 /// Parameters for sm_create_session
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct CreateSessionParams {
     /// Channel/label for the session (e.g. "claude-code", "project-x").
@@ -356,6 +368,7 @@ pub struct CreateSessionParams {
 }
 
 /// Parameters for sm_add_message
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct AddMessageParams {
     /// Session id to append to.
@@ -367,6 +380,7 @@ pub struct AddMessageParams {
 }
 
 /// Parameters for sm_list_sessions
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ListSessionsParams {
     /// Maximum sessions to return (default 20).
@@ -378,6 +392,7 @@ pub struct ListSessionsParams {
 }
 
 /// Parameters for sm_get_messages
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GetMessagesParams {
     /// Session id to read messages from.
@@ -491,4 +506,130 @@ pub struct SearchAsOfParams {
     pub top_k: Option<usize>,
     /// Optional namespace filter.
     pub namespace: Option<String>,
+}
+
+// ─── Verification gate ─────────────────────────────────────────────────
+
+/// Parameters for sm_verify_claim
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct VerifyClaimParams {
+    /// The claim text to verify.
+    pub claim: String,
+    /// Risk class: low, medium, high, critical.
+    pub risk_class: String,
+    /// Optional evidence references supporting the claim.
+    #[serde(default)]
+    pub evidence_refs: Option<Vec<String>>,
+    /// Whether refutation was attempted (if false, high/critical claims cannot be promoted).
+    #[serde(default)]
+    pub refutation_attempted: Option<bool>,
+}
+
+// ─── Search receipt tools ──────────────────────────────────────────────
+
+/// Parameters for sm_get_search_receipt
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct GetSearchReceiptParams {
+    /// The receipt/request ID to look up.
+    pub receipt_id: String,
+}
+
+/// Parameters for sm_replay_search_receipt
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ReplaySearchReceiptParams {
+    /// The receipt/request ID to replay.
+    pub receipt_id: String,
+    /// The query text to use for replay (receipts don't store query text).
+    pub query: String,
+    /// Optional top_k for replay (defaults to original receipt's result count).
+    #[serde(default)]
+    pub top_k: Option<u32>,
+    /// Optional namespace filter for replay.
+    #[serde(default)]
+    pub namespaces: Option<Vec<String>>,
+}
+
+// ─── Reconcile tool ───────────────────────────────────────────────────
+
+/// Parameters for sm_reconcile
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ReconcileParams {
+    /// Action to take: "report_only", "rebuild_fts", or "re_embed".
+    pub action: String,
+}
+
+// ─── Maintenance tools ────────────────────────────────────────────────
+
+/// Parameters for sm_embeddings_are_dirty (no params needed, but struct for consistency)
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct EmbeddingsAreDirtyParams {}
+
+/// Parameters for sm_list_imports
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ListImportsParams {
+    /// Optional namespace filter.
+    #[serde(default)]
+    pub namespace: Option<String>,
+    /// Maximum number of import records to return (default 20).
+    #[serde(default)]
+    pub limit: Option<u32>,
+}
+
+/// Parameters for sm_import_status
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ImportStatusParams {
+    /// The envelope ID to check import status for.
+    pub envelope_id: String,
+}
+
+/// Parameters for sm_import_envelope
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ImportEnvelopeParams {
+    /// The import envelope as a JSON string.
+    pub envelope_json: String,
+}
+
+// ─── Projection query tools ───────────────────────────────────────────
+
+/// Parameters for projection query tools (sm_query_claim_versions, etc.)
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ProjectionQueryParams {
+    /// Namespace to query within.
+    pub namespace: String,
+    /// Optional domain scope filter.
+    #[serde(default)]
+    pub domain: Option<String>,
+    /// Optional workspace ID scope filter.
+    #[serde(default)]
+    pub workspace_id: Option<String>,
+    /// Optional repo ID scope filter.
+    #[serde(default)]
+    pub repo_id: Option<String>,
+    /// Optional free-text query.
+    #[serde(default)]
+    pub text_query: Option<String>,
+    /// Optional valid-time as-of filter (ISO 8601).
+    #[serde(default)]
+    pub valid_at: Option<String>,
+    /// Optional transaction-time cutoff (ISO 8601).
+    #[serde(default)]
+    pub recorded_at_or_before: Option<String>,
+    /// Optional subject entity ID filter.
+    #[serde(default)]
+    pub subject_entity_id: Option<String>,
+    /// Optional canonical entity ID filter.
+    #[serde(default)]
+    pub canonical_entity_id: Option<String>,
+    /// Optional claim state filter.
+    #[serde(default)]
+    pub claim_state: Option<String>,
+    /// Optional claim ID filter.
+    #[serde(default)]
+    pub claim_id: Option<String>,
+    /// Optional claim version ID filter.
+    #[serde(default)]
+    pub claim_version_id: Option<String>,
+    /// Maximum results to return (default 10).
+    #[serde(default)]
+    pub limit: Option<u32>,
 }

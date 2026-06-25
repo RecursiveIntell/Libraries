@@ -1,11 +1,14 @@
 //! Result capture — stores execution outputs as facts in semantic memory.
 //!
 //! The [`ResultCapture`] component takes an [`ExecutionResult`] from the
-//! executor, checks whether the output is a duplicate of existing knowledge,
-//! and if not, writes it as a new fact in the `"autonomous"` namespace. When
-//! a source fact ID is known (the gap that triggered the job), a graph edge
-//! is added connecting the new fact to the source, with relation
-//! `"fills_gap"`.
+//! executor, extracts individual factual statements from the model output,
+//! checks each for duplicates against existing knowledge, and writes unique
+//! statements as separate facts in the `"autonomous"` namespace. When a source
+//! fact ID is known (the gap that triggered the job), a graph edge is added
+//! connecting each new fact to the source, with relation `"fills_gap"`.
+//!
+//! Confidence is set based on content quality: 0.8 for sentences containing
+//! specific factual signals (numbers, dates, proper nouns), 0.5 otherwise.
 
 use crate::executor::ExecutionResult;
 use aidens_memory_kit::canonical_stack::AddGraphEdgeParams;
@@ -66,10 +69,14 @@ impl ResultCapture {
 
     /// Capture an execution result into semantic memory.
     ///
-    /// 1. Searches memory for the output content to check for duplicates.
-    /// 2. If no duplicate: adds a fact in the `"autonomous"` namespace.
-    /// 3. If the source fact ID is known: adds a graph edge connecting the
-    ///    new fact to the source fact with relation `"fills_gap"`.
+    /// Instead of capturing the entire model output as one fact, this extracts
+    /// individual factual statements:
+    /// 1. Splits the output by sentences (". " or newlines).
+    /// 2. For each sentence >30 chars, checks for duplicates against the KB.
+    /// 3. Adds each unique sentence as a separate fact.
+    /// 4. Sets confidence based on content quality (0.8 if specific facts,
+    ///    0.5 otherwise).
+    /// 5. Links each new fact to the source fact with a `fills_gap` edge.
     pub async fn capture(&self, result: &ExecutionResult) -> Result<CaptureOutcome> {
         // Don't capture empty or failed outputs.
         if !result.success || result.output.is_empty() {
@@ -80,81 +87,165 @@ impl ResultCapture {
             });
         }
 
-        // 1. Search for duplicates.
-        let existing = self
-            .memory
-            .search(&result.output, Some(&["autonomous".to_string()]), Some(5))
-            .await?;
+        // Extract individual factual statements.
+        let sentences = extract_sentences(&result.output);
 
-        // Check if any existing result has very similar content (exact match
-        // or near-exact containment).
-        let is_duplicate = existing.iter().any(|r| {
-            r.content == result.output
-                || r.content.contains(&result.output)
-                || result.output.contains(&r.content)
-        });
-
-        if is_duplicate {
-            return Ok(CaptureOutcome {
-                facts_added: 0,
-                facts_skipped_duplicates: 1,
-                fact_ids: Vec::new(),
-            });
-        }
-
-        // 2. Add the new fact.
+        let mut facts_added = 0usize;
+        let mut facts_skipped_duplicates = 0usize;
+        let mut fact_ids: Vec<String> = Vec::new();
         let source = format!("aidens-autonomous:{}", result.job_id);
-        let fact_id = self
-            .memory
-            .add_fact(
-                "autonomous",
-                &result.output,
-                Some(&source),
-                Some(0.6),
-            )
-            .await?;
 
-        let fact_ids = vec![fact_id.clone()];
-
-        // 3. Add graph edge connecting new fact to source fact.
-        if !result.source_fact_id.is_empty() {
-            let new_fact_node = if fact_id.starts_with("fact:") {
-                fact_id.clone()
-            } else {
-                format!("fact:{fact_id}")
-            };
-
-            let source_node = if result.source_fact_id.starts_with("fact:") {
-                result.source_fact_id.clone()
-            } else {
-                format!("fact:{}", result.source_fact_id)
-            };
-
-            let edge_params = AddGraphEdgeParams {
-                source: source_node,
-                target: new_fact_node,
-                edge_type: GraphEdgeType::Entity {
-                    relation: "fills_gap".to_string(),
-                },
-                weight: 1.0,
-                metadata: Some(serde_json::json!({
-                    "job_id": result.job_id,
-                    "gap_type": result.gap_type,
-                })),
-            };
-
-            // Best-effort: don't fail capture if edge creation fails.
-            if let Err(_e) = self.memory.add_graph_edge(edge_params).await {
-                // Edge creation is best-effort; the fact is already stored.
+        for sentence in &sentences {
+            // Skip short sentences.
+            if sentence.len() < 30 {
+                continue;
             }
+
+            // Search for duplicates in the autonomous namespace.
+            let existing = self
+                .memory
+                .search(sentence, Some(&["autonomous".to_string()]), Some(5))
+                .await?;
+
+            let is_duplicate = existing.iter().any(|r| {
+                r.content == *sentence
+                    || r.content.contains(sentence.as_str())
+                    || sentence.contains(&r.content)
+            });
+
+            if is_duplicate {
+                facts_skipped_duplicates += 1;
+                continue;
+            }
+
+            // Determine confidence based on content quality.
+            let confidence = if has_specific_facts(sentence) { 0.8 } else { 0.5 };
+
+            // Add the new fact.
+            let fact_id = self
+                .memory
+                .add_fact("autonomous", sentence, Some(&source), Some(confidence))
+                .await?;
+
+            // Add graph edge connecting new fact to source fact.
+            if !result.source_fact_id.is_empty() {
+                let new_fact_node = if fact_id.starts_with("fact:") {
+                    fact_id.clone()
+                } else {
+                    format!("fact:{fact_id}")
+                };
+
+                let source_node = if result.source_fact_id.starts_with("fact:") {
+                    result.source_fact_id.clone()
+                } else {
+                    format!("fact:{}", result.source_fact_id)
+                };
+
+                let edge_params = AddGraphEdgeParams {
+                    source: source_node,
+                    target: new_fact_node,
+                    edge_type: GraphEdgeType::Entity {
+                        relation: "fills_gap".to_string(),
+                    },
+                    weight: 1.0,
+                    metadata: Some(serde_json::json!({
+                        "job_id": result.job_id,
+                        "gap_type": result.gap_type,
+                    })),
+                };
+
+                // Best-effort: don't fail capture if edge creation fails.
+                let _ = self.memory.add_graph_edge(edge_params).await;
+            }
+
+            facts_added += 1;
+            fact_ids.push(fact_id);
         }
 
         Ok(CaptureOutcome {
-            facts_added: 1,
-            facts_skipped_duplicates: 0,
+            facts_added,
+            facts_skipped_duplicates,
             fact_ids,
         })
     }
+}
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+/// Split text into sentences. Splits on ". " and newlines, trims each, and
+/// re-attaches the period if it was stripped.
+fn extract_sentences(text: &str) -> Vec<String> {
+    let mut sentences = Vec::new();
+
+    // Split on newlines first, then on ". " within each line.
+    for line in text.lines() {
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+
+        // Split on ". " (sentence boundary).
+        let parts: Vec<&str> = line.split(". ").collect();
+        for (i, part) in parts.iter().enumerate() {
+            let mut s = part.trim().to_string();
+            if s.is_empty() {
+                continue;
+            }
+            // Re-attach the period for all but the last part (unless it already
+            // ends with one).
+            if i < parts.len() - 1 && !s.ends_with('.') {
+                s.push('.');
+            }
+            sentences.push(s);
+        }
+    }
+
+    // If we got nothing from line splitting, return the whole text as one sentence.
+    if sentences.is_empty() && !text.trim().is_empty() {
+        sentences.push(text.trim().to_string());
+    }
+
+    sentences
+}
+
+/// Check if a sentence contains specific factual signals: numbers, dates
+/// (20XX), or capitalized words (proper nouns).
+fn has_specific_facts(sentence: &str) -> bool {
+    // Check for numbers.
+    if sentence.chars().any(|c| c.is_ascii_digit()) {
+        return true;
+    }
+
+    // Check for dates (20XX pattern).
+    if sentence.contains("20") {
+        let bytes = sentence.as_bytes();
+        for i in 0..bytes.len().saturating_sub(3) {
+            if bytes[i] == b'2'
+                && bytes[i + 1] == b'0'
+                && bytes[i + 2].is_ascii_digit()
+                && bytes[i + 3].is_ascii_digit()
+            {
+                return true;
+            }
+        }
+    }
+
+    // Check for proper nouns (capitalized words that aren't at the start).
+    let words: Vec<&str> = sentence.split_whitespace().collect();
+    if words.len() > 1 {
+        for word in &words[1..] {
+            let first_char = word.chars().next();
+            if let Some(c) = first_char {
+                if c.is_uppercase() {
+                    return true;
+                }
+            }
+        }
+    }
+
+    false
 }
 
 // ---------------------------------------------------------------------------
@@ -197,6 +288,56 @@ mod tests {
             gap_type: "missing-context".to_string(),
             source_fact_id: fact_id.to_string(),
         }
+    }
+
+    #[test]
+    fn extract_sentences_splits_on_period_space() {
+        let sentences = extract_sentences("Rust is safe. Rust is fast. Rust is concurrent.");
+        assert_eq!(sentences.len(), 3);
+        assert_eq!(sentences[0], "Rust is safe.");
+        assert_eq!(sentences[1], "Rust is fast.");
+        assert_eq!(sentences[2], "Rust is concurrent.");
+    }
+
+    #[test]
+    fn extract_sentences_splits_on_newlines() {
+        let sentences = extract_sentences("First sentence here.\nSecond sentence here.\n");
+        assert_eq!(sentences.len(), 2);
+        assert_eq!(sentences[0], "First sentence here.");
+        assert_eq!(sentences[1], "Second sentence here.");
+    }
+
+    #[test]
+    fn extract_sentences_handles_single_sentence() {
+        let sentences = extract_sentences("Only one sentence with no period");
+        assert_eq!(sentences.len(), 1);
+        assert_eq!(sentences[0], "Only one sentence with no period");
+    }
+
+    #[test]
+    fn extract_sentences_skips_empty_lines() {
+        let sentences = extract_sentences("First.\n\n\nSecond.\n");
+        assert_eq!(sentences.len(), 2);
+    }
+
+    #[test]
+    fn has_specific_facts_detects_numbers() {
+        assert!(has_specific_facts("The crate has 49 tests passing."));
+    }
+
+    #[test]
+    fn has_specific_facts_detects_dates() {
+        assert!(has_specific_facts("Released in 2024 with new features."));
+    }
+
+    #[test]
+    fn has_specific_facts_detects_proper_nouns() {
+        assert!(has_specific_facts("The Rust language provides memory safety."));
+    }
+
+    #[test]
+    fn has_specific_facts_returns_false_for_vague() {
+        assert!(!has_specific_facts("this is a vague statement about things"));
     }
 
     #[tokio::test]
@@ -291,5 +432,38 @@ mod tests {
         };
         let edges = memory.list_graph_edges(&new_node).await.unwrap();
         assert!(!edges.is_empty(), "graph edge should have been created");
+    }
+
+    #[tokio::test]
+    async fn capture_extracts_multiple_sentences() {
+        let memory = mock_memory();
+        let capture = ResultCapture::new(memory.clone(), "http://localhost:1738");
+
+        let result = make_result(
+            true,
+            "Rust is a systems programming language. It provides memory safety without garbage collection. The borrow checker enforces ownership rules at compile time.",
+            "fact:source-abc",
+        );
+
+        let outcome = capture.capture(&result).await.unwrap();
+        // All three sentences are >30 chars, so all should be captured.
+        assert_eq!(outcome.facts_added, 3);
+        assert_eq!(outcome.fact_ids.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn capture_skips_short_sentences() {
+        let memory = mock_memory();
+        let capture = ResultCapture::new(memory.clone(), "http://localhost:1738");
+
+        let result = make_result(
+            true,
+            "Short. This is a longer sentence that should be captured properly here.",
+            "fact:source-abc",
+        );
+
+        let outcome = capture.capture(&result).await.unwrap();
+        // Only the long sentence should be captured.
+        assert_eq!(outcome.facts_added, 1);
     }
 }

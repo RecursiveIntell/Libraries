@@ -8,16 +8,12 @@
 //!   semantic-memory-mcp --memory-dir /path/to/memory-store
 //!   semantic-memory-mcp --memory-dir /path --embedder ollama --embedding-url http://localhost:11434
 
-mod bridge;
-mod http_server;
-mod server;
-mod tools;
-
 use clap::Parser;
 use rmcp::ServiceExt;
 use tracing_subscriber::EnvFilter;
 
-use crate::bridge::EmbedderBackend;
+use semantic_memory_mcp::bridge::{self, EmbedderBackend};
+use semantic_memory_mcp::{http_server, server};
 
 /// semantic-memory MCP server configuration.
 #[derive(Parser, Debug)]
@@ -83,6 +79,11 @@ struct Cli {
     /// TurboQuant QJL projection count (default: 16). Only used when --turbo-quant is set.
     #[arg(long)]
     turbo_quant_projections: Option<usize>,
+
+    /// Tool profile: lean (33 tools, default), standard (39 tools), full (48 tools).
+    /// Lean hides admin/audit/bitemporal/import tools for better agent efficiency.
+    #[arg(long, default_value = "lean")]
+    tool_profile: String,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -154,7 +155,7 @@ fn main() -> anyhow::Result<()> {
         .build()?;
 
     // Create the MCP server
-    let server = server::SemanticMemoryServer::new(bridge.clone());
+    let server = server::SemanticMemoryServer::new(bridge.clone(), &cli.tool_profile);
 
     // Start HTTP server if --http-port was specified.
     // When only HTTP is needed (no MCP client), use --http-only to skip stdio.

@@ -21,15 +21,27 @@
 //! autonomously improve its own knowledge graph.
 
 pub mod capture;
+pub mod entropy_search;
 pub mod evaluation;
 pub mod executor;
 pub mod gap_detector;
+pub mod hostile_audit;
 pub mod loop_driver;
+pub mod missions;
+pub mod proof_debt;
+pub mod receipt;
 pub mod task_generator;
+pub mod viscosity;
 
 pub use capture::{CaptureOutcome, ResultCapture};
+pub use entropy_search::{DomainEntropy, DomainStats, EntropyGradientSearcher, EntropySearchConfig};
 pub use evaluation::{EvaluationGate, FactDisposition};
 pub use executor::{ExecutionResult, LoopExecutor};
 pub use gap_detector::{DetectedGap, GapDetector, GapType};
+pub use hostile_audit::{AuditResult, HostileAuditGate};
 pub use loop_driver::{AutonomousLoop, LoopConfig, LoopState};
+pub use missions::{Mission, MissionImpl, MissionQuery, MissionScheduler, ScheduledMission};
+pub use proof_debt::{ProofDebtBudget, ProofDebtEntry, ProofDebtReceipt, RiskClass, PaymentMethod, classify_risk};
+pub use receipt::{CycleReceiptV1, LoopMode, ReceiptEmitter, ViscositySignalSnapshot};
 pub use task_generator::TaskGenerator;
+pub use viscosity::{StrictnessLevel, ViscosityConfig, ViscosityController, ViscositySignal};

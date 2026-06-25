@@ -5958,7 +5958,7 @@ dependencies = [
 
 [[package]]
 name = "semantic-memory"
-version = "0.5.3"
+version = "0.5.7"
 dependencies = [
  "bitemporal-runtime",
  "blake3",

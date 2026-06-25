@@ -294,6 +294,23 @@ impl CanonicalGovernanceAdapter {
         }
     }
 
+    pub fn create_verification_plan(
+        &self,
+        claim_id: &str,
+        risk_class: crate::RiskClass,
+    ) -> crate::VerificationPlanV1 {
+        crate::VerificationPlanV1::new(claim_id, risk_class)
+    }
+
+    pub fn create_claim_evidence_bundle(
+        &self,
+        claim_id: &str,
+        treatment: &str,
+        outcome: &str,
+    ) -> crate::ClaimEvidenceBundleV1 {
+        crate::ClaimEvidenceBundleV1::new(claim_id, treatment, outcome)
+    }
+
     pub fn authority_chain(
         &self,
         lease: &canonical_stack::AuthorityLeaseV1,
@@ -500,5 +517,37 @@ mod tests {
 
         assert_eq!(permit.case_id(), &case.case_id);
         assert_eq!(permit.plan_id(), &plan.plan_id);
+    }
+
+    #[test]
+    fn risk_bearing_claim_cannot_promote_without_verification_plan() {
+        let adapter = CanonicalGovernanceAdapter;
+        let plan = adapter.create_verification_plan("claim-01", RiskClass::High);
+        // A freshly-created plan is Pending — it cannot be promoted yet
+        assert!(!plan.can_promote(), "high-risk claim must not promote with Pending plan");
+        assert!(!plan.is_blocked(), "plan should not be blocked, just pending");
+    }
+
+    #[test]
+    fn create_verification_plan_high_risk_requires_falsification() {
+        let adapter = CanonicalGovernanceAdapter;
+        let plan = adapter.create_verification_plan("claim-high", RiskClass::High);
+        assert!(!plan.required_falsification_checks.is_empty());
+        assert!(!plan.required_replay_checks.is_empty());
+    }
+
+    #[test]
+    fn create_claim_evidence_bundle_marks_support() {
+        let adapter = CanonicalGovernanceAdapter;
+        let bundle = adapter.create_claim_evidence_bundle("claim-01", "experiment", "pass");
+        assert!(bundle.supports);
+        assert_eq!(bundle.claim_id, "claim-01");
+    }
+
+    #[test]
+    fn create_claim_evidence_bundle_marks_refutation() {
+        let adapter = CanonicalGovernanceAdapter;
+        let bundle = adapter.create_claim_evidence_bundle("claim-01", "experiment", "fail");
+        assert!(!bundle.supports);
     }
 }

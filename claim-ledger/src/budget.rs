@@ -393,7 +393,7 @@ pub fn evaluate_proof_debt_gate_with_config(
 ) -> ProofDebtGateResult {
     let pct = budget.consumed_pct();
     let exhausted = budget.is_exhausted();
-    let overdrawn = budget.consumed_micros > budget.budget_micros;
+    let _overdrawn = budget.consumed_micros > budget.budget_micros;
 
     let (decision, summary) = if pct >= config.retract_threshold_pct {
         (
