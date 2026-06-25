@@ -688,9 +688,20 @@ impl AutonomousLoop {
         let attempted = self.attempted_gaps.lock().unwrap().clone();
 
         // Get top domains to explore from entropy-gradient searcher.
-        let targets = match self.entropy_search.lock() {
-            Ok(searcher) => searcher.next_targets(5).await.unwrap_or_default(),
-            Err(_) => Vec::new(),
+        // Must not hold std::sync::MutexGuard across .await (not Send).
+        let targets = {
+            let searcher = self.entropy_search.lock();
+            match searcher {
+                Ok(s) => {
+                    // Clone the http_base_url so we can make a new searcher
+                    // outside the guard to avoid holding it across .await.
+                    let url = s.http_base_url.clone();
+                    drop(s);
+                    let temp_searcher = EntropyGradientSearcher::new(&url);
+                    temp_searcher.next_targets(5).await.unwrap_or_default()
+                }
+                Err(_) => Vec::new(),
+            }
         };
 
         if targets.is_empty() {

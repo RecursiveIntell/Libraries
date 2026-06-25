@@ -89,8 +89,9 @@ async fn main() -> Result<()> {
     let queue_root = config.queue_dir.clone();
     let http_base_url = config.http_base_url.clone();
 
-    // Spawn the loop in a background task.
-    let loop_handle = tokio::spawn(async move {
+    // Spawn the loop in a local task (non-Send futures need LocalSet).
+    let local_set = tokio::task::LocalSet::new();
+    let loop_handle = local_set.spawn_local(async move {
         let _ = loop_instance.run().await;
     });
 

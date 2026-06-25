@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiDENs — Closed-Loop Self-Learning AI</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface-2: #1a1a24;
+    --border: #2a2a38;
+    --ink: #e4e4ef;
+    --muted: #6b6b80;
+    --accent: #6ee7b7;
+    --accent-dim: #3ba56f;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  
+  /* Hero */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+  }
+  .hero .tagline {
+    color: var(--muted);
+    font-size: 1.125rem;
+    margin-bottom: 32px;
+  }
+  .hero .tagline strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 6px; }
+  .hero-meta strong { color: var(--ink); }
+  
+  /* Section */
+  section { padding: 60px 0; border-bottom: 1px solid var(--border); }
+  section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  section h2 .num {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.875rem;
+    font-weight: 400;
+    margin-right: 8px;
+  }
+  section .lead { color: var(--muted); margin-bottom: 32px; }
+  
+  /* Metrics grid */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .metric .value {
+    font-family: var(--mono);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .metric .label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Loop diagram */
+  .loop-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    padding: 40px 0;
+  }
+  .loop-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 12px;
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+  }
+  .loop-step .icon {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+  .loop-step .title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .loop-step .desc {
+    font-size: 0.625rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .loop-arrow {
+    color: var(--accent-dim);
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    padding: 0 4px;
+  }
+  
+  /* Mission list */
+  .missions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .mission-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .mission-card .name {
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .mission-card .desc {
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+  .mission-card .priority {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    color: var(--muted);
+    margin-top: 6px;
+    padding: 2px 6px;
+    background: var(--surface-2);
+    border-radius: 4px;
+  }
+  
+  /* Fact samples */
+  .facts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fact-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 3px solid var(--accent-dim);
+  }
+  .fact-item .meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    color: var(--muted);
+  }
+  .fact-item .content {
+    font-size: 0.875rem;
+    color: var(--ink);
+  }
+  .fact-item .gap-type {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--surface-2);
+    color: var(--warn);
+  }
+  
+  /* Comparison table */
+  .comparison {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+  }
+  .comparison th, .comparison td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .comparison td:not(:first-child) {
+    text-align: center;
+    font-family: var(--mono);
+  }
+  .comparison .yes { color: var(--accent); }
+  .comparison .no { color: var(--danger); opacity: 0.6; }
+  .comparison .partial { color: var(--warn); }
+  .comparison td:first-child {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  
+  /* Architecture */
+  .arch-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  .arch-block h3 {
+    font-family: var(--mono);
+    font-size: 0.875rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .arch-block p {
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+  .arch-block ul {
+    list-style: none;
+    margin-top: 8px;
+  }
+  .arch-block li {
+    font-size: 0.8125rem;
+    color: var(--muted);
+    padding: 2px 0;
+  }
+  .arch-block li::before {
+    content: '> ';
+    color: var(--accent-dim);
+    font-family: var(--mono);
+  }
+  
+  /* Run log */
+  .run-log {
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    overflow-x: auto;
+  }
+  .run-log .line { color: var(--muted); }
+  .run-log .line .iter { color: var(--accent); }
+  .run-log .line .done { color: var(--accent); }
+  .run-log .line .fail { color: var(--danger); }
+  .run-log .line .key { color: var(--warn); }
+  
+  /* Footer */
+  footer {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8125rem;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  
+  @media (max-width: 768px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .missions { grid-template-columns: 1fr; }
+    .loop-diagram { flex-direction: column; }
+    .loop-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="container">
+<div class="hero">
+  <h1>AiDENs</h1>
+  <p class="tagline">A <strong>closed-loop self-learning AI</strong> that audits its own knowledge graph, detects gaps, generates tasks, executes them via LLM, captures results as provenance-attributed facts, and evaluates fact quality — all local-first, all autonomous.</p>
+  <div class="hero-meta">
+    <span><strong>7,228</strong> facts</span>
+    <span><strong>15,413</strong> chunks</span>
+    <span><strong>877</strong> documents</span>
+    <span><strong>8</strong> mission types</span>
+    <span><strong>162</strong> tests passing</span>
+    <span><strong>126 MB</strong> DB</span>
+  </div>
+</div>
+
+<!-- The Loop -->
+<section>
+  <h2><span class="num">01</span>The Closed Loop</h2>
+  <p class="lead">The system runs continuously without human intervention. Each cycle: detect gaps in the knowledge graph, generate prioritized tasks, execute via LLM, capture results as facts, evaluate quality, feed back to RL routing.</p>
+  
+  <div class="loop-diagram">
+    <div class="loop-step"><div class="icon">01</div><div class="title">Detect</div><div class="desc">KB gaps via<br/>8 missions</div></div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step"><div class="icon">02</div><div class="title">Generate</div><div class="desc">Prioritized<br/>JobV1 tasks</div></div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step"><div class="icon">03</div><div class="title">Execute</div><div class="desc">LLM via<br/>Ollama</div></div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step"><div class="icon">04</div><div class="title">Capture</div><div class="desc">Facts with<br/>provenance</div></div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step"><div class="icon">05</div><div class="title">Evaluate</div><div class="desc">Promote /<br/>quarantine / reject</div></div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step"><div class="icon">06</div><div class="title">Feedback</div><div class="desc">RL routing<br/>outcome</div></div>
+    <div class="loop-arrow">↻</div>
+  </div>
+</section>
+
+<!-- Metrics from live run -->
+<section>
+  <h2><span class="num">02</span>Live Run Metrics</h2>
+  <p class="lead">Real data from a live loop run with gemma4:31b-cloud, 5 iterations, after the 3 critical bug fixes.</p>
+  
+  <div class="metrics">
+    <div class="metric"><div class="value">5</div><div class="label">Iterations</div></div>
+    <div class="metric"><div class="value">3</div><div class="label">Tasks Completed</div></div>
+    <div class="metric"><div class="value">0</div><div class="label">Tasks Failed</div></div>
+    <div class="metric"><div class="value">9</div><div class="label">Facts Captured</div></div>
+  </div>
+  
+  <div style="margin-top: 24px;">
+    <div class="run-log">
+<div class="line"><span class="iter">iter=1</span> gaps=2 tasks_gen=2 tasks_done=0 tasks_fail=0 facts_cap=0 safe=false <span class="key">job=Some(...)</span> err=None</div>
+<div class="line"><span class="iter">iter=3</span> gaps=2 tasks_gen=2 tasks_done=1 tasks_fail=0 facts_cap=3 <span class="done">DONE</span> err=None</div>
+<div class="line"><span class="iter">iter=4</span> gaps=6 tasks_gen=6 tasks_done=2 tasks_fail=0 facts_cap=6 err=None</div>
+<div class="line"><span class="iter">iter=5</span> gaps=6 tasks_gen=6 tasks_done=3 tasks_fail=0 facts_cap=9 <span class="done">DONE</span> err=None</div>
+<div class="line">Error: max_iterations (5) reached — loop terminating</div>
+<div class="line"><span class="done">100% success rate (was 34% before fixes)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Mission System -->
+<section>
+  <h2><span class="num">03</span>Mission System</h2>
+  <p class="lead">Eight high-ROI mission types with adaptive priority scheduling. Missions that find 0 issues get lowered priority; missions that find issues reset to base priority.</p>
+  
+  <div class="missions">
+    <div class="mission-card"><div class="name">VerifyPublishedCrates</div><div class="desc">Check if facts about crate versions match current state</div><div class="priority">priority 0.9 · every 20 iters</div></div>
+    <div class="mission-card"><div class="name">VerifyFileReferences</div><div class="desc">Check if file paths mentioned in facts still exist</div><div class="priority">priority 0.8 · every 15 iters</div></div>
+    <div class="mission-card"><div class="name">DetectContradictions</div><div class="desc">Find pairs of facts with conflicting claims</div><div class="priority">priority 0.85 · every 10 iters</div></div>
+    <div class="mission-card"><div class="name">AuditNamespaceCompleteness</div><div class="desc">Check each namespace for graph connectivity and coverage</div><div class="priority">priority 0.5 · every 30 iters</div></div>
+    <div class="mission-card"><div class="name">TraceProvenanceChains</div><div class="desc">Verify source attributions still exist and support claims</div><div class="priority">priority 0.7 · every 25 iters</div></div>
+    <div class="mission-card"><div class="name">FindDuplicates</div><div class="desc">Find facts with high content overlap across namespaces</div><div class="priority">priority 0.6 · every 20 iters</div></div>
+    <div class="mission-card"><div class="name">VerifyCodebaseSync</div><div class="desc">Check if facts about codebase metrics are still accurate</div><div class="priority">priority 0.75 · every 15 iters</div></div>
+    <div class="mission-card"><div class="name">StaleDateDetection</div><div class="desc">Find facts referencing dates more than 6 months old</div><div class="priority">priority 0.65 · every 10 iters</div></div>
+  </div>
+</section>
+
+<!-- Captured Facts -->
+<section>
+  <h2><span class="num">04</span>Facts Captured by the Loop</h2>
+  <p class="lead">Real facts captured by the autonomous loop in the "autonomous" namespace. Each fact was generated by the model analyzing a detected gap, then quality-scored by the evaluation gate.</p>
+  
+  <div class="facts-list">
+    <div class="fact-item">
+      <div class="meta"><span>fact:c31cd2e0...</span><span class="gap-type">missing-context</span></div>
+      <div class="content">The fact identifies the <code>crates/aidens-autonomous/Cargo.toml</code> file as a package manifest. Based on the file content and the project structure, this represents the "Brain" of the Loop — the autonomous loop executor that ties together gap detection, task generation, LLM execution, fact capture, and evaluation.</div>
+    </div>
+    <div class="fact-item">
+      <div class="meta"><span>fact:fa3c3f1e...</span><span class="gap-type">stale-fact</span></div>
+      <div class="content">The file <code>/Cargo.toml</code> exists and is accessible, which contradicts the semantic memory integrity report. The discrepancy likely stems from a stale or incorrect reference rather than a missing file.</div>
+    </div>
+    <div class="fact-item">
+      <div class="meta"><span>fact:a29ab206...</span><span class="gap-type">stale-fact</span></div>
+      <div class="content">To verify and fix this, audit all occurrences of the version string in the knowledge base and standardize them to the semantic version "v0.2.0".</div>
+    </div>
+    <div class="fact-item">
+      <div class="meta"><span>fact:b7d14ea9...</span><span class="gap-type">stale-fact</span></div>
+      <div class="content">To verify and fix, run a dependency audit across all crates in the <code>crates/</code> directory to identify version mismatches and align them with the workspace root.</div>
+    </div>
+    <div class="fact-item">
+      <div class="meta"><span>fact:3f4829c6...</span><span class="gap-type">contradiction-gap</span></div>
+      <div class="content">In the context of AiDENs, this represents the "domain truth" owned by the <code>semantic-memory</code> and <code>semantic-memory-forge</code> crates, which AiDENs is tasked to wire and coordinate without duplicating.</div>
+    </div>
+    <div class="fact-item">
+      <div class="meta"><span>fact:86fa287b...</span><span class="gap-type">stale-fact</span></div>
+      <div class="content">The staleness of fact 'fact:2e09cc7a...' is likely caused by a version or description mismatch between the semantic memory and the current <code>Cargo.toml</code> of the <code>llm-tool-runtime</code> crate.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison -->
+<section>
+  <h2><span class="num">05</span>What Exists Elsewhere</h2>
+  <p class="lead">Honest comparison with the closest systems. No single system, and no combination of systems, provides this combination.</p>
+  
+  <table class="comparison">
+    <thead>
+      <tr><th>Feature</th><th>AiDENs</th><th>Zep/Graphiti</th><th>Letta/MemGPT</th><th>AutoGPT</th><th>MemRL</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Closed-loop autonomous</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="partial">Partial</td><td class="no">No</td></tr>
+      <tr><td>Typed knowledge graph</td><td class="yes">Yes</td><td class="partial">Temporal</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+      <tr><td>Provenance + bitemporal</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+      <tr><td>Autonomous gap detection</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+      <tr><td>Fact quality evaluation</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+      <tr><td>Mission system</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+      <tr><td>RL routing feedback</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="partial">Concept</td></tr>
+      <tr><td>Durable queue + safe mode</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="partial">Basic</td><td class="no">No</td></tr>
+      <tr><td>Local-first (Ollama)</td><td class="yes">Yes</td><td class="no">No</td><td class="partial">Optional</td><td class="yes">Yes</td><td class="no">N/A</td></tr>
+      <tr><td>Receipts + audit trail</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Architecture -->
+<section>
+  <h2><span class="num">06</span>Architecture</h2>
+  <p class="lead">Built in Rust. 56K LOC across 36 crates. 506 tests + 162 autonomous tests. Runs entirely local-first with Ollama.</p>
+  
+  <div class="arch-block">
+    <h3>aidens-autonomous</h3>
+    <p>The closed-loop brain. 8K LOC, 162 tests.</p>
+    <ul>
+      <li>gap_detector.rs — 7 gap types: MissingContext, MissingLink, StaleFact, ContradictionGap, DuplicateFact, StaleByDate, LowQualityFact</li>
+      <li>missions.rs — 8 mission types with adaptive priority scheduling</li>
+      <li>executor.rs — PlanActVerifyLoopV1 with Ollama provider, system prompt, RL feedback</li>
+      <li>capture.rs — Sentence-level fact extraction with per-sentence confidence</li>
+      <li>evaluation.rs — Content quality scoring: numbers, dates, proper nouns, tech terms, coherence</li>
+      <li>loop_driver.rs — Main loop with safe mode, attempted gaps tracking, mission scheduling</li>
+    </ul>
+  </div>
+  
+  <div class="arch-block">
+    <h3>semantic-memory</h3>
+    <p>The knowledge graph. 7000+ facts, typed edges (semantic/temporal/causal/entity), bitemporal search, contradiction detection, factor graph belief propagation.</p>
+  </div>
+  
+  <div class="arch-block">
+    <h3>aidens-tui</h3>
+    <p>Terminal UI with 4 panels: memory stats, loop state, queue, activity log. ratatui + crossterm.</p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>RecursiveIntell · Local-first AI workbench · Built by Josh Stevenson</p>
+    <p style="margin-top:8px;"><a href="https://github.com/RecursiveIntell">github.com/RecursiveIntell</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

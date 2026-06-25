@@ -97,7 +97,7 @@ impl Default for EntropySearchConfig {
 #[derive(Debug, Clone)]
 pub struct EntropyGradientSearcher {
     /// HTTP base URL for semantic-memory server.
-    http_base_url: String,
+    pub http_base_url: String,
     /// Configuration.
     config: EntropySearchConfig,
     /// Domains that have been declared saturated.
