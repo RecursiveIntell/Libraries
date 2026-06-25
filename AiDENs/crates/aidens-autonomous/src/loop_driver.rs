@@ -277,13 +277,20 @@ impl AutonomousLoop {
     /// This is the main entry point. It loops indefinitely (or until
     /// `max_iterations` is reached), performing:
     ///
-    /// 1. Gap detection (every `gap_detection_interval` iterations).
-    /// 2. Job acquisition from the queue.
-    /// 3. Job execution.
-    /// 4. Result capture.
-    /// 5. Fact evaluation.
-    /// 6. Job completion/cancellation.
-    /// 7. Failure tracking and safe-mode activation.
+    /// 1. Viscosity check — determine strictness for this cycle.
+    /// 2. Mode check — if subtractive mode, run subtractive cycle instead.
+    /// 3. Gap detection (entropy-guided, every N iterations).
+    /// 4. Job acquisition from the queue.
+    /// 5. Job execution.
+    /// 6. Result capture.
+    /// 7. Fact evaluation (with viscosity-adjusted thresholds).
+    /// 8. Hostile audit (if strict/frozen).
+    /// 9. Proof-debt update (incur on promote, pay on verify).
+    /// 10. Job completion/cancellation.
+    /// 11. Viscosity recording.
+    /// 12. Proof-debt subtractive check.
+    /// 13. Receipt emission.
+    /// 14. Failure tracking and safe-mode activation.
     pub async fn run(&self) -> Result<()> {
         loop {
             // Snapshot state for this iteration.
@@ -293,14 +300,41 @@ impl AutonomousLoop {
                 state.iteration
             };
 
-            // 1. Mission-based gap detection — replace the simple
-            //    gap_detection_interval with mission scheduling. The
-            //    MissionScheduler picks the highest-priority due mission.
-            //    If no mission is due, fall back to the original
-            //    gap_detection_interval-based detection as a supplementary
-            //    scan.
+            // 1. Viscosity check — update state with current strictness.
+            let strictness_name = self.viscosity_strictness_name();
+            let should_generate = self.viscosity_should_generate();
+            let should_audit = self.viscosity_should_audit();
+            self.update_state(|s| {
+                s.strictness = strictness_name.clone();
+            });
+
+            // 2. Mode check — if proof-debt says subtractive, run that instead.
+            let in_subtractive = {
+                let mode = self.state.lock().map(|s| s.mode).unwrap_or_default();
+                mode == LoopMode::Subtractive
+            };
+
+            if in_subtractive || self.proof_debt_should_shift() {
+                self.update_state(|s| { s.mode = LoopMode::Subtractive; });
+                if let Err(e) = self.run_subtractive_cycle().await {
+                    self.update_state(|s| {
+                        s.last_error = Some(format!("subtractive cycle failed: {e}"));
+                    });
+                }
+                // Check if we can return to additive mode.
+                if !self.proof_debt_should_shift() {
+                    self.update_state(|s| { s.mode = LoopMode::Additive; });
+                }
+                // Emit receipt for subtractive cycle.
+                self.emit_cycle_receipt(iteration, 0, 0, 0, 0, 0, &[], &[]);
+                self.sleep_iteration().await;
+                self.check_max_iterations(iteration)?;
+                continue;
+            }
+
+            // 3. Gap detection (only if viscosity allows task generation).
             let queue_has_pending = self.queue_has_pending_jobs();
-            if !queue_has_pending {
+            if !queue_has_pending && should_generate {
                 // Try mission-scheduled detection first.
                 let mission_due = {
                     if let Ok(scheduler) = self.mission_scheduler.lock() {
@@ -317,7 +351,7 @@ impl AutonomousLoop {
                         });
                     }
                 } else {
-                    // Fall back to the original gap detection interval.
+                    // Fall back to entropy-guided gap detection.
                     let should_detect = self.config.gap_detection_interval > 0
                         && (iteration - 1) % self.config.gap_detection_interval == 0;
                     if should_detect {
@@ -330,21 +364,25 @@ impl AutonomousLoop {
                 }
             }
 
-            // 2. Acquire next job.
+            // 4. Acquire next job.
             let lease_outcome = match self.queue.acquire_next("autonomous-loop", 300) {
                 Ok(Some(outcome)) => outcome,
                 Ok(None) => {
-                    // No job available — sleep and continue.
+                    // No job available — emit idle receipt and sleep.
+                    self.emit_cycle_receipt(iteration, 0, 0, 0, 0, 0, &[], &[]);
                     self.sleep_iteration().await;
                     self.check_max_iterations(iteration)?;
                     continue;
                 }
                 Err(e) => {
+                    let error_msg = e.to_string();
+                    self.viscosity_record(false, false, FactDisposition::Reject, 0, 0);
                     self.update_state(|s| {
-                        s.last_error = Some(format!("acquire_next failed: {e}"));
+                        s.last_error = Some(format!("acquire_next failed: {error_msg}"));
                         s.consecutive_failures += 1;
                     });
                     self.check_safe_mode();
+                    self.emit_cycle_receipt(iteration, 0, 0, 0, 0, 0, &[], &[error_msg]);
                     self.sleep_iteration().await;
                     self.check_max_iterations(iteration)?;
                     continue;
@@ -360,7 +398,7 @@ impl AutonomousLoop {
                 s.current_job = Some(job_id_str.clone());
             });
 
-            // 4. Execute job.
+            // 5. Execute job.
             let exec_result: ExecutionResult = match self
                 .executor
                 .execute_job_with_payload(&job_id_str, &payload)
@@ -369,6 +407,7 @@ impl AutonomousLoop {
                 Ok(result) => result,
                 Err(e) => {
                     let error_msg = e.to_string();
+                    self.viscosity_record(false, false, FactDisposition::Reject, 0, 0);
                     self.update_state(|s| {
                         s.tasks_failed += 1;
                         s.consecutive_failures += 1;
@@ -387,13 +426,14 @@ impl AutonomousLoop {
                         let _ = self.attempted_gaps.lock().map(|mut g| g.insert(err_gap_key));
                     }
                     self.check_safe_mode();
+                    self.emit_cycle_receipt(iteration, 0, 1, 0, 0, 0, &[], &[error_msg]);
                     self.sleep_iteration().await;
                     self.check_max_iterations(iteration)?;
                     continue;
                 }
             };
 
-            // 5. Capture results.
+            // 6. Capture results.
             let capture_outcome: CaptureOutcome = match self.capture.capture(&exec_result).await {
                 Ok(outcome) => outcome,
                 Err(e) => {
@@ -408,37 +448,82 @@ impl AutonomousLoop {
                 }
             };
 
-            // 6. Evaluate captured facts.
-            for _fact_id in &capture_outcome.fact_ids {
-                let disposition = self.evaluation.evaluate(&exec_result.output, exec_result.success);
-                match disposition {
+            // 7. Evaluate captured facts (with viscosity-adjusted threshold).
+            let promotion_threshold = self.viscosity_promotion_threshold();
+            let mut facts_promoted = 0usize;
+            let mut facts_quarantined = 0usize;
+            let mut facts_rejected_this = 0usize;
+
+            for fact_id in &capture_outcome.fact_ids {
+                let (disposition, score) = self.evaluation.evaluate_with_score(
+                    &exec_result.output,
+                    exec_result.success,
+                );
+
+                // Apply viscosity-adjusted promotion threshold.
+                let effective_disposition = if score >= promotion_threshold {
+                    FactDisposition::Promote
+                } else if score >= 0.5 {
+                    FactDisposition::Quarantine
+                } else {
+                    disposition
+                };
+
+                // 8. Hostile audit (if strict/frozen and fact would be promoted).
+                let final_disposition = if should_audit && effective_disposition == FactDisposition::Promote {
+                    if let Some(audit_gate) = &self.hostile_audit {
+                        match audit_gate.audit(&exec_result.output, &fact_id).await {
+                            Ok(audit_result) if !audit_result.survived => {
+                                FactDisposition::Quarantine
+                            }
+                            _ => effective_disposition,
+                        }
+                    } else {
+                        effective_disposition
+                    }
+                } else {
+                    effective_disposition
+                };
+
+                match final_disposition {
                     FactDisposition::Promote => {
-                        self.update_state(|s| {
-                            s.facts_captured += 1;
-                        });
+                        facts_promoted += 1;
+                        self.update_state(|s| { s.facts_captured += 1; });
+
+                        // 9. Incur proof-debt for promoted facts.
+                        let namespace = payload
+                            .get("namespace")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("autonomous");
+                        let risk = crate::proof_debt::classify_risk(&exec_result.output, namespace);
+                        if let Ok(mut debt) = self.proof_debt.lock() {
+                            let entry_id = debt.incur(fact_id, namespace, risk);
+                            // Low risk: pay immediately via no-contradictions.
+                            if risk == RiskClass::Low {
+                                let _ = debt.pay(&entry_id, PaymentMethod::NoContradictions);
+                            }
+                        }
                     }
                     FactDisposition::Quarantine => {
-                        self.update_state(|s| {
-                            s.facts_captured += 1;
-                        });
+                        facts_quarantined += 1;
+                        self.update_state(|s| { s.facts_captured += 1; });
                     }
                     FactDisposition::Reject => {
-                        self.update_state(|s| {
-                            s.facts_rejected += 1;
-                        });
+                        facts_rejected_this += 1;
+                        self.update_state(|s| { s.facts_rejected += 1; });
                     }
                 }
             }
 
-            // Also count skipped duplicates as non-captured.
+            // Also count skipped duplicates.
             if capture_outcome.facts_skipped_duplicates > 0 {
+                facts_rejected_this += capture_outcome.facts_skipped_duplicates;
                 self.update_state(|s| {
                     s.facts_rejected += capture_outcome.facts_skipped_duplicates;
                 });
             }
 
-            // 7. Complete or cancel job.
-            // Extract gap key for attempted tracking.
+            // 10. Complete or cancel job.
             let gap_key = format!(
                 "{}|{}",
                 payload.get("fact_id").and_then(|v| v.as_str()).unwrap_or(""),
@@ -463,19 +548,105 @@ impl AutonomousLoop {
                 let _ = self.queue.cancel(&job_id, "execution-failed");
             }
 
-            // Mark this gap as attempted so we don't re-detect it.
+            // Mark this gap as attempted.
             if !gap_key.is_empty() && gap_key != "|" {
                 let _ = self.attempted_gaps.lock().map(|mut g| g.insert(gap_key));
             }
 
-            // 8. Check consecutive failures → safe mode.
+            // 11. Record cycle outcome in viscosity controller.
+            let was_duplicate = capture_outcome.facts_skipped_duplicates > 0;
+            // Use the majority disposition for viscosity recording.
+            let cycle_disposition = if facts_promoted > facts_quarantined
+                && facts_promoted > facts_rejected_this
+            {
+                FactDisposition::Promote
+            } else if facts_quarantined > 0 {
+                FactDisposition::Quarantine
+            } else {
+                FactDisposition::Reject
+            };
+            self.viscosity_record(
+                exec_result.success,
+                was_duplicate,
+                cycle_disposition,
+                0, // contradictions — TODO: wire to decoder output
+                facts_promoted,
+            );
+
+            // 12. Update proof-debt state.
+            let debt_outstanding = if let Ok(debt) = self.proof_debt.lock() {
+                debt.total_outstanding()
+            } else {
+                0
+            };
+            self.update_state(|s| {
+                s.proof_debt_outstanding = debt_outstanding;
+            });
+
+            // 13. Emit cycle receipt.
+            let domains: Vec<String> = self.state.lock().map(|s| s.domains_explored.clone()).unwrap_or_default();
+            let errors: Vec<String> = if exec_result.success {
+                Vec::new()
+            } else {
+                vec![exec_result.error.clone().unwrap_or_else(|| "unknown error".to_string())]
+            };
+            self.emit_cycle_receipt(
+                iteration,
+                0, // gaps_detected this cycle (tracked in run_gap_detection)
+                1, // one task executed
+                facts_promoted + facts_quarantined,
+                facts_rejected_this,
+                facts_quarantined,
+                &domains,
+                &errors,
+            );
+
+            // 14. Check consecutive failures → safe mode.
             self.check_safe_mode();
 
-            // 9. Check max iterations.
+            // 15. Check max iterations.
             self.check_max_iterations(iteration)?;
 
-            // 10. Sleep between iterations.
+            // 16. Sleep between iterations (viscosity-adjusted).
             self.sleep_iteration().await;
+        }
+    }
+
+    /// Emit a cycle receipt and update the receipt chain.
+    fn emit_cycle_receipt(
+        &self,
+        iteration: usize,
+        gaps: usize,
+        tasks: usize,
+        captured: usize,
+        rejected: usize,
+        quarantined: usize,
+        domains: &[String],
+        errors: &[String],
+    ) {
+        let strictness = self.viscosity_strictness_name();
+        let debt_outstanding = self.proof_debt.lock().map(|d| d.total_outstanding()).unwrap_or(0);
+        let total_incurred = self.proof_debt.lock().map(|d| d.debt_receipt().total_incurred).unwrap_or(0);
+        let mode = self.state.lock().map(|s| s.mode).unwrap_or_default();
+        let saturated = self.entropy_saturated_domains();
+
+        if let Ok(mut emitter) = self.receipts.lock() {
+            emitter.emit(
+                iteration,
+                gaps,
+                tasks,
+                captured,
+                rejected,
+                quarantined,
+                None, // viscosity signal snapshot — TODO: wire full signal
+                &strictness,
+                debt_outstanding,
+                total_incurred,
+                mode,
+                domains.to_vec(),
+                saturated,
+                errors.to_vec(),
+            );
         }
     }
 

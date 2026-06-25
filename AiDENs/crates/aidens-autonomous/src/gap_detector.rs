@@ -118,6 +118,9 @@ pub struct DetectedGap {
     /// Optional secondary fact ID (for contradictions, duplicates, links).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fact_id_b: Option<String>,
+    /// Optional secondary fact content snippet (for contradictions, duplicates).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content_b: Option<String>,
     /// Optional namespace context.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub namespace: Option<String>,
@@ -202,6 +205,7 @@ impl GapDetector {
                         priority: 0.6,
                         content_snippet: Some(truncate(&fact.content, 200)),
                         fact_id_b: None,
+                        content_b: None,
                         namespace: fact.namespace.clone(),
                         date: None,
                     });
@@ -224,6 +228,7 @@ impl GapDetector {
                     priority: 0.4,
                     content_snippet: Some(truncate(&fact.content, 200)),
                     fact_id_b: None,
+                    content_b: None,
                     namespace: fact.namespace.clone(),
                     date: None,
                 });
@@ -243,6 +248,7 @@ impl GapDetector {
                         priority: 0.65,
                         content_snippet: Some(truncate(&fact.content, 200)),
                         fact_id_b: None,
+                        content_b: None,
                         namespace: fact.namespace.clone(),
                         date: Some(date),
                     });
@@ -278,6 +284,7 @@ impl GapDetector {
                                 priority: 0.7,
                                 content_snippet: Some(truncate(&fact.content, 200)),
                                 fact_id_b: Some(other.id.clone()),
+                                content_b: Some(truncate(&other.content, 200)),
                                 namespace: fact.namespace.clone(),
                                 date: None,
                             });
@@ -301,6 +308,7 @@ impl GapDetector {
                                 priority: 0.85,
                                 content_snippet: Some(truncate(&fact.content, 200)),
                                 fact_id_b: Some(other.id.clone()),
+                                content_b: Some(truncate(&other.content, 200)),
                                 namespace: fact.namespace.clone(),
                                 date: None,
                             });
@@ -352,6 +360,7 @@ impl GapDetector {
                             priority: 0.5,
                             content_snippet: Some(truncate(&facts[i].content, 100)),
                             fact_id_b: Some(facts[j].id.clone()),
+                            content_b: Some(truncate(&facts[j].content, 100)),
                             namespace: Some(namespace.clone()),
                             date: None,
                         });
@@ -377,6 +386,7 @@ impl GapDetector {
                     priority: 0.9,
                     content_snippet: None,
                     fact_id_b: None,
+                    content_b: None,
                     namespace: None,
                     date: None,
                 });
@@ -437,6 +447,7 @@ impl GapDetector {
                         priority: 0.6,
                         content_snippet: Some(truncate(&fact.content, 200)),
                         fact_id_b: None,
+                        content_b: None,
                         namespace: Some(namespace.to_string()),
                         date: None,
                     });
@@ -458,6 +469,7 @@ impl GapDetector {
                     priority: 0.4,
                     content_snippet: Some(truncate(&fact.content, 200)),
                     fact_id_b: None,
+                    content_b: None,
                     namespace: Some(namespace.to_string()),
                     date: None,
                 });
@@ -477,6 +489,7 @@ impl GapDetector {
                         priority: 0.65,
                         content_snippet: Some(truncate(&fact.content, 200)),
                         fact_id_b: None,
+                        content_b: None,
                         namespace: Some(namespace.to_string()),
                         date: Some(date),
                     });
@@ -508,6 +521,7 @@ impl GapDetector {
                                 priority: 0.7,
                                 content_snippet: Some(truncate(&fact.content, 200)),
                                 fact_id_b: Some(other.id.clone()),
+                                content_b: Some(truncate(&other.content, 200)),
                                 namespace: Some(namespace.to_string()),
                                 date: None,
                             });
@@ -530,6 +544,7 @@ impl GapDetector {
                                 priority: 0.85,
                                 content_snippet: Some(truncate(&fact.content, 200)),
                                 fact_id_b: Some(other.id.clone()),
+                                content_b: Some(truncate(&other.content, 200)),
                                 namespace: Some(namespace.to_string()),
                                 date: None,
                             });
@@ -576,6 +591,7 @@ impl GapDetector {
                             priority: 0.5,
                             content_snippet: Some(truncate(&search_results[i].content, 100)),
                             fact_id_b: Some(search_results[j].id.clone()),
+                            content_b: Some(truncate(&search_results[j].content, 100)),
                             namespace: Some(namespace.to_string()),
                             date: None,
                         });
@@ -1212,6 +1228,7 @@ mod tests {
             priority: 0.6,
             content_snippet: Some("some content".to_string()),
             fact_id_b: None,
+            content_b: None,
             namespace: Some("general".to_string()),
             date: None,
         };
@@ -1230,6 +1247,7 @@ mod tests {
             priority: 0.9,
             content_snippet: None,
             fact_id_b: None,
+            content_b: None,
             namespace: None,
             date: None,
         };
@@ -1249,6 +1267,7 @@ mod tests {
                 priority: 0.5,
                 content_snippet: None,
                 fact_id_b: None,
+                content_b: None,
                 namespace: None,
                 date: None,
             },
@@ -1260,6 +1279,7 @@ mod tests {
                 priority: 0.9,
                 content_snippet: None,
                 fact_id_b: None,
+                content_b: None,
                 namespace: None,
                 date: None,
             },
@@ -1271,6 +1291,7 @@ mod tests {
                 priority: 0.85,
                 content_snippet: None,
                 fact_id_b: None,
+                content_b: None,
                 namespace: None,
                 date: None,
             },
@@ -1477,6 +1498,7 @@ mod tests {
             priority: 0.9,
             content_snippet: None,
             fact_id_b: None,
+            content_b: None,
             namespace: None,
             date: None,
         };

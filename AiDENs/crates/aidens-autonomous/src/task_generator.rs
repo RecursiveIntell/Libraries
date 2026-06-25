@@ -108,8 +108,9 @@ fn build_prompt(gap: &DetectedGap) -> String {
         GapType::ContradictionGap => {
             let fact_a = snippet;
             let fact_b = gap
-                .fact_id_b
+                .content_b
                 .as_deref()
+                .or(gap.fact_id_b.as_deref())
                 .unwrap_or("another fact with conflicting information");
             format!(
                 "Two facts may contradict each other: '{}' vs '{}'. \
@@ -117,11 +118,18 @@ fn build_prompt(gap: &DetectedGap) -> String {
                 fact_a, fact_b
             )
         }
-        GapType::DuplicateFact => format!(
-            "A fact appears to duplicate another: '{}'. \
-             Determine which version is more complete and accurate.",
-            snippet
-        ),
+        GapType::DuplicateFact => {
+            let fact_b = gap
+                .content_b
+                .as_deref()
+                .or(gap.fact_id_b.as_deref())
+                .unwrap_or("another fact");
+            format!(
+                "A fact appears to duplicate another: '{}' vs '{}'. \
+                 Determine which version is more complete and accurate.",
+                snippet, fact_b
+            )
+        }
         GapType::StaleByDate => {
             let date = gap.date.as_deref().unwrap_or("an old date");
             format!(
@@ -165,6 +173,7 @@ mod tests {
             priority: 0.5,
             content_snippet: Some(snippet.to_string()),
             fact_id_b: None,
+            content_b: None,
             namespace: Some("general".to_string()),
             date: None,
         }
@@ -214,6 +223,22 @@ mod tests {
             "Rust has 49 tests",
         );
         gap.fact_id_b = Some("fact:other".to_string());
+        gap.content_b = Some("Rust has 50 tests".to_string());
+        let prompt = build_prompt(&gap);
+        assert!(prompt.contains("contradict"));
+        assert!(prompt.contains("Rust has 49 tests"));
+        assert!(prompt.contains("Rust has 50 tests"));
+    }
+
+    #[test]
+    fn prompt_for_contradiction_gap_falls_back_to_fact_id_b() {
+        let mut gap = make_gap(
+            GapType::ContradictionGap,
+            "fact:conflict",
+            "Rust has 49 tests",
+        );
+        gap.fact_id_b = Some("fact:other".to_string());
+        // content_b is None — should fall back to fact_id_b
         let prompt = build_prompt(&gap);
         assert!(prompt.contains("contradict"));
         assert!(prompt.contains("Rust has 49 tests"));
@@ -222,14 +247,17 @@ mod tests {
 
     #[test]
     fn prompt_for_duplicate_fact() {
-        let gap = make_gap(
+        let mut gap = make_gap(
             GapType::DuplicateFact,
             "fact:dup",
             "Rust is a systems language",
         );
+        gap.fact_id_b = Some("fact:dup2".to_string());
+        gap.content_b = Some("Rust is a systems programming language".to_string());
         let prompt = build_prompt(&gap);
         assert!(prompt.contains("duplicate"));
         assert!(prompt.contains("Rust is a systems language"));
+        assert!(prompt.contains("Rust is a systems programming language"));
     }
 
     #[test]

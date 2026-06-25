@@ -720,6 +720,7 @@ impl MissionImpl for VerifyPublishedCratesMission {
                 priority: self.priority(),
                 content_snippet: Some(snippet),
                 fact_id_b: None,
+                content_b: None,
                 namespace: fact.namespace.clone(),
                 date: None,
             });
@@ -816,6 +817,7 @@ impl MissionImpl for VerifyFileReferencesMission {
                     priority: self.priority(),
                     content_snippet: Some(truncate(&fact.content, 200)),
                     fact_id_b: None,
+                    content_b: None,
                     namespace: fact.namespace.clone(),
                     date: None,
                 });
@@ -929,6 +931,7 @@ impl MissionImpl for DetectContradictionsMission {
                             priority: self.priority(),
                             content_snippet: Some(truncate(&facts[i].content, 200)),
                             fact_id_b: Some(facts[j].id.clone()),
+                            content_b: Some(truncate(&facts[j].content, 200)),
                             namespace: Some(namespace.clone()),
                             date: None,
                         });
@@ -943,7 +946,11 @@ impl MissionImpl for DetectContradictionsMission {
 
     fn prompt_for_gap(&self, gap: &DetectedGap) -> String {
         let fact_a = gap.content_snippet.as_deref().unwrap_or(&gap.description);
-        let fact_b = gap.fact_id_b.as_deref().unwrap_or("another fact");
+        let fact_b = gap
+            .content_b
+            .as_deref()
+            .or(gap.fact_id_b.as_deref())
+            .unwrap_or("another fact");
         format!(
             "Two facts may contradict each other: '{}' vs '{}'. \
              Analyze whether this is a real contradiction or a scope/time difference.",
@@ -1020,6 +1027,7 @@ impl MissionImpl for AuditNamespaceCompletenessMission {
                     priority: self.priority(),
                     content_snippet: None,
                     fact_id_b: None,
+                    content_b: None,
                     namespace: Some(namespace.clone()),
                     date: None,
                 });
@@ -1050,6 +1058,7 @@ impl MissionImpl for AuditNamespaceCompletenessMission {
                     priority: self.priority(),
                     content_snippet: None,
                     fact_id_b: None,
+                    content_b: None,
                     namespace: Some(ns.to_string()),
                     date: None,
                 });
@@ -1147,6 +1156,7 @@ impl MissionImpl for TraceProvenanceChainsMission {
                     priority: self.priority(),
                     content_snippet: Some(snippet),
                     fact_id_b: None,
+                    content_b: None,
                     namespace: fact.namespace.clone(),
                     date: None,
                 });
@@ -1241,6 +1251,7 @@ impl MissionImpl for FindDuplicatesMission {
                         priority: self.priority(),
                         content_snippet: Some(truncate(&all_results[i].content, 200)),
                         fact_id_b: Some(all_results[j].id.clone()),
+                        content_b: Some(truncate(&all_results[j].content, 200)),
                         namespace: all_results[i].namespace.clone(),
                         date: None,
                     });
@@ -1348,6 +1359,7 @@ impl MissionImpl for VerifyCodebaseSyncMission {
                     priority: self.priority(),
                     content_snippet: Some(snippet),
                     fact_id_b: None,
+                    content_b: None,
                     namespace: fact.namespace.clone(),
                     date: None,
                 });
@@ -1453,6 +1465,7 @@ impl MissionImpl for StaleDateDetectionMission {
                     priority: self.priority(),
                     content_snippet: Some(snippet),
                     fact_id_b: None,
+                    content_b: None,
                     namespace: fact.namespace.clone(),
                     date: Some(date),
                 });
@@ -1604,6 +1617,7 @@ mod tests {
             priority: 0.9,
             content_snippet: Some("semantic-memory v0.5.0".to_string()),
             fact_id_b: None,
+            content_b: None,
             namespace: None,
             date: None,
         };
@@ -1622,6 +1636,7 @@ mod tests {
             priority: 0.8,
             content_snippet: Some("src/lib.rs".to_string()),
             fact_id_b: None,
+            content_b: None,
             namespace: None,
             date: None,
         };
@@ -1640,6 +1655,7 @@ mod tests {
             priority: 0.85,
             content_snippet: Some("Rust has 49 tests".to_string()),
             fact_id_b: Some("fact:b".to_string()),
+            content_b: None,
             namespace: Some("general".to_string()),
             date: None,
         };
@@ -1659,6 +1675,7 @@ mod tests {
             priority: 0.5,
             content_snippet: None,
             fact_id_b: None,
+            content_b: None,
             namespace: Some("general".to_string()),
             date: None,
         };
@@ -1677,6 +1694,7 @@ mod tests {
             priority: 0.7,
             content_snippet: Some("source: https://example.com".to_string()),
             fact_id_b: None,
+            content_b: None,
             namespace: None,
             date: None,
         };
@@ -1695,6 +1713,7 @@ mod tests {
             priority: 0.6,
             content_snippet: Some("Rust is a systems language".to_string()),
             fact_id_b: Some("fact:5".to_string()),
+            content_b: None,
             namespace: None,
             date: None,
         };
@@ -1713,6 +1732,7 @@ mod tests {
             priority: 0.75,
             content_snippet: Some("The workspace has 12 crates and 91 tests".to_string()),
             fact_id_b: None,
+            content_b: None,
             namespace: None,
             date: None,
         };
@@ -1731,6 +1751,7 @@ mod tests {
             priority: 0.65,
             content_snippet: Some("Released 2024-01".to_string()),
             fact_id_b: None,
+            content_b: None,
             namespace: None,
             date: Some("2024-01".to_string()),
         };
