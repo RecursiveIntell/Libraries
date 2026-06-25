@@ -4,14 +4,14 @@ use aidens_autonomous::LoopState;
 use aidens_daemon_kit::DaemonControllerV1;
 use aidens_queue_kit::QueueSnapshotV1;
 use anyhow::Result;
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{Event, KeyCode};
 use ratatui::{backend::CrosstermBackend, layout::Rect, Terminal};
 use serde::Deserialize;
 use std::collections::VecDeque;
 use std::io::Stdout;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use tokio::time::Duration;
+use std::time::Duration;
 
 use crate::ui;
 
@@ -72,11 +72,20 @@ impl App {
     }
 
     /// Main event loop at ~10fps (100ms tick).
+    ///
+    /// Uses crossterm's async EventStream with tokio::select! so the loop
+    /// task runs concurrently with keyboard polling -- no blocking.
     pub async fn run(
         &mut self,
         terminal: &mut Terminal<CrosstermBackend<Stdout>>,
     ) -> Result<()> {
+        use crossterm::event::EventStream;
+        use futures::StreamExt;
+
         self.log("TUI started — press 'q' to quit, 'p' to pause, 's' for safe mode");
+
+        let mut event_stream = EventStream::new();
+        let mut render_interval = tokio::time::interval(Duration::from_millis(250));
 
         loop {
             // Render the current state.
@@ -85,33 +94,40 @@ impl App {
                 ui::render(frame, area, self);
             })?;
 
-            // Poll keyboard events (non-blocking, 100ms timeout).
-            if event::poll(Duration::from_millis(100))? {
-                if let Event::Key(key) = event::read()? {
-                    match key.code {
-                        KeyCode::Char('q') => {
-                            self.should_quit = true;
-                            self.log("Quit requested");
-                        }
-                        KeyCode::Char('p') => {
-                            self.paused = !self.paused;
-                            if self.paused {
-                                self.log("Polling paused");
-                            } else {
-                                self.log("Polling resumed");
+            // Use select! to poll keyboard events AND yield to the runtime
+            // concurrently. The loop task (on the LocalSet) gets polled
+            // during every await point, so it runs freely.
+            tokio::select! {
+                // Keyboard event (async, non-blocking)
+                maybe_event = event_stream.next() => {
+                    if let Some(Ok(Event::Key(key))) = maybe_event {
+                        match key.code {
+                            KeyCode::Char('q') => {
+                                self.should_quit = true;
+                                self.log("Quit requested");
                             }
-                        }
-                        KeyCode::Char('s') => {
-                            self.log("Attempting to set safe mode on queue...");
-                            if let Err(e) = self.set_queue_safe_mode() {
-                                self.log(format!("Safe mode error: {e}"));
-                            } else {
-                                self.log("Safe mode set on queue");
+                            KeyCode::Char('p') => {
+                                self.paused = !self.paused;
+                                if self.paused {
+                                    self.log("Polling paused");
+                                } else {
+                                    self.log("Polling resumed");
+                                }
                             }
+                            KeyCode::Char('s') => {
+                                self.log("Attempting to set safe mode on queue...");
+                                if let Err(e) = self.set_queue_safe_mode() {
+                                    self.log(format!("Safe mode error: {e}"));
+                                } else {
+                                    self.log("Safe mode set on queue");
+                                }
+                            }
+                            _ => {}
                         }
-                        _ => {}
                     }
                 }
+                // Render/poll tick every 250ms
+                _ = render_interval.tick() => {}
             }
 
             if self.should_quit {

@@ -12,7 +12,8 @@ aidens-daemon-kit = { path = "../aidens-daemon-kit" }
 aidens-queue-kit = { path = "../aidens-queue-kit" }
 aidens-contracts = { path = "../aidens-contracts" }
 ratatui = "0.29"
-crossterm = "0.28"
+crossterm = { version = "0.28", features = ["event-stream"] }
+futures = "0.3"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
