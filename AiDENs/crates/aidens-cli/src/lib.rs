@@ -209,9 +209,39 @@ pub enum Command {
     InspectRun {
         dir: String,
     },
+    Verify {
+        #[arg(long)]
+        config: Option<String>,
+        #[arg(long, default_value = ".")]
+        root: String,
+    },
+    InspectReceipt {
+        receipt_id: String,
+        #[arg(long)]
+        store: Option<String>,
+        #[arg(long)]
+        config: Option<String>,
+    },
     New {
         profile: String,
         destination: String,
+    },
+    /// Run the autonomous gap-detection → task-generation → execution → capture → evaluation loop.
+    Autonomous {
+        #[arg(long, default_value = "~/.hermes/semantic-memory.db")]
+        memory_dir: String,
+        #[arg(long, default_value = "/tmp/aidens-queue")]
+        queue_dir: String,
+        #[arg(long, default_value = "http://127.0.0.1:11434")]
+        ollama_url: String,
+        #[arg(long, default_value = "granite4.1:3b")]
+        ollama_model: String,
+        #[arg(long, default_value = "http://127.0.0.1:1738")]
+        http_base_url: String,
+        #[arg(long, default_value_t = 0)]
+        max_iterations: usize,
+        #[arg(long, default_value_t = 60)]
+        sleep_ms: u64,
     },
 }
 
@@ -667,10 +697,64 @@ pub fn run(cli: Cli) -> Result<String> {
             permit_json,
         } => run_coding_agent_command(&config, out, permit_json),
         Command::InspectRun { dir } => inspect_run_bundle_command(&dir),
+        Command::Verify { config, root } => verify_command(config, &root),
+        Command::InspectReceipt {
+            receipt_id,
+            store,
+            config,
+        } => inspect_receipt_command(&receipt_id, store, config),
         Command::New {
             profile,
             destination,
         } => new_app(&profile, &destination),
+        Command::Autonomous {
+            memory_dir,
+            queue_dir,
+            ollama_url,
+            ollama_model,
+            http_base_url,
+            max_iterations,
+            sleep_ms,
+        } => {
+            let config = aidens_autonomous::LoopConfig {
+                memory_dir: PathBuf::from(memory_dir),
+                queue_dir: PathBuf::from(queue_dir),
+                ollama_url,
+                ollama_model,
+                http_base_url,
+                max_iterations,
+                sleep_between_iterations_ms: sleep_ms,
+                ..Default::default()
+            };
+            let loop_driver = aidens_autonomous::AutonomousLoop::from_config(config)?;
+            let runtime = tokio::runtime::Runtime::new()?;
+            runtime.block_on(async {
+                // Spawn a stderr state reporter.
+                let state = loop_driver.state.clone();
+                let reporter = tokio::spawn(async move {
+                    loop {
+                        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                        let snap = state.lock().map(|s| s.clone()).unwrap_or_default();
+                        eprintln!(
+                            "[autonomous] iter={} gaps={} tasks_gen={} tasks_done={} tasks_fail={} facts_cap={} facts_rej={} safe={} job={:?}",
+                            snap.iteration,
+                            snap.gaps_detected,
+                            snap.tasks_generated,
+                            snap.tasks_completed,
+                            snap.tasks_failed,
+                            snap.facts_captured,
+                            snap.facts_rejected,
+                            snap.safe_mode,
+                            snap.current_job,
+                        );
+                    }
+                });
+                let result = loop_driver.run().await;
+                reporter.abort();
+                result
+            })?;
+            Ok("autonomous loop completed".to_string())
+        }
     }
 }
 
@@ -1988,6 +2072,53 @@ pub fn new_app(profile: &str, destination: &str) -> Result<String> {
         summary.app_dir.display(),
         summary.files
     ))
+}
+
+pub fn verify_command(config: Option<String>, root: &str) -> Result<String> {
+    let path = config.unwrap_or_else(|| "aidens.toml".into());
+    let (config_status, cfg) = load_or_default_config(&path)?;
+    ensure_profile_policy(&cfg)?;
+    let doctor = doctor_report_for_config(&config_status, &cfg);
+    let route = route_for_config(&cfg);
+    let receipt_store_configured = receipt_store_root_for_config(&cfg, std::path::Path::new(&path)).is_some();
+    let healthy_count = doctor
+        .sections
+        .values()
+        .flat_map(|section| section.iter())
+        .filter(|truth| truth.states.contains(&CapabilityStateV1::Healthy))
+        .count();
+    let total_count = doctor
+        .sections
+        .values()
+        .flat_map(|section| section.iter())
+        .count();
+    let all_healthy = healthy_count == total_count;
+    Ok(serde_json::to_string_pretty(&serde_json::json!({
+        "command": "verify",
+        "config": config_status,
+        "root": root,
+        "provider_route": route.route_label,
+        "provider_executable": !route.degraded,
+        "receipt_store_configured": receipt_store_configured,
+        "memory_mode": cfg.memory_mode,
+        "gate_summary": {
+            "healthy": healthy_count,
+            "total": total_count,
+            "all_healthy": all_healthy,
+        },
+        "verdict": if all_healthy { "gates-pass" } else { "gates-fail" },
+        "doctor": doctor,
+    }))?)
+}
+
+pub fn inspect_receipt_command(
+    receipt_id: &str,
+    store: Option<String>,
+    config: Option<String>,
+) -> Result<String> {
+    let store_config = receipt_store_config_from_options(store, config)?;
+    let store = CanonicalEventLog::open(store_config)?;
+    Ok(serde_json::to_string_pretty(&store.inspect(receipt_id)?)?)
 }
 
 fn sanitize_package_name(name: &str) -> Result<String> {

@@ -9,6 +9,7 @@ description = "AiDENs CLI — agent creation, doctor diagnostics, scaffold gener
 
 [dependencies]
 aidens-app-kit = { path = "../aidens-app-kit" }
+aidens-autonomous = { path = "../aidens-autonomous" }
 aidens-budget-kit = { path = "../aidens-budget-kit" }
 aidens-boundary-kit = { path = "../aidens-boundary-kit" }
 aidens-capability-kit = { path = "../aidens-capability-kit" }

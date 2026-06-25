@@ -1,0 +1,28 @@
+[package]
+name = "aidens-tui"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.76"
+license = "MIT OR Apache-2.0"
+description = "Terminal UI for observing the AiDENs autonomous loop"
+
+[dependencies]
+aidens-autonomous = { path = "../aidens-autonomous" }
+aidens-daemon-kit = { path = "../aidens-daemon-kit" }
+aidens-queue-kit = { path = "../aidens-queue-kit" }
+aidens-contracts = { path = "../aidens-contracts" }
+ratatui = "0.29"
+crossterm = "0.28"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
