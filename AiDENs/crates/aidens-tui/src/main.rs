@@ -90,9 +90,18 @@ async fn main() -> Result<()> {
     let http_base_url = config.http_base_url.clone();
 
     // Spawn the loop in a local task (non-Send futures need LocalSet).
+    // Wrap in error handling so a panic in the loop doesn't kill the TUI.
     let local_set = tokio::task::LocalSet::new();
+    let loop_state_clone = loop_state.clone();
     let loop_handle = local_set.spawn_local(async move {
-        let _ = loop_instance.run().await;
+        // Run the loop. If it errors or panics, log to shared state
+        // and let the TUI stay alive so the user can see what happened.
+        let result = loop_instance.run().await;
+        if let Err(e) = result {
+            if let Ok(mut s) = loop_state_clone.lock() {
+                s.last_error = Some(format!("loop exited: {e}"));
+            }
+        }
     });
 
     // Setup terminal.

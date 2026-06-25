@@ -88,11 +88,14 @@ impl App {
         let mut render_interval = tokio::time::interval(Duration::from_millis(250));
 
         loop {
-            // Render the current state.
-            terminal.draw(|frame| {
+            // Render the current state. If rendering fails, log but keep going.
+            if let Err(e) = terminal.draw(|frame| {
                 let area = frame.area();
                 ui::render(frame, area, self);
-            })?;
+            }) {
+                self.log(format!("Render error: {e}"));
+                // Don't propagate — keep the loop alive.
+            }
 
             // Use select! to poll keyboard events AND yield to the runtime
             // concurrently. The loop task (on the LocalSet) gets polled
@@ -136,18 +139,19 @@ impl App {
 
             // If paused, skip polling — just re-render last state.
             if !self.paused {
-                // Poll memory stats from HTTP.
+                // Poll memory stats from HTTP. Errors are logged, not fatal.
                 if let Err(e) = self.poll_memory_stats().await {
-                    // Don't spam the log on every failed poll.
-                    // Only log if we had stats before (transition to error).
                     if self.memory_stats.facts > 0 {
                         self.log(format!("Stats poll error: {e}"));
                     }
                 }
 
-                // Poll queue snapshot (read-only).
+                // Poll queue snapshot (read-only). Errors are logged, not fatal.
                 if let Err(e) = self.poll_queue() {
-                    self.log(format!("Queue poll error: {e}"));
+                    // Only log if we had a snapshot before.
+                    if self.queue_snapshot.is_some() {
+                        self.log(format!("Queue poll error: {e}"));
+                    }
                 }
             }
         }
