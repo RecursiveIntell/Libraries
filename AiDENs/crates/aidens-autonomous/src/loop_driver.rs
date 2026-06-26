@@ -41,9 +41,10 @@ pub struct LoopConfig {
     /// Maximum consecutive failures before entering safe mode.
     pub max_consecutive_failures: usize,
     /// Ollama-compatible provider base URL.
-    pub ollama_url: String,
+    pub model_url: String,
     /// Ollama model name.
-    pub ollama_model: String,
+    pub chosen_model: String,
+    pub api_key: Option<String>,
     /// Directory for the canonical memory store.
     pub memory_dir: PathBuf,
     /// Directory for the daemon queue.
@@ -52,7 +53,7 @@ pub struct LoopConfig {
     pub http_base_url: String,
     /// Auditor URL for hostile audit gate (empty = no audit).
     pub auditor_url: String,
-    /// Auditor model name (should differ from ollama_model).
+    /// Auditor model name (should differ from chosen_model).
     pub auditor_model: String,
 }
 
@@ -63,8 +64,9 @@ impl Default for LoopConfig {
             gap_detection_interval: 5,
             sleep_between_iterations_ms: 1000,
             max_consecutive_failures: 5,
-            ollama_url: "http://127.0.0.1:11434".to_string(),
-            ollama_model: "llama3".to_string(),
+            model_url: "http://127.0.0.1:11434".to_string(),
+            chosen_model: "llama3".to_string(),
+            api_key: None,
             memory_dir: PathBuf::from("./.aidens/memory"),
             queue_dir: PathBuf::from("./.aidens/queue"),
             http_base_url: "http://127.0.0.1:1738".to_string(),
@@ -193,9 +195,10 @@ impl AutonomousLoop {
         let generator = TaskGenerator::new(queue.clone());
         let executor = LoopExecutor::new(
             memory.clone(),
-            &config.ollama_url,
-            &config.ollama_model,
+            &config.model_url,
+            &config.chosen_model,
             &config.http_base_url,
+            config.api_key.clone(),
         );
         let capture = ResultCapture::new(memory, &config.http_base_url);
         let evaluation = EvaluationGate::new();
@@ -1012,8 +1015,8 @@ mod tests {
         assert_eq!(config.gap_detection_interval, 5);
         assert_eq!(config.sleep_between_iterations_ms, 1000);
         assert_eq!(config.max_consecutive_failures, 5);
-        assert_eq!(config.ollama_url, "http://127.0.0.1:11434");
-        assert_eq!(config.ollama_model, "llama3");
+        assert_eq!(config.model_url, "http://127.0.0.1:11434");
+        assert_eq!(config.chosen_model, "llama3");
     }
 
     #[test]
@@ -1023,8 +1026,9 @@ mod tests {
             gap_detection_interval: 3,
             sleep_between_iterations_ms: 500,
             max_consecutive_failures: 10,
-            ollama_url: "http://ollama:11434".to_string(),
-            ollama_model: "mistral".to_string(),
+            model_url: "http://ollama:11434".to_string(),
+            chosen_model: "mistral".to_string(),
+            api_key: None,
             memory_dir: PathBuf::from("/tmp/memory"),
             queue_dir: PathBuf::from("/tmp/queue"),
             http_base_url: "http://localhost:1738".to_string(),
@@ -1089,7 +1093,7 @@ mod tests {
         let json = serde_json::to_string(&config).unwrap();
         let back: LoopConfig = serde_json::from_str(&json).unwrap();
         assert_eq!(back.max_iterations, config.max_iterations);
-        assert_eq!(back.ollama_url, config.ollama_url);
+        assert_eq!(back.model_url, config.model_url);
     }
 
     #[test]
@@ -1125,8 +1129,9 @@ mod tests {
             gap_detection_interval: 1,
             sleep_between_iterations_ms: 0,
             max_consecutive_failures: 3,
-            ollama_url: "http://localhost:11434".to_string(),
-            ollama_model: "test-model".to_string(),
+            model_url: "http://localhost:11434".to_string(),
+            chosen_model: "test-model".to_string(),
+            api_key: None,
             memory_dir: memory_dir.clone(),
             queue_dir: queue_dir.clone(),
             http_base_url: "http://localhost:1738".to_string(),
@@ -1175,8 +1180,9 @@ mod tests {
             gap_detection_interval: 100, // don't detect during test
             sleep_between_iterations_ms: 0,
             max_consecutive_failures: 99,
-            ollama_url: "http://localhost:11434".to_string(),
-            ollama_model: "test".to_string(),
+            model_url: "http://localhost:11434".to_string(),
+            chosen_model: "test".to_string(),
+            api_key: None,
             memory_dir: memory_dir,
             queue_dir: queue_dir,
             http_base_url: "http://localhost:1738".to_string(),

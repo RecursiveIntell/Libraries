@@ -233,9 +233,11 @@ pub enum Command {
         #[arg(long, default_value = "/tmp/aidens-queue")]
         queue_dir: String,
         #[arg(long, default_value = "http://127.0.0.1:11434")]
-        ollama_url: String,
+        model_url: String,
         #[arg(long, default_value = "granite4.1:3b")]
-        ollama_model: String,
+        chosen_model: String,
+        #[arg(long)]
+        api_key: Option<String>,
         #[arg(long, default_value = "http://127.0.0.1:1738")]
         http_base_url: String,
         #[arg(long, default_value_t = 0)]
@@ -710,8 +712,9 @@ pub fn run(cli: Cli) -> Result<String> {
         Command::Autonomous {
             memory_dir,
             queue_dir,
-            ollama_url,
-            ollama_model,
+            model_url,
+            chosen_model,
+            api_key,
             http_base_url,
             max_iterations,
             sleep_ms,
@@ -719,8 +722,9 @@ pub fn run(cli: Cli) -> Result<String> {
             let config = aidens_autonomous::LoopConfig {
                 memory_dir: PathBuf::from(memory_dir),
                 queue_dir: PathBuf::from(queue_dir),
-                ollama_url,
-                ollama_model,
+                model_url,
+                chosen_model,
+                api_key,
                 http_base_url,
                 max_iterations,
                 sleep_between_iterations_ms: sleep_ms,

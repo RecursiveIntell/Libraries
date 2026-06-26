@@ -62,6 +62,7 @@ pub struct PlanActVerifyLoopV1 {
     provider_mock_response: Option<String>,
     provider_model: Option<String>,
     provider_base_url: Option<String>,
+    provider_api_key: Option<String>,
     sandbox_root: Option<String>,
     canonical_receipt_log_config: Option<CanonicalEventLogConfig>,
     budget_retries: u32,
@@ -97,6 +98,7 @@ impl PlanActVerifyLoopV1 {
             provider_mock_response: None,
             provider_model: None,
             provider_base_url: None,
+            provider_api_key: None,
             sandbox_root: None,
             canonical_receipt_log_config: Some(default_plan_act_verify_receipt_log_config()),
             budget_retries: 2,
@@ -137,6 +139,11 @@ impl PlanActVerifyLoopV1 {
 
     pub fn provider_base_url(mut self, base_url: impl Into<String>) -> Self {
         self.provider_base_url = Some(base_url.into());
+        self
+    }
+
+    pub fn api_key(mut self, key: impl Into<String>) -> Self {
+        self.provider_api_key = Some(key.into());
         self
     }
 
@@ -334,14 +341,26 @@ impl PlanActVerifyLoopV1 {
             },
         };
 
+        let provider_kind = match self.spec.provider_policy.provider {
+            AgentProviderModeV1::Mock => "mock".to_string(),
+            AgentProviderModeV1::Local => "mock".to_string(),
+            AgentProviderModeV1::Ollama => {
+                // If base_url points to an opencode/compatible endpoint, use openai-compatible transport
+                if let Some(ref url) = self.provider_base_url {
+                    if url.contains("opencode") || url.contains("/v1") {
+                        "openai-compatible".to_string()
+                    } else {
+                        "ollama".to_string()
+                    }
+                } else {
+                    "ollama".to_string()
+                }
+            }
+        };
         let provider_spec = ProviderSpecV1 {
-            kind: match self.spec.provider_policy.provider {
-                AgentProviderModeV1::Mock => "mock".into(),
-                AgentProviderModeV1::Local => "mock".into(),
-                AgentProviderModeV1::Ollama => "ollama".into(),
-            },
+            kind: provider_kind,
             model: self.provider_model.clone(),
-            api_key: None,
+            api_key: self.provider_api_key.clone(),
             base_url: self.provider_base_url.clone(),
             mock_response: self.provider_mock_response.clone(),
         };

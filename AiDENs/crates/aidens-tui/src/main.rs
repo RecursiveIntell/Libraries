@@ -1,14 +1,14 @@
 //! Binary entry point for the AiDENs TUI.
 //!
 //! Usage:
-//!   aidens-tui [--memory-dir <path>] [--queue-dir <path>] [--ollama-url <url>]
-//!              [--ollama-model <model>] [--http-base-url <url>]
+//!   aidens-tui [--memory-dir <path>] [--queue-dir <path>] [--model-url <url>]
+//!              [--chosen-model <model>] [--http-base-url <url>]
 //!
 //! Defaults:
 //!   --memory-dir    ~/.hermes/semantic-memory.db
 //!   --queue-dir     /tmp/aidens-queue
-//!   --ollama-url    http://127.0.0.1:11434
-//!   --ollama-model  granite4.1:3b
+//!   --model-url    http://127.0.0.1:11434
+//!   --chosen-model deepseek-v4-flash
 //!   --http-base-url http://127.0.0.1:1738
 
 use aidens_autonomous::{AutonomousLoop, LoopConfig};
@@ -41,12 +41,12 @@ fn parse_args() -> LoopConfig {
                 config.queue_dir = PathBuf::from(&v);
                 2
             }
-            ("--ollama-url", Some(v)) => {
-                config.ollama_url = v;
+            ("--model-url", Some(v)) => {
+                config.model_url = v;
                 2
             }
-            ("--ollama-model", Some(v)) => {
-                config.ollama_model = v;
+            ("--chosen-model", Some(v)) => {
+                config.chosen_model = v;
                 2
             }
             ("--http-base-url", Some(v)) => {

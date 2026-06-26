@@ -65,18 +65,19 @@ pub struct LoopExecutor {
     /// Shared canonical memory adapter for grounding and fact capture.
     pub memory: Arc<CanonicalMemoryAdapter>,
     /// Ollama-compatible provider base URL.
-    pub ollama_url: String,
+    pub model_url: String,
     /// Ollama model name to use for completions.
-    pub ollama_model: String,
+    pub chosen_model: String,
     /// Semantic-memory HTTP base URL (for `/record-outcome`).
     pub http_base_url: String,
+    pub api_key: Option<String>,
 }
 
 impl std::fmt::Debug for LoopExecutor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LoopExecutor")
-            .field("ollama_url", &self.ollama_url)
-            .field("ollama_model", &self.ollama_model)
+            .field("model_url", &self.model_url)
+            .field("chosen_model", &self.chosen_model)
             .field("http_base_url", &self.http_base_url)
             .finish_non_exhaustive()
     }
@@ -90,15 +91,17 @@ impl LoopExecutor {
     /// Create a new executor with the given memory adapter and provider config.
     pub fn new(
         memory: Arc<CanonicalMemoryAdapter>,
-        ollama_url: impl Into<String>,
-        ollama_model: impl Into<String>,
+        model_url: impl Into<String>,
+        chosen_model: impl Into<String>,
         http_base_url: impl Into<String>,
+        api_key: Option<String>,
     ) -> Self {
         Self {
             memory,
-            ollama_url: ollama_url.into(),
-            ollama_model: ollama_model.into(),
+            model_url: model_url.into(),
+            chosen_model: chosen_model.into(),
             http_base_url: http_base_url.into(),
+            api_key,
         }
     }
 
@@ -145,11 +148,12 @@ impl LoopExecutor {
         source_fact_id: &str,
     ) -> Result<ExecutionResult> {
         // Build the plan-act-verify loop.
-        let spec = autonomous_agent_spec(&self.ollama_model);
+        let spec = autonomous_agent_spec(&self.chosen_model);
         let loop_v1 = PlanActVerifyLoopV1::new(spec)
             .with_memory(self.memory.clone())
-            .provider_model(&self.ollama_model)
-            .provider_base_url(&self.ollama_url)
+            .provider_model(&self.chosen_model)
+            .provider_base_url(&self.model_url)
+            .api_key(self.api_key.clone().unwrap_or_default())
             .max_retries(2);
 
         // Prepend the system prompt to the user prompt. The runner builds the
@@ -388,9 +392,9 @@ mod tests {
     #[test]
     fn executor_stores_config() {
         let memory = mock_memory();
-        let executor = LoopExecutor::new(memory, "http://localhost:11434", "test-model", "http://localhost:1738");
-        assert_eq!(executor.ollama_url, "http://localhost:11434");
-        assert_eq!(executor.ollama_model, "test-model");
+        let executor = LoopExecutor::new(memory, "http://localhost:11434", "test-model", "http://localhost:1738", None);
+        assert_eq!(executor.model_url, "http://localhost:11434");
+        assert_eq!(executor.chosen_model, "test-model");
         assert_eq!(executor.http_base_url, "http://localhost:1738");
     }
 
@@ -483,6 +487,7 @@ mod tests {
             "http://localhost:11434",
             "test-model",
             "http://localhost:1738",
+            None,
         );
 
         // We'll bypass the Ollama provider by building the loop directly with
@@ -513,6 +518,7 @@ mod tests {
             "http://localhost:11434",
             "test-model",
             "http://localhost:1738",
+            None,
         );
         // Verify memory is accessible (Arc clone).
         assert_eq!(Arc::strong_count(&executor.memory), 2);
@@ -537,9 +543,10 @@ mod debug_tests {
 
         let executor = LoopExecutor {
             memory: memory.clone(),
-            ollama_url: "http://127.0.0.1:11434".to_string(),
-            ollama_model: "gemma4:31b-cloud".to_string(),
+            model_url: "http://127.0.0.1:11434".to_string(),
+            chosen_model: "gemma4:31b-cloud".to_string(),
             http_base_url: "http://127.0.0.1:1738".to_string(),
+            api_key: None,
         };
 
         let payload = serde_json::json!({

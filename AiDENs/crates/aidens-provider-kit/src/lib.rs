@@ -452,7 +452,61 @@ fn render_mock_response_template(template: &str, request: &AiDENsCompletionReque
         .to_string()
 }
 
+// ── OpenAiCompatibleProvider ──────────────────────────────────────────
+
 #[derive(Debug, Clone)]
+pub struct OpenAiCompatibleProvider {
+    base_url: String,
+    model: String,
+    client: reqwest::Client,
+    api_key: Option<String>,
+}
+
+impl OpenAiCompatibleProvider {
+    pub fn new(base_url: impl Into<String>, model: impl Into<String>, api_key: Option<String>) -> anyhow::Result<Self> {
+        let base_url = base_url.into().trim_end_matches('/').to_string();
+        let model = model.into();
+        if base_url.trim().is_empty() { bail!("openai-compatible provider unavailable: base_url is empty") }
+        if model.trim().is_empty() { bail!("openai-compatible provider unavailable: model is empty") }
+        let client = reqwest::Client::builder().connect_timeout(Duration::from_secs(10)).timeout(Duration::from_secs(300)).build()
+            .context("openai-compatible provider unavailable: failed to build HTTP client")?;
+        Ok(Self { base_url, model, client, api_key })
+    }
+}
+
+#[async_trait]
+impl AiDENsProvider for OpenAiCompatibleProvider {
+    fn provider_kind(&self) -> &str { "openai-compatible" }
+    fn model(&self) -> Option<&str> { Some(&self.model) }
+    fn capabilities(&self) -> ProviderCapabilitiesV1 { ProviderCapabilitiesV1 { chat_completion: true, native_tool_calling: true, streaming: false, structured_output: false } }
+
+    async fn complete(&self, request: AiDENsCompletionRequestV1) -> anyhow::Result<AiDENsCompletionResponseV1> {
+        let messages: Vec<serde_json::Value> = request.messages.iter().map(|m| serde_json::json!({"role": m.role, "content": m.content})).collect();
+        let mut body = serde_json::json!({"model": self.model, "messages": messages, "stream": false});
+        if let Some(temp) = request.temperature { body["temperature"] = serde_json::json!(temp); }
+        let tools: Vec<serde_json::Value> = request.provider_tool_schemas.iter().map(|s| serde_json::json!({"type": "function", "function": {"name": s.name, "description": s.description, "parameters": s.input_schema}})).collect();
+        if !tools.is_empty() { body["tools"] = serde_json::json!(tools); }
+        let url = if self.base_url.ends_with("/v1") || self.base_url.contains("/v1/") { format!("{}/chat/completions", self.base_url) } else { format!("{}/v1/chat/completions", self.base_url) };
+        let mut req = self.client.post(&url).json(&body);
+        if let Some(ref key) = self.api_key { req = req.header("Authorization", format!("Bearer {}", key)); }
+        let response = req.send().await.map_err(|e| anyhow!("openai-compatible provider unavailable: {}", e))?;
+        if !response.status().is_success() { let s = response.status(); let b = response.text().await.unwrap_or_default(); bail!("openai-compatible provider returned {s}: {b}") }
+        let json = response.json::<serde_json::Value>().await.context("openai-compatible provider: response JSON parse failed")?;
+        let choice = &json["choices"][0]["message"];
+        let text = choice["content"].as_str().unwrap_or("").to_string();
+        let name_to_tool_id: std::collections::HashMap<String, String> = request.provider_tool_schemas.iter().map(|s| (s.name.clone(), s.tool_id.clone())).collect();
+        let tool_calls: Vec<ToolCallRequestV1> = choice["tool_calls"].as_array().map(|calls| calls.iter().filter_map(|call| {
+            let name = call["function"]["name"].as_str()?;
+            let args = call["function"]["arguments"].clone();
+            let tid = name_to_tool_id.get(name).cloned().unwrap_or_else(|| name.to_string());
+            Some(ToolCallRequestV1::new(ToolCallSourceV1::NativeProvider, tid, args, None, vec![]))
+        }).collect()).unwrap_or_default();
+        let usage = &json["usage"];
+        Ok(AiDENsCompletionResponseV1 { text, provider_kind: self.provider_kind().into(), model: Some(self.model.clone()), prompt_eval_count: usage["prompt_tokens"].as_u64(), eval_count: usage["completion_tokens"].as_u64(), tool_calls })
+    }
+}
+
+
 pub struct UnavailableProvider {
     kind: String,
     model: Option<String>,
@@ -503,6 +557,11 @@ pub fn build_provider(spec: ProviderSpecV1) -> anyhow::Result<Arc<dyn AiDENsProv
         "mock" => Arc::new(MockProvider::new(
             spec.mock_response.unwrap_or_default(),
             spec.model,
+        )?),
+        "openai-compatible" | "opencode" => Arc::new(OpenAiCompatibleProvider::new(
+            spec.base_url.unwrap_or_else(|| "https://opencode.ai/zen/go/v1".into()),
+            spec.model.ok_or_else(|| anyhow!("openai-compatible provider unavailable: model is not configured"))?,
+            spec.api_key.clone(),
         )?),
         "ollama" => Arc::new(OllamaProvider::new(
             spec.base_url
@@ -573,7 +632,7 @@ pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
         },
         ProviderBackendMatrixEntryV1 {
             provider_kind: "openai-compatible".into(),
-            status: ProviderBackendStatusV1::BoundaryUnavailable,
+            status: ProviderBackendStatusV1::Executable,
             route_label: ProviderRouteKindV1::Unavailable.to_string(),
             api_key_required: true,
             chat_completion_executable: false,
