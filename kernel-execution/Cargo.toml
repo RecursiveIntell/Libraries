@@ -5,13 +5,19 @@ edition = "2021"
 rust-version = "1.75.0"
 description = "Deterministic K2 execution baseline for recursive inference graphs"
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/kernel-execution"
+homepage = "https://github.com/RecursiveIntell/kernel-execution"
+documentation = "https://docs.rs/kernel-execution"
+keywords = ["kernel", "execution", "inference", "deterministic", "recursive"]
+categories = ["algorithms", "science"]
 
 [dependencies]
-constraint-compiler = { path = "../constraint-compiler" }
-recursive-kernel-core = { path = "../recursive-kernel-core" }
+constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
+recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 schemars = { workspace = true }
 
 # LIB-005: inherit workspace lint policy
