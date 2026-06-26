@@ -36,7 +36,8 @@ members = [
     "crates/aidens-profile-memory",
     "crates/boundary-compiler-core",
     "crates/aidens-autonomous",
-    "crates/aidens-tui"
+    "crates/aidens-tui",
+    "crates/aidens-memory-tools",
 ]
 
 [workspace.package]
