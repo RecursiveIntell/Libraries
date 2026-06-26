@@ -5,19 +5,25 @@ edition = "2021"
 rust-version = "1.75.0"
 description = "Bounded exact/conservative oracle paths for the recursive inference kernel"
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/RecursiveIntell/kernel-oracles"
+homepage = "https://github.com/RecursiveIntell/kernel-oracles"
+documentation = "https://docs.rs/kernel-oracles"
+keywords = ["oracle", "kernel", "inference", "bounded", "conservative"]
+categories = ["algorithms", "science"]
 
 [dependencies]
 chrono = { workspace = true, features = ["serde"] }
-constraint-compiler = { path = "../constraint-compiler" }
-forge-memory-bridge = { path = "../forge-memory-bridge" }
-kernel-execution = { path = "../kernel-execution" }
-recursive-kernel-core = { path = "../recursive-kernel-core" }
+constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
+forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
+kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
+recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
 serde = { workspace = true, features = ["derive"] }
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 schemars = { workspace = true }
 
 [dev-dependencies]
-semantic-memory-forge = { path = "../semantic-memory-forge" }
+semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
 serde_json = { workspace = true }
 proptest = { workspace = true }
 
