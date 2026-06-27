@@ -46,3 +46,23 @@ def test_write_reports_includes_failed_policy_target_rows(tmp_path):
     assert "Failures: 1" in md
     assert "hard_cascade" in md
     assert "BudgetExceeded" in md
+
+
+def test_write_reports_accepts_custom_output_dir_and_docs_path(tmp_path):
+    mod = load_module()
+    candidate = mod.SessionCandidate("sess-1", "title", 42, 1000)
+    output_dir = tmp_path / "reports"
+    docs_path = tmp_path / "custom.md"
+
+    json_path, md_path = mod.write_reports(
+        tmp_path,
+        [{"ok": False, "fixture_id": "sess-1", "target_tokens": 8000, "budget_mode": "soft_warn", "error": "x"}],
+        [candidate],
+        output_dir=output_dir,
+        docs_path=docs_path,
+    )
+
+    assert json_path == output_dir / "hermes-replay-report.json"
+    assert md_path == docs_path
+    assert json_path.exists()
+    assert md_path.exists()

@@ -139,13 +139,23 @@ def short_error(report: dict) -> str:
     return str(report.get("error") or "").replace("\n", " ")[:160]
 
 
-def write_reports(crate_dir: Path, reports: list[dict], candidates: list[SessionCandidate]) -> tuple[Path, Path]:
-    out_dir = crate_dir / "target" / "context-governor-replay"
+def write_reports(
+    crate_dir: Path,
+    reports: list[dict],
+    candidates: list[SessionCandidate],
+    output_dir: Path | None = None,
+    docs_path: Path | None = None,
+) -> tuple[Path, Path]:
+    out_dir = output_dir or (crate_dir / "target" / "context-governor-replay")
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "hermes-replay-report.json"
-    docs_dir = crate_dir / "docs"
-    docs_dir.mkdir(parents=True, exist_ok=True)
-    md_path = docs_dir / "hermes-replay-eval-2026-06-27.md"
+    if docs_path is None:
+        docs_dir = crate_dir / "docs"
+        docs_dir.mkdir(parents=True, exist_ok=True)
+        md_path = docs_dir / "hermes-replay-eval-2026-06-27.md"
+    else:
+        docs_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path = docs_path
 
     json_path.write_text(json.dumps(reports, indent=2))
 
@@ -277,6 +287,21 @@ def main() -> None:
         default="hard_cascade",
         help="Budget mode or comma-separated modes: soft_warn,hard_cascade,fail_closed",
     )
+    parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Directory for hermes-replay-report.json. Defaults to target/context-governor-replay.",
+    )
+    parser.add_argument(
+        "--docs-path",
+        default=None,
+        help="Optional markdown report path. Defaults to docs/hermes-replay-eval-2026-06-27.md.",
+    )
+    parser.add_argument(
+        "--write-responses",
+        default=None,
+        help="Optional directory for per-run request/response artifacts under target/.",
+    )
     args = parser.parse_args()
 
     db_path = Path(args.db)
@@ -284,6 +309,9 @@ def main() -> None:
     candidates = load_candidates(db_path, args.limit, args.min_messages)
     targets = parse_int_list(args.target_tokens_list) if args.target_tokens_list else [args.target_tokens]
     budget_modes = parse_str_list(args.budget_mode)
+    response_dir = Path(args.write_responses) if args.write_responses else None
+    if response_dir:
+        response_dir.mkdir(parents=True, exist_ok=True)
     reports = []
     for budget_mode in budget_modes:
         for target_tokens in targets:
@@ -294,6 +322,10 @@ def main() -> None:
                     report["ok"] = True
                     report["target_tokens"] = target_tokens
                     report["budget_mode"] = budget_mode
+                    if response_dir:
+                        stem = f"{candidate.session_id[:12]}-{budget_mode}-{target_tokens}"
+                        (response_dir / f"{stem}.request.json").write_text(json.dumps(request, indent=2, ensure_ascii=False))
+                        (response_dir / f"{stem}.response.json").write_text(json.dumps(report, indent=2, ensure_ascii=False))
                     reports.append(report)
                 except Exception as exc:
                     reports.append(
@@ -305,7 +337,13 @@ def main() -> None:
                             "error": str(exc),
                         }
                     )
-    json_path, md_path = write_reports(crate_dir, reports, candidates)
+    json_path, md_path = write_reports(
+        crate_dir,
+        reports,
+        candidates,
+        output_dir=Path(args.output_dir) if args.output_dir else None,
+        docs_path=Path(args.docs_path) if args.docs_path else None,
+    )
     print(f"wrote {json_path}")
     print(f"wrote {md_path}")
 
