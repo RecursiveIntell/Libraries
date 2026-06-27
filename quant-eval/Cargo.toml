@@ -1,6 +1,6 @@
 [package]
 name = "quant-eval"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.75"
 description = "Compression and semantic search evaluation benchmark suite — codec admissibility, compression ratios, and retrieval quality"
@@ -20,6 +20,7 @@ serde_json = "1.0.149"
 chrono = { version = "0.4.44", features = ["serde"] }
 sha2 = "0.10"
 blake3 = "1.8.3"
+hyperquant = { version = "0.1.0", path = "../hyperquant" }
 
 [dev-dependencies]
 tempfile = "3.27.0"

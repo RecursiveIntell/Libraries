@@ -2029,12 +2029,15 @@ dependencies = [
 name = "fib-quant"
 version = "0.1.0-alpha.2"
 dependencies = [
+ "bincode",
  "blake3",
  "criterion 0.7.0",
  "gpu-backend",
  "half",
+ "memmap2",
  "nalgebra 0.33.3",
  "proptest",
+ "quant-codec-core",
  "rand 0.8.6",
  "rand_chacha 0.3.1",
  "rand_distr 0.4.3",
@@ -2042,6 +2045,7 @@ dependencies = [
  "serde",
  "serde_json",
  "statrs 0.17.1",
+ "tempfile",
  "thiserror 2.0.18",
 ]
 
@@ -3177,6 +3181,16 @@ dependencies = [
  "tower-service",
  "tracing",
  "windows-registry",
+]
+
+[[package]]
+name = "hyperquant"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -4923,6 +4937,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "poly-kv"
+version = "0.1.0-alpha.2"
+dependencies = [
+ "blake3",
+ "fib-quant",
+ "rand 0.8.6",
+ "rand_chacha 0.3.1",
+ "rayon",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "turbo-quant",
+]
+
+[[package]]
 name = "portable-atomic"
 version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5124,10 +5153,11 @@ dependencies = [
 
 [[package]]
 name = "quant-eval"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "blake3",
  "chrono",
+ "hyperquant",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -5958,7 +5988,7 @@ dependencies = [
 
 [[package]]
 name = "semantic-memory"
-version = "0.5.7"
+version = "0.5.8"
 dependencies = [
  "bitemporal-runtime",
  "blake3",
@@ -5974,6 +6004,7 @@ dependencies = [
  "hf-hub",
  "hnsw_rs",
  "lru",
+ "poly-kv",
  "quant-governor",
  "reqwest 0.12.28",
  "rusqlite",

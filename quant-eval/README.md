@@ -1,87 +1,54 @@
 # quant-eval
 
-`quant-eval` is a Rust crate for compression and semantic-search evaluation scaffolding.
+`quant-eval` is a Rust crate for evidence-first compression and retrieval evaluation. It provides deterministic benchmark scaffolds, typed result shapes, benchmark receipts, RAG fixture metrics, and HyperQuant primitive evaluation before any codec is promoted into a governor or runtime path.
 
-Current status: **prototype benchmark harnesses with synthetic data and simulated compression paths**. It is useful as a typed measurement substrate, but it does **not yet run real codec implementations** and should not be described as proving codec quality, production readiness, or workload-level benchmark performance.
+Current status: prototype-to-evidence benchmark substrate. It contains real metric code and deterministic fixtures, but some harnesses still use synthetic data or simulated compression paths. It should not be described as proving workload-level codec quality, production readiness, or model performance until real codec adapters and corpus receipts exist.
 
-## What is implemented
+![quant-eval evidence pipeline](docs/quant-eval-pipeline.svg)
 
-### Admissibility harness
+## What this gives you
 
-File: `src/benchmarks/admissibility.rs` (346 lines)
+`quant-eval` gives compression and retrieval crates a place to produce evidence before integration:
 
-Implemented:
+- **Compression benchmark scaffolding** — deterministic synthetic vector corpus, exact nearest-neighbor baseline, recall@K, MRR, and overlap-derived similarity summaries.
+- **Semantic-memory search scaffolding** — synthetic index/query generation, precision@K, recall@K, NDCG@K, MAP, and degradation-ratio calculations.
+- **Admissibility harness** — profile-oriented checks over deterministic standard vectors.
+- **Benchmark receipts** — timestamped receipt structures with machine fingerprint, result list, JSON serialization, hashes, and diffs.
+- **RAG fixture metrics** — local recall@K, NDCG@K, and exact-rerank recovery over caller-supplied query/retrieval fixtures.
+- **HyperQuant primitive evaluation** — deterministic Z1/A2 evaluation through the published `hyperquant` crate, with mean/max MSE, estimated bytes, rejected-vector counts, receipt counts, and explicit claim boundaries.
+- **Conservative public surface** — measurement APIs first; no silent production claims.
 
-- `CodecProfile` presets: `fast`, `balanced`, and `high_compression`.
-- `AdmissibilityTest` over caller-provided `TestSetEntry` values.
-- Standard synthetic test vectors for zero, unit, and deterministic pseudo-random vectors.
-- Summary counts per profile.
+## Evidence pipeline
 
-Important limitation:
+```text
+fixtures / synthetic corpora
+        ↓
+codec or retrieval harness
+        ↓
+metrics: MSE, recall@K, MRR, NDCG, MAP, recovery
+        ↓
+benchmark receipts + diffs
+        ↓
+policy/admission decisions in downstream crates
+```
 
-- The current harness simulates codec behavior from `should_succeed` and profile quality targets. It does not call a codec trait or encode/decode real payloads yet.
+The crate is intentionally upstream of runtime policy. It measures and records; it does not decide that a codec is admissible for a truth-bearing system.
 
-### Compression benchmark scaffold
+## Installation
 
-File: `src/benchmarks/compression.rs` (460 lines)
+```toml
+[dependencies]
+quant-eval = "0.1.1"
+```
 
-Implemented:
+From the RecursiveIntell Libraries workspace:
 
-- Deterministic synthetic corpus and query generation.
-- Raw nearest-neighbor computation with cosine similarity.
-- Recall@K and MRR calculations over exact-vs-estimated result sets.
-- Cosine-similarity-style summary statistics over result overlap.
+```toml
+[dependencies]
+quant-eval = { path = "../quant-eval" }
+```
 
-Important limitations:
-
-- Compression is simulated by returning the exact result set.
-- The benchmark does not currently measure encoded byte size, compression ratio, per-block ratios, wire formats, or codec theoretical ratios.
-- The reported cosine-similarity statistics are derived from top-K overlap, not from comparing raw vectors to decoded vectors.
-
-### Semantic memory benchmark scaffold
-
-File: `src/benchmarks/semantic.rs` (398 lines)
-
-Implemented:
-
-- Deterministic synthetic index and query generation.
-- Raw search baseline using cosine similarity.
-- Synthetic relevance judgments from the raw top-K results.
-- Precision@K, Recall@K, NDCG@K, MAP, and degradation-ratio calculations.
-
-Important limitation:
-
-- Compressed search currently delegates to raw search, so degradation is simulated/minimal by construction. It is not evidence of real codec preservation quality.
-
-### Benchmark receipts
-
-Files: `src/receipt.rs`, `src/fingerprint.rs`
-
-Implemented:
-
-- `BenchmarkReceipt` with timestamp, commit hash, machine fingerprint string, result list, and optional note.
-- `BenchmarkResult` timing fields.
-- Receipt JSON serialization/deserialization.
-- Receipt hash and receipt diff helpers.
-- `MachineFingerprint` derived from available host/user/arch/OS/CPU-count/machine-id inputs.
-
-## Public API
-
-The crate currently re-exports:
-
-- `AdmissibilityTest`
-- `CodecProfile`
-- `CompressionBenchmark`
-- `CompressionBenchmarkConfig`
-- `SemanticMemoryBenchmark`
-- `SemanticMemoryConfig`
-- `QuantEvalError`
-- `MachineFingerprint`
-- `BenchmarkReceipt`
-- `BenchmarkResult`
-- `ReceiptDiff`
-
-## Quick start
+## Quick start: compression benchmark scaffold
 
 ```rust
 use quant_eval::{CompressionBenchmark, CompressionBenchmarkConfig};
@@ -98,29 +65,232 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let report = benchmark.run()?;
     println!("recall@{} = {}", report.top_k, report.recall_at_k);
+    println!("mrr = {}", report.mrr);
     Ok(())
 }
 ```
 
-Run tests:
+## Quick start: HyperQuant primitive evaluation
+
+```rust
+use quant_eval::{run_hyperquant_eval, HyperQuantEvalConfig};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let result = run_hyperquant_eval(&HyperQuantEvalConfig {
+        dim: 16,
+        vectors: 64,
+        seed: 42,
+        scale: 8.0,
+    })?;
+
+    for profile in &result.profiles {
+        println!(
+            "{:?}: mean_mse={} max_mse={} receipts={}",
+            profile.kind,
+            profile.mean_mse,
+            profile.max_mse,
+            profile.receipt_count
+        );
+    }
+
+    println!("claim boundary: {}", result.claim_boundary);
+    Ok(())
+}
+```
+
+## Public API
+
+The crate re-exports:
+
+- `AdmissibilityTest`
+- `CodecProfile`
+- `CompressionBenchmark`
+- `CompressionBenchmarkConfig`
+- `SemanticMemoryBenchmark`
+- `SemanticMemoryConfig`
+- `QuantEvalError`
+- `MachineFingerprint`
+- `BenchmarkReceipt`
+- `BenchmarkResult`
+- `ReceiptDiff`
+- `evaluate_rag_fixture`
+- `RagEvalResult`
+- `RagQueryFixture`
+- `RagRetrievedDoc`
+- `run_hyperquant_eval`
+- `HyperQuantEvalConfig`
+- `HyperQuantEvalResult`
+- `HyperQuantProfileEval`
+
+## Implemented modules
+
+### Admissibility harness
+
+File: `src/benchmarks/admissibility.rs`
+
+Implemented:
+
+- `CodecProfile` presets: `fast`, `balanced`, and `high_compression`.
+- `AdmissibilityTest` over caller-provided `TestSetEntry` values.
+- Standard synthetic test vectors for zero, unit, and deterministic pseudo-random vectors.
+- Summary counts per profile.
+
+Important limitation:
+
+- This harness still simulates codec behavior from `should_succeed` and profile quality targets. It does not yet call a shared `quant-codec-core` trait.
+
+### Compression benchmark scaffold
+
+File: `src/benchmarks/compression.rs`
+
+Implemented:
+
+- Deterministic synthetic corpus and query generation.
+- Raw nearest-neighbor computation with cosine similarity.
+- Recall@K and MRR calculations over exact-vs-estimated result sets.
+- Similarity-style summary statistics over top-K overlap.
+
+Important limitations:
+
+- Compression is currently simulated by returning exact result sets.
+- It does not yet measure real encoded byte size, compression ratio, per-block ratios, wire formats, or codec theoretical ratios.
+- The reported cosine-similarity statistics are derived from top-K overlap, not raw-vs-decoded vector cosine.
+
+### Semantic-memory benchmark scaffold
+
+File: `src/benchmarks/semantic.rs`
+
+Implemented:
+
+- Deterministic synthetic index and query generation.
+- Raw search baseline using cosine similarity.
+- Synthetic relevance judgments from raw top-K results.
+- Precision@K, Recall@K, NDCG@K, MAP, and degradation-ratio calculations.
+
+Important limitation:
+
+- Compressed search currently delegates to raw search, so degradation is simulated/minimal by construction. It is not evidence of real codec preservation quality.
+
+### RAG fixture harness
+
+File: `src/rag.rs`
+
+Implemented:
+
+- Query fixtures with explicit relevant document IDs.
+- Retrieved document list with scores.
+- Recall@K.
+- NDCG@K.
+- Exact-rerank recovery for top-ranked relevant result.
+- Duplicate retrieved-doc suppression.
+
+### HyperQuant primitive harness
+
+File: `src/hyperquant_eval.rs`
+
+Implemented:
+
+- `HyperQuantEvalConfig`
+- `HyperQuantProfileEval`
+- `HyperQuantEvalResult`
+- `run_hyperquant_eval`
+- deterministic synthetic fixture generation;
+- triangular A2 fixture where A2 should match or beat Z1;
+- Z1/A2 metrics through the published `hyperquant` crate;
+- conservative claim-boundary string on every result.
+
+Important limitation:
+
+- This is primitive-level evidence only. It is not HyperQuant paper parity, model-quality evidence, or production admissibility.
+
+### Benchmark receipts
+
+Files: `src/receipt.rs`, `src/fingerprint.rs`
+
+Implemented:
+
+- `BenchmarkReceipt` with timestamp, commit hash, machine fingerprint string, result list, and optional note.
+- `BenchmarkResult` timing fields.
+- Receipt JSON serialization/deserialization.
+- Receipt hash and receipt diff helpers.
+- `MachineFingerprint` derived from available host/user/arch/OS/CPU-count/machine-id inputs.
+
+## Claim boundary
+
+Safe to claim today:
+
+- `quant-eval` provides deterministic Rust benchmark scaffolds and fixture metrics.
+- `quant-eval` can evaluate current HyperQuant Z1/A2 primitive behavior.
+- `quant-eval` emits typed metrics and benchmark receipt structures.
+- `quant-eval` has local tests, clippy, and publish dry-run receipts for this release.
+
+Not safe to claim today:
+
+- real codec admissibility across production workloads;
+- actual compression-ratio measurements for all codecs;
+- model-quality preservation;
+- superiority of any codec;
+- production readiness;
+- integrated policy enforcement for `poly-kv`, `fib-quant`, `turbo-quant`, `semantic-memory`, or `quant-governor`;
+- `quant_codec_core::EvalReport` emission.
+
+Those are reasonable next targets, but they need implementation evidence before becoming public claims.
+
+## Verification
+
+Release gate for v0.1.1:
 
 ```bash
-cargo test -p quant-eval
+cargo fmt -p quant-eval
+cargo test -p quant-eval -- --nocapture
+cargo test -p hyperquant -- --nocapture
+cargo check -p quant-eval --all-targets
+cargo clippy -p quant-eval --all-targets -- -D warnings
+cargo publish -p quant-eval --dry-run --allow-dirty
+```
+
+Expected current test surface:
+
+- 21 unit tests in `quant-eval` library modules.
+- 4 HyperQuant integration tests.
+- 5 general integration tests.
+- 5 RAG fixture tests.
+- 35 `quant-eval` tests total.
+- 18 `hyperquant` tests for the dependency surface.
+
+## Development
+
+Run focused HyperQuant evaluation tests:
+
+```bash
+cargo test -p quant-eval hyperquant_eval -- --nocapture
+```
+
+Run all quant-eval tests:
+
+```bash
+cargo test -p quant-eval -- --nocapture
+```
+
+Run lint gate:
+
+```bash
 cargo clippy -p quant-eval --all-targets -- -D warnings
 ```
 
-## Test coverage
+## Integration path
 
-Current verified test surface:
+Recommended adoption order:
 
-- 19 unit tests in the library modules.
-- 5 integration tests in `tests/integration.rs`.
-- `cargo test` passes.
-- `cargo clippy --all-targets -- -D warnings` passes.
+```text
+quant-eval fixture metrics
+  -> quant-codec-core adapter reports
+  -> quant-governor policy/admissibility
+  -> turbo-quant / fib-quant comparative benchmarks
+  -> poly-kv or semantic-memory only with exact fallback and disclosure
+```
 
-## MSRV
-
-Rust 1.75, 2021 edition.
+`quant-eval` should remain evidence infrastructure. Policy decisions belong in governor/runtime crates.
 
 ## Dependencies
 
@@ -132,34 +302,30 @@ Runtime dependencies:
 - `chrono`
 - `sha2`
 - `blake3`
+- `hyperquant`
 
 Dev dependency:
 
 - `tempfile`
 
-The crate currently contains no platform-specific code, FFI, or async runtime dependency.
+The crate currently contains no platform-specific code, FFI, async runtime dependency, CUDA, or HuggingFace integration.
 
-## What this README does not claim
+## Roadmap
 
-This README intentionally does **not** claim that `quant-eval`:
+Near-term:
 
-- proves real codec admissibility;
-- measures actual compression ratios;
-- enforces codec-reported admissibility classes;
-- integrates with `poly-kv`, `fib-quant`, `turbo-quant`, or `quant-governor`;
-- emits `quant_codec_core::EvalReport` values;
-- catches theoretical-ratio violations;
-- validates production performance.
-
-Those are reasonable next targets, but they need implementation evidence before they become public claims.
-
-## Next implementation targets
-
-1. Add a codec evaluation trait or adapter layer so the harness can call real encode/decode implementations.
+1. Add a codec evaluation trait or adapter layer so harnesses can call real encode/decode implementations.
 2. Replace simulated compression paths with actual compressed/decompressed vector comparisons.
 3. Add encoded-byte accounting and compression-ratio reports.
-4. Add a typed report shape that either depends on `quant-codec-core` or clearly defines a local `quant-eval` report schema.
-5. Add cross-crate integration tests once real codec adapters exist.
+4. Emit or convert into `quant-codec-core` report shapes when that boundary is ready.
+5. Add cross-crate integration tests for `hyperquant`, `fib-quant`, and `turbo-quant` adapters.
+
+Medium-term:
+
+1. Add real corpus fixtures for semantic-memory embeddings.
+2. Add before/after receipt diffs for codec promotion reviews.
+3. Add admissibility gates that can be consumed by `quant-governor`.
+4. Add visual report export for benchmark receipts.
 
 ## License
 
