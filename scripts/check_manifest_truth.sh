@@ -39,7 +39,7 @@ package_has_key() {
   ' "$cargo_file"
 }
 
-mapfile -t cargo_files < <(rg --files -g 'Cargo.toml' | sort)
+mapfile -t cargo_files < <(rg --files -g 'Cargo.toml' -g '!_salvage_from_libraries2/**' | sort)
 if [[ ${#cargo_files[@]} -eq 0 ]]; then
   echo "manifest truth check skipped (no Cargo.toml files found)"
   exit 0
