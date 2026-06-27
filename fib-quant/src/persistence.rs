@@ -20,7 +20,7 @@
 //! [13+L+G..17+L+G] entry_count: u32
 //! Per entry:
 //!   id_len: u32 (little-endian)
-//!   id_bytes: id_len bytes (bincode-serialized Id)
+//!   id_bytes: id_len bytes (postcard-serialized Id)
 //!   code_len: u32 (little-endian)
 //!   code_bytes: code_len bytes (FibCodeV1::to_compact_bytes)
 //! ```
@@ -174,7 +174,7 @@ fn read_f32_slice(
 /// is serialized as JSON, the Gram table as raw f32 values, and each
 /// entry's `FibCodeV1` as compact bytes (`to_compact_bytes`).
 ///
-/// The `Id` type must implement `Serialize` (via `bincode`).
+/// The `Id` type must implement `Serialize` (via `postcard`).
 ///
 /// # Errors
 ///
@@ -232,9 +232,9 @@ where
     // Entry count
     out.extend_from_slice(&entry_count.to_le_bytes());
 
-    // Per entry: id (bincode, length-prefixed) + code compact bytes (length-prefixed)
+    // Per entry: id (postcard, length-prefixed) + code compact bytes (length-prefixed)
     for (id, code) in entries {
-        let id_bytes = bincode::serialize(id).map_err(|e| {
+        let id_bytes = postcard::to_stdvec(id).map_err(|e| {
             FibQuantError::CorruptPayload(format!("failed to serialize entry id: {}", e))
         })?;
         write_len_prefixed(&mut out, &id_bytes);
@@ -255,7 +255,7 @@ where
 /// rebuilding the quantizer), and decodes each entry's compact bytes
 /// into a [`FibCodeV1`].
 ///
-/// The `Id` type must implement `DeserializeOwned` (via `bincode`).
+/// The `Id` type must implement `DeserializeOwned` (via `postcard`).
 ///
 /// # Errors
 ///
@@ -353,10 +353,10 @@ where
 
     // Read entries
     for i in 0..entry_count {
-        // ID (length-prefixed bincode)
+        // ID (length-prefixed postcard)
         let (id_bytes, next) = read_len_prefixed(buf, offset, &format!("entry {} id", i))?;
         offset = next;
-        let id: Id = bincode::deserialize_from(id_bytes).map_err(|e| {
+        let id: Id = postcard::from_bytes(id_bytes).map_err(|e| {
             FibQuantError::CorruptPayload(format!("failed to deserialize entry {} id: {}", i, e))
         })?;
 
@@ -513,10 +513,10 @@ where
         // as zero-copy slices.
         let mut entries: Vec<(Id, &'static [u8])> = Vec::with_capacity(entry_count);
         for i in 0..entry_count {
-            // ID (length-prefixed bincode)
+            // ID (length-prefixed postcard)
             let (id_bytes, next) = read_len_prefixed(buf, offset, &format!("entry {} id", i))?;
             offset = next;
-            let id: Id = bincode::deserialize_from(id_bytes).map_err(|e| {
+            let id: Id = postcard::from_bytes(id_bytes).map_err(|e| {
                 FibQuantError::CorruptPayload(format!(
                     "failed to deserialize entry {} id: {}",
                     i, e

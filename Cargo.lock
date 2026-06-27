@@ -2029,13 +2029,13 @@ dependencies = [
 name = "fib-quant"
 version = "0.1.0-alpha.2"
 dependencies = [
- "bincode",
  "blake3",
  "criterion 0.7.0",
  "gpu-backend",
  "half",
  "memmap2",
  "nalgebra 0.33.3",
+ "postcard",
  "proptest",
  "quant-codec-core",
  "rand 0.8.6",
