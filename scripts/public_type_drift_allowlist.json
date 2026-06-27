@@ -1,10 +1,38 @@
 {
   "allowlist": [
     {
+      "name": "CrateReceiptV1",
+      "owners": [
+        "contract-schema-gen",
+        "stack-ids"
+      ]
+    },
+    {
       "name": "ExecutionStopReason",
       "owners": [
         "kernel-execution",
         "verification-control"
+      ]
+    },
+    {
+      "name": "Outcome",
+      "owners": [
+        "contract-schema-gen",
+        "stack-ids"
+      ]
+    },
+    {
+      "name": "RefutationResult",
+      "owners": [
+        "semantic-memory",
+        "semantic-memory-forge"
+      ]
+    },
+    {
+      "name": "Syndrome",
+      "owners": [
+        "recursive-kernel-core",
+        "semantic-memory"
       ]
     }
   ]

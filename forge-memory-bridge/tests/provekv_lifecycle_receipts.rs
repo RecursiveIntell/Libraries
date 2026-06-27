@@ -36,9 +36,9 @@ fn post_import_hook_receipts_requested_rebuild_without_claiming_authority() {
     let artifacts = requested_post_import_artifacts(&options);
     assert_eq!(artifacts.len(), 1);
     assert_eq!(artifacts[0].status, "requested");
-    assert_eq!(artifacts[0].requested, true);
-    assert_eq!(artifacts[0].candidate_only, true);
-    assert_eq!(artifacts[0].exact_f32_rerank_required, true);
+    assert!(artifacts[0].requested);
+    assert!(artifacts[0].candidate_only);
+    assert!(artifacts[0].exact_f32_rerank_required);
     artifacts[0].validate().unwrap();
 }
 

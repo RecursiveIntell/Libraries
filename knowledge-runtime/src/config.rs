@@ -6,17 +6,12 @@ use serde::{Deserialize, Serialize};
 ///
 /// This is intentionally a hint/trace value only. Knowledge Runtime does not
 /// construct or depend on proveKV/poly-kv backends directly.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum RuntimeCandidateBackendHint {
+    #[default]
     SemanticMemoryDefault,
     ProveKvPoolCandidate,
-}
-
-impl Default for RuntimeCandidateBackendHint {
-    fn default() -> Self {
-        Self::SemanticMemoryDefault
-    }
 }
 
 /// Top-level runtime configuration.

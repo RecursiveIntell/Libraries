@@ -14,11 +14,44 @@ use crate::{
 
 pub const CODE_SCHEMA: &str = "fib_code_v1";
 
+/// Canonical codec ID string for fib-quant.
+/// Downstream crates should use this instead of defining their own.
+pub const CODEC_ID: &str = "fib_quant";
+
 /// Magic + version prefix for the compact binary wire format.
 /// `F` `B` `1` = Fib Binary v1. Any decoder that sees a different
 /// magic should reject the payload as corrupt.
 pub const COMPACT_MAGIC: [u8; 3] = [b'F', b'B', b'1'];
 pub const COMPACT_VERSION: u8 = 1;
+
+/// Magic + version for the v2 compact wire format with feature flags.
+/// `F` `B` `2` = Fib Binary v2. Adds a 1-byte feature flags field
+/// after the version byte, enabling forward-compatible extensions
+/// (alternative norm encodings, sparse indices, etc.).
+pub const COMPACT_V2_MAGIC: [u8; 3] = [b'F', b'B', b'2'];
+pub const COMPACT_V2_VERSION: u8 = 1;
+
+/// Feature flags for the v2 compact wire format.
+/// All bits are reserved for future use. Unknown flags must be ignored
+/// by the decoder (forward compatibility).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CompactFeatureFlags(pub u8);
+
+impl CompactFeatureFlags {
+    /// No features enabled (plain v2-compatible layout).
+    pub const NONE: Self = Self(0);
+    /// Bit 0: sparse index pattern (codeword indices use run-length encoding).
+    pub const SPARSE_INDICES: Self = Self(1 << 0);
+    /// Bit 1: alternative norm encoding (f32 instead of fp16).
+    pub const ALT_NORM_F32: Self = Self(1 << 1);
+    /// Bit 2: rotation schema indicator present (appended after indices).
+    pub const ROTATION_SCHEMA_TAG: Self = Self(1 << 2);
+
+    /// Check if a specific bit is set.
+    pub fn contains(self, bit: Self) -> bool {
+        self.0 & bit.0 != 0
+    }
+}
 
 /// Encoded fixed-rate FibQuant artifact.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -128,7 +161,7 @@ impl FibCodeV1 {
         // Validate packed index length
         let expected_packed_len = (block_count as usize)
             .checked_mul(wire_index_bits as usize)
-            .map(|bits| (bits + 7) / 8)
+            .map(|bits| bits.div_ceil(8))
             .ok_or_else(|| {
                 FibQuantError::ResourceLimitExceeded("packed index bits overflow".into())
             })?;
@@ -172,6 +205,118 @@ impl FibCodeV1 {
     pub fn compact_size(&self) -> usize {
         11 + self.norm_payload.len() + self.indices.len()
     }
+
+    /// Compact v2 binary wire format with feature flags.
+    ///
+    /// Layout (little-endian, packed):
+    ///   [0..3]   magic: "FB2"
+    ///   [3]      version: 1
+    ///   [4]      feature_flags
+    ///   [5]      wire_index_bits
+    ///   [6..10]  block_count (u32)
+    ///   [10..12] norm_len (u16)
+    ///   [12..12+norm_len] norm bytes
+    ///   then indices bytes
+    ///
+    /// The v2 format adds a 1-byte feature flags field at offset 4,
+    /// enabling forward-compatible extensions. Unknown flags are
+    /// ignored by the decoder.
+    pub fn to_compact_v2_bytes(&self, flags: CompactFeatureFlags) -> Vec<u8> {
+        self.to_compact_v2_bytes_with_flags(flags.0)
+    }
+
+    /// Encode v2 with raw flags byte. Internal helper to avoid the
+    /// `CompactFeatureFlags` wrapper when the caller already has a u8.
+    fn to_compact_v2_bytes_with_flags(&self, flags: u8) -> Vec<u8> {
+        let mut out = Vec::with_capacity(12 + self.norm_payload.len() + self.indices.len());
+        out.extend_from_slice(&COMPACT_V2_MAGIC);
+        out.push(COMPACT_V2_VERSION);
+        out.push(flags);
+        out.push(self.wire_index_bits);
+        out.extend_from_slice(&self.block_count.to_le_bytes());
+        let norm_len = self.norm_payload.len() as u16;
+        out.extend_from_slice(&norm_len.to_le_bytes());
+        out.extend_from_slice(&self.norm_payload);
+        out.extend_from_slice(&self.indices);
+        out
+    }
+
+    /// Decode the v2 compact binary format. Accepts any feature flags —
+    /// unknown flags are silently ignored (forward compatibility).
+    /// Known flags that alter the payload layout are handled.
+    pub fn from_compact_v2_bytes(
+        bytes: &[u8],
+        profile: &FibQuantProfileV1,
+    ) -> Result<(Self, CompactFeatureFlags)> {
+        if bytes.len() < 12 {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact v2 FibCodeV1 too short: {} bytes (need >= 12)",
+                bytes.len()
+            )));
+        }
+        if bytes[0..3] != COMPACT_V2_MAGIC {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact v2 FibCodeV1 bad magic: {:?} (expected {:?})",
+                &bytes[0..3],
+                COMPACT_V2_MAGIC
+            )));
+        }
+        if bytes[3] != COMPACT_V2_VERSION {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact v2 FibCodeV1 version {} not supported (need {})",
+                bytes[3], COMPACT_V2_VERSION
+            )));
+        }
+        let flags = CompactFeatureFlags(bytes[4]);
+        let wire_index_bits = bytes[5];
+        let block_count = u32::from_le_bytes([bytes[6], bytes[7], bytes[8], bytes[9]]);
+        let norm_len = u16::from_le_bytes([bytes[10], bytes[11]]) as usize;
+        let header_len = 12;
+        if bytes.len() < header_len + norm_len {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact v2 FibCodeV1 truncated: norm_len={} but only {} bytes remain",
+                norm_len,
+                bytes.len() - header_len
+            )));
+        }
+        let norm_payload = bytes[header_len..header_len + norm_len].to_vec();
+        let indices = bytes[header_len + norm_len..].to_vec();
+
+        // Validate packed index length
+        let expected_packed_len = (block_count as usize)
+            .checked_mul(wire_index_bits as usize)
+            .map(|bits| bits.div_ceil(8))
+            .ok_or_else(|| {
+                FibQuantError::ResourceLimitExceeded("packed index bits overflow".into())
+            })?;
+        if indices.len() != expected_packed_len {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "compact v2 FibCodeV1 indices: got {} bytes, expected {} (block_count={} * wire_index_bits={})",
+                indices.len(),
+                expected_packed_len,
+                block_count,
+                wire_index_bits
+            )));
+        }
+
+        let profile_digest = profile.digest()?;
+        Ok((
+            FibCodeV1 {
+                schema_version: CODE_SCHEMA.into(),
+                profile_digest,
+                codebook_digest: String::new(),
+                rotation_digest: String::new(),
+                ambient_dim: profile.ambient_dim,
+                block_dim: profile.block_dim,
+                norm_format: profile.norm_format.clone(),
+                norm_payload,
+                wire_index_bits,
+                block_count,
+                indices,
+            },
+            flags,
+        ))
+    }
 }
 
 /// FibQuant encoder/decoder bound to one profile and codebook.
@@ -180,6 +325,13 @@ pub struct FibQuantizer {
     profile: FibQuantProfileV1,
     codebook: FibCodebookV1,
     rotation: StoredRotation,
+    /// Cached profile digest — computed once at construction, reused
+    /// on every encode() call. Previously this was recomputed per
+    /// encode (JSON serialization + BLAKE3 hash of the full profile,
+    /// ~17ms at d=768).
+    profile_digest: String,
+    /// Cached rotation digest — same reasoning.
+    rotation_digest: String,
 }
 
 impl FibQuantizer {
@@ -194,10 +346,14 @@ impl FibQuantizer {
         codebook.validate()?;
         let profile = codebook.profile.clone();
         let rotation = StoredRotation::new(profile.ambient_dim as usize, profile.rotation_seed)?;
+        let profile_digest = profile.digest()?;
+        let rotation_digest = rotation.digest()?;
         Ok(Self {
             profile,
             codebook,
             rotation,
+            profile_digest,
+            rotation_digest,
         })
     }
 
@@ -209,6 +365,56 @@ impl FibQuantizer {
     /// Access the codebook.
     pub fn codebook(&self) -> &FibCodebookV1 {
         &self.codebook
+    }
+
+    /// Access the stored rotation. Exposed so downstream consumers
+    /// (scoring, residual, compat) don't need to reconstruct it
+    /// from the seed — saves an O(dim²) QR decomposition per call.
+    pub fn rotation(&self) -> &StoredRotation {
+        &self.rotation
+    }
+
+    /// Return the codebook digest (BLAKE3 hex of the codebook).
+    /// Convenience accessor so downstream consumers (poly-kv, scr-runtime)
+    /// don't need to access the codebook field chain directly.
+    pub fn codebook_digest(&self) -> &str {
+        &self.codebook.codebook_digest
+    }
+
+    /// Return the rotation digest (BLAKE3 hex of the rotation matrix).
+    pub fn rotation_digest(&self) -> &str {
+        &self.codebook.rotation_digest
+    }
+
+    /// Nominal compression ratio (original_bytes / encoded_bytes) for the
+    /// compact binary wire format at this profile's default operating point.
+    /// This is a theoretical ratio: `(ambient_dim * 4) / compact_size()`.
+    /// Actual ratio depends on the vector data (norm magnitude, codebook
+    /// index distribution).
+    pub fn nominal_compression_ratio(&self) -> f64 {
+        let original = (self.profile.ambient_dim as usize) * std::mem::size_of::<f32>();
+        // Average compact size: header (11 bytes) + norm (2 bytes fp16) +
+        // packed indices (block_count * wire_index_bits / 8)
+        let block_count = self.profile.block_count() as usize;
+        let index_bytes = (block_count * self.profile.wire_index_bits as usize).div_ceil(8);
+        let encoded = 11 + 2 + index_bytes;
+        original as f64 / encoded as f64
+    }
+
+    /// Default degradation threshold for this codec — the maximum
+    /// reconstruction MSE beyond which the compressed artifact should
+    /// be considered degraded and exact fallback should be used.
+    /// Based on empirical P26 measurements at k=4, N=32.
+    pub fn default_degradation_threshold(&self) -> f64 {
+        0.03
+    }
+
+    /// Whether this codec is high-fidelity (cosine > 0.85 at default
+    /// operating point). Used by quant-governor for routing decisions.
+    pub fn is_high_fidelity(&self) -> bool {
+        // k=4, N=32 gives cosine ~0.863 (measured). Smaller codebooks
+        // or larger blocks are lower fidelity.
+        self.profile.codebook_size >= 16 && self.profile.block_dim <= 8
     }
 
     /// Encode a vector into a fixed-rate artifact.
@@ -257,30 +463,39 @@ impl FibQuantizer {
         self.validate_code_header(code)?;
         let k = self.profile.block_dim as usize;
         let block_count = self.profile.block_count() as usize;
+        let codebook_size = self.profile.codebook_size as usize;
+        let codewords = &self.codebook.codewords;
         let unpacked = unpack_indices(&code.indices, block_count, self.profile.wire_index_bits)?;
-        let mut rotated = Vec::with_capacity(self.profile.ambient_dim as usize);
-        for index in unpacked {
-            if index >= self.profile.codebook_size {
-                return Err(FibQuantError::IndexOutOfRange {
-                    index,
-                    codebook_size: self.profile.codebook_size,
-                });
-            }
-            rotated.extend(self.codebook.codeword(index as usize)?);
-        }
-        let expected_rotated_len = block_count.checked_mul(k).ok_or_else(|| {
+        let expected_len = block_count.checked_mul(k).ok_or_else(|| {
             FibQuantError::ResourceLimitExceeded("decoded rotated vector length overflow".into())
         })?;
-        if rotated.len() != expected_rotated_len {
+        // Gather codewords directly in f32 — no f64 intermediate.
+        let mut rotated_f32: Vec<f32> = Vec::with_capacity(expected_len);
+        for &index in &unpacked {
+            let idx = index as usize;
+            if idx >= codebook_size {
+                return Err(FibQuantError::IndexOutOfRange {
+                    index,
+                    codebook_size: codebook_size as u32,
+                });
+            }
+            let base = idx * k;
+            rotated_f32.extend_from_slice(&codewords[base..base + k]);
+        }
+        if rotated_f32.len() != expected_len {
             return Err(FibQuantError::CorruptPayload(
                 "decoded rotated vector length mismatch".into(),
             ));
         }
         let norm = decode_norm(&code.norm_payload, &code.norm_format)?;
-        let reconstructed = self.rotation.apply_inverse(&rotated)?;
+        // Use f32 rotation (much faster than f64 path at d=768).
+        let matrix_f32 = self.rotation.matrix_f32();
+        let reconstructed = self
+            .rotation
+            .apply_inverse_f32_with_matrix(&rotated_f32, &matrix_f32)?;
         let out: Vec<f32> = reconstructed
             .into_iter()
-            .map(|value| (value * norm) as f32)
+            .map(|value| value * norm as f32)
             .collect();
         check_finite(&out)?;
         Ok(out)
@@ -293,6 +508,9 @@ impl FibQuantizer {
     ) -> Result<(FibCodeV1, FibQuantCompressionReceiptV1)> {
         let code = self.encode(x)?;
         let source_vector_digest = source_vector_digest(x)?;
+        let original_bytes = std::mem::size_of_val(x);
+        let encoded_bytes = code.compact_size();
+        let lloyd_refined = self.profile.lloyd_mode == crate::profile::LloydMode::Refine;
         let mut receipt = FibQuantCompressionReceiptV1::new(
             &self.profile,
             code.profile_digest.clone(),
@@ -300,6 +518,9 @@ impl FibQuantizer {
             code.rotation_digest.clone(),
             source_vector_digest,
             encoded_digest(&code)?,
+            original_bytes,
+            encoded_bytes,
+            lloyd_refined,
         );
         let decoded = self.decode(&code)?;
         receipt.mse = Some(metrics::mse(x, &decoded)?);
@@ -428,9 +649,9 @@ impl FibQuantizer {
         // Precompute digest fields that are identical for every code in
         // this batch. Saves a digest call per vector (the profile digest
         // is the same for all codes).
-        let profile_digest = self.profile.digest()?;
+        let profile_digest = self.profile_digest.clone();
         let codebook_digest = self.codebook.codebook_digest.clone();
-        let rotation_digest = self.rotation.digest()?;
+        let rotation_digest = self.rotation_digest.clone();
         let profile = &self.profile;
         let codewords_f32: &[f32] = &self.codebook.codewords;
 
@@ -501,7 +722,7 @@ impl FibQuantizer {
         }
 
         let mut codes = Vec::with_capacity(n);
-        for vec_idx in 0..n {
+        for (vec_idx, &norm) in norms.iter().enumerate().take(n) {
             let start = vec_idx * block_count;
             let end = start + block_count;
             let vec_indices: Vec<u32> = indices[start..end].to_vec();
@@ -514,7 +735,7 @@ impl FibQuantizer {
                 ambient_dim: self.profile.ambient_dim,
                 block_dim: self.profile.block_dim,
                 norm_format: self.profile.norm_format.clone(),
-                norm_payload: encode_norm(norms[vec_idx], &self.profile.norm_format)?,
+                norm_payload: encode_norm(norm, &self.profile.norm_format)?,
                 wire_index_bits: self.profile.wire_index_bits,
                 block_count: self.profile.block_count(),
                 indices: pack_indices(&vec_indices, self.profile.wire_index_bits)?,
@@ -551,6 +772,11 @@ impl FibQuantizer {
         let k = self.profile.block_dim as usize;
         let codebook_size = self.profile.codebook_size as usize;
         let codewords = &self.codebook.codewords;
+        // Hoist the f32 rotation matrix conversion out of the per-code loop.
+        // Previously this was called inside apply_inverse_f32 on every code,
+        // costing O(dim²) f64→f32 conversions per code. Now we convert once
+        // and reuse across the entire batch.
+        let matrix_f32 = self.rotation.matrix_f32();
         let mut out = Vec::with_capacity(codes.len());
         for code in codes {
             self.validate_code_header(code)?;
@@ -578,17 +804,88 @@ impl FibQuantizer {
             }
             debug_assert_eq!(rotated_f32.len(), expected_len);
             let norm = decode_norm(&code.norm_payload, &code.norm_format)?;
-            // Single f32 rotation. The original decode() does
-            // f32→f64, f64 rotation, then f64→f32. We do f32 rotation
-            // directly, matching the (matrix * input) as f32 of the
-            // original final cast within f32 precision.
-            let reconstructed = self.rotation.apply_inverse_f32(&rotated_f32)?;
+            // Single f32 rotation using the pre-converted matrix.
+            let reconstructed = self
+                .rotation
+                .apply_inverse_f32_with_matrix(&rotated_f32, &matrix_f32)?;
             let scaled: Vec<f32> = reconstructed
                 .into_iter()
                 .map(|value| value * norm as f32)
                 .collect();
             check_finite(&scaled)?;
             out.push(scaled);
+        }
+        Ok(out)
+    }
+
+    /// Encode vectors across multiple KV-cache layers in one call.
+    ///
+    /// This is an optimization for the multi-layer KV-cache case where
+    /// `layers` slices of `n` vectors each share the same profile. The
+    /// codebook and rotation are constructed once and reused across all
+    /// layers, avoiding the per-layer quantizer rebuild that the naive
+    /// `encode_batch` loop would incur.
+    ///
+    /// `layer_vectors` is organized as `[layer][vector][dim]`. Each
+    /// inner slice must have length `ambient_dim`. Returns
+    /// `[layer][vector]` of `FibCodeV1`.
+    pub fn encode_layers(&self, layer_vectors: &[&[&[f32]]]) -> Result<Vec<Vec<FibCodeV1>>> {
+        if layer_vectors.is_empty() {
+            return Ok(Vec::new());
+        }
+        // Pre-compute digest fields that are identical for every code
+        // across all layers.
+        let profile_digest = self.profile_digest.clone();
+        let codebook_digest = self.codebook.codebook_digest.clone();
+        let rotation_digest = self.rotation_digest.clone();
+        let d = self.profile.ambient_dim as usize;
+        let k = self.profile.block_dim as usize;
+        let profile = &self.profile;
+        let codewords_f32: &[f32] = &self.codebook.codewords;
+
+        let mut out = Vec::with_capacity(layer_vectors.len());
+        for layer in layer_vectors {
+            let n = layer.len();
+            if n == 0 {
+                out.push(Vec::new());
+                continue;
+            }
+            let mut codes = Vec::with_capacity(n);
+            for &vec_slice in *layer {
+                if vec_slice.len() != d {
+                    return Err(FibQuantError::CorruptPayload(format!(
+                        "input dimension {}, expected {d}",
+                        vec_slice.len()
+                    )));
+                }
+                check_finite(vec_slice)?;
+                let norm = l2_norm(vec_slice);
+                if norm == 0.0 {
+                    return Err(FibQuantError::ZeroNorm);
+                }
+                let normalized: Vec<f64> = vec_slice.iter().map(|v| f64::from(*v) / norm).collect();
+                let rotated_f64 = self.rotation.apply(&normalized)?;
+                let rotated_f32: Vec<f32> = rotated_f64.iter().map(|&v| v as f32).collect();
+                let block_count = profile.block_count() as usize;
+                let mut indices = Vec::with_capacity(block_count);
+                for block in rotated_f32.chunks_exact(k) {
+                    indices.push(gpu_backend::nearest_codeword_f32(block, codewords_f32, k) as u32);
+                }
+                codes.push(FibCodeV1 {
+                    schema_version: CODE_SCHEMA.into(),
+                    profile_digest: profile_digest.clone(),
+                    codebook_digest: codebook_digest.clone(),
+                    rotation_digest: rotation_digest.clone(),
+                    ambient_dim: profile.ambient_dim,
+                    block_dim: profile.block_dim,
+                    norm_format: profile.norm_format.clone(),
+                    norm_payload: encode_norm(norm, &profile.norm_format)?,
+                    wire_index_bits: profile.wire_index_bits,
+                    block_count: profile.block_count(),
+                    indices: pack_indices(&indices, profile.wire_index_bits)?,
+                });
+            }
+            out.push(codes);
         }
         Ok(out)
     }
@@ -680,7 +977,7 @@ impl FibQuantizer {
                 code.schema_version
             )));
         }
-        let expected_profile = self.profile.digest()?;
+        let expected_profile = self.profile_digest.clone();
         if code.profile_digest != expected_profile {
             return Err(FibQuantError::ProfileDigestMismatch {
                 expected: expected_profile,
@@ -700,7 +997,7 @@ impl FibQuantizer {
                 actual: code.codebook_digest.clone(),
             });
         }
-        let expected_rotation = self.rotation.digest()?;
+        let expected_rotation = self.rotation_digest.clone();
         if !code.rotation_digest.is_empty()
             && (code.rotation_digest != expected_rotation
                 || code.rotation_digest != self.codebook.rotation_digest)

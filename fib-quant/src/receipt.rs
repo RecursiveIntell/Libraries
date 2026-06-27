@@ -58,9 +58,20 @@ pub struct FibQuantCompressionReceiptV1 {
     pub fallback_available: bool,
     /// Unix timestamp seconds, supplied by caller path.
     pub recorded_unix_seconds: i64,
+    /// Original vector size in bytes (ambient_dim * 4 for f32).
+    pub original_bytes: usize,
+    /// Encoded artifact size in bytes (compact binary form).
+    pub encoded_bytes: usize,
+    /// Achieved compression ratio (original_bytes / encoded_bytes).
+    pub compression_ratio: f64,
+    /// Bits per coordinate in the wire format.
+    pub wire_bits_per_coord_actual: f64,
+    /// Whether Lloyd-Max refinement was applied.
+    pub lloyd_refined: bool,
 }
 
 impl FibQuantCompressionReceiptV1 {
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn new(
         profile: &FibQuantProfileV1,
         profile_digest: String,
@@ -68,7 +79,15 @@ impl FibQuantCompressionReceiptV1 {
         rotation_digest: String,
         source_vector_digest: String,
         encoded_digest: String,
+        original_bytes: usize,
+        encoded_bytes: usize,
+        lloyd_refined: bool,
     ) -> Self {
+        let compression_ratio = if encoded_bytes > 0 {
+            original_bytes as f64 / encoded_bytes as f64
+        } else {
+            f64::INFINITY
+        };
         Self {
             schema_version: RECEIPT_SCHEMA.into(),
             profile_digest,
@@ -93,6 +112,11 @@ impl FibQuantCompressionReceiptV1 {
             cosine_similarity: None,
             fallback_available: false,
             recorded_unix_seconds: current_unix_seconds(),
+            original_bytes,
+            encoded_bytes,
+            compression_ratio,
+            wire_bits_per_coord_actual: profile.wire_bits_per_coord,
+            lloyd_refined,
         }
     }
 }

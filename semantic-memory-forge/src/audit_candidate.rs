@@ -17,6 +17,7 @@ pub struct ForgeAuditCandidateSearchRequestV1 {
 }
 
 impl ForgeAuditCandidateSearchRequestV1 {
+    /// Validate that the request stays inside the explain-only Forge audit boundary.
     pub fn validate(&self) -> Result<(), String> {
         if !self.explain_only {
             return Err("Forge audit candidate search must be explain_only".into());
@@ -47,6 +48,7 @@ pub struct ForgeAuditCandidateSearchResultV1 {
 }
 
 impl ForgeAuditCandidateSearchResultV1 {
+    /// Validate that a retrieved item remains a candidate and does not claim Forge verification.
     pub fn validate_candidate_boundary(&self) -> Result<(), String> {
         if !self.candidate_only {
             return Err("audit search results must remain candidate_only".into());

@@ -26,10 +26,10 @@ pub fn init_context() -> Result<GpuContext> {
     let ctx = CudaContext::new(0).map_err(|_| GpuError::GpuUnavailable)?;
 
     let name = ctx.name().unwrap_or_else(|_| "unknown".into());
-    let memory_bytes = ctx.total_mem().unwrap_or(0) as usize;
+    let memory_bytes = ctx.total_mem().unwrap_or(0);
 
     // Lazy-init full state
-    let _ = CUDA_STATE.get_or_init(|| init_cuda_state(&ctx).map_or(None, Some));
+    let _ = CUDA_STATE.get_or_init(|| init_cuda_state(&ctx));
 
     Ok(GpuContext {
         device_index: 0,
@@ -216,6 +216,7 @@ fn lloyd_max_batch_cuda(
     Ok((indices, norms))
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn lloyd_max_decode_batch_gpu(
     _ctx: &GpuContext,
     indices: &[u8],
@@ -310,7 +311,7 @@ pub fn bitpack_gpu(_ctx: &GpuContext, indices: &[u8], bits_per_index: usize) -> 
 fn bitpack_cuda(indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
     let state = CUDA_STATE.get().and_then(|s| s.as_ref()).unwrap();
     let num_indices = indices.len();
-    let packed_len = (num_indices * bits_per_index + 7) / 8;
+    let packed_len = (num_indices * bits_per_index).div_ceil(8);
 
     let dev_indices = state
         .stream
@@ -322,7 +323,7 @@ fn bitpack_cuda(indices: &[u8], bits_per_index: usize) -> Result<Vec<u8>> {
         .map_err(|e| GpuError::CudaError(e.to_string()))?;
 
     let threads: u32 = 256;
-    let blocks = ((num_indices as u32 + threads * 8 - 1) / (threads * 8)).max(1);
+    let blocks = (num_indices as u32).div_ceil(threads * 8).max(1);
     let cfg = cudarc::driver::LaunchConfig {
         grid_dim: (blocks, 1, 1),
         block_dim: (threads, 1, 1),
