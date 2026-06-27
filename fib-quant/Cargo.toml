@@ -41,6 +41,13 @@ parallel = ["rayon"]
 # CPU loop for the (n, d) sizes we benchmark. Will be re-enabled once a
 # device-side pipeline keeps the rotated data resident on GPU.
 gpu_codebook_lookup = []
+# quant-codec-core trait implementations (VectorCodec, CodecProfile, KvCacheCodec).
+# Additive — does not change any existing API. Enables poly-kv and quant-governor
+# to route to fib-quant through the shared codec trait boundary.
+compat = ["quant-codec-core", "kv"]
+# Enables zero-copy mmap access for the persistence module (load_mmap,
+# MmapSidecarIndex). Off by default because memmap2 is an extra dependency.
+mmap = ["dep:memmap2"]
 
 [dependencies]
 blake3 = "1.8.3"
@@ -55,12 +62,16 @@ statrs = "0.17"
 thiserror = "2.0.18"
 gpu-backend = { version = "0.1.0-alpha.1", path = "../gpu-backend" }
 rayon = { version = "1.10", optional = true }
+quant-codec-core = { version = "0.1.0-alpha.1", path = "../poly-kv/crates/quant-codec-core", optional = true }
+bincode = "1.3"
+memmap2 = { version = "0.9", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.7", features = ["html_reports"] }
 proptest = "1"
 rand = "0.8"
 rand_chacha = "0.3"
+tempfile = "3"
 
 [[bench]]
 name = "encode_decode"
@@ -85,4 +96,4 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [lints.rust]
-unsafe_code = "forbid"
+unsafe_code = "deny"

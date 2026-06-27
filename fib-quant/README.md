@@ -1,24 +1,24 @@
 # fib-quant
 
-The cold-tier vector codec. ~50× compression. 100% recall on
-the canonical benchmark corpus.
+Experimental Rust implementation of FibQuant-style radial-angular
+vector quantization for KV-cache compression. ~50× compression in
+the binary-packed form. 100% recall on the canonical benchmark
+corpus (single-level).
 
-> Implementation of FibQuant-style radial-angular vector
-> quantization for KV-cache compression, based on the public
-> FibQuant reference (Lee & Kim 2026). The implementation is
-> independent and **not** the original paper code — see the
-> Attribution section below.
+> **Experimental, not production-ready.** This is an independent
+> implementation based on the public FibQuant reference (Lee & Kim
+> 2026). It is **not** the original paper code — see the Attribution
+> section below.
 
-`fib-quant` decomposes a vector into spherical blocks,
-quantizes each block against a Fibonacci-optimized codebook,
-and stores only the codebook indices. The result: a 768-dim
-f32 vector (3,072 bytes) becomes ~860 bytes in JSON, or
-~64 bytes with binary packing. And it still finds the right
-document at rank 1 in 100% of the canonical test queries.
+`fib-quant` decomposes a vector into spherical blocks, quantizes
+each block against a Fibonacci-optimized codebook, and stores only
+the codebook indices. The result: a 768-dim f32 vector (3,072 bytes)
+becomes ~860 bytes in JSON, or ~64 bytes with binary packing. And it
+still finds the right document at rank 1 in 100% of the canonical
+test queries.
 
-This is the **cold-tier codec** in the poly-kv pool. It
-handles shared context that's large, stable, and accessed by
-many agents:
+This is the **cold-tier codec** in the poly-kv pool. It handles
+shared context that's large, stable, and accessed by many agents:
 
 ```
 ┌──────────────────────────────────┐
@@ -35,58 +35,216 @@ many agents:
 
 ## What's in the box
 
-- **Codecs** (`src/codec.rs`, 842 lines) — `FibQuantizer`
-  with `encode`, `decode`, `encode_batch`, `decode_batch`.
-  The `encode_batch` is the Rayon-parallel path that wins
-  the poly-kv pool build.
-- **Codebook** (`src/codebook.rs`, 204 lines) —
-  `LloydRefinement` of a Fibonacci-sampled seed codebook.
-  Parity-verified against the reference.
-- **Rotation** (`src/rotation.rs`, 189 lines) — fast
-  Walsh-Hadamard rotation, with a CPU fallback and an
-  optional CUDA dispatch via `gpu-backend`.
+- **Codec** (`src/codec.rs`, 1121 lines) — `FibQuantizer` with
+  `encode`, `decode`, `encode_with_receipt`, `encode_batch`,
+  `decode_batch`, `decode_batch_fast`, `encode_layers`. The
+  `encode_batch` path is the Rayon-parallel path that wins the
+  poly-kv pool build.
+- **Codebook** (`src/codebook.rs`, 207 lines) —
+  `FibCodebookV1` with `build_initial_codebook` and Lloyd-Max
+  refinement. Parity-verified against the reference.
+- **Rotation** (`src/rotation.rs`, 216 lines) — fast
+  Walsh-Hadamard rotation with `StoredRotation`, a CPU fallback,
+  and an optional CUDA dispatch via `gpu-backend`.
 - **Spherical beta** (`src/spherical_beta.rs`, 139 lines) —
-  spherical-Beta direction samplers for codebook seeding.
-- **KV-cache codec** (`src/kv/`, ~2,500 lines) — a separate
-  `KvCacheCodec` impl that operates on `KvTensorShape` rather
-  than raw `Vec<f32>`. Includes attention-quality metrics,
-  shape contracts, and policy-role-aware dispatch.
-- **Profiles** (`src/profile.rs`, 408 lines) — typed
-  `FibProfile` with `paper_default` (k=4, N=32), `compact`
-  (k=4, N=32, binary-packed), and `kv` (KV-cache-tuned).
-- **Receipts** (`src/receipt.rs`, `src/kv/receipt.rs`) —
-  typed `FibEncodeReceipt` and `KvEncodeReceipt` capturing
-  every parameter of the encode pipeline for audit.
+  spherical-Beta direction samplers for codebook seeding:
+  `sample_spherical_beta`, `beta_d_k`, `radius_quantile`,
+  `radius_quantile_k2_closed_form`.
+- **Profiles** (`src/profile.rs`, 424 lines) — typed
+  `FibQuantProfileV1` with `paper_default(ambient_dim, block_dim,
+  codebook_size, seed)` (k=4, N=32 defaults shown in examples
+  below). Includes validation and rate computation.
+- **Receipts** (`src/receipt.rs`, 128 lines) — typed
+  `FibQuantCompressionReceiptV1` capturing every parameter of
+  the encode pipeline for audit.
+- **Scoring** (`src/scoring.rs`, 411 lines) — `GramTable` and
+  `FibScorer` for approximate inner-product scoring without full
+  decode, using a precomputed codebook Gram table.
+- **Residual VQ** (`src/residual.rs`, 491 lines) — two-level
+  vector quantization with `FibResidualQuantizer`,
+  `FibResidualCodeV1`, and `ResidualCodebookV1` for improved
+  reconstruction quality.
+- **Wire format** (`src/wire.rs`, 333 lines) — self-describing
+  wire format (`FibCodeWireV1`, `WireHeader`) that carries
+  profile metadata so downstream consumers can decode without
+  external profile knowledge.
+- **Sidecar search** (`src/sidecar.rs`, 430 lines) —
+  `FibSidecarIndex<Id>` wrapping `FibScorer` for approximate
+  nearest-inner-product search with `ScoredCandidate` and
+  `SearchReceiptV1`.
+- **Eval harness** (`src/eval.rs`, 519 lines) — benchmark
+  harness with `FibBenchmarkCorpus`, `run_benchmark`, and
+  `FibBenchmarkReceiptV1` capturing recall@K, nDCG@K, compression
+  ratio, MSE, and timing.
+- **Compat layer** (`src/compat.rs`, 248 lines, `compat` feature)
+  — implements `VectorCodec`, `CodecProfile`, and `KvCacheCodec`
+  traits from `quant-codec-core` so fib-quant can be used through
+  the shared codec trait boundary by `poly-kv`, `quant-governor`,
+  and `scr-runtime-compression`.
+- **KV-cache codec** (`src/kv/`, ~3,300 lines, `kv` feature) — a
+  separate `KvCacheCodec` impl that operates on `KvTensorShape`
+  rather than raw `Vec<f32>`. Includes attention-quality metrics,
+  shape contracts, policy-role-aware dispatch, and a streaming
+  encoder (`KvStreamEncoder` in `src/kv/stream.rs`, 800 lines) for
+  incremental token-by-token construction.
+- **KV receipts** (`src/kv/receipt.rs`) — `KvCompressionReceiptV1`,
+  `KvDecodeReceiptV1`, and `KvEvalReceiptV1` for KV-cache
+  pipeline audit.
 
 ## Quick Start
 
 ```rust
-use fib_quant::{FibQuantizer, FibProfile};
-use quant_codec_core::CodecProfile;
+use fib_quant::{FibQuantProfileV1, FibQuantizer};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Build a quantizer with the default paper profile.
-    let profile = FibProfile::paper_default(32);  // 32-dim vectors
-    let quantizer = FibQuantizer::new(profile.clone());
+    // paper_default takes 4 args: ambient_dim, block_dim, codebook_size, seed
+    let profile = FibQuantProfileV1::paper_default(32, 4, 32, 7)?;
+    let quantizer = FibQuantizer::new(profile)?;
 
     // Encode a single vector.
     let vector: Vec<f32> = (0..32).map(|i| i as f32 * 0.01).collect();
-    let block = quantizer.encode(&vector)?;
-    let reconstructed = quantizer.decode(&block)?;
+    let code = quantizer.encode(&vector)?;
+    let reconstructed = quantizer.decode(&code)?;
 
     // The cosine similarity should be high.
-    let cos = quantizer.cosine_similarity(&vector, &reconstructed);
+    let cos = fib_quant::metrics::cosine_similarity(&vector, &reconstructed)?;
     assert!(cos > 0.85);
 
-    // Or encode a batch in parallel.
-    let corpus: Vec<Vec<f32>> = /* ... */;
-    let (blocks, receipt) = quantizer.encode_batch(&corpus)?;
-    println!("Batch receipt: {:?}", receipt);
+    // Or encode with a full audit receipt.
+    let (code, receipt) = quantizer.encode_with_receipt(&vector)?;
+    println!("Receipt: {}", receipt.profile_digest);
+
+    // Or encode a batch in parallel (returns Vec<FibCodeV1>).
+    let corpus: Vec<Vec<f32>> = vec![vector.clone(), vector.clone()];
+    let refs: Vec<&[f32]> = corpus.iter().map(|v| v.as_slice()).collect();
+    let codes = quantizer.encode_batch(&refs)?;
+    assert_eq!(codes.len(), 2);
+
     Ok(())
 }
 ```
 
 Run it: `cargo run --release --example encode_decode`.
+
+## New modules
+
+### Scoring — approximate inner product without full decode
+
+`FibScorer` uses a precomputed codebook Gram table
+(`GramTable`, `G[i,j] = <codeword_i, codeword_j>`) to estimate the
+inner product of a query vector against a stored `FibCodeV1` without
+running the full decode pipeline (rotation inverse + norm scaling).
+The estimate is approximate — bounded by codebook quantization noise
+— and avoids decoding the stored vector entirely. For a codebook of
+size N=32, the Gram table is 4 KB.
+
+```rust
+use fib_quant::{FibScorer, FibQuantProfileV1, FibQuantizer};
+
+let profile = FibQuantProfileV1::paper_default(32, 4, 32, 7)?;
+let quantizer = FibQuantizer::new(profile)?;
+// FibScorer::new takes ownership of the quantizer.
+let scorer = FibScorer::new(quantizer)?;
+
+let query = vec![0.1; 32];
+// Encode before moving the quantizer into the scorer, or use
+// a separate quantizer instance for encoding.
+```
+
+### Residual — two-level VQ for better fidelity
+
+After encoding with the main codebook, the quantization residual
+still contains signal. `FibResidualQuantizer` encodes this residual
+with a second, smaller codebook (typically 4–8 codewords), adding
+2–3 bits per block. Cosine fidelity improves from ~0.863
+(single-level) to ~0.93+ (two-level) for typical nomic-768
+workloads, at the cost of ~10–15% size increase.
+
+```rust
+use fib_quant::{FibQuantProfileV1, FibQuantizer, FibResidualQuantizer};
+
+let profile = FibQuantProfileV1::paper_default(768, 4, 32, 7)?;
+let quantizer = FibQuantizer::new(profile)?;
+let residual = FibResidualQuantizer::build(&quantizer.profile().clone(), quantizer.codebook())?;
+```
+
+### Wire format — self-describing codes
+
+`FibCodeWireV1` wraps a `FibCodeV1` with a 59-byte header carrying
+seed, dim, k, N, norm_format, and profile digest. This enables
+decode without any external profile knowledge — the compact FB1/FB2
+formats strip all metadata, forcing consumers to hardcode profile
+fields.
+
+```rust
+use fib_quant::{FibCodeWireV1, FibQuantProfileV1, FibQuantizer};
+
+let profile = FibQuantProfileV1::paper_default(32, 4, 32, 7)?;
+let quantizer = FibQuantizer::new(profile)?;
+let code = quantizer.encode(&[0.1; 32])?;
+let wire_bytes = FibCodeWireV1::to_wire_bytes(&code, quantizer.profile())?;
+// Decode without needing the original profile — from_wire_bytes
+// returns (FibCodeV1, FibQuantProfileV1):
+let (decoded_code, recovered_profile) = FibCodeWireV1::from_wire_bytes(&wire_bytes)?;
+```
+
+### Sidecar — approximate search index
+
+`FibSidecarIndex<Id>` stores caller-owned IDs alongside encoded
+`FibCodeV1` artifacts and provides approximate nearest-inner-product
+search via the Gram-table estimator. The index is a *sidecar*: it
+produces approximate candidates that callers must rerank with an
+exact inner-product computation against the original (un-encoded)
+vectors before acting on the result.
+
+```rust
+use fib_quant::{FibScorer, FibSidecarIndex, FibQuantProfileV1, FibQuantizer};
+
+let profile = FibQuantProfileV1::paper_default(32, 4, 32, 7)?;
+// Encode first, then build the scorer for search.
+let quantizer = FibQuantizer::new(profile)?;
+let code = quantizer.encode(&[0.1; 32])?;
+
+// Build a fresh quantizer to move into the scorer.
+let profile2 = FibQuantProfileV1::paper_default(32, 4, 32, 7)?;
+let scorer = FibScorer::new(FibQuantizer::new(profile2)?)?;
+let mut index = FibSidecarIndex::new(scorer);
+
+index.add(42, code);
+
+let candidates = index.search(&[0.12; 32], 10, 4)?;
+// Rerank candidates against original vectors before use.
+```
+
+### Eval — benchmark harness
+
+`run_benchmark` takes a `FibBenchmarkCorpus` (database vectors,
+queries, ground-truth top-K) and a `&FibQuantizer`, then returns a
+`FibBenchmarkReceiptV1` with recall@K, nDCG@K, compression ratio,
+cosine similarity, MSE, and timing. Standalone helpers `recall_at_k`
+and `ndcg_at_k` are also exported.
+
+```rust
+use fib_quant::{FibBenchmarkCorpus, FibQuantProfileV1, FibQuantizer, run_benchmark};
+
+let corpus = FibBenchmarkCorpus { /* ... */ };
+let profile = FibQuantProfileV1::paper_default(768, 4, 32, 7)?;
+let quantizer = FibQuantizer::new(profile)?;
+let receipt = run_benchmark(&corpus, &quantizer)?;
+println!("recall@10: {}", receipt.recall_at_k);
+```
+
+### Streaming KV encoder
+
+`KvStreamEncoder` (behind the `kv` feature) allows building a
+`KvEncodedTensorV1` one token at a time instead of requiring the
+full tensor upfront. Pages are flushed automatically when they
+reach `tokens_per_page` from the page geometry. The output is
+identical to the batch `encode_kv_tensor` for the same input.
+
+Currently supports `batch = 1, layers = 1, kv_heads = 1` shapes
+(the common single-stream inference case).
 
 ## Benchmarks — measured
 
@@ -119,6 +277,11 @@ the binary wire format.**
 
 **Cosine fidelity: 0.863** (single vector), **0.9996** (after
 turbo-quant rerank in poly-kv).
+
+> The benchmark numbers above are from the P26 measurement run and
+> are valid for single-level quantization. Two-level residual VQ
+> improves cosine fidelity to ~0.93+ but has not been benchmarked
+> for retrieval quality yet.
 
 ### Encode_batch throughput — "Do All" perf pass 2026-06-01
 
@@ -169,7 +332,10 @@ next step.
   `encode_decode`, `test_compact_decode`.
 - **4 benches** (criterion): `codebook_build`, `encode_decode`,
   `kv_attention_ref`, `kv_encode_decode`.
-- `cargo test` clean, `cargo clippy --all-targets -- -D warnings` clean.
+- **105 tests** pass with `cargo test --all-features` (was 47
+  before the new module additions).
+- `cargo clippy --all-features --all-targets -- -D warnings` clean
+  (modulo upstream `gpu-backend` lints on newer toolchains).
 
 ## MSRV
 
@@ -181,13 +347,16 @@ crate level.
 - `serde` (with `derive`).
 - `serde_json`.
 - `blake3`.
+- `half` (f16 support for scoring/scaling).
+- `nalgebra` (with `serde-serialize`).
 - `rand` + `rand_chacha` (dev).
 - `gpu-backend` (optional) — for the GPU Hadamard dispatch.
 - `rayon` (optional, behind the `parallel` feature) — for
   parallel batch encoding.
+- `quant-codec-core` (optional, behind the `compat` feature) —
+  for the shared codec trait boundary.
 - `proptest` (dev).
 - `criterion` (dev).
-- `nalgebra` (with `serde-serialize`).
 
 ## License
 

@@ -8,6 +8,7 @@ pub mod attention_ref;
 pub mod block;
 pub mod calibration;
 pub mod codec;
+pub mod compressed_attention;
 pub mod layout;
 pub mod page;
 pub mod policy;
@@ -15,13 +16,19 @@ pub mod profile;
 pub mod quality;
 pub mod receipt;
 pub mod shape;
+pub mod stream;
 
 pub use attention_ref::{
     compare_attention_fixture, reference_attention_logits, reference_value_aggregation,
 };
 pub use block::{KvBlockEncodingV1, KvEncodedBlockV1};
 pub use calibration::{calibrate_kv_tensor, KvCalibrationSummaryV1};
-pub use codec::{decode_kv_pages, encode_kv_tensor, KvDecodedTensorV1, KvEncodedTensorV1};
+pub use codec::{
+    decode_kv_pages, decode_kv_slice, encode_kv_tensor, KvDecodedTensorV1, KvEncodedTensorV1,
+};
+pub use compressed_attention::{
+    compressed_attention_logits, compressed_attention_topk, CompressedAttentionOutput,
+};
 pub use layout::{KvCacheLayoutV1, KvLayoutOrder, KvPageGeometryV1};
 pub use page::KvEncodedPageV1;
 pub use policy::{
@@ -37,3 +44,4 @@ pub use receipt::{
     kv_tensor_digest, KvCompressionReceiptV1, KvDecodeReceiptV1, KvEvalReceiptV1, KvOperationKindV1,
 };
 pub use shape::{KvAttentionKind, KvDType, KvRole, KvRopeState, KvTensorShapeV1};
+pub use stream::{AppendReceipt, KvStreamEncoder};

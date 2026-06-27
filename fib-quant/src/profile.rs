@@ -84,6 +84,19 @@ pub enum EmptyCellPolicy {
     FailClosed,
 }
 
+/// Lloyd-Max refinement mode.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+#[serde(rename_all = "snake_case")]
+pub enum LloydMode {
+    /// Run multi-restart Lloyd-Max refinement (paper path).
+    Refine,
+    /// Skip refinement entirely — use the radial-angular initialization as-is.
+    /// Faster codebook construction (~6ms saved) at the cost of higher MSE.
+    /// The receipt will reflect this choice via `best_mse == init_mse`.
+    Skip,
+}
+
 /// Stable profile for paper-faithful FibQuant codebooks and payloads.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FibQuantProfileV1 {
@@ -125,6 +138,8 @@ pub struct FibQuantProfileV1 {
     pub training_samples: u32,
     /// Empty-cell repair policy.
     pub empty_cell_policy: EmptyCellPolicy,
+    /// Lloyd-Max refinement mode: Refine (paper path) or Skip (fast path).
+    pub lloyd_mode: LloydMode,
 }
 
 impl FibQuantProfileV1 {
@@ -167,6 +182,7 @@ impl FibQuantProfileV1 {
             lloyd_iterations: 25,
             training_samples: default_training_samples(codebook_size)?,
             empty_cell_policy: EmptyCellPolicy::SplitHighestDistortion,
+            lloyd_mode: LloydMode::Refine,
         };
         profile.validate()?;
         Ok(profile)

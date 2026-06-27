@@ -96,6 +96,46 @@ pub(crate) struct RefinedCodebook {
     pub report: LloydReportV1,
 }
 
+/// Skip Lloyd-Max refinement entirely. The radial-angular initialization
+/// becomes the final codebook. The report records `best_mse == init_mse`
+/// and `best_restart == 0` with zero repair events, so downstream consumers
+/// can detect the skip path from the receipt.
+pub(crate) fn skip_refinement(
+    profile: &FibQuantProfileV1,
+    initial: &[f64],
+) -> Result<RefinedCodebook> {
+    profile.validate()?;
+    let k = profile.block_dim as usize;
+    let n = profile.codebook_size as usize;
+    if initial.len() != n * k {
+        return Err(FibQuantError::CorruptPayload(format!(
+            "initial codebook has {}, expected {}",
+            initial.len(),
+            n * k
+        )));
+    }
+    let samples = training_samples(profile)?;
+    let init_mse = mse_for_codebook(initial, k, &samples)?;
+    let report = LloydReportV1 {
+        schema_version: LLOYD_REPORT_SCHEMA.into(),
+        restarts: profile.lloyd_restarts,
+        iterations: profile.lloyd_iterations,
+        training_samples: samples.len() as u32,
+        init_mse,
+        best_mse: init_mse,
+        best_restart: 0,
+        empty_cells_repaired: 0,
+        repair_events: Vec::new(),
+        seed: profile.codebook_seed,
+    };
+    Ok(RefinedCodebook {
+        codewords: initial.iter().map(|&v| v as f32).collect(),
+        init_mse,
+        training_mse: init_mse,
+        report,
+    })
+}
+
 struct RepairRecorder<'a> {
     events: &'a mut Vec<LloydRepairEventV1>,
     restart: u32,

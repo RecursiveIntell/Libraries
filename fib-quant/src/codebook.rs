@@ -4,7 +4,7 @@ use crate::{
     digest::json_digest,
     directions::directions_for_method,
     lloyd::{refine_codebook, LloydReportV1},
-    profile::{FibQuantProfileV1, RadiusMethod},
+    profile::{FibQuantProfileV1, LloydMode, RadiusMethod},
     rotation::StoredRotation,
     spherical_beta::{radius_quantile, radius_quantile_k2_closed_form},
     FibQuantError, Result,
@@ -43,7 +43,10 @@ impl FibCodebookV1 {
         let rotation_digest =
             StoredRotation::new(profile.ambient_dim as usize, profile.rotation_seed)?.digest()?;
         let initial = build_initial_codebook(&profile)?;
-        let refined = refine_codebook(&profile, &initial)?;
+        let refined = match profile.lloyd_mode {
+            LloydMode::Refine => refine_codebook(&profile, &initial)?,
+            LloydMode::Skip => crate::lloyd::skip_refinement(&profile, &initial)?,
+        };
         let mut codebook = Self {
             schema_version: CODEBOOK_SCHEMA.into(),
             profile,

@@ -128,6 +128,13 @@ impl StoredRotation {
         Ok(out)
     }
 
+    /// Return the rotation matrix converted to f32. Useful for callers that
+    /// need to reuse the converted matrix across many `apply_inverse_f32_with_matrix`
+    /// calls without reconverting each time.
+    pub fn matrix_f32(&self) -> Vec<f32> {
+        self.matrix.iter().map(|&v| v as f32).collect()
+    }
+
     /// Apply inverse `x = Pi^T y` in f32. Faster than the f64 version for
     /// batch decode of many small vectors, where the f32→f64 roundtrip is
     /// the bottleneck. Result is mathematically equivalent for the
@@ -135,8 +142,28 @@ impl StoredRotation {
     /// codebook quantization noise floor.
     pub fn apply_inverse_f32(&self, input: &[f32]) -> Result<Vec<f32>> {
         self.check_dim(input.len())?;
+        let matrix_f32 = self.matrix_f32();
+        self.apply_inverse_f32_with_matrix(input, &matrix_f32)
+    }
+
+    /// Apply inverse `x = Pi^T y` using a pre-converted f32 matrix. This
+    /// avoids the f64→f32 conversion on every call, which is the bottleneck
+    /// in `decode_batch_fast` when decoding thousands of codes that share
+    /// the same rotation.
+    pub fn apply_inverse_f32_with_matrix(
+        &self,
+        input: &[f32],
+        matrix_f32: &[f32],
+    ) -> Result<Vec<f32>> {
+        self.check_dim(input.len())?;
+        if matrix_f32.len() != self.dim * self.dim {
+            return Err(FibQuantError::CorruptPayload(format!(
+                "f32 matrix len {} != dim^2 {}",
+                matrix_f32.len(),
+                self.dim * self.dim
+            )));
+        }
         let dim = self.dim;
-        let matrix_f32: Vec<f32> = self.matrix.iter().map(|&v| v as f32).collect();
         let mut out = vec![0.0f32; dim];
         for col in 0..dim {
             let mut sum = 0.0f32;
