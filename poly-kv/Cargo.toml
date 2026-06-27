@@ -25,9 +25,9 @@ rand = "0.8"
 rand_chacha = "0.3"
 thiserror = "2"
 
-turbo-quant = { version = "0.2.1", path = "../../Libraries/turbo-quant", optional = true }
-fib-quant = { version = "0.1.0-alpha.2", path = "../../Libraries/fib-quant", optional = true }
-gpu-backend = { version = "0.1.0-alpha.1", path = "../../Libraries/gpu-backend", optional = true }
+turbo-quant = { version = "0.2.1", path = "../turbo-quant", optional = true }
+fib-quant = { version = "0.1.0-alpha.2", path = "../fib-quant", optional = true }
+gpu-backend = { version = "0.1.0-alpha.1", path = "../gpu-backend", optional = true }
 stack-ids = { version = "0.1.1", path = "../stack-ids", optional = true }
 bitemporal-runtime = { version = "0.1.0", path = "../bitemporal-runtime", optional = true }
 chrono = { version = "0.4", optional = true }
