@@ -6,6 +6,8 @@ This bundle is designed for `~/Coding/Libraries` and the package `Libraries-libr
 
 Current front-door verification for the repo is `make gate` from the repository root. Run it before claiming the full release surface is green.
 
+Supersession note (2026-03-17): the earlier no-v25 terminal position is superseded by the current v25 repo truth surface and `scripts/check_v25_repo_truth.sh`.
+
 ## What this pass must produce
 
 - A new workspace member `fib-quant`, not in `default-members`.

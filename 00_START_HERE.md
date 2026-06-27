@@ -6,6 +6,8 @@
 **Scope:** Close every confirmed defect from two independent hostile audits and achieve DARPA CLARA submission readiness
 **Deadline:** April 10, 2026
 
+Supersession note (2026-03-17): the earlier no-v25 terminal position is superseded by the current v25 repo truth surface and `scripts/check_v25_repo_truth.sh`.
+
 ## Genesis
 
 This pack merges findings from two independent hostile audits:
