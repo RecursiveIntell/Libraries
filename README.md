@@ -4,6 +4,8 @@ Purpose: drive one Codex pass that creates a paper-faithful `fib-quant` Rust cra
 
 This bundle is designed for `~/Coding/Libraries` and the package `Libraries-libraries-next-codex-context-20260512.zip`.
 
+Current front-door verification for the repo is `make gate` from the repository root. Run it before claiming the full release surface is green.
+
 ## What this pass must produce
 
 - A new workspace member `fib-quant`, not in `default-members`.
