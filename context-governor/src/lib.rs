@@ -1,0 +1,2062 @@
+//! Crate-agnostic governed context compaction for AI agents.
+//!
+//! `context-governor` does not call an LLM and does not pretend to extend a
+//! provider's hard context window. It allocates a limited prompt budget across
+//! agent conversation messages, preserves high-risk context verbatim, demotes or
+//! summarizes low-risk context, emits receipts, and keeps exact fallback ranges
+//! for later expansion.
+
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::{BTreeMap, BTreeSet};
+use thiserror::Error;
+use uuid::Uuid;
+
+const CHARS_PER_TOKEN: usize = 4;
+const SUMMARY_PREFIX: &str = "[CONTEXT COMPACTION — RECEIPT-BACKED REFERENCE ONLY]";
+
+#[derive(Debug, Error)]
+pub enum ContextGovernorError {
+    #[error("cannot compact an empty message list")]
+    EmptyMessages,
+    #[error("serialization failed: {0}")]
+    Serialization(#[from] serde_json::Error),
+    #[error("io failed: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("receipt not found: {0}")]
+    ReceiptNotFound(String),
+    #[error("context budget exceeded: target {target_tokens} tokens, minimum required {minimum_required_tokens} tokens")]
+    BudgetExceeded {
+        target_tokens: usize,
+        minimum_required_tokens: usize,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct Message {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    pub role: String,
+    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ItemType {
+    LatestUserMessage,
+    ActiveInstruction,
+    AcceptanceGate,
+    ToolCall,
+    ToolResult,
+    ErrorOutput,
+    FilePathContext,
+    Decision,
+    UnresolvedQuestion,
+    SourceEvidence,
+    DurableFactCandidate,
+    ProjectStateCandidate,
+    ArtifactBoilerplate,
+    StalePlan,
+    DuplicateContext,
+    LowRiskNarrative,
+    #[default]
+    Unknown,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum AuthorityClass {
+    MustPreserveExact,
+    EvidenceCritical,
+    ActiveTask,
+    VerifiedToolReceipt,
+    DurableMemoryCandidate,
+    #[default]
+    SummaryOk,
+    ArchiveOk,
+    Discardable,
+    Quarantine,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum PreservationPolicy {
+    KeepVerbatim,
+    #[default]
+    ExtractiveSummary,
+    AbstractiveSummary,
+    SemanticMemoryArchive,
+    ReceiptOnly,
+    OmitDuplicate,
+    Quarantine,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ContentKind {
+    PlainText,
+    Json,
+    Diff,
+    Rust,
+    Markdown,
+    CargoOutput,
+    ShellLog,
+    SearchResults,
+    #[default]
+    Unknown,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum BudgetMode {
+    #[default]
+    SoftWarn,
+    HardCascade,
+    FailClosed,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum TokenCounterKind {
+    #[default]
+    ApproxChars,
+    ApproxWords,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum AllocatorMode {
+    #[default]
+    DeterministicV1,
+    AggressiveV1,
+}
+
+impl AllocatorMode {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Self::DeterministicV1 => "deterministic_v1",
+            Self::AggressiveV1 => "aggressive_v1",
+        }
+    }
+}
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct ContextItemV1 {
+    pub schema: String,
+    pub item_id: String,
+    pub session_id: String,
+    pub start_index: usize,
+    pub end_index: usize,
+    pub role_set: Vec<String>,
+    pub char_count: usize,
+    pub approx_tokens: usize,
+    pub content_blake3: String,
+    #[serde(default)]
+    pub content_kind: ContentKind,
+    pub item_type: ItemType,
+    pub authority_class: AuthorityClass,
+    pub preservation_policy: PreservationPolicy,
+    pub risk_reasons: Vec<String>,
+    pub source_message_ids: Vec<String>,
+    pub priority_score: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ContextAllocationPlanV1 {
+    pub schema: String,
+    pub plan_id: String,
+    pub session_id: String,
+    pub created_utc: DateTime<Utc>,
+    pub context_budget_tokens: usize,
+    pub target_output_tokens: usize,
+    pub allocator: String,
+    pub items: Vec<ContextItemV1>,
+    pub kept_item_ids: Vec<String>,
+    pub summarized_item_ids: Vec<String>,
+    pub archived_item_ids: Vec<String>,
+    pub omitted_item_ids: Vec<String>,
+    pub quarantined_item_ids: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct ExactFallbackRefV1 {
+    pub item_id: String,
+    pub start_index: usize,
+    pub end_index: usize,
+    pub content_blake3: String,
+    pub approx_tokens: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct ExactStoredItemV1 {
+    pub item_id: String,
+    pub source_indices: Vec<usize>,
+    pub content: String,
+    pub content_blake3: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct StructuredContextSummaryV1 {
+    pub active_task: Option<String>,
+    pub acceptance_gates: Vec<String>,
+    pub files: Vec<String>,
+    pub commands: Vec<String>,
+    pub errors: Vec<String>,
+    pub decisions: Vec<String>,
+    pub unresolved_questions: Vec<String>,
+    pub fallback_item_ids: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct SummaryLossReportV1 {
+    pub schema: String,
+    pub preserved_claims: Vec<String>,
+    pub omitted_claims: Vec<String>,
+    pub evidence_lost: Vec<String>,
+    pub uncertainty_introduced: Vec<String>,
+    pub exact_recovery_available: bool,
+    pub high_risk_omissions: Vec<String>,
+    #[serde(default)]
+    pub structured_summary: StructuredContextSummaryV1,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ContextCompactionReceiptV1 {
+    pub schema: String,
+    pub receipt_id: String,
+    pub session_id: String,
+    pub parent_session_id: Option<String>,
+    pub created_utc: DateTime<Utc>,
+    pub engine: String,
+    pub engine_version: String,
+    pub original_message_count: usize,
+    pub compacted_message_count: usize,
+    pub original_approx_tokens: usize,
+    pub compacted_approx_tokens: usize,
+    pub token_savings_estimate: isize,
+    pub token_counter: TokenCounterKind,
+    pub original_transcript_blake3: String,
+    pub compacted_transcript_blake3: String,
+    pub allocation_plan_id: String,
+    pub semantic_memory_fact_ids: Vec<String>,
+    pub semantic_memory_document_ids: Vec<String>,
+    pub exact_fallback_refs: Vec<ExactFallbackRefV1>,
+    pub summary_loss_report: SummaryLossReportV1,
+    pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CompactRequest {
+    pub session_id: String,
+    pub messages: Vec<Message>,
+    #[serde(default)]
+    pub policy: CompactionPolicy,
+    #[serde(default)]
+    pub focus: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CompactionPolicy {
+    pub target_tokens: usize,
+    pub protect_first_n: usize,
+    pub protect_last_n: usize,
+    pub summary_max_chars: usize,
+    pub allocator: String,
+    #[serde(default)]
+    pub semantic_memory_enabled: bool,
+    #[serde(default)]
+    pub archive_memory_enabled: bool,
+    #[serde(default)]
+    pub budget_mode: BudgetMode,
+    #[serde(default)]
+    pub token_counter: TokenCounterKind,
+}
+
+impl Default for CompactionPolicy {
+    fn default() -> Self {
+        Self {
+            target_tokens: 8_000,
+            protect_first_n: 3,
+            protect_last_n: 8,
+            summary_max_chars: 8_000,
+            allocator: "deterministic_v1".to_string(),
+            semantic_memory_enabled: false,
+            archive_memory_enabled: false,
+            budget_mode: BudgetMode::SoftWarn,
+            token_counter: TokenCounterKind::ApproxChars,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CompactResponse {
+    pub receipt: ContextCompactionReceiptV1,
+    pub allocation_plan: ContextAllocationPlanV1,
+    pub compacted_messages: Vec<Message>,
+    pub exact_store: Vec<ExactStoredItemV1>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct RecallCandidate {
+    pub source: Option<String>,
+    pub content: String,
+    pub score: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum RecallDecision {
+    AdmitAuthoritative,
+    AdmitBackground,
+    DemoteArtifact,
+    QuarantineSpeculative,
+    RejectNoise,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct RecallFilterResult {
+    pub decision: RecallDecision,
+    pub reasons: Vec<String>,
+}
+
+pub fn compact_context(request: CompactRequest) -> Result<CompactResponse, ContextGovernorError> {
+    compact_context_with_memory_sink(request, None)
+}
+
+pub fn compact_context_with_memory_sink(
+    request: CompactRequest,
+    memory_sink: Option<&mut dyn MemorySink>,
+) -> Result<CompactResponse, ContextGovernorError> {
+    if request.messages.is_empty() {
+        return Err(ContextGovernorError::EmptyMessages);
+    }
+
+    let original_tokens = count_tokens_messages(&request.messages, &request.policy);
+    let original_hash = hash_messages(&request.messages)?;
+    let mut items = classify_messages(&request.session_id, &request.messages, &request.policy);
+    score_items(&mut items, request.focus.as_deref());
+    let allocator_mode = resolve_allocator(&request.policy);
+    let allocator_unknown = {
+        let raw = request.policy.allocator.trim().to_lowercase();
+        !raw.is_empty()
+            && !matches!(
+                raw.as_str(),
+                "deterministic" | "deterministic_v1" | "aggressive" | "aggressive_v1"
+            )
+    };
+    let mut warning_from_allocator = Vec::new();
+    if allocator_unknown {
+        warning_from_allocator.push(format!(
+            "allocator '{}' is unknown; normalized to '{}'",
+            request.policy.allocator,
+            allocator_mode.as_str(),
+        ));
+    }
+    let plan = allocate_items(&request.session_id, items, &request.policy, allocator_mode);
+    let mut warnings = warning_from_allocator;
+    if matches!(
+        request.policy.token_counter,
+        TokenCounterKind::ApproxChars | TokenCounterKind::ApproxWords
+    ) {
+        warnings.push(
+            "token_counter is approximate; provider-native token budgets may differ".to_string(),
+        );
+    }
+
+    let exact_store = build_exact_store(&request.messages, &plan);
+    let receipt_id = format!("ctxr_{}", Uuid::new_v4().simple());
+    let structured_summary = build_structured_summary(&request.messages, &plan);
+    let summary = build_summary(
+        &request.messages,
+        &plan,
+        &request.policy,
+        &structured_summary,
+        &receipt_id,
+    );
+    let mut compacted_messages =
+        assemble_compacted_messages(&request.messages, &plan, &summary, &request.policy);
+    if matches!(request.policy.budget_mode, BudgetMode::HardCascade) {
+        warnings.push("hard cascade budget mode active".to_string());
+    }
+
+    if matches!(
+        request.policy.budget_mode,
+        BudgetMode::HardCascade | BudgetMode::FailClosed
+    ) {
+        compacted_messages = enforce_budget(compacted_messages, &request.policy, &mut warnings)?;
+    }
+
+    let compacted_tokens = count_tokens_messages(&compacted_messages, &request.policy);
+    let compacted_hash = hash_messages(&compacted_messages)?;
+    let exact_fallback_refs = exact_store
+        .iter()
+        .filter_map(|stored| {
+            plan.items
+                .iter()
+                .find(|i| i.item_id == stored.item_id)
+                .map(|item| ExactFallbackRefV1 {
+                    item_id: item.item_id.clone(),
+                    start_index: item.start_index,
+                    end_index: item.end_index,
+                    content_blake3: item.content_blake3.clone(),
+                    approx_tokens: item.approx_tokens,
+                })
+        })
+        .collect::<Vec<_>>();
+
+    if compacted_tokens > request.policy.target_tokens {
+        warnings.push(format!(
+            "compacted output still exceeds target budget: {} > {} tokens",
+            compacted_tokens, request.policy.target_tokens
+        ));
+    }
+
+    let mut receipt = ContextCompactionReceiptV1 {
+        schema: "ContextCompactionReceiptV1".to_string(),
+        receipt_id: receipt_id.clone(),
+        session_id: request.session_id.clone(),
+        parent_session_id: None,
+        created_utc: Utc::now(),
+        engine: "context-governor".to_string(),
+        engine_version: env!("CARGO_PKG_VERSION").to_string(),
+        original_message_count: request.messages.len(),
+        compacted_message_count: compacted_messages.len(),
+        original_approx_tokens: original_tokens,
+        compacted_approx_tokens: compacted_tokens,
+        token_savings_estimate: original_tokens as isize - compacted_tokens as isize,
+        token_counter: request.policy.token_counter.clone(),
+        original_transcript_blake3: original_hash,
+        compacted_transcript_blake3: compacted_hash,
+        allocation_plan_id: plan.plan_id.clone(),
+        semantic_memory_fact_ids: Vec::new(),
+        semantic_memory_document_ids: Vec::new(),
+        exact_fallback_refs,
+        summary_loss_report: build_loss_report(&plan, structured_summary),
+        warnings,
+    };
+
+    if request.policy.archive_memory_enabled || request.policy.semantic_memory_enabled {
+        if let Some(sink) = memory_sink {
+            let compact_response = CompactResponse {
+                receipt: receipt.clone(),
+                allocation_plan: plan.clone(),
+                compacted_messages: compacted_messages.clone(),
+                exact_store: exact_store.clone(),
+            };
+            let outcome = archive_response_to_memory(&compact_response, sink)?;
+            receipt.semantic_memory_fact_ids = outcome.record_ids;
+            if outcome.records_attempted == 0 {
+                receipt.warnings.push(
+                    "archive_memory_enabled true but no matching durable/archive candidates were found".to_string(),
+                );
+            }
+            if request.policy.semantic_memory_enabled && !request.policy.archive_memory_enabled {
+                receipt
+                    .warnings
+                    .push("semantic_memory_enabled=true but archive_memory_enabled=false; semantic IDs may be partial".to_string());
+            }
+        } else {
+            receipt.warnings.push(
+                "archive requested but no memory sink was supplied; semantic-memory IDs are intentionally empty".to_string(),
+            );
+        }
+    }
+
+    Ok(CompactResponse {
+        receipt,
+        allocation_plan: plan,
+        compacted_messages,
+        exact_store,
+    })
+}
+
+pub fn filter_recall_candidate(candidate: &RecallCandidate, query: &str) -> RecallFilterResult {
+    let content_l = candidate.content.to_lowercase();
+    let source_l = candidate.source.clone().unwrap_or_default().to_lowercase();
+    let query_l = query.to_lowercase();
+    let mut reasons = Vec::new();
+
+    let speculative_markers = [
+        "likely",
+        "would likely",
+        "potentially",
+        "may indicate",
+        "could imply",
+        "logically connect",
+        "intended to",
+        "seems to",
+    ];
+    if speculative_markers.iter().any(|m| content_l.contains(m)) {
+        reasons.push("speculative-language-without-evidence".to_string());
+        return RecallFilterResult {
+            decision: RecallDecision::QuarantineSpeculative,
+            reasons,
+        };
+    }
+
+    let artifact_markers = [
+        "_spec_pack.zip",
+        "_bundle.zip",
+        "pack_manifest",
+        "mvp_implementation_plan",
+        "rollback_and_quarantine_plan",
+        "master_codex_implementation_prompt",
+        "migration from prior drafts",
+        "profile_i",
+    ];
+    let is_artifact = artifact_markers
+        .iter()
+        .any(|m| content_l.contains(m) || source_l.contains(m));
+    if is_artifact {
+        let explicit = [
+            "aicc",
+            "context pack",
+            "pack manifest",
+            "zpy",
+            "gpt-pro-synthesis",
+        ]
+        .iter()
+        .any(|m| query_l.contains(m));
+        reasons.push("artifact-pack-marker".to_string());
+        return RecallFilterResult {
+            decision: if explicit {
+                RecallDecision::AdmitBackground
+            } else {
+                RecallDecision::RejectNoise
+            },
+            reasons,
+        };
+    }
+
+    if source_l.contains("tool-receipts")
+        && !query_l.contains("tool")
+        && !query_l.contains("receipt")
+    {
+        reasons.push("tool-receipt-not-query-matched".to_string());
+        return RecallFilterResult {
+            decision: RecallDecision::DemoteArtifact,
+            reasons,
+        };
+    }
+
+    if content_l.contains("verified")
+        || content_l.contains("passed")
+        || content_l.contains("source:")
+    {
+        reasons.push("verification-signal".to_string());
+        RecallFilterResult {
+            decision: RecallDecision::AdmitAuthoritative,
+            reasons,
+        }
+    } else {
+        RecallFilterResult {
+            decision: RecallDecision::AdmitBackground,
+            reasons,
+        }
+    }
+}
+
+pub fn approx_tokens_text(text: &str) -> usize {
+    (text.chars().count() / CHARS_PER_TOKEN).max(1)
+}
+
+fn approx_word_tokens(text: &str) -> usize {
+    text.split_whitespace()
+        .map(|token| {
+            if token.ends_with('.')
+                || token.ends_with(',')
+                || token.ends_with(';')
+                || token.ends_with('!')
+                || token.ends_with('?')
+            {
+                (token.chars().count() / CHARS_PER_TOKEN) + 1
+            } else {
+                token.chars().count() / CHARS_PER_TOKEN
+            }
+        })
+        .sum::<usize>()
+        .max(1)
+}
+
+pub fn approx_tokens_messages(messages: &[Message]) -> usize {
+    messages
+        .iter()
+        .map(|m| approx_tokens_text(&m.content) + 4)
+        .sum()
+}
+
+fn count_tokens_text(text: &str, policy: &CompactionPolicy) -> usize {
+    match policy.token_counter {
+        TokenCounterKind::ApproxChars => approx_tokens_text(text),
+        TokenCounterKind::ApproxWords => approx_word_tokens(text),
+    }
+}
+
+fn count_tokens_messages(messages: &[Message], policy: &CompactionPolicy) -> usize {
+    messages
+        .iter()
+        .map(|m| count_tokens_text(&m.content, policy) + 4)
+        .sum()
+}
+
+pub fn hash_messages(messages: &[Message]) -> Result<String, ContextGovernorError> {
+    let rendered = serde_json::to_string(messages)?;
+    Ok(hash_text(&rendered))
+}
+
+pub fn hash_text(text: &str) -> String {
+    blake3::hash(text.as_bytes()).to_hex().to_string()
+}
+
+fn classify_messages(
+    session_id: &str,
+    messages: &[Message],
+    policy: &CompactionPolicy,
+) -> Vec<ContextItemV1> {
+    let latest_user = messages
+        .iter()
+        .rposition(|m| m.role == "user")
+        .unwrap_or(messages.len() - 1);
+    let mut seen_hashes = BTreeSet::new();
+    messages
+        .iter()
+        .enumerate()
+        .map(|(idx, msg)| {
+            let h = hash_text(&msg.content);
+            let duplicate = !seen_hashes.insert(h.clone());
+            classify_message(session_id, idx, latest_user, msg, h, duplicate, policy)
+        })
+        .collect()
+}
+
+fn classify_message(
+    session_id: &str,
+    idx: usize,
+    latest_user: usize,
+    msg: &Message,
+    content_hash: String,
+    duplicate: bool,
+    policy: &CompactionPolicy,
+) -> ContextItemV1 {
+    let content_l = msg.content.to_lowercase();
+    let aggressive = is_aggressive_allocator(policy);
+    let counted_tokens = count_tokens_text(&msg.content, policy);
+    let msg_chars = msg.content.chars().count();
+    let long_message = msg_chars > 600;
+    let mut item_type = ItemType::LowRiskNarrative;
+    let mut authority = AuthorityClass::SummaryOk;
+    let mut policy = PreservationPolicy::ExtractiveSummary;
+    let mut reasons = Vec::new();
+
+    if idx == latest_user && msg.role == "user" {
+        item_type = ItemType::LatestUserMessage;
+        authority = AuthorityClass::ActiveTask;
+        policy = PreservationPolicy::KeepVerbatim;
+        reasons.push("latest-user-message".to_string());
+    } else if duplicate {
+        item_type = ItemType::DuplicateContext;
+        authority = AuthorityClass::Discardable;
+        policy = PreservationPolicy::OmitDuplicate;
+        reasons.push("duplicate-content".to_string());
+    } else if contains_any(
+        &content_l,
+        &[
+            "acceptance gate",
+            "must pass",
+            "required",
+            "requirement",
+            "do not",
+            "never ",
+        ],
+    ) {
+        item_type = ItemType::AcceptanceGate;
+        authority = AuthorityClass::MustPreserveExact;
+        policy = if aggressive && long_message {
+            PreservationPolicy::ReceiptOnly
+        } else {
+            PreservationPolicy::KeepVerbatim
+        };
+        reasons.push("acceptance-or-instruction".to_string());
+    } else if contains_any(
+        &content_l,
+        &[
+            "error:",
+            "error[",
+            "traceback",
+            "panic",
+            "failed",
+            "compilation failed",
+            "exit_code\":1",
+            "exit code 1",
+        ],
+    ) {
+        item_type = ItemType::ErrorOutput;
+        authority = AuthorityClass::EvidenceCritical;
+        policy = if msg.role == "tool" && msg.content.chars().count() > 600 {
+            PreservationPolicy::ReceiptOnly
+        } else {
+            PreservationPolicy::KeepVerbatim
+        };
+        reasons.push("error-output".to_string());
+    } else if contains_path_signal(&msg.content) {
+        item_type = ItemType::FilePathContext;
+        authority = AuthorityClass::EvidenceCritical;
+        policy = if aggressive && long_message {
+            PreservationPolicy::ReceiptOnly
+        } else {
+            PreservationPolicy::KeepVerbatim
+        };
+        reasons.push("path-signal".to_string());
+    } else if msg.role == "tool" {
+        item_type = ItemType::ToolResult;
+        authority = AuthorityClass::VerifiedToolReceipt;
+        policy = if msg.content.chars().count() > 600 {
+            PreservationPolicy::ReceiptOnly
+        } else {
+            PreservationPolicy::KeepVerbatim
+        };
+        reasons.push("tool-result".to_string());
+    } else if contains_any(
+        &content_l,
+        &["decided", "decision", "architecture", "verdict"],
+    ) {
+        item_type = ItemType::Decision;
+        authority = AuthorityClass::DurableMemoryCandidate;
+        policy = PreservationPolicy::SemanticMemoryArchive;
+        reasons.push("decision-signal".to_string());
+    } else if contains_any(&content_l, &["source:", "evidence", "verified", "receipt"]) {
+        item_type = ItemType::SourceEvidence;
+        authority = AuthorityClass::EvidenceCritical;
+        policy = if aggressive && long_message {
+            PreservationPolicy::ReceiptOnly
+        } else {
+            PreservationPolicy::KeepVerbatim
+        };
+        reasons.push("evidence-signal".to_string());
+    }
+
+    if contains_any(
+        &content_l,
+        &[
+            "likely",
+            "potentially",
+            "would likely",
+            "may indicate",
+            "logically connect",
+        ],
+    ) {
+        item_type = ItemType::ArtifactBoilerplate;
+        authority = AuthorityClass::Quarantine;
+        policy = PreservationPolicy::Quarantine;
+        reasons.push("speculative-language".to_string());
+    }
+
+    ContextItemV1 {
+        schema: "ContextItemV1".to_string(),
+        item_id: format!("ctxi_{idx:04}_{}", &content_hash[..12]),
+        session_id: session_id.to_string(),
+        start_index: idx,
+        end_index: idx,
+        role_set: vec![msg.role.clone()],
+        char_count: msg.content.chars().count(),
+        approx_tokens: counted_tokens,
+        content_blake3: content_hash,
+        content_kind: detect_content_kind(&msg.role, &msg.content),
+        item_type,
+        authority_class: authority,
+        preservation_policy: policy,
+        risk_reasons: reasons,
+        source_message_ids: msg.id.clone().into_iter().collect(),
+        priority_score: 0,
+    }
+}
+
+fn resolve_allocator(policy: &CompactionPolicy) -> AllocatorMode {
+    if policy.allocator.trim().is_empty() {
+        return AllocatorMode::DeterministicV1;
+    }
+    match policy.allocator.trim().to_lowercase().as_str() {
+        "deterministic" | "deterministic_v1" => AllocatorMode::DeterministicV1,
+        "aggressive" | "aggressive_v1" => AllocatorMode::AggressiveV1,
+        _ => AllocatorMode::DeterministicV1,
+    }
+}
+
+fn is_aggressive_allocator(policy: &CompactionPolicy) -> bool {
+    matches!(resolve_allocator(policy), AllocatorMode::AggressiveV1)
+}
+fn is_aggressive_allocator_mode(mode: &AllocatorMode) -> bool {
+    matches!(mode, AllocatorMode::AggressiveV1)
+}
+
+fn score_items(items: &mut [ContextItemV1], focus: Option<&str>) {
+    for item in items {
+        let mut score = match item.item_type {
+            ItemType::LatestUserMessage => 1000,
+            ItemType::ActiveInstruction => 900,
+            ItemType::AcceptanceGate => 850,
+            ItemType::ErrorOutput => 800,
+            ItemType::SourceEvidence => 750,
+            ItemType::ToolResult => 650,
+            ItemType::FilePathContext => 650,
+            ItemType::Decision => 600,
+            ItemType::UnresolvedQuestion => 575,
+            ItemType::DurableFactCandidate | ItemType::ProjectStateCandidate => 500,
+            ItemType::LowRiskNarrative => 100,
+            ItemType::ArtifactBoilerplate => -300,
+            ItemType::StalePlan => -350,
+            ItemType::DuplicateContext => -500,
+            ItemType::Unknown | ItemType::ToolCall => 50,
+        };
+        if matches!(
+            item.authority_class,
+            AuthorityClass::MustPreserveExact | AuthorityClass::ActiveTask
+        ) {
+            score += 300;
+        }
+        if focus.is_some() && !matches!(item.preservation_policy, PreservationPolicy::Quarantine) {
+            score += 25;
+        }
+        item.priority_score = score;
+    }
+}
+
+fn allocate_items(
+    session_id: &str,
+    items: Vec<ContextItemV1>,
+    policy: &CompactionPolicy,
+    allocator: AllocatorMode,
+) -> ContextAllocationPlanV1 {
+    let mut used_tokens = 0usize;
+    let mut kept = Vec::new();
+    let mut summarized = Vec::new();
+    let mut archived = Vec::new();
+    let mut omitted = Vec::new();
+    let mut quarantined = Vec::new();
+
+    let len = items.len();
+    let aggressive = is_aggressive_allocator_mode(&allocator);
+    for item in &items {
+        let in_head = item.start_index < policy.protect_first_n;
+        let in_tail = item.start_index + policy.protect_last_n >= len;
+        let protected_head = in_head && (!aggressive || item.approx_tokens <= 1_000);
+        let protected_tail = in_tail
+            && (!aggressive
+                || item.approx_tokens <= 300
+                || matches!(item.item_type, ItemType::LatestUserMessage));
+        match item.preservation_policy {
+            PreservationPolicy::Quarantine => quarantined.push(item.item_id.clone()),
+            PreservationPolicy::OmitDuplicate => omitted.push(item.item_id.clone()),
+            PreservationPolicy::SemanticMemoryArchive => {
+                archived.push(item.item_id.clone());
+                if protected_tail || item.priority_score >= 650 {
+                    kept.push(item.item_id.clone());
+                    used_tokens = used_tokens.saturating_add(item.approx_tokens);
+                } else {
+                    summarized.push(item.item_id.clone());
+                }
+            }
+            PreservationPolicy::KeepVerbatim => {
+                let must_keep = matches!(item.item_type, ItemType::LatestUserMessage)
+                    || protected_head
+                    || (!aggressive && protected_tail);
+                let fits_aggressive_budget = !aggressive
+                    || used_tokens + item.approx_tokens <= policy.target_tokens.saturating_div(2);
+                if must_keep || fits_aggressive_budget {
+                    kept.push(item.item_id.clone());
+                    used_tokens = used_tokens.saturating_add(item.approx_tokens);
+                } else {
+                    summarized.push(item.item_id.clone());
+                }
+            }
+            PreservationPolicy::ReceiptOnly => {
+                if protected_head
+                    || protected_tail
+                    || used_tokens + item.approx_tokens <= policy.target_tokens
+                {
+                    summarized.push(item.item_id.clone());
+                } else {
+                    omitted.push(item.item_id.clone());
+                }
+            }
+            PreservationPolicy::ExtractiveSummary | PreservationPolicy::AbstractiveSummary => {
+                let must_keep = matches!(item.item_type, ItemType::LatestUserMessage)
+                    || protected_head
+                    || protected_tail;
+                if must_keep
+                    || (!aggressive && used_tokens + item.approx_tokens <= policy.target_tokens / 2)
+                {
+                    kept.push(item.item_id.clone());
+                    used_tokens = used_tokens.saturating_add(item.approx_tokens);
+                } else {
+                    summarized.push(item.item_id.clone());
+                }
+            }
+        }
+    }
+
+    ContextAllocationPlanV1 {
+        schema: "ContextAllocationPlanV1".to_string(),
+        plan_id: format!("ctxp_{}", Uuid::new_v4().simple()),
+        session_id: session_id.to_string(),
+        created_utc: Utc::now(),
+        context_budget_tokens: policy.target_tokens,
+        target_output_tokens: policy.target_tokens,
+        allocator: allocator.as_str().to_string(),
+        items,
+        kept_item_ids: kept,
+        summarized_item_ids: summarized,
+        archived_item_ids: archived,
+        omitted_item_ids: omitted,
+        quarantined_item_ids: quarantined,
+    }
+}
+
+fn build_exact_store(
+    messages: &[Message],
+    plan: &ContextAllocationPlanV1,
+) -> Vec<ExactStoredItemV1> {
+    plan.items
+        .iter()
+        .filter(|item| {
+            plan.summarized_item_ids.contains(&item.item_id)
+                || plan.archived_item_ids.contains(&item.item_id)
+                || plan.omitted_item_ids.contains(&item.item_id)
+                || plan.quarantined_item_ids.contains(&item.item_id)
+                || matches!(item.preservation_policy, PreservationPolicy::ReceiptOnly)
+        })
+        .filter_map(|item| {
+            messages.get(item.start_index).map(|m| ExactStoredItemV1 {
+                item_id: item.item_id.clone(),
+                source_indices: vec![item.start_index],
+                content: m.content.clone(),
+                content_blake3: item.content_blake3.clone(),
+            })
+        })
+        .collect()
+}
+
+fn build_structured_summary(
+    messages: &[Message],
+    plan: &ContextAllocationPlanV1,
+) -> StructuredContextSummaryV1 {
+    let mut out = StructuredContextSummaryV1 {
+        active_task: messages
+            .iter()
+            .rev()
+            .find(|m| m.role == "user")
+            .map(|m| compact_preview(&m.content, 240)),
+        fallback_item_ids: plan
+            .summarized_item_ids
+            .iter()
+            .chain(plan.omitted_item_ids.iter())
+            .chain(plan.quarantined_item_ids.iter())
+            .cloned()
+            .collect(),
+        ..Default::default()
+    };
+
+    for msg in messages {
+        let content_l = msg.content.to_lowercase();
+        if content_l.contains("acceptance gate") || content_l.contains("must pass") {
+            push_unique(
+                &mut out.acceptance_gates,
+                compact_preview(&msg.content, 240),
+            );
+        }
+        if content_l.contains("decision:") || content_l.contains("decided") {
+            push_unique(&mut out.decisions, compact_preview(&msg.content, 240));
+        }
+        if content_l.contains("unresolved question") || content_l.contains('?') {
+            push_unique(
+                &mut out.unresolved_questions,
+                compact_preview(&msg.content, 240),
+            );
+        }
+        if content_l.contains("error")
+            || content_l.contains("traceback")
+            || content_l.contains("failed")
+        {
+            push_unique(
+                &mut out.errors,
+                important_lines(&msg.content, &["error", "failed", "traceback"], 240),
+            );
+        }
+        for file in extract_file_like_tokens(&msg.content) {
+            push_unique(&mut out.files, file);
+        }
+        for command in extract_command_like_lines(&msg.content) {
+            push_unique(&mut out.commands, command);
+        }
+    }
+    out
+}
+
+fn push_summary_list(lines: &mut Vec<String>, label: &str, values: &[String]) {
+    if values.is_empty() {
+        return;
+    }
+    lines.push(format!("- {label}:"));
+    for value in values.iter().take(5) {
+        lines.push(format!("  - {}", compact_preview(value, 220)));
+    }
+}
+
+fn push_unique(values: &mut Vec<String>, value: String) {
+    if !value.is_empty() && !values.contains(&value) {
+        values.push(value);
+    }
+}
+
+fn extract_file_like_tokens(text: &str) -> Vec<String> {
+    text.split_whitespace()
+        .map(|token| {
+            token.trim_matches(|c: char| {
+                c == ',' || c == ':' || c == ';' || c == ')' || c == '(' || c == '`' || c == '"'
+            })
+        })
+        .filter(|token| {
+            token.contains("/home/")
+                || token.starts_with("~/")
+                || token.ends_with(".rs")
+                || token.ends_with(".py")
+                || token.ends_with(".ts")
+                || token.ends_with(".tsx")
+                || token.ends_with(".md")
+                || token.ends_with(".toml")
+                || token.ends_with(".yaml")
+        })
+        .map(|token| token.to_string())
+        .collect()
+}
+
+fn extract_command_like_lines(text: &str) -> Vec<String> {
+    text.lines()
+        .map(str::trim)
+        .filter(|line| {
+            line.starts_with("running:")
+                || line.starts_with('$')
+                || line.starts_with("cargo ")
+                || line.starts_with("npm ")
+                || line.starts_with("python ")
+                || line.starts_with("git ")
+        })
+        .map(|line| compact_preview(line, 240))
+        .collect()
+}
+
+fn important_lines(text: &str, needles: &[&str], max_chars: usize) -> String {
+    let mut out = Vec::new();
+    for line in text.lines() {
+        let line_l = line.to_lowercase();
+        if needles.iter().any(|needle| line_l.contains(needle)) {
+            out.push(line.trim());
+        }
+        if out.len() >= 5 {
+            break;
+        }
+    }
+    if out.is_empty() {
+        compact_preview(text, max_chars)
+    } else {
+        compact_preview(&out.join(" | "), max_chars)
+    }
+}
+
+fn build_summary(
+    messages: &[Message],
+    plan: &ContextAllocationPlanV1,
+    policy: &CompactionPolicy,
+    structured: &StructuredContextSummaryV1,
+    receipt_id: &str,
+) -> String {
+    let mut lines = vec![
+        format!("{SUMMARY_PREFIX}"),
+        "Earlier turns were compacted. This summary is background, not an active task.".to_string(),
+        "Only the latest user message after this summary is active.".to_string(),
+        format!("Use context_expand(receipt_id=\"{receipt_id}\", item_id=...) to recover exact omitted text when needed."),
+        String::new(),
+        "## Structured anchors".to_string(),
+    ];
+    if let Some(active_task) = &structured.active_task {
+        lines.push(format!(
+            "- active_task: {}",
+            compact_preview(active_task, 220)
+        ));
+    }
+    push_summary_list(&mut lines, "acceptance_gates", &structured.acceptance_gates);
+    push_summary_list(&mut lines, "commands", &structured.commands);
+    push_summary_list(&mut lines, "errors", &structured.errors);
+    push_summary_list(&mut lines, "files", &structured.files);
+    push_summary_list(&mut lines, "decisions", &structured.decisions);
+    push_summary_list(
+        &mut lines,
+        "unresolved_questions",
+        &structured.unresolved_questions,
+    );
+    if !structured.fallback_item_ids.is_empty() {
+        let shown = structured
+            .fallback_item_ids
+            .iter()
+            .take(30)
+            .cloned()
+            .collect::<Vec<_>>();
+        let hidden = structured
+            .fallback_item_ids
+            .len()
+            .saturating_sub(shown.len());
+        let suffix = if hidden > 0 {
+            format!(" (+{hidden} more in receipt)")
+        } else {
+            String::new()
+        };
+        lines.push(format!(
+            "- fallback_item_ids: {}{}",
+            shown.join(", "),
+            suffix
+        ));
+    }
+
+    lines.push(String::new());
+    lines.push("## Preserved / summarized context".to_string());
+    for item in &plan.items {
+        if plan.summarized_item_ids.contains(&item.item_id)
+            || plan.archived_item_ids.contains(&item.item_id)
+        {
+            if let Some(msg) = messages.get(item.start_index) {
+                let preview = content_aware_preview(&item.content_kind, &msg.content, 220);
+                lines.push(format!(
+                    "- {} {:?}/{:?}/{:?}: {}",
+                    item.item_id,
+                    item.item_type,
+                    item.content_kind,
+                    item.preservation_policy,
+                    preview
+                ));
+            }
+        }
+    }
+    if !plan.quarantined_item_ids.is_empty() {
+        lines.push(String::new());
+        lines.push(format!(
+            "## Quarantined context\n{} items were excluded from authoritative context due to speculative/artifact signals; exact fallback remains available.",
+            plan.quarantined_item_ids.len()
+        ));
+    }
+    let mut summary = lines.join("\n");
+    if summary.chars().count() > policy.summary_max_chars {
+        summary = summary
+            .chars()
+            .take(policy.summary_max_chars)
+            .collect::<String>();
+        summary.push_str("\n[summary truncated by context-governor budget]");
+    }
+    summary
+}
+
+fn assemble_compacted_messages(
+    messages: &[Message],
+    plan: &ContextAllocationPlanV1,
+    summary: &str,
+    policy: &CompactionPolicy,
+) -> Vec<Message> {
+    let mut out = Vec::new();
+    let kept_set = plan.kept_item_ids.iter().cloned().collect::<BTreeSet<_>>();
+    let aggressive = is_aggressive_allocator(policy);
+    let item_by_index = plan
+        .items
+        .iter()
+        .map(|i| (i.start_index, i))
+        .collect::<BTreeMap<_, _>>();
+
+    let tail_start = messages.len().saturating_sub(policy.protect_last_n);
+
+    for (idx, msg) in messages.iter().enumerate() {
+        if idx >= tail_start {
+            continue;
+        }
+        if idx < policy.protect_first_n {
+            let Some(item) = item_by_index.get(&idx) else {
+                out.push(msg.clone());
+                continue;
+            };
+            let keep_head = matches!(item.item_type, ItemType::LatestUserMessage)
+                || (kept_set.contains(&item.item_id)
+                    && (!aggressive || item.approx_tokens <= 1_000))
+                || (matches!(
+                    item.authority_class,
+                    AuthorityClass::MustPreserveExact | AuthorityClass::ActiveTask
+                ) && (!aggressive || item.approx_tokens <= 1_000));
+            if keep_head {
+                out.push(msg.clone());
+            }
+        } else if let Some(item) = item_by_index.get(&idx) {
+            if kept_set.contains(&item.item_id)
+                && !out
+                    .iter()
+                    .any(|m: &Message| m.content == msg.content && m.role == msg.role)
+            {
+                out.push(msg.clone());
+            }
+        }
+    }
+
+    let summary_msg = Message {
+        id: Some(format!("summary_{}", plan.plan_id)),
+        role: choose_summary_role(out.last().map(|m| m.role.as_str())).to_string(),
+        content: summary.to_string(),
+        name: Some("context_governor".to_string()),
+        metadata: BTreeMap::from([("compressed_summary".to_string(), Value::Bool(true))]),
+    };
+    out.push(summary_msg);
+
+    for (offset, msg) in messages[tail_start..].iter().enumerate() {
+        let idx = tail_start + offset;
+        let Some(item) = item_by_index.get(&idx) else {
+            continue;
+        };
+        let should_keep_tail = kept_set.contains(&item.item_id)
+            || matches!(item.authority_class, AuthorityClass::ActiveTask)
+            || (matches!(item.authority_class, AuthorityClass::MustPreserveExact)
+                && matches!(item.preservation_policy, PreservationPolicy::KeepVerbatim));
+        if should_keep_tail
+            && !out
+                .iter()
+                .any(|m| m.content == msg.content && m.role == msg.role)
+        {
+            out.push(msg.clone());
+        }
+    }
+    out
+}
+
+fn choose_summary_role(previous: Option<&str>) -> &'static str {
+    match previous {
+        Some("assistant") => "user",
+        _ => "assistant",
+    }
+}
+
+fn build_loss_report(
+    plan: &ContextAllocationPlanV1,
+    structured_summary: StructuredContextSummaryV1,
+) -> SummaryLossReportV1 {
+    SummaryLossReportV1 {
+        schema: "SummaryLossReportV1".to_string(),
+        preserved_claims: plan.kept_item_ids.clone(),
+        omitted_claims: plan.omitted_item_ids.clone(),
+        evidence_lost: plan
+            .omitted_item_ids
+            .iter()
+            .chain(plan.summarized_item_ids.iter())
+            .cloned()
+            .collect(),
+        uncertainty_introduced: plan.quarantined_item_ids.clone(),
+        exact_recovery_available: true,
+        high_risk_omissions: plan
+            .items
+            .iter()
+            .filter(|i| {
+                plan.omitted_item_ids.contains(&i.item_id)
+                    && matches!(
+                        i.authority_class,
+                        AuthorityClass::MustPreserveExact | AuthorityClass::EvidenceCritical
+                    )
+            })
+            .map(|i| i.item_id.clone())
+            .collect(),
+        structured_summary,
+    }
+}
+
+fn compact_preview(text: &str, max_chars: usize) -> String {
+    let clean = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    if clean.chars().count() <= max_chars {
+        clean
+    } else {
+        let mut s = clean.chars().take(max_chars).collect::<String>();
+        s.push_str("...");
+        s
+    }
+}
+
+fn content_aware_preview(kind: &ContentKind, text: &str, max_chars: usize) -> String {
+    match kind {
+        ContentKind::Json => json_preview(text, max_chars),
+        ContentKind::Diff => important_lines(text, &["diff --git", "@@", "+++", "---"], max_chars),
+        ContentKind::CargoOutput => important_lines(
+            text,
+            &["error", "warning", "test result", "failed", "finished"],
+            max_chars,
+        ),
+        ContentKind::ShellLog => {
+            important_lines(text, &["error", "failed", "exit", "$"], max_chars)
+        }
+        _ => compact_preview(text, max_chars),
+    }
+}
+
+fn json_preview(text: &str, max_chars: usize) -> String {
+    if let Ok(value) = serde_json::from_str::<Value>(text) {
+        if let Some(obj) = value.as_object() {
+            let keys = obj.keys().take(12).cloned().collect::<Vec<_>>().join(", ");
+            return compact_preview(&format!("json keys: {keys}"), max_chars);
+        }
+    }
+    compact_preview(text, max_chars)
+}
+
+fn detect_content_kind(role: &str, content: &str) -> ContentKind {
+    let trimmed = content.trim();
+    let lower = trimmed.to_lowercase();
+    if serde_json::from_str::<Value>(trimmed).is_ok() {
+        return ContentKind::Json;
+    }
+    if lower.starts_with("diff --git") || lower.contains("\n@@ ") {
+        return ContentKind::Diff;
+    }
+    if lower.contains("error[")
+        || lower.contains("test result:")
+        || lower.contains("warning:")
+        || lower.contains("compiling ")
+    {
+        return ContentKind::CargoOutput;
+    }
+    if trimmed.starts_with("# ") || trimmed.contains("\n## ") || trimmed.contains("\n- ") {
+        return ContentKind::Markdown;
+    }
+    if lower.contains("fn main") || lower.contains("pub struct") || lower.contains("impl ") {
+        return ContentKind::Rust;
+    }
+    if role == "tool" {
+        return ContentKind::ShellLog;
+    }
+    ContentKind::PlainText
+}
+
+fn enforce_budget(
+    mut messages: Vec<Message>,
+    policy: &CompactionPolicy,
+    warnings: &mut Vec<String>,
+) -> Result<Vec<Message>, ContextGovernorError> {
+    let target = policy.target_tokens;
+    if count_tokens_messages(&messages, policy) <= target {
+        return Ok(messages);
+    }
+    let Some(summary_idx) = messages
+        .iter()
+        .position(|m| m.content.starts_with(SUMMARY_PREFIX))
+    else {
+        let minimum = count_tokens_messages(&messages, policy);
+        return Err(ContextGovernorError::BudgetExceeded {
+            target_tokens: target,
+            minimum_required_tokens: minimum,
+        });
+    };
+
+    let mut without_summary = messages.clone();
+    without_summary.remove(summary_idx);
+    let required = count_tokens_messages(&without_summary, policy);
+    if required > target {
+        if matches!(policy.budget_mode, BudgetMode::HardCascade) {
+            warnings.push(format!(
+                "hard cascade removed summary but exact protected minimum still exceeds target budget: {required} > {target} tokens"
+            ));
+            return Ok(without_summary);
+        }
+        return Err(ContextGovernorError::BudgetExceeded {
+            target_tokens: target,
+            minimum_required_tokens: required,
+        });
+    }
+
+    let available_chars = target
+        .saturating_sub(required)
+        .saturating_mul(CHARS_PER_TOKEN);
+    let minimal_summary = minimal_recovery_summary(&messages[summary_idx].content);
+    let minimal_tokens = count_tokens_text(&minimal_summary, policy) + 4;
+    if available_chars < 80 {
+        if required + minimal_tokens <= target {
+            messages[summary_idx].content = minimal_summary;
+            warnings.push("hard cascade reduced summary to minimal recovery pointer".to_string());
+        } else {
+            messages.remove(summary_idx);
+            warnings.push("hard cascade removed summary to satisfy target budget".to_string());
+        }
+        return Ok(messages);
+    }
+
+    let summary = &mut messages[summary_idx];
+    if summary.content.chars().count() > available_chars {
+        let truncated_body = summary
+            .content
+            .chars()
+            .take(available_chars.saturating_sub(96))
+            .collect::<String>();
+        summary.content = format!(
+            "{}\nhard cascade summary truncated; exact fallback remains available.\n{}",
+            SUMMARY_PREFIX, truncated_body
+        );
+        if count_tokens_messages(&messages, policy) > target && required + minimal_tokens <= target
+        {
+            messages[summary_idx].content = minimal_summary;
+        }
+        warnings.push("hard cascade truncated summary to satisfy target budget".to_string());
+    }
+    if count_tokens_messages(&messages, policy) > target {
+        messages.remove(summary_idx);
+        warnings.push("hard cascade removed summary after truncation did not fit".to_string());
+    }
+    Ok(messages)
+}
+
+fn minimal_recovery_summary(summary: &str) -> String {
+    let mut lines = vec![
+        SUMMARY_PREFIX.to_string(),
+        "Hard cascade kept only the recovery pointer; exact fallback remains available."
+            .to_string(),
+    ];
+    for line in summary.lines() {
+        if line.contains("context_expand(") || line.starts_with("- fallback_item_ids:") {
+            lines.push(compact_preview(line, 600));
+        }
+    }
+    lines.join("\n")
+}
+
+fn contains_any(text: &str, needles: &[&str]) -> bool {
+    needles.iter().any(|needle| text.contains(needle))
+}
+
+fn contains_path_signal(text: &str) -> bool {
+    text.contains("/home/")
+        || text.contains("~/")
+        || text.contains("Cargo.toml")
+        || text.contains("pyproject.toml")
+        || text.contains(".rs")
+        || text.contains(".py")
+        || text.contains(".ts")
+        || text.contains(".tsx")
+        || text.contains(".md")
+        || text.contains(".yaml")
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum SearchScope {
+    All,
+    Summary,
+    ExactStore,
+    Receipt,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ContextSearchHit {
+    pub source: String,
+    pub item_id: Option<String>,
+    pub snippet: String,
+    pub content_blake3: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ContextExpandResult {
+    pub item_id: String,
+    pub content: String,
+    pub content_blake3: String,
+    pub truncated: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ContextDiffSummary {
+    pub kept_count: usize,
+    pub summarized_count: usize,
+    pub archived_count: usize,
+    pub omitted_count: usize,
+    pub quarantined_count: usize,
+    pub original_approx_tokens: usize,
+    pub compacted_approx_tokens: usize,
+    pub token_savings_estimate: isize,
+    pub warnings: Vec<String>,
+}
+
+pub fn context_expand(
+    response: &CompactResponse,
+    item_id: &str,
+    max_chars: usize,
+) -> Option<ContextExpandResult> {
+    response
+        .exact_store
+        .iter()
+        .find(|item| item.item_id == item_id)
+        .map(|item| {
+            let total_chars = item.content.chars().count();
+            let truncated = total_chars > max_chars;
+            let content = if truncated {
+                item.content.chars().take(max_chars).collect::<String>()
+            } else {
+                item.content.clone()
+            };
+            ContextExpandResult {
+                item_id: item.item_id.clone(),
+                content,
+                content_blake3: item.content_blake3.clone(),
+                truncated,
+            }
+        })
+}
+
+pub fn context_search(
+    response: &CompactResponse,
+    query: &str,
+    top_k: usize,
+    scope: SearchScope,
+) -> Vec<ContextSearchHit> {
+    let query_l = query.to_lowercase();
+    let mut scored_hits = Vec::new();
+
+    let mut add_hit = |source: &'static str,
+                       rank: usize,
+                       item_id: Option<String>,
+                       rendered: &str,
+                       hash: Option<String>| {
+        if rendered.to_lowercase().contains(&query_l) {
+            scored_hits.push((
+                rank,
+                ContextSearchHit {
+                    source: source.to_string(),
+                    item_id,
+                    snippet: snippet_around(rendered, query, 320),
+                    content_blake3: hash,
+                },
+            ));
+        }
+    };
+
+    if matches!(scope, SearchScope::All | SearchScope::ExactStore) {
+        for item in &response.exact_store {
+            add_hit(
+                "exact_store",
+                90,
+                Some(item.item_id.clone()),
+                &item.content,
+                Some(item.content_blake3.clone()),
+            );
+        }
+    }
+
+    if matches!(scope, SearchScope::All | SearchScope::Summary) {
+        for msg in &response.compacted_messages {
+            add_hit(
+                "compacted_messages",
+                60,
+                msg.id.clone(),
+                &msg.content,
+                Some(hash_text(&msg.content)),
+            );
+        }
+    }
+
+    if matches!(scope, SearchScope::All | SearchScope::Receipt) {
+        if let Ok(rendered) = serde_json::to_string(&response.receipt) {
+            add_hit(
+                "receipt",
+                40,
+                Some(response.receipt.receipt_id.clone()),
+                &rendered,
+                Some(hash_text(&rendered)),
+            );
+        }
+    }
+
+    scored_hits.sort_by(|a, b| {
+        b.0.cmp(&a.0)
+            .then_with(|| a.1.source.cmp(&b.1.source))
+            .then_with(|| a.1.snippet.cmp(&b.1.snippet))
+    });
+
+    let mut seen = std::collections::HashSet::new();
+    let mut hits = Vec::new();
+    for (_, hit) in scored_hits {
+        let key = format!(
+            "{}:{}",
+            hit.source,
+            hit.item_id.clone().unwrap_or_else(|| "receipt".to_string())
+        );
+        if seen.insert(key) {
+            hits.push(hit);
+            if hits.len() >= top_k {
+                break;
+            }
+        }
+    }
+
+    hits
+}
+
+pub fn context_diff(response: &CompactResponse) -> ContextDiffSummary {
+    ContextDiffSummary {
+        kept_count: response.allocation_plan.kept_item_ids.len(),
+        summarized_count: response.allocation_plan.summarized_item_ids.len(),
+        archived_count: response.allocation_plan.archived_item_ids.len(),
+        omitted_count: response.allocation_plan.omitted_item_ids.len(),
+        quarantined_count: response.allocation_plan.quarantined_item_ids.len(),
+        original_approx_tokens: response.receipt.original_approx_tokens,
+        compacted_approx_tokens: response.receipt.compacted_approx_tokens,
+        token_savings_estimate: response.receipt.token_savings_estimate,
+        warnings: response.receipt.warnings.clone(),
+    }
+}
+
+fn snippet_around(content: &str, query: &str, max_chars: usize) -> String {
+    let content_l = content.to_lowercase();
+    let query_l = query.to_lowercase();
+    let start_byte = content_l
+        .find(&query_l)
+        .map(|idx| floor_char_boundary(content, idx.saturating_sub(max_chars / 3)))
+        .unwrap_or(0);
+    let mut snippet = content[start_byte..]
+        .chars()
+        .take(max_chars)
+        .collect::<String>();
+    if snippet.chars().count() == max_chars {
+        snippet.push_str("...");
+    }
+    snippet
+}
+
+fn floor_char_boundary(text: &str, mut idx: usize) -> usize {
+    idx = idx.min(text.len());
+    while idx > 0 && !text.is_char_boundary(idx) {
+        idx -= 1;
+    }
+    idx
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ReplayProbe {
+    pub category: String,
+    pub needle: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ReplayBaselineScore {
+    pub name: String,
+    pub visible_probes: usize,
+    pub recoverable_probes: usize,
+    pub total_probes: usize,
+    pub visible_rate: f64,
+    pub recoverable_rate: f64,
+    pub tokens: usize,
+    pub active_task_visible: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ReplayFixtureReport {
+    pub fixture_id: String,
+    pub original_message_count: usize,
+    pub compacted_message_count: usize,
+    pub probes: Vec<ReplayProbe>,
+    pub baselines: Vec<ReplayBaselineScore>,
+    pub receipt_id: String,
+    pub warnings: Vec<String>,
+}
+
+pub fn build_replay_probes(messages: &[Message], max_probes: usize) -> Vec<ReplayProbe> {
+    let mut probes = Vec::new();
+    if let Some(latest_user) = messages.iter().rev().find(|message| message.role == "user") {
+        push_probe(
+            &mut probes,
+            "active_task",
+            literal_probe_fragment(&latest_user.content, 120),
+            max_probes,
+        );
+    }
+
+    for message in messages {
+        let content_l = message.content.to_lowercase();
+        if content_l.contains("acceptance gate") || content_l.contains("must pass") {
+            push_probe(
+                &mut probes,
+                "acceptance_gate",
+                important_lines(&message.content, &["acceptance gate", "must pass"], 160),
+                max_probes,
+            );
+        }
+        if content_l.contains("decision:") || content_l.contains("decided") {
+            push_probe(
+                &mut probes,
+                "decision",
+                important_lines(&message.content, &["decision", "decided"], 160),
+                max_probes,
+            );
+        }
+        if content_l.contains("error")
+            || content_l.contains("traceback")
+            || content_l.contains("failed")
+        {
+            push_probe(
+                &mut probes,
+                "error",
+                important_lines(&message.content, &["error", "traceback", "failed"], 160),
+                max_probes,
+            );
+        }
+        for file in extract_file_like_tokens(&message.content) {
+            push_probe(&mut probes, "file", file, max_probes);
+        }
+        if probes.len() >= max_probes {
+            break;
+        }
+    }
+    probes
+}
+
+pub fn evaluate_replay_fixture(
+    fixture_id: impl Into<String>,
+    request: CompactRequest,
+    max_probes: usize,
+) -> Result<ReplayFixtureReport, ContextGovernorError> {
+    let fixture_id = fixture_id.into();
+    let original_message_count = request.messages.len();
+    let probes = build_replay_probes(&request.messages, max_probes);
+    let active_task = probes
+        .iter()
+        .find(|probe| probe.category == "active_task")
+        .map(|probe| probe.needle.as_str())
+        .unwrap_or("");
+
+    let full_text = join_message_content(&request.messages);
+    let full_tokens = approx_tokens_messages(&request.messages);
+    let head_tail_messages = head_tail_messages(&request.messages, 1, 1);
+    let head_tail_text = join_message_content(&head_tail_messages);
+    let head_tail_tokens = approx_tokens_messages(&head_tail_messages);
+
+    let response = compact_context(request)?;
+    let compacted_text = join_message_content(&response.compacted_messages);
+    let compacted_tokens = response.receipt.compacted_approx_tokens;
+
+    let baselines = vec![
+        score_text_baseline("full", &full_text, full_tokens, &probes, active_task),
+        score_text_baseline(
+            "head_tail",
+            &head_tail_text,
+            head_tail_tokens,
+            &probes,
+            active_task,
+        ),
+        score_context_governor(
+            &response,
+            &compacted_text,
+            compacted_tokens,
+            &probes,
+            active_task,
+        ),
+    ];
+
+    Ok(ReplayFixtureReport {
+        fixture_id,
+        original_message_count,
+        compacted_message_count: response.compacted_messages.len(),
+        probes,
+        baselines,
+        receipt_id: response.receipt.receipt_id,
+        warnings: response.receipt.warnings,
+    })
+}
+
+fn literal_probe_fragment(text: &str, max_chars: usize) -> String {
+    text.split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .chars()
+        .take(max_chars)
+        .collect()
+}
+
+fn push_probe(probes: &mut Vec<ReplayProbe>, category: &str, needle: String, max_probes: usize) {
+    let mut needle = compact_preview(needle.trim(), 180);
+    if let Some(stripped) = needle.strip_suffix("...") {
+        needle = stripped.to_string();
+    }
+    if needle.len() < 4 || probes.len() >= max_probes {
+        return;
+    }
+    if probes.iter().any(|probe| probe.needle == needle) {
+        return;
+    }
+    probes.push(ReplayProbe {
+        category: category.to_string(),
+        needle,
+    });
+}
+
+fn join_message_content(messages: &[Message]) -> String {
+    messages
+        .iter()
+        .map(|message| message.content.as_str())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn head_tail_messages(messages: &[Message], head: usize, tail: usize) -> Vec<Message> {
+    if messages.len() <= head + tail {
+        return messages.to_vec();
+    }
+    messages
+        .iter()
+        .take(head)
+        .chain(messages.iter().skip(messages.len().saturating_sub(tail)))
+        .cloned()
+        .collect()
+}
+
+fn text_contains_probe(text: &str, needle: &str) -> bool {
+    text.contains(needle) || compact_preview(text, usize::MAX / 4).contains(needle)
+}
+
+fn score_text_baseline(
+    name: &str,
+    text: &str,
+    tokens: usize,
+    probes: &[ReplayProbe],
+    active_task: &str,
+) -> ReplayBaselineScore {
+    let visible = probes
+        .iter()
+        .filter(|probe| text_contains_probe(text, &probe.needle))
+        .count();
+    build_score(
+        name,
+        visible,
+        visible,
+        probes.len(),
+        tokens,
+        text_contains_probe(text, active_task),
+    )
+}
+
+fn score_context_governor(
+    response: &CompactResponse,
+    compacted_text: &str,
+    tokens: usize,
+    probes: &[ReplayProbe],
+    active_task: &str,
+) -> ReplayBaselineScore {
+    let visible = probes
+        .iter()
+        .filter(|probe| text_contains_probe(compacted_text, &probe.needle))
+        .count();
+    let recoverable = probes
+        .iter()
+        .filter(|probe| !context_search(response, &probe.needle, 1, SearchScope::All).is_empty())
+        .count();
+    build_score(
+        "context_governor",
+        visible,
+        recoverable,
+        probes.len(),
+        tokens,
+        text_contains_probe(compacted_text, active_task),
+    )
+}
+
+fn build_score(
+    name: &str,
+    visible_probes: usize,
+    recoverable_probes: usize,
+    total_probes: usize,
+    tokens: usize,
+    active_task_visible: bool,
+) -> ReplayBaselineScore {
+    let denominator = total_probes.max(1) as f64;
+    ReplayBaselineScore {
+        name: name.to_string(),
+        visible_probes,
+        recoverable_probes,
+        total_probes,
+        visible_rate: visible_probes as f64 / denominator,
+        recoverable_rate: recoverable_probes as f64 / denominator,
+        tokens,
+        active_task_visible,
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct MemoryArchiveRecordV1 {
+    pub schema: String,
+    pub receipt_id: String,
+    pub item_id: String,
+    pub content_blake3: String,
+    pub content_kind: ContentKind,
+    pub archive_reason: String,
+    pub sensitivity: String,
+    pub preview: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct MemoryArchiveOutcome {
+    pub record_ids: Vec<String>,
+    pub records_attempted: usize,
+}
+
+pub trait MemorySink {
+    fn archive_context_record(
+        &mut self,
+        record: &MemoryArchiveRecordV1,
+    ) -> Result<Option<String>, ContextGovernorError>;
+}
+
+pub fn archive_response_to_memory(
+    response: &CompactResponse,
+    sink: &mut dyn MemorySink,
+) -> Result<MemoryArchiveOutcome, ContextGovernorError> {
+    let mut outcome = MemoryArchiveOutcome::default();
+    for item in &response.allocation_plan.items {
+        let should_archive = response
+            .allocation_plan
+            .archived_item_ids
+            .contains(&item.item_id)
+            || matches!(
+                item.authority_class,
+                AuthorityClass::DurableMemoryCandidate | AuthorityClass::EvidenceCritical
+            );
+        if !should_archive {
+            continue;
+        }
+        let Some(stored) = response
+            .exact_store
+            .iter()
+            .find(|stored| stored.item_id == item.item_id)
+        else {
+            continue;
+        };
+        let record = MemoryArchiveRecordV1 {
+            schema: "MemoryArchiveRecordV1".to_string(),
+            receipt_id: response.receipt.receipt_id.clone(),
+            item_id: item.item_id.clone(),
+            content_blake3: stored.content_blake3.clone(),
+            content_kind: item.content_kind.clone(),
+            archive_reason: format!("semantic archive {:?}", item.item_type),
+            sensitivity: "internal".to_string(),
+            preview: content_aware_preview(&item.content_kind, &stored.content, 280),
+        };
+        outcome.records_attempted += 1;
+        if let Some(id) = sink.archive_context_record(&record)? {
+            outcome.record_ids.push(id);
+        }
+    }
+    Ok(outcome)
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct StoredContextSearchHit {
+    pub receipt_id: String,
+    pub hit: ContextSearchHit,
+}
+
+#[derive(Debug, Clone)]
+pub struct FileContextStore {
+    root: std::path::PathBuf,
+}
+
+impl FileContextStore {
+    pub fn new(root: impl AsRef<std::path::Path>) -> Self {
+        Self {
+            root: root.as_ref().to_path_buf(),
+        }
+    }
+
+    pub fn save(
+        &self,
+        response: &CompactResponse,
+    ) -> Result<std::path::PathBuf, ContextGovernorError> {
+        std::fs::create_dir_all(&self.root)?;
+        let path = self.path_for_receipt(&response.receipt.receipt_id);
+        let tmp_path = path.with_extension("json.tmp");
+        let json = serde_json::to_string_pretty(response)?;
+        std::fs::write(&tmp_path, json)?;
+        std::fs::rename(&tmp_path, &path)?;
+        Ok(path)
+    }
+
+    pub fn load(&self, receipt_id: &str) -> Result<CompactResponse, ContextGovernorError> {
+        let path = self.path_for_receipt(receipt_id);
+        if !path.exists() {
+            return Err(ContextGovernorError::ReceiptNotFound(
+                receipt_id.to_string(),
+            ));
+        }
+        let json = std::fs::read_to_string(path)?;
+        Ok(serde_json::from_str(&json)?)
+    }
+
+    pub fn list_receipts(&self) -> Result<Vec<String>, ContextGovernorError> {
+        if !self.root.exists() {
+            return Ok(Vec::new());
+        }
+        let mut ids = Vec::new();
+        for entry in std::fs::read_dir(&self.root)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+                continue;
+            }
+            if let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) {
+                ids.push(stem.to_string());
+            }
+        }
+        ids.sort();
+        Ok(ids)
+    }
+
+    pub fn expand(
+        &self,
+        receipt_id: &str,
+        item_id: &str,
+        max_chars: usize,
+    ) -> Result<ContextExpandResult, ContextGovernorError> {
+        let response = self.load(receipt_id)?;
+        context_expand(&response, item_id, max_chars)
+            .ok_or_else(|| ContextGovernorError::ReceiptNotFound(item_id.to_string()))
+    }
+
+    pub fn search(
+        &self,
+        query: &str,
+        top_k: usize,
+        scope: SearchScope,
+    ) -> Result<Vec<StoredContextSearchHit>, ContextGovernorError> {
+        let mut out = Vec::new();
+        for receipt_id in self.list_receipts()? {
+            let response = self.load(&receipt_id)?;
+            for hit in context_search(&response, query, top_k, scope) {
+                out.push(StoredContextSearchHit {
+                    receipt_id: receipt_id.clone(),
+                    hit,
+                });
+                if out.len() >= top_k {
+                    return Ok(out);
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    fn path_for_receipt(&self, receipt_id: &str) -> std::path::PathBuf {
+        let safe = receipt_id
+            .chars()
+            .map(|ch| {
+                if ch.is_ascii_alphanumeric() || ch == '_' || ch == '-' {
+                    ch
+                } else {
+                    '_'
+                }
+            })
+            .collect::<String>();
+        self.root.join(format!("{safe}.json"))
+    }
+}
