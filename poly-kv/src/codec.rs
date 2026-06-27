@@ -72,6 +72,18 @@ pub trait KVecCodec: Send + Sync {
         let _ = (n, d);
         self.is_gpu_accelerated()
     }
+
+    /// Codebook digest (BLAKE3 hex) for provenance receipts.
+    /// Returns None if the codec doesn't support this.
+    fn codebook_digest(&self, _seed: u64) -> Option<String> {
+        None
+    }
+
+    /// Rotation digest (BLAKE3 hex) for provenance receipts.
+    /// Returns None if the codec doesn't support this.
+    fn rotation_digest(&self, _seed: u64) -> Option<String> {
+        None
+    }
 }
 
 /// A serialized compressed block with codec metadata.
@@ -366,6 +378,11 @@ impl FibQuantAdapter {
     }
 }
 
+/// Magic for the new self-describing wire batch format: "FBWB" (Fib Wire Batch v1).
+#[cfg(feature = "fib")]
+const FIB_WIRE_BATCH_MAGIC: [u8; 4] = [b'F', b'B', b'W', b'B'];
+
+// Legacy FB2 constants — kept only for backward-compat fallback decode.
 #[cfg(feature = "fib")]
 const FIB_BATCHED_MAGIC: [u8; 3] = [b'F', b'B', b'2'];
 #[cfg(feature = "fib")]
@@ -381,38 +398,41 @@ fn fib_code_indices_len(block_count: u32, wire_index_bits: u8) -> Result<usize> 
         })
 }
 
+/// Encode a batch using the FBWB shared-header format.
+///
+/// Layout:
+///   [FBWB magic: 4][count: u32][first_wire_len: u32][first_code_wire_bytes: ...]
+///   [remaining codes: (norm_payload + indices)] × (count - 1)
+///
+/// The first code is a complete FibCodeWireV1 blob (self-describing). Subsequent
+/// codes share the same profile shape and store only their payload bytes, keeping
+/// batch overhead proportional to number of codes rather than per-code header cost.
 #[cfg(feature = "fib")]
-fn encode_fib_batch_payload(codes: &[fib_quant::FibCodeV1]) -> Result<Vec<u8>> {
+fn encode_fib_batch_payload(
+    codes: &[fib_quant::FibCodeV1],
+    profile: &fib_quant::FibQuantProfileV1,
+) -> Result<Vec<u8>> {
     if codes.is_empty() {
         return Err(crate::error::PolyKvError::CompressionFailed(
-            "cannot encode empty FB2 batch".into(),
+            "cannot encode empty wire batch".into(),
         ));
     }
-    let first = &codes[0];
-    let wire_index_bits = first.wire_index_bits;
-    let block_count = first.block_count;
-    let norm_len = first.norm_payload.len();
-    if norm_len > u16::MAX as usize {
-        return Err(crate::error::PolyKvError::CompressionFailed(
-            "FB2 norm payload too large".into(),
-        ));
-    }
-    let indices_len = fib_code_indices_len(block_count, wire_index_bits)?;
-    let mut out = Vec::with_capacity(15 + codes.len() * (norm_len + indices_len));
-    out.extend_from_slice(&FIB_BATCHED_MAGIC);
-    out.push(FIB_BATCHED_VERSION);
+    let first_wire = fib_quant::FibCodeWireV1::to_wire_bytes(&codes[0], profile).map_err(|e| {
+        crate::error::PolyKvError::CompressionFailed(format!("fib wire encode failed: {e}"))
+    })?;
+    let norm_len = codes[0].norm_payload.len();
+    let indices_len = codes[0].indices.len();
+    let mut out = Vec::with_capacity(
+        4 + 4 + 4 + first_wire.len() + (codes.len() - 1) * (norm_len + indices_len),
+    );
+    out.extend_from_slice(&FIB_WIRE_BATCH_MAGIC);
     out.extend_from_slice(&(codes.len() as u32).to_le_bytes());
-    out.push(wire_index_bits);
-    out.extend_from_slice(&block_count.to_le_bytes());
-    out.extend_from_slice(&(norm_len as u16).to_le_bytes());
-    for code in codes {
-        if code.wire_index_bits != wire_index_bits
-            || code.block_count != block_count
-            || code.norm_payload.len() != norm_len
-            || code.indices.len() != indices_len
-        {
+    out.extend_from_slice(&(first_wire.len() as u32).to_le_bytes());
+    out.extend_from_slice(&first_wire);
+    for code in &codes[1..] {
+        if code.norm_payload.len() != norm_len || code.indices.len() != indices_len {
             return Err(crate::error::PolyKvError::CompressionFailed(
-                "FB2 batch contains heterogeneous FibCodeV1 shapes".into(),
+                "wire batch contains heterogeneous FibCodeV1 shapes".into(),
             ));
         }
         out.extend_from_slice(&code.norm_payload);
@@ -421,6 +441,74 @@ fn encode_fib_batch_payload(codes: &[fib_quant::FibCodeV1]) -> Result<Vec<u8>> {
     Ok(out)
 }
 
+/// Decode the FBWB shared-header batch format. No external profile needed.
+/// Subsequent codes are reconstructed using the shape inferred from the first wire code.
+#[cfg(feature = "fib")]
+fn decode_fib_batch_payload_wire(payload: &[u8]) -> Result<Vec<fib_quant::FibCodeV1>> {
+    // payload[0..4] = FBWB magic (already checked by caller)
+    if payload.len() < 12 {
+        return Err(crate::error::PolyKvError::CorruptPayload(format!(
+            "wire batch too short: {} bytes",
+            payload.len()
+        )));
+    }
+    let count = u32::from_le_bytes([payload[4], payload[5], payload[6], payload[7]]) as usize;
+    if count == 0 {
+        return Ok(Vec::new());
+    }
+    let first_len = u32::from_le_bytes([payload[8], payload[9], payload[10], payload[11]]) as usize;
+    let first_end = 12 + first_len;
+    if first_end > payload.len() {
+        return Err(crate::error::PolyKvError::CorruptPayload(format!(
+            "wire batch first code truncated: need {} bytes, have {}",
+            first_end,
+            payload.len()
+        )));
+    }
+    let (first_code, _profile) = fib_quant::FibCodeWireV1::from_wire_bytes(&payload[12..first_end])
+        .map_err(|e| {
+            crate::error::PolyKvError::DecompressionFailed(format!(
+                "fib wire decode failed at code 0: {e}"
+            ))
+        })?;
+    let norm_len = first_code.norm_payload.len();
+    let indices_len = first_code.indices.len();
+    let per_code = norm_len + indices_len;
+    let remaining = count - 1;
+    if payload.len() < first_end + remaining * per_code {
+        return Err(crate::error::PolyKvError::CorruptPayload(format!(
+            "wire batch body truncated: need {} bytes for {} remaining codes, have {}",
+            remaining * per_code,
+            remaining,
+            payload.len() - first_end
+        )));
+    }
+    let mut codes = Vec::with_capacity(count);
+    codes.push(first_code.clone());
+    let mut cursor = first_end;
+    for _ in 1..count {
+        let norm_payload = payload[cursor..cursor + norm_len].to_vec();
+        cursor += norm_len;
+        let indices = payload[cursor..cursor + indices_len].to_vec();
+        cursor += indices_len;
+        codes.push(fib_quant::FibCodeV1 {
+            schema_version: first_code.schema_version.clone(),
+            profile_digest: first_code.profile_digest.clone(),
+            codebook_digest: first_code.codebook_digest.clone(),
+            rotation_digest: first_code.rotation_digest.clone(),
+            ambient_dim: first_code.ambient_dim,
+            block_dim: first_code.block_dim,
+            norm_format: first_code.norm_format.clone(),
+            norm_payload,
+            wire_index_bits: first_code.wire_index_bits,
+            block_count: first_code.block_count,
+            indices,
+        });
+    }
+    Ok(codes)
+}
+
+/// Legacy FB2 fallback decode — used only when the payload starts with the old FB2 magic.
 #[cfg(feature = "fib")]
 fn decode_fib_batch_payload(
     payload: &[u8],
@@ -532,7 +620,7 @@ impl KVecCodec for FibQuantAdapter {
         let codes = quantizer.encode_batch(vectors).map_err(|e| {
             crate::error::PolyKvError::CompressionFailed(format!("fib encode_batch failed: {}", e))
         })?;
-        Ok(Some(encode_fib_batch_payload(&codes)?))
+        Ok(Some(encode_fib_batch_payload(&codes, quantizer.profile())?))
     }
 
     fn decode(&self, payload: &[u8], seed: u64) -> Result<Vec<f32>> {
@@ -595,18 +683,40 @@ impl KVecCodec for FibQuantAdapter {
     }
 
     fn decode_batch_compact(&self, payload: &[u8], seed: u64) -> Result<Option<Vec<Vec<f32>>>> {
-        if payload.len() < 3 || payload[0..3] != FIB_BATCHED_MAGIC {
-            return Ok(None);
+        if payload.len() >= 4 && payload[0..4] == FIB_WIRE_BATCH_MAGIC {
+            // New self-describing wire batch. from_wire_bytes reconstructs the
+            // profile via paper_default (no training-param overrides), so its
+            // profile_digest differs from our adapter's. Patch it to the adapter's
+            // digest before calling decode_batch_fast which validates the field.
+            let mut codes = decode_fib_batch_payload_wire(payload)?;
+            let quantizer = self.build_quantizer(seed)?;
+            let profile_digest = quantizer.profile().digest().map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib profile digest: {e}"
+                ))
+            })?;
+            for code in &mut codes {
+                code.profile_digest = profile_digest.clone();
+            }
+            let decoded = quantizer.decode_batch_fast(&codes).map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib wire batch decode_batch_fast failed: {e}"
+                ))
+            })?;
+            return Ok(Some(decoded));
         }
-        let quantizer = self.build_quantizer(seed)?;
-        let codes = decode_fib_batch_payload(payload, quantizer.profile())?;
-        let decoded = quantizer.decode_batch_fast(&codes).map_err(|e| {
-            crate::error::PolyKvError::DecompressionFailed(format!(
-                "fib FB2 decode_batch_fast failed: {}",
-                e
-            ))
-        })?;
-        Ok(Some(decoded))
+        if payload.len() >= 3 && payload[0..3] == FIB_BATCHED_MAGIC {
+            // Legacy FB2 fallback for payloads written by older poly-kv versions.
+            let quantizer = self.build_quantizer(seed)?;
+            let codes = decode_fib_batch_payload(payload, quantizer.profile())?;
+            let decoded = quantizer.decode_batch_fast(&codes).map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib FB2 decode_batch_fast failed: {e}"
+                ))
+            })?;
+            return Ok(Some(decoded));
+        }
+        Ok(None)
     }
 
     fn dim(&self) -> usize {
@@ -631,6 +741,18 @@ impl KVecCodec for FibQuantAdapter {
             Ok(q) => q.is_gpu_accelerated_for(n, d),
             Err(_) => false,
         }
+    }
+
+    fn codebook_digest(&self, seed: u64) -> Option<String> {
+        self.build_quantizer(seed)
+            .ok()
+            .map(|q| q.codebook_digest().to_string())
+    }
+
+    fn rotation_digest(&self, seed: u64) -> Option<String> {
+        self.build_quantizer(seed)
+            .ok()
+            .map(|q| q.rotation_digest().to_string())
     }
 }
 

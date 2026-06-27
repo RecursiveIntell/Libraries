@@ -60,4 +60,4 @@ pub use receipt::{
     SHELL_MATERIALIZE_RECEIPT_SCHEMA,
 };
 pub use shape::{AttentionType, KvTensorShape};
-pub use shell::{AgentShell, ShellLayer};
+pub use shell::{AgentShell, AttentionHit, ShellLayer};

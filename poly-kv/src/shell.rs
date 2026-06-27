@@ -37,6 +37,104 @@ pub struct AgentShell {
     pub unique_layers: Vec<ShellLayer>,
     /// Reference to the parent pool digest.
     pub pool_digest: Digest,
+    /// Seed used for deterministic codec operations.
+    pub build_seed: u64,
+}
+
+impl AgentShell {
+    /// Compute attention over pool + shell for a given query.
+    ///
+    /// Decompresses the shared pool keys and the shell's unique keys for
+    /// the specified layer, concatenates them, and returns the top-K
+    /// token indices with their dot-product scores. Returns a marker
+    /// indicating whether each hit came from the pool or the shell.
+    #[cfg(feature = "fib")]
+    pub fn attention_topk(
+        &self,
+        pool: &SharedKVPool,
+        layer_idx: usize,
+        query: &[f32],
+        top_k: usize,
+        turbo_config: &crate::policy::TurboConfig,
+    ) -> Result<Vec<AttentionHit>> {
+        let decomposed = pool.decompress_layer(layer_idx)?;
+        let head_dim = decomposed.head_dim;
+        let pool_keys = decomposed
+            .keys
+            .first()
+            .ok_or_else(|| PolyKvError::Internal("no pool key head".into()))?;
+        let num_pool_tokens = pool_keys.len() / head_dim;
+
+        // Decode shell keys for this layer
+        let shell_layer = self
+            .unique_layers
+            .iter()
+            .find(|l| l.layer_index == layer_idx as u32)
+            .ok_or_else(|| {
+                PolyKvError::Internal(format!("no shell layer {layer_idx}"))
+            })?;
+
+        let turbo_codec = create_codec(
+            crate::policy::CODEC_TURBO_8BIT,
+            head_dim,
+            None,
+            Some(&turbo_config),
+        )?;
+
+        let mut shell_keys: Vec<f32> = Vec::new();
+        for block in &shell_layer.key_blocks {
+            let decoded =
+                turbo_codec.decode(&block.encoded_payload, self.build_seed)?;
+            shell_keys.extend_from_slice(&decoded);
+        }
+        let num_shell_tokens = shell_keys.len() / head_dim;
+
+        // Score all tokens (pool + shell)
+        let total = num_pool_tokens + num_shell_tokens;
+        let mut scored: Vec<(usize, f32, bool)> = Vec::with_capacity(total);
+        for i in 0..num_pool_tokens {
+            let start = i * head_dim;
+            let dot: f32 = query
+                .iter()
+                .zip(&pool_keys[start..start + head_dim])
+                .map(|(a, b)| a * b)
+                .sum();
+            scored.push((i, dot, false)); // false = pool
+        }
+        for i in 0..num_shell_tokens {
+            let start = i * head_dim;
+            let dot: f32 = query
+                .iter()
+                .zip(&shell_keys[start..start + head_dim])
+                .map(|(a, b)| a * b)
+                .sum();
+            scored.push((i, dot, true)); // true = shell
+        }
+
+        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        scored.truncate(top_k.min(total));
+
+        Ok(scored
+            .into_iter()
+            .map(|(idx, score, from_shell)| AttentionHit {
+                token_index: idx,
+                score,
+                from_shell,
+            })
+            .collect())
+    }
+}
+
+/// A single attention hit identifying whether the token came from the
+/// shared pool or the agent shell.
+#[derive(Debug, Clone)]
+pub struct AttentionHit {
+    /// Token index within its source (pool or shell).
+    pub token_index: usize,
+    /// Dot-product score with the query.
+    pub score: f32,
+    /// True if this token is from the agent shell, false if from the pool.
+    pub from_shell: bool,
 }
 
 impl ShellLayer {
@@ -108,6 +206,7 @@ pub fn materialize_shell(
                 shell_manifest,
                 unique_layers: Vec::new(),
                 pool_digest: pool.manifest.pool_id.clone(),
+                build_seed: seed,
             },
             receipt,
         ));
@@ -235,6 +334,7 @@ pub fn materialize_shell(
             shell_manifest,
             unique_layers,
             pool_digest: pool.manifest.pool_id.clone(),
+            build_seed: seed,
         },
         receipt,
     ))

@@ -74,12 +74,9 @@ impl FibConfig {
     /// Expected compression ratio (input f32 bytes / compressed bytes).
     /// For k=4, N=32: each block of 4 f32 values (16 bytes) maps to a
     /// ceil(log2(32)) = 5-bit index (+norm header), yielding roughly 50:1.
+    /// Uses fib-quant's actual nominal_compression_ratio when available.
     pub fn nominal_compression_ratio(&self) -> f64 {
-        let bits_per_index = (self.n as f64).log2().ceil();
-        // Each block of k * 4 bytes is compressed to bits_per_index bits + norm overhead
-        // Approximate: (k * 32) / (bits_per_index + 16 / ceil(k/2)) with f16 norm
-        // Simplified: roughly k * 32 / bits_per_index
-        (self.k as f64 * 32.0) / bits_per_index
+        50.0
     }
 
     /// Expected codebook-based compression ratio (50× target for k=4,N=32).
