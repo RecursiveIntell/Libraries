@@ -2085,12 +2085,14 @@ impl FileContextStore {
     ) -> Result<Vec<StoredContextSearchHit>, ContextGovernorError> {
         // Use the inverted index to find candidate receipts that contain
         // any query token, then do full search only on those candidates.
+        // If the index returns no candidates (e.g. the query is a substring
+        // of a token, not a full token), fall back to searching all receipts.
         let query_tokens: Vec<String> =
             query.split_whitespace().map(|t| t.to_lowercase()).collect();
         let candidate_ids: Vec<String> = if query_tokens.is_empty() {
             self.list_receipts()?
         } else {
-            self.with_index(|idx| {
+            let candidates = self.with_index(|idx| {
                 let mut candidates: std::collections::HashSet<String> =
                     std::collections::HashSet::new();
                 for token in &query_tokens {
@@ -2103,7 +2105,14 @@ impl FileContextStore {
                 let mut sorted: Vec<String> = candidates.into_iter().collect();
                 sorted.sort();
                 sorted
-            })?
+            })?;
+            if candidates.is_empty() {
+                // No exact token matches — fall back to full scan so that
+                // substring queries (e.g. "NEEDLE" in "NEEDLE_PARSER") still work.
+                self.list_receipts()?
+            } else {
+                candidates
+            }
         };
 
         let mut out = Vec::new();
