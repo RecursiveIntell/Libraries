@@ -1024,14 +1024,25 @@ fn extract_file_like_tokens(text: &str) -> Vec<String> {
         })
         .filter(|token| {
             token.contains("/home/")
+                || token.contains("/usr/")
+                || token.contains("/etc/")
+                || token.contains("/var/")
+                || token.contains("/tmp/")
                 || token.starts_with("~/")
+                || token.starts_with("/")
                 || token.ends_with(".rs")
                 || token.ends_with(".py")
                 || token.ends_with(".ts")
                 || token.ends_with(".tsx")
+                || token.ends_with(".js")
                 || token.ends_with(".md")
                 || token.ends_with(".toml")
                 || token.ends_with(".yaml")
+                || token.ends_with(".yml")
+                || token.ends_with(".json")
+                || token.ends_with(".go")
+                || token.ends_with(".c")
+                || token.ends_with(".h")
         })
         .map(|token| token.to_string())
         .collect()
@@ -1219,18 +1230,15 @@ fn assemble_compacted_messages(
 
     for (offset, msg) in messages[tail_start..].iter().enumerate() {
         let idx = tail_start + offset;
-        let Some(item) = item_by_index.get(&idx) else {
-            continue;
-        };
-        let should_keep_tail = kept_set.contains(&item.item_id)
-            || matches!(item.authority_class, AuthorityClass::ActiveTask)
-            || (matches!(item.authority_class, AuthorityClass::MustPreserveExact)
-                && matches!(item.preservation_policy, PreservationPolicy::KeepVerbatim));
-        if should_keep_tail
-            && !out
-                .iter()
-                .any(|m| m.content == msg.content && m.role == msg.role)
-        {
+        let _ = item_by_index.get(&idx); // item exists but we always keep tail
+                                         // Always include tail messages within protect_last_n, regardless of
+                                         // kept_set. The built-in compressor always includes the last N messages;
+                                         // excluding them because the allocator summarized them causes data loss
+                                         // of recent context the model needs.
+        let should_keep_tail = !out
+            .iter()
+            .any(|m: &Message| m.content == msg.content && m.role == msg.role);
+        if should_keep_tail {
             out.push(msg.clone());
         }
     }

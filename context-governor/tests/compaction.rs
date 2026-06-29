@@ -34,6 +34,7 @@ fn preserves_latest_user_acceptance_gates_and_errors_verbatim() {
         messages: messages.clone(),
         policy: CompactionPolicy {
             target_tokens: 220,
+            protect_last_n: 2,
             ..Default::default()
         },
         focus: None,
