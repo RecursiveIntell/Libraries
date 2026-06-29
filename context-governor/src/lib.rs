@@ -13,6 +13,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
 use uuid::Uuid;
 
+pub mod high_roi;
+pub use high_roi::*;
+
 const CHARS_PER_TOKEN: usize = 4;
 const SUMMARY_PREFIX: &str = "[CONTEXT COMPACTION — RECEIPT-BACKED REFERENCE ONLY]";
 
@@ -1961,12 +1964,18 @@ pub struct StoredContextSearchHit {
 #[derive(Debug, Clone)]
 pub struct FileContextStore {
     root: std::path::PathBuf,
+    // In-memory inverted index: token -> set of receipt_ids that contain it.
+    // Built lazily on first search() call and invalidated on save().
+    index: std::cell::RefCell<
+        Option<std::collections::HashMap<String, std::collections::HashSet<String>>>,
+    >,
 }
 
 impl FileContextStore {
     pub fn new(root: impl AsRef<std::path::Path>) -> Self {
         Self {
             root: root.as_ref().to_path_buf(),
+            index: std::cell::RefCell::new(None),
         }
     }
 
@@ -1980,6 +1989,8 @@ impl FileContextStore {
         let json = serde_json::to_string_pretty(response)?;
         std::fs::write(&tmp_path, json)?;
         std::fs::rename(&tmp_path, &path)?;
+        // Invalidate the in-memory index so the next search rebuilds it
+        *self.index.borrow_mut() = None;
         Ok(path)
     }
 
@@ -2024,14 +2035,79 @@ impl FileContextStore {
             .ok_or_else(|| ContextGovernorError::ReceiptNotFound(item_id.to_string()))
     }
 
+    /// Build an in-memory inverted index from all stored receipts.
+    /// Tokenizes content on whitespace and stores receipt_id sets per token.
+    fn build_index(
+        &self,
+    ) -> Result<
+        std::collections::HashMap<String, std::collections::HashSet<String>>,
+        ContextGovernorError,
+    > {
+        let mut idx: std::collections::HashMap<String, std::collections::HashSet<String>> =
+            std::collections::HashMap::new();
+        for receipt_id in self.list_receipts()? {
+            let response = self.load(&receipt_id)?;
+            // Index exact_store content
+            for item in &response.exact_store {
+                for token in item.content.split_whitespace() {
+                    let token_l = token.to_lowercase();
+                    idx.entry(token_l).or_default().insert(receipt_id.clone());
+                }
+            }
+            // Index compacted_messages content
+            for msg in &response.compacted_messages {
+                for token in msg.content.split_whitespace() {
+                    let token_l = token.to_lowercase();
+                    idx.entry(token_l).or_default().insert(receipt_id.clone());
+                }
+            }
+        }
+        Ok(idx)
+    }
+
+    /// Ensure the index is built and return a reference to it.
+    fn with_index<F, R>(&self, f: F) -> Result<R, ContextGovernorError>
+    where
+        F: FnOnce(&std::collections::HashMap<String, std::collections::HashSet<String>>) -> R,
+    {
+        let mut guard = self.index.borrow_mut();
+        if guard.is_none() {
+            *guard = Some(self.build_index()?);
+        }
+        Ok(f(guard.as_ref().unwrap()))
+    }
+
     pub fn search(
         &self,
         query: &str,
         top_k: usize,
         scope: SearchScope,
     ) -> Result<Vec<StoredContextSearchHit>, ContextGovernorError> {
+        // Use the inverted index to find candidate receipts that contain
+        // any query token, then do full search only on those candidates.
+        let query_tokens: Vec<String> =
+            query.split_whitespace().map(|t| t.to_lowercase()).collect();
+        let candidate_ids: Vec<String> = if query_tokens.is_empty() {
+            self.list_receipts()?
+        } else {
+            self.with_index(|idx| {
+                let mut candidates: std::collections::HashSet<String> =
+                    std::collections::HashSet::new();
+                for token in &query_tokens {
+                    if let Some(receipt_ids) = idx.get(token) {
+                        for rid in receipt_ids {
+                            candidates.insert(rid.clone());
+                        }
+                    }
+                }
+                let mut sorted: Vec<String> = candidates.into_iter().collect();
+                sorted.sort();
+                sorted
+            })?
+        };
+
         let mut out = Vec::new();
-        for receipt_id in self.list_receipts()? {
+        for receipt_id in candidate_ids {
             let response = self.load(&receipt_id)?;
             for hit in context_search(&response, query, top_k, scope) {
                 out.push(StoredContextSearchHit {
