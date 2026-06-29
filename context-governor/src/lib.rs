@@ -2021,6 +2021,11 @@ impl FileContextStore {
         for entry in std::fs::read_dir(&self.root)? {
             let entry = entry?;
             let path = entry.path();
+            // Clean up stale .tmp files from interrupted save() calls
+            if path.extension().and_then(|ext| ext.to_str()) == Some("tmp") {
+                let _ = std::fs::remove_file(&path);
+                continue;
+            }
             if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
                 continue;
             }
