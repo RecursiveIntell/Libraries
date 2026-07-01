@@ -1,44 +1,64 @@
-# Host adapter integration notes
+# Host Adapter Boundary
 
-This crate is host-agnostic. OpenCode, Codex, Claude Code, Hermes, and other agent hosts should integrate through the same narrow adapter contract instead of adding host-specific dependencies to the core crate.
+`context-governor` is a deterministic Rust compaction engine plus CLI. Host adapters own provider/runtime concerns.
 
-## Adapter contract
+## Stable host: Hermes
 
-1. Convert host transcript items into `CompactRequest.messages`.
-2. Preserve the latest user task as a normal `user` message.
-3. Put host-only metadata in `Message.metadata`; the core crate treats it as receipt context, not execution authority.
-4. Call one of:
-   - `context_governor::compact_context(request)` from Rust
-   - `context-governor compact < request.json` from any host
-5. Persist the returned `CompactResponse` under the host/profile data directory.
-6. Expose receipt tools around:
-   - `context-governor search --dir DIR --query TEXT`
-   - `context-governor expand --dir DIR --receipt RECEIPT --item ITEM`
-   - `context-governor diff < response.json`
-7. If semantic-memory archival is enabled, the host adapter performs the write and records the returned external IDs in the receipt. The core crate does not perform network or MCP writes.
+Current stable integration target:
 
-## Suggested metadata keys
+- adapter path: `~/.hermes/hermes-agent/plugins/context_engine/context_governor/__init__.py`
+- config selector: `context.engine: context_governor`
+- tools exposed by Hermes: `context_expand`, `context_search`, `context_status`
+- safety gate: LLM summary replacement must pass `context-governor boundary-audit`; default policy is `fallback_extract`
 
-These are conventions only; unknown keys are preserved but not trusted.
+Verification receipts for the current local integration:
 
-- `provider`: model provider name, for host-side token accounting/audit.
-- `model`: concrete model name, for host-side token accounting/audit.
-- `tool_name`: host tool name for tool outputs.
-- `command_exit_code`: integer exit code for shell/tool results.
-- `pinned`: boolean; host requests verbatim preservation.
-- `must_preserve`: boolean; host requests exact fallback at minimum.
-- `sensitive`: boolean; host marks content unsuitable for semantic archival.
-- `source_path`: source file/path for retrieved context.
-- `receipt_ref`: upstream receipt or task id.
+- Hermes plugin/host/context-engine tests: `65 passed` via `uv run --extra dev python -m pytest tests/plugins/test_context_governor_plugin.py tests/agent/test_context_engine_host_contract.py tests/agent/test_context_engine.py -q -o 'addopts='`
+- crate certification: `target/certification/20260701-031403/certification.md`
 
-## Host-specific status
+## Planned hosts: Codex, OpenCode, Claude Code wrappers
 
-- Hermes: implemented as a local ContextEngine plugin under the Hermes profile, with receipt tools and host-side semantic-memory writes.
-- Codex/OpenCode/Claude Code: use the CLI contract above today. Do not claim native host plugins until each host has a tested adapter package.
+These are not implemented as first-class adapters in this crate yet. Do not claim they are shipped.
 
-## Safe rollout policy
+A future host wrapper should:
 
-- Keep the core crate deterministic and dependency-light.
-- Keep provider-native tokenizer support host-side or feature-gated until exact model mappings are verified.
-- Keep semantic-memory writes host-side so receipts contain real external IDs instead of placeholder claims.
-- Use `soft_warn` for first live trials; use `hard_cascade` only after replay receipts show acceptable recoverability and fail-open behavior.
+1. Map native transcript records into `CompactRequest.messages`.
+2. Pick a host-appropriate policy and disclose approximate token counting.
+3. Persist the full `CompactResponse` outside the prompt.
+4. Inject only `compacted_messages` into the model call.
+5. Expose receipt-backed `search`, `expand`, `diff`, and `status` tools.
+6. Preserve provider-specific message fields through metadata if the host supports tool calls, multimodal payloads, or tool-call IDs.
+7. Treat semantic-memory archival as host-owned: wire a real `MemorySink` or leave semantic IDs empty with a warning.
+8. Run boundary audit before reinjecting any LLM-generated summary.
+
+## Unsupported competitor adapters
+
+`compare_context_engines_live.py` records unsupported competitors explicitly instead of hiding them.
+
+As of the 2026-07-01 local run:
+
+- Hermes built-in compressor: unsupported in offline identical-input comparison because no stable offline CLI adapter exists; benchmark it only in fresh Hermes process runs.
+- Squeez: executable not found on PATH.
+- Ogham: executable not found on PATH.
+- headroom: executable not found on PATH.
+- LLMLingua: executable not found on PATH.
+
+This is an honest benchmark receipt. It does not prove context-governor beats those systems.
+
+## Public claim boundary
+
+Safe:
+
+- deterministic local compaction
+- receipts and exact fallback
+- local search/expand/diff/status
+- Hermes adapter verified locally
+- same-transcript synthetic comparison over implemented local baselines
+- aggregate/hash-only historical Hermes replay
+
+Not safe without more receipts:
+
+- external-engine superiority
+- downstream live LLM quality preservation
+- production KV-cache compression
+- built-in semantic-memory writes without a real host `MemorySink`

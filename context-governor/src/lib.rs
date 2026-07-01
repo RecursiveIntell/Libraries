@@ -129,6 +129,11 @@ pub enum TokenCounterKind {
     #[default]
     ApproxChars,
     ApproxWords,
+    ProviderChatApprox,
+    /// OpenAI cl100k-compatible tokenizer surface. In the default build this
+    /// deliberately falls back to the provider chat approximation and emits a
+    /// warning instead of silently pretending native tokenization happened.
+    TiktokenCl100k,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -363,10 +368,29 @@ pub fn compact_context_with_memory_sink(
     let mut warnings = warning_from_allocator;
     if matches!(
         request.policy.token_counter,
-        TokenCounterKind::ApproxChars | TokenCounterKind::ApproxWords
+        TokenCounterKind::ApproxChars
+            | TokenCounterKind::ApproxWords
+            | TokenCounterKind::ProviderChatApprox
     ) {
         warnings.push(
             "token_counter is approximate; provider-native token budgets may differ".to_string(),
+        );
+    }
+    if matches!(
+        request.policy.token_counter,
+        TokenCounterKind::ProviderChatApprox | TokenCounterKind::TiktokenCl100k
+    ) {
+        warnings.push(
+            "provider_chat_approx includes chat-role overhead but is not a native tokenizer"
+                .to_string(),
+        );
+    }
+    if matches!(
+        request.policy.token_counter,
+        TokenCounterKind::TiktokenCl100k
+    ) {
+        warnings.push(
+            "tiktoken_cl100k requested but native tokenizer feature is not compiled; using provider_chat_approx fallback".to_string(),
         );
     }
 
@@ -596,14 +620,55 @@ fn count_tokens_text(text: &str, policy: &CompactionPolicy) -> usize {
     match policy.token_counter {
         TokenCounterKind::ApproxChars => approx_tokens_text(text),
         TokenCounterKind::ApproxWords => approx_word_tokens(text),
+        TokenCounterKind::ProviderChatApprox | TokenCounterKind::TiktokenCl100k => {
+            provider_chat_approx_tokens(text)
+        }
     }
 }
 
 fn count_tokens_messages(messages: &[Message], policy: &CompactionPolicy) -> usize {
     messages
         .iter()
-        .map(|m| count_tokens_text(&m.content, policy) + 4)
+        .map(|m| {
+            count_tokens_text(&m.content, policy)
+                + message_overhead_tokens(policy, &m.role, m.name.as_deref())
+        })
         .sum()
+}
+
+fn message_overhead_tokens(policy: &CompactionPolicy, role: &str, name: Option<&str>) -> usize {
+    match policy.token_counter {
+        TokenCounterKind::ProviderChatApprox | TokenCounterKind::TiktokenCl100k => {
+            let role_overhead = match role {
+                "system" => 5,
+                "user" => 4,
+                "assistant" => 4,
+                "tool" => 7,
+                _ => 4,
+            };
+            role_overhead + usize::from(name.is_some())
+        }
+        TokenCounterKind::ApproxChars | TokenCounterKind::ApproxWords => 4,
+    }
+}
+
+fn provider_chat_approx_tokens(text: &str) -> usize {
+    let chars = text.chars().count();
+    let whitespace_tokens = text.split_whitespace().count();
+    let punctuation_tokens = text
+        .chars()
+        .filter(|ch| {
+            matches!(
+                ch,
+                '{' | '}' | '[' | ']' | ':' | ',' | '"' | '`' | '/' | '\\'
+            )
+        })
+        .count()
+        / 4;
+    let char_estimate = (chars / 4).max(1);
+    char_estimate
+        .max(whitespace_tokens + punctuation_tokens)
+        .max(1)
 }
 
 pub fn hash_messages(messages: &[Message]) -> Result<String, ContextGovernorError> {
@@ -1140,6 +1205,7 @@ fn build_summary(
     for item in &plan.items {
         if plan.summarized_item_ids.contains(&item.item_id)
             || plan.archived_item_ids.contains(&item.item_id)
+            || matches!(item.preservation_policy, PreservationPolicy::ReceiptOnly)
         {
             if let Some(msg) = messages.get(item.start_index) {
                 let preview = content_aware_preview(&item.content_kind, &msg.content, 220);
@@ -1307,6 +1373,17 @@ fn content_aware_preview(kind: &ContentKind, text: &str, max_chars: usize) -> St
         ContentKind::ShellLog => {
             important_lines(text, &["error", "failed", "exit", "$"], max_chars)
         }
+        ContentKind::SearchResults => important_lines(
+            text,
+            &["/home/", ":", "LINE", "match", ".rs", ".py", ".md"],
+            max_chars,
+        ),
+        ContentKind::Rust => important_lines(
+            text,
+            &["pub ", "fn ", "struct ", "impl ", "use ", "error", "TODO"],
+            max_chars,
+        ),
+        ContentKind::Markdown => important_lines(text, &["#", "##", "- ", "```"], max_chars),
         _ => compact_preview(text, max_chars),
     }
 }
@@ -1343,10 +1420,33 @@ fn detect_content_kind(role: &str, content: &str) -> ContentKind {
     if lower.contains("fn main") || lower.contains("pub struct") || lower.contains("impl ") {
         return ContentKind::Rust;
     }
+    if looks_like_search_results(trimmed) {
+        return ContentKind::SearchResults;
+    }
     if role == "tool" {
         return ContentKind::ShellLog;
     }
     ContentKind::PlainText
+}
+
+fn looks_like_search_results(text: &str) -> bool {
+    let mut path_line_count = 0usize;
+    for line in text.lines().take(1_000) {
+        let lower = line.to_lowercase();
+        let has_path = lower.contains("/home/")
+            || lower.contains("/tmp/")
+            || lower.contains(".rs:")
+            || lower.contains(".py:")
+            || lower.contains(".md:")
+            || lower.contains(".toml:")
+            || lower.contains(".yaml:")
+            || lower.contains(".json:");
+        let has_location_separator = line.matches(':').count() >= 2;
+        if has_path && has_location_separator {
+            path_line_count += 1;
+        }
+    }
+    path_line_count >= 1
 }
 
 fn enforce_budget(
@@ -1492,6 +1592,8 @@ pub struct ContextDiffSummary {
     pub compacted_approx_tokens: usize,
     pub token_savings_estimate: isize,
     pub warnings: Vec<String>,
+    #[serde(default)]
+    pub content_kind_reductions: BTreeMap<String, usize>,
 }
 
 pub fn context_expand(
@@ -1609,6 +1711,23 @@ pub fn context_search(
 }
 
 pub fn context_diff(response: &CompactResponse) -> ContextDiffSummary {
+    let mut content_kind_reductions: BTreeMap<String, usize> = BTreeMap::new();
+    let reduced_ids = response
+        .allocation_plan
+        .summarized_item_ids
+        .iter()
+        .chain(response.allocation_plan.archived_item_ids.iter())
+        .chain(response.allocation_plan.omitted_item_ids.iter())
+        .chain(response.allocation_plan.quarantined_item_ids.iter())
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    for item in &response.allocation_plan.items {
+        if reduced_ids.contains(&item.item_id) {
+            *content_kind_reductions
+                .entry(format!("{:?}", item.content_kind))
+                .or_insert(0) += 1;
+        }
+    }
     ContextDiffSummary {
         kept_count: response.allocation_plan.kept_item_ids.len(),
         summarized_count: response.allocation_plan.summarized_item_ids.len(),
@@ -1619,6 +1738,7 @@ pub fn context_diff(response: &CompactResponse) -> ContextDiffSummary {
         compacted_approx_tokens: response.receipt.compacted_approx_tokens,
         token_savings_estimate: response.receipt.token_savings_estimate,
         warnings: response.receipt.warnings.clone(),
+        content_kind_reductions,
     }
 }
 
@@ -2144,6 +2264,16 @@ pub struct StoredContextSearchHit {
     pub hit: ContextSearchHit,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct FileContextStoreStatusV1 {
+    pub schema: String,
+    pub root: String,
+    pub receipt_count: usize,
+    pub total_bytes: u64,
+    pub stale_tmp_files_removed: usize,
+    pub index_built: bool,
+}
+
 #[derive(Debug, Clone)]
 pub struct FileContextStore {
     root: std::path::PathBuf,
@@ -2189,27 +2319,50 @@ impl FileContextStore {
     }
 
     pub fn list_receipts(&self) -> Result<Vec<String>, ContextGovernorError> {
+        Ok(self.scan_receipts()?.0)
+    }
+
+    pub fn status(&self) -> Result<FileContextStoreStatusV1, ContextGovernorError> {
+        let (receipts, total_bytes, stale_tmp_files_removed) = self.scan_receipts()?;
+        Ok(FileContextStoreStatusV1 {
+            schema: "FileContextStoreStatusV1".to_string(),
+            root: self.root.display().to_string(),
+            receipt_count: receipts.len(),
+            total_bytes,
+            stale_tmp_files_removed,
+            index_built: self.index.borrow().is_some(),
+        })
+    }
+
+    fn scan_receipts(&self) -> Result<(Vec<String>, u64, usize), ContextGovernorError> {
         if !self.root.exists() {
-            return Ok(Vec::new());
+            return Ok((Vec::new(), 0, 0));
         }
         let mut ids = Vec::new();
+        let mut total_bytes = 0u64;
+        let mut stale_tmp_files_removed = 0usize;
         for entry in std::fs::read_dir(&self.root)? {
             let entry = entry?;
             let path = entry.path();
             // Clean up stale .tmp files from interrupted save() calls
             if path.extension().and_then(|ext| ext.to_str()) == Some("tmp") {
-                let _ = std::fs::remove_file(&path);
+                if std::fs::remove_file(&path).is_ok() {
+                    stale_tmp_files_removed += 1;
+                }
                 continue;
             }
             if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
                 continue;
+            }
+            if let Ok(metadata) = entry.metadata() {
+                total_bytes = total_bytes.saturating_add(metadata.len());
             }
             if let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) {
                 ids.push(stem.to_string());
             }
         }
         ids.sort();
-        Ok(ids)
+        Ok((ids, total_bytes, stale_tmp_files_removed))
     }
 
     pub fn expand(

@@ -62,6 +62,11 @@ fn run() -> Result<(), ContextGovernorError> {
             let store = FileContextStore::new(dir);
             print_json(&store.search(&query, top_k, scope)?)
         }
+        "status" => {
+            let dir = required_arg(&args, "--dir")?;
+            let store = FileContextStore::new(dir);
+            print_json(&store.status()?)
+        }
         "diff" => {
             let response: CompactResponse = read_json_stdin("CompactResponse")?;
             print_json(&context_diff(&response))
@@ -75,7 +80,7 @@ fn run() -> Result<(), ContextGovernorError> {
         }
         "help" | "--help" | "-h" => {
             println!(
-                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  diff < response.json\n  boundary-audit < request.json"
+                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  diff < response.json\n  boundary-audit < request.json"
             );
             Ok(())
         }

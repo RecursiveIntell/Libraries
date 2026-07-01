@@ -69,3 +69,34 @@ fn json_summary_keeps_keys_and_search_still_finds_exact_payload() {
     let hits = context_search(&response, "JSON_NEEDLE", 5, SearchScope::ExactStore);
     assert_eq!(hits.len(), 1);
 }
+
+#[test]
+fn search_result_summary_keeps_paths_and_match_lines_not_bulk_noise() {
+    let search_payload = format!(
+        "{}\n/home/demo/src/lib.rs:42: receipt_index_status includes store_bytes\n/home/demo/tests/store.rs:9: context_expand recovers exact omitted text\n{}",
+        "irrelevant search noise\n".repeat(400),
+        "tail noise\n".repeat(400)
+    );
+    let response = compact_context(CompactRequest {
+        session_id: "search-result-compression".into(),
+        messages: vec![msg("tool", &search_payload), msg("user", "latest")],
+        policy: CompactionPolicy {
+            target_tokens: 80,
+            protect_first_n: 0,
+            protect_last_n: 1,
+            allocator: "aggressive_v1".into(),
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+
+    let summary = response
+        .compacted_messages
+        .iter()
+        .find(|m| m.content.contains("CONTEXT COMPACTION"))
+        .unwrap();
+    assert!(summary.content.contains("/home/demo/src/lib.rs"));
+    assert!(summary.content.contains("store_bytes"));
+    assert!(summary.content.matches("irrelevant search noise").count() < 3);
+}

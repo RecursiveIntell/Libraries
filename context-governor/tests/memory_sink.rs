@@ -67,3 +67,34 @@ fn memory_archive_records_are_explicit_and_result_bound() {
         .iter()
         .any(|r| r.archive_reason.contains("semantic")));
 }
+
+#[test]
+fn semantic_memory_enabled_without_sink_fails_loud_not_silent() {
+    let response = compact_context(CompactRequest {
+        session_id: "memory-no-sink".into(),
+        messages: vec![
+            msg(
+                "assistant",
+                "Decision: this should be archived only with a real sink.",
+            ),
+            msg("user", "latest"),
+        ],
+        policy: CompactionPolicy {
+            semantic_memory_enabled: true,
+            archive_memory_enabled: true,
+            target_tokens: 80,
+            protect_first_n: 0,
+            protect_last_n: 1,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+
+    assert!(response.receipt.semantic_memory_fact_ids.is_empty());
+    assert!(response
+        .receipt
+        .warnings
+        .iter()
+        .any(|warning| warning.contains("archive requested but no memory sink")));
+}

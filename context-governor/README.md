@@ -60,6 +60,8 @@ Policy controls:
 - `BudgetMode::HardCascade` — shrink/remove summary to fit when exact-preserve content allows it
 - `BudgetMode::FailClosed` — refuse when required exact content cannot fit
 - `TokenCounterKind::ApproxChars` — explicit char/4 estimator recorded in receipts
+- `TokenCounterKind::ProviderChatApprox` — provider-style chat overhead heuristic, still recorded as approximate
+- `TokenCounterKind::TiktokenCl100k` — native-tokenizer-labelled surface that currently falls back loudly unless a host/native feature is wired; receipts do not fake exact provider counts
 
 Content kinds:
 
@@ -78,6 +80,7 @@ File store:
 - `save(&CompactResponse)`
 - `load(receipt_id)`
 - `list_receipts()`
+- `status()` — receipt count, store bytes, tmp-file cleanup count, and in-memory index state
 - `expand(receipt_id, item_id, max_chars)`
 - `search(query, top_k, scope)`
 
@@ -88,6 +91,7 @@ context-governor compact < request.json > response.json
 context-governor store --dir .ctx < response.json
 context-governor search --dir .ctx --query NEEDLE
 context-governor expand --dir .ctx --receipt ctxr_... --item ctxi_...
+context-governor status --dir .ctx
 context-governor diff < response.json
 ```
 
@@ -129,7 +133,7 @@ Request shape:
     "semantic_memory_enabled": false,
     "archive_memory_enabled": false,
     "budget_mode": "soft_warn",
-    "token_counter": "approx_chars"
+    "token_counter": "provider_chat_approx"
   },
   "messages": [
     { "role": "system", "content": "You are an agent." },
@@ -156,6 +160,7 @@ See:
 
 - `docs/architecture.md`
 - `docs/integrations/hermes.md`
+- `docs/integrations/host-adapters.md`
 - `docs/eval-harness.md`
 - `docs/roi-audit-2026-06-27.md`
 
@@ -183,13 +188,27 @@ This is a synthetic compaction throughput benchmark, not an agent-task success b
 - `examples/replay_eval.rs` is a small deterministic demo.
 - `examples/replay_fixture.rs` evaluates any `CompactRequest` JSON fixture.
 - `scripts/hermes_replay_eval.py` extracts local Hermes sessions from `~/.hermes/state.db` and writes a privacy-preserving aggregate report.
+- `scripts/compare_context_engines_live.py` runs identical synthetic transcripts through full, naive head/tail, context-governor, and explicit unsupported receipts for Hermes built-in/offline external adapters.
+- `scripts/hermes_task_replay_eval.py` scores 10 local Hermes coding sessions with aggregate/private-safe historical answerability output.
+- `scripts/certify_all.py --quick --skip-hermes` runs fmt, tests, adversarial eval, synthetic task success, same-transcript comparison, and bounded historical answerability.
 
 Run:
 
 ```bash
 cargo run --example replay_eval
 python scripts/hermes_replay_eval.py --limit 8 --min-messages 20 --target-tokens-list 20000,80000,120000 --budget-mode hard_cascade
+python3 scripts/compare_context_engines_live.py --quick
+python3 scripts/hermes_task_replay_eval.py --limit 10 --min-messages 12 --target-tokens 1200
+python3 scripts/certify_all.py --quick --skip-hermes
 ```
+
+Latest next-level local receipts from 2026-07-01:
+
+- same-transcript comparison: `target/context-governor-comparisons/same-transcript-comparison.md`
+- historical answerability replay: `target/historical-answerability/historical-answerability.md`
+- certification: `target/certification/20260701-031403/certification.md`
+
+Observed in that pass: same-transcript synthetic context-governor answerability 100.0%, recoverability 100.0%, token reduction 95.8%; historical 10-session answerability 100.0%, visible 28.0%, token reduction vs full 99.6%. These are local deterministic replay receipts, not universal downstream LLM quality or external-engine superiority proof.
 
 Latest local Hermes replay aggregate over the 8 largest active sessions by text volume:
 

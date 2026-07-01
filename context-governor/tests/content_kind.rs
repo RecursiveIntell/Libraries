@@ -46,3 +46,13 @@ fn detects_json_diff_cargo_rust_markdown_and_plain_text() {
         ContentKind::PlainText
     );
 }
+
+#[test]
+fn detects_search_results_before_generic_tool_logs() {
+    assert_eq!(
+        kind_for(
+            "/home/demo/src/lib.rs:42: matching line\n/home/demo/tests/store.rs:9: another match"
+        ),
+        ContentKind::SearchResults
+    );
+}

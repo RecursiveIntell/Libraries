@@ -65,3 +65,33 @@ fn file_context_store_round_trips_receipt_and_exact_fallback() {
     let listed = store.list_receipts().unwrap();
     assert_eq!(listed, vec![receipt_id]);
 }
+
+#[test]
+fn file_context_store_status_reports_lifecycle_bytes_and_cleans_tmp_files() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("stale.json.tmp"), "partial").unwrap();
+    let response = compact_context(CompactRequest {
+        session_id: "store-status".into(),
+        messages: vec![
+            msg("tool", &"bulk STORE_STATUS ".repeat(300)),
+            msg("user", "latest"),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: 100,
+            protect_last_n: 1,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+
+    let store = FileContextStore::new(dir.path());
+    store.save(&response).unwrap();
+    let status = store.status().unwrap();
+
+    assert_eq!(status.schema, "FileContextStoreStatusV1");
+    assert_eq!(status.receipt_count, 1);
+    assert!(status.total_bytes > 0);
+    assert!(status.stale_tmp_files_removed >= 1);
+    assert!(!dir.path().join("stale.json.tmp").exists());
+}
