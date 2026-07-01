@@ -1676,6 +1676,32 @@ pub struct ReplayFixtureReport {
     pub warnings: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ReplayAnswerabilityQuestion {
+    pub question: String,
+    pub expected_terms: Vec<String>,
+    pub forbidden_terms: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ReplayAnswerabilityBaselineScore {
+    pub name: String,
+    pub answerable_questions: usize,
+    pub total_questions: usize,
+    pub answerability_rate: f64,
+    pub incorrect_action_risk: usize,
+    pub tokens: usize,
+    pub active_task_visible: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ReplayAnswerabilityReport {
+    pub fixture_id: String,
+    pub baselines: Vec<ReplayAnswerabilityBaselineScore>,
+    pub receipt_id: String,
+    pub warnings: Vec<String>,
+}
+
 pub fn build_replay_probes(messages: &[Message], max_probes: usize) -> Vec<ReplayProbe> {
     let mut probes = Vec::new();
     if let Some(latest_user) = messages.iter().rev().find(|message| message.role == "user") {
@@ -1724,6 +1750,62 @@ pub fn build_replay_probes(messages: &[Message], max_probes: usize) -> Vec<Repla
         }
     }
     probes
+}
+
+pub fn evaluate_replay_answerability(
+    fixture_id: impl Into<String>,
+    request: CompactRequest,
+    questions: Vec<ReplayAnswerabilityQuestion>,
+) -> Result<ReplayAnswerabilityReport, ContextGovernorError> {
+    let fixture_id = fixture_id.into();
+    let active_task = request
+        .messages
+        .iter()
+        .rev()
+        .find(|message| message.role == "user")
+        .map(|message| literal_probe_fragment(&message.content, 120))
+        .unwrap_or_default();
+
+    let full_text = join_message_content(&request.messages);
+    let full_tokens = approx_tokens_messages(&request.messages);
+    let head_tail_messages = head_tail_messages(&request.messages, 1, 1);
+    let head_tail_text = join_message_content(&head_tail_messages);
+    let head_tail_tokens = approx_tokens_messages(&head_tail_messages);
+
+    let response = compact_context(request)?;
+    let compacted_text = join_message_content(&response.compacted_messages);
+    let compacted_tokens = response.receipt.compacted_approx_tokens;
+
+    let baselines = vec![
+        score_answerability_text_baseline(
+            "full",
+            &full_text,
+            full_tokens,
+            &questions,
+            &active_task,
+        ),
+        score_answerability_text_baseline(
+            "head_tail",
+            &head_tail_text,
+            head_tail_tokens,
+            &questions,
+            &active_task,
+        ),
+        score_answerability_context_governor(
+            &response,
+            &compacted_text,
+            compacted_tokens,
+            &questions,
+            &active_task,
+        ),
+    ];
+
+    Ok(ReplayAnswerabilityReport {
+        fixture_id,
+        baselines,
+        receipt_id: response.receipt.receipt_id,
+        warnings: response.receipt.warnings,
+    })
 }
 
 pub fn evaluate_replay_fixture(
@@ -1848,6 +1930,99 @@ fn score_text_baseline(
         tokens,
         text_contains_probe(text, active_task),
     )
+}
+
+fn score_answerability_text_baseline(
+    name: &str,
+    text: &str,
+    tokens: usize,
+    questions: &[ReplayAnswerabilityQuestion],
+    active_task: &str,
+) -> ReplayAnswerabilityBaselineScore {
+    let answerable = questions
+        .iter()
+        .filter(|question| answerability_terms_present(text, question))
+        .count();
+    let incorrect_action_risk = questions
+        .iter()
+        .filter(|question| forbidden_terms_present(text, question))
+        .count();
+    build_answerability_score(
+        name,
+        answerable,
+        questions.len(),
+        incorrect_action_risk,
+        tokens,
+        text_contains_probe(text, active_task),
+    )
+}
+
+fn score_answerability_context_governor(
+    response: &CompactResponse,
+    compacted_text: &str,
+    tokens: usize,
+    questions: &[ReplayAnswerabilityQuestion],
+    active_task: &str,
+) -> ReplayAnswerabilityBaselineScore {
+    let answerable = questions
+        .iter()
+        .filter(|question| {
+            question.expected_terms.iter().all(|term| {
+                text_contains_probe(compacted_text, term)
+                    || !context_search(response, term, 1, SearchScope::All).is_empty()
+            })
+        })
+        .count();
+    let incorrect_action_risk = questions
+        .iter()
+        .filter(|question| forbidden_terms_present(compacted_text, question))
+        .count();
+    build_answerability_score(
+        "context_governor",
+        answerable,
+        questions.len(),
+        incorrect_action_risk,
+        tokens,
+        text_contains_probe(compacted_text, active_task),
+    )
+}
+
+fn answerability_terms_present(text: &str, question: &ReplayAnswerabilityQuestion) -> bool {
+    question
+        .expected_terms
+        .iter()
+        .all(|term| text_contains_probe(text, term))
+}
+
+fn forbidden_terms_present(text: &str, question: &ReplayAnswerabilityQuestion) -> bool {
+    let text_l = text.to_lowercase();
+    question.forbidden_terms.iter().any(|term| {
+        let term_l = term.to_lowercase();
+        let negated = text_l.contains(&format!("not {term_l}"))
+            || text_l.contains(&format!("no {term_l}"))
+            || text_l.contains(&format!("avoid {term_l}"));
+        !negated && text_contains_probe(text, term)
+    })
+}
+
+fn build_answerability_score(
+    name: &str,
+    answerable_questions: usize,
+    total_questions: usize,
+    incorrect_action_risk: usize,
+    tokens: usize,
+    active_task_visible: bool,
+) -> ReplayAnswerabilityBaselineScore {
+    let denominator = total_questions.max(1) as f64;
+    ReplayAnswerabilityBaselineScore {
+        name: name.to_string(),
+        answerable_questions,
+        total_questions,
+        answerability_rate: answerable_questions as f64 / denominator,
+        incorrect_action_risk,
+        tokens,
+        active_task_visible,
+    }
 }
 
 fn score_context_governor(

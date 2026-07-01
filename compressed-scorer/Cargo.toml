@@ -1,0 +1,37 @@
+[package]
+name = "compressed-scorer"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Codec-agnostic compressed-domain scoring — estimate inner products without decompressing vectors"
+license = "MIT OR Apache-2.0"
+authors = ["sikmindz"]
+keywords = ["quantization", "compression", "scoring", "attention", "similarity"]
+categories = ["compression", "science", "algorithms"]
+repository = "https://github.com/RecursiveIntell/Libraries"
+
+[dependencies]
+heapless = "0.8"
+libm = { version = "0.2", default-features = false }
+
+# fib-quant scoring (Gram table + compressed attention)
+# NOTE: fib-quant 0.1.0-beta.1 on crates.io does not yet export FibScorer/FibPreparedQuery.
+# To use the fib feature, build from source: path = "../fib-quant"
+fib-quant = { version = "0.1.0-alpha.2", path = "../fib-quant", optional = true, default-features = false }
+
+# turbo-quant scoring (PolarQuant + QJL inner product estimates)
+turbo-quant = { version = "0.2.1", path = "../turbo-quant", optional = true, default-features = false }
+
+[features]
+default = ["turbo"]
+# Enable fib-quant Gram-table compressed scoring
+# NOTE: Requires fib-quant from source (crates.io version doesn't export FibScorer yet)
+fib = ["dep:fib-quant"]
+# Enable turbo-quant polar/QJL compressed scoring
+turbo = ["dep:turbo-quant"]
+# no_std mode (disables any std-only code paths)
+no_std = []
+
+
+[dev-dependencies]
+# For host-side tests only — not required by the crate itself

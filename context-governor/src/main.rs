@@ -1,6 +1,6 @@
 use context_governor::{
-    compact_context, context_diff, CompactRequest, CompactResponse, ContextGovernorError,
-    FileContextStore, SearchScope,
+    audit_compression_boundary, compact_context, context_diff, CompactRequest, CompactResponse,
+    ContextGovernorError, FileContextStore, SearchScope,
 };
 
 use serde::Serialize;
@@ -66,9 +66,16 @@ fn run() -> Result<(), ContextGovernorError> {
             let response: CompactResponse = read_json_stdin("CompactResponse")?;
             print_json(&context_diff(&response))
         }
+        "boundary-audit" => {
+            let request: BoundaryAuditRequest = read_json_stdin("BoundaryAuditRequest")?;
+            print_json(&audit_compression_boundary(
+                &request.source_fragments,
+                &request.compressed_summary,
+            ))
+        }
         "help" | "--help" | "-h" => {
             println!(
-                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  diff < response.json"
+                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  diff < response.json\n  boundary-audit < request.json"
             );
             Ok(())
         }
@@ -77,6 +84,12 @@ fn run() -> Result<(), ContextGovernorError> {
             format!("unknown command: {other}"),
         ))),
     }
+}
+
+#[derive(serde::Deserialize)]
+struct BoundaryAuditRequest {
+    source_fragments: Vec<String>,
+    compressed_summary: String,
 }
 
 fn read_json_stdin<T: serde::de::DeserializeOwned>(label: &str) -> Result<T, ContextGovernorError> {

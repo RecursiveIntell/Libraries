@@ -688,15 +688,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
-name = "bincode"
-version = "1.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "bitemporal-runtime"
 version = "0.1.0"
 dependencies = [
@@ -1380,11 +1371,11 @@ dependencies = [
 name = "fib-quant"
 version = "0.1.0-alpha.2"
 dependencies = [
- "bincode",
  "blake3",
  "gpu-backend",
  "half",
  "nalgebra 0.33.3",
+ "postcard",
  "rand 0.8.6",
  "rand_chacha 0.3.1",
  "rand_distr",
@@ -1715,6 +1706,17 @@ dependencies = [
  "allocator-api2",
  "equivalent",
  "foldhash 0.1.5",
+]
+
+[[package]]
+name = "hashbrown"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+dependencies = [
+ "allocator-api2",
+ "equivalent",
+ "foldhash 0.2.0",
 ]
 
 [[package]]
@@ -2245,6 +2247,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lru"
+version = "0.16.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f66e8d5d03f609abc3a39e6f08e4164ebf1447a732906d39eb9b99b7919ef39"
+dependencies = [
+ "hashbrown 0.16.1",
+]
+
+[[package]]
 name = "lru-slab"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2708,7 +2719,7 @@ dependencies = [
  "indoc",
  "instability",
  "itertools",
- "lru",
+ "lru 0.12.5",
  "paste",
  "strum",
  "unicode-segmentation",
@@ -3036,7 +3047,7 @@ dependencies = [
  "cxx",
  "cxx-build",
  "forge-memory-bridge",
- "lru",
+ "lru 0.16.4",
  "quant-governor",
  "reqwest",
  "rusqlite",
