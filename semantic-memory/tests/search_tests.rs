@@ -1584,7 +1584,7 @@ async fn invalid_ollama_url_is_rejected() {
 
 #[cfg(feature = "turbo-quant-codec")]
 #[tokio::test]
-async fn turbo_quant_candidate_backend_requires_safe_bits_and_exact_rerank() {
+async fn turbo_quant_candidate_backend_requires_safe_bits_and_allows_compressed_only_mode() {
     use semantic_memory::DerivedVectorBackendPolicy;
 
     let tmp = TempDir::new().unwrap();
@@ -1613,11 +1613,13 @@ async fn turbo_quant_candidate_backend_requires_safe_bits_and_exact_rerank() {
         },
         ..Default::default()
     };
-    let err = match MemoryStore::open_with_embedder(config, Box::new(MockEmbedder::new(768))) {
-        Ok(_) => panic!("TurboQuant without exact rerank should be rejected"),
-        Err(err) => err,
-    };
-    assert!(err.to_string().contains("require exact f32 rerank"));
+    let store = MemoryStore::open_with_embedder(config, Box::new(MockEmbedder::new(768)))
+        .expect("TurboQuant compressed-only mode should be accepted");
+    assert_eq!(
+        store.config().search.turbo_quant_require_exact_rerank,
+        false,
+        "compressed-domain candidate scoring must be configurable without exact rerank"
+    );
 }
 
 // ─── V2: Buffer Reuse Correctness (Fix 6 regression) ────────

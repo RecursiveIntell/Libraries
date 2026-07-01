@@ -31,7 +31,9 @@ pub use error::BitemporalError;
 pub use queries::{append_supersede, as_of_query, temporal_snapshot};
 #[cfg(feature = "sqlite")]
 pub use sqlite::SqliteDb;
-pub use types::{BitemporalRecord, RecordId, SupersessionReceipt, SupersessionTarget};
+pub use types::{
+    BitemporalGraphEdge, BitemporalRecord, RecordId, SupersessionReceipt, SupersessionTarget,
+};
 
 use chrono::{DateTime, Utc};
 use std::collections::BTreeMap;

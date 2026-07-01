@@ -4,6 +4,18 @@ All notable changes to `quant-eval` are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Added governed HyperQuant evaluation receipts that join `quant-governor`
+  embedding policy decisions, admission/block rationale, measured HyperQuant
+  fixture metrics, and Q8/Q4/HyperQuant byte-accounting baselines.
+- Added JSON round-trip and preset coverage for storage-efficient admission,
+  low-latency rejection, accuracy-oriented rejection, and strict-budget rejection.
+- Added a synthetic clustered HyperQuant retrieval benchmark with raw-vs-HyperQuant
+  latency percentiles, recall@K, NDCG@K, top-K overlap, exact top-1 recovery,
+  rank drift, score-error summaries, Rice byte accounting, thresholds, blockers,
+  and a JSON-emitting example.
+
 ## [0.1.0] — 2026-06-02
 
 First crates.io release.

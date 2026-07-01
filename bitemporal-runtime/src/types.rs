@@ -69,6 +69,65 @@ impl<T> BitemporalRecord<T> {
     }
 }
 
+/// A directed graph edge with independent valid-time and recorded-time semantics.
+///
+/// `valid_from` and `valid_to` describe when the edge is true in the domain.
+/// `recorded_at` describes when the system learned or recorded the edge.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct BitemporalGraphEdge<T> {
+    /// Source node identifier.
+    pub from: T,
+    /// Destination node identifier.
+    pub to: T,
+    /// Relation name connecting `from` to `to`.
+    pub relation: String,
+    /// Inclusive lower bound for valid time, or unbounded when absent.
+    pub valid_from: Option<DateTime<Utc>>,
+    /// Exclusive upper bound for valid time, or unbounded when absent.
+    pub valid_to: Option<DateTime<Utc>>,
+    /// Recorded time for this edge.
+    pub recorded_at: DateTime<Utc>,
+}
+
+impl<T> BitemporalGraphEdge<T> {
+    /// Create a graph edge with unbounded valid time.
+    pub fn new(from: T, to: T, relation: impl Into<String>, recorded_at: DateTime<Utc>) -> Self {
+        Self {
+            from,
+            to,
+            relation: relation.into(),
+            valid_from: None,
+            valid_to: None,
+            recorded_at,
+        }
+    }
+
+    /// Attach valid-time bounds to the edge.
+    pub fn with_valid_time(
+        mut self,
+        valid_from: Option<DateTime<Utc>>,
+        valid_to: Option<DateTime<Utc>>,
+    ) -> Self {
+        self.valid_from = valid_from;
+        self.valid_to = valid_to;
+        self
+    }
+
+    /// Returns true when `t` falls inside the valid interval.
+    ///
+    /// `valid_from` is inclusive, `valid_to` is exclusive, and absent bounds
+    /// are treated as unbounded.
+    pub fn is_valid_at(&self, t: DateTime<Utc>) -> bool {
+        self.valid_from.map(|from| from <= t).unwrap_or(true)
+            && self.valid_to.map(|to| t < to).unwrap_or(true)
+    }
+
+    /// Returns true when this edge had been recorded by `t`.
+    pub fn was_recorded_by(&self, t: DateTime<Utc>) -> bool {
+        self.recorded_at <= t
+    }
+}
+
 /// Reference to the record that was superseded by a supersession event.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -193,5 +252,49 @@ mod tests {
         assert!(!receipt.receipt_digest.is_empty());
         assert_eq!(receipt.superseded.superseded_id, "v1");
         assert_eq!(receipt.superseding_id, "v2");
+    }
+
+    fn ts(seconds: i64) -> DateTime<Utc> {
+        DateTime::from_timestamp(seconds, 0).expect("valid unix timestamp")
+    }
+
+    #[test]
+    fn graph_valid_interval_has_inclusive_start_and_exclusive_end() {
+        let edge = BitemporalGraphEdge::new("a", "b", "depends_on", ts(5))
+            .with_valid_time(Some(ts(10)), Some(ts(20)));
+
+        assert!(!edge.is_valid_at(ts(9)));
+        assert!(edge.is_valid_at(ts(10)));
+        assert!(edge.is_valid_at(ts(19)));
+        assert!(!edge.is_valid_at(ts(20)));
+    }
+
+    #[test]
+    fn graph_unbounded_valid_time_is_valid() {
+        let edge = BitemporalGraphEdge::new("a", "b", "related_to", ts(50));
+
+        assert!(edge.is_valid_at(ts(0)));
+        assert!(edge.is_valid_at(ts(100)));
+    }
+
+    #[test]
+    fn graph_recorded_gate_works() {
+        let edge = BitemporalGraphEdge::new("a", "b", "mentions", ts(50));
+
+        assert!(!edge.was_recorded_by(ts(49)));
+        assert!(edge.was_recorded_by(ts(50)));
+        assert!(edge.was_recorded_by(ts(51)));
+    }
+
+    #[test]
+    fn graph_serde_roundtrip() {
+        let edge = BitemporalGraphEdge::new("a".to_string(), "b".to_string(), "cites", ts(5))
+            .with_valid_time(Some(ts(10)), Some(ts(20)));
+
+        let json = serde_json::to_string(&edge).expect("edge serializes");
+        let decoded: BitemporalGraphEdge<String> =
+            serde_json::from_str(&json).expect("edge deserializes");
+
+        assert_eq!(decoded, edge);
     }
 }

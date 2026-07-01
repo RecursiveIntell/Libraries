@@ -15,7 +15,9 @@ Current status: prototype-to-evidence benchmark substrate. It contains real metr
 - **Admissibility harness** — profile-oriented checks over deterministic standard vectors.
 - **Benchmark receipts** — timestamped receipt structures with machine fingerprint, result list, JSON serialization, hashes, and diffs.
 - **RAG fixture metrics** — local recall@K, NDCG@K, and exact-rerank recovery over caller-supplied query/retrieval fixtures.
-- **HyperQuant primitive evaluation** — deterministic Z1/A2 evaluation through the published `hyperquant` crate, with mean/max MSE, estimated bytes, rejected-vector counts, receipt counts, and explicit claim boundaries.
+- **HyperQuant primitive evaluation** — deterministic Z1/A2/D4 evaluation through the published `hyperquant` crate, with mean/max MSE, estimated bytes, rejected-vector counts, receipt counts, and explicit claim boundaries.
+- **Governed HyperQuant receipts** — joins `quant-governor` embedding decisions, admission/block rationale, measured HyperQuant fixture metrics, and Q8/Q4/HyperQuant byte baselines into a serializable receipt.
+- **HyperQuant retrieval + latency benchmark** — synthetic clustered embedding retrieval benchmark with raw-vs-HyperQuant latency percentiles, recall@K, NDCG@K, top-K overlap, exact-rerank recovery, rank drift, score error, and compression accounting.
 - **Conservative public surface** — measurement APIs first; no silent production claims.
 
 ## Evidence pipeline
@@ -98,6 +100,67 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+## Quick start: governed HyperQuant receipt
+
+```rust
+use quant_eval::{
+    run_governed_hyperquant_eval, GovernedHyperQuantEvalConfig,
+    GovernedHyperQuantPolicyPreset, HyperQuantEvalConfig,
+};
+use quant_governor::AdmissibilityClass;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let receipt = run_governed_hyperquant_eval(&GovernedHyperQuantEvalConfig {
+        fixture: HyperQuantEvalConfig::default(),
+        policy_preset: GovernedHyperQuantPolicyPreset::StorageEfficient,
+        size_bytes: 500_000,
+        accuracy_requirement: 0.89,
+        latency_tolerance_ms: 200,
+        admissibility: AdmissibilityClass::Standard,
+    })?;
+
+    println!("selected codec: {}", receipt.decision.selected_codec);
+    println!("admitted: {}", receipt.admitted);
+    println!("reason: {}", receipt.admission_reason);
+    println!("claim boundary: {}", receipt.claim_boundary);
+    Ok(())
+}
+```
+
+## Quick start: HyperQuant retrieval + latency benchmark
+
+```rust
+use hyperquant::LatticeKind;
+use quant_eval::{run_hyperquant_retrieval_benchmark, HyperQuantRetrievalBenchmarkConfig};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let receipt = run_hyperquant_retrieval_benchmark(&HyperQuantRetrievalBenchmarkConfig {
+        dim: 32,
+        docs: 128,
+        queries: 12,
+        clusters: 8,
+        top_k: 5,
+        seed: 11,
+        scale: 16.0,
+        lattice: LatticeKind::D4,
+    })?;
+
+    println!("recall@k: {}", receipt.quality.recall_at_k);
+    println!("ndcg@k: {}", receipt.quality.ndcg_at_k);
+    println!("raw p95 ns: {}", receipt.raw_latency_ns.p95);
+    println!("hyperquant p95 ns: {}", receipt.hyperquant_latency_ns.p95);
+    println!("compression ratio: {}", receipt.compression_ratio);
+    println!("claim boundary: {}", receipt.claim_boundary);
+    Ok(())
+}
+```
+
+Run the JSON-emitting example:
+
+```bash
+cargo run -p quant-eval --example hyperquant_retrieval_benchmark
+```
+
 ## Public API
 
 The crate re-exports:
@@ -118,9 +181,23 @@ The crate re-exports:
 - `RagQueryFixture`
 - `RagRetrievedDoc`
 - `run_hyperquant_eval`
+- `run_governed_hyperquant_eval`
 - `HyperQuantEvalConfig`
 - `HyperQuantEvalResult`
 - `HyperQuantProfileEval`
+- `GovernedHyperQuantEvalConfig`
+- `GovernedHyperQuantEvalReceipt`
+- `GovernedHyperQuantPolicyPreset`
+- `GovernedHyperQuantDecisionTrace`
+- `GovernedHyperQuantBaseline`
+- `run_hyperquant_retrieval_benchmark`
+- `HyperQuantRetrievalBenchmarkConfig`
+- `HyperQuantRetrievalBenchmarkReceipt`
+- `HyperQuantRetrievalQuality`
+- `HyperQuantRetrievalThresholds`
+- `LatencySummaryNs`
+- `RankDriftSummary`
+- `ErrorSummary`
 
 ## Implemented modules
 
@@ -194,14 +271,39 @@ Implemented:
 - `HyperQuantProfileEval`
 - `HyperQuantEvalResult`
 - `run_hyperquant_eval`
+- `GovernedHyperQuantEvalConfig`
+- `GovernedHyperQuantEvalReceipt`
+- `GovernedHyperQuantPolicyPreset`
+- `run_governed_hyperquant_eval`
 - deterministic synthetic fixture generation;
 - triangular A2 fixture where A2 should match or beat Z1;
-- Z1/A2 metrics through the published `hyperquant` crate;
+- Z1/A2/D4 metrics through the published `hyperquant` crate;
+- governed embedding admission/block receipts using `quant-governor`;
+- Q8/Q4/HyperQuant byte-accounting baselines for fixture-level ROI review;
 - conservative claim-boundary string on every result.
 
 Important limitation:
 
-- This is primitive-level evidence only. It is not HyperQuant paper parity, model-quality evidence, or production admissibility.
+- This is primitive-level and synthetic clustered-fixture evidence only. It is not HyperQuant paper parity, BEIR/TREC RAG evidence, model-quality evidence, production admissibility, or superiority evidence.
+
+### HyperQuant retrieval + latency benchmark
+
+File: `src/hyperquant_retrieval.rs`
+
+Implemented:
+
+- deterministic clustered embedding fixture generation;
+- raw exact-search baseline over normalized vectors;
+- HyperQuant search over reconstructed Z1/A2/D4 vectors;
+- raw and HyperQuant latency summaries (`p50`, `p95`, `max`, `mean`);
+- retrieval quality metrics: recall@K, top-K overlap, NDCG@K, exact top-1 recovery in HyperQuant top-K;
+- rank drift and score-error summaries;
+- raw-vs-Rice-estimated HyperQuant byte accounting and compression ratio;
+- explicit thresholds and blockers in each receipt.
+
+Important limitation:
+
+- This benchmark is synthetic and local. It is useful for regression and first-pass ROI screening, but real retrieval claims still require real corpus/qrels evidence such as BEIR or TREC RAG.
 
 ### Benchmark receipts
 
@@ -220,18 +322,20 @@ Implemented:
 Safe to claim today:
 
 - `quant-eval` provides deterministic Rust benchmark scaffolds and fixture metrics.
-- `quant-eval` can evaluate current HyperQuant Z1/A2 primitive behavior.
+- `quant-eval` can evaluate current HyperQuant Z1/A2/D4 primitive behavior.
+- `quant-eval` can emit governed HyperQuant fixture receipts that join policy admission/block rationale with measured fixture metrics and Q8/Q4/HyperQuant byte baselines.
+- `quant-eval` can benchmark HyperQuant synthetic clustered retrieval latency and quality with receipt-backed recall@K, NDCG@K, exact top-1 recovery, rank drift, score error, and compression accounting.
 - `quant-eval` emits typed metrics and benchmark receipt structures.
 - `quant-eval` has local tests, clippy, and publish dry-run receipts for this release.
 
 Not safe to claim today:
 
-- real codec admissibility across production workloads;
+- real corpus retrieval quality or TREC/BEIR RAG performance;
 - actual compression-ratio measurements for all codecs;
 - model-quality preservation;
 - superiority of any codec;
 - production readiness;
-- integrated policy enforcement for `poly-kv`, `fib-quant`, `turbo-quant`, `semantic-memory`, or `quant-governor`;
+- integrated production policy enforcement for `poly-kv`, `fib-quant`, `turbo-quant`, or `semantic-memory`;
 - `quant_codec_core::EvalReport` emission.
 
 Those are reasonable next targets, but they need implementation evidence before becoming public claims.
@@ -252,11 +356,13 @@ cargo publish -p quant-eval --dry-run --allow-dirty
 Expected current test surface:
 
 - 21 unit tests in `quant-eval` library modules.
-- 4 HyperQuant integration tests.
+- 5 HyperQuant integration tests.
+- 5 governed HyperQuant receipt integration tests.
+- 3 HyperQuant retrieval benchmark integration tests.
 - 5 general integration tests.
 - 5 RAG fixture tests.
-- 35 `quant-eval` tests total.
-- 18 `hyperquant` tests for the dependency surface.
+- 44 `quant-eval` tests total.
+- 26 `hyperquant` tests for the dependency surface.
 
 ## Development
 
@@ -303,6 +409,7 @@ Runtime dependencies:
 - `sha2`
 - `blake3`
 - `hyperquant`
+- `quant-governor`
 
 Dev dependency:
 

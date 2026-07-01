@@ -25,6 +25,37 @@ pub const ROLLBACK_PLAN_V1_SCHEMA: &str = "rollback_plan_v1";
 pub const EFFECT_ADJUDICATION_RECEIPT_V1_SCHEMA: &str = "effect_adjudication_receipt_v1";
 pub const RELEASE_ROLLBACK_DECISION_V1_SCHEMA: &str = "release_rollback_decision_v1";
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DiagnosticLocalizationReceiptV1 {
+    pub source_path: String,
+    pub line_start: usize,
+    pub line_end: usize,
+    pub diagnostic_code: Option<String>,
+    pub rationale: String,
+    pub confidence: f32,
+}
+
+impl DiagnosticLocalizationReceiptV1 {
+    pub fn validate(&self) -> Result<(), String> {
+        if self.source_path.trim().is_empty() {
+            return Err("source_path must be nonempty".into());
+        }
+        if self.line_start < 1 {
+            return Err("line_start must be at least 1".into());
+        }
+        if self.line_end < self.line_start {
+            return Err("line_end must be greater than or equal to line_start".into());
+        }
+        if !(0.0..=1.0).contains(&self.confidence) {
+            return Err("confidence must be in [0,1]".into());
+        }
+        if self.rationale.trim().is_empty() {
+            return Err("rationale must be nonempty".into());
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct EffectAdjudicationReceiptV1 {
     pub schema_version: String,
@@ -454,6 +485,54 @@ mod tests {
     use verification_policy::{
         evaluate_policy, ApprovalRequirement, AutonomyCeiling, MethodPolicy, PolicySnapshot,
     };
+
+    #[test]
+    fn diagnostic_localization_receipt_validates_required_fields() {
+        let receipt = DiagnosticLocalizationReceiptV1 {
+            source_path: "src/lib.rs".into(),
+            line_start: 12,
+            line_end: 14,
+            diagnostic_code: Some("E0308".into()),
+            rationale: "compiler diagnostic points at the mismatched assignment".into(),
+            confidence: 0.85,
+        };
+
+        assert_eq!(receipt.validate(), Ok(()));
+    }
+
+    #[test]
+    fn diagnostic_localization_receipt_rejects_invalid_ranges_and_empty_fields() {
+        let mut receipt = DiagnosticLocalizationReceiptV1 {
+            source_path: "src/lib.rs".into(),
+            line_start: 1,
+            line_end: 1,
+            diagnostic_code: None,
+            rationale: "located diagnostic span".into(),
+            confidence: 1.0,
+        };
+
+        receipt.source_path.clear();
+        assert!(receipt.validate().is_err());
+
+        receipt.source_path = "src/lib.rs".into();
+        receipt.line_start = 0;
+        assert!(receipt.validate().is_err());
+
+        receipt.line_start = 10;
+        receipt.line_end = 9;
+        assert!(receipt.validate().is_err());
+
+        receipt.line_end = 10;
+        receipt.confidence = 1.01;
+        assert!(receipt.validate().is_err());
+
+        receipt.confidence = f32::NAN;
+        assert!(receipt.validate().is_err());
+
+        receipt.confidence = 0.5;
+        receipt.rationale = " ".into();
+        assert!(receipt.validate().is_err());
+    }
 
     #[test]
     fn calibration_can_force_advisory_only_disposition() {

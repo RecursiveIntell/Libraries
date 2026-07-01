@@ -1203,11 +1203,21 @@ mod bge_m3_tests {
         assert!(results.is_empty());
     }
 
-    // ── Ollama integration tests (require running Ollama with bge-m3) ──
+    // ── Ollama integration tests (requires running Ollama with bge-m3 model pulled) ──
+    const LIVE_OLLAMA_TESTS_ENABLED_ENV: &str = "SEMANTIC_MEMORY_RUN_LIVE_OLLAMA_TESTS";
+
+    fn should_run_live_ollama_tests() -> bool {
+        std::env::var(LIVE_OLLAMA_TESTS_ENABLED_ENV)
+            .ok()
+            .is_some_and(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+    }
 
     #[tokio::test]
-    #[ignore = "requires Ollama running with bge-m3 model pulled"]
     async fn bge_m3_embed_multi_live() {
+        if !should_run_live_ollama_tests() {
+            eprintln!("Skipping live Ollama test; set {LIVE_OLLAMA_TESTS_ENABLED_ENV}=1 to enable");
+            return;
+        }
         let embedder = BgeM3Embedder::with_params(
             "http://127.0.0.1:11434",
             "bge-m3",
@@ -1227,8 +1237,11 @@ mod bge_m3_tests {
     }
 
     #[tokio::test]
-    #[ignore = "requires Ollama running with bge-m3 model pulled"]
     async fn bge_m3_embed_batch_multi_live() {
+        if !should_run_live_ollama_tests() {
+            eprintln!("Skipping live Ollama test; set {LIVE_OLLAMA_TESTS_ENABLED_ENV}=1 to enable");
+            return;
+        }
         let embedder = BgeM3Embedder::with_params(
             "http://127.0.0.1:11434",
             "bge-m3",
@@ -1254,8 +1267,11 @@ mod bge_m3_tests {
     }
 
     #[tokio::test]
-    #[ignore = "requires Ollama running with bge-m3 model pulled"]
     async fn bge_m3_embedder_as_standard_embedder_live() {
+        if !should_run_live_ollama_tests() {
+            eprintln!("Skipping live Ollama test; set {LIVE_OLLAMA_TESTS_ENABLED_ENV}=1 to enable");
+            return;
+        }
         let embedder = BgeM3Embedder::with_params(
             "http://127.0.0.1:11434",
             "bge-m3",

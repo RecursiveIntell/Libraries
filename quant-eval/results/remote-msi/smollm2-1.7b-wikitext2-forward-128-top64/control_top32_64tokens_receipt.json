@@ -1,0 +1,220 @@
+{
+  "schema_version": "compressed_attention_forward_ppl_v1",
+  "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "corpus": "wikitext-2",
+  "n_tokens": 64,
+  "ppl_frac": 0.3,
+  "eval_window": [
+    44,
+    63
+  ],
+  "top_k": 32,
+  "recent_guard": 8,
+  "quant_bits": 4,
+  "device": "cuda",
+  "baseline_ppl": 11.23927165992014,
+  "compressed_attention_ppl": 11.215859848447835,
+  "delta_ppl_pct": -0.2083036355086375,
+  "baseline_forward_seconds": 0.2574462890625,
+  "compressed_forward_seconds": 51.21147966384888,
+  "logit_cosine_mean": 0.9986821413040161,
+  "logit_cosine_p05": 0.9944726526737213,
+  "kl_mean": 0.005795301403850317,
+  "kl_p95": 0.021429062262177462,
+  "max_abs_logit_delta_mean": 0.7207545042037964,
+  "max_abs_logit_delta_p95": 1.4588867187499974,
+  "argmax_match_rate": 1.0,
+  "target_logit_abs_delta_mean": 0.17042943835258484,
+  "target_logit_abs_delta_p95": 0.3632812499999998,
+  "attention": {
+    "samples": 49152,
+    "decoded_keys": 0,
+    "decoded_values_mean": 38.779134114583336,
+    "decoded_values_p95": 40.0,
+    "attention_output_cosine_mean": 0.9985733885790372,
+    "attention_output_cosine_p05": 0.9968530029058456,
+    "attention_mse_mean": 2.5570749239955696e-05,
+    "attention_mse_p95": 0.00010398394770163563,
+    "attention_topk_overlap_mean": 0.8428141276041666,
+    "attention_topk_overlap_p05": 0.59375,
+    "per_layer": {
+      "0": {
+        "samples": 2048,
+        "cosine_mean": 0.9823938126137364,
+        "cosine_p05": 0.913067963719368,
+        "overlap_mean": 0.8509063720703125,
+        "decoded_values_mean": 38.55615234375
+      },
+      "1": {
+        "samples": 2048,
+        "cosine_mean": 0.998768921388546,
+        "cosine_p05": 0.9928977608680726,
+        "overlap_mean": 0.833953857421875,
+        "decoded_values_mean": 39.01171875
+      },
+      "2": {
+        "samples": 2048,
+        "cosine_mean": 0.9979808495845646,
+        "cosine_p05": 0.988623821735382,
+        "overlap_mean": 0.814788818359375,
+        "decoded_values_mean": 38.60107421875
+      },
+      "3": {
+        "samples": 2048,
+        "cosine_mean": 0.9974466616113205,
+        "cosine_p05": 0.9908987522125243,
+        "overlap_mean": 0.8140716552734375,
+        "decoded_values_mean": 38.58447265625
+      },
+      "4": {
+        "samples": 2048,
+        "cosine_mean": 0.9985447107173968,
+        "cosine_p05": 0.9960286408662796,
+        "overlap_mean": 0.8257598876953125,
+        "decoded_values_mean": 38.607421875
+      },
+      "5": {
+        "samples": 2048,
+        "cosine_mean": 0.998038848338183,
+        "cosine_p05": 0.9955535352230072,
+        "overlap_mean": 0.819091796875,
+        "decoded_values_mean": 38.65869140625
+      },
+      "6": {
+        "samples": 2048,
+        "cosine_mean": 0.9991055185964797,
+        "cosine_p05": 0.9968327283859253,
+        "overlap_mean": 0.8198089599609375,
+        "decoded_values_mean": 38.80126953125
+      },
+      "7": {
+        "samples": 2048,
+        "cosine_mean": 0.9995696154655889,
+        "cosine_p05": 0.9988673686981201,
+        "overlap_mean": 0.8326416015625,
+        "decoded_values_mean": 38.84375
+      },
+      "8": {
+        "samples": 2048,
+        "cosine_mean": 0.9995196834206581,
+        "cosine_p05": 0.9981575995683669,
+        "overlap_mean": 0.854766845703125,
+        "decoded_values_mean": 38.8798828125
+      },
+      "9": {
+        "samples": 2048,
+        "cosine_mean": 0.9992900528013706,
+        "cosine_p05": 0.9966034203767777,
+        "overlap_mean": 0.852020263671875,
+        "decoded_values_mean": 38.81787109375
+      },
+      "10": {
+        "samples": 2048,
+        "cosine_mean": 0.9995456239557825,
+        "cosine_p05": 0.9974214345216752,
+        "overlap_mean": 0.8611297607421875,
+        "decoded_values_mean": 38.84912109375
+      },
+      "11": {
+        "samples": 2048,
+        "cosine_mean": 0.999307469726773,
+        "cosine_p05": 0.9958637237548829,
+        "overlap_mean": 0.844635009765625,
+        "decoded_values_mean": 38.7900390625
+      },
+      "12": {
+        "samples": 2048,
+        "cosine_mean": 0.9996162295574322,
+        "cosine_p05": 0.9974454402923584,
+        "overlap_mean": 0.855712890625,
+        "decoded_values_mean": 38.94775390625
+      },
+      "13": {
+        "samples": 2048,
+        "cosine_mean": 0.9995587207959034,
+        "cosine_p05": 0.9977633774280548,
+        "overlap_mean": 0.8495941162109375,
+        "decoded_values_mean": 38.83251953125
+      },
+      "14": {
+        "samples": 2048,
+        "cosine_mean": 0.9995515446935315,
+        "cosine_p05": 0.9975381910800933,
+        "overlap_mean": 0.83648681640625,
+        "decoded_values_mean": 38.671875
+      },
+      "15": {
+        "samples": 2048,
+        "cosine_mean": 0.9995246262114961,
+        "cosine_p05": 0.9974366784095765,
+        "overlap_mean": 0.8556365966796875,
+        "decoded_values_mean": 38.79345703125
+      },
+      "16": {
+        "samples": 2048,
+        "cosine_mean": 0.9995136403886136,
+        "cosine_p05": 0.997195017337799,
+        "overlap_mean": 0.8362274169921875,
+        "decoded_values_mean": 38.78173828125
+      },
+      "17": {
+        "samples": 2048,
+        "cosine_mean": 0.9997409153438639,
+        "cosine_p05": 0.9988084763288497,
+        "overlap_mean": 0.850677490234375,
+        "decoded_values_mean": 38.76904296875
+      },
+      "18": {
+        "samples": 2048,
+        "cosine_mean": 0.9998342529579531,
+        "cosine_p05": 0.9991296201944351,
+        "overlap_mean": 0.851470947265625,
+        "decoded_values_mean": 38.8583984375
+      },
+      "19": {
+        "samples": 2048,
+        "cosine_mean": 0.9997160402999725,
+        "cosine_p05": 0.9985875070095063,
+        "overlap_mean": 0.853912353515625,
+        "decoded_values_mean": 38.8359375
+      },
+      "20": {
+        "samples": 2048,
+        "cosine_mean": 0.9997180805366952,
+        "cosine_p05": 0.9984670698642731,
+        "overlap_mean": 0.8564910888671875,
+        "decoded_values_mean": 38.79931640625
+      },
+      "21": {
+        "samples": 2048,
+        "cosine_mean": 0.9998146656434983,
+        "cosine_p05": 0.999060755968094,
+        "overlap_mean": 0.8615875244140625,
+        "decoded_values_mean": 38.7392578125
+      },
+      "22": {
+        "samples": 2048,
+        "cosine_mean": 0.9998573290358763,
+        "cosine_p05": 0.9992697775363921,
+        "overlap_mean": 0.8540802001953125,
+        "decoded_values_mean": 38.9033203125
+      },
+      "23": {
+        "samples": 2048,
+        "cosine_mean": 0.9998035122116562,
+        "cosine_p05": 0.998959082365036,
+        "overlap_mean": 0.8420867919921875,
+        "decoded_values_mean": 38.76513671875
+      }
+    }
+  },
+  "thresholds": {
+    "ppl_delta_abs_pct_max": 3.0,
+    "logit_cosine_p05_min": 0.995,
+    "kl_p95_max": 0.05,
+    "decoded_keys_required": 0
+  },
+  "passed": false,
+  "elapsed_s": 57.127504110336304,
+  "claim_boundary": "Actual model forward pass patched at LlamaAttention after RoPE and before o_proj. Candidate ranking uses quantized key scores and decodes selected values/keys only for exact selected softmax. Python implementation is quality-only, not speed evidence."
+}

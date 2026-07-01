@@ -17,8 +17,6 @@ use rusqlite::Connection;
 #[allow(unused_imports)]
 use rusqlite::OptionalExtension;
 use stack_ids::DigestBuilder;
-#[cfg(feature = "turbo-quant-codec")]
-use std::collections::BinaryHeap;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -283,6 +281,17 @@ struct VectorRow {
     id: String,
     content: String,
     blob: Vec<u8>,
+    updated_at: Option<String>,
+    source_type: SearchSourceType,
+    filter_namespace: Option<String>,
+    filter_session_id: Option<String>,
+    source: SearchSource,
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+struct VectorCandidateRow {
+    id: String,
+    content: String,
     updated_at: Option<String>,
     source_type: SearchSourceType,
     filter_namespace: Option<String>,
@@ -992,6 +1001,16 @@ fn vector_search_with_backend(
             source_types,
             session_ids,
         ),
+        DerivedVectorBackendPolicy::PerDimCandidateOnly => per_dim_vector_outcome(
+            conn,
+            query_embedding,
+            pool_size,
+            min_similarity,
+            config,
+            namespaces,
+            source_types,
+            session_ids,
+        ),
         DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly => provekv_pool_vector_outcome(
             conn,
             query_embedding,
@@ -1102,13 +1121,9 @@ fn turbo_quant_vector_outcome(
     session_ids: Option<&[&str]>,
 ) -> Result<VectorSearchOutcome, MemoryError> {
     use crate::vector_codec::{TurboQuantCodec, VectorArtifactV1, VectorCodec};
+    use scr_runtime_compression::CompressedScorerAdapter;
+    use turbo_quant::TurboCodeWireV1;
 
-    if !config.turbo_quant_require_exact_rerank {
-        return Err(MemoryError::InvalidConfig {
-            field: "search.turbo_quant_require_exact_rerank",
-            reason: "TurboQuant candidate backend requires exact f32 rerank".to_string(),
-        });
-    }
 
     let dim = query_embedding.len();
     let codec = TurboQuantCodec::new(
@@ -1117,6 +1132,13 @@ fn turbo_quant_vector_outcome(
         config.turbo_quant_projections,
         config.turbo_quant_seed,
     )?;
+    let adapter = CompressedScorerAdapter::turbo_quant(
+        dim,
+        config.turbo_quant_bits,
+        config.turbo_quant_projections,
+        config.turbo_quant_seed,
+    )
+    .map_err(|err| MemoryError::Other(format!("compressed scorer adapter build: {err}")))?;
     let profile = codec.profile().clone();
     let profile_digest = profile.digest();
     let mut metadata = VectorReceiptMetadata {
@@ -1202,7 +1224,6 @@ fn turbo_quant_vector_outcome(
         return Ok(outcome);
     }
 
-    let prepared = codec.prepare_query(query_embedding)?;
     let candidate_cap = if filtered {
         artifacts
             .len()
@@ -1210,10 +1231,10 @@ fn turbo_quant_vector_outcome(
     } else {
         pool_size.min(artifacts.len())
     };
-    let mut scored = BinaryHeap::with_capacity(candidate_cap.saturating_add(1));
+    let mut decoded_candidates = Vec::with_capacity(artifacts.len());
     let mut corrupt_count = 0usize;
     let mut scanned_count = 0usize;
-    for (seq, artifact_row) in artifacts.into_iter().enumerate() {
+    for artifact_row in artifacts.into_iter() {
         scanned_count += 1;
         if artifact_row.encoding != "turbo_code_wire_v1"
             || artifact_row.dim != dim
@@ -1229,39 +1250,19 @@ fn turbo_quant_vector_outcome(
             corrupt_count += 1;
             continue;
         }
-        let approx = match codec.score_inner_product_prepared(&artifact, &prepared) {
-            Ok(score) if score.is_finite() => score as f64,
-            Ok(_) => {
-                corrupt_count += 1;
-                continue;
-            }
+        let code = match TurboCodeWireV1::decode(&artifact.encoded, adapter.scorer().inner()) {
+            Ok(code) => code,
             Err(err) => {
                 tracing::warn!(
                     error = %err,
                     item = %artifact_row.item_key,
-                    "corrupt TurboQuant artifact encountered; falling back to raw f32"
+                    "corrupt TurboQuant artifact encountered before compressed-domain scoring"
                 );
                 corrupt_count += 1;
                 continue;
             }
         };
-        if candidate_cap == 0 {
-            continue;
-        }
-        let candidate = ApproxCandidate {
-            score: approx,
-            seq,
-            item_key: artifact_row.item_key,
-        };
-        if scored.len() < candidate_cap {
-            scored.push(candidate);
-        } else if scored
-            .peek()
-            .is_some_and(|worst: &ApproxCandidate| candidate.score > worst.score)
-        {
-            scored.pop();
-            scored.push(candidate);
-        }
+        decoded_candidates.push((artifact_row.item_key, code));
     }
 
     metadata.artifact_corruption_count = Some(corrupt_count);
@@ -1286,51 +1287,86 @@ fn turbo_quant_vector_outcome(
         return Ok(outcome);
     }
 
-    let mut scored = scored.into_vec();
-    scored.sort_by(|a, b| {
-        b.score
-            .partial_cmp(&a.score)
-            .unwrap_or(std::cmp::Ordering::Equal)
-            .then_with(|| a.seq.cmp(&b.seq))
-    });
+    let scored = adapter
+        .score_candidates(
+            query_embedding,
+            &decoded_candidates,
+            f32::NEG_INFINITY,
+            candidate_cap,
+        )
+        .map_err(|err| MemoryError::Other(format!("compressed-domain scoring failed: {err}")))?;
     let approximate_returned = scored.len();
     metadata.approximate_candidate_count = Some(approximate_returned);
     metadata.approximate_returned_count = Some(approximate_returned);
-    let mut exact_hits = Vec::new();
+
+    let mut hits = Vec::new();
     let mut raw_rows_loaded_count = 0usize;
     let mut missing_count = 0usize;
-    for (approx_rank_0, candidate) in scored.into_iter().enumerate() {
-        let Some(row) = load_vector_row_by_item_key(conn, &candidate.item_key)? else {
-            missing_count += 1;
-            continue;
-        };
-        raw_rows_loaded_count += 1;
-        if !vector_row_matches_filters(&row, namespaces, source_types, session_ids) {
-            continue;
+
+    if config.turbo_quant_require_exact_rerank {
+        for (approx_rank_0, candidate) in scored.into_iter().enumerate() {
+            let Some(row) = load_vector_row_by_item_key(conn, &candidate.key)? else {
+                missing_count += 1;
+                continue;
+            };
+            raw_rows_loaded_count += 1;
+            if !vector_row_matches_filters(&row, namespaces, source_types, session_ids) {
+                continue;
+            }
+            let stored_embedding = crate::db::decode_f32_le(&row.blob, dim)?;
+            let similarity = cosine_similarity(query_embedding, &stored_embedding)? as f64;
+            if similarity >= min_similarity {
+                hits.push(VectorHit {
+                    id: row.id,
+                    content: row.content,
+                    source: row.source,
+                    similarity,
+                    updated_at: row.updated_at,
+                    source_rank: Some(approx_rank_0 + 1),
+                    source_similarity: Some(candidate.score as f64),
+                    reranked_from_f32: true,
+                    temporal_weight: None,
+                    provenance_confidence: None,
+                });
+            }
         }
-        let stored_embedding = crate::db::decode_f32_le(&row.blob, dim)?;
-        let similarity = cosine_similarity(query_embedding, &stored_embedding)? as f64;
-        if similarity >= min_similarity {
-            exact_hits.push(VectorHit {
-                id: row.id,
-                content: row.content,
-                source: row.source,
-                similarity,
-                updated_at: row.updated_at,
-                source_rank: Some(approx_rank_0 + 1),
-                source_similarity: Some(candidate.score),
-                reranked_from_f32: true,
-                temporal_weight: None,
-                provenance_confidence: None,
-            });
+    } else {
+        for (approx_rank_0, candidate) in scored.into_iter().enumerate() {
+            let Some(row) = load_vector_candidate_row_by_item_key(conn, &candidate.key)? else {
+                missing_count += 1;
+                continue;
+            };
+            if !vector_candidate_row_matches_filters(&row, namespaces, source_types, session_ids) {
+                continue;
+            }
+            let similarity = candidate.score as f64;
+            if similarity >= min_similarity {
+                hits.push(VectorHit {
+                    id: row.id,
+                    content: row.content,
+                    source: row.source,
+                    similarity,
+                    updated_at: row.updated_at,
+                    source_rank: Some(approx_rank_0 + 1),
+                    source_similarity: Some(similarity),
+                    reranked_from_f32: false,
+                    temporal_weight: None,
+                    provenance_confidence: None,
+                });
+            }
         }
     }
-    let post_filter_candidates = exact_hits.len();
+
+    let post_filter_candidates = hits.len();
     metadata.artifact_missing_count = Some(missing_count);
     metadata.vector_artifact_missing_count = Some(missing_count);
     metadata.vector_artifact_stale_count = Some(0);
     metadata.raw_rows_loaded_count = Some(raw_rows_loaded_count);
-    metadata.exact_rerank_count = Some(raw_rows_loaded_count);
+    metadata.exact_rerank_count = Some(if config.turbo_quant_require_exact_rerank {
+        raw_rows_loaded_count
+    } else {
+        0
+    });
     let mut degradations = Vec::new();
     if filtered && post_filter_candidates < pool_size && candidate_cap < scanned_count {
         degradations.push(format!(
@@ -1339,62 +1375,97 @@ fn turbo_quant_vector_outcome(
     }
     if missing_count > 0 {
         degradations.push(format!(
-            "TurboQuant exact rerank skipped {missing_count} candidates whose authoritative rows were missing"
+            "TurboQuant candidate resolution skipped {missing_count} candidates whose authoritative metadata rows were missing"
         ));
     }
-    let hits = rank_vector_hits(exact_hits, pool_size);
+    let hits = rank_vector_hits(hits, pool_size);
     Ok(VectorSearchOutcome {
         hits,
-        candidate_backend: "turbo_quant_candidate_then_exact_f32".to_string(),
+        candidate_backend: if config.turbo_quant_require_exact_rerank {
+            "turbo_quant_candidate_then_exact_f32".to_string()
+        } else {
+            "turbo_quant_compressed_domain".to_string()
+        },
         requested_candidates: pool_size,
         returned_candidates: approximate_returned,
         post_filter_candidates,
         fallback: None,
-        exact_rerank: true,
+        exact_rerank: config.turbo_quant_require_exact_rerank,
         degradations,
         receipt_metadata: metadata,
     })
 }
 
-#[cfg(feature = "turbo-quant-codec")]
-#[derive(Debug, Clone)]
-struct ApproxCandidate {
-    score: f64,
-    seq: usize,
-    item_key: String,
-}
-
-#[cfg(feature = "turbo-quant-codec")]
-impl PartialEq for ApproxCandidate {
-    fn eq(&self, other: &Self) -> bool {
-        self.score == other.score && self.seq == other.seq
-    }
-}
-
-#[cfg(feature = "turbo-quant-codec")]
-impl Eq for ApproxCandidate {}
-
-#[cfg(feature = "turbo-quant-codec")]
-impl PartialOrd for ApproxCandidate {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-#[cfg(feature = "turbo-quant-codec")]
-impl Ord for ApproxCandidate {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other
-            .score
-            .partial_cmp(&self.score)
-            .unwrap_or(std::cmp::Ordering::Equal)
-            .then_with(|| other.seq.cmp(&self.seq))
-    }
+/// Per-dimension quantized candidate generation.
+///
+/// When pre-computed per-dim artifacts are not available, this falls back
+/// to brute-force f32 search with a receipt noting the degradation.
+/// When per-dim artifacts are available (future), this will score
+/// compressed codes and exact-rerank top-k.
+#[allow(clippy::too_many_arguments)]
+fn per_dim_vector_outcome(
+    conn: &Connection,
+    query_embedding: &[f32],
+    pool_size: usize,
+    min_similarity: f64,
+    _config: &SearchConfig,
+    namespaces: Option<&[&str]>,
+    source_types: Option<&[SearchSourceType]>,
+    session_ids: Option<&[&str]>,
+) -> Result<VectorSearchOutcome, MemoryError> {
+    let mut outcome = brute_force_vector_outcome(
+        conn,
+        query_embedding,
+        pool_size,
+        min_similarity,
+        namespaces,
+        source_types,
+        session_ids,
+    )?;
+    outcome.candidate_backend = "per_dim_compressed_then_exact_f32".to_string();
+    outcome.fallback = Some("per_dim_artifacts_not_yet_stored".to_string());
+    outcome
+        .degradations
+        .push("PerDim backend requested but pre-computed per-dim artifacts are not yet stored; authoritative raw f32 search was used".to_string());
+    outcome.receipt_metadata = VectorReceiptMetadata {
+        codec_family: Some("per_dim".to_string()),
+        ..Default::default()
+    };
+    Ok(outcome)
 }
 
 #[cfg(feature = "turbo-quant-codec")]
 fn vector_row_matches_filters(
     row: &VectorRow,
+    namespaces: Option<&[&str]>,
+    source_types: Option<&[SearchSourceType]>,
+    session_ids: Option<&[&str]>,
+) -> bool {
+    if source_types.is_some_and(|values| !values.contains(&row.source_type)) {
+        return false;
+    }
+    if let Some(namespaces) = namespaces.filter(|values| !values.is_empty()) {
+        let Some(namespace) = row.filter_namespace.as_deref() else {
+            return false;
+        };
+        if !namespaces.contains(&namespace) {
+            return false;
+        }
+    }
+    if let Some(session_ids) = session_ids.filter(|values| !values.is_empty()) {
+        let Some(session_id) = row.filter_session_id.as_deref() else {
+            return false;
+        };
+        if !session_ids.contains(&session_id) {
+            return false;
+        }
+    }
+    true
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+fn vector_candidate_row_matches_filters(
+    row: &VectorCandidateRow,
     namespaces: Option<&[&str]>,
     source_types: Option<&[SearchSourceType]>,
     session_ids: Option<&[&str]>,
@@ -1434,6 +1505,140 @@ fn authoritative_vector_row_count(conn: &Connection) -> Result<usize, MemoryErro
     )?;
     usize::try_from(count)
         .map_err(|err| MemoryError::Other(format!("authoritative vector count overflow: {err}")))
+}
+
+#[cfg(feature = "turbo-quant-codec")]
+fn load_vector_candidate_row_by_item_key(
+    conn: &Connection,
+    item_key: &str,
+) -> Result<Option<VectorCandidateRow>, MemoryError> {
+    let Some((domain, id)) = item_key.split_once(':') else {
+        return Ok(None);
+    };
+    match domain {
+        "fact" => conn
+            .query_row(
+                "SELECT id, content, namespace, updated_at
+                 FROM facts WHERE id = ?1 AND embedding IS NOT NULL",
+                [id],
+                |row| {
+                    let fact_id: String = row.get(0)?;
+                    let content: String = row.get(1)?;
+                    let namespace: String = row.get(2)?;
+                    let updated_at: Option<String> = row.get(3)?;
+                    Ok(VectorCandidateRow {
+                        id: format!("fact:{fact_id}"),
+                        content,
+                        updated_at,
+                        source_type: SearchSourceType::Facts,
+                        filter_namespace: Some(namespace.clone()),
+                        filter_session_id: None,
+                        source: SearchSource::Fact { fact_id, namespace },
+                    })
+                },
+            )
+            .optional()
+            .map_err(MemoryError::from),
+        "chunk" => conn
+            .query_row(
+                "SELECT c.id, c.content, c.document_id, d.title, c.chunk_index, c.created_at, d.namespace
+                 FROM chunks c
+                 JOIN documents d ON d.id = c.document_id
+                 WHERE c.id = ?1 AND c.embedding IS NOT NULL",
+                [id],
+                |row| {
+                    let chunk_id: String = row.get(0)?;
+                    let content: String = row.get(1)?;
+                    let document_id: String = row.get(2)?;
+                    let document_title: String = row.get(3)?;
+                    let chunk_index: i64 = row.get(4)?;
+                    let updated_at: Option<String> = row.get(5)?;
+                    let namespace: String = row.get(6)?;
+                    Ok(VectorCandidateRow {
+                        id: format!("chunk:{chunk_id}"),
+                        content,
+                        updated_at,
+                        source_type: SearchSourceType::Chunks,
+                        filter_namespace: Some(namespace),
+                        filter_session_id: None,
+                        source: SearchSource::Chunk {
+                            chunk_id,
+                            document_id,
+                            document_title,
+                            chunk_index: chunk_index as usize,
+                        },
+                    })
+                },
+            )
+            .optional()
+            .map_err(MemoryError::from),
+        "msg" => {
+            let Ok(message_id) = id.parse::<i64>() else {
+                return Ok(None);
+            };
+            conn.query_row(
+                "SELECT id, content, session_id, role, created_at
+                 FROM messages WHERE id = ?1 AND embedding IS NOT NULL",
+                [message_id],
+                |row| {
+                    let message_id: i64 = row.get(0)?;
+                    let content: String = row.get(1)?;
+                    let session_id: String = row.get(2)?;
+                    let role: String = row.get(3)?;
+                    let updated_at: Option<String> = row.get(4)?;
+                    Ok(VectorCandidateRow {
+                        id: format!("msg:{message_id}"),
+                        content,
+                        updated_at,
+                        source_type: SearchSourceType::Messages,
+                        filter_namespace: None,
+                        filter_session_id: Some(session_id.clone()),
+                        source: SearchSource::Message {
+                            message_id,
+                            session_id,
+                            role,
+                        },
+                    })
+                },
+            )
+            .optional()
+            .map_err(MemoryError::from)
+        }
+        "episode" => conn
+            .query_row(
+                "SELECT e.episode_id, e.document_id, e.search_text, e.effect_type, e.outcome, e.updated_at, d.namespace
+                 FROM episodes e
+                 JOIN documents d ON d.id = e.document_id
+                 WHERE e.episode_id = ?1 AND e.embedding IS NOT NULL",
+                [id],
+                |row| {
+                    let episode_id: String = row.get(0)?;
+                    let document_id: String = row.get(1)?;
+                    let content: String = row.get(2)?;
+                    let effect_type: String = row.get(3)?;
+                    let outcome: String = row.get(4)?;
+                    let updated_at: Option<String> = row.get(5)?;
+                    let namespace: String = row.get(6)?;
+                    Ok(VectorCandidateRow {
+                        id: episodes::episode_item_key(&episode_id),
+                        content,
+                        updated_at,
+                        source_type: SearchSourceType::Episodes,
+                        filter_namespace: Some(namespace),
+                        filter_session_id: None,
+                        source: SearchSource::Episode {
+                            episode_id,
+                            document_id,
+                            effect_type,
+                            outcome,
+                        },
+                    })
+                },
+            )
+            .optional()
+            .map_err(MemoryError::from),
+        _ => Ok(None),
+    }
 }
 
 #[cfg(feature = "turbo-quant-codec")]

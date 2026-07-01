@@ -8,7 +8,7 @@
 // runtime-specific structure (kind enum + key + scope) that goes beyond
 // the opaque string ID in stack-ids.
 
-pub use stack_ids::{EntityId, Scope, ScopeKey};
+pub use stack_ids::{EntityId, PerspectiveKey, Scope, ScopeKey};
 
 use serde::{Deserialize, Serialize};
 

@@ -16,6 +16,9 @@ pub enum CompressionError {
 
     #[error("quant-governor policy rejected compression: {0}")]
     PolicyRejected(String),
+
+    #[error("compressed-domain scoring failed: {0}")]
+    ScoringFailed(String),
 }
 
 /// Errors that can occur during decompression operations.

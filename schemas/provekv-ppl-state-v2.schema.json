@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProveKV PPL State V2",
+  "type": "object",
+  "required": ["model", "corpus", "phase0", "phase1"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "model": { "type": "string" },
+    "corpus": { "type": "string" },
+    "n_tokens": { "type": "integer", "minimum": 1 },
+    "phase0": { "type": "object", "required": ["ppl"], "properties": { "ppl": { "type": "number", "exclusiveMinimum": 0 } } },
+    "phase1": { "type": "object", "required": ["ppl", "delta_ppl_pct"], "properties": { "ppl": { "type": "number", "exclusiveMinimum": 0 }, "compression_ratio": { "type": "number", "exclusiveMinimum": 1 }, "delta_ppl_pct": { "type": "number" } } }
+  },
+  "additionalProperties": true
+}

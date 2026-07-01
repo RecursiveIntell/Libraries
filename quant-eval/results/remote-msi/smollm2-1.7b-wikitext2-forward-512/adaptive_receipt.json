@@ -1,0 +1,944 @@
+{
+  "schema_version": "compressed_attention_forward_ppl_v1",
+  "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "corpus": "wikitext-2",
+  "n_tokens": 512,
+  "ppl_frac": 0.3,
+  "eval_window": [
+    357,
+    511
+  ],
+  "top_k": "adaptive",
+  "recent_guard": 16,
+  "quant_bits": 4,
+  "scorer": "quantized",
+  "adaptive_budget": true,
+  "device": "cuda",
+  "baseline_ppl": 5.144194931922517,
+  "compressed_attention_ppl": 4.9809119324607725,
+  "delta_ppl_pct": -3.1741215413219415,
+  "baseline_forward_seconds": 0.3462800979614258,
+  "compressed_forward_seconds": 227.6250159740448,
+  "logit_cosine_mean": 0.9951581358909607,
+  "logit_cosine_p05": 0.9814262717962265,
+  "kl_mean": 0.01578625850379467,
+  "kl_p95": 0.07419397942721842,
+  "max_abs_logit_delta_mean": 1.3083977699279785,
+  "max_abs_logit_delta_p95": 2.702929687499999,
+  "argmax_match_rate": 0.9610389471054077,
+  "target_logit_abs_delta_mean": 0.3064305782318115,
+  "target_logit_abs_delta_p95": 0.8570312499999999,
+  "attention": {
+    "samples": 768,
+    "decoded_keys_for_ranking": 0,
+    "decoded_selected_keys_mean": 98.54557291666667,
+    "decoded_selected_keys_p95": 105.0,
+    "decoded_values_mean": 98.54557291666667,
+    "decoded_values_p95": 105.0,
+    "attention_output_cosine_mean": 0.9948514706532782,
+    "attention_output_cosine_p05": 0.9860710740089417,
+    "attention_mse_mean": 0.0003975922440127689,
+    "attention_mse_p95": 0.0,
+    "attention_topk_overlap_mean": 0.7542411966685664,
+    "attention_topk_overlap_p05": 0.08650046310589689,
+    "per_layer": {
+      "0": {
+        "samples": 32,
+        "cosine_mean": 0.9277917789295316,
+        "cosine_p05": 0.5791113585233688,
+        "overlap_mean": 0.8090073529411764,
+        "decoded_values_mean": 184.3125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.8551137261092663,
+            "cosine_p05": 0.4528285935521126,
+            "overlap_mean": 0.8404411764705882,
+            "decoded_values_mean": 185
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9999645724892616,
+            "cosine_p05": 0.9999040096998214,
+            "overlap_mean": 0.7772058823529412,
+            "decoded_values_mean": 183.5
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.8568370416760445,
+            "cosine_p05": 0.6337906658649444,
+            "overlap_mean": 0.8485294117647059,
+            "decoded_values_mean": 184.75
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9992517754435539,
+            "cosine_p05": 0.9976852715015411,
+            "overlap_mean": 0.7698529411764705,
+            "decoded_values_mean": 184
+          }
+        }
+      },
+      "1": {
+        "samples": 32,
+        "cosine_mean": 0.9999037012457848,
+        "cosine_p05": 0.999491474032402,
+        "overlap_mean": 0.8022203947368421,
+        "decoded_values_mean": 91.34375,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9998377338051796,
+            "cosine_p05": 0.9994395345449447,
+            "overlap_mean": 0.8026315789473685,
+            "decoded_values_mean": 91.375
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9998157694935799,
+            "cosine_p05": 0.9993442833423614,
+            "overlap_mean": 0.819078947368421,
+            "decoded_values_mean": 91
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999725669622421,
+            "cosine_p05": 0.9999082446098327,
+            "overlap_mean": 0.7944078947368421,
+            "decoded_values_mean": 91.5
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9999887347221375,
+            "cosine_p05": 0.9999584883451461,
+            "overlap_mean": 0.7927631578947368,
+            "decoded_values_mean": 91.5
+          }
+        }
+      },
+      "2": {
+        "samples": 32,
+        "cosine_mean": 0.9995333757251501,
+        "cosine_p05": 0.9977115333080291,
+        "overlap_mean": 0.7463474025974026,
+        "decoded_values_mean": 92.09375,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.999166764318943,
+            "cosine_p05": 0.9972348213195801,
+            "overlap_mean": 0.7711038961038961,
+            "decoded_values_mean": 92.5
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9998570159077644,
+            "cosine_p05": 0.9993165016174316,
+            "overlap_mean": 0.7386363636363636,
+            "decoded_values_mean": 92.125
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999174252152443,
+            "cosine_p05": 0.9997275471687317,
+            "overlap_mean": 0.7597402597402597,
+            "decoded_values_mean": 91.625
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9991922974586487,
+            "cosine_p05": 0.99819875061512,
+            "overlap_mean": 0.7159090909090909,
+            "decoded_values_mean": 92.125
+          }
+        }
+      },
+      "3": {
+        "samples": 32,
+        "cosine_mean": 0.9982513636350632,
+        "cosine_p05": 0.9924549281597138,
+        "overlap_mean": 0.7099719101123595,
+        "decoded_values_mean": 103.53125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9992323070764542,
+            "cosine_p05": 0.9980804234743118,
+            "overlap_mean": 0.6952247191011236,
+            "decoded_values_mean": 103
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9978662952780724,
+            "cosine_p05": 0.9936422288417817,
+            "overlap_mean": 0.7345505617977528,
+            "decoded_values_mean": 103.875
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9959798008203506,
+            "cosine_p05": 0.9907753109931945,
+            "overlap_mean": 0.7078651685393258,
+            "decoded_values_mean": 104.25
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9999270513653755,
+            "cosine_p05": 0.999760776758194,
+            "overlap_mean": 0.7022471910112359,
+            "decoded_values_mean": 103
+          }
+        }
+      },
+      "4": {
+        "samples": 32,
+        "cosine_mean": 0.9919495787471533,
+        "cosine_p05": 0.9452689439058304,
+        "overlap_mean": 0.7421875,
+        "decoded_values_mean": 103.03125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9801962822675705,
+            "cosine_p05": 0.9389281541109085,
+            "overlap_mean": 0.7571022727272727,
+            "decoded_values_mean": 102.5
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9998520240187645,
+            "cosine_p05": 0.9993102848529816,
+            "overlap_mean": 0.7315340909090909,
+            "decoded_values_mean": 103.5
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999862611293793,
+            "cosine_p05": 0.9999612778425215,
+            "overlap_mean": 0.7556818181818182,
+            "decoded_values_mean": 102.875
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9877637475728989,
+            "cosine_p05": 0.95418464243412,
+            "overlap_mean": 0.7244318181818181,
+            "decoded_values_mean": 103.25
+          }
+        }
+      },
+      "5": {
+        "samples": 32,
+        "cosine_mean": 0.9989544115960598,
+        "cosine_p05": 0.9932354420423507,
+        "overlap_mean": 0.7126524390243902,
+        "decoded_values_mean": 96.9375,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.996299684047699,
+            "cosine_p05": 0.9919664084911346,
+            "overlap_mean": 0.6951219512195123,
+            "decoded_values_mean": 97.5
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.999972477555275,
+            "cosine_p05": 0.9998813688755035,
+            "overlap_mean": 0.7103658536585366,
+            "decoded_values_mean": 96.625
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9995603263378143,
+            "cosine_p05": 0.9981063485145568,
+            "overlap_mean": 0.7027439024390244,
+            "decoded_values_mean": 96.5
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9999851584434509,
+            "cosine_p05": 0.9999284058809279,
+            "overlap_mean": 0.7423780487804879,
+            "decoded_values_mean": 97.125
+          }
+        }
+      },
+      "6": {
+        "samples": 32,
+        "cosine_mean": 0.9993923082947731,
+        "cosine_p05": 0.9965011864900589,
+        "overlap_mean": 0.7333860759493671,
+        "decoded_values_mean": 94.125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9999969005584717,
+            "cosine_p05": 0.9999875605106352,
+            "overlap_mean": 0.7689873417721519,
+            "decoded_values_mean": 94.25
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9998946934938431,
+            "cosine_p05": 0.9996290981769562,
+            "overlap_mean": 0.7199367088607594,
+            "decoded_values_mean": 94.25
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999598115682602,
+            "cosine_p05": 0.9998174756765366,
+            "overlap_mean": 0.7136075949367089,
+            "decoded_values_mean": 93.5
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9977178275585175,
+            "cosine_p05": 0.992814913392067,
+            "overlap_mean": 0.7310126582278481,
+            "decoded_values_mean": 94.5
+          }
+        }
+      },
+      "7": {
+        "samples": 32,
+        "cosine_mean": 0.9999912995845079,
+        "cosine_p05": 0.9999656081199646,
+        "overlap_mean": 0.7739448051948051,
+        "decoded_values_mean": 92.375,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9999994784593582,
+            "cosine_p05": 0.999998152256012,
+            "overlap_mean": 0.7824675324675324,
+            "decoded_values_mean": 92
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9999941810965538,
+            "cosine_p05": 0.9999759197235107,
+            "overlap_mean": 0.7727272727272727,
+            "decoded_values_mean": 92.625
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999903216958046,
+            "cosine_p05": 0.9999688923358917,
+            "overlap_mean": 0.7922077922077921,
+            "decoded_values_mean": 92
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9999812170863152,
+            "cosine_p05": 0.9999159067869186,
+            "overlap_mean": 0.7483766233766234,
+            "decoded_values_mean": 92.875
+          }
+        }
+      },
+      "8": {
+        "samples": 32,
+        "cosine_mean": 0.9991844147443771,
+        "cosine_p05": 0.9978298068046569,
+        "overlap_mean": 0.7395833333333334,
+        "decoded_values_mean": 93.9375,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9991263821721077,
+            "cosine_p05": 0.9976127982139587,
+            "overlap_mean": 0.7548076923076923,
+            "decoded_values_mean": 93.875
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9977989569306374,
+            "cosine_p05": 0.9904044151306151,
+            "overlap_mean": 0.7131410256410257,
+            "decoded_values_mean": 93.875
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999615848064423,
+            "cosine_p05": 0.9998229831457137,
+            "overlap_mean": 0.7596153846153846,
+            "decoded_values_mean": 94
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9998507350683212,
+            "cosine_p05": 0.9995591938495636,
+            "overlap_mean": 0.7307692307692307,
+            "decoded_values_mean": 94
+          }
+        }
+      },
+      "9": {
+        "samples": 32,
+        "cosine_mean": 0.9932804014533758,
+        "cosine_p05": 0.9614412277936936,
+        "overlap_mean": 0.7550154320987654,
+        "decoded_values_mean": 96.875,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9951204136013985,
+            "cosine_p05": 0.9895035088062285,
+            "overlap_mean": 0.7685185185185185,
+            "decoded_values_mean": 96.875
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9830934554338455,
+            "cosine_p05": 0.9548299968242644,
+            "overlap_mean": 0.7453703703703703,
+            "decoded_values_mean": 97
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9949112087488174,
+            "cosine_p05": 0.9860274285078048,
+            "overlap_mean": 0.7330246913580247,
+            "decoded_values_mean": 97
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9999965280294418,
+            "cosine_p05": 0.9999915897846221,
+            "overlap_mean": 0.7731481481481481,
+            "decoded_values_mean": 96.625
+          }
+        }
+      },
+      "10": {
+        "samples": 32,
+        "cosine_mean": 0.9996420051902533,
+        "cosine_p05": 0.9980787456035614,
+        "overlap_mean": 0.7621753246753247,
+        "decoded_values_mean": 92.71875,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.998604491353035,
+            "cosine_p05": 0.996390026807785,
+            "overlap_mean": 0.7288961038961039,
+            "decoded_values_mean": 92.625
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9999725222587585,
+            "cosine_p05": 0.9999039441347122,
+            "overlap_mean": 0.7597402597402597,
+            "decoded_values_mean": 92.875
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999997988343239,
+            "cosine_p05": 0.9999991059303283,
+            "overlap_mean": 0.7840909090909091,
+            "decoded_values_mean": 92.5
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9999912083148956,
+            "cosine_p05": 0.9999572575092315,
+            "overlap_mean": 0.775974025974026,
+            "decoded_values_mean": 92.875
+          }
+        }
+      },
+      "11": {
+        "samples": 32,
+        "cosine_mean": 0.9995205849409103,
+        "cosine_p05": 0.9968487471342087,
+        "overlap_mean": 0.7616185897435898,
+        "decoded_values_mean": 93.53125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9988820925354958,
+            "cosine_p05": 0.9966393560171127,
+            "overlap_mean": 0.7996794871794872,
+            "decoded_values_mean": 93.75
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9999940320849419,
+            "cosine_p05": 0.9999747037887572,
+            "overlap_mean": 0.7836538461538461,
+            "decoded_values_mean": 93.625
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9998994469642639,
+            "cosine_p05": 0.9997500985860824,
+            "overlap_mean": 0.7451923076923077,
+            "decoded_values_mean": 93.125
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9993067681789398,
+            "cosine_p05": 0.9970312058925628,
+            "overlap_mean": 0.717948717948718,
+            "decoded_values_mean": 93.625
+          }
+        }
+      },
+      "12": {
+        "samples": 32,
+        "cosine_mean": 0.9974164422601461,
+        "cosine_p05": 0.9873022198677064,
+        "overlap_mean": 0.7393196202531646,
+        "decoded_values_mean": 94.6875,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9991546273231506,
+            "cosine_p05": 0.9979075521230696,
+            "overlap_mean": 0.7104430379746836,
+            "decoded_values_mean": 94.875
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9977907314896584,
+            "cosine_p05": 0.9929598182439804,
+            "overlap_mean": 0.7737341772151899,
+            "decoded_values_mean": 94.625
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9992129504680634,
+            "cosine_p05": 0.9975625455379487,
+            "overlap_mean": 0.754746835443038,
+            "decoded_values_mean": 95
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9935074597597122,
+            "cosine_p05": 0.9844894289970396,
+            "overlap_mean": 0.7183544303797469,
+            "decoded_values_mean": 94.25
+          }
+        }
+      },
+      "13": {
+        "samples": 32,
+        "cosine_mean": 0.9954525399953127,
+        "cosine_p05": 0.9832505881786346,
+        "overlap_mean": 0.7484756097560976,
+        "decoded_values_mean": 97.4375,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9977646321058273,
+            "cosine_p05": 0.9923291355371475,
+            "overlap_mean": 0.823170731707317,
+            "decoded_values_mean": 97.625
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9999965727329254,
+            "cosine_p05": 0.9999896854162216,
+            "overlap_mean": 0.7454268292682926,
+            "decoded_values_mean": 97
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9992263168096542,
+            "cosine_p05": 0.9963465899229049,
+            "overlap_mean": 0.7301829268292683,
+            "decoded_values_mean": 97.75
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9848226383328438,
+            "cosine_p05": 0.9509550690650939,
+            "overlap_mean": 0.6951219512195121,
+            "decoded_values_mean": 97.375
+          }
+        }
+      },
+      "14": {
+        "samples": 32,
+        "cosine_mean": 0.9994535241276026,
+        "cosine_p05": 0.9975815266370773,
+        "overlap_mean": 0.7905092592592592,
+        "decoded_values_mean": 96.53125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9993601888418198,
+            "cosine_p05": 0.9972733527421951,
+            "overlap_mean": 0.8209876543209876,
+            "decoded_values_mean": 96.625
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9994693621993065,
+            "cosine_p05": 0.9985658109188079,
+            "overlap_mean": 0.7515432098765432,
+            "decoded_values_mean": 96.375
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9993294030427933,
+            "cosine_p05": 0.9966242879629135,
+            "overlap_mean": 0.8425925925925926,
+            "decoded_values_mean": 96.5
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9996551424264908,
+            "cosine_p05": 0.9988101959228515,
+            "overlap_mean": 0.7469135802469136,
+            "decoded_values_mean": 96.625
+          }
+        }
+      },
+      "15": {
+        "samples": 32,
+        "cosine_mean": 0.9973539505153894,
+        "cosine_p05": 0.9881406754255295,
+        "overlap_mean": 0.7844145569620253,
+        "decoded_values_mean": 94.46875,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9997141361236572,
+            "cosine_p05": 0.9987537652254104,
+            "overlap_mean": 0.7515822784810127,
+            "decoded_values_mean": 94.375
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9997731372714043,
+            "cosine_p05": 0.9992002815008163,
+            "overlap_mean": 0.8481012658227848,
+            "decoded_values_mean": 94.625
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9985510557889938,
+            "cosine_p05": 0.9964416861534118,
+            "overlap_mean": 0.759493670886076,
+            "decoded_values_mean": 94.875
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9913774728775024,
+            "cosine_p05": 0.9708154082298277,
+            "overlap_mean": 0.7784810126582279,
+            "decoded_values_mean": 94
+          }
+        }
+      },
+      "16": {
+        "samples": 32,
+        "cosine_mean": 0.9978860393166542,
+        "cosine_p05": 0.9901588529348373,
+        "overlap_mean": 0.7515625,
+        "decoded_values_mean": 95.28125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9956254586577415,
+            "cosine_p05": 0.9869282692670822,
+            "overlap_mean": 0.6843750000000001,
+            "decoded_values_mean": 94.875
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9996166527271271,
+            "cosine_p05": 0.9987282633781432,
+            "overlap_mean": 0.7140625,
+            "decoded_values_mean": 94.75
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9994272291660309,
+            "cosine_p05": 0.9974674105644226,
+            "overlap_mean": 0.8015625,
+            "decoded_values_mean": 95.5
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9968748167157173,
+            "cosine_p05": 0.9897370636463165,
+            "overlap_mean": 0.80625,
+            "decoded_values_mean": 96
+          }
+        }
+      },
+      "17": {
+        "samples": 32,
+        "cosine_mean": 0.9985312093049288,
+        "cosine_p05": 0.9931985914707183,
+        "overlap_mean": 0.733573717948718,
+        "decoded_values_mean": 93.8125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9999426901340485,
+            "cosine_p05": 0.9997039139270782,
+            "overlap_mean": 0.7371794871794872,
+            "decoded_values_mean": 94
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.999764509499073,
+            "cosine_p05": 0.9991322219371795,
+            "overlap_mean": 0.766025641025641,
+            "decoded_values_mean": 93.625
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9986873418092728,
+            "cosine_p05": 0.9954716473817824,
+            "overlap_mean": 0.6794871794871795,
+            "decoded_values_mean": 93.625
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9957302957773209,
+            "cosine_p05": 0.9882301419973373,
+            "overlap_mean": 0.7516025641025641,
+            "decoded_values_mean": 94
+          }
+        }
+      },
+      "18": {
+        "samples": 32,
+        "cosine_mean": 0.9977686237543821,
+        "cosine_p05": 0.9883736968040466,
+        "overlap_mean": 0.71875,
+        "decoded_values_mean": 92.28125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9956931099295616,
+            "cosine_p05": 0.9835235148668289,
+            "overlap_mean": 0.7467532467532467,
+            "decoded_values_mean": 92.375
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9967596530914307,
+            "cosine_p05": 0.9868695139884949,
+            "overlap_mean": 0.6915584415584416,
+            "decoded_values_mean": 91.625
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999399855732918,
+            "cosine_p05": 0.9997492760419846,
+            "overlap_mean": 0.7191558441558442,
+            "decoded_values_mean": 92.5
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9986817464232445,
+            "cosine_p05": 0.9947241157293318,
+            "overlap_mean": 0.7175324675324676,
+            "decoded_values_mean": 92.625
+          }
+        }
+      },
+      "19": {
+        "samples": 32,
+        "cosine_mean": 0.9952466282993555,
+        "cosine_p05": 0.9752335220575332,
+        "overlap_mean": 0.7633928571428571,
+        "decoded_values_mean": 92.625,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9975643828511238,
+            "cosine_p05": 0.9895676821470261,
+            "overlap_mean": 0.7483766233766234,
+            "decoded_values_mean": 92.875
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.999443344771862,
+            "cosine_p05": 0.9981864899396896,
+            "overlap_mean": 0.7142857142857143,
+            "decoded_values_mean": 92.5
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9851340800523758,
+            "cosine_p05": 0.9558341801166534,
+            "overlap_mean": 0.7954545454545454,
+            "decoded_values_mean": 92.375
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9988447055220604,
+            "cosine_p05": 0.9946484267711639,
+            "overlap_mean": 0.7954545454545454,
+            "decoded_values_mean": 92.75
+          }
+        }
+      },
+      "20": {
+        "samples": 32,
+        "cosine_mean": 0.9945678524672985,
+        "cosine_p05": 0.9718089640140533,
+        "overlap_mean": 0.7674050632911392,
+        "decoded_values_mean": 94.4375,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.997845970094204,
+            "cosine_p05": 0.9942849040031433,
+            "overlap_mean": 0.7895569620253164,
+            "decoded_values_mean": 95
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9891419038176537,
+            "cosine_p05": 0.9575001299381256,
+            "overlap_mean": 0.7341772151898734,
+            "decoded_values_mean": 93.5
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9955692440271378,
+            "cosine_p05": 0.9801425606012344,
+            "overlap_mean": 0.764240506329114,
+            "decoded_values_mean": 94.625
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9957142919301987,
+            "cosine_p05": 0.9836204230785368,
+            "overlap_mean": 0.7816455696202531,
+            "decoded_values_mean": 94.625
+          }
+        }
+      },
+      "21": {
+        "samples": 32,
+        "cosine_mean": 0.997881319373846,
+        "cosine_p05": 0.9888350993394852,
+        "overlap_mean": 0.7625811688311688,
+        "decoded_values_mean": 92.75,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9952174201607704,
+            "cosine_p05": 0.988697400689125,
+            "overlap_mean": 0.788961038961039,
+            "decoded_values_mean": 92.875
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9993656650185585,
+            "cosine_p05": 0.997804868221283,
+            "overlap_mean": 0.737012987012987,
+            "decoded_values_mean": 92.75
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.997868537902832,
+            "cosine_p05": 0.9905835121870041,
+            "overlap_mean": 0.724025974025974,
+            "decoded_values_mean": 92.75
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9990736544132233,
+            "cosine_p05": 0.9965134918689728,
+            "overlap_mean": 0.8003246753246753,
+            "decoded_values_mean": 92.625
+          }
+        }
+      },
+      "22": {
+        "samples": 32,
+        "cosine_mean": 0.9983806237578392,
+        "cosine_p05": 0.994742214679718,
+        "overlap_mean": 0.766826923076923,
+        "decoded_values_mean": 93.53125,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9988087266683578,
+            "cosine_p05": 0.9973684251308441,
+            "overlap_mean": 0.7467948717948718,
+            "decoded_values_mean": 93.75
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9961908906698227,
+            "cosine_p05": 0.9816075593233109,
+            "overlap_mean": 0.7948717948717949,
+            "decoded_values_mean": 94
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9989302530884743,
+            "cosine_p05": 0.9946061640977859,
+            "overlap_mean": 0.7291666666666666,
+            "decoded_values_mean": 92.625
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.999592624604702,
+            "cosine_p05": 0.9980079621076583,
+            "overlap_mean": 0.7964743589743589,
+            "decoded_values_mean": 93.75
+          }
+        }
+      },
+      "23": {
+        "samples": 32,
+        "cosine_mean": 0.9991013184189796,
+        "cosine_p05": 0.9960760205984115,
+        "overlap_mean": 0.7268668831168831,
+        "decoded_values_mean": 92.4375,
+        "per_head": {
+          "0": {
+            "samples": 8,
+            "cosine_mean": 0.9992488026618958,
+            "cosine_p05": 0.9977544695138931,
+            "overlap_mean": 0.6948051948051948,
+            "decoded_values_mean": 92.5
+          },
+          "8": {
+            "samples": 8,
+            "cosine_mean": 0.9972148910164833,
+            "cosine_p05": 0.9889839202165603,
+            "overlap_mean": 0.7581168831168831,
+            "decoded_values_mean": 92.75
+          },
+          "16": {
+            "samples": 8,
+            "cosine_mean": 0.9999625310301781,
+            "cosine_p05": 0.9998150378465652,
+            "overlap_mean": 0.7272727272727273,
+            "decoded_values_mean": 91.75
+          },
+          "24": {
+            "samples": 8,
+            "cosine_mean": 0.9999790489673615,
+            "cosine_p05": 0.9999147981405258,
+            "overlap_mean": 0.7272727272727273,
+            "decoded_values_mean": 92.75
+          }
+        }
+      }
+    }
+  },
+  "thresholds": {
+    "ppl_delta_abs_pct_max": 3.0,
+    "logit_cosine_p05_min": 0.995,
+    "kl_p95_max": 0.05,
+    "decoded_keys_for_ranking_required": 0
+  },
+  "passed": false,
+  "elapsed_s": 233.48551225662231,
+  "claim_boundary": "Actual model forward pass patched at LlamaAttention after RoPE and before o_proj. Candidate ranking uses quantized key scores without full-key decode; selected keys and values are used only for exact selected softmax/output. Python implementation is quality-only, not speed evidence."
+}

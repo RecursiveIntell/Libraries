@@ -4,6 +4,15 @@ All notable changes to `quant-governor` are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Added policy-tiered embedding governance for `Hyperquant`:
+  - `storage_efficient` mode allows lattice routing on medium-to-large embeddings when budget permits.
+  - `low_latency` mode avoids lattice quantization for embeddings and prefers `Turbo` at low-latency thresholds.
+  - `accuracy_oriented` mode disables `Hyperquant` routing.
+- Embedding routing now enforces policy-level degradation budget ceilings before selecting
+  lossy codecs, ensuring `max_degradation` is respected.
+
 ## [0.1.0] — 2026-06-02
 
 Initial crates.io release.

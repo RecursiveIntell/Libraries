@@ -76,6 +76,8 @@ where
             CodecId::Polar => Ok(T::from(data.to_vec())),
             #[cfg(feature = "qjl")]
             CodecId::Qjl => Ok(T::from(data.to_vec())),
+            // PerDim is asymmetric: codes need the scorer, not full reconstruction.
+            CodecId::PerDim => Ok(T::from(data.to_vec())),
             #[cfg(not(any(
                 feature = "turbo",
                 feature = "fib",
@@ -99,7 +101,16 @@ pub fn select_codec(
     request: GovernanceRequest,
 ) -> Result<CodecId, quant_governor::error::GovernorError> {
     let decision = evaluate(request, policy)?;
-    Ok(match decision.codec {
+    Ok(codec_profile_to_codec_id(decision.codec))
+}
+
+/// Map policy-level codec profiles onto runtime codecs.
+///
+/// Profiles without a symmetric runtime implementation deliberately fall back to
+/// `Uncompressed` instead of pretending a codec exists. This keeps governance
+/// decisions safe while new profiles are being researched or wired downstream.
+fn codec_profile_to_codec_id(profile: quant_governor::CodecProfile) -> CodecId {
+    match profile {
         quant_governor::CodecProfile::Raw => CodecId::Uncompressed,
         quant_governor::CodecProfile::Q8 => CodecId::Uncompressed, // Q8 not yet implemented
         quant_governor::CodecProfile::Q4 => CodecId::Uncompressed, // Q4 not yet implemented
@@ -107,7 +118,8 @@ pub fn select_codec(
         quant_governor::CodecProfile::Fib => CodecId::FibQuant,
         quant_governor::CodecProfile::Polar => CodecId::Polar,
         quant_governor::CodecProfile::Qjl => CodecId::Qjl,
-    })
+        quant_governor::CodecProfile::Hyperquant => CodecId::Uncompressed,
+    }
 }
 
 // ── Profile construction ──
@@ -167,6 +179,9 @@ pub fn encode(codec_id: CodecId, vector: &[f32], seed: u64) -> Result<Vec<u8>, C
         CodecId::Polar => polar_quant_encode(vector, seed),
         #[cfg(feature = "qjl")]
         CodecId::Qjl => qjl_sketch_encode(vector, seed),
+        // PerDim encode is handled by the PerDimScorer, not this dispatch.
+        // Pass-through raw bytes as asymmetric codec.
+        CodecId::PerDim => Ok(bytemuck::cast_slice::<f32, u8>(vector).to_vec()),
         #[cfg(not(any(feature = "turbo", feature = "fib", feature = "polar", feature = "qjl")))]
         _ => Err(CompressionError::EncodeFailed(
             "no codec features enabled".to_string(),
@@ -199,6 +214,8 @@ pub fn decode(codec_id: CodecId, compressed: &[u8]) -> Result<Vec<u8>, Decompres
         CodecId::Polar => Ok(compressed.to_vec()),
         #[cfg(feature = "qjl")]
         CodecId::Qjl => Ok(compressed.to_vec()),
+        // PerDim is asymmetric: pass-through (use scorer for similarity).
+        CodecId::PerDim => Ok(compressed.to_vec()),
         #[cfg(not(any(feature = "turbo", feature = "fib", feature = "polar", feature = "qjl")))]
         _ => Err(DecompressError::DecodeFailed(
             "no codec features enabled".to_string(),
@@ -559,4 +576,32 @@ mod tests {
         let decoded = decode(CodecId::Qjl, &encoded).unwrap();
         assert_eq!(encoded, decoded, "qjl decode must be identity");
     }
+    #[test]
+    fn hyperquant_profile_falls_back_until_runtime_codec_exists() {
+        assert_eq!(
+            codec_profile_to_codec_id(quant_governor::CodecProfile::Hyperquant),
+            CodecId::Uncompressed
+        );
+    }
+
+    #[test]
+    fn implemented_policy_profiles_keep_their_runtime_codecs() {
+        assert_eq!(
+            codec_profile_to_codec_id(quant_governor::CodecProfile::Turbo),
+            CodecId::TurboQuant
+        );
+        assert_eq!(
+            codec_profile_to_codec_id(quant_governor::CodecProfile::Fib),
+            CodecId::FibQuant
+        );
+        assert_eq!(
+            codec_profile_to_codec_id(quant_governor::CodecProfile::Polar),
+            CodecId::Polar
+        );
+        assert_eq!(
+            codec_profile_to_codec_id(quant_governor::CodecProfile::Qjl),
+            CodecId::Qjl
+        );
+    }
+
 }

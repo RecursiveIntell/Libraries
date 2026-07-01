@@ -13,11 +13,13 @@
 
 mod codec_dispatch;
 mod compressed_search_path;
+mod compressed_scorer_adapter;
 mod error;
 mod exact_fallback_adapter;
 
 pub use codec_dispatch::{build_adapter, decode, encode, select_codec, CodecDispatch};
 pub use compressed_search_path::CompressedSearchPath;
+pub use compressed_scorer_adapter::{CompressedScorerAdapter, ScoredCompressedCandidate};
 pub use error::{CompressionError, DecompressError};
 pub use exact_fallback_adapter::ExactFallbackAdapter;
 
@@ -37,6 +39,8 @@ pub enum CodecId {
     Polar,
     /// QJL random-projection sketch (asymmetric inner-product).
     Qjl,
+    /// Per-dimension uniform quantization (asymmetric min/max, unit-normalized).
+    PerDim,
     /// Uncompressed representation (identity pass-through).
     Uncompressed,
 }
@@ -55,6 +59,7 @@ impl std::fmt::Display for CodecId {
             Self::FibQuant => write!(f, "fib_quant"),
             Self::Polar => write!(f, "polar"),
             Self::Qjl => write!(f, "qjl"),
+            Self::PerDim => write!(f, "per_dim"),
             Self::Uncompressed => write!(f, "uncompressed"),
         }
     }

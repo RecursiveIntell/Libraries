@@ -20,6 +20,7 @@
 //! | [`parse_number`] | Extract a numeric value |
 //! | [`parse_number_in_range`] | Extract a bounded numeric value |
 //! | [`parse_text`] | Clean text extraction |
+//! | [`parse_cypher_block`] | Extract a read-only Cypher query |
 //! | `parse_yaml` | Extract typed YAML (feature: `yaml`) |
 //!
 //! ## Traced Variants
@@ -51,6 +52,7 @@
 //! | [`try_repair_json`] | Fix common LLM JSON errors |
 
 pub mod choice;
+pub mod cypher;
 pub mod error;
 pub mod extract;
 pub mod json;
@@ -65,6 +67,7 @@ pub mod yaml;
 
 // Re-export all public functions at module level
 pub use choice::{parse_choice, parse_choice_with_trace};
+pub use cypher::parse_cypher_block;
 pub use error::{ParseError, ParseOptions, ParseTrace};
 pub use extract::{preprocess, strip_think_tags};
 pub use json::{parse_json, parse_json_value, parse_json_value_with_trace, parse_json_with_trace};

@@ -3,7 +3,7 @@
 //! These tests verify behavior at scale: bulk ingestion throughput,
 //! search latency at various data sizes, and concurrent access safety.
 //!
-//! Run with: cargo test --all-features -- scale_test -- --ignored
+//! Run with: SEMANTIC_MEMORY_RUN_SCALE_TESTS=1 cargo test --all-features --test scale_test
 
 #![cfg(all(feature = "usearch-backend", feature = "candle-embedder"))]
 #![allow(clippy::expect_used)]
@@ -13,6 +13,14 @@ use semantic_memory::{
 };
 use std::sync::Arc;
 use tempfile::TempDir;
+
+const LIVE_SCALE_TESTS_ENABLED_ENV: &str = "SEMANTIC_MEMORY_RUN_SCALE_TESTS";
+
+fn run_scale_tests() -> bool {
+    std::env::var(LIVE_SCALE_TESTS_ENABLED_ENV)
+        .ok()
+        .is_some_and(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+}
 
 fn open_store(tmp: &TempDir) -> MemoryStore {
     let config = MemoryConfig {
@@ -32,8 +40,11 @@ fn open_store(tmp: &TempDir) -> MemoryStore {
 }
 
 #[tokio::test]
-#[ignore]
 async fn bulk_ingestion_100_facts() {
+    if !run_scale_tests() {
+        eprintln!("Skipping scale test; set {LIVE_SCALE_TESTS_ENABLED_ENV}=1 to enable");
+        return;
+    }
     let tmp = TempDir::new().expect("tempdir");
     let store = open_store(&tmp);
 
@@ -81,8 +92,11 @@ async fn bulk_ingestion_100_facts() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn concurrent_search_and_add_4_threads() {
+    if !run_scale_tests() {
+        eprintln!("Skipping scale test; set {LIVE_SCALE_TESTS_ENABLED_ENV}=1 to enable");
+        return;
+    }
     let tmp = TempDir::new().expect("tempdir");
     let store = Arc::new(open_store(&tmp));
 

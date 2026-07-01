@@ -6,6 +6,23 @@ use serde::{Deserialize, Serialize};
 use crate::degradation::DegradationReceipt;
 use crate::receipt::ExactFallbackReceipt;
 
+/// Receipts capturing policy-facing admissibility and rationale decisions.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GovernanceDecisionReceipt {
+    /// Name of policy used for routing
+    pub policy_name: String,
+    /// Content type that triggered the policy branch
+    pub content_type: String,
+    /// Admissibility class from the request
+    pub admissibility: String,
+    /// Human-readable rationale for this codec choice
+    pub rationale: String,
+    /// Profiles blocked by this policy branch
+    pub blocked_profiles: Vec<CodecProfile>,
+    /// Candidate profiles considered for this branch
+    pub candidate_profiles: Vec<CodecProfile>,
+}
+
 /// Codec profiles available for governance selection.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -24,8 +41,9 @@ pub enum CodecProfile {
     Polar,
     /// QJL random-projection sketch (asymmetric; fixed-size inner-product estimator)
     Qjl,
+    /// HyperQuant lattice-based codec (symmetric; reconstructs original vector)
+    Hyperquant,
 }
-
 impl CodecProfile {
     /// Returns the default degradation threshold for this profile.
     pub fn default_degradation_threshold(&self) -> f64 {
@@ -37,6 +55,7 @@ impl CodecProfile {
             CodecProfile::Fib => 0.03,
             CodecProfile::Polar => 0.06,
             CodecProfile::Qjl => 0.04,
+            CodecProfile::Hyperquant => 0.07,
         }
     }
 
@@ -70,6 +89,10 @@ impl CodecProfile {
             // For 768-dim raw = 3072, qjl = 120, ratio ≈ 25.6.
             // We report a conservative 8.0 to avoid overpromising.
             CodecProfile::Qjl => 8.0,
+            // HyperQuant uses lattice quantization and optional entropy coding.
+            // Compression ratio depends on dimension, data stats, and chosen
+            // lattice; report a conservative default of 2.75.
+            CodecProfile::Hyperquant => 2.75,
         }
     }
 }
@@ -84,6 +107,7 @@ impl std::fmt::Display for CodecProfile {
             CodecProfile::Fib => write!(f, "fib"),
             CodecProfile::Polar => write!(f, "polar"),
             CodecProfile::Qjl => write!(f, "qjl"),
+            CodecProfile::Hyperquant => write!(f, "hyperquant"),
         }
     }
 }
@@ -114,7 +138,17 @@ pub enum CodecReceipt {
     /// Degradation receipt when moving between non-raw profiles
     Degradation(DegradationReceipt),
 
-    /// Direct encoding without fallback
+    /// Governance receipt with policy rationale for a non-fallback routing decision
+    Governance {
+        /// Timestamp of decision
+        timestamp: DateTime<Utc>,
+        /// Profile selected
+        profile: CodecProfile,
+        /// Policy rationale and admissibility trace
+        governance: GovernanceDecisionReceipt,
+    },
+
+    /// Direct encoding without fallback or explicit governance trace
     Direct {
         /// Timestamp of decision
         timestamp: DateTime<Utc>,
@@ -133,6 +167,24 @@ impl CodecDecision {
             receipt: CodecReceipt::Direct {
                 timestamp: Utc::now(),
                 profile: codec,
+            },
+        }
+    }
+
+    /// Create a direct codec decision with governance rationale.
+    pub fn with_governance(
+        codec: CodecProfile,
+        degradation_budget: f64,
+        governance: GovernanceDecisionReceipt,
+    ) -> Self {
+        Self {
+            codec,
+            exact_fallback: false,
+            degradation_budget,
+            receipt: CodecReceipt::Governance {
+                timestamp: Utc::now(),
+                profile: codec,
+                governance,
             },
         }
     }
@@ -206,5 +258,6 @@ mod tests {
         assert_eq!(CodecProfile::Raw.estimated_compression_ratio(), 1.0);
         assert_eq!(CodecProfile::Q4.estimated_compression_ratio(), 4.0);
         assert_eq!(CodecProfile::Turbo.estimated_compression_ratio(), 3.0);
+        assert_eq!(CodecProfile::Hyperquant.estimated_compression_ratio(), 2.75);
     }
 }

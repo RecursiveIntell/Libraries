@@ -1,0 +1,222 @@
+{
+  "schema_version": "compressed_attention_forward_ppl_v1",
+  "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "corpus": "wikitext-2",
+  "n_tokens": 64,
+  "ppl_frac": 0.3,
+  "eval_window": [
+    44,
+    63
+  ],
+  "top_k": 64,
+  "recent_guard": 8,
+  "quant_bits": 4,
+  "device": "cuda",
+  "baseline_ppl": 11.23927165992014,
+  "compressed_attention_ppl": 11.233372616650932,
+  "delta_ppl_pct": -0.05248599239970687,
+  "baseline_forward_seconds": 0.26453614234924316,
+  "compressed_forward_seconds": 46.88773036003113,
+  "logit_cosine_mean": 0.9999988079071045,
+  "logit_cosine_p05": 0.9999952256679535,
+  "kl_mean": 1.1941283446503803e-05,
+  "kl_p95": 3.135684528388081e-05,
+  "max_abs_logit_delta_mean": 0.03178967908024788,
+  "max_abs_logit_delta_p95": 0.0630859375,
+  "argmax_match_rate": 1.0,
+  "target_logit_abs_delta_mean": 0.005852950271219015,
+  "target_logit_abs_delta_p95": 0.015625,
+  "attention": {
+    "samples": 49152,
+    "decoded_keys_for_ranking": 0,
+    "decoded_selected_keys_mean": 64,
+    "decoded_selected_keys_p95": 64.0,
+    "decoded_values_mean": 64,
+    "decoded_values_p95": 64.0,
+    "attention_output_cosine_mean": 1.0000000081745384,
+    "attention_output_cosine_p05": 0.9999998807907104,
+    "attention_mse_mean": 2.6927467948102662e-11,
+    "attention_mse_p95": 0.0,
+    "attention_topk_overlap_mean": 1.0,
+    "attention_topk_overlap_p05": 1.0,
+    "per_layer": {
+      "0": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000093714334,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "1": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000092259143,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "2": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000096915755,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "3": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000078289304,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "4": {
+        "samples": 2048,
+        "cosine_mean": 1.000000006344635,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "5": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000064028427,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "6": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000066065695,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "7": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000064028427,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "8": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000058789738,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "9": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000091386028,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "10": {
+        "samples": 2048,
+        "cosine_mean": 1.000000006170012,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "11": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000057625584,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "12": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000076252036,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "13": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000100408215,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "14": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000098370947,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "15": {
+        "samples": 2048,
+        "cosine_mean": 1.000000009458745,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "16": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000081199687,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "17": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000093423296,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "18": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000135332812,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "19": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000083236955,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "20": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000080326572,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "21": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000102445483,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "22": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000050058588,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      },
+      "23": {
+        "samples": 2048,
+        "cosine_mean": 1.0000000077998266,
+        "cosine_p05": 0.9999998807907104,
+        "overlap_mean": 1.0,
+        "decoded_values_mean": 64
+      }
+    }
+  },
+  "thresholds": {
+    "ppl_delta_abs_pct_max": 3.0,
+    "logit_cosine_p05_min": 0.995,
+    "kl_p95_max": 0.05,
+    "decoded_keys_for_ranking_required": 0
+  },
+  "passed": true,
+  "elapsed_s": 52.97290015220642,
+  "claim_boundary": "Actual model forward pass patched at LlamaAttention after RoPE and before o_proj. Candidate ranking uses quantized key scores without full-key decode; selected keys and values are used only for exact selected softmax/output. Python implementation is quality-only, not speed evidence."
+}

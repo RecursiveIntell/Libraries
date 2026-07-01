@@ -1,0 +1,438 @@
+{
+  "schema_version": "real_cache_compressed_attention_v1",
+  "cache": "bench/ppl/smollm2-1.7b/wikitext-2/compressed-topk-gate-256/cache_oracle.pt",
+  "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "seq_len": 256,
+  "layers_evaluated": 24,
+  "top_k": 64,
+  "recent_guard": 16,
+  "quant_bits": 4,
+  "samples": 6144,
+  "decoded_keys": 0,
+  "decoded_values_mean": 67.66259765625,
+  "decoded_values_p95": 73.0,
+  "attention_output_cosine_mean": 0.9996757385815727,
+  "attention_output_cosine_p05": 0.9999186247587204,
+  "attention_mse_mean": 1.8636054309552297e-05,
+  "attention_mse_p95": 4.488884314923757e-05,
+  "attention_topk_overlap_mean": 0.9405695597330729,
+  "attention_topk_overlap_p05": 0.875,
+  "latency_full_attention_us_p50": 96.0394991125213,
+  "latency_full_attention_us_p95": 139.19530083512655,
+  "latency_topk_decode_us_p50": 354.705998688587,
+  "latency_topk_decode_us_p95": 474.73184968112037,
+  "raw_key_bytes_fp16": 25165824,
+  "compressed_key_bytes_estimated": 7077888,
+  "key_compression_ratio_estimated": 3.5555555555555554,
+  "thresholds": {
+    "attention_output_cosine_p05_min": 0.995,
+    "attention_topk_overlap_mean_min": 0.8,
+    "decoded_keys_required": 0
+  },
+  "passed": true,
+  "failure_count": 59,
+  "failures_sample": [
+    {
+      "layer": 0,
+      "head": 2,
+      "pos": 200,
+      "cosine": 0.9783958196640015,
+      "topk_overlap": 0.953125,
+      "decoded_values": 77
+    },
+    {
+      "layer": 0,
+      "head": 2,
+      "pos": 228,
+      "cosine": 0.9837842583656311,
+      "topk_overlap": 0.96875,
+      "decoded_values": 72
+    },
+    {
+      "layer": 0,
+      "head": 3,
+      "pos": 200,
+      "cosine": 0.9922720789909363,
+      "topk_overlap": 0.953125,
+      "decoded_values": 75
+    },
+    {
+      "layer": 0,
+      "head": 3,
+      "pos": 228,
+      "cosine": 0.984700620174408,
+      "topk_overlap": 0.96875,
+      "decoded_values": 71
+    },
+    {
+      "layer": 0,
+      "head": 4,
+      "pos": 119,
+      "cosine": 0.9881303906440735,
+      "topk_overlap": 0.96875,
+      "decoded_values": 64
+    },
+    {
+      "layer": 0,
+      "head": 4,
+      "pos": 146,
+      "cosine": 0.9893704056739807,
+      "topk_overlap": 0.984375,
+      "decoded_values": 73
+    },
+    {
+      "layer": 0,
+      "head": 4,
+      "pos": 200,
+      "cosine": 0.9696974754333496,
+      "topk_overlap": 0.984375,
+      "decoded_values": 76
+    },
+    {
+      "layer": 0,
+      "head": 4,
+      "pos": 228,
+      "cosine": 0.9729752540588379,
+      "topk_overlap": 0.9375,
+      "decoded_values": 71
+    },
+    {
+      "layer": 0,
+      "head": 4,
+      "pos": 255,
+      "cosine": 0.9927149415016174,
+      "topk_overlap": 0.984375,
+      "decoded_values": 71
+    },
+    {
+      "layer": 0,
+      "head": 7,
+      "pos": 200,
+      "cosine": 0.9669314026832581,
+      "topk_overlap": 1.0,
+      "decoded_values": 78
+    },
+    {
+      "layer": 0,
+      "head": 7,
+      "pos": 228,
+      "cosine": 0.9687806963920593,
+      "topk_overlap": 0.96875,
+      "decoded_values": 72
+    },
+    {
+      "layer": 0,
+      "head": 10,
+      "pos": 119,
+      "cosine": 0.9784224033355713,
+      "topk_overlap": 0.984375,
+      "decoded_values": 72
+    },
+    {
+      "layer": 0,
+      "head": 10,
+      "pos": 146,
+      "cosine": 0.9943054914474487,
+      "topk_overlap": 0.984375,
+      "decoded_values": 72
+    },
+    {
+      "layer": 0,
+      "head": 11,
+      "pos": 119,
+      "cosine": 0.9786455035209656,
+      "topk_overlap": 0.984375,
+      "decoded_values": 66
+    },
+    {
+      "layer": 0,
+      "head": 11,
+      "pos": 200,
+      "cosine": 0.991233229637146,
+      "topk_overlap": 0.953125,
+      "decoded_values": 76
+    },
+    {
+      "layer": 0,
+      "head": 11,
+      "pos": 228,
+      "cosine": 0.9874697327613831,
+      "topk_overlap": 0.953125,
+      "decoded_values": 70
+    },
+    {
+      "layer": 0,
+      "head": 14,
+      "pos": 119,
+      "cosine": 0.9772972464561462,
+      "topk_overlap": 0.984375,
+      "decoded_values": 72
+    },
+    {
+      "layer": 0,
+      "head": 15,
+      "pos": 119,
+      "cosine": 0.8768349289894104,
+      "topk_overlap": 1.0,
+      "decoded_values": 70
+    },
+    {
+      "layer": 0,
+      "head": 15,
+      "pos": 200,
+      "cosine": 0.9694059491157532,
+      "topk_overlap": 0.953125,
+      "decoded_values": 77
+    },
+    {
+      "layer": 0,
+      "head": 15,
+      "pos": 228,
+      "cosine": 0.9295667409896851,
+      "topk_overlap": 0.984375,
+      "decoded_values": 70
+    },
+    {
+      "layer": 0,
+      "head": 16,
+      "pos": 119,
+      "cosine": 0.4091813266277313,
+      "topk_overlap": 1.0,
+      "decoded_values": 70
+    },
+    {
+      "layer": 0,
+      "head": 16,
+      "pos": 255,
+      "cosine": 0.9901436567306519,
+      "topk_overlap": 1.0,
+      "decoded_values": 74
+    },
+    {
+      "layer": 0,
+      "head": 17,
+      "pos": 200,
+      "cosine": 0.9904426336288452,
+      "topk_overlap": 1.0,
+      "decoded_values": 75
+    },
+    {
+      "layer": 0,
+      "head": 17,
+      "pos": 228,
+      "cosine": 0.9878241419792175,
+      "topk_overlap": 0.984375,
+      "decoded_values": 73
+    },
+    {
+      "layer": 0,
+      "head": 18,
+      "pos": 146,
+      "cosine": 0.9922112822532654,
+      "topk_overlap": 0.953125,
+      "decoded_values": 74
+    },
+    {
+      "layer": 0,
+      "head": 18,
+      "pos": 200,
+      "cosine": 0.9763668775558472,
+      "topk_overlap": 0.984375,
+      "decoded_values": 76
+    },
+    {
+      "layer": 0,
+      "head": 18,
+      "pos": 228,
+      "cosine": 0.9785605669021606,
+      "topk_overlap": 0.984375,
+      "decoded_values": 72
+    },
+    {
+      "layer": 0,
+      "head": 19,
+      "pos": 119,
+      "cosine": 0.849906861782074,
+      "topk_overlap": 1.0,
+      "decoded_values": 72
+    },
+    {
+      "layer": 0,
+      "head": 20,
+      "pos": 228,
+      "cosine": 0.9938490986824036,
+      "topk_overlap": 0.984375,
+      "decoded_values": 75
+    },
+    {
+      "layer": 0,
+      "head": 21,
+      "pos": 200,
+      "cosine": 0.8730989694595337,
+      "topk_overlap": 0.96875,
+      "decoded_values": 78
+    },
+    {
+      "layer": 0,
+      "head": 21,
+      "pos": 228,
+      "cosine": 0.8540375828742981,
+      "topk_overlap": 0.96875,
+      "decoded_values": 73
+    },
+    {
+      "layer": 0,
+      "head": 22,
+      "pos": 119,
+      "cosine": 0.9928999543190002,
+      "topk_overlap": 0.984375,
+      "decoded_values": 70
+    },
+    {
+      "layer": 0,
+      "head": 30,
+      "pos": 119,
+      "cosine": 0.9794007539749146,
+      "topk_overlap": 0.9375,
+      "decoded_values": 65
+    },
+    {
+      "layer": 0,
+      "head": 31,
+      "pos": 200,
+      "cosine": 0.9715061187744141,
+      "topk_overlap": 0.96875,
+      "decoded_values": 78
+    },
+    {
+      "layer": 0,
+      "head": 31,
+      "pos": 228,
+      "cosine": 0.9738381505012512,
+      "topk_overlap": 0.9375,
+      "decoded_values": 72
+    },
+    {
+      "layer": 1,
+      "head": 6,
+      "pos": 173,
+      "cosine": 0.9942145943641663,
+      "topk_overlap": 0.875,
+      "decoded_values": 70
+    },
+    {
+      "layer": 1,
+      "head": 6,
+      "pos": 200,
+      "cosine": 0.9889357686042786,
+      "topk_overlap": 0.875,
+      "decoded_values": 69
+    },
+    {
+      "layer": 1,
+      "head": 6,
+      "pos": 228,
+      "cosine": 0.9905933737754822,
+      "topk_overlap": 0.828125,
+      "decoded_values": 69
+    },
+    {
+      "layer": 1,
+      "head": 11,
+      "pos": 255,
+      "cosine": 0.9992625117301941,
+      "topk_overlap": 0.78125,
+      "decoded_values": 72
+    },
+    {
+      "layer": 1,
+      "head": 23,
+      "pos": 228,
+      "cosine": 0.9999809265136719,
+      "topk_overlap": 0.796875,
+      "decoded_values": 71
+    },
+    {
+      "layer": 2,
+      "head": 10,
+      "pos": 228,
+      "cosine": 0.9943317174911499,
+      "topk_overlap": 0.921875,
+      "decoded_values": 69
+    },
+    {
+      "layer": 2,
+      "head": 13,
+      "pos": 228,
+      "cosine": 0.9996240139007568,
+      "topk_overlap": 0.78125,
+      "decoded_values": 69
+    },
+    {
+      "layer": 2,
+      "head": 25,
+      "pos": 255,
+      "cosine": 0.9995028376579285,
+      "topk_overlap": 0.765625,
+      "decoded_values": 68
+    },
+    {
+      "layer": 5,
+      "head": 12,
+      "pos": 200,
+      "cosine": 0.999998152256012,
+      "topk_overlap": 0.78125,
+      "decoded_values": 64
+    },
+    {
+      "layer": 7,
+      "head": 22,
+      "pos": 255,
+      "cosine": 1.0,
+      "topk_overlap": 0.796875,
+      "decoded_values": 67
+    },
+    {
+      "layer": 8,
+      "head": 21,
+      "pos": 255,
+      "cosine": 0.9948620796203613,
+      "topk_overlap": 0.890625,
+      "decoded_values": 68
+    },
+    {
+      "layer": 9,
+      "head": 6,
+      "pos": 255,
+      "cosine": 0.9928408265113831,
+      "topk_overlap": 0.90625,
+      "decoded_values": 71
+    },
+    {
+      "layer": 10,
+      "head": 5,
+      "pos": 255,
+      "cosine": 0.9848589897155762,
+      "topk_overlap": 0.796875,
+      "decoded_values": 68
+    },
+    {
+      "layer": 11,
+      "head": 17,
+      "pos": 255,
+      "cosine": 0.9911454916000366,
+      "topk_overlap": 0.875,
+      "decoded_values": 71
+    },
+    {
+      "layer": 20,
+      "head": 3,
+      "pos": 228,
+      "cosine": 0.9947134256362915,
+      "topk_overlap": 0.890625,
+      "decoded_values": 72
+    }
+  ],
+  "elapsed_s": 6.921972274780273,
+  "claim_boundary": "Real model KV cache quality gate. Uses cached key vectors as query probes; does not yet replace model attention or measure PPL/logit drift."
+}

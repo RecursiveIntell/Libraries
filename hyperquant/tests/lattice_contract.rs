@@ -86,15 +86,12 @@ fn a2_beats_or_matches_z1_on_triangular_lattice_point() {
 }
 
 #[test]
-fn d4_and_e8_are_explicitly_unsupported_not_fake_implemented() {
+fn e8_is_explicitly_unsupported_not_fake_implemented() {
     let input = [1.0, 2.0, 3.0, 4.0];
     let d4 = HyperQuantConfig::new(LatticeKind::D4, 1.0).quantize(&input);
     let e8 = HyperQuantConfig::new(LatticeKind::E8, 1.0).quantize(&input);
 
-    assert_eq!(
-        d4.unwrap_err(),
-        HyperQuantError::UnsupportedLattice(LatticeKind::D4)
-    );
+    assert!(d4.is_ok());
     assert_eq!(
         e8.unwrap_err(),
         HyperQuantError::UnsupportedLattice(LatticeKind::E8)

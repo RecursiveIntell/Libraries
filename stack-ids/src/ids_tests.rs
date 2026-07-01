@@ -918,6 +918,51 @@ fn horizon_identity_json_format_is_stable() {
     let decoded: HorizonIdentity = serde_json::from_str(&encoded).unwrap();
     assert_eq!(decoded, identity);
 }
+mod perspective_key_tests {
+    use super::*;
+
+    #[test]
+    fn perspective_key_trims_whitespace() {
+        let k = PerspectiveKey::new("  user  ");
+        assert_eq!(k.as_str(), "user");
+        assert_eq!(k.to_string(), "user");
+    }
+
+    #[test]
+    fn perspective_key_empty_becomes_default() {
+        let k = PerspectiveKey::new("");
+        assert_eq!(k.as_str(), "default");
+    }
+
+    #[test]
+    fn perspective_key_whitespace_only_becomes_default() {
+        let k = PerspectiveKey::new("   ");
+        assert_eq!(k.as_str(), "default");
+    }
+
+    #[test]
+    fn perspective_key_from_str() {
+        let k = PerspectiveKey::from("assistant");
+        assert_eq!(k.as_str(), "assistant");
+    }
+
+    #[test]
+    fn perspective_key_serde_roundtrip() {
+        let k = PerspectiveKey::new("research");
+        let json = serde_json::to_string(&k).unwrap();
+        assert_eq!(json, "\"research\"");
+        let back: PerspectiveKey = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, k);
+    }
+
+    #[test]
+    fn perspective_key_ordering() {
+        let a = PerspectiveKey::new("alpha");
+        let b = PerspectiveKey::new("beta");
+        assert!(a < b);
+    }
+}
+
 mod v25_profile_runtime_identity_tests {
     use super::*;
     use serde::{Deserialize, Serialize};

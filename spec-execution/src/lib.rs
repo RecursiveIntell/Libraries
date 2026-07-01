@@ -27,6 +27,31 @@ pub const HUMAN_VETO_BUNDLE_V1_SCHEMA: &str = "human_veto_bundle_v1";
 pub const META_CHALLENGE_BUNDLE_V1_SCHEMA: &str = "meta_challenge_bundle_v1";
 pub const SELF_HOSTING_BUILD_RECEIPT_V1_SCHEMA: &str = "self_hosting_build_receipt_v1";
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FormalCheckStatus {
+    Passed,
+    Failed,
+    Missing,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FormalCheckReceiptV1 {
+    pub check_name: String,
+    pub command: Option<String>,
+    pub status: FormalCheckStatus,
+    pub required: bool,
+}
+
+impl FormalCheckReceiptV1 {
+    pub fn gate_allows_progress(&self) -> bool {
+        !(self.required
+            && matches!(
+                self.status,
+                FormalCheckStatus::Failed | FormalCheckStatus::Missing
+            ))
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct SpecBundleV1 {
     pub schema_version: String,
@@ -378,5 +403,51 @@ pub fn establish_veto_challenge_baseline(
             "self-hosting status does not override veto, challenge, or rollback obligations".into(),
         ],
         generated_at: generated_at.into(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn formal_check_required_failed_or_missing_blocks_progress() {
+        let failed = FormalCheckReceiptV1 {
+            check_name: "lean-proof".into(),
+            command: Some("lake build".into()),
+            status: FormalCheckStatus::Failed,
+            required: true,
+        };
+        let missing = FormalCheckReceiptV1 {
+            status: FormalCheckStatus::Missing,
+            ..failed.clone()
+        };
+
+        assert!(!failed.gate_allows_progress());
+        assert!(!missing.gate_allows_progress());
+    }
+
+    #[test]
+    fn formal_check_passed_or_optional_checks_allow_progress() {
+        let passed = FormalCheckReceiptV1 {
+            check_name: "model-check".into(),
+            command: None,
+            status: FormalCheckStatus::Passed,
+            required: true,
+        };
+        let optional_failed = FormalCheckReceiptV1 {
+            check_name: "optional-theorem-prover".into(),
+            command: Some("prove --best-effort".into()),
+            status: FormalCheckStatus::Failed,
+            required: false,
+        };
+        let optional_missing = FormalCheckReceiptV1 {
+            status: FormalCheckStatus::Missing,
+            ..optional_failed.clone()
+        };
+
+        assert!(passed.gate_allows_progress());
+        assert!(optional_failed.gate_allows_progress());
+        assert!(optional_missing.gate_allows_progress());
     }
 }

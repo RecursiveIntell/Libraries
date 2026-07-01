@@ -18,13 +18,105 @@ use tokio::task::block_in_place;
 
 use crate::bridge::MemoryBridge;
 
+/// Capability gate for HTTP endpoints that mutate or destroy local memory state.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum HttpAdminGate {
+    /// Explicit unsafe mode for trusted test/dev deployments only.
+    UnsafeAllowAll,
+    /// Require an admin token. If `token` is `None`, all destructive endpoints are denied.
+    DenyUnlessAuthorized { token: Option<String> },
+}
+
+impl HttpAdminGate {
+    /// Load the HTTP admin gate from environment.
+    ///
+    /// Defaults safe: destructive endpoints are denied unless either
+    /// `SEMANTIC_MEMORY_MCP_HTTP_ADMIN_TOKEN` is set and supplied by clients, or
+    /// `SEMANTIC_MEMORY_MCP_HTTP_UNSAFE_ADMIN=1|true|yes` is set explicitly.
+    pub fn from_env() -> Self {
+        let unsafe_admin = std::env::var("SEMANTIC_MEMORY_MCP_HTTP_UNSAFE_ADMIN")
+            .ok()
+            .map(|v| matches!(v.to_ascii_lowercase().as_str(), "1" | "true" | "yes"))
+            .unwrap_or(false);
+        if unsafe_admin {
+            return Self::UnsafeAllowAll;
+        }
+
+        let token = std::env::var("SEMANTIC_MEMORY_MCP_HTTP_ADMIN_TOKEN")
+            .ok()
+            .filter(|v| !v.trim().is_empty());
+        Self::DenyUnlessAuthorized { token }
+    }
+
+    fn allows(&self, headers: &[(String, String)]) -> bool {
+        match self {
+            Self::UnsafeAllowAll => true,
+            Self::DenyUnlessAuthorized {
+                token: Some(expected),
+            } => {
+                let expected = expected.as_str();
+                headers.iter().any(|(name, value)| {
+                    if name.eq_ignore_ascii_case("authorization") {
+                        value
+                            .strip_prefix("Bearer ")
+                            .map(|supplied| supplied == expected)
+                            .unwrap_or(false)
+                    } else if name.eq_ignore_ascii_case("x-admin-token") {
+                        value == expected
+                    } else {
+                        false
+                    }
+                })
+            }
+            Self::DenyUnlessAuthorized { token: None } => false,
+        }
+    }
+}
+
+fn is_destructive_endpoint(method: &str, path: &str) -> bool {
+    matches!(
+        (method, path),
+        ("POST", "/add")
+            | ("POST", "/add-edge")
+            | ("POST", "/delete-fact")
+            | ("POST", "/record-outcome")
+            | ("POST", "/maintenance/vacuum")
+            | ("POST", "/maintenance/reembed")
+            | ("POST", "/maintenance/reembed-missing")
+            | ("POST", "/maintenance/reconcile")
+            | ("POST", "/maintenance/compact-hnsw")
+            | ("POST", "/maintenance/auto-edge")
+    )
+}
+
+/// Parse an HTTP request body as a JSON Value, using llm-output-parser
+/// when the llm-parser feature is enabled (for robust handling of
+/// potentially malformed agent-submitted input), falling back to
+/// serde_json::from_str.
+fn parse_body_json(body: &str) -> serde_json::Value {
+    #[cfg(feature = "llm-parser")]
+    {
+        llm_output_parser::parse_json_value(body)
+            .unwrap_or_else(|_| serde_json::from_str(body).unwrap_or(serde_json::Value::Null))
+    }
+    #[cfg(not(feature = "llm-parser"))]
+    {
+        serde_json::from_str(body).unwrap_or(serde_json::Value::Null)
+    }
+}
+
 /// Call Ollama to rate each result's relevance to the query (1-5) and sort descending.
 /// Returns a new vec with a `rerank_score` field added to each result object.
 fn rerank_results(
     query: &str,
     results: &[serde_json::Value],
+    llm_url: &str,
     model: &str,
 ) -> Vec<serde_json::Value> {
+    if llm_url.trim().is_empty() || model.trim().is_empty() {
+        return results.to_vec();
+    }
+    let generate_url = format!("{}/api/generate", llm_url.trim_end_matches('/'));
     let client = reqwest::blocking::Client::new();
     let mut scored: Vec<(f64, serde_json::Value)> = results
         .iter()
@@ -41,7 +133,7 @@ fn rerank_results(
                 "options": {"temperature": 0, "num_predict": 1}
             });
             let rating = client
-                .post("http://127.0.0.1:11434/api/generate")
+                .post(&generate_url)
                 .json(&body)
                 .send()
                 .ok()
@@ -69,7 +161,31 @@ fn rerank_results(
         .collect()
 }
 
-pub fn start_http_server(port: u16, bridge: MemoryBridge, handle: Handle) {
+pub fn start_http_server(
+    port: u16,
+    bridge: MemoryBridge,
+    handle: Handle,
+    llm_url: String,
+    llm_model: String,
+) {
+    start_http_server_with_admin_gate(
+        port,
+        bridge,
+        handle,
+        llm_url,
+        llm_model,
+        HttpAdminGate::from_env(),
+    );
+}
+
+pub fn start_http_server_with_admin_gate(
+    port: u16,
+    bridge: MemoryBridge,
+    handle: Handle,
+    llm_url: String,
+    llm_model: String,
+    admin_gate: HttpAdminGate,
+) {
     std::thread::spawn(move || {
         let listener = match TcpListener::bind(("127.0.0.1", port)) {
             Ok(l) => {
@@ -90,8 +206,11 @@ pub fn start_http_server(port: u16, bridge: MemoryBridge, handle: Handle) {
 
             let bridge = bridge.clone();
             let h = handle.clone();
+            let llm_url = llm_url.clone();
+            let llm_model = llm_model.clone();
+            let admin_gate = admin_gate.clone();
             std::thread::spawn(move || {
-                handle_connection(stream, bridge, h);
+                handle_connection(stream, bridge, h, llm_url, llm_model, admin_gate);
             });
         }
     });
@@ -101,6 +220,9 @@ fn handle_connection(
     mut stream: std::net::TcpStream,
     bridge: MemoryBridge,
     handle: Handle,
+    llm_url: String,
+    llm_model: String,
+    admin_gate: HttpAdminGate,
 ) {
     let mut reader = BufReader::new(stream.try_clone().expect("clone"));
     let mut request_line = String::new();
@@ -116,6 +238,7 @@ fn handle_connection(
     let path = parts[1];
 
     let mut content_length = 0;
+    let mut headers: Vec<(String, String)> = Vec::new();
     loop {
         let mut header = String::new();
         if reader.read_line(&mut header).is_err() {
@@ -123,6 +246,9 @@ fn handle_connection(
         }
         if header.trim().is_empty() {
             break;
+        }
+        if let Some((name, value)) = header.trim_end().split_once(':') {
+            headers.push((name.trim().to_string(), value.trim().to_string()));
         }
         if let Some(len_str) = header
             .strip_prefix("Content-Length:")
@@ -138,31 +264,60 @@ fn handle_connection(
     }
     let body_str = String::from_utf8_lossy(&body);
 
+    if is_destructive_endpoint(method, path) && !admin_gate.allows(&headers) {
+        let response = serde_json::json!({
+            "ok": false,
+            "error": "admin authorization required",
+        });
+        write_json_response(&mut stream, "403 Forbidden", &response);
+        return;
+    }
+
     let (status, response) = match (method, path) {
         ("GET", "/health") => (
             "200 OK",
             serde_json::json!({"ok": true, "service": "semantic-memory-mcp"}),
         ),
-        ("POST", "/search") => handle_search(&body_str, &bridge, &handle),
+        ("POST", "/search") => handle_search(&body_str, &bridge, &handle, &llm_url, &llm_model),
         ("POST", "/search-routed") => handle_search_routed(&body_str, &bridge, &handle),
-        ("POST", "/rerank") => handle_rerank(&body_str),
+        #[cfg(feature = "orchestration")]
+        ("POST", "/query-orchestrated") => handle_query_orchestrated(&body_str, &bridge, &handle),
+        ("POST", "/rerank") => handle_rerank(&body_str, &llm_url, &llm_model),
         ("POST", "/stats") => handle_stats(&bridge, &handle),
         ("POST", "/add") => handle_add_fact(&body_str, &bridge, &handle),
+        ("POST", "/add-edge") => handle_add_edge(&body_str, &bridge, &handle),
+        ("POST", "/delete-fact") => handle_delete_fact(&body_str, &bridge, &handle),
         ("POST", "/record-outcome") => handle_record_outcome(&body_str, &bridge, &handle),
         ("GET", "/verify-integrity") => handle_verify_integrity(&bridge, &handle),
         ("POST", "/discord") => handle_discord(&body_str, &bridge, &handle),
         ("POST", "/maintenance/check") => handle_maintenance_check(&bridge, &handle),
         ("POST", "/maintenance/vacuum") => handle_maintenance_vacuum(&bridge, &handle),
         ("POST", "/maintenance/reembed") => handle_maintenance_reembed(&bridge, &handle),
-        ("POST", "/maintenance/reconcile") => handle_maintenance_reconcile(&body_str, &bridge, &handle),
+        ("POST", "/maintenance/reembed-missing") => {
+            handle_maintenance_reembed_missing(&body_str, &bridge, &handle)
+        }
+        ("POST", "/maintenance/reconcile") => {
+            handle_maintenance_reconcile(&body_str, &bridge, &handle)
+        }
         ("POST", "/maintenance/compact-hnsw") => handle_maintenance_compact_hnsw(&bridge, &handle),
+        ("POST", "/maintenance/auto-edge") => {
+            handle_maintenance_auto_edge(&body_str, &bridge, &handle)
+        }
         _ => (
             "404 Not Found",
             serde_json::json!({"error": "not found", "path": path}),
         ),
     };
 
-    let response_str = serde_json::to_string(&response).unwrap_or_default();
+    write_json_response(&mut stream, status, &response);
+}
+
+fn write_json_response(
+    stream: &mut std::net::TcpStream,
+    status: &str,
+    response: &serde_json::Value,
+) {
+    let response_str = serde_json::to_string(response).unwrap_or_default();
     let response_bytes = response_str.as_bytes();
     let http_response = format!(
         "HTTP/1.1 {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
@@ -179,23 +334,26 @@ fn handle_search(
     body: &str,
     bridge: &MemoryBridge,
     handle: &Handle,
+    llm_url: &str,
+    llm_model: &str,
 ) -> (&'static str, serde_json::Value) {
-    let params: serde_json::Value = match serde_json::from_str(body) {
-        Ok(v) => v,
-        Err(e) => {
-            return (
-                "400 Bad Request",
-                serde_json::json!({"ok": false, "error": format!("invalid JSON: {e}")}),
-            )
-        }
-    };
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
 
     let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
     let top_k = params.get("top_k").and_then(|v| v.as_u64()).unwrap_or(5) as usize;
     let namespaces: Option<Vec<String>> = params
         .get("namespaces")
         .and_then(|v| serde_json::from_value(v.clone()).ok());
-    let do_rerank = params.get("rerank").and_then(|v| v.as_bool()).unwrap_or(false);
+    let do_rerank = params
+        .get("rerank")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
 
     if query.is_empty() {
         return (
@@ -221,7 +379,9 @@ fn handle_search(
                 .map(|r| {
                     let namespace = match &r.source {
                         semantic_memory::SearchSource::Fact { namespace, .. } => namespace.clone(),
-                        semantic_memory::SearchSource::Chunk { document_title, .. } => document_title.clone(),
+                        semantic_memory::SearchSource::Chunk { document_title, .. } => {
+                            document_title.clone()
+                        }
                         _ => String::new(),
                     };
                     serde_json::json!({
@@ -235,7 +395,7 @@ fn handle_search(
                 .collect();
 
             let final_results: Vec<serde_json::Value> = if do_rerank && !json_results.is_empty() {
-                rerank_results(query, &json_results, "granite4.1:3b")
+                rerank_results(query, &json_results, &llm_url, &llm_model)
                     .into_iter()
                     .take(top_k)
                     .collect()
@@ -292,19 +452,20 @@ fn handle_search_routed(
     use semantic_memory::integration::plan_execution;
     use semantic_memory::routing::RetrievalRouter;
 
-    let params: serde_json::Value = match serde_json::from_str(body) {
-        Ok(v) => v,
-        Err(e) => {
-            return (
-                "400 Bad Request",
-                serde_json::json!({"ok": false, "error": format!("invalid JSON: {e}")}),
-            )
-        }
-    };
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
 
     let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
     let base_top_k = params.get("top_k").and_then(|v| v.as_u64()).unwrap_or(12) as usize;
-    let query_class = params.get("query_class").and_then(|v| v.as_str()).unwrap_or("A");
+    let query_class = params
+        .get("query_class")
+        .and_then(|v| v.as_str())
+        .unwrap_or("A");
     let namespaces: Option<Vec<String>> = params
         .get("namespaces")
         .and_then(|v| serde_json::from_value(v.clone()).ok());
@@ -312,7 +473,10 @@ fn handle_search_routed(
         .get("contradictions")
         .and_then(|v| serde_json::from_value(v.clone()).ok())
         .unwrap_or_default();
-    let group_by_community = params.get("group_by_community").and_then(|v| v.as_bool()).unwrap_or(false);
+    let group_by_community = params
+        .get("group_by_community")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
 
     if query.is_empty() {
         return (
@@ -402,11 +566,12 @@ fn handle_search_routed(
             if decision.decoder {
                 #[cfg(feature = "full")]
                 {
-                    use semantic_memory::factor_graph::{factors_from_edges, FactorGraph, FactorGraphConfig};
+                    use semantic_memory::factor_graph::{
+                        factors_from_edges, FactorGraph, FactorGraphConfig,
+                    };
 
-                    let graph_edges = block_in_place(|| {
-                        handle.block_on(store.list_all_graph_edges())
-                    });
+                    let graph_edges =
+                        block_in_place(|| handle.block_on(store.list_all_graph_edges()));
 
                     if let Ok(edges) = graph_edges {
                         let raw_edges: Vec<(
@@ -440,8 +605,7 @@ fn handle_search_routed(
                             .map(|r| (r.source.result_id(), r.score))
                             .collect();
                         let factors = factors_from_edges(&raw_edges);
-                        let graph =
-                            FactorGraph::new(&nodes, factors, FactorGraphConfig::default());
+                        let graph = FactorGraph::new(&nodes, factors, FactorGraphConfig::default());
                         let propagated = graph.propagate();
                         let top_beliefs = propagated.top_k(top_k);
 
@@ -485,7 +649,8 @@ fn handle_search_routed(
             // Discord second-order retrieval
             if plan.use_discord {
                 use semantic_memory::discord::DiscordScorer;
-                let direct_ids: Vec<String> = results.iter().map(|r| r.source.result_id()).collect();
+                let direct_ids: Vec<String> =
+                    results.iter().map(|r| r.source.result_id()).collect();
                 let existing_ids: std::collections::HashSet<String> =
                     direct_ids.iter().cloned().collect();
                 let edges_result = block_in_place(|| {
@@ -524,8 +689,33 @@ fn handle_search_routed(
                     let discord_hits = scorer.score(&direct_ids, &edge_refs);
                     for hit in &discord_hits {
                         if !existing_ids.contains(&hit.item_id) {
+                            // Fetch the fact's content directly from the DB.
+                            // get_fact expects a bare UUID (without "fact:" prefix).
+                            let bare_id = hit.item_id.strip_prefix("fact:").unwrap_or(&hit.item_id);
+                            let (content, namespace) = {
+                                let fact_result = handle.block_on(store.get_fact(bare_id));
+                                match fact_result {
+                                    Ok(Some(fact)) => (fact.content, fact.namespace),
+                                    Ok(None) => {
+                                        eprintln!(
+                                            "[discord] get_fact returned None for id={}",
+                                            bare_id
+                                        );
+                                        (String::new(), String::new())
+                                    }
+                                    Err(e) => {
+                                        eprintln!(
+                                            "[discord] get_fact error for id={}: {}",
+                                            bare_id, e
+                                        );
+                                        (String::new(), String::new())
+                                    }
+                                }
+                            };
                             discord_results_payload.push(serde_json::json!({
                                 "result_id": hit.item_id,
+                                "content": content,
+                                "namespace": namespace,
                                 "discord_score": hit.discord_score,
                                 "anchor_ids": hit.anchor_ids,
                                 "relationship_types": hit.relationship_types,
@@ -563,33 +753,23 @@ fn handle_search_routed(
                             member_to_comm.insert(m.clone(), c.id.clone());
                         }
                     }
-                    let mut groups: std::collections::HashMap<
-                        String,
-                        Vec<serde_json::Value>,
-                    > = std::collections::HashMap::new();
+                    let mut groups: std::collections::HashMap<String, Vec<serde_json::Value>> =
+                        std::collections::HashMap::new();
                     let mut ungrouped: Vec<serde_json::Value> = Vec::new();
                     for r in &json_results {
                         if let Some(rid) = r.get("result_id").and_then(|v| v.as_str()) {
                             match member_to_comm.get(rid).cloned() {
-                                Some(cid) => {
-                                    groups.entry(cid).or_default().push(r.clone())
-                                }
+                                Some(cid) => groups.entry(cid).or_default().push(r.clone()),
                                 None => ungrouped.push(r.clone()),
                             }
                         }
                     }
                     let mut map = serde_json::Map::new();
                     for (cid, items) in groups {
-                        map.insert(
-                            format!("community_{cid}"),
-                            serde_json::json!(items),
-                        );
+                        map.insert(format!("community_{cid}"), serde_json::json!(items));
                     }
                     if !ungrouped.is_empty() {
-                        map.insert(
-                            "ungrouped".to_string(),
-                            serde_json::json!(ungrouped),
-                        );
+                        map.insert("ungrouped".to_string(), serde_json::json!(ungrouped));
                     }
                     serde_json::Value::Object(map)
                 } else {
@@ -653,10 +833,155 @@ fn handle_search_routed(
     }
 }
 
-fn handle_stats(
+/// Handle /query-orchestrated: knowledge-runtime powered query with intent
+/// classification, multi-leg route planning, provenance-aware merge, and
+/// degradation reporting. Available when `orchestration` feature is enabled.
+#[cfg(feature = "orchestration")]
+fn handle_query_orchestrated(
+    body: &str,
     bridge: &MemoryBridge,
     handle: &Handle,
 ) -> (&'static str, serde_json::Value) {
+    use knowledge_runtime::adapters::semantic_memory::SemanticMemoryAdapter;
+    use knowledge_runtime::config::RuntimeConfig;
+    use knowledge_runtime::KnowledgeRuntime;
+    use stack_ids::Scope;
+
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
+
+    let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
+    let top_k = params.get("top_k").and_then(|v| v.as_u64()).unwrap_or(12) as usize;
+    let namespace = params
+        .get("namespace")
+        .and_then(|v| v.as_str())
+        .unwrap_or("general");
+    let domain = params.get("domain").and_then(|v| v.as_str());
+    let include_trace = params
+        .get("trace")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(true);
+
+    if query.is_empty() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "missing 'query' field"}),
+        );
+    }
+
+    // Construct KnowledgeRuntime on-demand from the bridge's store.
+    // MemoryStore is Clone (Arc internals), so this is cheap.
+    let adapter = SemanticMemoryAdapter::new(bridge.store.clone());
+    let scope = Scope::new(namespace);
+    let scope = if let Some(d) = domain {
+        scope.with_domain(d)
+    } else {
+        scope
+    };
+    let config = RuntimeConfig {
+        default_scope: Scope::new(namespace),
+        query: knowledge_runtime::config::QueryConfig {
+            max_results_per_leg: top_k,
+            max_route_legs: 4,
+            default_limit: top_k,
+            ..Default::default()
+        },
+        entity: knowledge_runtime::config::EntityConfig::default(),
+        projection: knowledge_runtime::config::ProjectionConfig::default(),
+        strict_temporal: false,
+        strict_scope: false,
+    };
+
+    let runtime = match KnowledgeRuntime::new(config, adapter) {
+        Ok(rt) => rt,
+        Err(e) => {
+            return (
+                "500 Internal Server Error",
+                serde_json::json!({"ok": false, "error": format!("runtime init: {e}")}),
+            )
+        }
+    };
+
+    // Step 1: Classify
+    let classification = runtime.classify(query);
+
+    // Step 2: Plan
+    let route_plan = runtime.plan(query, Some(&scope));
+
+    // Step 3: Execute full pipeline
+    let result =
+        block_in_place(|| handle.block_on(runtime.query_with_trace(query, Some(&scope), None)));
+
+    match result {
+        Ok((results, trace)) => {
+            let json_results: Vec<serde_json::Value> = results
+                .iter()
+                .map(|r| {
+                    let ns = match &r.source {
+                        semantic_memory::SearchSource::Fact { namespace, .. } => namespace.clone(),
+                        semantic_memory::SearchSource::Chunk { document_title, .. } => {
+                            document_title.clone()
+                        }
+                        _ => String::new(),
+                    };
+                    serde_json::json!({
+                        "result_id": r.source.result_id(),
+                        "content": r.content,
+                        "score": r.score,
+                        "cosine_similarity": r.cosine_similarity,
+                        "namespace": ns,
+                        "source_type": match &r.source {
+                            semantic_memory::SearchSource::Fact { .. } => "fact",
+                            semantic_memory::SearchSource::Chunk { .. } => "chunk",
+                            semantic_memory::SearchSource::Message { .. } => "message",
+                            _ => "unknown",
+                        },
+                    })
+                })
+                .collect();
+
+            let trace_json = if include_trace {
+                serde_json::to_value(&trace).unwrap_or(serde_json::Value::Null)
+            } else {
+                serde_json::Value::Null
+            };
+
+            let classification_json = serde_json::json!({
+                "mode": classification.mode.kind(),
+                "confidence": classification.confidence,
+                "reason": classification.reason,
+            });
+
+            let plan_json = serde_json::to_value(&route_plan).unwrap_or(serde_json::Value::Null);
+
+            (
+                "200 OK",
+                serde_json::json!({
+                    "ok": true,
+                    "query": query,
+                    "top_k": top_k,
+                    "results": json_results,
+                    "classification": classification_json,
+                    "route_plan": plan_json,
+                    "trace": trace_json,
+                    "routed": true,
+                    "orchestrated": true,
+                }),
+            )
+        }
+        Err(e) => (
+            "500 Internal Server Error",
+            serde_json::json!({"ok": false, "error": format!("query error: {e}")}),
+        ),
+    }
+}
+
+fn handle_stats(bridge: &MemoryBridge, handle: &Handle) -> (&'static str, serde_json::Value) {
     let store = &bridge.store;
     let result = block_in_place(|| handle.block_on(store.stats()));
     match result {
@@ -667,6 +992,15 @@ fn handle_stats(
                 "facts": stats.total_facts,
                 "documents": stats.total_documents,
                 "chunks": stats.total_chunks,
+                "sessions": stats.total_sessions,
+                "messages": stats.total_messages,
+                "active_graph_edges": stats.active_graph_edges,
+                "invalidated_graph_edges": stats.invalidated_graph_edges,
+                "total_graph_edges": stats.active_graph_edges + stats.invalidated_graph_edges,
+                "facts_missing_embeddings": stats.facts_missing_embeddings,
+                "chunks_missing_embeddings": stats.chunks_missing_embeddings,
+                "embedding_model": stats.embedding_model,
+                "embedding_dimensions": stats.embedding_dimensions,
                 "db_size_mb": (stats.database_size_bytes as f64) / (1024.0 * 1024.0),
             }),
         ),
@@ -677,22 +1011,30 @@ fn handle_stats(
     }
 }
 
-fn handle_rerank(body: &str) -> (&'static str, serde_json::Value) {
-    let params: serde_json::Value = match serde_json::from_str(body) {
-        Ok(v) => v,
-        Err(e) => {
-            return (
-                "400 Bad Request",
-                serde_json::json!({"ok": false, "error": format!("invalid JSON: {e}")}),
-            )
-        }
-    };
+fn handle_rerank(
+    body: &str,
+    default_llm_url: &str,
+    default_model: &str,
+) -> (&'static str, serde_json::Value) {
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
 
     let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
     let model = params
         .get("model")
         .and_then(|v| v.as_str())
-        .unwrap_or("granite4.1:3b");
+        .filter(|s| !s.trim().is_empty())
+        .unwrap_or(default_model);
+    let llm_url = params
+        .get("llm_url")
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.trim().is_empty())
+        .unwrap_or(default_llm_url);
     let results = match params.get("results").and_then(|v| v.as_array()) {
         Some(r) => r.clone(),
         None => {
@@ -710,7 +1052,7 @@ fn handle_rerank(body: &str) -> (&'static str, serde_json::Value) {
         );
     }
 
-    let reranked = rerank_results(query, &results, model);
+    let reranked = rerank_results(query, &results, llm_url, model);
     let count = reranked.len();
     (
         "200 OK",
@@ -727,15 +1069,13 @@ fn handle_add_fact(
     bridge: &MemoryBridge,
     handle: &Handle,
 ) -> (&'static str, serde_json::Value) {
-    let params: serde_json::Value = match serde_json::from_str(body) {
-        Ok(v) => v,
-        Err(e) => {
-            return (
-                "400 Bad Request",
-                serde_json::json!({"ok": false, "error": format!("invalid JSON: {e}")}),
-            )
-        }
-    };
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
 
     let content = params.get("content").and_then(|v| v.as_str()).unwrap_or("");
     let namespace = params
@@ -767,6 +1107,111 @@ fn handle_add_fact(
     }
 }
 
+/// Handle /add-edge: add a graph edge between two facts.
+fn handle_add_edge(
+    body: &str,
+    bridge: &MemoryBridge,
+    handle: &Handle,
+) -> (&'static str, serde_json::Value) {
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
+
+    let source = params.get("source").and_then(|v| v.as_str()).unwrap_or("");
+    let target = params.get("target").and_then(|v| v.as_str()).unwrap_or("");
+    let edge_type_str = params
+        .get("edge_type")
+        .and_then(|v| v.as_str())
+        .unwrap_or("semantic");
+    let weight = params.get("weight").and_then(|v| v.as_f64()).unwrap_or(1.0);
+    let cosine_similarity = params.get("cosine_similarity").and_then(|v| v.as_f64());
+    let relation = params.get("relation").and_then(|v| v.as_str());
+
+    if source.is_empty() || target.is_empty() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "missing 'source' or 'target'"}),
+        );
+    }
+
+    let edge_type = match edge_type_str {
+        "semantic" => semantic_memory::GraphEdgeType::Semantic {
+            cosine_similarity: cosine_similarity.unwrap_or(weight) as f32,
+        },
+        "temporal" => semantic_memory::GraphEdgeType::Temporal {
+            delta_secs: params
+                .get("delta_secs")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0),
+        },
+        "causal" => semantic_memory::GraphEdgeType::Causal {
+            confidence: cosine_similarity.unwrap_or(weight) as f32,
+            evidence_ids: Vec::new(),
+        },
+        "entity" => semantic_memory::GraphEdgeType::Entity {
+            relation: relation.unwrap_or("mentions").to_string(),
+        },
+        _ => semantic_memory::GraphEdgeType::Semantic {
+            cosine_similarity: cosine_similarity.unwrap_or(weight) as f32,
+        },
+    };
+
+    let store = &bridge.store;
+    let result = block_in_place(|| {
+        handle.block_on(store.add_graph_edge(source, target, edge_type, weight, None))
+    });
+
+    match result {
+        Ok(edge) => (
+            "200 OK",
+            serde_json::json!({"ok": true, "edge_id": edge.id}),
+        ),
+        Err(e) => (
+            "500 Internal Server Error",
+            serde_json::json!({"ok": false, "error": format!("{e}")}),
+        ),
+    }
+}
+
+/// Handle /delete-fact: hard-delete a fact by ID.
+fn handle_delete_fact(
+    body: &str,
+    bridge: &MemoryBridge,
+    handle: &Handle,
+) -> (&'static str, serde_json::Value) {
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
+
+    let fact_id = params.get("fact_id").and_then(|v| v.as_str()).unwrap_or("");
+    if fact_id.is_empty() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "missing 'fact_id'"}),
+        );
+    }
+
+    let bare_id = fact_id.strip_prefix("fact:").unwrap_or(fact_id);
+    let store = &bridge.store;
+    let result = block_in_place(|| handle.block_on(store.delete_fact(bare_id)));
+
+    match result {
+        Ok(()) => ("200 OK", serde_json::json!({"ok": true, "deleted": true})),
+        Err(e) => (
+            "500 Internal Server Error",
+            serde_json::json!({"ok": false, "error": format!("{e}")}),
+        ),
+    }
+}
+
 /// Handle /record-outcome: record a search outcome for RL routing feedback.
 fn handle_record_outcome(
     body: &str,
@@ -776,19 +1221,23 @@ fn handle_record_outcome(
     use semantic_memory::rl_routing::{record_routing_outcome, RoutingOutcome};
     use semantic_memory::routing::{QueryProfile, RetrievalRouter};
 
-    let params: serde_json::Value = match serde_json::from_str(body) {
-        Ok(v) => v,
-        Err(e) => {
-            return (
-                "400 Bad Request",
-                serde_json::json!({"ok": false, "error": format!("invalid JSON: {e}")}),
-            )
-        }
-    };
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
 
     let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
-    let outcome = params.get("outcome").and_then(|v| v.as_str()).unwrap_or("neutral");
-    let _query_class = params.get("query_class").and_then(|v| v.as_str()).unwrap_or("A");
+    let outcome = params
+        .get("outcome")
+        .and_then(|v| v.as_str())
+        .unwrap_or("neutral");
+    let _query_class = params
+        .get("query_class")
+        .and_then(|v| v.as_str())
+        .unwrap_or("A");
 
     if query.is_empty() {
         return (
@@ -892,15 +1341,13 @@ fn handle_discord(
 ) -> (&'static str, serde_json::Value) {
     use semantic_memory::discord::DiscordScorer;
 
-    let params: serde_json::Value = match serde_json::from_str(body) {
-        Ok(v) => v,
-        Err(e) => {
-            return (
-                "400 Bad Request",
-                serde_json::json!({"ok": false, "error": format!("invalid JSON: {e}")}),
-            )
-        }
-    };
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
 
     let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
     let top_k = params.get("top_k").and_then(|v| v.as_u64()).unwrap_or(5) as usize;
@@ -920,9 +1367,8 @@ fn handle_discord(
                 );
             }
             let store = &bridge.store;
-            let search_result = block_in_place(|| {
-                handle.block_on(store.search(query, Some(top_k), None, None))
-            });
+            let search_result =
+                block_in_place(|| handle.block_on(store.search(query, Some(top_k), None, None)));
             match search_result {
                 Ok(results) => results.iter().map(|r| r.source.result_id()).collect(),
                 Err(e) => {
@@ -945,11 +1391,7 @@ fn handle_discord(
     let store = &bridge.store;
     // Load graph edges for the neighborhood
     let edges_result = block_in_place(|| {
-        handle.block_on(store.list_graph_edges_for_neighborhood(
-            direct_ids.clone(),
-            2,
-            200,
-        ))
+        handle.block_on(store.list_graph_edges_for_neighborhood(direct_ids.clone(), 2, 200))
     });
 
     let edges: Vec<semantic_memory::discord::GraphEdgeRef> = match edges_result {
@@ -995,8 +1437,19 @@ fn handle_discord(
         .iter()
         .filter(|hit| !existing.contains(&hit.item_id))
         .map(|hit| {
+            // Fetch the fact's content directly from the DB.
+            let bare_id = hit.item_id.strip_prefix("fact:").unwrap_or(&hit.item_id);
+            let (content, namespace) = {
+                let fact_result = handle.block_on(store.get_fact(bare_id));
+                match fact_result {
+                    Ok(Some(fact)) => (fact.content, fact.namespace),
+                    _ => (String::new(), String::new()),
+                }
+            };
             serde_json::json!({
                 "result_id": hit.item_id,
+                "content": content,
+                "namespace": namespace,
                 "discord_score": hit.discord_score,
                 "anchor_ids": hit.anchor_ids,
                 "relationship_types": hit.relationship_types,
@@ -1127,15 +1580,13 @@ fn handle_maintenance_reconcile(
     bridge: &MemoryBridge,
     handle: &Handle,
 ) -> (&'static str, serde_json::Value) {
-    let params: serde_json::Value = match serde_json::from_str(body) {
-        Ok(v) => v,
-        Err(e) => {
-            return (
-                "400 Bad Request",
-                serde_json::json!({"ok": false, "error": format!("invalid JSON: {e}")}),
-            )
-        }
-    };
+    let params: serde_json::Value = parse_body_json(body);
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
 
     let action_str = params
         .get("action")
@@ -1187,6 +1638,40 @@ fn handle_maintenance_reconcile(
 ///
 /// Only available when the `hnsw` feature is enabled. The default backend is
 /// usearch, so this endpoint returns a not-applicable response without the feature.
+fn handle_maintenance_reembed_missing(
+    body: &str,
+    bridge: &MemoryBridge,
+    handle: &Handle,
+) -> (&'static str, serde_json::Value) {
+    let params: serde_json::Value = if body.trim().is_empty() {
+        serde_json::json!({})
+    } else {
+        parse_body_json(body)
+    };
+    if params.is_null() {
+        return (
+            "400 Bad Request",
+            serde_json::json!({"ok": false, "error": "invalid JSON body"}),
+        );
+    }
+    let limit = params
+        .get("limit")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize);
+    let store = &bridge.store;
+    let result = block_in_place(|| handle.block_on(store.reembed_missing_fact_embeddings(limit)));
+    match result {
+        Ok(repaired) => (
+            "200 OK",
+            serde_json::json!({"ok": true, "repaired_facts": repaired}),
+        ),
+        Err(e) => (
+            "500 Internal Server Error",
+            serde_json::json!({"ok": false, "error": format!("{e}")}),
+        ),
+    }
+}
+
 fn handle_maintenance_compact_hnsw(
     bridge: &MemoryBridge,
     handle: &Handle,
@@ -1222,4 +1707,772 @@ fn handle_maintenance_compact_hnsw(
             }),
         )
     }
+}
+
+/// Handle POST /maintenance/auto-edge: automatically create low-noise entity
+/// edges between facts in DIFFERENT durable namespaces. These edges are recall
+/// scaffolding only: they should surface adjacent context, not become proof.
+///
+/// Accepts optional JSON body:
+///   - batch_size (default 500): facts per page when iterating
+///   - max_edges_per_fact (default 12): cumulative cap on auto edges per fact
+///   - min_shared_terms (default 4): minimum shared quality terms
+///   - min_jaccard (default 0.08): minimum shared/union quality-term overlap
+///   - max_fact_chars (default 1200): skip long omnibus/artifact facts
+///   - dry_run (default false): if true, report what would be created without creating edges
+///
+/// Returns a report with facts_processed, edges_created, edges_skipped, time_elapsed.
+fn handle_maintenance_auto_edge(
+    body: &str,
+    bridge: &MemoryBridge,
+    handle: &Handle,
+) -> (&'static str, serde_json::Value) {
+    let start = std::time::Instant::now();
+
+    let params: serde_json::Value = parse_body_json(body);
+    let batch_size = params
+        .get("batch_size")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(500) as usize;
+    let max_edges_per_fact = params
+        .get("max_edges_per_fact")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(12) as usize;
+    let min_shared_terms = params
+        .get("min_shared_terms")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(4) as usize;
+    let min_jaccard = params
+        .get("min_jaccard")
+        .and_then(|v| v.as_f64())
+        .unwrap_or(0.08);
+    let max_fact_chars = params
+        .get("max_fact_chars")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(1200) as usize;
+    let dry_run = params
+        .get("dry_run")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let rebuild = params
+        .get("rebuild")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let store = &bridge.store;
+
+    fn is_auto_shared_terms_edge(edge_type: &semantic_memory::GraphEdgeType) -> bool {
+        matches!(
+            edge_type,
+            semantic_memory::GraphEdgeType::Entity { relation }
+                if relation.starts_with("shared_terms:")
+        )
+    }
+
+    // If rebuild mode, invalidate existing auto-generated shared_terms edges only.
+    // Do NOT invalidate curated entity edges (founder_of, governs, fills_gap, etc.).
+    let mut edges_invalidated: u64 = 0;
+    if rebuild && !dry_run {
+        let all_edges = block_in_place(|| handle.block_on(store.list_all_graph_edges()));
+        if let Ok(edges) = all_edges {
+            for edge in &edges {
+                let parsed = edge.edge_type_parsed.clone().or_else(|| {
+                    serde_json::from_str::<semantic_memory::GraphEdgeType>(&edge.edge_type).ok()
+                });
+                if parsed
+                    .as_ref()
+                    .map(is_auto_shared_terms_edge)
+                    .unwrap_or(false)
+                {
+                    let _ = block_in_place(|| {
+                        handle.block_on(store.invalidate_graph_edge(&edge.id, "auto-edge rebuild"))
+                    });
+                    edges_invalidated += 1;
+                }
+            }
+        }
+        eprintln!("[auto-edge] rebuild: invalidated {edges_invalidated} existing entity edges");
+    }
+
+    // Namespaces to SKIP entirely. Auto-edges should connect durable technical /
+    // research / doctrine facts. Social captures, autonomous self-commentary,
+    // personal/behavioral material, broad "general" facts, and test/preferences
+    // create recall noise when graph-enriched into technical queries.
+    const SKIP_NAMESPACES: &[&str] = &[
+        "mixed",
+        "chatgpt",
+        "twitter",
+        "tool-receipts",
+        "agentguard",
+        "autonomous",
+        "personal",
+        "behavioral",
+        "preferences",
+        "general",
+        "test",
+    ];
+    let skip_ns: std::collections::HashSet<&str> = SKIP_NAMESPACES.iter().copied().collect();
+
+    // Large stopword list — common English words that should never create edges.
+    const STOPWORDS: &[&str] = &[
+        "the",
+        "and",
+        "for",
+        "are",
+        "but",
+        "not",
+        "you",
+        "all",
+        "can",
+        "her",
+        "was",
+        "one",
+        "our",
+        "out",
+        "has",
+        "have",
+        "had",
+        "his",
+        "how",
+        "its",
+        "may",
+        "new",
+        "now",
+        "old",
+        "see",
+        "him",
+        "way",
+        "who",
+        "did",
+        "yes",
+        "yet",
+        "say",
+        "she",
+        "too",
+        "use",
+        "via",
+        "any",
+        "few",
+        "get",
+        "got",
+        "let",
+        "put",
+        "run",
+        "set",
+        "try",
+        "two",
+        "bad",
+        "big",
+        "far",
+        "off",
+        "own",
+        "per",
+        "sub",
+        "top",
+        "end",
+        "add",
+        "also",
+        "been",
+        "from",
+        "into",
+        "that",
+        "this",
+        "with",
+        "will",
+        "your",
+        "they",
+        "them",
+        "were",
+        "what",
+        "when",
+        "where",
+        "which",
+        "while",
+        "there",
+        "their",
+        "about",
+        "after",
+        "before",
+        "between",
+        "because",
+        "being",
+        "would",
+        "could",
+        "should",
+        "than",
+        "then",
+        "these",
+        "those",
+        "only",
+        "over",
+        "under",
+        "again",
+        "more",
+        "most",
+        "some",
+        "such",
+        "very",
+        "just",
+        "like",
+        "even",
+        "back",
+        "both",
+        "down",
+        "here",
+        "make",
+        "made",
+        "each",
+        "want",
+        "need",
+        "know",
+        "same",
+        "other",
+        "many",
+        "much",
+        "last",
+        "first",
+        "third",
+        "next",
+        "best",
+        "main",
+        "full",
+        "upon",
+        "within",
+        "without",
+        "through",
+        "during",
+        "above",
+        "below",
+        "against",
+        "among",
+        "across",
+        "behind",
+        "beside",
+        "beyond",
+        // Common technical/process words that create false connections
+        "project",
+        "work",
+        "thing",
+        "things",
+        "fix",
+        "fixed",
+        "build",
+        "built",
+        "code",
+        "data",
+        "system",
+        "update",
+        "updated",
+        "check",
+        "checked",
+        "test",
+        "tested",
+        "error",
+        "issue",
+        "problem",
+        "result",
+        "results",
+        "status",
+        "state",
+        "info",
+        "note",
+        "notes",
+        "list",
+        "item",
+        "items",
+        "type",
+        "types",
+        "field",
+        "fields",
+        "name",
+        "names",
+        "value",
+        "values",
+        "line",
+        "lines",
+        "file",
+        "files",
+        "part",
+        "parts",
+        "section",
+        "sections",
+        "step",
+        "steps",
+        "task",
+        "tasks",
+        "goal",
+        "goals",
+        "plan",
+        "plans",
+        "done",
+        "open",
+        "close",
+        "closed",
+        "start",
+        "started",
+        "stop",
+        "stopped",
+        "change",
+        "changed",
+        "changing",
+        "good",
+        "bad",
+        "right",
+        "wrong",
+        "true",
+        "false",
+        "yes",
+        "no",
+        "ok",
+        "lots",
+        "lot",
+        "really",
+        "actually",
+        "basically",
+        "probably",
+        "maybe",
+        "going",
+        "getting",
+        "looking",
+        "trying",
+        "working",
+        "something",
+        "anything",
+        "everything",
+        "nothing",
+        "someone",
+        "anyone",
+        "everyone",
+        "still",
+        "always",
+        "never",
+        "sometimes",
+        "usually",
+        "often",
+        "since",
+        "until",
+        "though",
+        "although",
+        "however",
+        "therefore",
+        "either",
+        "neither",
+        "both",
+        "all",
+        "any",
+        "some",
+        "none",
+        "version",
+        "config",
+        "setup",
+        "install",
+        "installed",
+        "running",
+        "report",
+        "reports",
+        "summary",
+        "detail",
+        "details",
+        "feature",
+        "features",
+        "function",
+        "functions",
+        "method",
+        "methods",
+        "class",
+        "classes",
+        "module",
+        "modules",
+        "crate",
+        "crates",
+        "package",
+        "packages",
+        "library",
+        "libraries",
+        "app",
+        "apps",
+        "web",
+        "page",
+        "pages",
+        "site",
+        "sites",
+        "link",
+        "links",
+        "post",
+        "posts",
+        "reply",
+        "replies",
+        "comment",
+        "comments",
+        "read",
+        "write",
+        "call",
+        "called",
+        "calling",
+        "return",
+        "returns",
+        "input",
+        "output",
+        "source",
+        "target",
+        "source_id",
+        "target_id",
+        "create",
+        "created",
+        "creating",
+        "delete",
+        "deleted",
+        "removing",
+        "find",
+        "found",
+        "finding",
+        "search",
+        "searching",
+        "replace",
+        "replaced",
+        "show",
+        "shown",
+        "showing",
+        "hide",
+        "hidden",
+        "display",
+        "rendered",
+        "enable",
+        "enabled",
+        "disable",
+        "disabled",
+        "allow",
+        "allowed",
+        "require",
+        "required",
+        "requiring",
+        "support",
+        "supported",
+        "default",
+        "custom",
+        "general",
+        "specific",
+        "standard",
+        "current",
+        "latest",
+        "previous",
+        "old",
+        "new",
+        "future",
+        "high",
+        "low",
+        "medium",
+        "critical",
+        "normal",
+        "minor",
+        "major",
+        "single",
+        "multiple",
+        "total",
+        "count",
+        "number",
+        "description",
+        "summary",
+        "overview",
+        "introduction",
+        "conclusion",
+        "todo",
+        "fixme",
+        "wip",
+        "draft",
+        "final",
+        "complete",
+        "completed",
+        "include",
+        "includes",
+        "included",
+        "exclude",
+        "excludes",
+        "excluded",
+        "require",
+        "requires",
+        "required",
+        "optional",
+        "important",
+        "urgent",
+        "priority",
+        "blocking",
+        "question",
+        "answer",
+        "response",
+        "request",
+    ];
+    let stopword_set: std::collections::HashSet<&str> = STOPWORDS.iter().copied().collect();
+
+    // Artifact/session-pack chunks masquerade as durable project facts. They are
+    // useful as searchable text, but terrible graph hubs. Keep them out of the
+    // auto-edge layer; direct search can still find them when explicitly needed.
+    const CONTENT_SKIP_MARKERS: &[&str] = &[
+        ".zip]",
+        "_bundle",
+        "_pack",
+        "PHASE_",
+        "CODEX_DELEGATE",
+        "CONTEXT_PACK",
+        "ACCEPTANCE_GATES",
+        "PROOF_PACKET",
+        "BEGIN PATCH",
+        "```",
+    ];
+
+    /// Extract HIGH-QUALITY terms from text: only proper nouns, camelCase/snake_case
+    /// identifiers, and words 5+ chars that aren't stopwords. This filters out
+    /// common English words that create false connections.
+    fn extract_terms(
+        text: &str,
+        stopwords: &std::collections::HashSet<&str>,
+    ) -> std::collections::HashSet<String> {
+        let mut terms = std::collections::HashSet::new();
+        for word in text.split(|c: char| !c.is_alphanumeric() && c != '_' && c != '-') {
+            let w = word.trim_matches(|c: char| c == '-' || c == '_');
+            if w.len() < 3 {
+                continue;
+            }
+            let lower = w.to_lowercase();
+            if stopwords.contains(lower.as_str()) {
+                continue;
+            }
+            // Skip pure numbers
+            if lower.chars().all(|c| c.is_ascii_digit()) {
+                continue;
+            }
+            // Include if:
+            // - camelCase or snake_case (has internal uppercase or _ or -)
+            // - all lowercase and 5+ chars (filters short common words)
+            // - starts with uppercase (proper noun)
+            let has_separator = w.contains('_') || w.contains('-');
+            let has_upper = w.chars().any(|c| c.is_uppercase());
+            let starts_upper = w.chars().next().map(|c| c.is_uppercase()).unwrap_or(false);
+            let long_enough = lower.len() >= 5;
+
+            if has_separator || has_upper || starts_upper || long_enough {
+                terms.insert(lower);
+            }
+        }
+        terms
+    }
+
+    // 1. Get all namespaces that contain facts
+    let namespaces = match block_in_place(|| handle.block_on(store.list_fact_namespaces())) {
+        Ok(ns) => ns,
+        Err(e) => {
+            return (
+                "500 Internal Server Error",
+                serde_json::json!({"ok": false, "error": format!("list_fact_namespaces error: {e}")}),
+            )
+        }
+    };
+
+    // Filter out skip namespaces
+    let namespaces: Vec<String> = namespaces
+        .into_iter()
+        .filter(|ns| !skip_ns.contains(ns.as_str()))
+        .collect();
+
+    // 2. Page through all facts in each namespace, extract terms, store (id, namespace, terms)
+    struct FactInfo {
+        id: String,
+        namespace: String,
+        terms: std::collections::HashSet<String>,
+    }
+
+    let mut all_facts: Vec<FactInfo> = Vec::new();
+    for ns in &namespaces {
+        let mut offset = 0usize;
+        loop {
+            let batch = match block_in_place(|| {
+                handle.block_on(store.list_facts(ns, batch_size, offset))
+            }) {
+                Ok(facts) => facts,
+                Err(e) => {
+                    eprintln!("[auto-edge] list_facts error for ns={ns} offset={offset}: {e}");
+                    break;
+                }
+            };
+            if batch.is_empty() {
+                break;
+            }
+            'fact_loop: for fact in &batch {
+                if fact.content.len() > max_fact_chars {
+                    continue;
+                }
+                for marker in CONTENT_SKIP_MARKERS {
+                    if fact.content.contains(marker) {
+                        continue 'fact_loop;
+                    }
+                }
+                let terms = extract_terms(&fact.content, &stopword_set);
+                // Skip facts with too few quality terms — they can't form meaningful edges.
+                if terms.len() >= min_shared_terms {
+                    all_facts.push(FactInfo {
+                        id: fact.id.clone(),
+                        namespace: fact.namespace.clone(),
+                        terms,
+                    });
+                }
+            }
+            offset += batch.len();
+            if batch.len() < batch_size {
+                break;
+            }
+        }
+    }
+
+    let facts_processed = all_facts.len();
+
+    // 3. Load existing edges to skip pairs that already have edges, and count
+    // existing auto edges so max_edges_per_fact is cumulative across cron runs.
+    let mut edge_counts: std::collections::HashMap<String, u64> = std::collections::HashMap::new();
+    let existing_edges: std::collections::HashSet<(String, String)> =
+        match block_in_place(|| handle.block_on(store.list_all_graph_edges())) {
+            Ok(edges) => edges
+                .iter()
+                .filter_map(|e| {
+                    let parsed = e.edge_type_parsed.clone().or_else(|| {
+                        serde_json::from_str::<semantic_memory::GraphEdgeType>(&e.edge_type).ok()
+                    });
+                    match parsed.as_ref() {
+                        Some(semantic_memory::GraphEdgeType::Entity { .. }) => {
+                            if is_auto_shared_terms_edge(parsed.as_ref().unwrap()) {
+                                *edge_counts.entry(e.source.clone()).or_insert(0) += 1;
+                                *edge_counts.entry(e.target.clone()).or_insert(0) += 1;
+                            }
+                            Some((e.source.clone(), e.target.clone()))
+                        }
+                        None | Some(_) => None,
+                    }
+                })
+                .collect(),
+            Err(_) => std::collections::HashSet::new(),
+        };
+
+    // 4. For each pair of facts in DIFFERENT namespaces sharing enough terms AND
+    // enough proportional overlap, create an entity edge. The Jaccard gate keeps
+    // long omnibus facts from becoming graph hubs just because they mention many
+    // project names.
+    let mut edges_created: u64 = 0;
+    let mut edges_skipped: u64 = 0;
+
+    for i in 0..all_facts.len() {
+        let fact_i = &all_facts[i];
+        let src_id = format!("fact:{}", fact_i.id);
+
+        // Check if this fact has already hit its edge cap
+        if *edge_counts.get(&src_id).unwrap_or(&0) >= max_edges_per_fact as u64 {
+            continue;
+        }
+
+        for j in (i + 1)..all_facts.len() {
+            let fact_j = &all_facts[j];
+
+            // Only create edges between DIFFERENT namespaces
+            if fact_i.namespace == fact_j.namespace {
+                continue;
+            }
+
+            // Check shared terms and proportional overlap.
+            let shared: usize = fact_i.terms.intersection(&fact_j.terms).count();
+            if shared < min_shared_terms {
+                continue;
+            }
+            let union = fact_i.terms.union(&fact_j.terms).count();
+            let jaccard = if union == 0 {
+                0.0
+            } else {
+                (shared as f64) / (union as f64)
+            };
+            if jaccard < min_jaccard {
+                continue;
+            }
+
+            let tgt_id = format!("fact:{}", fact_j.id);
+
+            // Determine direction (smaller id first for consistency)
+            let (edge_source, edge_target) = if src_id <= tgt_id {
+                (src_id.clone(), tgt_id.clone())
+            } else {
+                (tgt_id.clone(), src_id.clone())
+            };
+
+            // Skip if edge already exists
+            if existing_edges.contains(&(edge_source.clone(), edge_target.clone())) {
+                edges_skipped += 1;
+                continue;
+            }
+
+            // Check edge cap for both facts
+            let count_src = *edge_counts.get(&src_id).unwrap_or(&0);
+            let count_tgt = *edge_counts.get(&tgt_id).unwrap_or(&0);
+            if count_src >= max_edges_per_fact as u64 || count_tgt >= max_edges_per_fact as u64 {
+                continue;
+            }
+
+            if dry_run {
+                edges_created += 1;
+                continue;
+            }
+
+            let relation = format!("shared_terms:{shared};jaccard:{jaccard:.3}");
+            let edge_type = semantic_memory::GraphEdgeType::Entity {
+                relation: relation.clone(),
+            };
+            // Weight based on proportional overlap, not raw term count. Raw counts
+            // reward long omnibus facts; Jaccard rewards focused similarity.
+            let weight = jaccard.clamp(0.05, 1.0);
+
+            let result = block_in_place(|| {
+                handle.block_on(store.add_graph_edge(
+                    &edge_source,
+                    &edge_target,
+                    edge_type,
+                    weight,
+                    None,
+                ))
+            });
+
+            match result {
+                Ok(_) => {
+                    edges_created += 1;
+                    *edge_counts.entry(src_id.clone()).or_insert(0) += 1;
+                    *edge_counts.entry(tgt_id.clone()).or_insert(0) += 1;
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[auto-edge] add_graph_edge error: {e} for {edge_source} -> {edge_target}"
+                    );
+                }
+            }
+
+            // Re-check cap after creating edge
+            if *edge_counts.get(&src_id).unwrap_or(&0) >= max_edges_per_fact as u64 {
+                break;
+            }
+        }
+    }
+
+    let elapsed = start.elapsed();
+
+    (
+        "200 OK",
+        serde_json::json!({
+            "ok": true,
+            "action": "auto-edge",
+            "dry_run": dry_run,
+            "facts_processed": facts_processed,
+            "namespaces_scanned": namespaces.len(),
+            "edges_created": edges_created,
+            "edges_skipped": edges_skipped,
+            "max_edges_per_fact": max_edges_per_fact,
+            "min_shared_terms": min_shared_terms,
+            "min_jaccard": min_jaccard,
+            "max_fact_chars": max_fact_chars,
+            "time_elapsed_ms": elapsed.as_millis(),
+            "time_elapsed_secs": (elapsed.as_millis() as f64) / 1000.0,
+        }),
+    )
 }

@@ -277,6 +277,9 @@ pub enum DerivedVectorBackendPolicy {
     /// This is deliberately not a replacement for SQLite f32 storage or for prompt/KV
     /// prefix reuse. It is a rebuildable derived artifact over an embedding snapshot.
     ProveKvPoolCandidateOnly,
+    /// Use per-dimension quantization to generate candidates on-the-fly from
+    /// raw f32 embeddings, then exact rerank. No pre-computed artifacts needed.
+    PerDimCandidateOnly,
 }
 
 const fn default_turbo_quant_bits() -> u8 {
@@ -335,8 +338,13 @@ impl SearchConfig {
         self.derived_vector_backend == DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly
     }
 
+    pub(crate) fn uses_per_dim_backend(&self) -> bool {
+        self.derived_vector_backend == DerivedVectorBackendPolicy::PerDimCandidateOnly
+    }
+
+    #[allow(dead_code)]
     pub(crate) fn uses_derived_vector_backend(&self) -> bool {
-        self.uses_turbo_quant_backend() || self.uses_provekv_pool_backend()
+        self.uses_turbo_quant_backend() || self.uses_provekv_pool_backend() || self.uses_per_dim_backend()
     }
 
     fn normalize_and_validate(&mut self, embedding_dimensions: usize) -> Result<(), MemoryError> {
@@ -422,10 +430,10 @@ impl SearchConfig {
                 }
             }
         }
-        if self.uses_derived_vector_backend() && !self.turbo_quant_require_exact_rerank {
+        if self.uses_provekv_pool_backend() && !self.turbo_quant_require_exact_rerank {
             return Err(MemoryError::InvalidConfig {
                 field: "search.turbo_quant_require_exact_rerank",
-                reason: "derived vector candidate backends require exact f32 rerank".to_string(),
+                reason: "proveKV pool candidate backend requires exact f32 rerank".to_string(),
             });
         }
         Ok(())

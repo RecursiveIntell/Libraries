@@ -74,7 +74,72 @@ fn degradation_budget_accounted() {
     assert_eq!(decision.degradation_budget, 0.10);
 }
 
-/// Test 5: content_type_routing_matrix — verify all 7 content types route correctly.
+/// Test: storage_efficient policy prefers hyperquant for large embeddings under budget.
+#[test]
+fn storage_efficient_prefers_hyperquant_for_embeddings() {
+    let policy = GovernancePolicy::storage_efficient();
+    let request = GovernanceRequest {
+        content_type: ContentType::Embedding,
+        size_bytes: 500_000,
+        accuracy_requirement: 0.89,
+        latency_tolerance_ms: 200,
+        admissibility: AdmissibilityClass::Standard,
+    };
+
+    let decision = evaluate(request, &policy).unwrap();
+    assert_eq!(decision.codec, CodecProfile::Hyperquant);
+}
+
+/// Test: low-latency policy prefers turbo for embeddings even when large.
+#[test]
+fn low_latency_prefers_turbo_for_embeddings() {
+    let policy = GovernancePolicy::low_latency();
+    let request = GovernanceRequest {
+        content_type: ContentType::Embedding,
+        size_bytes: 2_000_000,
+        accuracy_requirement: 0.85,
+        latency_tolerance_ms: 60,
+        admissibility: AdmissibilityClass::Standard,
+    };
+
+    let decision = evaluate(request, &policy).unwrap();
+    assert_eq!(decision.codec, CodecProfile::Turbo);
+}
+
+/// Test: accuracy-oriented policy does not use hyperquant for same shape input.
+#[test]
+fn accuracy_oriented_keeps_embedding_on_q8_when_hyperquant_is_disallowed() {
+    let policy = GovernancePolicy::accuracy_oriented();
+    let request = GovernanceRequest {
+        content_type: ContentType::Embedding,
+        size_bytes: 500_000,
+        accuracy_requirement: 0.93,
+        latency_tolerance_ms: 200,
+        admissibility: AdmissibilityClass::Standard,
+    };
+
+    let decision = evaluate(request, &policy).unwrap();
+    assert_eq!(decision.codec, CodecProfile::Q8);
+}
+
+/// Test: budget-aware routing avoids codecs that exceed policy degradation budget.
+#[test]
+fn embedding_budget_aware_avoids_hyperquant_and_q4_when_too_stringent() {
+    let policy = GovernancePolicy::new(0.06, 64, 0.999);
+    let request = GovernanceRequest {
+        content_type: ContentType::Embedding,
+        size_bytes: 2_000_000,
+        accuracy_requirement: 0.8,
+        latency_tolerance_ms: 500,
+        admissibility: AdmissibilityClass::Standard,
+    };
+
+    let decision = evaluate(request, &policy).unwrap();
+    // 0.06 budget blocks both Hyperquant (0.07) and Q4 (0.10), so policy falls back to Q8.
+    assert_eq!(decision.codec, CodecProfile::Q8);
+}
+
+/// Test 5: content_type_routing_matrix — verify all 8 content types route correctly.
 #[test]
 fn content_type_routing_matrix() {
     let policy = GovernancePolicy::default();
@@ -123,6 +188,17 @@ fn content_type_routing_matrix() {
     let video_decision = evaluate(video_req, &policy).unwrap();
     assert_eq!(video_decision.codec, CodecProfile::Turbo);
 
+    // Embedding — BestEffort + large size uses Hyperquant for governed lossy rollout
+    let embedding_req = GovernanceRequest {
+        content_type: ContentType::Embedding,
+        size_bytes: 2_000_000,
+        accuracy_requirement: 0.88,
+        latency_tolerance_ms: 200,
+        admissibility: AdmissibilityClass::BestEffort,
+    };
+    let embedding_decision = evaluate(embedding_req, &policy).unwrap();
+    assert_eq!(embedding_decision.codec, CodecProfile::Hyperquant);
+
     // Structured — high accuracy gets Raw
     let structured_req = GovernanceRequest {
         content_type: ContentType::Structured,
@@ -155,6 +231,7 @@ fn content_type_routing_matrix() {
     };
     let other_decision = evaluate(other_req, &policy).unwrap();
     assert_eq!(other_decision.codec, CodecProfile::Q8);
+
 }
 
 /// Test: small content bypasses compression.
@@ -182,6 +259,7 @@ fn codec_profile_degradation_thresholds() {
     assert_eq!(CodecProfile::Q4.default_degradation_threshold(), 0.10);
     assert_eq!(CodecProfile::Turbo.default_degradation_threshold(), 0.08);
     assert_eq!(CodecProfile::Fib.default_degradation_threshold(), 0.03);
+    assert_eq!(CodecProfile::Hyperquant.default_degradation_threshold(), 0.07);
 }
 
 /// Test: codec decision is direct (no fallback) for standard case.

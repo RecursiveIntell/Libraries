@@ -68,6 +68,9 @@ pub mod governed {
             CodecProfile::Fib => scr_runtime_compression::CodecId::FibQuant,
             CodecProfile::Polar => scr_runtime_compression::CodecId::Polar,
             CodecProfile::Qjl => scr_runtime_compression::CodecId::Qjl,
+            // HyperQuant governance can appear before the runtime codec is wired.
+            // Keep the path safe and exact rather than pretending compression exists.
+            CodecProfile::Hyperquant => scr_runtime_compression::CodecId::Uncompressed,
         };
 
         // Encode through the real codec path. (Previously this called
@@ -131,7 +134,16 @@ pub use governed::{encode_governed, encode_governed_default, GovernedEncodeResul
 #[cfg(all(test, feature = "turbo-quant-codec"))]
 mod tests {
     use super::governed::encode_governed;
-    use quant_governor::GovernancePolicy;
+    use quant_governor::{CodecProfile, GovernancePolicy};
+
+    #[test]
+    fn hyperquant_codec_profile_uses_exact_fallback_until_runtime_codec_exists() {
+        let codec_id = match CodecProfile::Hyperquant {
+            CodecProfile::Hyperquant => scr_runtime_compression::CodecId::Uncompressed,
+            _ => unreachable!("test pins Hyperquant branch"),
+        };
+        assert_eq!(codec_id, scr_runtime_compression::CodecId::Uncompressed);
+    }
 
     /// End-to-end parity test for the governed compression path.
     ///

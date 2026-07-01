@@ -11,6 +11,10 @@ pub const POOL_BUILD_RECEIPT_SCHEMA: &str = "pool_build_receipt_v1";
 pub const SHELL_MATERIALIZE_RECEIPT_SCHEMA: &str = "shell_materialize_receipt_v1";
 /// Schema version for injection receipts.
 pub const INJECTION_RECEIPT_SCHEMA: &str = "injection_receipt_v1";
+/// Schema version for compressed attention selection receipts.
+pub const ATTENTION_SELECTION_RECEIPT_SCHEMA: &str = "attention_selection_receipt_v1";
+/// Schema version for cache access receipts.
+pub const CACHE_ACCESS_RECEIPT_SCHEMA: &str = "cache_access_receipt_v1";
 
 /// Receipt produced when building a SharedKVPool.
 ///
@@ -295,6 +299,138 @@ impl InjectionReceipt {
     pub fn with_trace_ctx(mut self, ctx: stack_ids::TraceCtx) -> Self {
         self.trace_ctx = Some(ctx);
         self
+    }
+}
+
+/// Receipt produced when selecting attention candidates from compressed pool/shell state.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AttentionSelectionReceiptV1 {
+    pub schema_version: String,
+    pub pool_digest: Digest,
+    pub shell_digest: Option<Digest>,
+    pub layer: u32,
+    pub head: u32,
+    pub candidate_count: usize,
+    pub refined_count: usize,
+    pub decoded_keys: usize,
+    pub decoded_values: usize,
+    pub exact_fallback: bool,
+    pub max_score_error_bound: Option<f32>,
+}
+
+impl AttentionSelectionReceiptV1 {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        pool_digest: Digest,
+        shell_digest: Option<Digest>,
+        layer: u32,
+        head: u32,
+        candidate_count: usize,
+        refined_count: usize,
+        decoded_keys: usize,
+        decoded_values: usize,
+        exact_fallback: bool,
+        max_score_error_bound: Option<f32>,
+    ) -> Self {
+        Self {
+            schema_version: ATTENTION_SELECTION_RECEIPT_SCHEMA.into(),
+            pool_digest,
+            shell_digest,
+            layer,
+            head,
+            candidate_count,
+            refined_count,
+            decoded_keys,
+            decoded_values,
+            exact_fallback,
+            max_score_error_bound,
+        }
+    }
+
+    pub fn validate(&self) -> crate::error::Result<()> {
+        if self.schema_version != ATTENTION_SELECTION_RECEIPT_SCHEMA {
+            return Err(crate::error::PolyKvError::InvalidReceipt(format!(
+                "expected schema {}, got {}",
+                ATTENTION_SELECTION_RECEIPT_SCHEMA, self.schema_version
+            )));
+        }
+        if self.pool_digest.hex().is_empty() {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "pool_digest is empty".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CacheIsolationMode {
+    SingleTenant,
+    SharedTrusted,
+    SharedIsolated,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CacheSecurityPolicy {
+    pub tenant_or_scope: String,
+    pub isolation_mode: CacheIsolationMode,
+    pub allow_shared_pool: bool,
+    pub require_access_receipts: bool,
+}
+
+impl CacheSecurityPolicy {
+    pub fn local_single_tenant(scope: impl Into<String>) -> Self {
+        Self {
+            tenant_or_scope: scope.into(),
+            isolation_mode: CacheIsolationMode::SingleTenant,
+            allow_shared_pool: true,
+            require_access_receipts: true,
+        }
+    }
+
+    pub fn validate(&self) -> crate::error::Result<()> {
+        if self.tenant_or_scope.is_empty() {
+            return Err(crate::error::PolyKvError::InvalidPolicy(
+                "cache security tenant/scope is empty".into(),
+            ));
+        }
+        if matches!(self.isolation_mode, CacheIsolationMode::SharedIsolated)
+            && !self.require_access_receipts
+        {
+            return Err(crate::error::PolyKvError::InvalidPolicy(
+                "shared isolated mode requires access receipts".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CacheAccessReceiptV1 {
+    pub schema_version: String,
+    pub tenant_or_scope: String,
+    pub pool_digest: Digest,
+    pub shell_digest: Option<Digest>,
+    pub page_ids_touched: Vec<String>,
+    pub candidate_count: usize,
+    pub exact_fallback_count: usize,
+    pub isolation_mode: CacheIsolationMode,
+}
+
+impl CacheAccessReceiptV1 {
+    pub fn validate(&self) -> crate::error::Result<()> {
+        if self.schema_version != CACHE_ACCESS_RECEIPT_SCHEMA {
+            return Err(crate::error::PolyKvError::InvalidReceipt(format!(
+                "expected schema {}, got {}",
+                CACHE_ACCESS_RECEIPT_SCHEMA, self.schema_version
+            )));
+        }
+        if self.tenant_or_scope.is_empty() {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "tenant/scope is empty".into(),
+            ));
+        }
+        Ok(())
     }
 }
 

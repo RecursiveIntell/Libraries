@@ -4,8 +4,8 @@
 //! the mock embedder (no model download, no Ollama, no network).
 //! Each test gets a fresh temp directory so there is no cross-test state.
 
-use semantic_memory_mcp::bridge::{BridgeConfig, EmbedderBackend, MemoryBridge};
 use semantic_memory::GraphEdgeType;
+use semantic_memory_mcp::bridge::{BridgeConfig, EmbedderBackend, MemoryBridge};
 
 /// Open a MemoryBridge with the mock embedder in a temp directory.
 fn open_bridge(dir: &std::path::Path) -> MemoryBridge {
@@ -160,15 +160,10 @@ mod lifecycle_tests {
         let results = rt
             .block_on(store.search("turbo-quant downloads", Some(10), None, None))
             .expect("search should succeed");
-        let has_old = results
-            .iter()
-            .any(|r| r.content.contains("1000 downloads"));
-        let has_new = results
-            .iter()
-            .any(|r| r.content.contains("4000 downloads"));
+        let has_new = results.iter().any(|r| r.content.contains("4000 downloads"));
         assert!(has_new, "new fact should appear in search");
         // Old fact may or may not be filtered depending on search filter logic,
-        // but the edge should exist
+        // but the supersedes edge should exist.
     }
 
     #[test]
@@ -236,10 +231,7 @@ mod lifecycle_tests {
         let edges = rt
             .block_on(store.list_graph_edges_for_node(&source))
             .expect("list_graph_edges should succeed");
-        assert!(
-            !edges.is_empty(),
-            "should have at least one edge from A"
-        );
+        assert!(!edges.is_empty(), "should have at least one edge from A");
         let found = edges.iter().any(|e| e.target == target);
         assert!(found, "should find the edge A->B");
     }
@@ -251,9 +243,7 @@ mod lifecycle_tests {
         add_fact(&bridge, "Fact for stats test.", "stats_ns");
         let store = &bridge.store;
         let rt = tokio::runtime::Runtime::new().unwrap();
-        let stats = rt
-            .block_on(store.stats())
-            .expect("stats should succeed");
+        let stats = rt.block_on(store.stats()).expect("stats should succeed");
         assert!(
             stats.total_facts >= 1,
             "should have at least 1 fact, got: {}",
@@ -269,7 +259,10 @@ mod http_server_tests {
 
     /// Start the HTTP server on a random port and return the port.
     /// Returns (port, runtime) — the runtime must stay alive while making requests.
-    fn start_http(bridge: MemoryBridge) -> (u16, tokio::runtime::Runtime) {
+    fn start_http_with_gate(
+        bridge: MemoryBridge,
+        admin_gate: semantic_memory_mcp::http_server::HttpAdminGate,
+    ) -> (u16, tokio::runtime::Runtime) {
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let port = listener.local_addr().unwrap().port();
         drop(listener);
@@ -284,12 +277,26 @@ mod http_server_tests {
         let _enter = rt.enter();
         std::thread::spawn(move || {
             let _guard = handle.enter();
-            semantic_memory_mcp::http_server::start_http_server(port, bridge, handle);
+            semantic_memory_mcp::http_server::start_http_server_with_admin_gate(
+                port,
+                bridge,
+                handle,
+                "http://127.0.0.1:11434".to_string(),
+                "granite4.1:3b".to_string(),
+                admin_gate,
+            );
         });
 
         // Give the server a moment to bind
         std::thread::sleep(std::time::Duration::from_millis(100));
         (port, rt)
+    }
+
+    fn start_http(bridge: MemoryBridge) -> (u16, tokio::runtime::Runtime) {
+        start_http_with_gate(
+            bridge,
+            semantic_memory_mcp::http_server::HttpAdminGate::UnsafeAllowAll,
+        )
     }
 
     fn http_get(port: u16, path: &str) -> (String, String) {
@@ -309,10 +316,24 @@ mod http_server_tests {
     }
 
     fn http_post(port: u16, path: &str, body: &str) -> (String, String) {
+        http_post_with_headers(port, path, body, &[])
+    }
+
+    fn http_post_with_headers(
+        port: u16,
+        path: &str,
+        body: &str,
+        headers: &[(&str, &str)],
+    ) -> (String, String) {
         let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let extra_headers = headers
+            .iter()
+            .map(|(name, value)| format!("{}: {}\r\n", name, value))
+            .collect::<String>();
         let request = format!(
-            "POST {} HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            "POST {} HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\n{}Content-Length: {}\r\nConnection: close\r\n\r\n{}",
             path,
+            extra_headers,
             body.len(),
             body
         );
@@ -324,6 +345,71 @@ mod http_server_tests {
             .map(|i| response[i + 4..].to_string())
             .unwrap_or_default();
         (response, body_start)
+    }
+
+    #[test]
+    fn destructive_http_endpoints_require_admin_gate_by_default() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let (port, _rt) = start_http_with_gate(
+            bridge,
+            semantic_memory_mcp::http_server::HttpAdminGate::DenyUnlessAuthorized { token: None },
+        );
+
+        for (path, body) in [
+            ("/add", r#"{"content":"blocked","namespace":"test"}"#),
+            ("/add-edge", r#"{"source":"fact:a","target":"fact:b"}"#),
+            ("/delete-fact", r#"{"fact_id":"fact:a"}"#),
+            ("/record-outcome", r#"{"query":"q","outcome":"neutral"}"#),
+            ("/maintenance/vacuum", "{}"),
+            ("/maintenance/reembed", "{}"),
+            ("/maintenance/reembed-missing", "{}"),
+            ("/maintenance/reconcile", r#"{"action":"ReEmbed"}"#),
+            ("/maintenance/compact-hnsw", "{}"),
+            ("/maintenance/auto-edge", "{}"),
+        ] {
+            let (response, body) = http_post(port, path, body);
+            assert!(
+                response.contains("403 Forbidden"),
+                "{path} should be gated, got: {response} body={body}"
+            );
+            let json: serde_json::Value = serde_json::from_str(&body).expect("valid JSON");
+            assert_eq!(json["ok"], serde_json::Value::Bool(false));
+            assert_eq!(json["error"], "admin authorization required");
+        }
+    }
+
+    #[test]
+    fn destructive_http_endpoint_accepts_bearer_admin_token() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let (port, _rt) = start_http_with_gate(
+            bridge,
+            semantic_memory_mcp::http_server::HttpAdminGate::DenyUnlessAuthorized {
+                token: Some("test-token".to_string()),
+            },
+        );
+
+        let (forbidden_response, _) = http_post(
+            port,
+            "/add",
+            r#"{"content":"missing token","namespace":"test"}"#,
+        );
+        assert!(forbidden_response.contains("403 Forbidden"));
+
+        let (ok_response, ok_body) = http_post_with_headers(
+            port,
+            "/add",
+            r#"{"content":"authorized token fact","namespace":"test"}"#,
+            &[("Authorization", "Bearer test-token")],
+        );
+        assert!(
+            ok_response.contains("200 OK"),
+            "authorized add should succeed: {ok_response} body={ok_body}"
+        );
+        let json: serde_json::Value = serde_json::from_str(&ok_body).expect("valid JSON");
+        assert_eq!(json["ok"], serde_json::Value::Bool(true));
+        assert!(json["fact_id"].is_string());
     }
 
     #[test]
@@ -398,7 +484,11 @@ mod http_server_tests {
             "/add",
             r#"{"content": "Test fact for stats.", "namespace": "stats"}"#,
         );
-        assert!(add_response.contains("200 OK"), "add should succeed: {}", add_body);
+        assert!(
+            add_response.contains("200 OK"),
+            "add should succeed: {}",
+            add_body
+        );
 
         let (_, body) = http_post(port, "/stats", "{}");
         let json: serde_json::Value = serde_json::from_str(&body).expect("valid JSON");

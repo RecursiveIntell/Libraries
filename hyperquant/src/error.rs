@@ -15,6 +15,18 @@ pub enum HyperQuantError {
     /// The lattice is intentionally exposed as a known target but not yet implemented.
     #[error("unsupported lattice {0:?}: implementation is not shipped, and no placeholder result is emitted")]
     UnsupportedLattice(LatticeKind),
+    /// Rice coding parameter is outside the supported local range.
+    #[error("invalid Rice parameter k={k}; expected 0..=15")]
+    InvalidRiceParameter { k: u8 },
+    /// Encoded bitstream metadata is inconsistent with the payload.
+    #[error("invalid Rice bitstream: {reason}")]
+    InvalidRiceBitstream { reason: &'static str },
+    /// RHT tile dimension must be a non-zero power of two.
+    #[error("invalid RHT tile dimension {tile_dim}; expected a non-zero power of two")]
+    InvalidTileDimension { tile_dim: usize },
+    /// Output buffer length does not match encoded block length.
+    #[error("decode output length mismatch: expected {expected}, got {actual}")]
+    DecodeLengthMismatch { expected: usize, actual: usize },
 }
 
 /// Result alias for HyperQuant operations.

@@ -1,161 +1,70 @@
 # scr-runtime-compression
 
-Runtime integration adapter for `semantic-memory`'s compression
-layer.
+Runtime compression adapter layer for `semantic-memory`, `turbo-quant`, `fib-quant`, and the shared `compressed-scorer` trait.
 
-`scr-runtime-compression` is the **runtime adapter** that lets
-`semantic-memory` use `turbo-quant` and `fib-quant` without
-taking a hard dependency on either. The two key types are:
+This crate does not own codec truth and does not own semantic-memory retrieval semantics. It owns integration seams:
 
-- **`CompressedSearchPath`** — a search path that uses a
-  compressed candidate index (from `turbo-quant` or
-  `fib-quant`) followed by exact rerank against the raw
-  vectors. This is the production-mode path for memory recall
-  with a compressible corpus.
-- **`ExactFallbackAdapter`** — a typed wrapper that takes
-  any compressed representation and a raw-fallback, and
-  always returns the raw result. The contract: the adapter
-  emits a `FallbackReceiptV1` on every call, so the audit
-  trail captures which path served the request.
+- `CompressedSearchPath` — carries compression metadata with a caller's search path.
+- `ExactFallbackAdapter` — decode/fallback wrapper for exact reconstruction paths.
+- `CompressedScorerAdapter` — compressed-domain candidate scorer that ranks compressed payloads without f32 decompression.
 
-The crate is **alpha**. The runtime adapter works but the
-GPU path is gated off-by-default because the per-call H2D/D2H
-overhead negates the kernel speedup at the current call
-granularity.
+## Current adapter split
 
-## What's in the box
+`ExactFallbackAdapter` is for verification/fallback:
 
-### `CompressedSearchPath`
-
-```rust
-pub struct CompressedSearchPath {
-    compressed_index: Box<dyn CompressedIndex>,
-    raw_corpus: Vec<Vec<f32>>,
-    profile_digest: CodecProfileDigest,
-}
-
-impl CompressedSearchPath {
-    pub fn search(&self, query: &[f32], k: usize) -> Result<SearchResult, CompressionError> {
-        // 1. Get top-k * oversample candidates from compressed index
-        // 2. Exact rerank on raw_corpus
-        // 3. Return reranked top-k with a Receipt
-    }
-}
+```text
+compressed bytes -> codec decode -> exact/decoded bytes
 ```
 
-The `oversample` factor is the key control: higher oversample
-gives better recall at the cost of more rerank work. The
-default is 4 (matches the turbo-quant smoke benchmark setup).
+`CompressedScorerAdapter` is for hot-path candidate generation:
 
-### `ExactFallbackAdapter`
-
-```rust
-pub struct ExactFallbackAdapter<C: CompressedIndex, R: RawStore> {
-    compressed: C,
-    raw: R,
-    // Emits FallbackReceiptV1 on every call
-}
+```text
+query f32 -> prepare once -> score compressed candidates -> ranked approximate candidates
 ```
 
-The adapter's contract:
+Semantic-memory can now choose either:
 
-- **If the compressed index is admissible for the query**
-  (size, accuracy, latency), it serves the result from the
-  compressed index and emits a `FallbackReceiptV1 { path: "compressed" }`.
-- **If the compressed index is not admissible** (e.g. caller
-  asked for `Admissibility::Exact`), it serves from the raw
-  store and emits a `FallbackReceiptV1 { path: "raw" }`.
-- **Every call emits exactly one receipt.** The audit trail
-  records the path taken.
+1. compressed candidate generation followed by exact f32 rerank, or
+2. compressed-domain-only candidate scoring when `turbo_quant_require_exact_rerank = false`.
 
-### Feature flags
+The second path still resolves metadata rows for returned hits, but it does not load/decode authoritative embedding blobs for final rerank.
+
+## Example: generic compressed scorer
+
+```rust
+use scr_runtime_compression::{CodecId, CompressedScorerAdapter};
+
+let adapter = CompressedScorerAdapter::turbo_quant(768, 8, 64, 0)?;
+let candidates = vec![("item:a", turbo_code_a), ("item:b", turbo_code_b)];
+let ranked = adapter.score_candidates(&query, &candidates, f32::NEG_INFINITY, 10)?;
+assert!(ranked.len() <= 10);
+```
+
+## Feature flags
 
 | Feature | Default | What it enables |
-|---|---|---|
-| `turbo` | yes | `turbo-quant` codec adapter |
-| `fib` | yes | `fib-quant` codec adapter |
-| `polar` | yes | Polar-only compression (asymmetric) |
-| `qjl` | yes | QJL sketches for residual recovery |
-| `gpu` | no | GPU dispatch via `gpu-backend` |
+|---|---:|---|
+| `turbo` | yes | `turbo-quant` encode/decode and `CompressedScorerAdapter::turbo_quant`. |
+| `fib` | yes | `fib-quant` encode/decode and `CompressedScorerAdapter::fib_quant`. |
+| `polar` | yes | Polar-only asymmetric encode/pass-through decode. |
+| `qjl` | yes | QJL sketch encode/pass-through decode. |
 
-The default is `["turbo", "fib", "polar", "qjl"]` — all four
-codecs available, no GPU (because the GPU path is slower in
-integration at this time).
+Default features are `turbo`, `fib`, `polar`, and `qjl`.
 
-## Quick Start
+## Integration contract
 
-```rust
-use scr_runtime_compression::{CompressedSearchPath, ExactFallbackAdapter};
-use turbo_quant::{TurboSidecarCode, TurboSidecarIndex};
-use quant_codec_core::{KvTensorShape, DType};
+- Approximate scores are candidate evidence, not raw-vector truth.
+- Exact rerank remains the conservative default.
+- Compressed-only mode must be explicit in the caller config.
+- Corrupt artifacts fail closed to raw f32 fallback where the caller has raw authority.
+- This crate never imports semantic-memory database types; semantic-memory resolves IDs, filters, receipts, and source authority.
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Build a compressed index.
-    let code = TurboSidecarCode::encode(&profile, &corpus)?;
-    let index = TurboSidecarIndex::build(&profile, code)?;
+## Verification receipts from this integration pass
 
-    // Wrap it in the search path.
-    let path = CompressedSearchPath::new(index, corpus.clone(), profile_digest);
-
-    // Search.
-    let result = path.search(&query, 10)?;
-    assert_eq!(result.results.len(), 10);
-    println!("Receipt: {:?}", result.receipt);
-    Ok(())
-}
-```
-
-Run it: `cargo run --example basic_search` (see `examples/`).
-
-## Test coverage
-
-- **Exact-fallback contract tests** — every adapter call
-  emits exactly one receipt, and the path recorded matches
-  the actual path taken.
-- **Oversample sweep tests** — k=10 with oversample = 1, 4,
-  16, 64; assert recall@10 and rerank-cost.
-- **Admissibility routing** — caller says
-  `Admissibility::Exact`, the adapter routes to raw; caller
-  says `Admissibility::Approximate`, the adapter routes to
-  compressed.
-- `cargo test --all-features` clean.
-- `cargo clippy --all-targets -- -D warnings` clean.
+- `cargo test -p scr-runtime-compression` -> 26 passed, 1 doc-test passed, 1 ignored.
+- `cargo tree -p scr-runtime-compression -i compressed-scorer` -> `compressed-scorer -> scr-runtime-compression`, no reverse cycle.
+- Downstream semantic-memory check/test with `brute-force turbo-quant-codec` passed.
 
 ## MSRV
 
-Rust 1.75 (2021 edition). Stable features only.
-
-## Dependencies
-
-- `bytemuck` (with `derive`) — for safe zero-copy codec
-  output.
-- `serde` (with `derive`).
-- `serde_json`.
-- `thiserror`.
-- `chrono` (for receipt timestamps).
-- `quant-governor` — for the policy routing layer.
-- `turbo-quant` (optional) — for the `turbo` feature.
-- `fib-quant` (optional) — for the `fib` feature.
-
-## License
-
-MIT. See `LICENSE-MIT` for the full text.
-
-## Changelog
-
-See `CHANGELOG.md` for the release history.
-
-## Where it's used
-
-`scr-runtime-compression` is the integration layer for:
-
-- `semantic-memory` — every recall over a corpus with
-  `Admissibility::Standard` or below routes through
-  `CompressedSearchPath`.
-- The `quant-governor` policy engine — when the policy
-  routes to a compressed codec, the `ExactFallbackAdapter` is
-  the one that actually executes the call.
-
-Any system that wants to **add governed compression** to an
-existing search path can adopt `scr-runtime-compression`
-directly.
+Rust 1.75, edition 2021.

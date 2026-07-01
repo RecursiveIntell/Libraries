@@ -1,7 +1,7 @@
 {
   "receipt_version": 1,
-  "snapshot": "2026-03-30-hardening-closeout",
-  "captured_at": "2026-03-30",
+  "snapshot": "2026-06-26-hardening-closeout",
+  "captured_at": "2026-06-26",
   "supported_closeout_lane": {
     "crates": [
       "contract-schema-gen",
@@ -169,11 +169,11 @@
         "sha256": "03a47d6e6c55d00692ce4753a3fd94b5de9eee1aaf02e69f5b79760b81cebd00"
       }
     ],
-    "canonical_schema_dir_sha256": "27f1de9745fce203af3be4fc605d0c0eaf8c80d9e293bd993096438627777b25"
+    "canonical_schema_dir_sha256": "1b73da06e5d9587546c89f449f1d5a93a8bfaedbcf38a1bf5054b90c83d4cb82"
   },
   "evidence_manifest": {
     "path": "STATUS_EVIDENCE_MANIFEST.json",
-    "sha256": "d8c8d0ca4442873281245c4772e3d87d5b7e233ddc33ead76a1f2ec1d108d2ab"
+    "sha256": "e18d3f1e867579308699cc7d5dc5358bdbbd458b878cc93742eea161d0aefe6c"
   },
   "risk_register": {
     "path": "06_RISK_REGISTER.md",
@@ -181,32 +181,68 @@
   },
   "archive_manifest": {
     "path": "docs/archive/root_closeout_history/manifest.json",
-    "sha256": "328f341f6c7744e99a855c2359df878d7ee48cbfa56a75b738916eab93302a20",
+    "sha256": "bc31e16d0f9acfb7584836a408f5e18f7307d8956267e8e7e6901208b0a9276e",
     "archive_mode": "logical_supersession_map",
     "active_root_file_count": 22,
     "physically_archived_groups": [
       {
         "group": "prior_pack_numbered_documents",
         "archived_dir": "docs/archive/superseded_packs",
-        "archived_count": 63
+        "archived_count": 72
       },
       {
         "group": "superseded_canonical_specs",
         "archived_dir": "docs/archive/superseded_packs",
-        "archived_count": 63
+        "archived_count": 72
       },
       {
         "group": "superseded_standalone_control_docs",
         "archived_dir": "docs/archive/superseded_packs",
-        "archived_count": 63
+        "archived_count": 72
       }
     ]
   },
   "public_type_drift": {
     "allowlist_path": "scripts/public_type_drift_allowlist.json",
-    "allowlist_sha256": "453f6ea590196bc0eb90446f8d7a1811cc8507523abafff34dac26f4c13c39d7",
-    "allowlisted_duplicate_count": 0,
-    "allowlist": []
+    "allowlist_sha256": "746353c1ab55eba4b371a2785ea929ea3122e3415431829bfba766df243cf768",
+    "allowlisted_duplicate_count": 5,
+    "allowlist": [
+      {
+        "name": "CrateReceiptV1",
+        "owners": [
+          "contract-schema-gen",
+          "stack-ids"
+        ]
+      },
+      {
+        "name": "ExecutionStopReason",
+        "owners": [
+          "kernel-execution",
+          "verification-control"
+        ]
+      },
+      {
+        "name": "Outcome",
+        "owners": [
+          "contract-schema-gen",
+          "stack-ids"
+        ]
+      },
+      {
+        "name": "RefutationResult",
+        "owners": [
+          "semantic-memory",
+          "semantic-memory-forge"
+        ]
+      },
+      {
+        "name": "Syndrome",
+        "owners": [
+          "recursive-kernel-core",
+          "semantic-memory"
+        ]
+      }
+    ]
   },
   "public_api_docs": {
     "tracked_crates": [
@@ -243,7 +279,7 @@
       {
         "crate": "verification-control",
         "documented": 36,
-        "total": 36
+        "total": 41
       },
       {
         "crate": "verification-policy",
@@ -252,8 +288,8 @@
       },
       {
         "crate": "semantic-memory-forge",
-        "documented": 35,
-        "total": 35
+        "documented": 37,
+        "total": 37
       }
     ],
     "fully_documented_crates": [
@@ -261,7 +297,6 @@
       "recursive-kernel-core",
       "constraint-compiler",
       "effect-runtime",
-      "verification-control",
       "verification-policy",
       "semantic-memory-forge"
     ]

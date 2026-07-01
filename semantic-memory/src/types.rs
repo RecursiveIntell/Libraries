@@ -1405,6 +1405,14 @@ pub struct MemoryStats {
     pub embedding_model: Option<String>,
     /// Currently configured embedding dimensions.
     pub embedding_dimensions: Option<usize>,
+    /// Active, non-invalidated stored graph edges.
+    pub active_graph_edges: u64,
+    /// Invalidated stored graph edges retained for append-only audit history.
+    pub invalidated_graph_edges: u64,
+    /// Facts missing embeddings.
+    pub facts_missing_embeddings: u64,
+    /// Chunks missing embeddings.
+    pub chunks_missing_embeddings: u64,
 }
 
 /// Per-surface deletion counts for namespace removal.

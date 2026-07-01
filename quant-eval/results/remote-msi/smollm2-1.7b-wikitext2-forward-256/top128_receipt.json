@@ -1,0 +1,53 @@
+{
+  "schema_version": "compressed_attention_forward_ppl_v1",
+  "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "corpus": "wikitext-2",
+  "n_tokens": 256,
+  "ppl_frac": 0.3,
+  "eval_window": [
+    178,
+    255
+  ],
+  "top_k": 128,
+  "recent_guard": 16,
+  "quant_bits": 4,
+  "device": "cuda",
+  "baseline_ppl": 11.900871279801352,
+  "compressed_attention_ppl": 11.863077813047635,
+  "delta_ppl_pct": -0.3175689062183356,
+  "baseline_forward_seconds": 0.2288661003112793,
+  "compressed_forward_seconds": 110.99222373962402,
+  "logit_cosine_mean": 0.9980449080467224,
+  "logit_cosine_p05": 0.9913895130157471,
+  "kl_mean": 0.006328055169433355,
+  "kl_p95": 0.028843563795089726,
+  "max_abs_logit_delta_mean": 0.893310546875,
+  "max_abs_logit_delta_p95": 2.2562500000000005,
+  "argmax_match_rate": 0.9740259647369385,
+  "target_logit_abs_delta_mean": 0.21304915845394135,
+  "target_logit_abs_delta_p95": 0.6500000000000006,
+  "attention": {
+    "samples": 0,
+    "decoded_keys_for_ranking": 0,
+    "decoded_selected_keys_mean": null,
+    "decoded_selected_keys_p95": null,
+    "decoded_values_mean": null,
+    "decoded_values_p95": null,
+    "attention_output_cosine_mean": null,
+    "attention_output_cosine_p05": null,
+    "attention_mse_mean": null,
+    "attention_mse_p95": null,
+    "attention_topk_overlap_mean": null,
+    "attention_topk_overlap_p05": null,
+    "per_layer": {}
+  },
+  "thresholds": {
+    "ppl_delta_abs_pct_max": 3.0,
+    "logit_cosine_p05_min": 0.995,
+    "kl_p95_max": 0.05,
+    "decoded_keys_for_ranking_required": 0
+  },
+  "passed": false,
+  "elapsed_s": 116.8882474899292,
+  "claim_boundary": "Actual model forward pass patched at LlamaAttention after RoPE and before o_proj. Candidate ranking uses quantized key scores without full-key decode; selected keys and values are used only for exact selected softmax/output. Python implementation is quality-only, not speed evidence."
+}

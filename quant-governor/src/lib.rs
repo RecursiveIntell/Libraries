@@ -42,7 +42,7 @@ pub mod error;
 pub mod policy;
 pub mod receipt;
 
-pub use decision::{CodecDecision, CodecProfile};
+pub use decision::{CodecDecision, CodecProfile, GovernanceDecisionReceipt};
 pub use degradation::DegradationReceipt;
 pub use error::GovernorError;
 pub use policy::{AdmissibilityClass, ContentType, GovernancePolicy, GovernanceRequest};

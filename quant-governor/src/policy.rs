@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::decision::{CodecDecision, CodecProfile};
+use crate::decision::{CodecDecision, CodecProfile, GovernanceDecisionReceipt};
 use crate::error::GovernorError;
 
 /// Content type for routing decisions.
@@ -18,6 +18,8 @@ pub enum ContentType {
     Video,
     /// Structured data
     Structured,
+    /// Vector embeddings
+    Embedding,
     /// Model weights
     Model,
     /// Other/unknown
@@ -33,6 +35,7 @@ impl std::fmt::Display for ContentType {
             ContentType::Audio => write!(f, "audio"),
             ContentType::Video => write!(f, "video"),
             ContentType::Structured => write!(f, "structured"),
+            ContentType::Embedding => write!(f, "embedding"),
             ContentType::Model => write!(f, "model"),
             ContentType::Other => write!(f, "other"),
         }
@@ -160,9 +163,17 @@ impl GovernancePolicy {
         if request.size_bytes <= self.small_content_threshold
             && request.admissibility != AdmissibilityClass::Critical
         {
-            return Ok(CodecDecision::direct(
+            return Ok(CodecDecision::with_governance(
                 CodecProfile::Raw,
                 self.max_degradation,
+                GovernanceDecisionReceipt {
+                    policy_name: self.name.clone(),
+                    content_type: request.content_type.to_string(),
+                    admissibility: format!("{request:?}", request = request.admissibility),
+                    rationale: "Small content bypass: routing directly to Raw.".to_string(),
+                    blocked_profiles: vec![],
+                    candidate_profiles: vec![CodecProfile::Raw],
+                },
             ));
         }
 
@@ -170,26 +181,48 @@ impl GovernancePolicy {
         if request.accuracy_requirement >= self.raw_min_accuracy
             || request.admissibility == AdmissibilityClass::Critical
         {
-            return Ok(CodecDecision::direct(CodecProfile::Raw, 0.0));
+            return Ok(CodecDecision::with_governance(
+                CodecProfile::Raw,
+                0.0,
+                GovernanceDecisionReceipt {
+                    policy_name: self.name.clone(),
+                    content_type: request.content_type.to_string(),
+                    admissibility: format!("{request:?}", request = request.admissibility),
+                    rationale: "Critical policy path: raw codec required by accuracy or admissibility.".to_string(),
+                    blocked_profiles: vec![CodecProfile::Q8, CodecProfile::Q4],
+                    candidate_profiles: vec![CodecProfile::Raw],
+                },
+            ));
         }
 
-        // Select codec based on content type and requirements
-        let codec = self.select_codec(&request)?;
+        // Select codec and optional governance trace for policy-facing decisions.
+        let (codec, governance_trace) = self.select_codec(&request)?;
         let degradation = codec.default_degradation_threshold();
 
-        Ok(CodecDecision::direct(codec, degradation))
+        match governance_trace {
+            Some(trace) => Ok(CodecDecision::with_governance(
+                codec,
+                degradation,
+                trace,
+            )),
+            None => Ok(CodecDecision::direct(codec, degradation)),
+        }
     }
 
     /// Select appropriate codec based on request.
-    fn select_codec(&self, request: &GovernanceRequest) -> Result<CodecProfile, GovernorError> {
+    fn select_codec(
+        &self,
+        request: &GovernanceRequest,
+    ) -> Result<(CodecProfile, Option<GovernanceDecisionReceipt>), GovernorError> {
         match request.content_type {
-            ContentType::Text => self.select_for_text(request),
-            ContentType::Image => self.select_for_image(request),
-            ContentType::Audio => self.select_for_audio(request),
-            ContentType::Video => self.select_for_video(request),
-            ContentType::Structured => self.select_for_structured(request),
-            ContentType::Model => self.select_for_model(request),
-            ContentType::Other => Ok(CodecProfile::Q8),
+            ContentType::Text => Ok((self.select_for_text(request)?, None)),
+            ContentType::Image => Ok((self.select_for_image(request)?, None)),
+            ContentType::Audio => Ok((self.select_for_audio(request)?, None)),
+            ContentType::Video => Ok((self.select_for_video(request)?, None)),
+            ContentType::Structured => Ok((self.select_for_structured(request)?, None)),
+            ContentType::Embedding => self.select_for_embedding(request),
+            ContentType::Model => Ok((self.select_for_model(request)?, None)),
+            ContentType::Other => Ok((CodecProfile::Q8, None)),
         }
     }
 
@@ -251,6 +284,176 @@ impl GovernancePolicy {
         } else {
             Ok(CodecProfile::Q8)
         }
+    }
+
+    fn select_for_embedding(
+        &self,
+        request: &GovernanceRequest,
+    ) -> Result<(CodecProfile, Option<GovernanceDecisionReceipt>), GovernorError> {
+        if request.accuracy_requirement >= self.raw_min_accuracy {
+            return Ok((CodecProfile::Raw, None));
+        }
+
+        if request.admissibility == AdmissibilityClass::HighPriority {
+            if request.size_bytes > 1_000_000 && self.within_budget(CodecProfile::Q4) {
+                return Ok((
+                    CodecProfile::Q4,
+                    Some(GovernanceDecisionReceipt {
+                        policy_name: self.name.clone(),
+                        content_type: "Embedding".to_string(),
+                        admissibility: format!("{request:?}", request = request.admissibility),
+                        rationale: "HighPriority embedding routes avoid HyperQuant by policy.".to_string(),
+                        blocked_profiles: vec![CodecProfile::Hyperquant],
+                        candidate_profiles: vec![
+                            CodecProfile::Hyperquant,
+                            CodecProfile::Q4,
+                            CodecProfile::Q8,
+                            CodecProfile::Turbo,
+                        ],
+                    }),
+                ));
+            }
+            return Ok((
+                CodecProfile::Q8,
+                Some(GovernanceDecisionReceipt {
+                    policy_name: self.name.clone(),
+                    content_type: "Embedding".to_string(),
+                    admissibility: format!("{request:?}", request = request.admissibility),
+                    rationale:
+                        "HighPriority embedding did not satisfy Q4 threshold, fallback to Q8 by policy.".to_string(),
+                    blocked_profiles: vec![CodecProfile::Hyperquant, CodecProfile::Q4],
+                    candidate_profiles: vec![CodecProfile::Hyperquant, CodecProfile::Q4, CodecProfile::Q8],
+                }),
+            ));
+        }
+
+        // Low-latency policy should stay on asymmetric/sketch codecs and avoid
+        // lattice quantization in the hot-path to preserve first-pass latency.
+        if self.name == "low_latency"
+            && request.latency_tolerance_ms < 100
+            && request.size_bytes >= 256_000
+            && self.within_budget(CodecProfile::Turbo)
+        {
+            return Ok((
+                CodecProfile::Turbo,
+                Some(GovernanceDecisionReceipt {
+                    policy_name: self.name.clone(),
+                    content_type: "Embedding".to_string(),
+                    admissibility: format!("{request:?}", request = request.admissibility),
+                    rationale:
+                        "Low-latency embedding routing prefers Turbo over HyperQuant to satisfy latency policy.".to_string(),
+                    blocked_profiles: vec![CodecProfile::Hyperquant, CodecProfile::Q4],
+                    candidate_profiles: vec![
+                        CodecProfile::Hyperquant,
+                        CodecProfile::Turbo,
+                        CodecProfile::Q8,
+                    ],
+                }),
+            ));
+        }
+
+        let storage_oriented = self.name == "storage_efficient";
+        let accuracy_oriented = self.name == "accuracy_oriented";
+
+        let prefer_hyperquant = if accuracy_oriented {
+            false
+        } else if storage_oriented {
+            request.accuracy_requirement <= 0.95
+                && (request.size_bytes >= 256_000
+                    || request.admissibility == AdmissibilityClass::BestEffort)
+                && self.within_budget(CodecProfile::Hyperquant)
+        } else {
+            request.accuracy_requirement <= 0.90
+                && (request.size_bytes >= 1_000_000
+                    || request.admissibility == AdmissibilityClass::BestEffort)
+                && self.within_budget(CodecProfile::Hyperquant)
+        };
+
+        if prefer_hyperquant {
+            return Ok((
+                CodecProfile::Hyperquant,
+                Some(GovernanceDecisionReceipt {
+                    policy_name: self.name.clone(),
+                    content_type: "Embedding".to_string(),
+                    admissibility: format!("{request:?}", request = request.admissibility),
+                    rationale: if storage_oriented {
+                        "storage_efficient policy admitted HyperQuant under budget and threshold requirements."
+                            .to_string()
+                    } else {
+                        "Default policy admitted HyperQuant under budget and size threshold requirements."
+                            .to_string()
+                    },
+                    blocked_profiles: vec![],
+                    candidate_profiles: vec![
+                        CodecProfile::Hyperquant,
+                        CodecProfile::Q4,
+                        CodecProfile::Q8,
+                        CodecProfile::Turbo,
+                    ],
+                }),
+            ));
+        }
+
+        let blocked = if self.within_budget(CodecProfile::Q4) {
+            Vec::new()
+        } else {
+            vec![CodecProfile::Q4]
+        };
+
+        if request.size_bytes > 1_000_000 && self.within_budget(CodecProfile::Q4) {
+            Ok((
+                CodecProfile::Q4,
+                Some(GovernanceDecisionReceipt {
+                    policy_name: self.name.clone(),
+                    content_type: "Embedding".to_string(),
+                    admissibility: format!("{request:?}", request = request.admissibility),
+                    rationale: "Embedding is large, but HyperQuant not admitted for this policy profile.".to_string(),
+                    blocked_profiles: {
+                        let mut blocked_profiles = vec![CodecProfile::Hyperquant];
+                        if storage_oriented {
+                            blocked_profiles.push(CodecProfile::Turbo);
+                        }
+                        blocked_profiles
+                    },
+                    candidate_profiles: vec![
+                        CodecProfile::Hyperquant,
+                        CodecProfile::Q4,
+                        CodecProfile::Q8,
+                        CodecProfile::Turbo,
+                    ],
+                }),
+            ))
+        } else {
+            Ok((
+                CodecProfile::Q8,
+                Some(GovernanceDecisionReceipt {
+                    policy_name: self.name.clone(),
+                    content_type: "Embedding".to_string(),
+                    admissibility: format!("{request:?}", request = request.admissibility),
+                    rationale: if self.within_budget(CodecProfile::Hyperquant) {
+                        "HyperQuant was blocked by profile/size gate; Q4 would miss quality threshold or size is low.".to_string()
+                    } else {
+                        "HyperQuant was blocked by policy max_degradation budget.".to_string()
+                    },
+                    blocked_profiles: if blocked.is_empty() {
+                        vec![CodecProfile::Hyperquant]
+                    } else {
+                        let mut blocked_profiles = vec![CodecProfile::Hyperquant];
+                        blocked_profiles.extend(blocked);
+                        blocked_profiles
+                    },
+                    candidate_profiles: vec![
+                        CodecProfile::Hyperquant,
+                        CodecProfile::Q4,
+                        CodecProfile::Q8,
+                    ],
+                }),
+            ))
+        }
+    }
+
+    fn within_budget(&self, profile: CodecProfile) -> bool {
+        profile.default_degradation_threshold() <= self.max_degradation
     }
 
     fn select_for_model(&self, request: &GovernanceRequest) -> Result<CodecProfile, GovernorError> {
@@ -345,6 +548,54 @@ mod tests {
         let decision = policy.evaluate(request).unwrap();
         assert_eq!(decision.codec, CodecProfile::Raw);
     }
+
+    #[test]
+    fn embedding_large_best_effort_prefers_hyperquant() {
+        let policy = GovernancePolicy::default();
+        let request = GovernanceRequest {
+            content_type: ContentType::Embedding,
+            size_bytes: 2_000_000,
+            accuracy_requirement: 0.88,
+            latency_tolerance_ms: 200,
+            admissibility: AdmissibilityClass::BestEffort,
+        };
+
+        let decision = policy.evaluate(request).unwrap();
+        assert_eq!(decision.codec, CodecProfile::Hyperquant);
+
+        if let crate::decision::CodecReceipt::Governance { governance, .. } = decision.receipt {
+            assert_eq!(governance.policy_name, "default");
+            assert!(governance.rationale.contains("HyperQuant"));
+            assert_eq!(governance.blocked_profiles.len(), 0);
+        } else {
+            panic!("expected governance receipt for embedding decision");
+        }
+    }
+
+    #[test]
+    fn embedding_rejects_hyperquant_when_budget_disallows_or_size_is_low() {
+        let policy = GovernancePolicy::default();
+        let request = GovernanceRequest {
+            content_type: ContentType::Embedding,
+            size_bytes: 16_000,
+            accuracy_requirement: 0.97,
+            latency_tolerance_ms: 200,
+            ..Default::default()
+        };
+
+        let decision = policy.evaluate(request).unwrap();
+        assert_eq!(decision.codec, CodecProfile::Q8);
+
+        if let crate::decision::CodecReceipt::Governance { governance, .. } = decision.receipt {
+            assert_eq!(governance.policy_name, "default");
+            assert!(governance.rationale.contains("HyperQuant was blocked"));
+            assert!(governance.blocked_profiles.contains(&CodecProfile::Hyperquant));
+            assert!(governance.content_type.eq("Embedding"));
+        } else {
+            panic!("expected governance receipt for embedding decision");
+        }
+    }
+
 
     #[test]
     fn low_latency_audio_gets_turbo() {

@@ -1,0 +1,16 @@
+{
+  "backend": "cpu",
+  "blockers": [],
+  "compression_ratio": 11.130434782608695,
+  "corpus": "wikitext-2",
+  "delta_ppl_pct": 0.0,
+  "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "n_tokens": 256,
+  "oracle_ppl": 11.926321457678194,
+  "passed": true,
+  "pool_size_bytes": 9043968,
+  "roundtrip_ppl": 11.926321457678194,
+  "schema_version": "provekv_ppl_receipt_summary_v1",
+  "source": "/home/sikmindz/Coding/Libraries/quant-eval/results/remote-msi/smollm2-1.7b-wikitext2-256/state.json",
+  "total_compressed_bytes": 9043968
+}

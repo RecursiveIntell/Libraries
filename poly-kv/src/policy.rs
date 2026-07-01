@@ -125,6 +125,43 @@ impl TurboConfig {
     }
 }
 
+/// Role assigned to an attention head/layer for non-uniform cache budgets.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum HeadRole {
+    Local,
+    Retrieval,
+    Sink,
+    Semantic,
+    Unknown,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RoleBudget {
+    pub role: HeadRole,
+    pub min_bits: u8,
+    pub max_bits: u8,
+    pub force_exact_fallback: bool,
+}
+
+impl RoleBudget {
+    pub fn validate(&self) -> Result<()> {
+        if self.min_bits > self.max_bits {
+            return Err(PolyKvError::InvalidPolicy(
+                "role min_bits > max_bits".into(),
+            ));
+        }
+        if matches!(self.role, HeadRole::Retrieval | HeadRole::Sink)
+            && self.max_bits == 0
+            && !self.force_exact_fallback
+        {
+            return Err(PolyKvError::InvalidPolicy(
+                "retrieval/sink roles require nonzero budget or exact fallback".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
 /// Hard-coded two-tier compression policy.
 ///
 /// Derived from empirical benchmarks run on 2026-06-01:
@@ -140,6 +177,9 @@ pub struct CompressionPolicy {
     pub fib_config: FibConfig,
     /// TurboQuant configuration.
     pub turbo_config: TurboConfig,
+    /// Optional head/layer role budgets for V2 cache policies.
+    #[serde(default)]
+    pub role_budgets: Vec<RoleBudget>,
 }
 
 impl CompressionPolicy {
@@ -150,6 +190,26 @@ impl CompressionPolicy {
             shell_codec: CODEC_TURBO_8BIT.into(),
             fib_config: FibConfig::default_k4_n32(),
             turbo_config: TurboConfig::default_8bit(),
+            role_budgets: vec![
+                RoleBudget {
+                    role: HeadRole::Retrieval,
+                    min_bits: 2,
+                    max_bits: 8,
+                    force_exact_fallback: false,
+                },
+                RoleBudget {
+                    role: HeadRole::Sink,
+                    min_bits: 4,
+                    max_bits: 8,
+                    force_exact_fallback: false,
+                },
+                RoleBudget {
+                    role: HeadRole::Local,
+                    min_bits: 2,
+                    max_bits: 6,
+                    force_exact_fallback: false,
+                },
+            ],
         }
     }
 
@@ -169,6 +229,9 @@ impl CompressionPolicy {
         }
         self.fib_config.validate()?;
         self.turbo_config.validate()?;
+        for budget in &self.role_budgets {
+            budget.validate()?;
+        }
         Ok(())
     }
 }
@@ -202,5 +265,23 @@ mod tests {
         let mut config = TurboConfig::default_8bit();
         config.bits = 1;
         assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_retrieval_role_requires_budget_or_exact_fallback() {
+        let bad = RoleBudget {
+            role: HeadRole::Retrieval,
+            min_bits: 0,
+            max_bits: 0,
+            force_exact_fallback: false,
+        };
+        assert!(bad.validate().is_err());
+        let allowed = RoleBudget {
+            role: HeadRole::Retrieval,
+            min_bits: 0,
+            max_bits: 0,
+            force_exact_fallback: true,
+        };
+        assert!(allowed.validate().is_ok());
     }
 }

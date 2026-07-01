@@ -42,6 +42,133 @@ pub struct AgentShell {
 }
 
 impl AgentShell {
+    /// Compute top-k attention candidates using codec-provided compressed scoring when available.
+    ///
+    /// Receipts expose whether a codec had to fall back to key decoding. Turbo shell
+    /// blocks score without reconstructing f32 keys; current fib pool compact blocks
+    /// may still report decoded key fallback until a page-level fib scorer is wired.
+    #[cfg(feature = "fib")]
+    pub fn attention_topk_compressed(
+        &self,
+        pool: &SharedKVPool,
+        layer_idx: usize,
+        query: &[f32],
+        top_k: usize,
+        turbo_config: &crate::policy::TurboConfig,
+    ) -> Result<(
+        Vec<AttentionHit>,
+        crate::receipt::AttentionSelectionReceiptV1,
+    )> {
+        let head_dim = pool.manifest.shape.head_dim;
+        if query.len() != head_dim {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: head_dim,
+                got: query.len(),
+            });
+        }
+        let mut scored: Vec<(usize, f32, bool)> = Vec::new();
+        let mut decoded_keys = 0usize;
+        let mut candidate_count = 0usize;
+
+        let pool_layer = pool
+            .layers
+            .get(layer_idx)
+            .ok_or_else(|| PolyKvError::Internal(format!("no pool layer {layer_idx}")))?;
+        let pool_codec = create_codec(
+            pool.manifest.shared_codec.as_str(),
+            head_dim,
+            Some(&pool.policy.fib_config),
+            None,
+        )?;
+        for (i, block) in pool_layer.key_blocks.iter().enumerate() {
+            if let Some(scores) = pool_codec.score_batch_compact(
+                &block.encoded_payload,
+                query,
+                pool.manifest.build_seed,
+            )? {
+                for (batch_idx, score) in scores.into_iter().enumerate() {
+                    scored.push((
+                        i.saturating_mul(1_000_000).saturating_add(batch_idx),
+                        score,
+                        false,
+                    ));
+                    candidate_count += 1;
+                }
+            } else if let Some(decoded_batch) =
+                pool_codec.decode_batch_compact(&block.encoded_payload, pool.manifest.build_seed)?
+            {
+                for (batch_idx, decoded) in decoded_batch.iter().enumerate() {
+                    if decoded.len() != query.len() {
+                        return Err(PolyKvError::DimensionMismatch {
+                            expected: query.len(),
+                            got: decoded.len(),
+                        });
+                    }
+                    let score: f32 = query.iter().zip(decoded.iter()).map(|(a, b)| a * b).sum();
+                    decoded_keys += 1;
+                    scored.push((
+                        i.saturating_mul(1_000_000).saturating_add(batch_idx),
+                        score,
+                        false,
+                    ));
+                    candidate_count += 1;
+                }
+            } else {
+                let (score, decoded) = pool_codec.score_compressed(
+                    &block.encoded_payload,
+                    query,
+                    pool.manifest.build_seed,
+                )?;
+                decoded_keys += usize::from(decoded);
+                scored.push((i, score, false));
+                candidate_count += 1;
+            }
+        }
+
+        let shell_layer = self
+            .unique_layers
+            .iter()
+            .find(|l| l.layer_index == layer_idx as u32);
+        if let Some(shell_layer) = shell_layer {
+            let shell_codec = create_codec(
+                crate::policy::CODEC_TURBO_8BIT,
+                head_dim,
+                None,
+                Some(turbo_config),
+            )?;
+            for (i, block) in shell_layer.key_blocks.iter().enumerate() {
+                let (score, decoded) =
+                    shell_codec.score_compressed(&block.encoded_payload, query, self.build_seed)?;
+                decoded_keys += usize::from(decoded);
+                scored.push((i, score, true));
+                candidate_count += 1;
+            }
+        }
+
+        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        scored.truncate(top_k.min(scored.len()));
+        let hits: Vec<AttentionHit> = scored
+            .into_iter()
+            .map(|(idx, score, from_shell)| AttentionHit {
+                token_index: idx,
+                score,
+                from_shell,
+            })
+            .collect();
+        let receipt = crate::receipt::AttentionSelectionReceiptV1::new(
+            pool.manifest.pool_id.clone(),
+            Some(self.shell_manifest.digest()?),
+            layer_idx as u32,
+            0,
+            candidate_count,
+            0,
+            decoded_keys,
+            hits.len(),
+            decoded_keys > 0,
+            None,
+        );
+        Ok((hits, receipt))
+    }
     /// Compute attention over pool + shell for a given query.
     ///
     /// Decompresses the shared pool keys and the shell's unique keys for
@@ -70,9 +197,7 @@ impl AgentShell {
             .unique_layers
             .iter()
             .find(|l| l.layer_index == layer_idx as u32)
-            .ok_or_else(|| {
-                PolyKvError::Internal(format!("no shell layer {layer_idx}"))
-            })?;
+            .ok_or_else(|| PolyKvError::Internal(format!("no shell layer {layer_idx}")))?;
 
         let turbo_codec = create_codec(
             crate::policy::CODEC_TURBO_8BIT,
@@ -83,8 +208,7 @@ impl AgentShell {
 
         let mut shell_keys: Vec<f32> = Vec::new();
         for block in &shell_layer.key_blocks {
-            let decoded =
-                turbo_codec.decode(&block.encoded_payload, self.build_seed)?;
+            let decoded = turbo_codec.decode(&block.encoded_payload, self.build_seed)?;
             shell_keys.extend_from_slice(&decoded);
         }
         let num_shell_tokens = shell_keys.len() / head_dim;

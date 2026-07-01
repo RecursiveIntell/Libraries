@@ -1,0 +1,194 @@
+{
+  "schema_version": "1.0.0",
+  "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "model_slug": "smollm2-1.7b",
+  "corpus": "wikitext-2",
+  "corpus_slug": "wikitext-2",
+  "n_tokens": 256,
+  "ppl_frac": 0.3,
+  "started_at": "2026-06-29T07:10:24.576846-05:00",
+  "phase0": {
+    "status": "complete",
+    "ppl": 11.926321457678194,
+    "ppl_window": [
+      178,
+      255
+    ],
+    "cache_path": "bench/ppl/smollm2-1.7b/wikitext-2/compressed-topk-gate-256/cache_oracle.pt",
+    "cache_bytes": 50346273,
+    "model_config": {
+      "num_layers": 24,
+      "num_heads": 32,
+      "num_kv_heads": 32,
+      "head_dim": 64,
+      "hidden_size": 2048
+    },
+    "forward_seconds": 0.4451172351837158,
+    "completed_at": "2026-06-29T07:10:36.477538-05:00"
+  },
+  "model_config": {
+    "num_layers": 24,
+    "num_heads": 32,
+    "num_kv_heads": 32,
+    "head_dim": 64,
+    "hidden_size": 2048
+  },
+  "phase1": {
+    "status": "complete",
+    "ppl": 11.926321457678194,
+    "ppl_window": [
+      178,
+      255
+    ],
+    "roundtrip_bin": "bench/ppl/smollm2-1.7b/wikitext-2/compressed-topk-gate-256/roundtrip.bin",
+    "roundtrip_bin_bytes": 275869941,
+    "manifest": {
+      "pool_id": "ce84442c00b4137556ab819b41a7807479cd33768ae707123df943009454a5d0",
+      "num_shared_tokens": 256,
+      "num_layers": 24,
+      "num_kv_heads": 32,
+      "head_dim": 64,
+      "shared_codec": "\"fib_k4_n32\"",
+      "compression_ratio": 11.130434782608695,
+      "pool_size_bytes": 9043968,
+      "total_compressed_bytes": 9043968,
+      "backend": "cpu",
+      "fib_build_ms": 916,
+      "build_seed": 42,
+      "built_at_unix": 1782735081
+    },
+    "compression_ratio": 11.130434782608695,
+    "pool_size_bytes": 9043968,
+    "total_compressed_bytes": 9043968,
+    "delta_ppl_pct": 0.0,
+    "roundtrip_cli_seconds": 23.85692596435547,
+    "forward_with_overwritten_cache_seconds": 0.028177499771118164,
+    "completed_at": "2026-06-29T07:11:58.172475-05:00"
+  },
+  "report": {
+    "summary": "Oracle PPL 11.9263 | Roundtrip PPL 11.9263 | delta_ppl_pct +0.00% | compression_ratio 11.13x | model HuggingFaceTB/SmolLM2-1.7B-Instruct | corpus wikitext-2 | n_tokens 256 | ppl_frac 0.3",
+    "per_layer": [
+      {
+        "layer": 0,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 12286824
+      },
+      {
+        "layer": 1,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11720218
+      },
+      {
+        "layer": 2,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11624816
+      },
+      {
+        "layer": 3,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11589566
+      },
+      {
+        "layer": 4,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11574005
+      },
+      {
+        "layer": 5,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11562665
+      },
+      {
+        "layer": 6,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11549866
+      },
+      {
+        "layer": 7,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11524393
+      },
+      {
+        "layer": 8,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11499024
+      },
+      {
+        "layer": 9,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11518100
+      },
+      {
+        "layer": 10,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11483295
+      },
+      {
+        "layer": 11,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11479872
+      },
+      {
+        "layer": 12,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11456843
+      },
+      {
+        "layer": 13,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11477416
+      },
+      {
+        "layer": 14,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11476934
+      },
+      {
+        "layer": 15,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11429694
+      },
+      {
+        "layer": 16,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11427701
+      },
+      {
+        "layer": 17,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11394120
+      },
+      {
+        "layer": 18,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11367052
+      },
+      {
+        "layer": 19,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11326268
+      },
+      {
+        "layer": 20,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11307514
+      },
+      {
+        "layer": 21,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11283092
+      },
+      {
+        "layer": 22,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11271402
+      },
+      {
+        "layer": 23,
+        "oracle_bytes": 2097152,
+        "roundtrip_layer_bytes": 11238895
+      }
+    ],
+    "completed_at": "2026-06-29T07:11:58.481033-05:00"
+  }
+}

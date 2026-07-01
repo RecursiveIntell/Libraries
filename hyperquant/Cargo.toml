@@ -1,6 +1,6 @@
 [package]
 name = "hyperquant"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.75"
 description = "Experimental lattice quantization primitives with explicit receipts and conservative claim boundaries"
@@ -19,12 +19,18 @@ include = [
     "LICENSE-APACHE",
     "src/**",
     "tests/**",
+    "examples/**",
 ]
+
+[features]
+default = []
+compat = ["dep:quant-codec-core"]
 
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
 blake3 = { workspace = true }
+quant-codec-core = { version = "0.1.0-alpha.1", path = "../poly-kv/crates/quant-codec-core", optional = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }

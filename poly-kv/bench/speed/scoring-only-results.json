@@ -1,0 +1,207 @@
+{
+  "device": "cuda",
+  "dim": 128,
+  "n_runs": 20,
+  "results": [
+    {
+      "n_keys": 64,
+      "method": "per-key-4",
+      "latency_ms": 0.12662410736083984,
+      "keys_per_sec": 505432.9806062888,
+      "speedup_vs_dense": 9.70796460176991,
+      "bytes_per_key": 4.5,
+      "rank_cosine": 0.9935809373855591,
+      "topk_overlap": 0.96875
+    },
+    {
+      "n_keys": 64,
+      "method": "per-key-8",
+      "latency_ms": 0.1171112060546875,
+      "keys_per_sec": 546489.1205211726,
+      "speedup_vs_dense": 10.496539087947882,
+      "bytes_per_key": 5.0,
+      "rank_cosine": 0.9999710321426392,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 64,
+      "method": "per-dim-4",
+      "latency_ms": 0.17483234405517578,
+      "keys_per_sec": 366064.98840856407,
+      "speedup_vs_dense": 7.0310923223782895,
+      "bytes_per_key": 20.5,
+      "rank_cosine": 0.9949042201042175,
+      "topk_overlap": 0.9375
+    },
+    {
+      "n_keys": 64,
+      "method": "per-dim-8",
+      "latency_ms": 0.1667022705078125,
+      "keys_per_sec": 383917.98627002287,
+      "speedup_vs_dense": 7.373998855835239,
+      "bytes_per_key": 21.0,
+      "rank_cosine": 0.9999860525131226,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 64,
+      "method": "dense",
+      "latency_ms": 1.229262351989746,
+      "keys_per_sec": 52063.74367229776,
+      "speedup_vs_dense": 1.0,
+      "bytes_per_key": 256,
+      "rank_cosine": 1.0,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 128,
+      "method": "per-key-4",
+      "latency_ms": 0.1252889633178711,
+      "keys_per_sec": 1021638.2721217888,
+      "speedup_vs_dense": 0.40447193149381544,
+      "bytes_per_key": 4.5,
+      "rank_cosine": 0.9933791160583496,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 128,
+      "method": "per-key-8",
+      "latency_ms": 0.12398958206176756,
+      "keys_per_sec": 1032344.797615614,
+      "speedup_vs_dense": 0.40871070089414485,
+      "bytes_per_key": 5.0,
+      "rank_cosine": 0.9999781847000122,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 128,
+      "method": "per-dim-4",
+      "latency_ms": 0.15628337860107422,
+      "keys_per_sec": 819025.0373760489,
+      "speedup_vs_dense": 0.3242562929061785,
+      "bytes_per_key": 12.5,
+      "rank_cosine": 0.9943480491638184,
+      "topk_overlap": 0.9375
+    },
+    {
+      "n_keys": 128,
+      "method": "per-dim-8",
+      "latency_ms": 0.1546025276184082,
+      "keys_per_sec": 827929.5427558023,
+      "speedup_vs_dense": 0.3277816331251446,
+      "bytes_per_key": 13.0,
+      "rank_cosine": 0.9999799728393555,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 128,
+      "method": "dense",
+      "latency_ms": 0.05067586898803711,
+      "keys_per_sec": 2525857.031286756,
+      "speedup_vs_dense": 1.0,
+      "bytes_per_key": 256,
+      "rank_cosine": 1.0,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 256,
+      "method": "per-key-4",
+      "latency_ms": 0.12221336364746094,
+      "keys_per_sec": 2094697.2766289504,
+      "speedup_vs_dense": 0.40284822473663673,
+      "bytes_per_key": 4.5,
+      "rank_cosine": 0.9933972954750061,
+      "topk_overlap": 0.90625
+    },
+    {
+      "n_keys": 256,
+      "method": "per-key-8",
+      "latency_ms": 0.12242794036865234,
+      "keys_per_sec": 2091025.947419669,
+      "speedup_vs_dense": 0.4021421616358325,
+      "bytes_per_key": 5.0,
+      "rank_cosine": 0.9999786019325256,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 256,
+      "method": "per-dim-4",
+      "latency_ms": 0.1613616943359375,
+      "keys_per_sec": 1586497.9669030735,
+      "speedup_vs_dense": 0.30511229314420807,
+      "bytes_per_key": 8.5,
+      "rank_cosine": 0.9933061599731445,
+      "topk_overlap": 0.9375
+    },
+    {
+      "n_keys": 256,
+      "method": "per-dim-8",
+      "latency_ms": 0.15679597854614258,
+      "keys_per_sec": 1632694.9349958184,
+      "speedup_vs_dense": 0.3139968068121341,
+      "bytes_per_key": 9.0,
+      "rank_cosine": 0.999976634979248,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 256,
+      "method": "dense",
+      "latency_ms": 0.049233436584472656,
+      "keys_per_sec": 5199718.276029056,
+      "speedup_vs_dense": 1.0,
+      "bytes_per_key": 256,
+      "rank_cosine": 1.0,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 512,
+      "method": "per-key-4",
+      "latency_ms": 0.12367963790893555,
+      "keys_per_sec": 4139727.5142168673,
+      "speedup_vs_dense": 0.37657831325301205,
+      "bytes_per_key": 4.5,
+      "rank_cosine": 0.9932860732078552,
+      "topk_overlap": 0.875
+    },
+    {
+      "n_keys": 512,
+      "method": "per-key-8",
+      "latency_ms": 0.11742115020751953,
+      "keys_per_sec": 4360372.889340102,
+      "speedup_vs_dense": 0.3966497461928934,
+      "bytes_per_key": 5.0,
+      "rank_cosine": 0.9999788403511047,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 512,
+      "method": "per-dim-4",
+      "latency_ms": 0.15982389450073242,
+      "keys_per_sec": 3203525.9909002758,
+      "speedup_vs_dense": 0.2914149324979488,
+      "bytes_per_key": 6.5,
+      "rank_cosine": 0.9930148124694824,
+      "topk_overlap": 0.90625
+    },
+    {
+      "n_keys": 512,
+      "method": "per-dim-8",
+      "latency_ms": 0.16415119171142578,
+      "keys_per_sec": 3119075.741466957,
+      "speedup_vs_dense": 0.28373275236020334,
+      "bytes_per_key": 7.0,
+      "rank_cosine": 0.9999766945838928,
+      "topk_overlap": 1.0
+    },
+    {
+      "n_keys": 512,
+      "method": "dense",
+      "latency_ms": 0.046575069427490234,
+      "keys_per_sec": 10993005.62068083,
+      "speedup_vs_dense": 1.0,
+      "bytes_per_key": 256,
+      "rank_cosine": 1.0,
+      "topk_overlap": 1.0
+    }
+  ]
+}

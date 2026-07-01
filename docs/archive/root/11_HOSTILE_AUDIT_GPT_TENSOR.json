@@ -1,0 +1,225 @@
+{
+  "scale": {
+    "min": 0,
+    "max": 5,
+    "meaning": {
+      "0": "clean",
+      "5": "severe risk"
+    }
+  },
+  "axes": {
+    "Truth": "repo says contradictory things or governance/source-basis truth is drifting",
+    "Code": "structural or code-shape risk",
+    "Ops": "release/gate/operator risk",
+    "Scale": "performance or hotspot growth risk",
+    "Sec": "security/capability risk",
+    "Human": "maintainer/onboarding/oncall pain"
+  },
+  "current_severity": [
+    {
+      "lens": "Constitutional truth auditor",
+      "Truth": 5,
+      "Code": 3,
+      "Ops": 5,
+      "Scale": 2,
+      "Sec": 1,
+      "Human": 5
+    },
+    {
+      "lens": "Cynical architect",
+      "Truth": 2,
+      "Code": 2,
+      "Ops": 2,
+      "Scale": 2,
+      "Sec": 1,
+      "Human": 2
+    },
+    {
+      "lens": "Blast-radius pessimist",
+      "Truth": 2,
+      "Code": 5,
+      "Ops": 4,
+      "Scale": 4,
+      "Sec": 2,
+      "Human": 4
+    },
+    {
+      "lens": "Failure-semantics sadist",
+      "Truth": 3,
+      "Code": 3,
+      "Ops": 3,
+      "Scale": 2,
+      "Sec": 2,
+      "Human": 2
+    },
+    {
+      "lens": "Sleep-deprived oncall engineer",
+      "Truth": 3,
+      "Code": 3,
+      "Ops": 5,
+      "Scale": 3,
+      "Sec": 2,
+      "Human": 4
+    },
+    {
+      "lens": "Contract/schema lawyer",
+      "Truth": 4,
+      "Code": 3,
+      "Ops": 4,
+      "Scale": 2,
+      "Sec": 1,
+      "Human": 3
+    },
+    {
+      "lens": "Evidence scientist",
+      "Truth": 4,
+      "Code": 2,
+      "Ops": 4,
+      "Scale": 3,
+      "Sec": 1,
+      "Human": 3
+    },
+    {
+      "lens": "Security goblin",
+      "Truth": 2,
+      "Code": 2,
+      "Ops": 3,
+      "Scale": 2,
+      "Sec": 3,
+      "Human": 2
+    },
+    {
+      "lens": "New maintainer from hell",
+      "Truth": 4,
+      "Code": 4,
+      "Ops": 3,
+      "Scale": 2,
+      "Sec": 1,
+      "Human": 5
+    },
+    {
+      "lens": "DARPA demo reviewer",
+      "Truth": 5,
+      "Code": 3,
+      "Ops": 5,
+      "Scale": 3,
+      "Sec": 2,
+      "Human": 4
+    }
+  ],
+  "severity_90d_if_ignored": [
+    {
+      "lens": "Constitutional truth auditor",
+      "Truth": 5,
+      "Code": 4,
+      "Ops": 5,
+      "Scale": 3,
+      "Sec": 2,
+      "Human": 5
+    },
+    {
+      "lens": "Cynical architect",
+      "Truth": 2,
+      "Code": 3,
+      "Ops": 3,
+      "Scale": 3,
+      "Sec": 2,
+      "Human": 3
+    },
+    {
+      "lens": "Blast-radius pessimist",
+      "Truth": 3,
+      "Code": 5,
+      "Ops": 5,
+      "Scale": 5,
+      "Sec": 3,
+      "Human": 5
+    },
+    {
+      "lens": "Failure-semantics sadist",
+      "Truth": 4,
+      "Code": 4,
+      "Ops": 4,
+      "Scale": 3,
+      "Sec": 3,
+      "Human": 3
+    },
+    {
+      "lens": "Sleep-deprived oncall engineer",
+      "Truth": 4,
+      "Code": 4,
+      "Ops": 5,
+      "Scale": 4,
+      "Sec": 3,
+      "Human": 5
+    },
+    {
+      "lens": "Contract/schema lawyer",
+      "Truth": 5,
+      "Code": 4,
+      "Ops": 5,
+      "Scale": 3,
+      "Sec": 2,
+      "Human": 4
+    },
+    {
+      "lens": "Evidence scientist",
+      "Truth": 5,
+      "Code": 3,
+      "Ops": 5,
+      "Scale": 4,
+      "Sec": 2,
+      "Human": 4
+    },
+    {
+      "lens": "Security goblin",
+      "Truth": 3,
+      "Code": 3,
+      "Ops": 4,
+      "Scale": 3,
+      "Sec": 4,
+      "Human": 3
+    },
+    {
+      "lens": "New maintainer from hell",
+      "Truth": 5,
+      "Code": 5,
+      "Ops": 4,
+      "Scale": 3,
+      "Sec": 2,
+      "Human": 5
+    },
+    {
+      "lens": "DARPA demo reviewer",
+      "Truth": 5,
+      "Code": 4,
+      "Ops": 5,
+      "Scale": 4,
+      "Sec": 3,
+      "Human": 5
+    }
+  ],
+  "means": {
+    "current": 2.95,
+    "severity_90d_if_ignored": 3.8
+  },
+  "principal_risks_ranked": [
+    "Ops / release truth",
+    "Truth drift",
+    "Human maintainability",
+    "Hotspot concentration / module accretion",
+    "Gate false positives / stale checker logic"
+  ],
+  "evidence_points": [
+    "Workspace Cargo.toml exposes 30 members/default members",
+    "Pack contains 45 Cargo packages",
+    "Roughly 415 Rust files and 123,715 lines of Rust",
+    "Roughly 153 test files",
+    "0 detected workspace path-dependency cycles",
+    "4 unsafe hits in src, all under Primitives/check-runner",
+    "Observed gate failures: check_doc_truth.sh, check_public_api_docs.py, check_commit_permit_paths.py, check_root_archive_manifest.py, check_hotspot_budgets.sh, and likely false-positive behavior in check_no_prod_panics.sh",
+    "README.md materially stale relative to 00_START_HERE.md",
+    "STATUS_EVIDENCE_MANIFEST.json references a missing docs/archive/root_closeout_history/manifest.json artifact",
+    "Pack includes target-* directories, which is archive pollution"
+  ]
+}

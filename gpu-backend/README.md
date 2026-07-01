@@ -117,10 +117,44 @@ The win is real but small — the dominant cost in
 fib-quant's encode_batch is the codebook lookup, not the
 Hadamard.
 
+### Fib Gram page scorer — CPU/CUDA dispatch surface
+
+The crate now also exposes a page-level scorer for FibQuant compressed
+attention/retrieval pages:
+
+- `FibGramPageScoreInput`
+- `score_fib_gram_pages_cpu`
+- `score_fib_gram_pages`
+- `topk_indices_desc`
+
+This scorer consumes query codeword indices, stored codeword indices,
+stored norms, and the Gram table. It computes approximate inner products
+without reconstructing stored f32 vectors. `fib-quant::FibScorer` uses
+this path through `score_batch_prepared_pages`, and `poly-kv` routes
+compact fib pool pages through it.
+
+CPU receipt on this host:
+
+```text
+schema_version=fib_gram_page_scorer_bench_v1
+backend=cpu
+gpu_available=false
+n_candidates=4096
+block_count=16
+candidate_block_scores=65536
+elapsed_us=95
+candidate_block_scores_per_sec≈6.83e8
+```
+
+CUDA source was added as `kernels/fib_gram_page_score.cu`, and the Rust
+feature path compiles with `--features gpu,precompiled-ptx`. Runtime CUDA
+execution still requires a working NVIDIA driver and a compiled
+`kernels/combined.ptx` containing `fib_gram_page_score`.
+
 ## What would actually win
 
-A **device-side pipeline** that keeps the rotated data on GPU
-between the Hadamard and the codebook lookup:
+A **device-side pipeline** that keeps the rotated/scoring pages on GPU
+between the Hadamard, codebook lookup, and Gram page scorer:
 
 1. H2D input (once per pool build)
 2. GPU Hadamard (in-place on device)

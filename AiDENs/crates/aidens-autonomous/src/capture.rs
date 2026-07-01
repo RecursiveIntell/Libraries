@@ -3,17 +3,18 @@
 //! The [`ResultCapture`] component takes an [`ExecutionResult`] from the
 //! executor, extracts individual factual statements from the model output,
 //! checks each for duplicates against existing knowledge, and writes unique
-//! statements as separate facts in the `"autonomous"` namespace. When a source
-//! fact ID is known (the gap that triggered the job), a graph edge is added
-//! connecting each new fact to the source, with relation `"fills_gap"`.
+//! statements as separate facts in the `"autonomous"` namespace.
+//!
+//! Autonomous captures deliberately do **not** create graph edges. Model-written
+//! summaries are useful as quarantinable observations, but they are not verified
+//! enough to link into the durable graph. A separate promotion/curation path must
+//! add any graph edges after verification.
 //!
 //! Confidence is set based on content quality: 0.8 for sentences containing
 //! specific factual signals (numbers, dates, proper nouns), 0.5 otherwise.
 
 use crate::executor::ExecutionResult;
-use aidens_memory_kit::canonical_stack::AddGraphEdgeParams;
 use aidens_memory_kit::CanonicalMemoryAdapter;
-use semantic_memory::types::GraphEdgeType;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -76,7 +77,8 @@ impl ResultCapture {
     /// 3. Adds each unique sentence as a separate fact.
     /// 4. Sets confidence based on content quality (0.8 if specific facts,
     ///    0.5 otherwise).
-    /// 5. Links each new fact to the source fact with a `fills_gap` edge.
+    /// 5. Does not create graph edges; autonomous facts stay isolated until a
+    ///    separate verified promotion/curation path links them.
     pub async fn capture(&self, result: &ExecutionResult) -> Result<CaptureOutcome> {
         // Don't capture empty or failed outputs.
         if !result.success || result.output.is_empty() {
@@ -121,42 +123,12 @@ impl ResultCapture {
             // Determine confidence based on content quality.
             let confidence = if has_specific_facts(sentence) { 0.8 } else { 0.5 };
 
-            // Add the new fact.
+            // Add the new fact. It remains unlinked graph-wise; autonomous
+            // model output is an observation, not verified relationship evidence.
             let fact_id = self
                 .memory
                 .add_fact("autonomous", sentence, Some(&source), Some(confidence))
                 .await?;
-
-            // Add graph edge connecting new fact to source fact.
-            if !result.source_fact_id.is_empty() {
-                let new_fact_node = if fact_id.starts_with("fact:") {
-                    fact_id.clone()
-                } else {
-                    format!("fact:{fact_id}")
-                };
-
-                let source_node = if result.source_fact_id.starts_with("fact:") {
-                    result.source_fact_id.clone()
-                } else {
-                    format!("fact:{}", result.source_fact_id)
-                };
-
-                let edge_params = AddGraphEdgeParams {
-                    source: source_node,
-                    target: new_fact_node,
-                    edge_type: GraphEdgeType::Entity {
-                        relation: "fills_gap".to_string(),
-                    },
-                    weight: 1.0,
-                    metadata: Some(serde_json::json!({
-                        "job_id": result.job_id,
-                        "gap_type": result.gap_type,
-                    })),
-                };
-
-                // Best-effort: don't fail capture if edge creation fails.
-                let _ = self.memory.add_graph_edge(edge_params).await;
-            }
 
             facts_added += 1;
             fact_ids.push(fact_id);
@@ -402,10 +374,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn capture_adds_graph_edge_to_source_fact() {
+    async fn capture_does_not_add_graph_edge_to_source_fact() {
         let memory = mock_memory();
 
-        // Pre-add a source fact so the graph edge has a real target.
+        // Pre-add a source fact. Autonomous capture may store an observation,
+        // but it must not assert a graph relationship to the source fact.
         let source_fact_id = memory
             .add_fact("autonomous", "Source fact content here.", Some("test"), Some(0.5))
             .await
@@ -423,7 +396,6 @@ mod tests {
         assert_eq!(outcome.facts_added, 1);
         assert_eq!(outcome.fact_ids.len(), 1);
 
-        // Verify graph edge was created — list edges for the new fact.
         let new_fact_id = &outcome.fact_ids[0];
         let new_node = if new_fact_id.starts_with("fact:") {
             new_fact_id.clone()
@@ -431,7 +403,7 @@ mod tests {
             format!("fact:{new_fact_id}")
         };
         let edges = memory.list_graph_edges(&new_node).await.unwrap();
-        assert!(!edges.is_empty(), "graph edge should have been created");
+        assert!(edges.is_empty(), "autonomous capture must not create graph edges");
     }
 
     #[tokio::test]

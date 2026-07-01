@@ -14,9 +14,13 @@ use std::sync::OnceLock;
 pub mod cuda;
 pub mod error;
 pub mod fallback;
+pub mod page_scorer;
 pub mod simd_nearest;
 
 pub use error::GpuError;
+pub use page_scorer::{
+    score_fib_gram_pages, score_fib_gram_pages_cpu, topk_indices_desc, FibGramPageScoreInput,
+};
 
 /// Result type for GPU operations.
 pub type Result<T> = std::result::Result<T, GpuError>;

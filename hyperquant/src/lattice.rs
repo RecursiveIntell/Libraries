@@ -42,9 +42,8 @@ impl HyperQuantConfig {
         match self.kind {
             LatticeKind::Z1 => quantize_z1(values, self.scale),
             LatticeKind::A2 => quantize_a2(values, self.scale),
-            LatticeKind::D4 | LatticeKind::E8 => {
-                Err(HyperQuantError::UnsupportedLattice(self.kind))
-            }
+            LatticeKind::D4 => quantize_d4(values, self.scale),
+            LatticeKind::E8 => Err(HyperQuantError::UnsupportedLattice(self.kind)),
         }
     }
 }
@@ -139,6 +138,64 @@ pub fn quantize_a2(values: &[f32], scale: f32) -> Result<HyperQuantResult> {
     })
 }
 
+/// Quantize chunks on the D4 checkerboard lattice.
+///
+/// D4 is the integer lattice with even coordinate sum in 4D. Each full chunk
+/// rounds to the nearest integer vector and flips the coordinate with the
+/// largest rounding error when parity repair is needed. Trailing pairs use A2;
+/// a single trailing coordinate uses Z1.
+pub fn quantize_d4(values: &[f32], scale: f32) -> Result<HyperQuantResult> {
+    validate_input(values)?;
+    let effective_scale = scalar::effective_scale(scale);
+    let mut codes = Vec::with_capacity(values.len());
+    let mut reconstructed = Vec::with_capacity(values.len());
+
+    let mut chunks = values.chunks_exact(4);
+    for chunk in &mut chunks {
+        let scaled = [
+            chunk[0] * effective_scale,
+            chunk[1] * effective_scale,
+            chunk[2] * effective_scale,
+            chunk[3] * effective_scale,
+        ];
+        let (chunk_codes, chunk_reconstructed) = nearest_d4_point(scaled);
+        codes.extend_from_slice(&chunk_codes);
+        reconstructed.extend(
+            chunk_reconstructed
+                .iter()
+                .map(|value| *value / effective_scale),
+        );
+    }
+
+    let tail = chunks.remainder();
+    if tail.len() >= 2 {
+        let (u, v, rx, ry) = nearest_a2_point(tail[0] * effective_scale, tail[1] * effective_scale);
+        codes.push(u);
+        codes.push(v);
+        reconstructed.push(rx / effective_scale);
+        reconstructed.push(ry / effective_scale);
+    }
+    if tail.len() == 1 || tail.len() == 3 {
+        let value = tail[tail.len() - 1];
+        let code = scalar::clamp_i16_code(value * effective_scale);
+        codes.push(code);
+        reconstructed.push(code as f32 / effective_scale);
+    }
+
+    let mse = finite_mse(values, &reconstructed)?;
+    let config = HyperQuantConfig::new(LatticeKind::D4, effective_scale);
+    Ok(HyperQuantResult {
+        kind: LatticeKind::D4,
+        mse,
+        codes,
+        reconstructed,
+        effective_scale,
+        input_len: values.len(),
+        input_digest: receipt::input_digest(values),
+        config_digest: config.config_digest(),
+    })
+}
+
 fn validate_input(values: &[f32]) -> Result<()> {
     if values.is_empty() {
         return Err(HyperQuantError::EmptyInput);
@@ -185,6 +242,52 @@ fn nearest_a2_point(x: f32, y: f32) -> (i16, i16, f32, f32) {
         }
     }
     (best.0, best.1, best.2, best.3)
+}
+
+fn nearest_d4_point(x: [f32; 4]) -> ([i16; 4], [f32; 4]) {
+    let mut rounded = [0i32; 4];
+    let mut reconstructed = [0.0f32; 4];
+    let mut sum = 0i32;
+    for idx in 0..4 {
+        let code = scalar::clamp_i16_code(x[idx]) as i32;
+        rounded[idx] = code;
+        reconstructed[idx] = code as f32;
+        sum += code;
+    }
+
+    if sum % 2 != 0 {
+        let mut best_idx = 0usize;
+        let mut best_delta = f32::INFINITY;
+        let mut best_adjust = 0i32;
+        for idx in 0..4 {
+            for adjust in [-1i32, 1i32] {
+                let candidate = rounded[idx].saturating_add(adjust);
+                if !(i16::MIN as i32..=i16::MAX as i32).contains(&candidate) {
+                    continue;
+                }
+                let current_err = (x[idx] - rounded[idx] as f32).powi(2);
+                let candidate_err = (x[idx] - candidate as f32).powi(2);
+                let delta = candidate_err - current_err;
+                if delta < best_delta {
+                    best_delta = delta;
+                    best_idx = idx;
+                    best_adjust = adjust;
+                }
+            }
+        }
+        rounded[best_idx] = rounded[best_idx].saturating_add(best_adjust);
+        reconstructed[best_idx] = rounded[best_idx] as f32;
+    }
+
+    (
+        [
+            rounded[0] as i16,
+            rounded[1] as i16,
+            rounded[2] as i16,
+            rounded[3] as i16,
+        ],
+        reconstructed,
+    )
 }
 
 #[cfg(test)]

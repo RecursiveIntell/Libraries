@@ -2172,6 +2172,35 @@ impl MemoryStore {
                 )
                 .unwrap_or((None, None));
 
+            let active_graph_edges: u64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM graph_edges WHERE is_invalidated = 0 AND invalidated_at IS NULL",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap_or(0);
+            let invalidated_graph_edges: u64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM graph_edges WHERE is_invalidated != 0 OR invalidated_at IS NOT NULL",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap_or(0);
+            let facts_missing_embeddings: u64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM facts WHERE embedding IS NULL OR length(embedding) = 0",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap_or(0);
+            let chunks_missing_embeddings: u64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM chunks WHERE embedding IS NULL OR length(embedding) = 0",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap_or(0);
+
             Ok(MemoryStats {
                 total_facts,
                 total_documents,
@@ -2181,6 +2210,10 @@ impl MemoryStore {
                 database_size_bytes: db_size,
                 embedding_model: model,
                 embedding_dimensions: dims,
+                active_graph_edges,
+                invalidated_graph_edges,
+                facts_missing_embeddings,
+                chunks_missing_embeddings,
             })
         })
         .await
@@ -2210,6 +2243,84 @@ impl MemoryStore {
     /// Check if embeddings need re-generation after a model change.
     pub async fn embeddings_are_dirty(&self) -> Result<bool, MemoryError> {
         self.with_read_conn(db::is_embeddings_dirty).await
+    }
+
+    /// Re-embed only facts currently missing embeddings.
+    ///
+    /// This is the targeted integrity-repair path for small drift reports. It
+    /// avoids blocking the warm server with a full corpus re-embed when only a
+    /// handful of fact rows are missing embeddings. Returns the repaired count.
+    pub async fn reembed_missing_fact_embeddings(
+        &self,
+        limit: Option<usize>,
+    ) -> Result<usize, MemoryError> {
+        let batch_size = self.inner.config.embedding.batch_size;
+        let dims = self.inner.config.embedding.dimensions;
+        let max_rows = limit.unwrap_or(usize::MAX);
+
+        let fact_contents: Vec<(String, String)> = self
+            .with_read_conn(move |conn| {
+                let mut stmt = conn.prepare(
+                    "SELECT id, content FROM facts WHERE embedding IS NULL OR length(embedding) = 0 LIMIT ?1",
+                )?;
+                let result = stmt
+                    .query_map([max_rows as i64], |row| Ok((row.get(0)?, row.get(1)?)))?
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(result)
+            })
+            .await?;
+
+        let mut repaired = 0usize;
+        for batch in fact_contents.chunks(batch_size) {
+            let texts: Vec<String> = batch.iter().map(|(_, c)| c.clone()).collect();
+            let embeddings = self.embed_batch_internal(texts).await?;
+            for embedding in &embeddings {
+                self.validate_embedding_dimensions(embedding)?;
+            }
+
+            let quantizer = Quantizer::new(dims);
+            let updates: Vec<(String, Vec<u8>, Option<Vec<u8>>)> = batch
+                .iter()
+                .zip(embeddings.iter())
+                .map(|((id, _), emb)| {
+                    let q8 = quantizer
+                        .quantize(emb)
+                        .map(|qv| quantize::pack_quantized(&qv))
+                        .ok();
+                    (id.clone(), db::embedding_to_bytes(emb), q8)
+                })
+                .collect();
+
+            self.with_write_conn(move |conn| {
+                db::with_transaction(conn, |tx| {
+                    for (fid, bytes, q8) in &updates {
+                        tx.execute(
+                            "UPDATE facts SET embedding = ?1, embedding_q8 = ?2, updated_at = datetime('now') WHERE id = ?3",
+                            rusqlite::params![bytes, q8.as_deref(), fid],
+                        )?;
+                        #[cfg(feature = "hnsw")]
+                        db::queue_pending_index_op(
+                            tx,
+                            &format!("fact:{fid}"),
+                            "fact",
+                            db::IndexOpKind::Upsert,
+                        )?;
+                        db::invalidate_derived_vector_artifact(tx, &format!("fact:{fid}"))?;
+                    }
+                    Ok(())
+                })
+            })
+            .await?;
+
+            repaired += batch.len();
+        }
+
+        #[cfg(feature = "hnsw")]
+        self.sync_pending_hnsw_ops_best_effort("reembed_missing_fact_embeddings")
+            .await;
+
+        self.clear_search_cache();
+        Ok(repaired)
     }
 
     /// Re-embed all facts, chunks, messages, and episodes. Call after changing embedding models.

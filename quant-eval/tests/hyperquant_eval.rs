@@ -14,9 +14,10 @@ fn hyperquant_eval_reports_z1_and_a2_profiles() {
 
     assert_eq!(result.config.dim, 8);
     assert_eq!(result.config.vectors, 16);
-    assert_eq!(result.profiles.len(), 2);
+    assert_eq!(result.profiles.len(), 3);
     assert_eq!(result.profiles[0].kind, LatticeKind::Z1);
     assert_eq!(result.profiles[1].kind, LatticeKind::A2);
+    assert_eq!(result.profiles[2].kind, LatticeKind::D4);
     assert!(result
         .profiles
         .iter()
@@ -33,6 +34,32 @@ fn hyperquant_eval_reports_z1_and_a2_profiles() {
         .profiles
         .iter()
         .all(|profile| profile.receipt_count == 16));
+    assert!(result
+        .profiles
+        .iter()
+        .all(|profile| profile.mean_bytes_per_vector > 0.0));
+}
+
+#[test]
+fn hyperquant_eval_uses_rice_byte_accounting_not_fixed_i16_size() {
+    let config = HyperQuantEvalConfig {
+        dim: 16,
+        vectors: 8,
+        seed: 0,
+        scale: 0.0001,
+    };
+
+    let result = run_hyperquant_eval(&config).expect("hyperquant eval succeeds");
+    let z1 = result.profile(LatticeKind::Z1).expect("z1 profile exists");
+    let fixed_i16_bytes = config.dim * core::mem::size_of::<i16>();
+
+    assert!(
+        z1.estimated_compressed_bytes_per_vector < fixed_i16_bytes,
+        "expected Rice accounting below fixed i16 bytes, got {} >= {}",
+        z1.estimated_compressed_bytes_per_vector,
+        fixed_i16_bytes
+    );
+    assert!(z1.mean_bytes_per_vector > 0.0);
 }
 
 #[test]

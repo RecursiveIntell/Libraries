@@ -30,6 +30,22 @@ pub trait KVecCodec: Send + Sync {
         payloads.iter().map(|p| self.decode(p, seed)).collect()
     }
 
+    /// Score a compressed payload against a query. Returns `(score, decoded_key_used)`.
+    ///
+    /// Default falls back to decode+dot and reports `decoded_key_used=true`.
+    /// Codecs with compressed-domain scoring should override and report false.
+    fn score_compressed(&self, payload: &[u8], query: &[f32], seed: u64) -> Result<(f32, bool)> {
+        let decoded = self.decode(payload, seed)?;
+        if decoded.len() != query.len() {
+            return Err(crate::error::PolyKvError::DimensionMismatch {
+                expected: decoded.len(),
+                got: query.len(),
+            });
+        }
+        let score = query.iter().zip(decoded.iter()).map(|(a, b)| a * b).sum();
+        Ok((score, true))
+    }
+
     /// Encode a batch into one amortized binary payload when supported.
     ///
     /// Default `None` preserves legacy per-vector block storage. The fib adapter
@@ -43,6 +59,21 @@ pub trait KVecCodec: Send + Sync {
     /// Decode one compact batch payload back into vectors when supported.
     fn decode_batch_compact(&self, payload: &[u8], seed: u64) -> Result<Option<Vec<Vec<f32>>>> {
         let _ = (payload, seed);
+        Ok(None)
+    }
+
+    /// Score a compact batch payload against a query when supported.
+    ///
+    /// Returns `None` when the payload is not a supported compact batch. Implementations
+    /// must return scores in the same logical order as the encoded vectors and must not
+    /// reconstruct full f32 keys. Callers use this to prove `decoded_keys == 0`.
+    fn score_batch_compact(
+        &self,
+        payload: &[u8],
+        query: &[f32],
+        seed: u64,
+    ) -> Result<Option<Vec<f32>>> {
+        let _ = (payload, query, seed);
         Ok(None)
     }
 
@@ -293,6 +324,52 @@ impl KVecCodec for TurboQuantAdapter {
         })?;
 
         Ok(reconstructed)
+    }
+
+    fn score_compressed(&self, payload: &[u8], query: &[f32], seed: u64) -> Result<(f32, bool)> {
+        if query.len() != self.dim {
+            return Err(crate::error::PolyKvError::DimensionMismatch {
+                expected: self.dim,
+                got: query.len(),
+            });
+        }
+        let quantizer =
+            turbo_quant::TurboQuantizer::new(self.dim, self.bits, self.projections, seed).map_err(
+                |e| {
+                    crate::error::PolyKvError::CompressionFailed(format!(
+                        "turbo quantizer init failed: {}",
+                        e
+                    ))
+                },
+            )?;
+        let code: turbo_quant::TurboCode =
+            if payload.len() >= 4 && &payload[0..4] == turbo_quant::TURBO_CODE_WIRE_MAGIC {
+                turbo_quant::TurboCodeWireV1::decode(payload, &quantizer).map_err(|e| {
+                    crate::error::PolyKvError::DecompressionFailed(format!(
+                        "turbo wire decode failed: {}",
+                        e
+                    ))
+                })?
+            } else {
+                serde_json::from_slice(payload).map_err(|e| {
+                    crate::error::PolyKvError::DecompressionFailed(format!(
+                        "turbo code deserialize failed: {}",
+                        e
+                    ))
+                })?
+            };
+        let prepared = quantizer.prepare_query(query).map_err(|e| {
+            crate::error::PolyKvError::CompressionFailed(format!(
+                "turbo prepare query failed: {}",
+                e
+            ))
+        })?;
+        let score = quantizer
+            .inner_product_estimate_prepared(&code, &prepared)
+            .map_err(|e| {
+                crate::error::PolyKvError::CompressionFailed(format!("turbo score failed: {}", e))
+            })?;
+        Ok((score, false))
     }
 
     fn dim(&self) -> usize {
@@ -691,9 +768,7 @@ impl KVecCodec for FibQuantAdapter {
             let mut codes = decode_fib_batch_payload_wire(payload)?;
             let quantizer = self.build_quantizer(seed)?;
             let profile_digest = quantizer.profile().digest().map_err(|e| {
-                crate::error::PolyKvError::DecompressionFailed(format!(
-                    "fib profile digest: {e}"
-                ))
+                crate::error::PolyKvError::DecompressionFailed(format!("fib profile digest: {e}"))
             })?;
             for code in &mut codes {
                 code.profile_digest = profile_digest.clone();
@@ -717,6 +792,98 @@ impl KVecCodec for FibQuantAdapter {
             return Ok(Some(decoded));
         }
         Ok(None)
+    }
+
+    fn score_compressed(&self, payload: &[u8], query: &[f32], seed: u64) -> Result<(f32, bool)> {
+        if query.len() != self.dim {
+            return Err(crate::error::PolyKvError::DimensionMismatch {
+                expected: self.dim,
+                got: query.len(),
+            });
+        }
+        let quantizer = self.build_quantizer(seed)?;
+        let profile = quantizer.profile().clone();
+        let mut code = if payload.len() >= 3 && payload[0..3] == fib_quant::COMPACT_MAGIC {
+            fib_quant::FibCodeV1::from_compact_bytes(payload, &profile).map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib compact decode failed: {}",
+                    e
+                ))
+            })?
+        } else if payload.len() >= 4 && payload[0..4] == FIB_WIRE_BATCH_MAGIC {
+            return Err(crate::error::PolyKvError::CorruptPayload(
+                "score_compressed received fib batch payload; call score_batch_compact".into(),
+            ));
+        } else {
+            serde_json::from_slice(payload).map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib code deserialize failed: {}",
+                    e
+                ))
+            })?
+        };
+        code.profile_digest = profile.digest().map_err(|e| {
+            crate::error::PolyKvError::DecompressionFailed(format!("fib profile digest: {e}"))
+        })?;
+        let scorer = fib_quant::FibScorer::new(quantizer).map_err(|e| {
+            crate::error::PolyKvError::CompressionFailed(format!("fib scorer init failed: {e}"))
+        })?;
+        let prepared = scorer.prepare_query(query).map_err(|e| {
+            crate::error::PolyKvError::CompressionFailed(format!("fib prepare query failed: {e}"))
+        })?;
+        let score = scorer.score_prepared(&prepared, &code).map_err(|e| {
+            crate::error::PolyKvError::CompressionFailed(format!("fib score failed: {e}"))
+        })?;
+        Ok((score, false))
+    }
+
+    fn score_batch_compact(
+        &self,
+        payload: &[u8],
+        query: &[f32],
+        seed: u64,
+    ) -> Result<Option<Vec<f32>>> {
+        if query.len() != self.dim {
+            return Err(crate::error::PolyKvError::DimensionMismatch {
+                expected: self.dim,
+                got: query.len(),
+            });
+        }
+        let mut codes = if payload.len() >= 4 && payload[0..4] == FIB_WIRE_BATCH_MAGIC {
+            decode_fib_batch_payload_wire(payload)?
+        } else if payload.len() >= 3 && payload[0..3] == FIB_BATCHED_MAGIC {
+            let quantizer = self.build_quantizer(seed)?;
+            decode_fib_batch_payload(payload, quantizer.profile())?
+        } else {
+            return Ok(None);
+        };
+        let quantizer = self.build_quantizer(seed)?;
+        let profile_digest = quantizer.profile().digest().map_err(|e| {
+            crate::error::PolyKvError::DecompressionFailed(format!("fib profile digest: {e}"))
+        })?;
+        for code in &mut codes {
+            code.profile_digest = profile_digest.clone();
+        }
+        let scorer = fib_quant::FibScorer::new(quantizer).map_err(|e| {
+            crate::error::PolyKvError::CompressionFailed(format!("fib scorer init failed: {e}"))
+        })?;
+        let prepared = scorer.prepare_query(query).map_err(|e| {
+            crate::error::PolyKvError::CompressionFailed(format!("fib prepare query failed: {e}"))
+        })?;
+        let scored = scorer
+            .score_batch_prepared_pages(&prepared, &codes)
+            .map_err(|e| {
+                crate::error::PolyKvError::CompressionFailed(format!(
+                    "fib page score batch failed: {e}"
+                ))
+            })?;
+        let mut scores = vec![0.0f32; codes.len()];
+        for item in scored {
+            if let Some(slot) = scores.get_mut(item.idx) {
+                *slot = item.score;
+            }
+        }
+        Ok(Some(scores))
     }
 
     fn dim(&self) -> usize {

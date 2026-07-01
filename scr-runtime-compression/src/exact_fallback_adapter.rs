@@ -189,7 +189,7 @@ mod tests {
                     Ok(out)
                 }
                 // Asymmetric codecs: pass-through (no reconstruction).
-                CodecId::Polar | CodecId::Qjl => Ok(data.to_vec()),
+                CodecId::Polar | CodecId::Qjl | CodecId::PerDim => Ok(data.to_vec()),
             }
         }))
     }

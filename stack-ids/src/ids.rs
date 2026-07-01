@@ -1231,6 +1231,42 @@ define_id!(
     PolicyImpactDiffId
 );
 
+/// A named perspective used to partition or contextualize memory retrieval.
+///
+/// Empty strings are normalized to `"default"`. Leading/trailing whitespace is
+/// trimmed before normalization so callers can pass raw user input safely.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct PerspectiveKey(String);
+
+impl PerspectiveKey {
+    pub fn new(value: impl Into<String>) -> Self {
+        let s = value.into();
+        let trimmed = s.trim();
+        if trimmed.is_empty() {
+            Self("default".to_string())
+        } else {
+            Self(trimmed.to_string())
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for PerspectiveKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl From<&str> for PerspectiveKey {
+    fn from(value: &str) -> Self {
+        Self::new(value)
+    }
+}
+
 #[cfg(test)]
 #[path = "ids_tests.rs"]
 mod tests;

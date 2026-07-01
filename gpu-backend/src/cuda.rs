@@ -451,3 +451,80 @@ fn codebook_lookup_cuda(
 
     Ok(out)
 }
+
+// ── Fib Gram Page Scoring ──
+
+pub fn fib_gram_page_score_gpu(
+    _ctx: &GpuContext,
+    input: crate::page_scorer::FibGramPageScoreInput<'_>,
+) -> Result<Vec<f32>> {
+    if !cuda_ready() {
+        return crate::page_scorer::score_fib_gram_pages_cpu(input);
+    }
+    fib_gram_page_score_cuda(input).or_else(|_| crate::page_scorer::score_fib_gram_pages_cpu(input))
+}
+
+fn fib_gram_page_score_cuda(
+    input: crate::page_scorer::FibGramPageScoreInput<'_>,
+) -> Result<Vec<f32>> {
+    let state = CUDA_STATE.get().and_then(|s| s.as_ref()).unwrap();
+    let dev_query = state
+        .stream
+        .clone_htod(input.query_indices)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    let dev_stored = state
+        .stream
+        .clone_htod(input.stored_indices)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    let dev_norms = state
+        .stream
+        .clone_htod(input.stored_norms)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    let dev_gram = state
+        .stream
+        .clone_htod(input.gram)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    let mut dev_scores = state
+        .stream
+        .alloc_zeros::<f32>(input.n_candidates)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+
+    let f = state
+        .module
+        .load_function("fib_gram_page_score")
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    let threads = 128u32;
+    let blocks = (input.n_candidates as u32).div_ceil(threads).max(1);
+    let cfg = cudarc::driver::LaunchConfig {
+        grid_dim: (blocks, 1, 1),
+        block_dim: (threads, 1, 1),
+        shared_mem_bytes: 0,
+    };
+    let nc = input.n_candidates as i32;
+    let bc = input.block_count as i32;
+    let nw = input.n_codewords as i32;
+    let qn = input.query_norm;
+    let mut args = state.stream.launch_builder(&f);
+    args.arg(&dev_query);
+    args.arg(&dev_stored);
+    args.arg(&dev_norms);
+    args.arg(&dev_gram);
+    args.arg(&mut dev_scores);
+    args.arg(&nc);
+    args.arg(&bc);
+    args.arg(&nw);
+    args.arg(&qn);
+    unsafe { args.launch(cfg) }
+        .map_err(|e| GpuError::CudaError(format!("fib_gram_page_score: {}", e)))?;
+
+    let mut scores = vec![0.0f32; input.n_candidates];
+    state
+        .stream
+        .memcpy_dtoh(&dev_scores, &mut scores)
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    state
+        .stream
+        .synchronize()
+        .map_err(|e| GpuError::CudaError(e.to_string()))?;
+    Ok(scores)
+}

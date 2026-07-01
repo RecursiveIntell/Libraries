@@ -378,11 +378,60 @@ impl FibScorer {
             let score = self.score_prepared(prepared, code)?;
             results.push(ScoredItem { idx, score });
         }
-        results.sort_by(|a, b| {
-            b.score
-                .partial_cmp(&a.score)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
+        sort_scored_items(&mut results);
+        Ok(results)
+    }
+
+    /// Score a batch via the shared page scorer backend.
+    ///
+    /// This flattens the compressed codeword indices and stored norms, then
+    /// dispatches to `gpu-backend`. The default build uses the CPU page scorer;
+    /// `gpu-backend` can dispatch to CUDA when built with the GPU feature and a
+    /// compatible PTX module. No stored vectors are decoded.
+    pub fn score_batch_prepared_pages(
+        &self,
+        prepared: &FibPreparedQuery,
+        codes: &[FibCodeV1],
+    ) -> Result<Vec<ScoredItem>> {
+        if codes.is_empty() {
+            return Ok(Vec::new());
+        }
+        if prepared.query_norm == 0.0 {
+            return Ok((0..codes.len())
+                .map(|idx| ScoredItem { idx, score: 0.0 })
+                .collect());
+        }
+        let block_count = self.quantizer.profile().block_count() as usize;
+        let mut stored_indices = Vec::with_capacity(codes.len() * block_count);
+        let mut stored_norms = Vec::with_capacity(codes.len());
+        for code in codes {
+            let mut indices = unpack_indices(
+                &code.indices,
+                block_count,
+                self.quantizer.profile().wire_index_bits,
+            )?;
+            stored_indices.append(&mut indices);
+            stored_norms.push(decode_stored_norm(code, self.quantizer.profile())? as f32);
+        }
+        let input = gpu_backend::FibGramPageScoreInput {
+            query_indices: &prepared.query_indices,
+            stored_indices: &stored_indices,
+            stored_norms: &stored_norms,
+            gram: self.gram.values(),
+            query_norm: prepared.query_norm as f32,
+            n_candidates: codes.len(),
+            block_count,
+            n_codewords: self.quantizer.profile().codebook_size as usize,
+        };
+        let scores = gpu_backend::score_fib_gram_pages(input).map_err(|e| {
+            FibQuantError::DependencyUnsupported(format!("gpu-backend page scorer failed: {e}"))
+        })?;
+        let mut results: Vec<ScoredItem> = scores
+            .into_iter()
+            .enumerate()
+            .map(|(idx, score)| ScoredItem { idx, score })
+            .collect();
+        sort_scored_items(&mut results);
         Ok(results)
     }
 
@@ -456,6 +505,15 @@ impl FibScorer {
         }
         Ok(ip / (q_norm * stored_norm))
     }
+}
+
+fn sort_scored_items(items: &mut [ScoredItem]) {
+    items.sort_by(|a, b| {
+        b.score
+            .partial_cmp(&a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| a.idx.cmp(&b.idx))
+    });
 }
 
 fn decode_stored_norm(code: &FibCodeV1, _profile: &FibQuantProfileV1) -> Result<f64> {
