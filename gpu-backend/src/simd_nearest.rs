@@ -180,8 +180,8 @@ unsafe fn nearest_codeword_f32_avx2_k2(sample: &[f32], codebook: &[f32]) -> usiz
 #[target_feature(enable = "avx2", enable = "fma")]
 unsafe fn nearest_codeword_f32_avx2_k8(sample: &[f32], codebook: &[f32]) -> usize {
     use std::arch::x86_64::{
-        _mm256_castps256_ps128, _mm256_loadu_ps, _mm256_mul_ps, _mm256_sub_ps, _mm_cvtss_f32,
-        _mm_hadd_ps,
+        _mm256_castps256_ps128, _mm256_extractf128_ps, _mm256_loadu_ps, _mm256_mul_ps,
+        _mm256_sub_ps,
     };
 
     debug_assert_eq!(sample.len(), 8);
@@ -198,11 +198,12 @@ unsafe fn nearest_codeword_f32_avx2_k8(sample: &[f32], codebook: &[f32]) -> usiz
         let delta = _mm256_sub_ps(cw, s_vec);
         let dist_sq = _mm256_mul_ps(delta, delta);
 
-        // Horizontal sum of all 8 lanes
+        // Horizontal sum of all 8 lanes: sum lo4 + hi4 separately, then add.
         let lo = _mm256_castps256_ps128(dist_sq);
-        let hadd = _mm_hadd_ps(lo, lo);
-        let hadd2 = _mm_hadd_ps(hadd, hadd);
-        let d0 = _mm_cvtss_f32(hadd2);
+        let hi = _mm256_extractf128_ps(dist_sq, 1);
+        let lo_sum = hsum4(lo);
+        let hi_sum = hsum4(hi);
+        let d0 = lo_sum + hi_sum;
 
         if d0 < best_dist {
             best_dist = d0;

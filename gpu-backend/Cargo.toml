@@ -1,6 +1,6 @@
 [package]
 name = "gpu-backend"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 edition = "2021"
 description = "Shared CUDA GPU backend for fib-quant and turbo-quant vector quantization (Hadamard rotation kernel, codebook lookup kernel, parity-verified)"
 license = "MIT"

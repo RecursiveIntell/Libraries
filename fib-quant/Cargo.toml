@@ -1,6 +1,6 @@
 [package]
 name = "fib-quant"
-version = "0.1.0-alpha.2"
+version = "0.1.0-alpha.3"
 edition = "2021"
 rust-version = "1.75"
 description = "Experimental Rust implementation of the FibQuant radial-angular vector quantization core"
@@ -60,7 +60,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 statrs = "0.17"
 thiserror = "2.0.18"
-gpu-backend = { version = "0.1.0-alpha.1", path = "../gpu-backend" }
+gpu-backend = { version = "0.1.0-alpha.2", path = "../gpu-backend" }
 rayon = { version = "1.10", optional = true }
 quant-codec-core = { version = "0.1.0-alpha.1", path = "../poly-kv/crates/quant-codec-core", optional = true }
 postcard = { version = "1.1", default-features = false, features = ["use-std"] }
