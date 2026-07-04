@@ -6,7 +6,7 @@ authors = ["Josh"]
 license = "MIT"
 description = "Production-grade background job queue system"
 readme = "README.md"
-keywords = ["queue", "jobs", "background-processing", "async"]
+keywords = ["queue", "jobs", "background", "async"]
 categories = ["asynchronous", "database"]
 
 [dependencies]
@@ -19,7 +19,7 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 thiserror = "2"
 tracing = "0.1"
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 
 [dev-dependencies]
 tempfile = "3"

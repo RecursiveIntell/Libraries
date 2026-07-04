@@ -5,7 +5,6 @@ edition = "2021"
 rust-version = "1.75"
 license = "MIT"
 readme = "README.md"
-publish = false
 description = "Serializable mindstate payload types for forge-engine"
 
 [dependencies]

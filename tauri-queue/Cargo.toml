@@ -6,7 +6,7 @@ authors = ["Josh"]
 license = "MIT"
 description = "Tauri integration for job-queue background job processing"
 readme = "README.md"
-keywords = ["tauri", "queue", "jobs", "background-processing", "async"]
+keywords = ["tauri", "queue", "jobs", "background", "async"]
 categories = ["asynchronous", "database"]
 
 [dependencies]
