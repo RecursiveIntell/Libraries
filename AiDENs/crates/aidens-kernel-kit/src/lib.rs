@@ -1,12 +1,12 @@
 //! Thin kernel facade over canonical compiler, execution, oracle, and core crates.
 
-pub mod regional_decoder;
 pub mod lawful_subtraction;
 pub mod mechanism;
+pub mod regional_decoder;
 
 pub use regional_decoder::{
-    classify_convergence, ConvergenceState, ConvergenceStopReason, RegionConvergenceReportV1,
-    RegionContractV1, ResidualEnvelopeV1, SyndromeEnvelopeV1,
+    classify_convergence, ConvergenceState, ConvergenceStopReason, RegionContractV1,
+    RegionConvergenceReportV1, ResidualEnvelopeV1, SyndromeEnvelopeV1,
 };
 
 pub use lawful_subtraction::{
@@ -124,7 +124,10 @@ impl CanonicalKernelAdapter {
     }
 
     /// Run conformance gates against a compiled graph.
-    pub fn check_conformance(&self, compiled: &canonical_stack::CompileOutput) -> Vec<ConformanceGateResult> {
+    pub fn check_conformance(
+        &self,
+        compiled: &canonical_stack::CompileOutput,
+    ) -> Vec<ConformanceGateResult> {
         let _ = compiled;
         self.conformance_gate_ids()
             .into_iter()
@@ -157,8 +160,8 @@ pub struct ConformanceGateResult {
 mod tests {
     use super::*;
     use constraint_compiler::{
-        CompilationBoundary, CompiledRegion, ConstraintDegradation, GraphGeometryManifest, GraphSurfaceKind,
-        InferenceHyperedge, InferenceNode,
+        CompilationBoundary, CompiledRegion, ConstraintDegradation, GraphGeometryManifest,
+        GraphSurfaceKind, InferenceHyperedge, InferenceNode,
     };
     use stack_ids::{ContentDigest, ScopeKey};
 
@@ -181,8 +184,7 @@ mod tests {
         let output = adapter.reason(&compiled, 2);
 
         assert_eq!(
-            output.stop_reason,
-            output.execution_report.stop_reason,
+            output.stop_reason, output.execution_report.stop_reason,
             "ReasonOutput.stop_reason should mirror execution_report.stop_reason"
         );
         assert!(matches!(

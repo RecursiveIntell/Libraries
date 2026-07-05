@@ -70,7 +70,7 @@ impl Default for LoopConfig {
             memory_dir: PathBuf::from("./.aidens/memory"),
             queue_dir: PathBuf::from("./.aidens/queue"),
             http_base_url: "http://127.0.0.1:1738".to_string(),
-            auditor_url: String::new(),  // empty = no hostile audit
+            auditor_url: String::new(), // empty = no hostile audit
             auditor_model: String::new(),
         }
     }
@@ -169,8 +169,7 @@ impl AutonomousLoop {
     pub fn from_config(config: LoopConfig) -> Result<Self> {
         // Open memory adapter.
         let memory_config = aidens_memory_kit::memory_config_for_root(&config.memory_dir);
-        let runtime_config =
-            aidens_memory_kit::runtime_config_for_namespace("autonomous");
+        let runtime_config = aidens_memory_kit::runtime_config_for_namespace("autonomous");
         let memory = Arc::new(
             aidens_memory_kit::CanonicalMemoryAdapter::open_with_mock_embedder(
                 memory_config,
@@ -184,11 +183,7 @@ impl AutonomousLoop {
             "autonomous-loop",
             "aidens-autonomous",
         );
-        let queue = DaemonControllerV1::open(
-            &config.queue_dir,
-            namespace,
-            "aidens-autonomous",
-        )?;
+        let queue = DaemonControllerV1::open(&config.queue_dir, namespace, "aidens-autonomous")?;
 
         // Build components.
         let detector = GapDetector::new(&config.http_base_url);
@@ -208,7 +203,10 @@ impl AutonomousLoop {
         let proof_debt = ProofDebtBudget::new();
         let entropy_search = EntropyGradientSearcher::new(&config.http_base_url);
         let hostile_audit = if !config.auditor_url.is_empty() && !config.auditor_model.is_empty() {
-            Some(HostileAuditGate::new(&config.auditor_url, &config.auditor_model))
+            Some(HostileAuditGate::new(
+                &config.auditor_url,
+                &config.auditor_model,
+            ))
         } else {
             None
         };
@@ -245,7 +243,10 @@ impl AutonomousLoop {
         config: LoopConfig,
     ) -> Self {
         let hostile_audit = if !config.auditor_url.is_empty() && !config.auditor_model.is_empty() {
-            Some(HostileAuditGate::new(&config.auditor_url, &config.auditor_model))
+            Some(HostileAuditGate::new(
+                &config.auditor_url,
+                &config.auditor_model,
+            ))
         } else {
             None
         };
@@ -298,7 +299,10 @@ impl AutonomousLoop {
         loop {
             // Snapshot state for this iteration.
             let iteration = {
-                let mut state = self.state.lock().map_err(|e| anyhow::anyhow!("state lock: {e}"))?;
+                let mut state = self
+                    .state
+                    .lock()
+                    .map_err(|e| anyhow::anyhow!("state lock: {e}"))?;
                 state.iteration += 1;
                 state.iteration
             };
@@ -318,7 +322,9 @@ impl AutonomousLoop {
             };
 
             if in_subtractive || self.proof_debt_should_shift() {
-                self.update_state(|s| { s.mode = LoopMode::Subtractive; });
+                self.update_state(|s| {
+                    s.mode = LoopMode::Subtractive;
+                });
                 if let Err(e) = self.run_subtractive_cycle().await {
                     self.update_state(|s| {
                         s.last_error = Some(format!("subtractive cycle failed: {e}"));
@@ -326,7 +332,9 @@ impl AutonomousLoop {
                 }
                 // Check if we can return to additive mode.
                 if !self.proof_debt_should_shift() {
-                    self.update_state(|s| { s.mode = LoopMode::Additive; });
+                    self.update_state(|s| {
+                        s.mode = LoopMode::Additive;
+                    });
                 }
                 // Emit receipt for subtractive cycle.
                 self.emit_cycle_receipt(iteration, 0, 0, 0, 0, 0, &[], &[]);
@@ -422,11 +430,20 @@ impl AutonomousLoop {
                     let _ = self.queue.cancel(&job_id, "execution-error");
                     let err_gap_key = format!(
                         "{}|{}",
-                        payload.get("fact_id").and_then(|v| v.as_str()).unwrap_or(""),
-                        payload.get("gap_type").and_then(|v| v.as_str()).unwrap_or(""),
+                        payload
+                            .get("fact_id")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or(""),
+                        payload
+                            .get("gap_type")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or(""),
                     );
                     if !err_gap_key.is_empty() && err_gap_key != "|" {
-                        let _ = self.attempted_gaps.lock().map(|mut g| g.insert(err_gap_key));
+                        let _ = self
+                            .attempted_gaps
+                            .lock()
+                            .map(|mut g| g.insert(err_gap_key));
                     }
                     self.check_safe_mode();
                     self.emit_cycle_receipt(iteration, 0, 1, 0, 0, 0, &[], &[error_msg]);
@@ -458,10 +475,9 @@ impl AutonomousLoop {
             let mut facts_rejected_this = 0usize;
 
             for fact_id in &capture_outcome.fact_ids {
-                let (disposition, score) = self.evaluation.evaluate_with_score(
-                    &exec_result.output,
-                    exec_result.success,
-                );
+                let (disposition, score) = self
+                    .evaluation
+                    .evaluate_with_score(&exec_result.output, exec_result.success);
 
                 // Apply viscosity-adjusted promotion threshold.
                 let effective_disposition = if score >= promotion_threshold {
@@ -473,25 +489,28 @@ impl AutonomousLoop {
                 };
 
                 // 8. Hostile audit (if strict/frozen and fact would be promoted).
-                let final_disposition = if should_audit && effective_disposition == FactDisposition::Promote {
-                    if let Some(audit_gate) = &self.hostile_audit {
-                        match audit_gate.audit(&exec_result.output, &fact_id).await {
-                            Ok(audit_result) if !audit_result.survived => {
-                                FactDisposition::Quarantine
+                let final_disposition =
+                    if should_audit && effective_disposition == FactDisposition::Promote {
+                        if let Some(audit_gate) = &self.hostile_audit {
+                            match audit_gate.audit(&exec_result.output, &fact_id).await {
+                                Ok(audit_result) if !audit_result.survived => {
+                                    FactDisposition::Quarantine
+                                }
+                                _ => effective_disposition,
                             }
-                            _ => effective_disposition,
+                        } else {
+                            effective_disposition
                         }
                     } else {
                         effective_disposition
-                    }
-                } else {
-                    effective_disposition
-                };
+                    };
 
                 match final_disposition {
                     FactDisposition::Promote => {
                         facts_promoted += 1;
-                        self.update_state(|s| { s.facts_captured += 1; });
+                        self.update_state(|s| {
+                            s.facts_captured += 1;
+                        });
 
                         // 9. Incur proof-debt for promoted facts.
                         let namespace = payload
@@ -509,11 +528,15 @@ impl AutonomousLoop {
                     }
                     FactDisposition::Quarantine => {
                         facts_quarantined += 1;
-                        self.update_state(|s| { s.facts_captured += 1; });
+                        self.update_state(|s| {
+                            s.facts_captured += 1;
+                        });
                     }
                     FactDisposition::Reject => {
                         facts_rejected_this += 1;
-                        self.update_state(|s| { s.facts_rejected += 1; });
+                        self.update_state(|s| {
+                            s.facts_rejected += 1;
+                        });
                     }
                 }
             }
@@ -529,8 +552,14 @@ impl AutonomousLoop {
             // 10. Complete or cancel job.
             let gap_key = format!(
                 "{}|{}",
-                payload.get("fact_id").and_then(|v| v.as_str()).unwrap_or(""),
-                payload.get("gap_type").and_then(|v| v.as_str()).unwrap_or(""),
+                payload
+                    .get("fact_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or(""),
+                payload
+                    .get("gap_type")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or(""),
             );
 
             if exec_result.success {
@@ -559,15 +588,14 @@ impl AutonomousLoop {
             // 11. Record cycle outcome in viscosity controller.
             let was_duplicate = capture_outcome.facts_skipped_duplicates > 0;
             // Use the majority disposition for viscosity recording.
-            let cycle_disposition = if facts_promoted > facts_quarantined
-                && facts_promoted > facts_rejected_this
-            {
-                FactDisposition::Promote
-            } else if facts_quarantined > 0 {
-                FactDisposition::Quarantine
-            } else {
-                FactDisposition::Reject
-            };
+            let cycle_disposition =
+                if facts_promoted > facts_quarantined && facts_promoted > facts_rejected_this {
+                    FactDisposition::Promote
+                } else if facts_quarantined > 0 {
+                    FactDisposition::Quarantine
+                } else {
+                    FactDisposition::Reject
+                };
             self.viscosity_record(
                 exec_result.success,
                 was_duplicate,
@@ -587,11 +615,18 @@ impl AutonomousLoop {
             });
 
             // 13. Emit cycle receipt.
-            let domains: Vec<String> = self.state.lock().map(|s| s.domains_explored.clone()).unwrap_or_default();
+            let domains: Vec<String> = self
+                .state
+                .lock()
+                .map(|s| s.domains_explored.clone())
+                .unwrap_or_default();
             let errors: Vec<String> = if exec_result.success {
                 Vec::new()
             } else {
-                vec![exec_result.error.clone().unwrap_or_else(|| "unknown error".to_string())]
+                vec![exec_result
+                    .error
+                    .clone()
+                    .unwrap_or_else(|| "unknown error".to_string())]
             };
             self.emit_cycle_receipt(
                 iteration,
@@ -628,8 +663,16 @@ impl AutonomousLoop {
         errors: &[String],
     ) {
         let strictness = self.viscosity_strictness_name();
-        let debt_outstanding = self.proof_debt.lock().map(|d| d.total_outstanding()).unwrap_or(0);
-        let total_incurred = self.proof_debt.lock().map(|d| d.debt_receipt().total_incurred).unwrap_or(0);
+        let debt_outstanding = self
+            .proof_debt
+            .lock()
+            .map(|d| d.total_outstanding())
+            .unwrap_or(0);
+        let total_incurred = self
+            .proof_debt
+            .lock()
+            .map(|d| d.debt_receipt().total_incurred)
+            .unwrap_or(0);
         let mode = self.state.lock().map(|s| s.mode).unwrap_or_default();
         let saturated = self.entropy_saturated_domains();
 
@@ -660,7 +703,9 @@ impl AutonomousLoop {
     /// adaptive priority adjustment.
     async fn run_mission_detection(&self, mission: &Mission, iteration: usize) -> Result<()> {
         let attempted = self.attempted_gaps.lock().unwrap().clone();
-        let gaps = mission.detect_issues(&self.config.http_base_url, &attempted).await?;
+        let gaps = mission
+            .detect_issues(&self.config.http_base_url, &attempted)
+            .await?;
 
         let issue_count = gaps.len();
         self.update_state(|s| {
@@ -790,7 +835,10 @@ impl AutonomousLoop {
 
         // For each medium-risk entry, check if the claim has contradictions.
         for (entry_id, claim_id) in &medium_entries {
-            let has_contradiction = self.check_claim_contradictions(claim_id).await.unwrap_or(false);
+            let has_contradiction = self
+                .check_claim_contradictions(claim_id)
+                .await
+                .unwrap_or(false);
             if let Ok(mut debt) = self.proof_debt.lock() {
                 if has_contradiction {
                     // Quarantine the claim — pay debt via quarantine.
@@ -918,7 +966,13 @@ impl AutonomousLoop {
         facts_added: usize,
     ) {
         if let Ok(mut vc) = self.viscosity.lock() {
-            vc.record(success, was_duplicate, disposition, contradictions, facts_added);
+            vc.record(
+                success,
+                was_duplicate,
+                disposition,
+                contradictions,
+                facts_added,
+            );
         }
     }
 
@@ -942,7 +996,11 @@ impl AutonomousLoop {
     fn check_safe_mode(&self) {
         let should_enter_safe = {
             let state = self.state.lock().ok();
-            state.map(|s| s.consecutive_failures >= self.config.max_consecutive_failures && !s.safe_mode).unwrap_or(false)
+            state
+                .map(|s| {
+                    s.consecutive_failures >= self.config.max_consecutive_failures && !s.safe_mode
+                })
+                .unwrap_or(false)
         };
 
         if should_enter_safe {
@@ -953,7 +1011,9 @@ impl AutonomousLoop {
                     s.consecutive_failures
                 ));
             });
-            let _ = self.queue.set_safe_mode(true, "consecutive-failure-threshold");
+            let _ = self
+                .queue
+                .set_safe_mode(true, "consecutive-failure-threshold");
         }
     }
 
@@ -1001,8 +1061,10 @@ mod tests {
         use std::sync::atomic::{AtomicU64, Ordering};
         static COUNTER: AtomicU64 = AtomicU64::new(0);
         let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let dir = std::env::temp_dir()
-            .join(format!("aidens-autonomous-loop-{name}-{id}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!(
+            "aidens-autonomous-loop-{name}-{id}-{}",
+            std::process::id()
+        ));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir

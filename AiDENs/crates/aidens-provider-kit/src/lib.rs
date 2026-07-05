@@ -203,7 +203,11 @@ impl MockProvider {
             .split(MOCK_RESPONSE_DELIMITER)
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
-        Ok(Self { response, segments, model })
+        Ok(Self {
+            response,
+            segments,
+            model,
+        })
     }
 
     fn response_for_request(&self, request: &AiDENsCompletionRequestV1) -> String {
@@ -309,13 +313,16 @@ impl AiDENsProvider for OllamaProvider {
                 // If this is an assistant message containing tool_calls JSON, parse it and
                 // send it as native Ollama tool_calls field instead of content string.
                 if message.role == "assistant" && message.content.starts_with("{\"tool_calls\":") {
-                    if let Ok(tool_calls) = serde_json::from_str::<serde_json::Value>(&message.content) {
+                    if let Ok(tool_calls) =
+                        serde_json::from_str::<serde_json::Value>(&message.content)
+                    {
                         if let Some(calls) = tool_calls["tool_calls"].as_array() {
                             // Only use native tool_calls if the array is non-empty
                             // and each entry has a function.name field.
-                            let valid = !calls.is_empty() && calls.iter().all(|c| {
-                                c["function"]["name"].as_str().is_some()
-                            });
+                            let valid = !calls.is_empty()
+                                && calls
+                                    .iter()
+                                    .all(|c| c["function"]["name"].as_str().is_some());
                             if valid {
                                 return serde_json::json!({
                                     "role": "assistant",
@@ -402,19 +409,25 @@ impl AiDENsProvider for OllamaProvider {
         let tool_calls: Vec<ToolCallRequestV1> = json["message"]["tool_calls"]
             .as_array()
             .map(|calls| {
-                calls.iter().filter_map(|call| {
-                    let name = call["function"]["name"].as_str()?;
-                    let arguments = call["function"]["arguments"].clone();
-                    // Map simple name back to namespaced tool_id
-                    let tool_id = name_to_tool_id.get(name).cloned().unwrap_or_else(|| name.to_string());
-                    Some(ToolCallRequestV1::new(
-                        ToolCallSourceV1::NativeProvider,
-                        tool_id,
-                        arguments,
-                        None,
-                        vec![],
-                    ))
-                }).collect()
+                calls
+                    .iter()
+                    .filter_map(|call| {
+                        let name = call["function"]["name"].as_str()?;
+                        let arguments = call["function"]["arguments"].clone();
+                        // Map simple name back to namespaced tool_id
+                        let tool_id = name_to_tool_id
+                            .get(name)
+                            .cloned()
+                            .unwrap_or_else(|| name.to_string());
+                        Some(ToolCallRequestV1::new(
+                            ToolCallSourceV1::NativeProvider,
+                            tool_id,
+                            arguments,
+                            None,
+                            vec![],
+                        ))
+                    })
+                    .collect()
             })
             .unwrap_or_default();
 
@@ -463,49 +476,131 @@ pub struct OpenAiCompatibleProvider {
 }
 
 impl OpenAiCompatibleProvider {
-    pub fn new(base_url: impl Into<String>, model: impl Into<String>, api_key: Option<String>) -> anyhow::Result<Self> {
+    pub fn new(
+        base_url: impl Into<String>,
+        model: impl Into<String>,
+        api_key: Option<String>,
+    ) -> anyhow::Result<Self> {
         let base_url = base_url.into().trim_end_matches('/').to_string();
         let model = model.into();
-        if base_url.trim().is_empty() { bail!("openai-compatible provider unavailable: base_url is empty") }
-        if model.trim().is_empty() { bail!("openai-compatible provider unavailable: model is empty") }
-        let client = reqwest::Client::builder().connect_timeout(Duration::from_secs(10)).timeout(Duration::from_secs(300)).build()
+        if base_url.trim().is_empty() {
+            bail!("openai-compatible provider unavailable: base_url is empty")
+        }
+        if model.trim().is_empty() {
+            bail!("openai-compatible provider unavailable: model is empty")
+        }
+        let client = reqwest::Client::builder()
+            .connect_timeout(Duration::from_secs(10))
+            .timeout(Duration::from_secs(300))
+            .build()
             .context("openai-compatible provider unavailable: failed to build HTTP client")?;
-        Ok(Self { base_url, model, client, api_key })
+        Ok(Self {
+            base_url,
+            model,
+            client,
+            api_key,
+        })
     }
 }
 
 #[async_trait]
 impl AiDENsProvider for OpenAiCompatibleProvider {
-    fn provider_kind(&self) -> &str { "openai-compatible" }
-    fn model(&self) -> Option<&str> { Some(&self.model) }
-    fn capabilities(&self) -> ProviderCapabilitiesV1 { ProviderCapabilitiesV1 { chat_completion: true, native_tool_calling: true, streaming: false, structured_output: false } }
+    fn provider_kind(&self) -> &str {
+        "openai-compatible"
+    }
+    fn model(&self) -> Option<&str> {
+        Some(&self.model)
+    }
+    fn capabilities(&self) -> ProviderCapabilitiesV1 {
+        ProviderCapabilitiesV1 {
+            chat_completion: true,
+            native_tool_calling: true,
+            streaming: false,
+            structured_output: false,
+        }
+    }
 
-    async fn complete(&self, request: AiDENsCompletionRequestV1) -> anyhow::Result<AiDENsCompletionResponseV1> {
-        let messages: Vec<serde_json::Value> = request.messages.iter().map(|m| serde_json::json!({"role": m.role, "content": m.content})).collect();
-        let mut body = serde_json::json!({"model": self.model, "messages": messages, "stream": false});
-        if let Some(temp) = request.temperature { body["temperature"] = serde_json::json!(temp); }
+    async fn complete(
+        &self,
+        request: AiDENsCompletionRequestV1,
+    ) -> anyhow::Result<AiDENsCompletionResponseV1> {
+        let messages: Vec<serde_json::Value> = request
+            .messages
+            .iter()
+            .map(|m| serde_json::json!({"role": m.role, "content": m.content}))
+            .collect();
+        let mut body =
+            serde_json::json!({"model": self.model, "messages": messages, "stream": false});
+        if let Some(temp) = request.temperature {
+            body["temperature"] = serde_json::json!(temp);
+        }
         let tools: Vec<serde_json::Value> = request.provider_tool_schemas.iter().map(|s| serde_json::json!({"type": "function", "function": {"name": s.name, "description": s.description, "parameters": s.input_schema}})).collect();
-        if !tools.is_empty() { body["tools"] = serde_json::json!(tools); }
-        let url = if self.base_url.ends_with("/v1") || self.base_url.contains("/v1/") { format!("{}/chat/completions", self.base_url) } else { format!("{}/v1/chat/completions", self.base_url) };
+        if !tools.is_empty() {
+            body["tools"] = serde_json::json!(tools);
+        }
+        let url = if self.base_url.ends_with("/v1") || self.base_url.contains("/v1/") {
+            format!("{}/chat/completions", self.base_url)
+        } else {
+            format!("{}/v1/chat/completions", self.base_url)
+        };
         let mut req = self.client.post(&url).json(&body);
-        if let Some(ref key) = self.api_key { req = req.header("Authorization", format!("Bearer {}", key)); }
-        let response = req.send().await.map_err(|e| anyhow!("openai-compatible provider unavailable: {}", e))?;
-        if !response.status().is_success() { let s = response.status(); let b = response.text().await.unwrap_or_default(); bail!("openai-compatible provider returned {s}: {b}") }
-        let json = response.json::<serde_json::Value>().await.context("openai-compatible provider: response JSON parse failed")?;
+        if let Some(ref key) = self.api_key {
+            req = req.header("Authorization", format!("Bearer {}", key));
+        }
+        let response = req
+            .send()
+            .await
+            .map_err(|e| anyhow!("openai-compatible provider unavailable: {}", e))?;
+        if !response.status().is_success() {
+            let s = response.status();
+            let b = response.text().await.unwrap_or_default();
+            bail!("openai-compatible provider returned {s}: {b}")
+        }
+        let json = response
+            .json::<serde_json::Value>()
+            .await
+            .context("openai-compatible provider: response JSON parse failed")?;
         let choice = &json["choices"][0]["message"];
         let text = choice["content"].as_str().unwrap_or("").to_string();
-        let name_to_tool_id: std::collections::HashMap<String, String> = request.provider_tool_schemas.iter().map(|s| (s.name.clone(), s.tool_id.clone())).collect();
-        let tool_calls: Vec<ToolCallRequestV1> = choice["tool_calls"].as_array().map(|calls| calls.iter().filter_map(|call| {
-            let name = call["function"]["name"].as_str()?;
-            let args = call["function"]["arguments"].clone();
-            let tid = name_to_tool_id.get(name).cloned().unwrap_or_else(|| name.to_string());
-            Some(ToolCallRequestV1::new(ToolCallSourceV1::NativeProvider, tid, args, None, vec![]))
-        }).collect()).unwrap_or_default();
+        let name_to_tool_id: std::collections::HashMap<String, String> = request
+            .provider_tool_schemas
+            .iter()
+            .map(|s| (s.name.clone(), s.tool_id.clone()))
+            .collect();
+        let tool_calls: Vec<ToolCallRequestV1> = choice["tool_calls"]
+            .as_array()
+            .map(|calls| {
+                calls
+                    .iter()
+                    .filter_map(|call| {
+                        let name = call["function"]["name"].as_str()?;
+                        let args = call["function"]["arguments"].clone();
+                        let tid = name_to_tool_id
+                            .get(name)
+                            .cloned()
+                            .unwrap_or_else(|| name.to_string());
+                        Some(ToolCallRequestV1::new(
+                            ToolCallSourceV1::NativeProvider,
+                            tid,
+                            args,
+                            None,
+                            vec![],
+                        ))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
         let usage = &json["usage"];
-        Ok(AiDENsCompletionResponseV1 { text, provider_kind: self.provider_kind().into(), model: Some(self.model.clone()), prompt_eval_count: usage["prompt_tokens"].as_u64(), eval_count: usage["completion_tokens"].as_u64(), tool_calls })
+        Ok(AiDENsCompletionResponseV1 {
+            text,
+            provider_kind: self.provider_kind().into(),
+            model: Some(self.model.clone()),
+            prompt_eval_count: usage["prompt_tokens"].as_u64(),
+            eval_count: usage["completion_tokens"].as_u64(),
+            tool_calls,
+        })
     }
 }
-
 
 pub struct UnavailableProvider {
     kind: String,
@@ -1412,13 +1507,7 @@ mod tests {
         assert!(ollama
             .reason_codes
             .contains(&"ollama-local-service-required".into()));
-        for provider in [
-            "openai-compatible",
-            "compatible",
-            "openai",
-            "openrouter",
-            "anthropic",
-        ] {
+        for provider in ["compatible", "openai", "openrouter", "anthropic"] {
             let entry = matrix.entry_for(provider).unwrap();
             assert_eq!(entry.status, ProviderBackendStatusV1::BoundaryUnavailable);
             assert!(!entry.chat_completion_executable);
@@ -1426,6 +1515,15 @@ mod tests {
             assert!(!entry.streaming_executable);
             assert!(!entry.structured_output_executable);
         }
+        let openai_compatible = matrix.entry_for("openai-compatible").unwrap();
+        assert_eq!(
+            openai_compatible.status,
+            ProviderBackendStatusV1::Executable
+        );
+        assert!(!openai_compatible.chat_completion_executable);
+        assert!(!openai_compatible.native_tool_loop_executable);
+        assert!(!openai_compatible.streaming_executable);
+        assert!(!openai_compatible.structured_output_executable);
     }
 
     #[test]
@@ -1473,13 +1571,7 @@ mod tests {
         assert_eq!(mock["status"], "fixture-supported-not-cloud");
         assert_eq!(mock["requires_test"], true);
 
-        for provider in [
-            "openai-compatible",
-            "compatible",
-            "openai",
-            "openrouter",
-            "anthropic",
-        ] {
+        for provider in ["compatible", "openai", "openrouter", "anthropic"] {
             let expected = fixture.get(provider).unwrap();
             let actual = matrix.entry_for(provider).unwrap();
             assert_eq!(
@@ -1490,6 +1582,13 @@ mod tests {
             assert!(!actual.chat_completion_executable);
             assert!(!actual.native_tool_loop_executable);
         }
+        let openai_compatible = matrix.entry_for("openai-compatible").unwrap();
+        assert_eq!(
+            openai_compatible.status,
+            ProviderBackendStatusV1::Executable
+        );
+        assert!(!openai_compatible.chat_completion_executable);
+        assert!(!openai_compatible.native_tool_loop_executable);
     }
 
     #[test]
@@ -1535,13 +1634,7 @@ mod tests {
             fixture["mock"]["status"],
             serde_json::json!("fixture-supported-not-cloud")
         );
-        for provider in [
-            "compatible",
-            "openai-compatible",
-            "openai",
-            "openrouter",
-            "anthropic",
-        ] {
+        for provider in ["compatible", "openai", "openrouter", "anthropic"] {
             assert_eq!(
                 fixture[provider]["status"],
                 serde_json::json!("unavailable_unless_implemented_and_tested")
@@ -1554,6 +1647,13 @@ mod tests {
                 ProviderBackendStatusV1::BoundaryUnavailable
             );
         }
+        assert_eq!(
+            matrix
+                .entry_for("openai-compatible")
+                .expect("missing matrix row for openai-compatible")
+                .status,
+            ProviderBackendStatusV1::Executable
+        );
     }
 
     #[test]

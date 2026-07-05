@@ -13,8 +13,8 @@
 use crate::executor::ExecutionResult;
 use aidens_memory_kit::canonical_stack::AddGraphEdgeParams;
 use aidens_memory_kit::CanonicalMemoryAdapter;
-use semantic_memory::types::GraphEdgeType;
 use anyhow::Result;
+use semantic_memory::types::GraphEdgeType;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -57,10 +57,7 @@ impl std::fmt::Debug for ResultCapture {
 
 impl ResultCapture {
     /// Create a new result capture with the given memory adapter.
-    pub fn new(
-        memory: Arc<CanonicalMemoryAdapter>,
-        http_base_url: impl Into<String>,
-    ) -> Self {
+    pub fn new(memory: Arc<CanonicalMemoryAdapter>, http_base_url: impl Into<String>) -> Self {
         Self {
             memory,
             http_base_url: http_base_url.into(),
@@ -119,7 +116,11 @@ impl ResultCapture {
             }
 
             // Determine confidence based on content quality.
-            let confidence = if has_specific_facts(sentence) { 0.8 } else { 0.5 };
+            let confidence = if has_specific_facts(sentence) {
+                0.8
+            } else {
+                0.5
+            };
 
             // Add the new fact.
             let fact_id = self
@@ -262,8 +263,10 @@ mod tests {
         use std::sync::atomic::{AtomicU64, Ordering};
         static COUNTER: AtomicU64 = AtomicU64::new(0);
         let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let dir = std::env::temp_dir()
-            .join(format!("aidens-autonomous-capture-{name}-{id}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!(
+            "aidens-autonomous-capture-{name}-{id}-{}",
+            std::process::id()
+        ));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
@@ -284,7 +287,11 @@ mod tests {
             job_id: "job:test-001".to_string(),
             output: output.to_string(),
             success,
-            error: if success { None } else { Some("failed".to_string()) },
+            error: if success {
+                None
+            } else {
+                Some("failed".to_string())
+            },
             gap_type: "missing-context".to_string(),
             source_fact_id: fact_id.to_string(),
         }
@@ -332,12 +339,16 @@ mod tests {
 
     #[test]
     fn has_specific_facts_detects_proper_nouns() {
-        assert!(has_specific_facts("The Rust language provides memory safety."));
+        assert!(has_specific_facts(
+            "The Rust language provides memory safety."
+        ));
     }
 
     #[test]
     fn has_specific_facts_returns_false_for_vague() {
-        assert!(!has_specific_facts("this is a vague statement about things"));
+        assert!(!has_specific_facts(
+            "this is a vague statement about things"
+        ));
     }
 
     #[tokio::test]
@@ -407,7 +418,12 @@ mod tests {
 
         // Pre-add a source fact so the graph edge has a real target.
         let source_fact_id = memory
-            .add_fact("autonomous", "Source fact content here.", Some("test"), Some(0.5))
+            .add_fact(
+                "autonomous",
+                "Source fact content here.",
+                Some("test"),
+                Some(0.5),
+            )
             .await
             .unwrap();
 

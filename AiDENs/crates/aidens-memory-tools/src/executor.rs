@@ -12,6 +12,7 @@ use std::sync::Arc;
 /// in-process. No MCP, no HTTP — direct function calls.
 #[derive(Clone)]
 pub struct MemoryToolExecutor {
+    #[allow(dead_code)]
     adapter: Arc<CanonicalMemoryAdapter>,
 }
 
@@ -31,7 +32,9 @@ impl MemoryToolExecutor {
 impl CustomToolExecutor for MemoryToolExecutor {
     async fn execute(&self, tool_id: &str, input: Value) -> Result<String> {
         let _ = (tool_id, input);
-        Err(anyhow!("memory tools not yet implemented — subagent in progress"))
+        Err(anyhow!(
+            "memory tools not yet implemented — subagent in progress"
+        ))
     }
 
     fn clone_box(&self) -> Arc<dyn CustomToolExecutor> {

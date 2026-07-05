@@ -7,6 +7,7 @@ pub(crate) struct ScaffoldSummary {
     pub(crate) files: Vec<String>,
 }
 
+#[allow(dead_code)]
 pub(crate) fn scaffold_project(
     profile: AiDENsProfile,
     name: &str,

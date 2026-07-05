@@ -12,8 +12,8 @@
 use aidens_contracts::{
     AgentMemoryModeV1, AgentPermitRuleV1, AgentProviderModeV1, AgentSpecBudgetPolicyV1,
     AgentSpecEvidencePolicyV1, AgentSpecMemoryPolicyV1, AgentSpecPermitPolicyV1,
-    AgentSpecProviderPolicyV1, AgentSpecSupportLabelV1, AgentSpecToolPolicyV1,
-    AgentSpecVerificationPolicyV1, AgentSpecV1, AgentVerificationCheckV1,
+    AgentSpecProviderPolicyV1, AgentSpecSupportLabelV1, AgentSpecToolPolicyV1, AgentSpecV1,
+    AgentSpecVerificationPolicyV1, AgentVerificationCheckV1,
 };
 use aidens_memory_kit::CanonicalMemoryAdapter;
 use aidens_runner::{PlanActVerifyLoopV1, PlanActVerifyOutcomeV1};
@@ -326,8 +326,10 @@ mod tests {
         use std::sync::atomic::{AtomicU64, Ordering};
         static COUNTER: AtomicU64 = AtomicU64::new(0);
         let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let dir = std::env::temp_dir()
-            .join(format!("aidens-autonomous-executor-{name}-{id}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!(
+            "aidens-autonomous-executor-{name}-{id}-{}",
+            std::process::id()
+        ));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         dir
@@ -392,7 +394,13 @@ mod tests {
     #[test]
     fn executor_stores_config() {
         let memory = mock_memory();
-        let executor = LoopExecutor::new(memory, "http://localhost:11434", "test-model", "http://localhost:1738", None);
+        let executor = LoopExecutor::new(
+            memory,
+            "http://localhost:11434",
+            "test-model",
+            "http://localhost:1738",
+            None,
+        );
         assert_eq!(executor.model_url, "http://localhost:11434");
         assert_eq!(executor.chosen_model, "test-model");
         assert_eq!(executor.http_base_url, "http://localhost:1738");
@@ -538,7 +546,7 @@ mod debug_tests {
         let memory_config = memory_config_for_root(&dir);
         let runtime_config = runtime_config_for_namespace("test");
         let memory = std::sync::Arc::new(
-            CanonicalMemoryAdapter::open_with_mock_embedder(memory_config, runtime_config).unwrap()
+            CanonicalMemoryAdapter::open_with_mock_embedder(memory_config, runtime_config).unwrap(),
         );
 
         let executor = LoopExecutor {
@@ -555,7 +563,10 @@ mod debug_tests {
             "fact_id": "test-fact"
         });
 
-        let result = executor.execute_job_with_payload("debug-test", &payload).await.unwrap();
+        let result = executor
+            .execute_job_with_payload("debug-test", &payload)
+            .await
+            .unwrap();
 
         println!("Success: {}", result.success);
         println!("Output: {}", result.output);

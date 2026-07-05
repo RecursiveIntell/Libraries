@@ -16,8 +16,8 @@
 mod canonical_boundary;
 
 pub use boundary_compiler::{
-    BoundaryProfile, Canonicalizer, JcsError as CanonicalJcsError,
-    ContentDigest as CanonicalContentDigest,
+    BoundaryProfile, Canonicalizer, ContentDigest as CanonicalContentDigest,
+    JcsError as CanonicalJcsError,
 };
 
 pub use canonical_boundary::canonical_compile_json_boundary;
@@ -73,9 +73,7 @@ pub fn canonical_digest(
 }
 
 /// Canonicalize a JSON value per RFC 8785.
-pub fn canonicalize_json(
-    value: &serde_json::Value,
-) -> Result<String, boundary_compiler::JcsError> {
+pub fn canonicalize_json(value: &serde_json::Value) -> Result<String, boundary_compiler::JcsError> {
     boundary_compiler::Canonicalizer::new().canonicalize(value)
 }
 

@@ -194,11 +194,7 @@ mod tests {
 
     #[test]
     fn prompt_for_missing_link() {
-        let mut gap = make_gap(
-            GapType::MissingLink,
-            "fact:a|fact:b",
-            "Fact A content",
-        );
+        let mut gap = make_gap(GapType::MissingLink, "fact:a|fact:b", "Fact A content");
         gap.fact_id_b = Some("fact:b".to_string());
         gap.namespace = Some("research".to_string());
         let prompt = build_prompt(&gap);
@@ -262,11 +258,7 @@ mod tests {
 
     #[test]
     fn prompt_for_stale_by_date() {
-        let mut gap = make_gap(
-            GapType::StaleByDate,
-            "fact:stale",
-            "Released in 2023",
-        );
+        let mut gap = make_gap(GapType::StaleByDate, "fact:stale", "Released in 2023");
         gap.date = Some("2023".to_string());
         let prompt = build_prompt(&gap);
         assert!(prompt.contains("2023"));
@@ -309,11 +301,7 @@ mod tests {
 
     #[test]
     fn payload_contains_required_fields() {
-        let gap = make_gap(
-            GapType::MissingContext,
-            "fact:abc",
-            "some content snippet",
-        );
+        let gap = make_gap(GapType::MissingContext, "fact:abc", "some content snippet");
         let payload = serde_json::json!({
             "prompt": build_prompt(&gap),
             "gap_type": gap.gap_type.to_string(),

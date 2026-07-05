@@ -8,31 +8,31 @@ license = "MIT"
 
 [dependencies]
 chrono = { workspace = true }
-constitutional-memory = { path = "../constitutional-memory" }
-constraint-compiler = { path = "../constraint-compiler" }
-discovery-portfolio = { path = "../discovery-portfolio" }
-federated-settlement = { path = "../federated-settlement" }
-forge-memory-bridge = { path = "../forge-memory-bridge" }
-knowledge-runtime = { path = "../knowledge-runtime" }
-kernel-execution = { path = "../kernel-execution" }
-kernel-oracles = { path = "../kernel-oracles" }
-mechanism-runtime = { path = "../mechanism-runtime" }
-recursive-kernel-core = { path = "../recursive-kernel-core" }
-semantic-memory = { path = "../semantic-memory" }
-semantic-memory-forge = { path = "../semantic-memory-forge" }
-spec-execution = { path = "../spec-execution" }
-verification-adjudication = { path = "../verification-adjudication" }
-verification-calibration = { path = "../verification-calibration" }
-verification-control = { path = "../verification-control" }
-verification-policy = { path = "../verification-policy" }
+constitutional-memory = { version = "0.1.0", path = "../constitutional-memory" }
+constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
+discovery-portfolio = { version = "0.1.0", path = "../discovery-portfolio" }
+federated-settlement = { version = "0.1.0", path = "../federated-settlement" }
+forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
+knowledge-runtime = { version = "0.1.0", path = "../knowledge-runtime" }
+kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
+kernel-oracles = { version = "0.1.0", path = "../kernel-oracles" }
+mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime" }
+recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
+semantic-memory = { version = "0.5.8", path = "../semantic-memory" }
+semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
+spec-execution = { version = "0.1.0", path = "../spec-execution" }
+verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }
+verification-calibration = { version = "0.1.0", path = "../verification-calibration" }
+verification-control = { version = "0.1.0", path = "../verification-control" }
+verification-policy = { version = "0.1.0", path = "../verification-policy" }
 serde_json = { workspace = true }
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 
 [dev-dependencies]
-forge-engine = { path = "../living-memory/living-memory" }
-forge-pilot = { path = "../forge-pilot" }
+forge-engine = { version = "0.2.0", path = "../living-memory/living-memory" }
+forge-pilot = { version = "0.1.0", path = "../forge-pilot" }
 proptest = { workspace = true }
 
 # LIB-005: inherit workspace lint policy

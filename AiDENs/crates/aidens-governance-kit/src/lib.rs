@@ -3,8 +3,8 @@
 pub mod verification;
 
 pub use verification::{
-    evaluate_promotion, ClaimEvidenceBundleV1, GovernanceAction, GovernanceDecisionV1,
-    RiskClass, VerificationDisposition, VerificationPlanV1,
+    evaluate_promotion, ClaimEvidenceBundleV1, GovernanceAction, GovernanceDecisionV1, RiskClass,
+    VerificationDisposition, VerificationPlanV1,
 };
 
 pub mod canonical_stack {
@@ -25,8 +25,8 @@ pub mod canonical_stack {
     };
     pub use verification_policy::{
         ApprovalRecord, ApprovalRequirement, ApprovalScope, AutonomyCeiling,
-        DelegationPolicyProfileV1, EffectPolicyProfileV1, ExecutionPermit,
-        MethodPolicy, PermitIssuanceError, PolicyDecision, PolicySnapshot, ReleasePolicyProfileV1,
+        DelegationPolicyProfileV1, EffectPolicyProfileV1, ExecutionPermit, MethodPolicy,
+        PermitIssuanceError, PolicyDecision, PolicySnapshot, ReleasePolicyProfileV1,
     };
 }
 
@@ -324,7 +324,10 @@ impl CanonicalGovernanceAdapter {
         }
 
         let mut replay_requirements = vec![acting_on_behalf.effect_execution_receipt_id.clone()];
-        if replay_requirements.iter().all(|value| value.trim().is_empty()) {
+        if replay_requirements
+            .iter()
+            .all(|value| value.trim().is_empty())
+        {
             replay_requirements = vec!["replay-requirement:fallback".to_string()];
         }
 
@@ -344,17 +347,16 @@ impl CanonicalGovernanceAdapter {
         ) {
             Ok(bundle) => bundle,
             Err(_) => canonical_stack::DelegationBundleV1 {
-            schema_version: "DelegationBundleV1".to_string(),
-            delegation_bundle_id,
-            authority_lease_id: lease.authority_lease_id.clone(),
-            delegated_rights: vec!["delegated-action:fallback".to_string()],
-            reduced_ceilings: lease.hard_ceilings.clone(),
-            replay_requirements: vec!["replay-requirement:fallback".to_string()],
-            further_delegation_permitted: false,
+                schema_version: "DelegationBundleV1".to_string(),
+                delegation_bundle_id,
+                authority_lease_id: lease.authority_lease_id.clone(),
+                delegated_rights: vec!["delegated-action:fallback".to_string()],
+                reduced_ceilings: lease.hard_ceilings.clone(),
+                replay_requirements: vec!["replay-requirement:fallback".to_string()],
+                further_delegation_permitted: false,
             },
         }
     }
-
 }
 
 #[derive(Debug, Clone)]
@@ -396,14 +398,9 @@ impl GovernanceContext {
         case: &canonical_stack::VerificationCase,
         plan: &canonical_stack::CheckPlan,
     ) -> Result<canonical_stack::ExecutionPermit, canonical_stack::PermitIssuanceError> {
-        let decision = self.adapter.evaluate_policy(
-            &self.policy_snapshot,
-            case,
-            plan,
-            &[],
-            false,
-            false,
-        );
+        let decision =
+            self.adapter
+                .evaluate_policy(&self.policy_snapshot, case, plan, &[], false, false);
         decision.issue_execution_permit(case, plan, &[])
     }
 
@@ -524,8 +521,14 @@ mod tests {
         let adapter = CanonicalGovernanceAdapter;
         let plan = adapter.create_verification_plan("claim-01", RiskClass::High);
         // A freshly-created plan is Pending — it cannot be promoted yet
-        assert!(!plan.can_promote(), "high-risk claim must not promote with Pending plan");
-        assert!(!plan.is_blocked(), "plan should not be blocked, just pending");
+        assert!(
+            !plan.can_promote(),
+            "high-risk claim must not promote with Pending plan"
+        );
+        assert!(
+            !plan.is_blocked(),
+            "plan should not be blocked, just pending"
+        );
     }
 
     #[test]

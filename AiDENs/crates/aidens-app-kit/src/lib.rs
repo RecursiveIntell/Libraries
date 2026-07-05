@@ -97,7 +97,9 @@ impl AiDENsProfile {
             hidden_defaults: false,
             memory_mode: match self {
                 Self::ChatOnly | Self::CodingAgent => aidens_contracts::MemoryModeV1::Disabled,
-                Self::MemoryAgent | Self::AutonomousDaemon | Self::ResearchWorkbench => aidens_contracts::MemoryModeV1::Optional,
+                Self::MemoryAgent | Self::AutonomousDaemon | Self::ResearchWorkbench => {
+                    aidens_contracts::MemoryModeV1::Optional
+                }
             },
             governance_enabled: matches!(self, Self::AutonomousDaemon),
             kernel_reasoning_enabled: matches!(self, Self::ResearchWorkbench),
@@ -207,8 +209,7 @@ impl AiDENsApp {
 
     /// One-liner quickstart: build a mock agent and run a prompt.
     pub async fn chat(prompt: impl Into<String>) -> anyhow::Result<aidens_runner::AiDENsRunOutput> {
-        let plan = AiDENsProfile::ChatOnly
-            .expand("quickstart-chat")?;
+        let plan = AiDENsProfile::ChatOnly.expand("quickstart-chat")?;
         let app = AiDENsApp::from_plan(plan)
             .mock_provider("You are a helpful assistant.")
             .build()

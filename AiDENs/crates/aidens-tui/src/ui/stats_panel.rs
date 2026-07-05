@@ -1,10 +1,10 @@
 //! Memory stats panel — renders HTTP-polled memory statistics.
 
+use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
-use ratatui::layout::Rect;
 
 use crate::app::App;
 
@@ -26,7 +26,10 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
         Line::from(format!("  Chunks:    {}", stats.chunks)),
         Line::from(format!(
             "  Edges:     {}",
-            stats.graph_edges.map(|e| e.to_string()).unwrap_or_else(|| "—".to_string())
+            stats
+                .graph_edges
+                .map(|e| e.to_string())
+                .unwrap_or_else(|| "—".to_string())
         )),
         Line::from(format!("  DB Size:   {:.2} MB", stats.db_size_mb)),
         Line::from(""),

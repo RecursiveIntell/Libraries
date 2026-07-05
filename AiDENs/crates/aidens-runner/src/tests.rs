@@ -359,8 +359,13 @@ fn completion_request_serializes_tool_results_without_empty_substitution() {
     .complete_success(serde_json::json!({"content":"readme"}));
     let result = ToolCallResultV1::from_invocation(&request_call, &invocation);
 
-    let request =
-        completion_request("continue".into(), &empty_tool_exposure(), &[result], &[request_call.clone()]).unwrap();
+    let request = completion_request(
+        "continue".into(),
+        &empty_tool_exposure(),
+        &[result],
+        &[request_call.clone()],
+    )
+    .unwrap();
 
     // messages: [system, user, assistant(tool_calls), tool(result)] = 4
     assert_eq!(request.messages.len(), 4);

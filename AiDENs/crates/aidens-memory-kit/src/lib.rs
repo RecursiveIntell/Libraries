@@ -20,9 +20,9 @@ pub mod canonical_stack {
         KnowledgeRuntime, QueryTrace, RuntimeConfig, RuntimeError, RuntimeQueryProvenanceV1, Scope,
     };
     pub use semantic_memory::{
-        MemoryConfig as CanonicalMemoryConfig, MemoryError as CanonicalMemoryError,
-        MemoryStore as CanonicalMemoryStore, MockEmbedder, ProjectionImportResult,
-        AddGraphEdgeParams, ExplainedSearchResponse, IntegrityReport, MemoryStats, ReceiptMode,
+        AddGraphEdgeParams, ExplainedSearchResponse, IntegrityReport,
+        MemoryConfig as CanonicalMemoryConfig, MemoryError as CanonicalMemoryError, MemoryStats,
+        MemoryStore as CanonicalMemoryStore, MockEmbedder, ProjectionImportResult, ReceiptMode,
         ReconcileAction, SearchContext, SearchResponse, SearchResult, StoredGraphEdge,
         VectorSearchReceiptV1, VerifyMode,
     };
@@ -347,9 +347,8 @@ impl CanonicalMemoryAdapter {
         namespaces: Option<&[String]>,
         top_k: Option<usize>,
     ) -> Result<Vec<canonical_stack::SearchResult>, canonical_stack::CanonicalMemoryError> {
-        let namespaces = namespaces.map(|namespaces| {
-            namespaces.iter().map(String::as_str).collect::<Vec<&str>>()
-        });
+        let namespaces = namespaces
+            .map(|namespaces| namespaces.iter().map(String::as_str).collect::<Vec<&str>>());
         self.store
             .search(query, top_k, namespaces.as_deref(), None)
             .await
@@ -367,9 +366,8 @@ impl CanonicalMemoryAdapter {
         ),
         canonical_stack::CanonicalMemoryError,
     > {
-        let namespaces = namespaces.map(|namespaces| {
-            namespaces.iter().map(String::as_str).collect::<Vec<&str>>()
-        });
+        let namespaces = namespaces
+            .map(|namespaces| namespaces.iter().map(String::as_str).collect::<Vec<&str>>());
         let mut context = canonical_stack::SearchContext::default_now();
         context.receipt_mode = canonical_stack::ReceiptMode::ReturnReceipt;
 
@@ -390,9 +388,7 @@ impl CanonicalMemoryAdapter {
         query: &str,
         top_k: Option<usize>,
     ) -> Result<Vec<canonical_stack::SearchResult>, canonical_stack::CanonicalMemoryError> {
-        self.store
-            .search_fts_only(query, top_k, None, None)
-            .await
+        self.store.search_fts_only(query, top_k, None, None).await
     }
 
     pub async fn search_vector_only(
@@ -409,7 +405,8 @@ impl CanonicalMemoryAdapter {
         &self,
         query: &str,
         top_k: Option<usize>,
-    ) -> Result<canonical_stack::ExplainedSearchResponse, canonical_stack::CanonicalMemoryError> {
+    ) -> Result<canonical_stack::ExplainedSearchResponse, canonical_stack::CanonicalMemoryError>
+    {
         self.store
             .search_explained_with_context(
                 query,
@@ -424,7 +421,8 @@ impl CanonicalMemoryAdapter {
     pub async fn get_search_receipt(
         &self,
         receipt_id: &str,
-    ) -> Result<Option<canonical_stack::VectorSearchReceiptV1>, canonical_stack::CanonicalMemoryError> {
+    ) -> Result<Option<canonical_stack::VectorSearchReceiptV1>, canonical_stack::CanonicalMemoryError>
+    {
         self.store.get_search_receipt(receipt_id).await
     }
 
@@ -501,7 +499,9 @@ impl CanonicalMemoryAdapter {
         confidence: Option<f64>,
     ) -> Result<String, canonical_stack::CanonicalMemoryError> {
         let metadata = confidence.map(|confidence| serde_json::json!(confidence));
-        self.store.add_fact(namespace, content, source, metadata).await
+        self.store
+            .add_fact(namespace, content, source, metadata)
+            .await
     }
 }
 
@@ -544,9 +544,9 @@ pub fn runtime_config_for_namespace(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use semantic_memory::types::GraphEdgeType;
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
-    use semantic_memory::types::GraphEdgeType;
 
     fn test_memory_root(tag: &str) -> PathBuf {
         let now = SystemTime::now()
@@ -694,7 +694,10 @@ mod tests {
             .expect("list graph edges");
         assert_eq!(by_node.len(), initial_count + 1);
 
-        let final_count = adapter.count_graph_edges().await.expect("final graph count");
+        let final_count = adapter
+            .count_graph_edges()
+            .await
+            .expect("final graph count");
         assert_eq!(final_count, initial_count + 1);
 
         cleanup_root(&root);

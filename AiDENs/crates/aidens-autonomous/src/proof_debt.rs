@@ -430,9 +430,21 @@ mod tests {
 
     #[test]
     fn test_classify_risk() {
-        assert_eq!(classify_risk("groundbreaking discovery", "projects"), RiskClass::Critical);
-        assert_eq!(classify_risk("novel architecture pattern", "research"), RiskClass::High);
-        assert_eq!(classify_risk("pattern transfer from physics", "research"), RiskClass::Medium);
-        assert_eq!(classify_risk("task completed successfully", "autonomous"), RiskClass::Low);
+        assert_eq!(
+            classify_risk("groundbreaking discovery", "projects"),
+            RiskClass::Critical
+        );
+        assert_eq!(
+            classify_risk("novel architecture pattern", "research"),
+            RiskClass::High
+        );
+        assert_eq!(
+            classify_risk("pattern transfer from physics", "research"),
+            RiskClass::Medium
+        );
+        assert_eq!(
+            classify_risk("task completed successfully", "autonomous"),
+            RiskClass::Low
+        );
     }
 }

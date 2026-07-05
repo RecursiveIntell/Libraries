@@ -8,7 +8,7 @@ description = "Config loading, validation, redaction, and atomic apply planning"
 
 
 [dependencies]
-aidens-contracts = { path = "../aidens-contracts" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
@@ -17,4 +17,4 @@ thiserror = "2"
 toml = "0.8"
 
 [dev-dependencies]
-aidens-testkit = { path = "../aidens-testkit" }
+aidens-testkit = { version = "0.1.0", path = "../aidens-testkit" }

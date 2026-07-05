@@ -12,13 +12,13 @@ description = "Memory facade — search, graph, integrity, receipts over semanti
 semantic-memory-integration = ["semantic-memory/turbo-quant-codec"]
 
 [dependencies]
-forge-memory-bridge = { version = "0.1.0", path = "../../../forge-memory-bridge" }
+forge-memory-bridge = { version = "0.1.1", path = "../../../forge-memory-bridge" }
 knowledge-runtime = { version = "0.1.0", path = "../../../knowledge-runtime" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-semantic-memory = { version = "0.5.0", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
-semantic-memory-forge = { version = "0.1.0", path = "../../../semantic-memory-forge" }
-stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
+semantic-memory = { version = "0.5.8", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
+semantic-memory-forge = { version = "0.1.1", path = "../../../semantic-memory-forge" }
+stack-ids = { version = "0.1.1", path = "../../../stack-ids" }
 thiserror = "2"
 
 [dev-dependencies]

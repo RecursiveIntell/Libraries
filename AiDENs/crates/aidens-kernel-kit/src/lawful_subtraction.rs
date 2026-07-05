@@ -115,15 +115,19 @@ impl SubtractionPlanV1 {
     /// Create a new subtraction plan.
     pub fn new(operation: SubtractionOperation, target_ids: Vec<String>) -> Self {
         Self {
-            plan_id: format!("sp:{}:{}", match operation {
-                SubtractionOperation::Dedupe => "dedupe",
-                SubtractionOperation::Summarize => "summarize",
-                SubtractionOperation::Compact => "compact",
-                SubtractionOperation::Retire => "retire",
-                SubtractionOperation::Quarantine => "quarantine",
-                SubtractionOperation::Minimize => "minimize",
-                SubtractionOperation::SupportCoreExtraction => "support-core",
-            }, chrono::Utc::now().timestamp()),
+            plan_id: format!(
+                "sp:{}:{}",
+                match operation {
+                    SubtractionOperation::Dedupe => "dedupe",
+                    SubtractionOperation::Summarize => "summarize",
+                    SubtractionOperation::Compact => "compact",
+                    SubtractionOperation::Retire => "retire",
+                    SubtractionOperation::Quarantine => "quarantine",
+                    SubtractionOperation::Minimize => "minimize",
+                    SubtractionOperation::SupportCoreExtraction => "support-core",
+                },
+                chrono::Utc::now().timestamp()
+            ),
             operation,
             target_ids,
             preserved_invariants: vec![],
@@ -220,6 +224,9 @@ mod tests {
                 current_at_risk: 1,
                 exceeded: true,
             });
-        assert!(!plan.can_proceed(), "subtraction must not proceed when invariant budget is exceeded");
+        assert!(
+            !plan.can_proceed(),
+            "subtraction must not proceed when invariant budget is exceeded"
+        );
     }
 }

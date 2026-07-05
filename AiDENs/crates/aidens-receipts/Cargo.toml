@@ -13,11 +13,11 @@ chrono = { version = "0.4", features = ["serde"] }
 llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-semantic-memory-forge = { version = "0.1.0", path = "../../../semantic-memory-forge" }
-stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
+semantic-memory-forge = { version = "0.1.1", path = "../../../semantic-memory-forge" }
+stack-ids = { version = "0.1.1", path = "../../../stack-ids" }
 thiserror = "2"
 verification-control = { version = "0.1.0", path = "../../../verification-control" }
 
 [dev-dependencies]
-aidens-testkit = { path = "../aidens-testkit" }
+aidens-testkit = { version = "0.1.0", path = "../aidens-testkit" }
 uuid = { version = "1", features = ["v4", "v7", "serde"] }

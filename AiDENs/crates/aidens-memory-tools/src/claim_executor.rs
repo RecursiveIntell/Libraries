@@ -25,7 +25,9 @@ impl Default for ClaimToolExecutor {
 impl CustomToolExecutor for ClaimToolExecutor {
     async fn execute(&self, tool_id: &str, input: Value) -> Result<String> {
         let _ = (tool_id, input);
-        Err(anyhow!("claim tools not yet implemented — subagent in progress"))
+        Err(anyhow!(
+            "claim tools not yet implemented — subagent in progress"
+        ))
     }
 
     fn clone_box(&self) -> Arc<dyn CustomToolExecutor> {

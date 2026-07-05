@@ -97,28 +97,44 @@ impl Mission {
     ) -> Result<Vec<DetectedGap>> {
         match self {
             Self::VerifyPublishedCrates => {
-                VerifyPublishedCratesMission.detect_issues(http_base_url, attempted).await
+                VerifyPublishedCratesMission
+                    .detect_issues(http_base_url, attempted)
+                    .await
             }
             Self::VerifyFileReferences => {
-                VerifyFileReferencesMission.detect_issues(http_base_url, attempted).await
+                VerifyFileReferencesMission
+                    .detect_issues(http_base_url, attempted)
+                    .await
             }
             Self::DetectContradictions => {
-                DetectContradictionsMission.detect_issues(http_base_url, attempted).await
+                DetectContradictionsMission
+                    .detect_issues(http_base_url, attempted)
+                    .await
             }
             Self::AuditNamespaceCompleteness => {
-                AuditNamespaceCompletenessMission.detect_issues(http_base_url, attempted).await
+                AuditNamespaceCompletenessMission
+                    .detect_issues(http_base_url, attempted)
+                    .await
             }
             Self::TraceProvenanceChains => {
-                TraceProvenanceChainsMission.detect_issues(http_base_url, attempted).await
+                TraceProvenanceChainsMission
+                    .detect_issues(http_base_url, attempted)
+                    .await
             }
             Self::FindDuplicates => {
-                FindDuplicatesMission.detect_issues(http_base_url, attempted).await
+                FindDuplicatesMission
+                    .detect_issues(http_base_url, attempted)
+                    .await
             }
             Self::VerifyCodebaseSync => {
-                VerifyCodebaseSyncMission.detect_issues(http_base_url, attempted).await
+                VerifyCodebaseSyncMission
+                    .detect_issues(http_base_url, attempted)
+                    .await
             }
             Self::StaleDateDetection => {
-                StaleDateDetectionMission.detect_issues(http_base_url, attempted).await
+                StaleDateDetectionMission
+                    .detect_issues(http_base_url, attempted)
+                    .await
             }
         }
     }
@@ -180,6 +196,7 @@ impl std::fmt::Display for Mission {
 
 /// Trait implemented by each mission variant to define its search, detection,
 /// prompt, priority, and frequency logic.
+#[allow(async_fn_in_trait)]
 pub trait MissionImpl: Send + Sync {
     /// Human-readable name (kebab-case).
     fn name(&self) -> &str;
@@ -303,7 +320,12 @@ impl MissionScheduler {
     ///
     /// If `issues_found == 0`, reduce dynamic priority by 0.1 (min 0.1).
     /// If `issues_found > 0`, reset dynamic priority to the mission's base priority.
-    pub fn record_result(&mut self, mission_name: &str, issues_found: usize, current_iteration: usize) {
+    pub fn record_result(
+        &mut self,
+        mission_name: &str,
+        issues_found: usize,
+        current_iteration: usize,
+    ) {
         for sm in &mut self.missions {
             if sm.mission.as_kebab() == mission_name {
                 sm.last_run = current_iteration;
@@ -353,10 +375,7 @@ struct SearchResult {
 }
 
 /// POST /search with the given query parameters and parse results.
-async fn http_search(
-    http_base_url: &str,
-    query: &MissionQuery,
-) -> Result<Vec<SearchResult>> {
+async fn http_search(http_base_url: &str, query: &MissionQuery) -> Result<Vec<SearchResult>> {
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()
@@ -442,7 +461,10 @@ fn truncate(s: &str, max: usize) -> String {
 /// Tokenize a string into a set of lowercase words.
 fn word_set(s: &str) -> HashSet<String> {
     s.split_whitespace()
-        .map(|w| w.trim_matches(|c: char| !c.is_alphanumeric()).to_lowercase())
+        .map(|w| {
+            w.trim_matches(|c: char| !c.is_alphanumeric())
+                .to_lowercase()
+        })
         .filter(|w| !w.is_empty())
         .collect()
 }
@@ -464,16 +486,24 @@ fn jaccard_similarity(a: &str, b: &str) -> f64 {
 
 /// Check if two facts have contradictory signals (negation, different numbers, different dates).
 fn has_contradiction_signals(a: &str, b: &str) -> bool {
-    let negation_words = ["not", "no", "never", "false", "incorrect", "wrong", "disagree"];
+    let negation_words = [
+        "not",
+        "no",
+        "never",
+        "false",
+        "incorrect",
+        "wrong",
+        "disagree",
+    ];
     let a_lower = a.to_lowercase();
     let b_lower = b.to_lowercase();
 
-    let a_has_neg = negation_words.iter().any(|w| {
-        a_lower.contains(&format!(" {} ", w)) || a_lower.starts_with(&format!("{} ", w))
-    });
-    let b_has_neg = negation_words.iter().any(|w| {
-        b_lower.contains(&format!(" {} ", w)) || b_lower.starts_with(&format!("{} ", w))
-    });
+    let a_has_neg = negation_words
+        .iter()
+        .any(|w| a_lower.contains(&format!(" {} ", w)) || a_lower.starts_with(&format!("{} ", w)));
+    let b_has_neg = negation_words
+        .iter()
+        .any(|w| b_lower.contains(&format!(" {} ", w)) || b_lower.starts_with(&format!("{} ", w)));
 
     if a_has_neg != b_has_neg {
         return true;
@@ -574,7 +604,11 @@ fn extract_file_paths(s: &str) -> Vec<String> {
     // Match paths like /a/b/c.rs or src/lib.rs or crates/foo/Cargo.toml
     let mut chars = s.char_indices().peekable();
     while let Some((idx, c)) = chars.next() {
-        if c == '/' || (c.is_ascii_alphabetic() && idx + 3 < s.len() && s[idx..].starts_with("src/") || s[idx..].starts_with("crates/") || s[idx..].starts_with("docs/")) {
+        if c == '/'
+            || (c.is_ascii_alphabetic() && idx + 3 < s.len() && s[idx..].starts_with("src/")
+                || s[idx..].starts_with("crates/")
+                || s[idx..].starts_with("docs/"))
+        {
             // Try to capture a path-like token ending in a file extension
             let mut end = idx;
             if c == '/' {
@@ -582,7 +616,12 @@ fn extract_file_paths(s: &str) -> Vec<String> {
             }
             while end < s.len() {
                 let ch = s.as_bytes()[end];
-                if ch.is_ascii_alphanumeric() || ch == b'_' || ch == b'/' || ch == b'-' || ch == b'.' {
+                if ch.is_ascii_alphanumeric()
+                    || ch == b'_'
+                    || ch == b'/'
+                    || ch == b'-'
+                    || ch == b'.'
+                {
                     end += 1;
                 } else {
                     break;
@@ -611,10 +650,15 @@ fn is_stale_date(date_str: &str) -> bool {
 
     // Try full date parse (20XX-MM-DD or 20XX-MM).
     if date_str.len() >= 7 {
-        let parts: Vec<&str> = date_str.split(|c: char| c == '-' || c == '.' || c == '/').collect();
+        let parts: Vec<&str> = date_str
+            .split(|c: char| c == '-' || c == '.' || c == '/')
+            .collect();
         if parts.len() >= 2 {
             if let (Ok(year), Ok(month)) = (parts[0].parse::<i32>(), parts[1].parse::<u32>()) {
-                let day = parts.get(2).and_then(|d| d.parse::<u32>().ok()).unwrap_or(1);
+                let day = parts
+                    .get(2)
+                    .and_then(|d| d.parse::<u32>().ok())
+                    .unwrap_or(1);
                 if let Some(date) = chrono::NaiveDate::from_ymd_opt(year, month, day) {
                     return date < six_months_ago.date_naive();
                 }
@@ -624,7 +668,11 @@ fn is_stale_date(date_str: &str) -> bool {
 
     // Fallback: year-only comparison.
     if let Ok(year) = date_str.parse::<i32>() {
-        let stale_year = six_months_ago.format("%Y").to_string().parse::<i32>().unwrap_or(0);
+        let stale_year = six_months_ago
+            .format("%Y")
+            .to_string()
+            .parse::<i32>()
+            .unwrap_or(0);
         return year <= stale_year;
     }
 
@@ -1227,8 +1275,10 @@ impl MissionImpl for FindDuplicatesMission {
 
         for i in 0..all_results.len() {
             for j in (i + 1)..all_results.len() {
-                let pair_key = format!("{}|{}+duplicate-fact", all_results[i].id, all_results[j].id);
-                let rev_pair = format!("{}|{}+duplicate-fact", all_results[j].id, all_results[i].id);
+                let pair_key =
+                    format!("{}|{}+duplicate-fact", all_results[i].id, all_results[j].id);
+                let rev_pair =
+                    format!("{}|{}+duplicate-fact", all_results[j].id, all_results[i].id);
                 if attempted.contains(&pair_key)
                     || attempted.contains(&rev_pair)
                     || seen_pairs.contains(&pair_key)
@@ -1247,7 +1297,8 @@ impl MissionImpl for FindDuplicatesMission {
                             "Fact '{}' appears to duplicate fact '{}' (Jaccard similarity: {:.2}).",
                             all_results[i].id, all_results[j].id, jaccard
                         ),
-                        suggested_task: "Determine which version is more complete and accurate.".to_string(),
+                        suggested_task: "Determine which version is more complete and accurate."
+                            .to_string(),
                         priority: self.priority(),
                         content_snippet: Some(truncate(&all_results[i].content, 200)),
                         fact_id_b: Some(all_results[j].id.clone()),
@@ -1401,13 +1452,11 @@ impl MissionImpl for StaleDateDetectionMission {
     }
 
     fn search_queries(&self) -> Vec<MissionQuery> {
-        vec![
-            MissionQuery {
-                query: "date version release updated published".to_string(),
-                namespaces: None,
-                top_k: 30,
-            },
-        ]
+        vec![MissionQuery {
+            query: "date version release updated published".to_string(),
+            namespaces: None,
+            top_k: 30,
+        }]
     }
 
     async fn detect_issues(
@@ -1506,17 +1555,35 @@ mod tests {
 
     #[test]
     fn mission_display_and_kebab() {
-        assert_eq!(Mission::VerifyPublishedCrates.to_string(), "verify-published-crates");
-        assert_eq!(Mission::VerifyFileReferences.as_kebab(), "verify-file-references");
-        assert_eq!(Mission::DetectContradictions.as_kebab(), "detect-contradictions");
+        assert_eq!(
+            Mission::VerifyPublishedCrates.to_string(),
+            "verify-published-crates"
+        );
+        assert_eq!(
+            Mission::VerifyFileReferences.as_kebab(),
+            "verify-file-references"
+        );
+        assert_eq!(
+            Mission::DetectContradictions.as_kebab(),
+            "detect-contradictions"
+        );
         assert_eq!(
             Mission::AuditNamespaceCompleteness.as_kebab(),
             "audit-namespace-completeness"
         );
-        assert_eq!(Mission::TraceProvenanceChains.as_kebab(), "trace-provenance-chains");
+        assert_eq!(
+            Mission::TraceProvenanceChains.as_kebab(),
+            "trace-provenance-chains"
+        );
         assert_eq!(Mission::FindDuplicates.as_kebab(), "find-duplicates");
-        assert_eq!(Mission::VerifyCodebaseSync.as_kebab(), "verify-codebase-sync");
-        assert_eq!(Mission::StaleDateDetection.as_kebab(), "stale-date-detection");
+        assert_eq!(
+            Mission::VerifyCodebaseSync.as_kebab(),
+            "verify-codebase-sync"
+        );
+        assert_eq!(
+            Mission::StaleDateDetection.as_kebab(),
+            "stale-date-detection"
+        );
     }
 
     #[test]
@@ -1545,11 +1612,20 @@ mod tests {
 
     #[test]
     fn mission_impl_names_match() {
-        assert_eq!(VerifyPublishedCratesMission.name(), "verify-published-crates");
+        assert_eq!(
+            VerifyPublishedCratesMission.name(),
+            "verify-published-crates"
+        );
         assert_eq!(VerifyFileReferencesMission.name(), "verify-file-references");
         assert_eq!(DetectContradictionsMission.name(), "detect-contradictions");
-        assert_eq!(AuditNamespaceCompletenessMission.name(), "audit-namespace-completeness");
-        assert_eq!(TraceProvenanceChainsMission.name(), "trace-provenance-chains");
+        assert_eq!(
+            AuditNamespaceCompletenessMission.name(),
+            "audit-namespace-completeness"
+        );
+        assert_eq!(
+            TraceProvenanceChainsMission.name(),
+            "trace-provenance-chains"
+        );
         assert_eq!(FindDuplicatesMission.name(), "find-duplicates");
         assert_eq!(VerifyCodebaseSyncMission.name(), "verify-codebase-sync");
         assert_eq!(StaleDateDetectionMission.name(), "stale-date-detection");
@@ -1805,11 +1881,15 @@ mod tests {
         let mut scheduler = MissionScheduler::new();
         // Lower it first.
         scheduler.record_result("verify-published-crates", 0, 10);
-        assert!((scheduler.priority_of("verify-published-crates").unwrap() - 0.8).abs() < f64::EPSILON);
+        assert!(
+            (scheduler.priority_of("verify-published-crates").unwrap() - 0.8).abs() < f64::EPSILON
+        );
 
         // Now find issues — priority should reset to base (0.9).
         scheduler.record_result("verify-published-crates", 5, 30);
-        assert!((scheduler.priority_of("verify-published-crates").unwrap() - 0.9).abs() < f64::EPSILON);
+        assert!(
+            (scheduler.priority_of("verify-published-crates").unwrap() - 0.9).abs() < f64::EPSILON
+        );
     }
 
     #[test]
@@ -1819,7 +1899,9 @@ mod tests {
         for i in 0..20 {
             scheduler.record_result("audit-namespace-completeness", 0, i * 30);
         }
-        let priority = scheduler.priority_of("audit-namespace-completeness").unwrap();
+        let priority = scheduler
+            .priority_of("audit-namespace-completeness")
+            .unwrap();
         assert!((priority - 0.1).abs() < f64::EPSILON);
     }
 
@@ -1847,7 +1929,10 @@ mod tests {
         };
         let sched2 = MissionScheduler::with_missions(vec![sm]);
         assert!(sched2.next_mission(15).is_some());
-        assert_eq!(sched2.next_mission(15).unwrap(), &Mission::DetectContradictions);
+        assert_eq!(
+            sched2.next_mission(15).unwrap(),
+            &Mission::DetectContradictions
+        );
     }
 
     #[test]
@@ -1894,9 +1979,9 @@ mod tests {
 
     #[test]
     fn is_stale_date_recent_date_not_stale() {
-        // Use a date in the current year — should not be stale.
+        // Use today's date so the test remains deterministic throughout the year.
         let now = chrono::Utc::now();
-        let recent = format!("{}-01-01", now.format("%Y"));
+        let recent = now.format("%Y-%m-%d").to_string();
         assert!(!is_stale_date(&recent));
     }
 
@@ -1995,9 +2080,24 @@ mod tests {
     #[test]
     fn count_by_namespace_groups_correctly() {
         let results = vec![
-            SearchResult { id: "a".into(), content: "x".into(), namespace: Some("g".into()), score: 0.9 },
-            SearchResult { id: "b".into(), content: "y".into(), namespace: Some("g".into()), score: 0.8 },
-            SearchResult { id: "c".into(), content: "z".into(), namespace: Some("c".into()), score: 0.7 },
+            SearchResult {
+                id: "a".into(),
+                content: "x".into(),
+                namespace: Some("g".into()),
+                score: 0.9,
+            },
+            SearchResult {
+                id: "b".into(),
+                content: "y".into(),
+                namespace: Some("g".into()),
+                score: 0.8,
+            },
+            SearchResult {
+                id: "c".into(),
+                content: "z".into(),
+                namespace: Some("c".into()),
+                score: 0.7,
+            },
         ];
         let counts = count_by_namespace(&results);
         assert_eq!(counts.get("g"), Some(&2));
@@ -2007,8 +2107,18 @@ mod tests {
     #[test]
     fn count_by_namespace_skips_skip_namespaces() {
         let results = vec![
-            SearchResult { id: "a".into(), content: "x".into(), namespace: Some("test".into()), score: 0.9 },
-            SearchResult { id: "b".into(), content: "y".into(), namespace: Some("general".into()), score: 0.8 },
+            SearchResult {
+                id: "a".into(),
+                content: "x".into(),
+                namespace: Some("test".into()),
+                score: 0.9,
+            },
+            SearchResult {
+                id: "b".into(),
+                content: "y".into(),
+                namespace: Some("general".into()),
+                score: 0.8,
+            },
         ];
         let counts = count_by_namespace(&results);
         assert!(!counts.contains_key("test"));

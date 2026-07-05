@@ -200,7 +200,8 @@ impl ToolDispatcher {
                         })
                     }
                     Err(e) => {
-                        let failed = receipt.complete_failure(format!("custom-executor-failed: {e}"));
+                        let failed =
+                            receipt.complete_failure(format!("custom-executor-failed: {e}"));
                         Err(ToolInvocationError::new(
                             format!("custom executor for '{tool_id}' failed: {e}"),
                             failed,

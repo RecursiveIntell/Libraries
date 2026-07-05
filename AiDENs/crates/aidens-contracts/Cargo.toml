@@ -18,10 +18,10 @@ mechanism-runtime = { version = "0.1.0", path = "../../../mechanism-runtime" }
 recursive-kernel-core = { version = "0.1.0", path = "../../../recursive-kernel-core" }
 remote-oracle-admission = { version = "0.1.0", path = "../../../remote-oracle-admission" }
 schemars = { version = "0.8", features = ["chrono", "uuid1"] }
-semantic-memory-forge = { version = "0.1.0", path = "../../../semantic-memory-forge" }
+semantic-memory-forge = { version = "0.1.1", path = "../../../semantic-memory-forge" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../../../stack-ids" }
 uuid = { version = "1", features = ["v4", "v7", "serde"] }
 verification-adjudication = { version = "0.1.0", path = "../../../verification-adjudication" }
 verification-control = { version = "0.1.0", path = "../../../verification-control" }

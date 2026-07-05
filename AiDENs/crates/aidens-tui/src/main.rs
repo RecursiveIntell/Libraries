@@ -110,10 +110,12 @@ async fn main() -> Result<()> {
     // Build and run the app INSIDE the LocalSet so both the loop task
     // and the TUI event loop share the same executor. Without this,
     // the LocalSet never gets polled and the loop never runs.
-    let app_result = local_set.run_until(async {
-        let mut app = App::new(loop_state, http_base_url, queue_root);
-        app.run(&mut terminal).await
-    }).await;
+    let app_result = local_set
+        .run_until(async {
+            let mut app = App::new(loop_state, http_base_url, queue_root);
+            app.run(&mut terminal).await
+        })
+        .await;
 
     // Cleanup terminal regardless of app result.
     let _ = restore_terminal();

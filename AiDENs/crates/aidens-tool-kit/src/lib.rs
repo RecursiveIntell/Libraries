@@ -1,10 +1,10 @@
 //! Tool registry, exposure planning, and safe sandbox-validated dispatch.
 
 pub mod canonical_stack;
+mod custom;
 mod descriptors;
 mod dispatcher;
 mod executors;
-mod custom;
 mod exposure;
 mod patch;
 mod registry;

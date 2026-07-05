@@ -8,26 +8,26 @@ description = "Umbrella crate re-exporting all AiDENs capabilities with one-line
 
 
 [dependencies]
-aidens-agency-kit = { path = "../aidens-agency-kit" }
-aidens-app-kit = { path = "../aidens-app-kit" }
-aidens-contracts = { path = "../aidens-contracts" }
-aidens-governance-kit = { path = "../aidens-governance-kit" }
-aidens-kernel-kit = { path = "../aidens-kernel-kit" }
-aidens-memory-kit = { path = "../aidens-memory-kit" }
-aidens-profile-coding = { path = "../aidens-profile-coding" }
-aidens-provider-kit = { path = "../aidens-provider-kit" }
-aidens-runner = { path = "../aidens-runner" }
-aidens-security-kit = { path = "../aidens-security-kit" }
-aidens-tool-kit = { path = "../aidens-tool-kit" }
+aidens-agency-kit = { version = "0.1.0", path = "../aidens-agency-kit" }
+aidens-app-kit = { version = "0.1.0", path = "../aidens-app-kit" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
+aidens-governance-kit = { version = "0.1.0", path = "../aidens-governance-kit" }
+aidens-kernel-kit = { version = "0.1.0", path = "../aidens-kernel-kit" }
+aidens-memory-kit = { version = "0.1.0", path = "../aidens-memory-kit" }
+aidens-profile-coding = { version = "0.1.0", path = "../aidens-profile-coding" }
+aidens-provider-kit = { version = "0.1.0", path = "../aidens-provider-kit" }
+aidens-runner = { version = "0.1.0", path = "../aidens-runner" }
+aidens-security-kit = { version = "0.1.0", path = "../aidens-security-kit" }
+aidens-tool-kit = { version = "0.1.0", path = "../aidens-tool-kit" }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 
 [dev-dependencies]
-aidens-boundary-kit = { path = "../aidens-boundary-kit" }
-aidens-receipts = { path = "../aidens-receipts" }
+aidens-boundary-kit = { version = "0.1.0", path = "../aidens-boundary-kit" }
+aidens-receipts = { version = "0.1.0", path = "../aidens-receipts" }
 anyhow = "1"
 serde_json = "1"
-semantic-memory = { version = "0.5.0", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
+semantic-memory = { version = "0.5.8", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 verification-policy = { version = "0.1.0", path = "../../../verification-policy" }
 

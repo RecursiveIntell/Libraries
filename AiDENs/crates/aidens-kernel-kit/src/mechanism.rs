@@ -84,11 +84,19 @@ impl MechanismAdapter {
 
     /// Run a refuter suite against a mechanism.
     pub fn refute_mechanism(mechanism: &mut MechanismBundleV1, refuters: Vec<RefuterV1>) {
-        let all_passed = refuters.iter().all(|r| r.result == RefutationResult::Survived);
-        let any_refuted = refuters.iter().any(|r| r.result == RefutationResult::Refuted);
+        let all_passed = refuters
+            .iter()
+            .all(|r| r.result == RefutationResult::Survived);
+        let any_refuted = refuters
+            .iter()
+            .any(|r| r.result == RefutationResult::Refuted);
 
         mechanism.refuter_suite = Some(RefuterSuiteV1 {
-            suite_id: format!("rs:{}:{}", mechanism.mechanism_id, chrono::Utc::now().timestamp()),
+            suite_id: format!(
+                "rs:{}:{}",
+                mechanism.mechanism_id,
+                chrono::Utc::now().timestamp()
+            ),
             refuters,
             all_passed,
         });
@@ -103,7 +111,12 @@ impl MechanismAdapter {
     }
 
     /// Create a new version of a mechanism, superseding the old one.
-    pub fn supersede_mechanism(old: &mut MechanismBundleV1, new_name: &str, new_description: &str, new_fit_score: f64) -> MechanismBundleV1 {
+    pub fn supersede_mechanism(
+        old: &mut MechanismBundleV1,
+        new_name: &str,
+        new_description: &str,
+        new_fit_score: f64,
+    ) -> MechanismBundleV1 {
         old.status = MechanismStatus::Superseded;
         let new_version = old.version + 1;
         let new_id = format!("mech:{}:{}", new_name, chrono::Utc::now().timestamp());
@@ -152,12 +165,15 @@ mod tests {
     #[test]
     fn refuted_mechanism_cannot_promote() {
         let mut m = MechanismAdapter::fit_mechanism("test-mech", "a test", 0.85);
-        MechanismAdapter::refute_mechanism(&mut m, vec![RefuterV1 {
-            refuter_id: "r1".into(),
-            refutation_method: "counterexample".into(),
-            result: RefutationResult::Refuted,
-            evidence: "found counterexample".into(),
-        }]);
+        MechanismAdapter::refute_mechanism(
+            &mut m,
+            vec![RefuterV1 {
+                refuter_id: "r1".into(),
+                refutation_method: "counterexample".into(),
+                result: RefutationResult::Refuted,
+                evidence: "found counterexample".into(),
+            }],
+        );
         assert_eq!(m.status, MechanismStatus::Refuted);
         assert!(!MechanismAdapter::can_promote(&m));
     }
@@ -165,12 +181,15 @@ mod tests {
     #[test]
     fn survived_mechanism_can_promote() {
         let mut m = MechanismAdapter::fit_mechanism("test-mech", "a test", 0.85);
-        MechanismAdapter::refute_mechanism(&mut m, vec![RefuterV1 {
-            refuter_id: "r1".into(),
-            refutation_method: "counterexample".into(),
-            result: RefutationResult::Survived,
-            evidence: "no counterexample found".into(),
-        }]);
+        MechanismAdapter::refute_mechanism(
+            &mut m,
+            vec![RefuterV1 {
+                refuter_id: "r1".into(),
+                refutation_method: "counterexample".into(),
+                result: RefutationResult::Survived,
+                evidence: "no counterexample found".into(),
+            }],
+        );
         assert_eq!(m.status, MechanismStatus::Tested);
         assert!(MechanismAdapter::can_promote(&m));
     }
@@ -181,18 +200,24 @@ mod tests {
         let new = MechanismAdapter::supersede_mechanism(&mut old, "mech-v2", "second", 0.9);
         assert_eq!(old.status, MechanismStatus::Superseded);
         assert_eq!(new.version, 2);
-        assert_eq!(old.superseded_by.as_deref(), Some(new.mechanism_id.as_str()));
+        assert_eq!(
+            old.superseded_by.as_deref(),
+            Some(new.mechanism_id.as_str())
+        );
     }
 
     #[test]
     fn inconclusive_refuter_keeps_candidate() {
         let mut m = MechanismAdapter::fit_mechanism("test", "test", 0.5);
-        MechanismAdapter::refute_mechanism(&mut m, vec![RefuterV1 {
-            refuter_id: "r1".into(),
-            refutation_method: "fuzz".into(),
-            result: RefutationResult::Inconclusive,
-            evidence: "need more data".into(),
-        }]);
+        MechanismAdapter::refute_mechanism(
+            &mut m,
+            vec![RefuterV1 {
+                refuter_id: "r1".into(),
+                refutation_method: "fuzz".into(),
+                result: RefutationResult::Inconclusive,
+                evidence: "need more data".into(),
+            }],
+        );
         assert_eq!(m.status, MechanismStatus::Candidate);
         assert!(!MechanismAdapter::can_promote(&m));
     }

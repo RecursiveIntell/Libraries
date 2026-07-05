@@ -8,7 +8,7 @@ description = "Thin arbiter facade over canonical contradiction artifacts"
 
 
 [dependencies]
-semantic-memory-forge = { version = "0.1.0", path = "../../../semantic-memory-forge" }
-stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
+semantic-memory-forge = { version = "0.1.1", path = "../../../semantic-memory-forge" }
+stack-ids = { version = "0.1.1", path = "../../../stack-ids" }
 
 [dev-dependencies]

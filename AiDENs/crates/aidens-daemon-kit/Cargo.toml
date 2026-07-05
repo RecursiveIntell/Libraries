@@ -8,10 +8,10 @@ description = "Daemon facade for queue, schedule, wake, leases, and safe mode"
 
 
 [dependencies]
-aidens-contracts = { path = "../aidens-contracts" }
-aidens-queue-kit = { path = "../aidens-queue-kit" }
-aidens-schedule-kit = { path = "../aidens-schedule-kit" }
-aidens-wake-kit = { path = "../aidens-wake-kit" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
+aidens-queue-kit = { version = "0.1.0", path = "../aidens-queue-kit" }
+aidens-schedule-kit = { version = "0.1.0", path = "../aidens-schedule-kit" }
+aidens-wake-kit = { version = "0.1.0", path = "../aidens-wake-kit" }
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

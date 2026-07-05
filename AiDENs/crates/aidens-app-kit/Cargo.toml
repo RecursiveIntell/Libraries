@@ -8,13 +8,13 @@ description = "Safe app builder and profile expansion with 5 built-in profiles"
 
 
 [dependencies]
-aidens-runner = { path = "../aidens-runner" }
-aidens-contracts = { path = "../aidens-contracts" }
-aidens-config = { path = "../aidens-config" }
-aidens-plan-kit = { path = "../aidens-plan-kit" }
-aidens-provider-kit = { path = "../aidens-provider-kit" }
-aidens-receipts = { path = "../aidens-receipts" }
-aidens-tool-kit = { path = "../aidens-tool-kit" }
+aidens-runner = { version = "0.1.0", path = "../aidens-runner" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
+aidens-config = { version = "0.1.0", path = "../aidens-config" }
+aidens-plan-kit = { version = "0.1.0", path = "../aidens-plan-kit" }
+aidens-provider-kit = { version = "0.1.0", path = "../aidens-provider-kit" }
+aidens-receipts = { version = "0.1.0", path = "../aidens-receipts" }
+aidens-tool-kit = { version = "0.1.0", path = "../aidens-tool-kit" }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 anyhow = "1"

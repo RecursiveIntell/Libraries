@@ -8,7 +8,7 @@ description = "Repair facade over canonical verification and Forge repair artifa
 
 
 [dependencies]
-semantic-memory-forge = { version = "0.1.0", path = "../../../semantic-memory-forge" }
+semantic-memory-forge = { version = "0.1.1", path = "../../../semantic-memory-forge" }
 serde_json = "1"
 verification-control = { version = "0.1.0", path = "../../../verification-control" }
 

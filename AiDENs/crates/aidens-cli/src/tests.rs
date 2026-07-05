@@ -223,13 +223,7 @@ fn doctor_reports_provider_capability_matrix_without_cloud_or_native_overclaims(
         .contains("ollama-local-service-required"));
     assert!(!ollama.states.contains(&CapabilityStateV1::Healthy));
 
-    for provider in [
-        "openai-compatible",
-        "compatible",
-        "openai",
-        "openrouter",
-        "anthropic",
-    ] {
+    for provider in ["compatible", "openai", "openrouter", "anthropic"] {
         let row = find(provider);
         assert!(row.states.contains(&CapabilityStateV1::Unavailable));
         assert!(row.states.contains(&CapabilityStateV1::Deferred));
@@ -242,6 +236,14 @@ fn doctor_reports_provider_capability_matrix_without_cloud_or_native_overclaims(
         assert!(reason.contains("streaming_executable=false"));
         assert!(reason.contains("structured_output_executable=false"));
     }
+
+    let openai_compatible = find("openai-compatible");
+    assert!(!openai_compatible
+        .states
+        .contains(&CapabilityStateV1::Healthy));
+    let reason = openai_compatible.reason.as_deref().unwrap();
+    assert!(reason.contains("chat_completion_executable=false"));
+    assert!(reason.contains("native_tool_loop_executable=false"));
 }
 
 #[test]
@@ -315,9 +317,24 @@ api_key = "configured"
         assert_eq!(report["native_tool_loop"], false, "{provider}");
         assert_eq!(report["structured_output"], false, "{provider}");
         assert_eq!(report["streaming"], false, "{provider}");
-        assert_eq!(report["backend_status"], "boundary-unavailable");
-        assert_eq!(report["support_label"], "deferred/unavailable");
-        assert_eq!(report["support_tier"], "deferred");
+        let expected_backend_status = if provider == "openai-compatible" {
+            "executable"
+        } else {
+            "boundary-unavailable"
+        };
+        let expected_support_label = if provider == "openai-compatible" {
+            "executable-test-backed"
+        } else {
+            "deferred/unavailable"
+        };
+        let expected_support_tier = if provider == "openai-compatible" {
+            "partial"
+        } else {
+            "deferred"
+        };
+        assert_eq!(report["backend_status"], expected_backend_status);
+        assert_eq!(report["support_label"], expected_support_label);
+        assert_eq!(report["support_tier"], expected_support_tier);
         assert!(report["reason_codes"]
             .as_array()
             .unwrap()
@@ -957,7 +974,9 @@ model = "llama3"
     assert!(report["reason_codes"]
         .as_array()
         .unwrap()
-        .contains(&serde_json::json!("ollama-native-tool-loop-via-function-calling")));
+        .contains(&serde_json::json!(
+            "ollama-native-tool-loop-via-function-calling"
+        )));
     assert_ne!(report["route"], "native-ollama");
     let _ = std::fs::remove_dir_all(&root);
 }

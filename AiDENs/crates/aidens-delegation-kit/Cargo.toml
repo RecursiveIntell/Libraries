@@ -8,7 +8,7 @@ description = "Delegation status surface (quarantined — status interface only)
 
 
 [dependencies]
-aidens-contracts = { path = "../aidens-contracts" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 chrono = { version = "0.4", features = ["serde"] }

@@ -51,11 +51,8 @@ mod tests {
 
     #[test]
     fn external_artifact_admission_cannot_overwrite_local_truth() {
-        let decision = FederationAdapter::admit_external_artifact(
-            "ext:001",
-            "remote-runtime",
-            "trust-root-1",
-        );
+        let decision =
+            FederationAdapter::admit_external_artifact("ext:001", "remote-runtime", "trust-root-1");
         assert_eq!(decision.decision, AdmissionDisposition::Quarantined);
         assert!(decision.rationale.contains("require explicit admission"));
     }

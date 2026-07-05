@@ -79,7 +79,11 @@ impl EvaluationGate {
 
     /// Evaluate content and return the numeric quality score alongside the
     /// disposition. Useful for debugging and logging.
-    pub fn evaluate_with_score(&self, content: &str, execution_success: bool) -> (FactDisposition, f64) {
+    pub fn evaluate_with_score(
+        &self,
+        content: &str,
+        execution_success: bool,
+    ) -> (FactDisposition, f64) {
         if !execution_success {
             return (FactDisposition::Reject, 0.0);
         }
@@ -178,13 +182,15 @@ fn has_proper_nouns(s: &str) -> bool {
 /// Check if content contains technical terms (common in programming/science).
 fn has_technical_terms(s: &str) -> bool {
     let tech_indicators = [
-        "API", "crate", "struct", "enum", "trait", "impl", "module", "function",
-        "compiler", "runtime", "async", "await", "memory", "buffer", "queue",
-        "kernel", "hash", "token", "parse", "schema", "vector", "iterator",
-        "protocol", "endpoint", "request", "response", "version", "config",
+        "API", "crate", "struct", "enum", "trait", "impl", "module", "function", "compiler",
+        "runtime", "async", "await", "memory", "buffer", "queue", "kernel", "hash", "token",
+        "parse", "schema", "vector", "iterator", "protocol", "endpoint", "request", "response",
+        "version", "config",
     ];
     let s_lower = s.to_lowercase();
-    tech_indicators.iter().any(|t| s_lower.contains(&t.to_lowercase()))
+    tech_indicators
+        .iter()
+        .any(|t| s_lower.contains(&t.to_lowercase()))
 }
 
 /// Check if content is coherent — not garbled, not overly repetitive.
@@ -321,7 +327,8 @@ mod tests {
     #[test]
     fn evaluate_with_score_returns_score() {
         let gate = EvaluationGate::new();
-        let content = "Rust 1.76 introduced the PlanActVerifyLoopV1 struct in the aidens-runner crate.";
+        let content =
+            "Rust 1.76 introduced the PlanActVerifyLoopV1 struct in the aidens-runner crate.";
         let (disposition, score) = gate.evaluate_with_score(content, true);
         assert_eq!(disposition, FactDisposition::Promote);
         assert!(score >= 0.8);
@@ -356,14 +363,18 @@ mod tests {
 
     #[test]
     fn has_technical_terms_detects_tech_words() {
-        assert!(has_technical_terms("The API endpoint returns a JSON response"));
+        assert!(has_technical_terms(
+            "The API endpoint returns a JSON response"
+        ));
         assert!(has_technical_terms("The crate uses async runtime"));
         assert!(!has_technical_terms("The cat sat on the mat"));
     }
 
     #[test]
     fn is_coherent_validates_reasonable_text() {
-        assert!(is_coherent("Rust is a systems programming language with memory safety."));
+        assert!(is_coherent(
+            "Rust is a systems programming language with memory safety."
+        ));
         assert!(!is_coherent("aa"));
         assert!(!is_coherent("word word word word word word word word"));
     }

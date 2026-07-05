@@ -7,10 +7,10 @@ license = "MIT OR Apache-2.0"
 description = "Terminal UI for observing the AiDENs autonomous loop"
 
 [dependencies]
-aidens-autonomous = { path = "../aidens-autonomous" }
-aidens-daemon-kit = { path = "../aidens-daemon-kit" }
-aidens-queue-kit = { path = "../aidens-queue-kit" }
-aidens-contracts = { path = "../aidens-contracts" }
+aidens-autonomous = { version = "0.1.0", path = "../aidens-autonomous" }
+aidens-daemon-kit = { version = "0.1.0", path = "../aidens-daemon-kit" }
+aidens-queue-kit = { version = "0.1.0", path = "../aidens-queue-kit" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
 ratatui = "0.29"
 crossterm = { version = "0.28", features = ["event-stream"] }
 futures = "0.3"

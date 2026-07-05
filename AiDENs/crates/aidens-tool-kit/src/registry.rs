@@ -198,8 +198,10 @@ impl ToolRegistryV1 {
         if !self.register_enabled(descriptor, enabled) {
             return false;
         }
-        self.executors
-            .insert(tool_id, ToolExecutorV1::Custom(crate::custom::CustomExecutorHandle::new(executor)));
+        self.executors.insert(
+            tool_id,
+            ToolExecutorV1::Custom(crate::custom::CustomExecutorHandle::new(executor)),
+        );
         true
     }
 

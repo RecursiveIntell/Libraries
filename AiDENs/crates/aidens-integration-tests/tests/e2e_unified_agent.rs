@@ -31,10 +31,8 @@ async fn e2e_runner_with_governance_context() {
     use aidens_governance_kit::{canonical_stack, GovernanceContext};
     use aidens_runner::AiDENsRunner;
 
-    let policy = canonical_stack::PolicySnapshot::permissive(
-        "e2e-test-policy",
-        "2026-01-01T00:00:00Z",
-    );
+    let policy =
+        canonical_stack::PolicySnapshot::permissive("e2e-test-policy", "2026-01-01T00:00:00Z");
     let runner = AiDENsRunner::builder()
         .mock_provider("Governed response")
         .governance(Some(GovernanceContext::new(policy)))
@@ -82,10 +80,8 @@ async fn e2e_runner_with_all_capabilities() {
     use aidens_kernel_kit::CanonicalKernelAdapter;
     use aidens_runner::AiDENsRunner;
 
-    let policy = canonical_stack::PolicySnapshot::permissive(
-        "e2e-full-policy",
-        "2026-01-01T00:00:00Z",
-    );
+    let policy =
+        canonical_stack::PolicySnapshot::permissive("e2e-full-policy", "2026-01-01T00:00:00Z");
     let runner = AiDENsRunner::builder()
         .mock_provider("Full capability response")
         .governance(Some(GovernanceContext::new(policy)))
@@ -118,7 +114,10 @@ async fn e2e_memory_agent_profile_has_memory_enabled() {
         .expect("runtime defaults");
 
     assert!(
-        !matches!(defaults.memory_mode, aidens_contracts::MemoryModeV1::Disabled),
+        !matches!(
+            defaults.memory_mode,
+            aidens_contracts::MemoryModeV1::Disabled
+        ),
         "MemoryAgent profile must not disable memory"
     );
 }

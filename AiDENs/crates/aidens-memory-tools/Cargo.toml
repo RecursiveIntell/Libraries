@@ -10,14 +10,14 @@ description = "Native semantic-memory, knowledge-runtime, and claim-ledger tools
 doctest = false
 
 [dependencies]
-aidens-tool-kit = { path = "../aidens-tool-kit" }
-aidens-contracts = { path = "../aidens-contracts" }
-aidens-memory-kit = { path = "../aidens-memory-kit" }
-semantic-memory = { path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
-knowledge-runtime = { path = "../../../knowledge-runtime" }
-claim-ledger = { path = "../../../claim-ledger" }
-stack-ids = { path = "../../../stack-ids" }
-llm-output-parser = { path = "../../../llm-output-parser" }
+aidens-tool-kit = { version = "0.1.0", path = "../aidens-tool-kit" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
+aidens-memory-kit = { version = "0.1.0", path = "../aidens-memory-kit" }
+semantic-memory = { version = "0.5.8", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
+knowledge-runtime = { version = "0.1.0", path = "../../../knowledge-runtime" }
+claim-ledger = { version = "0.1.1", path = "../../../claim-ledger" }
+stack-ids = { version = "0.1.1", path = "../../../stack-ids" }
+llm-output-parser = { version = "0.2.0", path = "../../../llm-output-parser" }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["rt", "macros"] }

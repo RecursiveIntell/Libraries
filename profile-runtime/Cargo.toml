@@ -8,17 +8,17 @@ description = "Canonical effective constitution and profile composition runtime 
 readme = "README.md"
 
 [dependencies]
-assurance-runtime = { path = "../assurance-runtime" }
-attestation-exchange = { path = "../attestation-exchange" }
-authority-delegation = { path = "../authority-delegation" }
-continuity-runtime = { path = "../continuity-runtime" }
+assurance-runtime = { version = "0.1.0", path = "../assurance-runtime" }
+attestation-exchange = { version = "0.1.0", path = "../attestation-exchange" }
+authority-delegation = { version = "0.1.0", path = "../authority-delegation" }
+continuity-runtime = { version = "0.1.0", path = "../continuity-runtime" }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 schemars = { workspace = true }
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 thiserror = { workspace = true }
 tracing = { workspace = true }
-verification-policy = { path = "../verification-policy" }
+verification-policy = { version = "0.1.0", path = "../verification-policy" }
 
 [dev-dependencies]
 proptest = { workspace = true }

@@ -2085,7 +2085,8 @@ pub fn verify_command(config: Option<String>, root: &str) -> Result<String> {
     ensure_profile_policy(&cfg)?;
     let doctor = doctor_report_for_config(&config_status, &cfg);
     let route = route_for_config(&cfg);
-    let receipt_store_configured = receipt_store_root_for_config(&cfg, std::path::Path::new(&path)).is_some();
+    let receipt_store_configured =
+        receipt_store_root_for_config(&cfg, std::path::Path::new(&path)).is_some();
     let healthy_count = doctor
         .sections
         .values()

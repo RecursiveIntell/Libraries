@@ -13,7 +13,7 @@ authority-delegation = { version = "0.1.0", path = "../../../authority-delegatio
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../../../stack-ids" }
 verification-adjudication = { version = "0.1.0", path = "../../../verification-adjudication" }
 verification-calibration = { version = "0.1.0", path = "../../../verification-calibration" }
 verification-control = { version = "0.1.0", path = "../../../verification-control" }

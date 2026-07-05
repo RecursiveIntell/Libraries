@@ -169,10 +169,7 @@ impl EntropyGradientSearcher {
         let mut stats = Vec::new();
 
         // Parse namespaces from stats response.
-        if let Some(namespaces) = data
-            .get("namespaces")
-            .and_then(|v| v.as_array())
-        {
+        if let Some(namespaces) = data.get("namespaces").and_then(|v| v.as_array()) {
             for ns in namespaces {
                 let domain = ns
                     .get("namespace")
@@ -182,14 +179,10 @@ impl EntropyGradientSearcher {
                 if domain.is_empty() || self.config.skip_domains.contains(&domain) {
                     continue;
                 }
-                let fact_count = ns
-                    .get("fact_count")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(0) as usize;
-                let edge_count = ns
-                    .get("edge_count")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(0) as usize;
+                let fact_count =
+                    ns.get("fact_count").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+                let edge_count =
+                    ns.get("edge_count").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
                 let contradiction_count = ns
                     .get("contradiction_count")
                     .and_then(|v| v.as_u64())
@@ -289,7 +282,12 @@ impl EntropyGradientSearcher {
 
     /// Record exploration yield for a domain (for saturation tracking).
     /// Also updates fact count history for gradient computation.
-    pub fn record_exploration(&mut self, domain: &str, candidates_found: usize, current_facts: usize) {
+    pub fn record_exploration(
+        &mut self,
+        domain: &str,
+        candidates_found: usize,
+        current_facts: usize,
+    ) {
         // Update yield history.
         let yield_hist = self.yield_history.entry(domain.to_string()).or_default();
         yield_hist.push_back(candidates_found);
@@ -298,14 +296,20 @@ impl EntropyGradientSearcher {
         }
 
         // Update fact count history.
-        let fact_hist = self.fact_count_history.entry(domain.to_string()).or_default();
+        let fact_hist = self
+            .fact_count_history
+            .entry(domain.to_string())
+            .or_default();
         fact_hist.push_back(current_facts);
         if fact_hist.len() > self.config.growth_window {
             fact_hist.pop_front();
         }
 
         // Update exploration count.
-        *self.exploration_count.entry(domain.to_string()).or_default() += 1;
+        *self
+            .exploration_count
+            .entry(domain.to_string())
+            .or_default() += 1;
 
         // Check saturation.
         if self.check_saturation(domain) {
@@ -353,10 +357,11 @@ impl EntropyGradientSearcher {
 
     /// Whether all known domains are saturated.
     pub fn all_saturated(&self) -> bool {
-        !self.saturated.is_empty() && self
-            .yield_history
-            .keys()
-            .all(|d| self.saturated.contains(d))
+        !self.saturated.is_empty()
+            && self
+                .yield_history
+                .keys()
+                .all(|d| self.saturated.contains(d))
     }
 
     /// Get exploration count for a domain.

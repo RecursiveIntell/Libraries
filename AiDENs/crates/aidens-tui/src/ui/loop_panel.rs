@@ -1,10 +1,10 @@
 //! Loop state panel — renders the autonomous loop's shared state.
 
+use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
-use ratatui::layout::Rect;
 
 use crate::app::App;
 
@@ -18,12 +18,10 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
         " Loop State "
     };
 
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .title(Span::styled(
-            title,
-            Style::default().add_modifier(Modifier::BOLD),
-        ));
+    let block = Block::default().borders(Borders::ALL).title(Span::styled(
+        title,
+        Style::default().add_modifier(Modifier::BOLD),
+    ));
 
     let green = Style::default().fg(Color::Green);
     let red = Style::default().fg(Color::Red);
@@ -36,7 +34,10 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
         Line::from(""),
         Line::from(vec![
             Span::raw("  Tasks Gen:   "),
-            Span::styled(state.tasks_generated.to_string(), Style::default().fg(Color::Cyan)),
+            Span::styled(
+                state.tasks_generated.to_string(),
+                Style::default().fg(Color::Cyan),
+            ),
         ]),
         Line::from(vec![
             Span::raw("  Tasks Done:  "),

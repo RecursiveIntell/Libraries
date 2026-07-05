@@ -7,13 +7,13 @@ license = "MIT OR Apache-2.0"
 description = "Autonomous gap detection and task generation for closed-loop self-learning"
 
 [dependencies]
-aidens-daemon-kit = { path = "../aidens-daemon-kit" }
-aidens-queue-kit = { path = "../aidens-queue-kit" }
-aidens-contracts = { path = "../aidens-contracts" }
-aidens-memory-kit = { path = "../aidens-memory-kit" }
-aidens-runner = { path = "../aidens-runner" }
-aidens-governance-kit = { path = "../aidens-governance-kit" }
-semantic-memory = { version = "0.5.0", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
+aidens-daemon-kit = { version = "0.1.0", path = "../aidens-daemon-kit" }
+aidens-queue-kit = { version = "0.1.0", path = "../aidens-queue-kit" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
+aidens-memory-kit = { version = "0.1.0", path = "../aidens-memory-kit" }
+aidens-runner = { version = "0.1.0", path = "../aidens-runner" }
+aidens-governance-kit = { version = "0.1.0", path = "../aidens-governance-kit" }
+semantic-memory = { version = "0.5.8", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

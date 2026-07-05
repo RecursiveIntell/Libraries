@@ -8,18 +8,18 @@ description = "Run and turn executor — provider, tools, governance, memory, re
 
 
 [dependencies]
-aidens-agency-kit = { path = "../aidens-agency-kit" }
-aidens-memory-kit = { path = "../aidens-memory-kit" }
-aidens-receipts = { path = "../aidens-receipts" }
-aidens-governance-kit = { path = "../aidens-governance-kit" }
-aidens-kernel-kit = { path = "../aidens-kernel-kit" }
-aidens-provider-kit = { path = "../aidens-provider-kit" }
-aidens-contracts = { path = "../aidens-contracts" }
-aidens-tool-kit = { path = "../aidens-tool-kit" }
-aidens-permit-kit = { path = "../aidens-permit-kit" }
-aidens-budget-kit = { path = "../aidens-budget-kit" }
-aidens-boundary-kit = { path = "../aidens-boundary-kit" }
-boundary-compiler-core = { path = "../boundary-compiler-core" }
+aidens-agency-kit = { version = "0.1.0", path = "../aidens-agency-kit" }
+aidens-memory-kit = { version = "0.1.0", path = "../aidens-memory-kit" }
+aidens-receipts = { version = "0.1.0", path = "../aidens-receipts" }
+aidens-governance-kit = { version = "0.1.0", path = "../aidens-governance-kit" }
+aidens-kernel-kit = { version = "0.1.0", path = "../aidens-kernel-kit" }
+aidens-provider-kit = { version = "0.1.0", path = "../aidens-provider-kit" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
+aidens-tool-kit = { version = "0.1.0", path = "../aidens-tool-kit" }
+aidens-permit-kit = { version = "0.1.0", path = "../aidens-permit-kit" }
+aidens-budget-kit = { version = "0.1.0", path = "../aidens-budget-kit" }
+aidens-boundary-kit = { version = "0.1.0", path = "../aidens-boundary-kit" }
+boundary-compiler-core = { version = "0.1.0", path = "../boundary-compiler-core" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

@@ -116,8 +116,7 @@ impl HostileAuditGate {
             .to_string();
 
         // Parse the response.
-        let survived = response_text.contains("SURVIVES")
-            && !response_text.contains("- ");
+        let survived = response_text.contains("SURVIVES") && !response_text.contains("- ");
 
         // Extract issues (lines starting with "- ").
         let issues: Vec<String> = response_text

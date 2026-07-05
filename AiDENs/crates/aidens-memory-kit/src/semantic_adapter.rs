@@ -294,7 +294,12 @@ mod tests {
 
         adapter
             .store()
-            .add_fact("replay-ns", "replay receipt roundtrip fact about Rust", None, None)
+            .add_fact(
+                "replay-ns",
+                "replay receipt roundtrip fact about Rust",
+                None,
+                None,
+            )
             .await
             .expect("add fact");
 
@@ -324,7 +329,12 @@ mod tests {
 
         adapter
             .store()
-            .add_fact("replay-ids-ns", "receipt result id matching test fact", None, None)
+            .add_fact(
+                "replay-ids-ns",
+                "receipt result id matching test fact",
+                None,
+                None,
+            )
             .await
             .expect("add fact");
 
@@ -476,9 +486,7 @@ mod tests {
                 .expect("add edge");
         }
 
-        let seeds: Vec<String> = (0..3)
-            .map(|i| format!("namespace:maxn-src-{i}"))
-            .collect();
+        let seeds: Vec<String> = (0..3).map(|i| format!("namespace:maxn-src-{i}")).collect();
         let edges_uncapped = adapter
             .graph_traversal(seeds.clone(), 1, 1_000)
             .await
@@ -518,7 +526,12 @@ mod tests {
 
         adapter
             .store()
-            .add_fact("cs-ns", "compressed search fixture fact about memory", None, None)
+            .add_fact(
+                "cs-ns",
+                "compressed search fixture fact about memory",
+                None,
+                None,
+            )
             .await
             .expect("add fact");
 
@@ -539,7 +552,12 @@ mod tests {
         for i in 0..5 {
             adapter
                 .store()
-                .add_fact("cs-topk-ns", &format!("top-k limit test fact number {i}"), None, None)
+                .add_fact(
+                    "cs-topk-ns",
+                    &format!("top-k limit test fact number {i}"),
+                    None,
+                    None,
+                )
                 .await
                 .expect("add fact");
         }
@@ -574,12 +592,22 @@ mod tests {
 
         adapter
             .store()
-            .add_fact("cs-multi-ns", "multi-fact alpha: Rust memory safety", None, None)
+            .add_fact(
+                "cs-multi-ns",
+                "multi-fact alpha: Rust memory safety",
+                None,
+                None,
+            )
             .await
             .expect("add fact alpha");
         adapter
             .store()
-            .add_fact("cs-multi-ns", "multi-fact beta: Rust ownership model", None, None)
+            .add_fact(
+                "cs-multi-ns",
+                "multi-fact beta: Rust ownership model",
+                None,
+                None,
+            )
             .await
             .expect("add fact beta");
 
@@ -647,7 +675,12 @@ mod tests {
 
         adapter
             .store()
-            .add_fact("tq-ns", "turbo quant fact about vector compression", None, None)
+            .add_fact(
+                "tq-ns",
+                "turbo quant fact about vector compression",
+                None,
+                None,
+            )
             .await
             .expect("add fact");
 
@@ -655,7 +688,10 @@ mod tests {
             .compressed_search("vector compression", Some(5))
             .await
             .expect("compressed search");
-        assert!(!results.is_empty(), "turbo quant search should find added fact");
+        assert!(
+            !results.is_empty(),
+            "turbo quant search should find added fact"
+        );
         cleanup(&root);
     }
 }

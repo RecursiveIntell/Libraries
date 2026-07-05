@@ -9,7 +9,7 @@ description = "Kernel reasoning facade — compiler, execution, oracle, conforma
 
 [dependencies]
 constraint-compiler = { version = "0.1.0", path = "../../../constraint-compiler" }
-forge-memory-bridge = { version = "0.1.0", path = "../../../forge-memory-bridge" }
+forge-memory-bridge = { version = "0.1.1", path = "../../../forge-memory-bridge" }
 kernel-conformance = { version = "0.1.0", path = "../../../kernel-conformance" }
 kernel-execution = { version = "0.1.0", path = "../../../kernel-execution" }
 kernel-oracles = { version = "0.1.0", path = "../../../kernel-oracles" }
@@ -19,4 +19,4 @@ serde_json = "1"
 chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
-stack-ids = { version = "0.1.0", path = "../../../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../../../stack-ids" }

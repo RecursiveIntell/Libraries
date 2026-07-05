@@ -135,13 +135,19 @@ pub fn classify_convergence(
     max_iterations: u32,
 ) -> (ConvergenceState, ConvergenceStopReason) {
     if residual_history.is_empty() {
-        return (ConvergenceState::MaxIterationsReached, ConvergenceStopReason::MaxIterations);
+        return (
+            ConvergenceState::MaxIterationsReached,
+            ConvergenceStopReason::MaxIterations,
+        );
     }
 
     let last = *residual_history.last().unwrap();
 
     if last < tolerance {
-        return (ConvergenceState::Converged, ConvergenceStopReason::Converged);
+        return (
+            ConvergenceState::Converged,
+            ConvergenceStopReason::Converged,
+        );
     }
 
     if residual_history.len() >= max_iterations as usize {
@@ -153,22 +159,36 @@ pub fn classify_convergence(
             let c = residual_history[n - 2];
             let d = residual_history[n - 1];
             if (a > b && b < c && c > d) || (a < b && b > c && c < d) {
-                return (ConvergenceState::Oscillating, ConvergenceStopReason::OscillationDetected);
+                return (
+                    ConvergenceState::Oscillating,
+                    ConvergenceStopReason::OscillationDetected,
+                );
             }
         }
 
         // Check for divergence (residuals increasing)
         if residual_history.len() >= 3 {
             let n = residual_history.len();
-            if residual_history[n - 3] < residual_history[n - 2] && residual_history[n - 2] < residual_history[n - 1] {
-                return (ConvergenceState::Diverging, ConvergenceStopReason::DivergenceDetected);
+            if residual_history[n - 3] < residual_history[n - 2]
+                && residual_history[n - 2] < residual_history[n - 1]
+            {
+                return (
+                    ConvergenceState::Diverging,
+                    ConvergenceStopReason::DivergenceDetected,
+                );
             }
         }
 
-        return (ConvergenceState::MaxIterationsReached, ConvergenceStopReason::MaxIterations);
+        return (
+            ConvergenceState::MaxIterationsReached,
+            ConvergenceStopReason::MaxIterations,
+        );
     }
 
-    (ConvergenceState::MaxIterationsReached, ConvergenceStopReason::MaxIterations)
+    (
+        ConvergenceState::MaxIterationsReached,
+        ConvergenceStopReason::MaxIterations,
+    )
 }
 
 #[cfg(test)]

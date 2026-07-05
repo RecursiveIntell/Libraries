@@ -8,10 +8,10 @@ description = "Approval and permit model for tool dispatch gating"
 
 
 [dependencies]
-aidens-contracts = { path = "../aidens-contracts" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 
 [dev-dependencies]
-aidens-testkit = { path = "../aidens-testkit" }
+aidens-testkit = { version = "0.1.0", path = "../aidens-testkit" }
 serde_json = "1"

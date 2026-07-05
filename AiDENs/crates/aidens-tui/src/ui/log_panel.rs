@@ -1,10 +1,10 @@
 //! Activity log panel — renders scrollable log entries with an input line.
 
+use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
-use ratatui::layout::Rect;
 
 use crate::app::App;
 
@@ -36,10 +36,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     }
 
     // Add a separator and input line at the bottom.
-    lines.push(Line::from(Span::styled(
-        "─".repeat(60),
-        gray,
-    )));
+    lines.push(Line::from(Span::styled("─".repeat(60), gray)));
     let paused_indicator = if app.is_paused() {
         Span::styled(" [PAUSED] ", Style::default().fg(Color::Yellow))
     } else {

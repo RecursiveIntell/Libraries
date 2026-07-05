@@ -8,6 +8,6 @@ description = "Runtime capability truth surfaces and support tier reporting"
 
 
 [dependencies]
-aidens-contracts = { path = "../aidens-contracts" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"

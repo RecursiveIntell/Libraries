@@ -8,6 +8,6 @@ description = "Coding-agent profile — tool bundles, permits, budget limits"
 
 
 [dependencies]
-aidens-contracts = { path = "../aidens-contracts" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"

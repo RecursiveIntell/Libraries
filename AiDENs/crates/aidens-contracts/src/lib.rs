@@ -25,8 +25,8 @@ mod release_completion;
 mod reserved_v11;
 mod schema_catalog;
 mod semantic;
-pub mod view_disclosure;
 mod tool_artifacts;
+pub mod view_disclosure;
 mod view_runtime;
 
 pub use agent_bundle::*;

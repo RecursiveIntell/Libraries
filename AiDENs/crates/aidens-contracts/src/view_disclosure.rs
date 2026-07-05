@@ -115,7 +115,13 @@ impl RuntimeQueryProvenanceV1 {
     }
 
     /// Create provenance for a widened query.
-    pub fn widened(query: &str, view_type: ViewType, stages: Vec<String>, result_count: usize, reason: &str) -> Self {
+    pub fn widened(
+        query: &str,
+        view_type: ViewType,
+        stages: Vec<String>,
+        result_count: usize,
+        reason: &str,
+    ) -> Self {
         let disclosure = ViewDisclosureV1::widened(view_type, reason, vec![]);
         Self {
             query: query.to_string(),
@@ -176,7 +182,10 @@ mod tests {
             "temporal index incomplete, fell back to timeless",
         );
         assert!(p.disclosure.widening_occurred);
-        assert_eq!(p.disclosure.verification_status, ViewVerificationStatus::Advisory);
+        assert_eq!(
+            p.disclosure.verification_status,
+            ViewVerificationStatus::Advisory
+        );
     }
 
     #[test]
@@ -191,6 +200,9 @@ mod tests {
         );
         assert!(p.disclosure.widening_occurred);
         assert!(p.disclosure.widening_reason.is_some());
-        assert_ne!(p.disclosure.verification_status, ViewVerificationStatus::Verified);
+        assert_ne!(
+            p.disclosure.verification_status,
+            ViewVerificationStatus::Verified
+        );
     }
 }

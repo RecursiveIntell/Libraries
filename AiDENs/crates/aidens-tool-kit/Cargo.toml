@@ -8,10 +8,10 @@ description = "Tool registry, exposure planning, and safe sandbox-validated disp
 
 
 [dependencies]
-aidens-boundary-kit = { path = "../aidens-boundary-kit" }
-aidens-contracts = { path = "../aidens-contracts" }
-aidens-permit-kit = { path = "../aidens-permit-kit" }
-aidens-security-kit = { path = "../aidens-security-kit" }
+aidens-boundary-kit = { version = "0.1.0", path = "../aidens-boundary-kit" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
+aidens-permit-kit = { version = "0.1.0", path = "../aidens-permit-kit" }
+aidens-security-kit = { version = "0.1.0", path = "../aidens-security-kit" }
 anyhow = "1"
 async-trait = "0.1"
 llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
@@ -20,5 +20,5 @@ serde_json = "1"
 thiserror = "2"
 
 [dev-dependencies]
-aidens-testkit = { path = "../aidens-testkit" }
+aidens-testkit = { version = "0.1.0", path = "../aidens-testkit" }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }

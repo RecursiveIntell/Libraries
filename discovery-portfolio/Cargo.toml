@@ -9,7 +9,7 @@ license = "MIT"
 [dependencies]
 schemars = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 
 [dev-dependencies]
 proptest = { workspace = true }

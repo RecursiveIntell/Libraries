@@ -15,9 +15,7 @@ pub struct McpTrustReportV1 {
     pub recommendation: String,
 }
 
-pub fn evaluate_mcp_tool_safety(
-    descriptor: &llm_tool_runtime::ToolDescriptor,
-) -> McpTrustReportV1 {
+pub fn evaluate_mcp_tool_safety(descriptor: &llm_tool_runtime::ToolDescriptor) -> McpTrustReportV1 {
     let side_effect_class = descriptor.side_effect_class.to_string();
     let requires_permit = requires_explicit_permit(&descriptor.side_effect_class);
     let is_dangerous = is_dangerous_without_permit(&descriptor.side_effect_class);
@@ -76,13 +74,14 @@ pub fn attest_tool_invocation(
         trace_context.clone()
     };
     let provenance_summary = if trace_context.is_empty() {
-        format!("invocation {} with attempt {}", receipt.tool_name, receipt.attempt_id)
+        format!(
+            "invocation {} with attempt {}",
+            receipt.tool_name, receipt.attempt_id
+        )
     } else {
         format!(
             "invocation {} with trace {} and attempt {}",
-            receipt.tool_name,
-            trace_context,
-            receipt.attempt_id,
+            receipt.tool_name, trace_context, receipt.attempt_id,
         )
     };
 
@@ -220,12 +219,8 @@ mod tests {
     use super::*;
 
     use llm_tool_runtime::{
-        ToolApprovalKind,
-        ToolBackendKind,
-        ToolIdempotencyClass,
+        McpSurfaceKind, ToolApprovalKind, ToolBackendKind, ToolExposureMode, ToolIdempotencyClass,
         ToolOutputMode,
-        ToolExposureMode,
-        McpSurfaceKind,
     };
 
     fn mcp_descriptor(side_effect_class: ToolSideEffectClass) -> llm_tool_runtime::ToolDescriptor {

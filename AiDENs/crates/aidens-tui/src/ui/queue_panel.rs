@@ -1,19 +1,17 @@
 //! Queue panel — renders the daemon queue snapshot.
 
 use aidens_contracts::JobStateV1;
+use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
-use ratatui::layout::Rect;
 
 use crate::app::App;
 
 /// Render the queue panel.
 pub fn render(frame: &mut Frame, area: Rect, app: &App) {
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .title(" Queue ");
+    let block = Block::default().borders(Borders::ALL).title(" Queue ");
 
     let gray = Style::default().fg(Color::DarkGray);
     let green = Style::default().fg(Color::Green);
@@ -24,8 +22,16 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
 
     match app.queue_snapshot_ref() {
         Some(snapshot) => {
-            let active = snapshot.jobs.iter().filter(|j| !j.state.is_terminal()).count();
-            let queued = snapshot.jobs.iter().filter(|j| j.state == JobStateV1::Queued).count();
+            let active = snapshot
+                .jobs
+                .iter()
+                .filter(|j| !j.state.is_terminal())
+                .count();
+            let queued = snapshot
+                .jobs
+                .iter()
+                .filter(|j| j.state == JobStateV1::Queued)
+                .count();
             let total = snapshot.jobs.len();
 
             lines.push(Line::from(vec![
@@ -40,8 +46,16 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
             lines.push(Line::from(vec![
                 Span::raw("  Safe:    "),
                 Span::styled(
-                    if snapshot.safe_mode_enabled { "ON" } else { "off" },
-                    if snapshot.safe_mode_enabled { red } else { gray },
+                    if snapshot.safe_mode_enabled {
+                        "ON"
+                    } else {
+                        "off"
+                    },
+                    if snapshot.safe_mode_enabled {
+                        red
+                    } else {
+                        gray
+                    },
                 ),
             ]));
             lines.push(Line::from(""));
@@ -74,10 +88,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
             }
         }
         None => {
-            lines.push(Line::from(Span::styled(
-                "  No snapshot available",
-                gray,
-            )));
+            lines.push(Line::from(Span::styled("  No snapshot available", gray)));
             lines.push(Line::from(Span::styled(
                 format!("  Queue: {}", app.queue_root_display()),
                 gray,

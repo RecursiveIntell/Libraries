@@ -191,7 +191,8 @@ impl ViscosityController {
             .iter()
             .filter(|r| r.disposition == FactDisposition::Quarantine)
             .count() as f64;
-        let total_contradictions: usize = self.history.iter().map(|r| r.contradictions_detected).sum();
+        let total_contradictions: usize =
+            self.history.iter().map(|r| r.contradictions_detected).sum();
         let total_facts: usize = self.history.iter().map(|r| r.facts_added).sum();
 
         ViscositySignal {

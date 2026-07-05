@@ -8,5 +8,5 @@ description = "Execution-plan assembly helpers for AiDENs product surfaces"
 
 
 [dependencies]
-aidens-contracts = { path = "../aidens-contracts" }
+aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
 thiserror = "2"

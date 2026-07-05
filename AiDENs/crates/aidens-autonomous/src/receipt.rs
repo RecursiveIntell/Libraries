@@ -190,12 +190,36 @@ mod tests {
     fn test_receipt_chaining() {
         let mut emitter = ReceiptEmitter::new();
         let r1 = emitter.emit(
-            1, 5, 3, 2, 1, 0, None, "normal", 2, 4, LoopMode::Additive,
-            vec!["projects".into()], vec![], vec![],
+            1,
+            5,
+            3,
+            2,
+            1,
+            0,
+            None,
+            "normal",
+            2,
+            4,
+            LoopMode::Additive,
+            vec!["projects".into()],
+            vec![],
+            vec![],
         );
         let r2 = emitter.emit(
-            2, 3, 2, 1, 0, 0, None, "normal", 3, 6, LoopMode::Additive,
-            vec!["research".into()], vec![], vec![],
+            2,
+            3,
+            2,
+            1,
+            0,
+            0,
+            None,
+            "normal",
+            3,
+            6,
+            LoopMode::Additive,
+            vec!["research".into()],
+            vec![],
+            vec![],
         );
         // First receipt has empty previous_hash.
         assert_eq!(r1.previous_hash, "");
@@ -210,12 +234,36 @@ mod tests {
         let mut e1 = ReceiptEmitter::new();
         let mut e2 = ReceiptEmitter::new();
         let r1 = e1.emit(
-            1, 0, 0, 0, 0, 0, None, "fast", 0, 0, LoopMode::Additive,
-            vec![], vec![], vec![],
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            None,
+            "fast",
+            0,
+            0,
+            LoopMode::Additive,
+            vec![],
+            vec![],
+            vec![],
         );
         let r2 = e2.emit(
-            1, 0, 0, 0, 0, 0, None, "fast", 0, 0, LoopMode::Additive,
-            vec![], vec![], vec![],
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            None,
+            "fast",
+            0,
+            0,
+            LoopMode::Additive,
+            vec![],
+            vec![],
+            vec![],
         );
         // Same inputs → same hash (timestamp differs, so hash differs,
         // but structure is identical).

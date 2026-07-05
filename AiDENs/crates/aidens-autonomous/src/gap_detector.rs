@@ -242,7 +242,9 @@ impl GapDetector {
                         fact_id: fact.id.clone(),
                         description: format!(
                             "Fact '{}' references date {} which may be outdated. Content: {}",
-                            fact.id, date, truncate(&fact.content, 120)
+                            fact.id,
+                            date,
+                            truncate(&fact.content, 120)
                         ),
                         suggested_task: "Check if the information is still current.".to_string(),
                         priority: 0.65,
@@ -270,8 +272,7 @@ impl GapDetector {
                         let jaccard = jaccard_similarity(&fact.content, &other.content);
 
                         // DuplicateFact: >80% content overlap.
-                        if jaccard > 0.8
-                            && !attempted.contains(&fact_key(&GapType::DuplicateFact))
+                        if jaccard > 0.8 && !attempted.contains(&fact_key(&GapType::DuplicateFact))
                         {
                             gaps.push(DetectedGap {
                                 gap_type: GapType::DuplicateFact,
@@ -333,10 +334,7 @@ impl GapDetector {
                     }
                     checked += 1;
 
-                    let pair_key = format!(
-                        "{}|{}+missing-link",
-                        facts[i].id, facts[j].id
-                    );
+                    let pair_key = format!("{}|{}+missing-link", facts[i].id, facts[j].id);
                     if attempted.contains(&pair_key) {
                         continue;
                     }
@@ -377,12 +375,14 @@ impl GapDetector {
                 gaps.push(DetectedGap {
                     gap_type: GapType::StaleFact,
                     fact_id: "db-integrity".to_string(),
-                    description: "Semantic memory integrity check failed — one or more facts may be \
+                    description:
+                        "Semantic memory integrity check failed — one or more facts may be \
                         corrupted or stale."
-                        .to_string(),
-                    suggested_task: "Run maintenance reconciliation and verify fact integrity across \
+                            .to_string(),
+                    suggested_task:
+                        "Run maintenance reconciliation and verify fact integrity across \
                         the knowledge base."
-                        .to_string(),
+                            .to_string(),
                     priority: 0.9,
                     content_snippet: None,
                     fact_id_b: None,
@@ -461,11 +461,9 @@ impl GapDetector {
                 gaps.push(DetectedGap {
                     gap_type: GapType::LowQualityFact,
                     fact_id: fact.id.clone(),
-                    description: format!(
-                        "Fact '{}' appears to be low quality.",
-                        fact.id
-                    ),
-                    suggested_task: "Determine if the fact should be kept, improved, or removed.".to_string(),
+                    description: format!("Fact '{}' appears to be low quality.", fact.id),
+                    suggested_task: "Determine if the fact should be kept, improved, or removed."
+                        .to_string(),
                     priority: 0.4,
                     content_snippet: Some(truncate(&fact.content, 200)),
                     fact_id_b: None,
@@ -507,8 +505,7 @@ impl GapDetector {
                         }
                         let jaccard = jaccard_similarity(&fact.content, &other.content);
 
-                        if jaccard > 0.8
-                            && !attempted.contains(&fact_key(&GapType::DuplicateFact))
+                        if jaccard > 0.8 && !attempted.contains(&fact_key(&GapType::DuplicateFact))
                         {
                             gaps.push(DetectedGap {
                                 gap_type: GapType::DuplicateFact,
@@ -517,7 +514,8 @@ impl GapDetector {
                                     "Fact '{}' appears to duplicate fact '{}' (Jaccard: {:.2}).",
                                     fact.id, other.id, jaccard
                                 ),
-                                suggested_task: "Determine which version is more complete.".to_string(),
+                                suggested_task: "Determine which version is more complete."
+                                    .to_string(),
                                 priority: 0.7,
                                 content_snippet: Some(truncate(&fact.content, 200)),
                                 fact_id_b: Some(other.id.clone()),
@@ -540,7 +538,8 @@ impl GapDetector {
                                     "Fact '{}' may contradict fact '{}' (overlap: {:.2}).",
                                     fact.id, other.id, jaccard
                                 ),
-                                suggested_task: "Analyze whether this is a real contradiction.".to_string(),
+                                suggested_task: "Analyze whether this is a real contradiction."
+                                    .to_string(),
                                 priority: 0.85,
                                 content_snippet: Some(truncate(&fact.content, 200)),
                                 fact_id_b: Some(other.id.clone()),
@@ -903,7 +902,10 @@ fn truncate(s: &str, max: usize) -> String {
 /// Tokenize a string into a set of lowercase words.
 fn word_set(s: &str) -> HashSet<String> {
     s.split_whitespace()
-        .map(|w| w.trim_matches(|c: char| !c.is_alphanumeric()).to_lowercase())
+        .map(|w| {
+            w.trim_matches(|c: char| !c.is_alphanumeric())
+                .to_lowercase()
+        })
         .filter(|w| !w.is_empty())
         .collect()
 }
@@ -926,17 +928,25 @@ fn jaccard_similarity(a: &str, b: &str) -> f64 {
 /// Check if two facts have contradictory signals.
 /// Looks for negation words, different numbers, or different dates.
 fn has_contradiction_signals(a: &str, b: &str) -> bool {
-    let negation_words = ["not", "no", "never", "false", "incorrect", "wrong", "disagree"];
+    let negation_words = [
+        "not",
+        "no",
+        "never",
+        "false",
+        "incorrect",
+        "wrong",
+        "disagree",
+    ];
     let a_lower = a.to_lowercase();
     let b_lower = b.to_lowercase();
 
     // Check for negation in one but not the other.
-    let a_has_neg = negation_words.iter().any(|w| {
-        a_lower.contains(&format!(" {} ", w)) || a_lower.starts_with(&format!("{} ", w))
-    });
-    let b_has_neg = negation_words.iter().any(|w| {
-        b_lower.contains(&format!(" {} ", w)) || b_lower.starts_with(&format!("{} ", w))
-    });
+    let a_has_neg = negation_words
+        .iter()
+        .any(|w| a_lower.contains(&format!(" {} ", w)) || a_lower.starts_with(&format!("{} ", w)));
+    let b_has_neg = negation_words
+        .iter()
+        .any(|w| b_lower.contains(&format!(" {} ", w)) || b_lower.starts_with(&format!("{} ", w)));
 
     if a_has_neg != b_has_neg {
         return true;
@@ -1027,7 +1037,11 @@ fn extract_stale_date(content: &str) -> Option<String> {
             // current month is > 6, consider it potentially stale.
             // Actually, the simplest heuristic: if the year is <= the year of
             // six_months_ago, flag it.
-            let stale_year = six_months_ago.format("%Y").to_string().parse::<i32>().unwrap_or(0);
+            let stale_year = six_months_ago
+                .format("%Y")
+                .to_string()
+                .parse::<i32>()
+                .unwrap_or(0);
             if year <= stale_year {
                 return Some(date_str.clone());
             }
@@ -1176,19 +1190,27 @@ mod tests {
     #[test]
     fn low_quality_short_content() {
         assert!(is_low_quality("too short"));
-        assert!(!is_low_quality("This is a sufficiently long factual statement about Rust."));
+        assert!(!is_low_quality(
+            "This is a sufficiently long factual statement about Rust."
+        ));
     }
 
     #[test]
     fn low_quality_url_heavy() {
-        assert!(is_low_quality("http://example.com http://test.com http://foo.com http://bar.com"));
-        assert!(!is_low_quality("See http://example.com for more details about Rust programming."));
+        assert!(is_low_quality(
+            "http://example.com http://test.com http://foo.com http://bar.com"
+        ));
+        assert!(!is_low_quality(
+            "See http://example.com for more details about Rust programming."
+        ));
     }
 
     #[test]
     fn low_quality_json_blob() {
         assert!(is_low_quality(r#"{"key": "value", "nested": {"a": 1}}"#));
-        assert!(!is_low_quality("This is a normal fact about the knowledge base."));
+        assert!(!is_low_quality(
+            "This is a normal fact about the knowledge base."
+        ));
     }
 
     #[test]
@@ -1451,10 +1473,7 @@ mod tests {
         let facts: Vec<SearchFact> = results_arr
             .iter()
             .filter_map(|item| {
-                let id = item
-                    .get("result_id")
-                    .and_then(|v| v.as_str())?
-                    .to_string();
+                let id = item.get("result_id").and_then(|v| v.as_str())?.to_string();
                 let content = item
                     .get("content")
                     .and_then(|v| v.as_str())

@@ -49,7 +49,11 @@ pub struct App {
 
 impl App {
     /// Create a new App instance.
-    pub fn new(loop_state: Arc<Mutex<LoopState>>, http_base_url: String, queue_root: PathBuf) -> Self {
+    pub fn new(
+        loop_state: Arc<Mutex<LoopState>>,
+        http_base_url: String,
+        queue_root: PathBuf,
+    ) -> Self {
         Self {
             loop_state,
             memory_stats: MemoryStats::default(),
@@ -75,10 +79,7 @@ impl App {
     ///
     /// Uses crossterm's async EventStream with tokio::select! so the loop
     /// task runs concurrently with keyboard polling -- no blocking.
-    pub async fn run(
-        &mut self,
-        terminal: &mut Terminal<CrosstermBackend<Stdout>>,
-    ) -> Result<()> {
+    pub async fn run(&mut self, terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
         use crossterm::event::EventStream;
         use futures::StreamExt;
 
@@ -181,11 +182,8 @@ impl App {
 
     /// Poll the queue snapshot using a read-only daemon controller.
     fn poll_queue(&mut self) -> Result<()> {
-        let namespace = DaemonControllerV1::namespace(
-            &self.queue_root,
-            "autonomous-loop",
-            "aidens-autonomous",
-        );
+        let namespace =
+            DaemonControllerV1::namespace(&self.queue_root, "autonomous-loop", "aidens-autonomous");
         let controller = DaemonControllerV1::open_read_only(&self.queue_root, namespace)?;
         let snapshot = controller.snapshot()?;
         self.queue_snapshot = Some(snapshot);
@@ -194,11 +192,8 @@ impl App {
 
     /// Set safe mode on the queue (requires a writable open).
     fn set_queue_safe_mode(&mut self) -> Result<()> {
-        let namespace = DaemonControllerV1::namespace(
-            &self.queue_root,
-            "autonomous-loop",
-            "aidens-autonomous",
-        );
+        let namespace =
+            DaemonControllerV1::namespace(&self.queue_root, "autonomous-loop", "aidens-autonomous");
         let controller = DaemonControllerV1::open(&self.queue_root, namespace, "aidens-tui")?;
         controller.set_safe_mode(true, "tui-manual-override")?;
         Ok(())

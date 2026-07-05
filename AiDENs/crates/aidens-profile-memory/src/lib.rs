@@ -33,7 +33,10 @@ mod tests {
         let profile = SemanticMemoryBackendProfileV1::provekv_derived_candidate();
         assert!(profile.validate().is_ok());
         assert_eq!(profile.owner, "semantic-memory");
-        assert_eq!(profile.derived_candidate_backend, "provekv_pool_candidate_then_exact_f32");
+        assert_eq!(
+            profile.derived_candidate_backend,
+            "provekv_pool_candidate_then_exact_f32"
+        );
         assert!(profile.exact_f32_rerank_required);
         assert!(!profile.direct_provekv_dependency_allowed);
         assert!(!profile.recall_integration_allowed);

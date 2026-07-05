@@ -167,7 +167,10 @@ impl PlanActVerifyLoopV1 {
         self
     }
 
-    pub fn with_memory(mut self, memory: std::sync::Arc<aidens_memory_kit::CanonicalMemoryAdapter>) -> Self {
+    pub fn with_memory(
+        mut self,
+        memory: std::sync::Arc<aidens_memory_kit::CanonicalMemoryAdapter>,
+    ) -> Self {
         self.memory = Some(memory);
         self
     }
@@ -1229,7 +1232,7 @@ impl TurnExecutorV1 {
             // Track only this turn's tool calls for the next completion_request
             current_turn_tool_calls.clear();
             current_turn_tool_calls.extend(tool_calls.iter().cloned());
-            
+
             if tool_calls.is_empty() {
                 let tool_result_texts = tool_results
                     .iter()

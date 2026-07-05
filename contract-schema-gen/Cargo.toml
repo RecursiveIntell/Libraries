@@ -4,35 +4,35 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.75.0"
 license = "MIT"
-publish = false
+description = "Generate JSON schemas for RecursiveIntell contract and proof runtime types"
 
 [dependencies]
-assurance-runtime = { path = "../assurance-runtime" }
-attestation-exchange = { path = "../attestation-exchange" }
-authority-delegation = { path = "../authority-delegation" }
-constitutional-memory = { path = "../constitutional-memory" }
-continuity-runtime = { path = "../continuity-runtime" }
+assurance-runtime = { version = "0.1.0", path = "../assurance-runtime" }
+attestation-exchange = { version = "0.1.0", path = "../attestation-exchange" }
+authority-delegation = { version = "0.1.0", path = "../authority-delegation" }
+constitutional-memory = { version = "0.1.0", path = "../constitutional-memory" }
+continuity-runtime = { version = "0.1.0", path = "../continuity-runtime" }
 schemars = { workspace = true }
-discovery-portfolio = { path = "../discovery-portfolio" }
-effect-runtime = { path = "../effect-runtime" }
-federated-settlement = { path = "../federated-settlement" }
+discovery-portfolio = { version = "0.1.0", path = "../discovery-portfolio" }
+effect-runtime = { version = "0.1.0", path = "../effect-runtime" }
+federated-settlement = { version = "0.1.0", path = "../federated-settlement" }
 serde_json = { workspace = true }
-semantic-memory-forge = { path = "../semantic-memory-forge" }
-forge-memory-bridge = { path = "../forge-memory-bridge" }
-knowledge-runtime = { path = "../knowledge-runtime" }
-mechanism-runtime = { path = "../mechanism-runtime" }
-semantic-memory = { path = "../semantic-memory" }
-constraint-compiler = { path = "../constraint-compiler" }
-kernel-execution = { path = "../kernel-execution" }
-kernel-oracles = { path = "../kernel-oracles" }
-forge-pilot = { path = "../forge-pilot" }
-remote-oracle-admission = { path = "../remote-oracle-admission" }
-profile-runtime = { path = "../profile-runtime" }
-spec-execution = { path = "../spec-execution" }
-verification-adjudication = { path = "../verification-adjudication" }
-verification-calibration = { path = "../verification-calibration" }
-verification-control = { path = "../verification-control" }
-verification-policy = { path = "../verification-policy" }
+semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
+forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
+knowledge-runtime = { version = "0.1.0", path = "../knowledge-runtime" }
+mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime" }
+semantic-memory = { version = "0.5.8", path = "../semantic-memory" }
+constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
+kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
+kernel-oracles = { version = "0.1.0", path = "../kernel-oracles" }
+forge-pilot = { version = "0.1.0", path = "../forge-pilot" }
+remote-oracle-admission = { version = "0.1.0", path = "../remote-oracle-admission" }
+profile-runtime = { version = "0.1.0", path = "../profile-runtime" }
+spec-execution = { version = "0.1.0", path = "../spec-execution" }
+verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }
+verification-calibration = { version = "0.1.0", path = "../verification-calibration" }
+verification-control = { version = "0.1.0", path = "../verification-control" }
+verification-policy = { version = "0.1.0", path = "../verification-policy" }
 tempfile = { workspace = true }
 
 # LIB-005: inherit workspace lint policy
