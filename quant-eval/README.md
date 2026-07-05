@@ -16,6 +16,7 @@ Current status: prototype-to-evidence benchmark substrate. It contains real metr
 - **Benchmark receipts** — timestamped receipt structures with machine fingerprint, result list, JSON serialization, hashes, and diffs.
 - **RAG fixture metrics** — local recall@K, NDCG@K, and exact-rerank recovery over caller-supplied query/retrieval fixtures.
 - **HyperQuant primitive evaluation** — deterministic Z1/A2 evaluation through the published `hyperquant` crate, with mean/max MSE, estimated bytes, rejected-vector counts, receipt counts, and explicit claim boundaries.
+- **HyperQuant real-corpus retrieval gate** — caller-supplied document/query embeddings and qrels compared across exact f32 retrieval and HyperQuant-reconstructed retrieval, with recall@K, NDCG@K, top-K overlap, exact-rerank recovery, score error, compression ratio, and pass/fail blockers.
 - **Conservative public surface** — measurement APIs first; no silent production claims.
 
 ## Evidence pipeline
@@ -121,6 +122,13 @@ The crate re-exports:
 - `HyperQuantEvalConfig`
 - `HyperQuantEvalResult`
 - `HyperQuantProfileEval`
+- `run_hyperquant_real_corpus_eval`
+- `HyperQuantRealCorpus`
+- `HyperQuantRealCorpusConfig`
+- `HyperQuantRealCorpusProfile`
+- `HyperQuantRealCorpusReceipt`
+- `RealCorpusDocument`
+- `RealCorpusQuery`
 
 ## Implemented modules
 
@@ -203,6 +211,27 @@ Important limitation:
 
 - This is primitive-level evidence only. It is not HyperQuant paper parity, model-quality evidence, or production admissibility.
 
+### HyperQuant real-corpus retrieval gate
+
+Files: `src/hyperquant_real_corpus.rs`, `tests/hyperquant_real_corpus.rs`
+
+Implemented:
+
+- caller-supplied document/query embeddings plus explicit qrels;
+- exact f32 retrieval baseline;
+- retrieval over HyperQuant-reconstructed document vectors for Z1 and A2;
+- recall@K, NDCG@K, top-K overlap, exact-rerank recovery-at-1, rank-drift mean/p95/max, score-error mean/p95/max, search timing, byte accounting, compression ratio, pass/fail blockers;
+- conservative receipt schema `hyperquant-real-corpus-eval-v1`.
+
+Important limitation:
+
+- The in-tree test fixture is hand-authored and small. It proves the real-corpus API/gate path, not BEIR/Scifact quality. External corpus builders should feed this API and preserve the emitted receipt.
+
+Stored fixture receipt:
+
+- `docs/codex-runs/P1/HYPERQUANT_REAL_CORPUS_FIXTURE_RECEIPT.json`
+- `docs/codex-runs/P1/HYPERQUANT_REAL_CORPUS_FIXTURE_SUMMARY.md`
+
 ### Benchmark receipts
 
 Files: `src/receipt.rs`, `src/fingerprint.rs`
@@ -221,11 +250,13 @@ Safe to claim today:
 
 - `quant-eval` provides deterministic Rust benchmark scaffolds and fixture metrics.
 - `quant-eval` can evaluate current HyperQuant Z1/A2 primitive behavior.
+- `quant-eval` can run a caller-supplied real-corpus/qrels HyperQuant retrieval gate and emit pass/fail blocker receipts.
 - `quant-eval` emits typed metrics and benchmark receipt structures.
 - `quant-eval` has local tests, clippy, and publish dry-run receipts for this release.
 
 Not safe to claim today:
 
+- BEIR/Scifact or other external corpus quality;
 - real codec admissibility across production workloads;
 - actual compression-ratio measurements for all codecs;
 - model-quality preservation;
@@ -252,10 +283,11 @@ cargo publish -p quant-eval --dry-run --allow-dirty
 Expected current test surface:
 
 - 21 unit tests in `quant-eval` library modules.
-- 4 HyperQuant integration tests.
+- 4 HyperQuant primitive integration tests.
+- 2 HyperQuant real-corpus gate integration tests.
 - 5 general integration tests.
 - 5 RAG fixture tests.
-- 35 `quant-eval` tests total.
+- 37 `quant-eval` tests total.
 - 18 `hyperquant` tests for the dependency surface.
 
 ## Development
@@ -314,16 +346,16 @@ The crate currently contains no platform-specific code, FFI, async runtime depen
 
 Near-term:
 
-1. Add a codec evaluation trait or adapter layer so harnesses can call real encode/decode implementations.
-2. Replace simulated compression paths with actual compressed/decompressed vector comparisons.
-3. Add encoded-byte accounting and compression-ratio reports.
-4. Emit or convert into `quant-codec-core` report shapes when that boundary is ready.
-5. Add cross-crate integration tests for `hyperquant`, `fib-quant`, and `turbo-quant` adapters.
+1. Feed BEIR/Scifact or semantic-memory embeddings into `run_hyperquant_real_corpus_eval` and store the emitted receipt.
+2. Add a codec evaluation trait or adapter layer so harnesses can call real encode/decode implementations across crates.
+3. Replace remaining simulated compression paths with actual compressed/decompressed vector comparisons.
+4. Add encoded-byte accounting and compression-ratio reports for every codec path.
+5. Emit or convert into `quant-codec-core` report shapes when that boundary is ready.
+6. Add cross-crate integration tests for `hyperquant`, `fib-quant`, and `turbo-quant` adapters.
 
 Medium-term:
 
-1. Add real corpus fixtures for semantic-memory embeddings.
-2. Add before/after receipt diffs for codec promotion reviews.
+1. Add before/after receipt diffs for codec promotion reviews.
 3. Add admissibility gates that can be consumed by `quant-governor`.
 4. Add visual report export for benchmark receipts.
 

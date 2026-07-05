@@ -4,6 +4,16 @@ All notable changes to `quant-eval` are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- HyperQuant real-corpus/qrels retrieval gate: `run_hyperquant_real_corpus_eval` compares exact f32 retrieval against HyperQuant Z1/A2 reconstructed-vector retrieval and emits `hyperquant-real-corpus-eval-v1` receipts.
+- Receipt metrics now include recall@K, NDCG@K, top-K overlap, exact-rerank recovery@1, rank-drift mean/p95/max, score-error mean/p95/max, search timing, byte accounting, compression ratio, and explicit blockers.
+- Runnable example `hyperquant_real_corpus_receipt` plus stored tiny fixture receipt/summary under `docs/codex-runs/P1/`.
+
+### Claim boundary
+
+- The in-tree tiny fixture proves the reusable gate/API/receipt path. It is not BEIR/Scifact quality evidence or production admissibility.
+
 ## [0.1.0] — 2026-06-02
 
 First crates.io release.

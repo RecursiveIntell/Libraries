@@ -1,0 +1,63 @@
+{
+  "schema": "hyperquant-real-corpus-eval-v1",
+  "corpus_id": "tiny-semantic-fixture-v1",
+  "embedding_model": "hand-authored-unit-vectors",
+  "config": {
+    "top_k": 2,
+    "candidate_k": 3,
+    "scale": 16.0,
+    "min_top_k_overlap": 0.5,
+    "min_exact_rerank_recovery_at_1": 1.0
+  },
+  "profiles": [
+    {
+      "kind": "Z1",
+      "query_count": 3,
+      "doc_count": 4,
+      "raw_recall_at_k": 1.0,
+      "codec_recall_at_k": 1.0,
+      "raw_ndcg_at_k": 1.0,
+      "codec_ndcg_at_k": 1.0,
+      "top_k_overlap": 1.0,
+      "exact_rerank_recovery_at_1": 1.0,
+      "rank_drift_mean": 0.0,
+      "rank_drift_p95": 0.0,
+      "rank_drift_max": 0,
+      "mean_score_error_at_k": 0.0,
+      "score_error_p95_at_k": 0.0,
+      "score_error_max_at_k": 0.0,
+      "raw_search_ns_total": 4309,
+      "codec_search_ns_total": 2944,
+      "raw_bytes": 64,
+      "compressed_bytes": 32,
+      "compression_ratio": 2.0,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "kind": "A2",
+      "query_count": 3,
+      "doc_count": 4,
+      "raw_recall_at_k": 1.0,
+      "codec_recall_at_k": 1.0,
+      "raw_ndcg_at_k": 1.0,
+      "codec_ndcg_at_k": 1.0,
+      "top_k_overlap": 1.0,
+      "exact_rerank_recovery_at_1": 1.0,
+      "rank_drift_mean": 0.0,
+      "rank_drift_p95": 0.0,
+      "rank_drift_max": 0,
+      "mean_score_error_at_k": 1.0554989e-8,
+      "score_error_p95_at_k": 5.9604645e-8,
+      "score_error_max_at_k": 5.9604645e-8,
+      "raw_search_ns_total": 2235,
+      "codec_search_ns_total": 1993,
+      "raw_bytes": 64,
+      "compressed_bytes": 32,
+      "compression_ratio": 2.0,
+      "passed": true,
+      "blockers": []
+    }
+  ],
+  "claim_boundary": "real corpus retrieval fixture evidence only; not BEIR superiority, model-quality preservation, or production admissibility unless caller supplies external corpus receipts"
+}
