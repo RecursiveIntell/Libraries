@@ -7,11 +7,11 @@ description = "Canonical verification policy and approval artifacts"
 license = "MIT"
 
 [dependencies]
-llm-tool-runtime = { path = "../llm-tool-runtime" }
+llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
 schemars = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-stack-ids = { path = "../stack-ids" }
-verification-control = { path = "../verification-control" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
+verification-control = { version = "0.1.0", path = "../verification-control" }
 
 [dev-dependencies]
 serde_json = { workspace = true }

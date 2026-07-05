@@ -9,8 +9,8 @@ license = "MIT"
 [dependencies]
 schemars = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-stack-ids = { path = "../stack-ids" }
-verification-control = { path = "../verification-control" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
+verification-control = { version = "0.1.0", path = "../verification-control" }
 
 [dev-dependencies]
 serde_json = { workspace = true }

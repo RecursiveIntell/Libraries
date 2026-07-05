@@ -4,12 +4,13 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.75.0"
 license = "MIT"
+description = "Typed side-effect intent, execution receipt, and policy primitives for RecursiveIntell runtime gates"
 
 [dependencies]
 chrono = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 schemars = { workspace = true }
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 thiserror = { workspace = true }
 
 [dev-dependencies]
