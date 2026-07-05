@@ -233,6 +233,8 @@ Stored fixture receipt:
 - `docs/codex-runs/P1/HYPERQUANT_REAL_CORPUS_FIXTURE_SUMMARY.md`
 - `docs/codex-runs/P2/HYPERQUANT_SCIFACT_ALL_MINILM_RECEIPT.json`
 - `docs/codex-runs/P2/HYPERQUANT_SCIFACT_ALL_MINILM_SUMMARY.md`
+- `docs/codex-runs/P2/HYPERQUANT_SCIFACT_CODEC_COMPARISON_RECEIPT.json`
+- `docs/codex-runs/P2/HYPERQUANT_SCIFACT_CODEC_COMPARISON_SUMMARY.md`
 
 Reproduce the BEIR/Scifact receipt:
 
@@ -247,7 +249,21 @@ HQ_MIN_TOP_K_OVERLAP=0.30 HQ_MIN_EXACT_RERANK_RECOVERY_AT_1=0.80 \
 cargo run -p quant-eval --example hyperquant_scifact_eval -- \
   quant-eval/target/hyperquant-scifact/scifact-all-minilm-corpus.json \
   quant-eval/docs/codex-runs/P2/HYPERQUANT_SCIFACT_ALL_MINILM_RECEIPT.json
+
+cargo run -p quant-eval --example hyperquant_scifact_compare -- \
+  quant-eval/target/hyperquant-scifact/scifact-all-minilm-corpus.json \
+  quant-eval/docs/codex-runs/P2/HYPERQUANT_SCIFACT_CODEC_COMPARISON_RECEIPT.json
 ```
+
+Comparison result on the stored Scifact/all-minilm receipt:
+
+| Profile | Compression | R@10 | Top-K overlap | Exact-rerank recovery@1 | Verdict |
+|---|---:|---:|---:|---:|---|
+| scalar_i8_per_vector_scale | 3.9588x | 0.7800 | 0.9933 | 0.8767 | strongest current embedding baseline |
+| scalar_i8_global_symmetric | 4.0000x | 0.7733 | 0.9595 | 0.8767 | strongest simple baseline |
+| hyperquant_A2_scale_8 | 2.0000x | 0.7582 | 0.5910 | 0.8733 | passes; worth research, not best current product codec |
+| hyperquant_Z1_scale_8 | 2.0000x | 0.7549 | 0.5514 | 0.8667 | passes; weaker than A2 |
+| sign_binary_1bit | 32.0000x | 0.7238 | 0.5652 | 0.8567 | negative/high-compression control |
 
 ### Benchmark receipts
 
@@ -269,6 +285,7 @@ Safe to claim today:
 - `quant-eval` can evaluate current HyperQuant Z1/A2 primitive behavior.
 - `quant-eval` can run a caller-supplied real-corpus/qrels HyperQuant retrieval gate and emit pass/fail blocker receipts.
 - `quant-eval` has a BEIR/Scifact all-minilm receipt where both current HyperQuant profiles pass the declared candidate-gate thresholds: Z1 exact-rerank recovery@1 0.8667 / top-K overlap 0.5514, A2 exact-rerank recovery@1 0.8733 / top-K overlap 0.5910.
+- `quant-eval` has a Scifact codec-comparison receipt showing simple int8 baselines outperform current HyperQuant Z1/A2 for embedding retrieval quality and compression ratio, while HyperQuant still beats the 1-bit sign control and passes the candidate gate.
 - `quant-eval` emits typed metrics and benchmark receipt structures.
 - `quant-eval` has local tests, clippy, and publish dry-run receipts for this release.
 
@@ -276,7 +293,7 @@ Not safe to claim today:
 
 - BEIR/Scifact or other external corpus quality beyond the stored all-minilm candidate-gate receipt;
 - real codec admissibility across production workloads;
-- actual compression-ratio measurements for all codecs;
+- broad compression-ratio measurements beyond the stored Scifact comparison baselines;
 - model-quality preservation;
 - superiority of any codec;
 - production readiness;
