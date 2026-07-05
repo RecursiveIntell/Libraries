@@ -15,12 +15,12 @@ default = []
 danger-sm-write = []
 
 [dependencies]
-claim-ledger = { path = "../../claim-ledger" }
-llm-tool-runtime = { path = "../../llm-tool-runtime" }
-semantic-memory = { path = "../../semantic-memory" }
-semantic-memory-forge = { path = "../../semantic-memory-forge" }
-forge-memory-bridge = { path = "../../forge-memory-bridge" }
-stack-ids = { path = "../../stack-ids" }
+claim-ledger = { version = "0.1.1", path = "../../claim-ledger" }
+llm-tool-runtime = { version = "0.1.0", path = "../../llm-tool-runtime" }
+semantic-memory = { version = "0.5.8", path = "../../semantic-memory" }
+semantic-memory-forge = { version = "0.1.1", path = "../../semantic-memory-forge" }
+forge-memory-bridge = { version = "0.1.1", path = "../../forge-memory-bridge" }
+stack-ids = { version = "0.1.1", path = "../../stack-ids" }
 forge-policy = { version = "0.1.0", path = "../../Primitives/forge-policy" }
 sandbox-workspace = { version = "0.1.0", path = "../../Primitives/sandbox-workspace" }
 typed-patch = { version = "0.1.0", path = "../../Primitives/typed-patch" }

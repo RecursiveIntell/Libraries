@@ -27,29 +27,29 @@ governance = [
 ]
 
 [dependencies]
-assurance-runtime = { path = "../assurance-runtime", optional = true }
-attestation-exchange = { path = "../attestation-exchange", optional = true }
-authority-delegation = { path = "../authority-delegation", optional = true }
-claim-ledger = { path = "../claim-ledger", optional = true }
-constitutional-memory = { path = "../constitutional-memory", optional = true }
-continuity-runtime = { path = "../continuity-runtime", optional = true }
-effect-runtime = { path = "../effect-runtime", optional = true }
-mechanism-runtime = { path = "../mechanism-runtime", optional = true }
-constraint-compiler = { path = "../constraint-compiler" }
-forge-engine = { path = "../living-memory/living-memory" }
-forge-memory-bridge = { path = "../forge-memory-bridge" }
-kernel-execution = { path = "../kernel-execution" }
-kernel-oracles = { path = "../kernel-oracles" }
-knowledge-runtime = { path = "../knowledge-runtime" }
-recursive-kernel-core = { path = "../recursive-kernel-core" }
-semantic-memory = { path = "../semantic-memory" }
-semantic-memory-forge = { path = "../semantic-memory-forge" }
-verification-adjudication = { path = "../verification-adjudication" }
-verification-calibration = { path = "../verification-calibration" }
-verification-control = { path = "../verification-control" }
-verification-policy = { path = "../verification-policy" }
+assurance-runtime = { version = "0.1.0", path = "../assurance-runtime", optional = true }
+attestation-exchange = { version = "0.1.0", path = "../attestation-exchange", optional = true }
+authority-delegation = { version = "0.1.0", path = "../authority-delegation", optional = true }
+claim-ledger = { version = "0.1.1", path = "../claim-ledger", optional = true }
+constitutional-memory = { version = "0.1.0", path = "../constitutional-memory", optional = true }
+continuity-runtime = { version = "0.1.0", path = "../continuity-runtime", optional = true }
+effect-runtime = { version = "0.1.0", path = "../effect-runtime", optional = true }
+mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime", optional = true }
+constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
+forge-engine = { version = "0.2.0", path = "../living-memory/living-memory" }
+forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
+kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
+kernel-oracles = { version = "0.1.0", path = "../kernel-oracles" }
+knowledge-runtime = { version = "0.1.0", path = "../knowledge-runtime" }
+recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
+semantic-memory = { version = "0.5.8", path = "../semantic-memory" }
+semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
+verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }
+verification-calibration = { version = "0.1.0", path = "../verification-calibration" }
+verification-control = { version = "0.1.0", path = "../verification-control" }
+verification-policy = { version = "0.1.0", path = "../verification-policy" }
 schemars = { workspace = true }
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 blake3 = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
@@ -62,8 +62,8 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 rusqlite = { workspace = true }
 
 [dev-dependencies]
-llm-tool-runtime = { path = "../llm-tool-runtime" }
-semantic-memory = { path = "../semantic-memory", features = ["testing"] }
+llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
+semantic-memory = { version = "0.5.8", path = "../semantic-memory", features = ["testing"] }
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "time"] }
 uuid = { workspace = true, features = ["v4"] }

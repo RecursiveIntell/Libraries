@@ -5,7 +5,6 @@ edition = "2021"
 rust-version = "1.75"
 license = "MIT"
 readme = "README.md"
-publish = false
 description = "Workspace sandboxing and patch filesystem primitives"
 
 [dependencies]
