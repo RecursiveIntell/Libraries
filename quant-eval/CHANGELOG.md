@@ -4,6 +4,18 @@ All notable changes to `quant-eval` are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- HyperQuant real-corpus/qrels retrieval gate: `run_hyperquant_real_corpus_eval` compares exact f32 retrieval against HyperQuant Z1/A2 reconstructed-vector retrieval and emits `hyperquant-real-corpus-eval-v1` receipts.
+- BEIR/Scifact all-minilm receipt: 5,183 documents, 300 test queries, Z1 exact-rerank recovery@1 0.8667 / top-K overlap 0.5514, A2 exact-rerank recovery@1 0.8733 / top-K overlap 0.5910, both passing declared candidate-gate thresholds.
+- Receipt metrics now include recall@1/5/10/K, NDCG@K, top-K overlap, exact-rerank recovery@1, rank-drift mean/p95/max, score-error mean/p95/max, search timing, byte accounting, compression ratio, and explicit blockers.
+- Runnable examples `hyperquant_real_corpus_receipt` and `hyperquant_scifact_eval`, plus Scifact Ollama builder `tools/hyperquant_scifact/build_scifact_ollama.py` and stored receipts/summaries under `docs/codex-runs/`.
+
+### Claim boundary
+
+- The in-tree tiny fixture proves the reusable gate/API/receipt path. It is not BEIR/Scifact quality evidence or production admissibility.
+- The P2 Scifact receipt is BEIR/Scifact candidate-gate evidence for all-minilm embeddings only; it is not model-quality preservation evidence or production admissibility.
+
 ## [0.1.0] — 2026-06-02
 
 First crates.io release.
