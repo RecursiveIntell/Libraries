@@ -1,6 +1,6 @@
 //! # Job Queue
 //!
-//! Production-grade background job queue system extracted from tauri-queue.
+//! Production-grade background agent job queue system extracted from tauri-queue.
 //! Framework-agnostic — no Tauri dependency.
 //!
 //! ## Features
@@ -307,7 +307,7 @@ impl JobContext {
 ///
 /// ```ignore
 /// use serde::{Serialize, Deserialize};
-/// use job_queue::*;
+/// use agent_queue::*;
 ///
 /// #[derive(Debug, Clone, Serialize, Deserialize)]
 /// struct EmailJob {

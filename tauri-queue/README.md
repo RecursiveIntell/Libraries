@@ -1,6 +1,6 @@
 # tauri-queue
 
-Tauri integration for job-queue background job processing with frontend event bridging.
+Tauri integration for agent-queue background job processing with frontend event bridging.
 
 ## Example
 
@@ -14,7 +14,7 @@ let emitter = TauriEventEmitter::new(app_handle.clone());
 
 ## Ecosystem
 
-- **job-queue**: Core queue engine that Tauri-Queue wraps
+- **agent-queue**: Core queue engine that Tauri-Queue wraps
 - **stack-ids**: `TraceCtx` re-exported for frontend correlation
 
 ## stack-ids integration

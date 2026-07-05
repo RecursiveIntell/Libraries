@@ -39,6 +39,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "agent-queue"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "stack-ids",
+ "tempfile",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "ahash"
 version = "0.8.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -878,7 +895,7 @@ dependencies = [
 
 [[package]]
 name = "claim-ledger"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "blake3",
  "chrono",
@@ -2037,7 +2054,7 @@ dependencies = [
 
 [[package]]
 name = "fib-quant"
-version = "0.1.0-alpha.2"
+version = "0.1.0-beta.2"
 dependencies = [
  "blake3",
  "criterion 0.7.0",
@@ -2786,7 +2803,7 @@ dependencies = [
 
 [[package]]
 name = "gpu-backend"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 dependencies = [
  "blake3",
  "cudarc",
@@ -3587,23 +3604,6 @@ checksum = "38c0b942f458fe50cdac086d2f946512305e5631e720728f2a61aabcd47a6264"
 dependencies = [
  "quote",
  "syn 2.0.117",
-]
-
-[[package]]
-name = "job-queue"
-version = "0.2.0"
-dependencies = [
- "anyhow",
- "chrono",
- "rusqlite",
- "serde",
- "serde_json",
- "stack-ids",
- "tempfile",
- "thiserror 2.0.18",
- "tokio",
- "tracing",
- "uuid",
 ]
 
 [[package]]
@@ -6894,7 +6894,7 @@ dependencies = [
 name = "tauri-queue"
 version = "0.3.0"
 dependencies = [
- "job-queue",
+ "agent-queue",
  "serde",
  "serde_json",
  "stack-ids",

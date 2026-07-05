@@ -4,13 +4,13 @@ version = "0.3.0"
 edition = "2021"
 authors = ["Josh"]
 license = "MIT"
-description = "Tauri integration for job-queue background job processing"
+description = "Tauri integration for agent-queue background job processing"
 readme = "README.md"
 keywords = ["tauri", "queue", "jobs", "background", "async"]
 categories = ["asynchronous", "database"]
 
 [dependencies]
-job-queue = { version = "0.2.0", path = "../job-queue" }
+job_queue = { package = "agent-queue", version = "0.2.0", path = "../job-queue" }
 tauri = "2"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }

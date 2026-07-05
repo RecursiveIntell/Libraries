@@ -1,11 +1,11 @@
-# job-queue
+# agent-queue
 
-Production-grade background job queue with SQLite persistence, priority scheduling, and retry lineage tracking.
+Production-grade background agent job queue with SQLite persistence, priority scheduling, and retry lineage tracking.
 
 ## Example
 
 ```rust
-use job_queue::{QueueManager, JobHandler, JobContext};
+use agent_queue::{QueueManager, JobHandler, JobContext};
 use serde_json::json;
 
 let manager = QueueManager::new("jobs.db")?;
@@ -26,7 +26,7 @@ impl JobHandler for EmailHandler {
 ## Ecosystem
 
 - **stack-ids**: Provides `TraceCtx`, `AttemptId`, `TrialId` for trace correlation and retry lineage
-- **Tauri-Queue**: Bridges job-queue events to Tauri's frontend event system
+- **Tauri-Queue**: Bridges agent-queue events to Tauri's frontend event system
 
 ## stack-ids integration
 

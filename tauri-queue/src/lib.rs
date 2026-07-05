@@ -1,6 +1,6 @@
 //! # Tauri Queue
 //!
-//! Tauri integration for the `job-queue` background job processing system.
+//! Tauri integration for the `agent-queue` background job processing system.
 //!
 //! This crate provides a [`TauriEventEmitter`] that bridges job-queue events
 //! to Tauri's frontend event system, plus re-exports of all core job-queue types.
