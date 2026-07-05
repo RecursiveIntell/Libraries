@@ -97,11 +97,7 @@ pub fn start_http_server(port: u16, bridge: MemoryBridge, handle: Handle) {
     });
 }
 
-fn handle_connection(
-    mut stream: std::net::TcpStream,
-    bridge: MemoryBridge,
-    handle: Handle,
-) {
+fn handle_connection(mut stream: std::net::TcpStream, bridge: MemoryBridge, handle: Handle) {
     let mut reader = BufReader::new(stream.try_clone().expect("clone"));
     let mut request_line = String::new();
     if reader.read_line(&mut request_line).is_err() {
@@ -154,7 +150,9 @@ fn handle_connection(
         ("POST", "/maintenance/check") => handle_maintenance_check(&bridge, &handle),
         ("POST", "/maintenance/vacuum") => handle_maintenance_vacuum(&bridge, &handle),
         ("POST", "/maintenance/reembed") => handle_maintenance_reembed(&bridge, &handle),
-        ("POST", "/maintenance/reconcile") => handle_maintenance_reconcile(&body_str, &bridge, &handle),
+        ("POST", "/maintenance/reconcile") => {
+            handle_maintenance_reconcile(&body_str, &bridge, &handle)
+        }
         ("POST", "/maintenance/compact-hnsw") => handle_maintenance_compact_hnsw(&bridge, &handle),
         _ => (
             "404 Not Found",
@@ -195,7 +193,10 @@ fn handle_search(
     let namespaces: Option<Vec<String>> = params
         .get("namespaces")
         .and_then(|v| serde_json::from_value(v.clone()).ok());
-    let do_rerank = params.get("rerank").and_then(|v| v.as_bool()).unwrap_or(false);
+    let do_rerank = params
+        .get("rerank")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
 
     if query.is_empty() {
         return (
@@ -221,7 +222,9 @@ fn handle_search(
                 .map(|r| {
                     let namespace = match &r.source {
                         semantic_memory::SearchSource::Fact { namespace, .. } => namespace.clone(),
-                        semantic_memory::SearchSource::Chunk { document_title, .. } => document_title.clone(),
+                        semantic_memory::SearchSource::Chunk { document_title, .. } => {
+                            document_title.clone()
+                        }
                         _ => String::new(),
                     };
                     serde_json::json!({
@@ -304,7 +307,10 @@ fn handle_search_routed(
 
     let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
     let base_top_k = params.get("top_k").and_then(|v| v.as_u64()).unwrap_or(12) as usize;
-    let query_class = params.get("query_class").and_then(|v| v.as_str()).unwrap_or("A");
+    let query_class = params
+        .get("query_class")
+        .and_then(|v| v.as_str())
+        .unwrap_or("A");
     let namespaces: Option<Vec<String>> = params
         .get("namespaces")
         .and_then(|v| serde_json::from_value(v.clone()).ok());
@@ -312,7 +318,10 @@ fn handle_search_routed(
         .get("contradictions")
         .and_then(|v| serde_json::from_value(v.clone()).ok())
         .unwrap_or_default();
-    let group_by_community = params.get("group_by_community").and_then(|v| v.as_bool()).unwrap_or(false);
+    let group_by_community = params
+        .get("group_by_community")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
 
     if query.is_empty() {
         return (
@@ -402,11 +411,12 @@ fn handle_search_routed(
             if decision.decoder {
                 #[cfg(feature = "full")]
                 {
-                    use semantic_memory::factor_graph::{factors_from_edges, FactorGraph, FactorGraphConfig};
+                    use semantic_memory::factor_graph::{
+                        factors_from_edges, FactorGraph, FactorGraphConfig,
+                    };
 
-                    let graph_edges = block_in_place(|| {
-                        handle.block_on(store.list_all_graph_edges())
-                    });
+                    let graph_edges =
+                        block_in_place(|| handle.block_on(store.list_all_graph_edges()));
 
                     if let Ok(edges) = graph_edges {
                         let raw_edges: Vec<(
@@ -440,8 +450,7 @@ fn handle_search_routed(
                             .map(|r| (r.source.result_id(), r.score))
                             .collect();
                         let factors = factors_from_edges(&raw_edges);
-                        let graph =
-                            FactorGraph::new(&nodes, factors, FactorGraphConfig::default());
+                        let graph = FactorGraph::new(&nodes, factors, FactorGraphConfig::default());
                         let propagated = graph.propagate();
                         let top_beliefs = propagated.top_k(top_k);
 
@@ -485,7 +494,8 @@ fn handle_search_routed(
             // Discord second-order retrieval
             if plan.use_discord {
                 use semantic_memory::discord::DiscordScorer;
-                let direct_ids: Vec<String> = results.iter().map(|r| r.source.result_id()).collect();
+                let direct_ids: Vec<String> =
+                    results.iter().map(|r| r.source.result_id()).collect();
                 let existing_ids: std::collections::HashSet<String> =
                     direct_ids.iter().cloned().collect();
                 let edges_result = block_in_place(|| {
@@ -563,33 +573,23 @@ fn handle_search_routed(
                             member_to_comm.insert(m.clone(), c.id.clone());
                         }
                     }
-                    let mut groups: std::collections::HashMap<
-                        String,
-                        Vec<serde_json::Value>,
-                    > = std::collections::HashMap::new();
+                    let mut groups: std::collections::HashMap<String, Vec<serde_json::Value>> =
+                        std::collections::HashMap::new();
                     let mut ungrouped: Vec<serde_json::Value> = Vec::new();
                     for r in &json_results {
                         if let Some(rid) = r.get("result_id").and_then(|v| v.as_str()) {
                             match member_to_comm.get(rid).cloned() {
-                                Some(cid) => {
-                                    groups.entry(cid).or_default().push(r.clone())
-                                }
+                                Some(cid) => groups.entry(cid).or_default().push(r.clone()),
                                 None => ungrouped.push(r.clone()),
                             }
                         }
                     }
                     let mut map = serde_json::Map::new();
                     for (cid, items) in groups {
-                        map.insert(
-                            format!("community_{cid}"),
-                            serde_json::json!(items),
-                        );
+                        map.insert(format!("community_{cid}"), serde_json::json!(items));
                     }
                     if !ungrouped.is_empty() {
-                        map.insert(
-                            "ungrouped".to_string(),
-                            serde_json::json!(ungrouped),
-                        );
+                        map.insert("ungrouped".to_string(), serde_json::json!(ungrouped));
                     }
                     serde_json::Value::Object(map)
                 } else {
@@ -653,10 +653,7 @@ fn handle_search_routed(
     }
 }
 
-fn handle_stats(
-    bridge: &MemoryBridge,
-    handle: &Handle,
-) -> (&'static str, serde_json::Value) {
+fn handle_stats(bridge: &MemoryBridge, handle: &Handle) -> (&'static str, serde_json::Value) {
     let store = &bridge.store;
     let result = block_in_place(|| handle.block_on(store.stats()));
     match result {
@@ -787,8 +784,14 @@ fn handle_record_outcome(
     };
 
     let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
-    let outcome = params.get("outcome").and_then(|v| v.as_str()).unwrap_or("neutral");
-    let _query_class = params.get("query_class").and_then(|v| v.as_str()).unwrap_or("A");
+    let outcome = params
+        .get("outcome")
+        .and_then(|v| v.as_str())
+        .unwrap_or("neutral");
+    let _query_class = params
+        .get("query_class")
+        .and_then(|v| v.as_str())
+        .unwrap_or("A");
 
     if query.is_empty() {
         return (
@@ -920,9 +923,8 @@ fn handle_discord(
                 );
             }
             let store = &bridge.store;
-            let search_result = block_in_place(|| {
-                handle.block_on(store.search(query, Some(top_k), None, None))
-            });
+            let search_result =
+                block_in_place(|| handle.block_on(store.search(query, Some(top_k), None, None)));
             match search_result {
                 Ok(results) => results.iter().map(|r| r.source.result_id()).collect(),
                 Err(e) => {
@@ -945,11 +947,7 @@ fn handle_discord(
     let store = &bridge.store;
     // Load graph edges for the neighborhood
     let edges_result = block_in_place(|| {
-        handle.block_on(store.list_graph_edges_for_neighborhood(
-            direct_ids.clone(),
-            2,
-            200,
-        ))
+        handle.block_on(store.list_graph_edges_for_neighborhood(direct_ids.clone(), 2, 200))
     });
 
     let edges: Vec<semantic_memory::discord::GraphEdgeRef> = match edges_result {

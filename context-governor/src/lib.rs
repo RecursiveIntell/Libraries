@@ -2272,6 +2272,32 @@ pub struct FileContextStoreStatusV1 {
     pub total_bytes: u64,
     pub stale_tmp_files_removed: usize,
     pub index_built: bool,
+    pub searchable: bool,
+    pub last_receipt: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct FileContextStorePruneResultV1 {
+    pub schema: String,
+    pub kept_receipts: usize,
+    pub removed_receipts: usize,
+    pub total_bytes: u64,
+    pub index_built: bool,
+    pub last_receipt: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+struct PersistedReceiptIndexV1 {
+    schema: String,
+    receipt_ids: Vec<String>,
+    token_to_receipts: BTreeMap<String, Vec<String>>,
+}
+
+#[derive(Debug, Clone)]
+struct ReceiptFileInfo {
+    receipt_id: String,
+    path: std::path::PathBuf,
+    created_utc: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone)]
@@ -2304,6 +2330,7 @@ impl FileContextStore {
         std::fs::rename(&tmp_path, &path)?;
         // Invalidate the in-memory index so the next search rebuilds it
         *self.index.borrow_mut() = None;
+        self.rebuild_and_persist_index()?;
         Ok(path)
     }
 
@@ -2319,22 +2346,53 @@ impl FileContextStore {
     }
 
     pub fn list_receipts(&self) -> Result<Vec<String>, ContextGovernorError> {
-        Ok(self.scan_receipts()?.0)
+        Ok(self
+            .scan_receipts()?
+            .0
+            .into_iter()
+            .map(|info| info.receipt_id)
+            .collect())
     }
 
     pub fn status(&self) -> Result<FileContextStoreStatusV1, ContextGovernorError> {
         let (receipts, total_bytes, stale_tmp_files_removed) = self.scan_receipts()?;
+        let index_built =
+            self.index.borrow().is_some() || self.persisted_index_matches(&receipts)?;
         Ok(FileContextStoreStatusV1 {
             schema: "FileContextStoreStatusV1".to_string(),
             root: self.root.display().to_string(),
             receipt_count: receipts.len(),
             total_bytes,
             stale_tmp_files_removed,
-            index_built: self.index.borrow().is_some(),
+            index_built,
+            searchable: index_built || receipts.is_empty(),
+            last_receipt: receipts.last().map(|info| info.receipt_id.clone()),
         })
     }
 
-    fn scan_receipts(&self) -> Result<(Vec<String>, u64, usize), ContextGovernorError> {
+    pub fn prune_receipts_keep_last(
+        &self,
+        keep_last: usize,
+    ) -> Result<FileContextStorePruneResultV1, ContextGovernorError> {
+        let (receipts, _, _) = self.scan_receipts()?;
+        let remove_count = receipts.len().saturating_sub(keep_last);
+        for info in receipts.iter().take(remove_count) {
+            std::fs::remove_file(&info.path)?;
+        }
+        *self.index.borrow_mut() = None;
+        self.rebuild_and_persist_index()?;
+        let status = self.status()?;
+        Ok(FileContextStorePruneResultV1 {
+            schema: "FileContextStorePruneResultV1".to_string(),
+            kept_receipts: status.receipt_count,
+            removed_receipts: remove_count,
+            total_bytes: status.total_bytes,
+            index_built: status.index_built,
+            last_receipt: status.last_receipt,
+        })
+    }
+
+    fn scan_receipts(&self) -> Result<(Vec<ReceiptFileInfo>, u64, usize), ContextGovernorError> {
         if !self.root.exists() {
             return Ok((Vec::new(), 0, 0));
         }
@@ -2354,14 +2412,30 @@ impl FileContextStore {
             if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
                 continue;
             }
+            if path.file_name().and_then(|name| name.to_str()) == Some(".receipt-index.json") {
+                continue;
+            }
+            let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
+                continue;
+            };
             if let Ok(metadata) = entry.metadata() {
                 total_bytes = total_bytes.saturating_add(metadata.len());
-            }
-            if let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) {
-                ids.push(stem.to_string());
+                let created_utc = std::fs::read_to_string(&path)
+                    .ok()
+                    .and_then(|json| serde_json::from_str::<CompactResponse>(&json).ok())
+                    .map(|response| response.receipt.created_utc);
+                ids.push(ReceiptFileInfo {
+                    receipt_id: stem.to_string(),
+                    path,
+                    created_utc,
+                });
             }
         }
-        ids.sort();
+        ids.sort_by(|a, b| {
+            a.created_utc
+                .cmp(&b.created_utc)
+                .then_with(|| a.receipt_id.cmp(&b.receipt_id))
+        });
         Ok((ids, total_bytes, stale_tmp_files_removed))
     }
 
@@ -2406,6 +2480,74 @@ impl FileContextStore {
         Ok(idx)
     }
 
+    fn rebuild_and_persist_index(&self) -> Result<(), ContextGovernorError> {
+        let index = self.build_index()?;
+        self.persist_index(&index)?;
+        *self.index.borrow_mut() = Some(index);
+        Ok(())
+    }
+
+    fn persisted_index_matches(
+        &self,
+        receipts: &[ReceiptFileInfo],
+    ) -> Result<bool, ContextGovernorError> {
+        let Some(index) = self.load_persisted_index()? else {
+            return Ok(false);
+        };
+        let receipt_ids = receipts
+            .iter()
+            .map(|info| info.receipt_id.clone())
+            .collect::<Vec<_>>();
+        Ok(index.receipt_ids == receipt_ids)
+    }
+
+    fn load_persisted_index(
+        &self,
+    ) -> Result<Option<PersistedReceiptIndexV1>, ContextGovernorError> {
+        let path = self.index_path();
+        if !path.exists() {
+            return Ok(None);
+        }
+        let json = std::fs::read_to_string(path)?;
+        Ok(Some(serde_json::from_str(&json)?))
+    }
+
+    fn persist_index(
+        &self,
+        index: &std::collections::HashMap<String, std::collections::HashSet<String>>,
+    ) -> Result<(), ContextGovernorError> {
+        std::fs::create_dir_all(&self.root)?;
+        let receipt_ids = self.list_receipts()?;
+        let token_to_receipts = index
+            .iter()
+            .map(|(token, receipt_set)| {
+                let mut receipts = receipt_set.iter().cloned().collect::<Vec<_>>();
+                receipts.sort();
+                (token.clone(), receipts)
+            })
+            .collect::<BTreeMap<_, _>>();
+        let persisted = PersistedReceiptIndexV1 {
+            schema: "PersistedReceiptIndexV1".to_string(),
+            receipt_ids,
+            token_to_receipts,
+        };
+        let path = self.index_path();
+        let tmp_path = path.with_extension("json.tmp");
+        std::fs::write(&tmp_path, serde_json::to_string_pretty(&persisted)?)?;
+        std::fs::rename(tmp_path, path)?;
+        Ok(())
+    }
+
+    fn index_from_persisted(
+        persisted: PersistedReceiptIndexV1,
+    ) -> std::collections::HashMap<String, std::collections::HashSet<String>> {
+        persisted
+            .token_to_receipts
+            .into_iter()
+            .map(|(token, receipts)| (token, receipts.into_iter().collect()))
+            .collect()
+    }
+
     /// Ensure the index is built and return a reference to it.
     fn with_index<F, R>(&self, f: F) -> Result<R, ContextGovernorError>
     where
@@ -2413,7 +2555,21 @@ impl FileContextStore {
     {
         let mut guard = self.index.borrow_mut();
         if guard.is_none() {
-            *guard = Some(self.build_index()?);
+            let receipts = self.scan_receipts()?.0;
+            if let Some(persisted) = self.load_persisted_index()? {
+                let receipt_ids = receipts
+                    .iter()
+                    .map(|info| info.receipt_id.clone())
+                    .collect::<Vec<_>>();
+                if persisted.receipt_ids == receipt_ids {
+                    *guard = Some(Self::index_from_persisted(persisted));
+                }
+            }
+            if guard.is_none() {
+                let index = self.build_index()?;
+                self.persist_index(&index)?;
+                *guard = Some(index);
+            }
         }
         Ok(f(guard.as_ref().unwrap()))
     }
@@ -2484,5 +2640,9 @@ impl FileContextStore {
             })
             .collect::<String>();
         self.root.join(format!("{safe}.json"))
+    }
+
+    fn index_path(&self) -> std::path::PathBuf {
+        self.root.join(".receipt-index.json")
     }
 }

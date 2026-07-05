@@ -121,16 +121,7 @@ fn load_stored_edge_refs(
 /// edge tuples (source, target, GraphEdgeType, weight, metadata_json).
 fn load_stored_factor_edges(
     store: &semantic_memory::MemoryStore,
-) -> Result<
-    Vec<(
-        String,
-        String,
-        semantic_memory::GraphEdgeType,
-        f64,
-        Option<String>,
-    )>,
-    ErrorData,
-> {
+) -> Result<Vec<FactorEdgeTuple>, ErrorData> {
     let edges =
         tokio::task::block_in_place(|| Handle::current().block_on(store.list_all_graph_edges()))
             .map_err(|e| {
@@ -246,20 +237,19 @@ fn load_neighborhood_edge_refs(
     Ok(refs)
 }
 
+type FactorEdgeTuple = (
+    String,
+    String,
+    semantic_memory::GraphEdgeType,
+    f64,
+    Option<String>,
+);
+
 /// Helper: load graph edges for a neighborhood as factor graph tuples.
 fn load_neighborhood_factor_edges(
     store: &semantic_memory::MemoryStore,
     seed_ids: &[String],
-) -> Result<
-    Vec<(
-        String,
-        String,
-        semantic_memory::GraphEdgeType,
-        f64,
-        Option<String>,
-    )>,
-    ErrorData,
-> {
+) -> Result<Vec<FactorEdgeTuple>, ErrorData> {
     if seed_ids.is_empty() {
         return load_stored_factor_edges(store);
     }
@@ -446,8 +436,8 @@ impl SemanticMemoryServer {
     }
 
     // DEPRECATED #[tool(
-        // description = "Search with full score breakdown showing how BM25 and vector scores combine. Useful for debugging retrieval quality.",
-        // annotations(read_only_hint = true)
+    // description = "Search with full score breakdown showing how BM25 and vector scores combine. Useful for debugging retrieval quality.",
+    // annotations(read_only_hint = true)
     // )]
     #[allow(dead_code)]
     fn sm_search_explained(
@@ -604,11 +594,10 @@ impl SemanticMemoryServer {
                         .send()
                     {
                         if let Ok(v) = resp.json::<serde_json::Value>() {
-                            if let Some(response_str) =
-                                v.get("response").and_then(|r| r.as_str())
-                            {
+                            if let Some(response_str) = v.get("response").and_then(|r| r.as_str()) {
                                 // Use boundary compiler for robust JSON parsing with duplicate-key rejection
-                                let parsed_result = boundary_compiler::parse_with_dup_check(response_str.trim());
+                                let parsed_result =
+                                    boundary_compiler::parse_with_dup_check(response_str.trim());
                                 if let Ok(parsed) = parsed_result {
                                     if let Some(entities) =
                                         parsed.get("entities").and_then(|e| e.as_array())
@@ -620,17 +609,16 @@ impl SemanticMemoryServer {
                                             {
                                                 let entity_node = format!("entity:{name}");
                                                 let _ = tokio::task::block_in_place(|| {
-                                                    Handle::current().block_on(
-                                                        store.add_graph_edge(
-                                                            &fact_node,
-                                                            &entity_node,
-                                                            semantic_memory::GraphEdgeType::Entity {
-                                                                relation: "mentions".to_string(),
-                                                            },
-                                                            1.0,
-                                                            None,
-                                                        ),
-                                                    )
+                                                    Handle::current()
+                                                        .block_on(store.add_graph_edge(
+                                                        &fact_node,
+                                                        &entity_node,
+                                                        semantic_memory::GraphEdgeType::Entity {
+                                                            relation: "mentions".to_string(),
+                                                        },
+                                                        1.0,
+                                                        None,
+                                                    ))
                                                 });
                                             }
                                         }
@@ -1015,8 +1003,8 @@ impl SemanticMemoryServer {
     // ── Conversation / session tools (v0.3.0) ────────────────────────
 
     // DEPRECATED #[tool(
-        // description = "Create a conversation session (container for messages). Returns session id. Use to persist history recallable via sm_search_conversations.",
-        // annotations(idempotent_hint = true)
+    // description = "Create a conversation session (container for messages). Returns session id. Use to persist history recallable via sm_search_conversations.",
+    // annotations(idempotent_hint = true)
     // )]
     #[allow(dead_code)]
     fn sm_create_session(
@@ -1042,7 +1030,7 @@ impl SemanticMemoryServer {
     }
 
     // DEPRECATED #[tool(
-        // description = "Append a message to a session. role: user|assistant|system|tool. Message is embedded and FTS-indexed. Returns message id."
+    // description = "Append a message to a session. role: user|assistant|system|tool. Message is embedded and FTS-indexed. Returns message id."
     // )]
     #[allow(dead_code)]
     fn sm_add_message(
@@ -1086,8 +1074,10 @@ impl SemanticMemoryServer {
         }
     }
 
-    // DEPRECATED #[tool(description = "List recent conversation sessions (newest first) with message counts.", annotations(read_only_hint = true))]
-    #[allow(dead_code)]
+    #[tool(
+        description = "List recent conversation sessions (newest first) with message counts.",
+        annotations(read_only_hint = true)
+    )]
     fn sm_list_sessions(
         &self,
         Parameters(ListSessionsParams { limit, offset }): Parameters<ListSessionsParams>,
@@ -1117,11 +1107,10 @@ impl SemanticMemoryServer {
         }
     }
 
-    // DEPRECATED #[tool(
-        // description = "Get most recent messages from a session within a token budget (default 4000), chronological order. Returns role, content, timestamps.",
-        // annotations(read_only_hint = true)
-    // )]
-    #[allow(dead_code)]
+    #[tool(
+        description = "Get most recent messages from a session within a token budget (default 4000), chronological order. Returns role, content, timestamps.",
+        annotations(read_only_hint = true)
+    )]
     fn sm_get_messages(
         &self,
         Parameters(GetMessagesParams {
@@ -1247,12 +1236,11 @@ impl SemanticMemoryServer {
 
         // Load persisted RL routing policy (or default if none saved yet)
         let store = &self.bridge.store;
-        let policy = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.load_routing_policy())
-        })
-        .ok()
-        .flatten()
-        .unwrap_or_default();
+        let policy =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.load_routing_policy()))
+                .ok()
+                .flatten()
+                .unwrap_or_default();
         let profile = QueryProfile::from_query(&query);
         let decision = route_with_rl(&policy, &profile);
         let contras = contradictions.unwrap_or_default();
@@ -1403,14 +1391,11 @@ impl SemanticMemoryServer {
 
                 if plan.use_discord {
                     use semantic_memory::discord::DiscordScorer;
-                    let direct_ids: Vec<String> = result_refs
-                        .iter()
-                        .map(|r| r.source.result_id())
-                        .collect();
+                    let direct_ids: Vec<String> =
+                        result_refs.iter().map(|r| r.source.result_id()).collect();
                     let existing_ids: std::collections::HashSet<String> =
                         direct_ids.iter().cloned().collect();
-                    if let Ok(edges) =
-                        load_neighborhood_edge_refs(&self.bridge.store, &direct_ids)
+                    if let Ok(edges) = load_neighborhood_edge_refs(&self.bridge.store, &direct_ids)
                     {
                         let scorer = DiscordScorer::with_defaults();
                         let discord_hits = scorer.score(&direct_ids, &edges);
@@ -1461,62 +1446,49 @@ impl SemanticMemoryServer {
                 }
 
                 // Community grouping (opt-in).
-                let grouped_results_payload: serde_json::Value =
-                    if group_by_community == Some(true) {
-                        let seed_ids: Vec<String> = result_refs
-                            .iter()
-                            .take(k)
-                            .map(|r| r.source.result_id())
-                            .collect();
-                        let edges =
-                            load_neighborhood_edge_pairs(store, &seed_ids).unwrap_or_default();
-                        if !edges.is_empty() {
-                            use semantic_memory::community::detect_communities;
-                            let communities = detect_communities(&edges, 1.0, 42);
-                            let mut member_to_comm: std::collections::HashMap<String, String> =
-                                std::collections::HashMap::new();
-                            for c in &communities {
-                                for m in &c.members {
-                                    member_to_comm.insert(m.clone(), c.id.clone());
-                                }
+                let grouped_results_payload: serde_json::Value = if group_by_community == Some(true)
+                {
+                    let seed_ids: Vec<String> = result_refs
+                        .iter()
+                        .take(k)
+                        .map(|r| r.source.result_id())
+                        .collect();
+                    let edges = load_neighborhood_edge_pairs(store, &seed_ids).unwrap_or_default();
+                    if !edges.is_empty() {
+                        use semantic_memory::community::detect_communities;
+                        let communities = detect_communities(&edges, 1.0, 42);
+                        let mut member_to_comm: std::collections::HashMap<String, String> =
+                            std::collections::HashMap::new();
+                        for c in &communities {
+                            for m in &c.members {
+                                member_to_comm.insert(m.clone(), c.id.clone());
                             }
-                            let mut groups: std::collections::HashMap<
-                                String,
-                                Vec<serde_json::Value>,
-                            > = std::collections::HashMap::new();
-                            let mut ungrouped: Vec<serde_json::Value> = Vec::new();
-                            for r in &json_results {
-                                if let Some(rid) =
-                                    r.get("result_id").and_then(|v| v.as_str())
-                                {
-                                    match member_to_comm.get(rid).cloned() {
-                                        Some(cid) => {
-                                            groups.entry(cid).or_default().push(r.clone())
-                                        }
-                                        None => ungrouped.push(r.clone()),
-                                    }
-                                }
-                            }
-                            let mut map = serde_json::Map::new();
-                            for (cid, items) in groups {
-                                map.insert(
-                                    format!("community_{cid}"),
-                                    serde_json::json!(items),
-                                );
-                            }
-                            if !ungrouped.is_empty() {
-                                map.insert(
-                                    "ungrouped".to_string(),
-                                    serde_json::json!(ungrouped),
-                                );
-                            }
-                            serde_json::Value::Object(map)
-                        } else {
-                            serde_json::Value::Null
                         }
+                        let mut groups: std::collections::HashMap<String, Vec<serde_json::Value>> =
+                            std::collections::HashMap::new();
+                        let mut ungrouped: Vec<serde_json::Value> = Vec::new();
+                        for r in &json_results {
+                            if let Some(rid) = r.get("result_id").and_then(|v| v.as_str()) {
+                                match member_to_comm.get(rid).cloned() {
+                                    Some(cid) => groups.entry(cid).or_default().push(r.clone()),
+                                    None => ungrouped.push(r.clone()),
+                                }
+                            }
+                        }
+                        let mut map = serde_json::Map::new();
+                        for (cid, items) in groups {
+                            map.insert(format!("community_{cid}"), serde_json::json!(items));
+                        }
+                        if !ungrouped.is_empty() {
+                            map.insert("ungrouped".to_string(), serde_json::json!(ungrouped));
+                        }
+                        serde_json::Value::Object(map)
                     } else {
                         serde_json::Value::Null
-                    };
+                    }
+                } else {
+                    serde_json::Value::Null
+                };
 
                 // Task 7: Auto-call topology when routing returns Class D (SYNTHESIS) and >10 results.
                 let mut topology_payload = serde_json::json!({ "auto_called": false });
@@ -1658,7 +1630,9 @@ impl SemanticMemoryServer {
     )]
     fn sm_detect_contradictions(
         &self,
-        Parameters(DetectContradictionsParams { query, top_k }): Parameters<DetectContradictionsParams>,
+        Parameters(DetectContradictionsParams { query, top_k }): Parameters<
+            DetectContradictionsParams,
+        >,
     ) -> Result<String, ErrorData> {
         use semantic_memory::contradiction_detect::{detect_contradictions, DetectorConfig};
 
@@ -1738,7 +1712,7 @@ impl SemanticMemoryServer {
         };
 
         // SM-AUD-015: Validate confidence is finite and in [0, 1].
-        if !confidence.is_finite() || confidence < 0.0 || confidence > 1.0 {
+        if !confidence.is_finite() || !(0.0..=1.0).contains(&confidence) {
             return Err(ErrorData::invalid_params(
                 format!("confidence must be a finite value in [0.0, 1.0], got {confidence}"),
                 None,
@@ -1816,16 +1790,19 @@ impl SemanticMemoryServer {
             "betti_0": 0usize,
             "betti_1": 0usize,
         });
+        #[allow(unused_mut)]
         let mut topology_error: Option<String> = None;
 
         let mut communities: Vec<serde_json::Value> = Vec::new();
         let mut community_contradictions: Vec<serde_json::Value> = Vec::new();
+        #[allow(unused_mut)]
         let mut community_error: Option<String> = None;
 
         let mut subgraph_assessment = serde_json::json!({
             "subgraphs_identified": 0usize,
             "subgraphs_pruned": 0usize,
         });
+        #[allow(unused_mut)]
         let mut subgraph_error: Option<String> = None;
 
         #[cfg(feature = "full")]
@@ -1835,117 +1812,93 @@ impl SemanticMemoryServer {
             if !stored_edges.is_empty() {
                 let analysis_edges = stored_edges.clone();
 
-                let topology_result = (|| -> Result<(), String> {
-                    use semantic_memory::topology::{compute_betti_numbers, find_voids};
+                use semantic_memory::topology::{compute_betti_numbers, find_voids};
 
-                    let mut adjacency: HashMap<String, Vec<String>> = HashMap::new();
-                    for (left, right) in &analysis_edges {
-                        adjacency
-                            .entry(left.clone())
-                            .or_default()
-                            .push(right.clone());
-                        adjacency
-                            .entry(right.clone())
-                            .or_default()
-                            .push(left.clone());
-                    }
-
-                    let betti_numbers = compute_betti_numbers(&adjacency);
-                    betti = serde_json::json!({
-                        "betti_0": betti_numbers.betti_0,
-                        "betti_1": betti_numbers.betti_1,
-                    });
-
-                    topology_voids = find_voids(&analysis_edges)
-                        .into_iter()
-                        .map(|v| {
-                            serde_json::json!({
-                                "description": v.description,
-                                "void_type": format!("{:?}", v.void_type),
-                                "nearby_items": v.nearby_items,
-                                "suggested_connections": v.suggested_connections,
-                            })
-                        })
-                        .collect();
-
-                    Ok(())
-                })();
-
-                if let Err(e) = topology_result {
-                    topology_error = Some(e);
+                let mut adjacency: HashMap<String, Vec<String>> = HashMap::new();
+                for (left, right) in &analysis_edges {
+                    adjacency
+                        .entry(left.clone())
+                        .or_default()
+                        .push(right.clone());
+                    adjacency
+                        .entry(right.clone())
+                        .or_default()
+                        .push(left.clone());
                 }
 
-                let community_result = (|| -> Result<(), String> {
-                    use semantic_memory::community::{
-                        community_contradiction_scan, detect_communities,
-                    };
+                let betti_numbers = compute_betti_numbers(&adjacency);
+                betti = serde_json::json!({
+                    "betti_0": betti_numbers.betti_0,
+                    "betti_1": betti_numbers.betti_1,
+                });
 
-                    let detected = detect_communities(&analysis_edges, 1.0, 42);
-                    communities = detected
-                        .iter()
-                        .map(|c| {
-                            serde_json::json!({
-                                "id": c.id,
-                                "members": c.members,
-                                "level": c.level,
-                                "parent": c.parent,
-                                "member_count": c.members.len(),
-                            })
+                topology_voids = find_voids(&analysis_edges)
+                    .into_iter()
+                    .map(|v| {
+                        serde_json::json!({
+                            "description": v.description,
+                            "void_type": format!("{:?}", v.void_type),
+                            "nearby_items": v.nearby_items,
+                            "suggested_connections": v.suggested_connections,
                         })
-                        .collect();
+                    })
+                    .collect();
 
-                    community_contradictions = community_contradiction_scan(&detected, &[])
-                        .into_iter()
-                        .map(|cc| {
-                            serde_json::json!({
-                                "community_id": cc.community_id,
-                                "item_a": cc.item_a,
-                                "item_b": cc.item_b,
-                                "description": cc.description,
-                            })
+                use semantic_memory::community::{
+                    community_contradiction_scan, detect_communities,
+                };
+
+                let detected = detect_communities(&analysis_edges, 1.0, 42);
+                communities = detected
+                    .iter()
+                    .map(|c| {
+                        serde_json::json!({
+                            "id": c.id,
+                            "members": c.members,
+                            "level": c.level,
+                            "parent": c.parent,
+                            "member_count": c.members.len(),
                         })
-                        .collect();
+                    })
+                    .collect();
 
-                    Ok(())
-                })();
+                community_contradictions = community_contradiction_scan(&detected, &[])
+                    .into_iter()
+                    .map(|cc| {
+                        serde_json::json!({
+                            "community_id": cc.community_id,
+                            "item_a": cc.item_a,
+                            "item_b": cc.item_b,
+                            "description": cc.description,
+                        })
+                    })
+                    .collect();
 
-                if let Err(e) = community_result {
-                    community_error = Some(e);
+                use semantic_memory::integration::autonomous_subgraph_maintenance;
+                use semantic_memory::subgraph_pruning::AccessLog;
+                use std::collections::HashSet;
+
+                let mut access_items: HashSet<String> = HashSet::new();
+                for (left, right) in &analysis_edges {
+                    access_items.insert(left.clone());
+                    access_items.insert(right.clone());
                 }
 
-                let subgraph_result = (|| -> Result<(), String> {
-                    use semantic_memory::integration::autonomous_subgraph_maintenance;
-                    use semantic_memory::subgraph_pruning::AccessLog;
-                    use std::collections::HashSet;
+                let access_logs = access_items
+                    .into_iter()
+                    .map(|item| AccessLog {
+                        item_id: item,
+                        access_count: 1,
+                        last_accessed: "1970-01-01T00:00:00Z".to_string(),
+                    })
+                    .collect::<Vec<_>>();
 
-                    let mut access_items: HashSet<String> = HashSet::new();
-                    for (left, right) in &analysis_edges {
-                        access_items.insert(left.clone());
-                        access_items.insert(right.clone());
-                    }
-
-                    let access_logs = access_items
-                        .into_iter()
-                        .map(|item| AccessLog {
-                            item_id: item,
-                            access_count: 1,
-                            last_accessed: "1970-01-01T00:00:00Z".to_string(),
-                        })
-                        .collect::<Vec<_>>();
-
-                    let report =
-                        autonomous_subgraph_maintenance(&analysis_edges, &access_logs, &[], 0);
-                    subgraph_assessment = serde_json::json!({
-                        "subgraphs_identified": report.subgraphs_identified,
-                        "subgraphs_pruned": report.subgraphs_pruned,
-                        "summary": report.summary,
-                    });
-                    Ok(())
-                })();
-
-                if let Err(e) = subgraph_result {
-                    subgraph_error = Some(e);
-                }
+                let report = autonomous_subgraph_maintenance(&analysis_edges, &access_logs, &[], 0);
+                subgraph_assessment = serde_json::json!({
+                    "subgraphs_identified": report.subgraphs_identified,
+                    "subgraphs_pruned": report.subgraphs_pruned,
+                    "summary": report.summary,
+                });
             }
         }
 
@@ -2043,7 +1996,7 @@ impl SemanticMemoryServer {
 
         // SM-AUD-015: Validate numeric params are finite and in range.
         if let Some(cs) = params.cosine_similarity {
-            if !cs.is_finite() || cs < 0.0 || cs > 1.0 {
+            if !cs.is_finite() || !(0.0..=1.0).contains(&cs) {
                 return Err(ErrorData::invalid_params(
                     format!("cosine_similarity must be finite and in [0.0, 1.0], got {cs}"),
                     None,
@@ -2051,7 +2004,7 @@ impl SemanticMemoryServer {
             }
         }
         if let Some(conf) = params.confidence {
-            if !conf.is_finite() || conf < 0.0 || conf > 1.0 {
+            if !conf.is_finite() || !(0.0..=1.0).contains(&conf) {
                 return Err(ErrorData::invalid_params(
                     format!("confidence must be finite and in [0.0, 1.0], got {conf}"),
                     None,
@@ -2416,9 +2369,13 @@ impl SemanticMemoryServer {
         &self,
         Parameters(DeleteFactParams { fact_id }): Parameters<DeleteFactParams>,
     ) -> Result<String, ErrorData> {
-        let bare = fact_id.strip_prefix("fact:").unwrap_or(&fact_id).to_string();
+        let bare = fact_id
+            .strip_prefix("fact:")
+            .unwrap_or(&fact_id)
+            .to_string();
         let store = &self.bridge.store;
-        let result = tokio::task::block_in_place(|| Handle::current().block_on(store.delete_fact(&bare)));
+        let result =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.delete_fact(&bare)));
         match result {
             Ok(()) => json_to_string(&serde_json::json!({
                 "ok": true,
@@ -2426,7 +2383,10 @@ impl SemanticMemoryServer {
                 "fact_id": format!("fact:{bare}"),
                 "message": "Fact permanently deleted",
             })),
-            Err(e) => Err(ErrorData::internal_error(format!("delete_fact error: {e}"), None)),
+            Err(e) => Err(ErrorData::internal_error(
+                format!("delete_fact error: {e}"),
+                None,
+            )),
         }
     }
 
@@ -2439,7 +2399,9 @@ impl SemanticMemoryServer {
         Parameters(DeleteNamespaceParams { namespace }): Parameters<DeleteNamespaceParams>,
     ) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
-        let result = tokio::task::block_in_place(|| Handle::current().block_on(store.delete_namespace(&namespace)));
+        let result = tokio::task::block_in_place(|| {
+            Handle::current().block_on(store.delete_namespace(&namespace))
+        });
         match result {
             Ok(r) => json_to_string(&serde_json::json!({
                 "ok": true,
@@ -2455,7 +2417,10 @@ impl SemanticMemoryServer {
                 },
                 "message": "Namespace permanently deleted",
             })),
-            Err(e) => Err(ErrorData::internal_error(format!("delete_namespace error: {e}"), None)),
+            Err(e) => Err(ErrorData::internal_error(
+                format!("delete_namespace error: {e}"),
+                None,
+            )),
         }
     }
 
@@ -2467,16 +2432,24 @@ impl SemanticMemoryServer {
         &self,
         Parameters(UpdateFactParams { fact_id, content }): Parameters<UpdateFactParams>,
     ) -> Result<String, ErrorData> {
-        let bare = fact_id.strip_prefix("fact:").unwrap_or(&fact_id).to_string();
+        let bare = fact_id
+            .strip_prefix("fact:")
+            .unwrap_or(&fact_id)
+            .to_string();
         let store = &self.bridge.store;
-        let result = tokio::task::block_in_place(|| Handle::current().block_on(store.update_fact(&bare, &content)));
+        let result = tokio::task::block_in_place(|| {
+            Handle::current().block_on(store.update_fact(&bare, &content))
+        });
         match result {
             Ok(()) => json_to_string(&serde_json::json!({
                 "ok": true,
                 "fact_id": format!("fact:{bare}"),
                 "message": "Fact content updated and re-embedded",
             })),
-            Err(e) => Err(ErrorData::internal_error(format!("update_fact error: {e}"), None)),
+            Err(e) => Err(ErrorData::internal_error(
+                format!("update_fact error: {e}"),
+                None,
+            )),
         }
     }
 
@@ -2485,15 +2458,27 @@ impl SemanticMemoryServer {
     )]
     fn sm_consolidate_facts(
         &self,
-        Parameters(ConsolidateFactsParams { keep_id, supersede_id, merged_content }): Parameters<ConsolidateFactsParams>,
+        Parameters(ConsolidateFactsParams {
+            keep_id,
+            supersede_id,
+            merged_content,
+        }): Parameters<ConsolidateFactsParams>,
     ) -> Result<String, ErrorData> {
-        let keep_bare = keep_id.strip_prefix("fact:").unwrap_or(&keep_id).to_string();
-        let sup_bare = supersede_id.strip_prefix("fact:").unwrap_or(&supersede_id).to_string();
+        let keep_bare = keep_id
+            .strip_prefix("fact:")
+            .unwrap_or(&keep_id)
+            .to_string();
+        let sup_bare = supersede_id
+            .strip_prefix("fact:")
+            .unwrap_or(&supersede_id)
+            .to_string();
         let store = &self.bridge.store;
 
         // Get both facts to determine namespace and merge content
-        let keep_fact = tokio::task::block_in_place(|| Handle::current().block_on(store.get_fact(&keep_bare)));
-        let sup_fact = tokio::task::block_in_place(|| Handle::current().block_on(store.get_fact(&sup_bare)));
+        let keep_fact =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.get_fact(&keep_bare)));
+        let sup_fact =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.get_fact(&sup_bare)));
 
         let (namespace, final_content) = match (keep_fact, sup_fact) {
             (Ok(Some(k)), Ok(Some(s))) => {
@@ -2519,7 +2504,7 @@ impl SemanticMemoryServer {
             ),
             (Err(_), _) | (Ok(None), _) => {
                 return Err(ErrorData::internal_error(
-                    format!("keep fact not found"),
+                    "keep fact not found".to_string(),
                     None,
                 ));
             }
@@ -2530,7 +2515,10 @@ impl SemanticMemoryServer {
             Handle::current().block_on(store.update_fact(&keep_bare, &final_content))
         });
         if let Err(e) = update_result {
-            return Err(ErrorData::internal_error(format!("update keep fact error: {e}"), None));
+            return Err(ErrorData::internal_error(
+                format!("update keep fact error: {e}"),
+                None,
+            ));
         }
 
         // Supersede the other fact: add a new fact with merged content and link with "supersedes" edge
@@ -2603,12 +2591,11 @@ impl SemanticMemoryServer {
 
         let store = &self.bridge.store;
         // Load persisted policy (or default if none saved yet)
-        let mut policy = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.load_routing_policy())
-        })
-        .ok()
-        .flatten()
-        .unwrap_or_default();
+        let mut policy =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.load_routing_policy()))
+                .ok()
+                .flatten()
+                .unwrap_or_default();
         record_routing_outcome(&mut policy, &profile, &decision, outcome_enum);
         // Save updated policy
         let _ = tokio::task::block_in_place(|| {
@@ -2647,19 +2634,29 @@ impl SemanticMemoryServer {
     )]
     fn sm_create_claim(
         &self,
-        Parameters(CreateClaimParams { fact_id, source_span }): Parameters<CreateClaimParams>,
+        Parameters(CreateClaimParams {
+            fact_id,
+            source_span,
+        }): Parameters<CreateClaimParams>,
     ) -> Result<String, ErrorData> {
         use claim_ledger::Claim;
-        let bare = fact_id.strip_prefix("fact:").unwrap_or(&fact_id).to_string();
+        let bare = fact_id
+            .strip_prefix("fact:")
+            .unwrap_or(&fact_id)
+            .to_string();
         let store = &self.bridge.store;
 
         // Get the fact content
-        let fact = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.get_fact(&bare))
-        });
+        let fact =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.get_fact(&bare)));
         let fact = match fact {
             Ok(Some(f)) => f,
-            _ => return Err(ErrorData::internal_error(format!("fact not found: {fact_id}"), None)),
+            _ => {
+                return Err(ErrorData::internal_error(
+                    format!("fact not found: {fact_id}"),
+                    None,
+                ))
+            }
         };
 
         // Create a claim from the fact
@@ -2723,7 +2720,11 @@ impl SemanticMemoryServer {
     )]
     fn sm_judge_support(
         &self,
-        Parameters(JudgeSupportParams { claim_id, judgment, rationale }): Parameters<JudgeSupportParams>,
+        Parameters(JudgeSupportParams {
+            claim_id,
+            judgment,
+            rationale,
+        }): Parameters<JudgeSupportParams>,
     ) -> Result<String, ErrorData> {
         use claim_ledger::{SupportJudgment, SupportState};
         let state = match judgment.to_lowercase().as_str() {
@@ -2766,13 +2767,16 @@ impl SemanticMemoryServer {
     )]
     fn sm_search_as_of(
         &self,
-        Parameters(SearchAsOfParams { query, as_of_date, top_k, namespace }): Parameters<SearchAsOfParams>,
+        Parameters(SearchAsOfParams {
+            query,
+            as_of_date,
+            top_k,
+            namespace,
+        }): Parameters<SearchAsOfParams>,
     ) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
         let k = top_k.unwrap_or(5);
-        let ns_slice: Option<Vec<&str>> = namespace
-            .as_ref()
-            .map(|n| vec![n.as_str()]);
+        let ns_slice: Option<Vec<&str>> = namespace.as_ref().map(|n| vec![n.as_str()]);
 
         // Parse the as-of date
         let _as_of = chrono::DateTime::parse_from_rfc3339(&as_of_date)
@@ -2785,7 +2789,8 @@ impl SemanticMemoryServer {
         // Search normally, then filter by date
         let results = tokio::task::block_in_place(|| {
             Handle::current().block_on(store.search(&query, Some(k * 2), ns_slice.as_deref(), None))
-        }).map_err(|e| ErrorData::internal_error(format!("search error: {e}"), None))?;
+        })
+        .map_err(|e| ErrorData::internal_error(format!("search error: {e}"), None))?;
 
         // Filter: only include results that existed as of the date
         // Since SearchResult doesn't carry updated_at directly, we return all
@@ -2822,28 +2827,76 @@ impl SemanticMemoryServer {
     )]
     fn sm_verify_claim(
         &self,
-        Parameters(VerifyClaimParams { claim, risk_class, evidence_refs, refutation_attempted }): Parameters<VerifyClaimParams>,
+        Parameters(VerifyClaimParams {
+            claim,
+            risk_class,
+            evidence_refs,
+            refutation_attempted,
+        }): Parameters<VerifyClaimParams>,
     ) -> Result<String, ErrorData> {
         let risk = risk_class.to_lowercase();
-        let has_evidence = evidence_refs.as_ref().map(|v| !v.is_empty()).unwrap_or(false);
+        let has_evidence = evidence_refs
+            .as_ref()
+            .map(|v| !v.is_empty())
+            .unwrap_or(false);
         let refuted = refutation_attempted.unwrap_or(false);
 
         // Required checks by risk class
         let (needs_replay, needs_falsification, disposition, rationale) = match risk.as_str() {
-            "low" => (false, false, "promote", "Low risk: cheap checks only, claim can be promoted"),
-            "medium" => (true, false, "promote", "Medium risk: replay check required, claim can be promoted"),
-            "high" => (true, true, if refuted { "quarantine" } else if has_evidence { "promote" } else { "defer" },
-                if refuted { "High risk: refutation attempted, claim quarantined" }
-                else if has_evidence { "High risk: falsification passed with evidence, claim promoted" }
-                else { "High risk: no evidence provided, claim deferred" }),
-            "critical" => (true, true, if refuted { "quarantine" } else if has_evidence && refutation_attempted == Some(true) { "promote" } else { "defer" },
-                if refuted { "Critical risk: refutation found, claim quarantined" }
-                else if has_evidence && refutation_attempted == Some(true) { "Critical risk: replay + falsification passed, claim promoted" }
-                else { "Critical risk: requires evidence AND refutation, claim deferred" }),
-            _ => return Err(ErrorData::invalid_params(
-                format!("Invalid risk_class '{risk}'. Must be: low, medium, high, or critical"),
-                None,
-            )),
+            "low" => (
+                false,
+                false,
+                "promote",
+                "Low risk: cheap checks only, claim can be promoted",
+            ),
+            "medium" => (
+                true,
+                false,
+                "promote",
+                "Medium risk: replay check required, claim can be promoted",
+            ),
+            "high" => (
+                true,
+                true,
+                if refuted {
+                    "quarantine"
+                } else if has_evidence {
+                    "promote"
+                } else {
+                    "defer"
+                },
+                if refuted {
+                    "High risk: refutation attempted, claim quarantined"
+                } else if has_evidence {
+                    "High risk: falsification passed with evidence, claim promoted"
+                } else {
+                    "High risk: no evidence provided, claim deferred"
+                },
+            ),
+            "critical" => (
+                true,
+                true,
+                if refuted {
+                    "quarantine"
+                } else if has_evidence && refutation_attempted == Some(true) {
+                    "promote"
+                } else {
+                    "defer"
+                },
+                if refuted {
+                    "Critical risk: refutation found, claim quarantined"
+                } else if has_evidence && refutation_attempted == Some(true) {
+                    "Critical risk: replay + falsification passed, claim promoted"
+                } else {
+                    "Critical risk: requires evidence AND refutation, claim deferred"
+                },
+            ),
+            _ => {
+                return Err(ErrorData::invalid_params(
+                    format!("Invalid risk_class '{risk}'. Must be: low, medium, high, or critical"),
+                    None,
+                ))
+            }
         };
 
         json_to_string(&serde_json::json!({
@@ -2915,7 +2968,12 @@ impl SemanticMemoryServer {
     )]
     fn sm_replay_search_receipt(
         &self,
-        Parameters(ReplaySearchReceiptParams { receipt_id, query, top_k, namespaces }): Parameters<ReplaySearchReceiptParams>,
+        Parameters(ReplaySearchReceiptParams {
+            receipt_id,
+            query,
+            top_k,
+            namespaces,
+        }): Parameters<ReplaySearchReceiptParams>,
     ) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
         let k = top_k.map(|v| v as usize);
@@ -3014,9 +3072,7 @@ impl SemanticMemoryServer {
     )]
     fn sm_vacuum(&self) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
-        let result = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.vacuum())
-        });
+        let result = tokio::task::block_in_place(|| Handle::current().block_on(store.vacuum()));
         match result {
             Ok(()) => json_to_string(&serde_json::json!({
                 "ok": true,
@@ -3035,9 +3091,8 @@ impl SemanticMemoryServer {
     )]
     fn sm_reembed_all(&self) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
-        let result = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.reembed_all())
-        });
+        let result =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.reembed_all()));
         match result {
             Ok(count) => json_to_string(&serde_json::json!({
                 "ok": true,
@@ -3140,9 +3195,8 @@ impl SemanticMemoryServer {
     ) -> Result<String, ErrorData> {
         let store = &self.bridge.store;
         let query = build_projection_query(params);
-        let result = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.query_episodes(query))
-        });
+        let result =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.query_episodes(query)));
         match result {
             Ok(rows) => json_to_string(&serde_json::json!({
                 "ok": true,
@@ -3221,10 +3275,7 @@ impl SemanticMemoryServer {
     ) -> Result<String, ErrorData> {
         let envelope: semantic_memory::projection_import::ImportEnvelope =
             serde_json::from_str(&envelope_json).map_err(|e| {
-                ErrorData::invalid_params(
-                    format!("Failed to parse envelope JSON: {e}"),
-                    None,
-                )
+                ErrorData::invalid_params(format!("Failed to parse envelope JSON: {e}"), None)
             })?;
         envelope.validate().map_err(|e| {
             ErrorData::invalid_params(format!("Envelope validation failed: {e}"), None)
@@ -3301,6 +3352,139 @@ impl SemanticMemoryServer {
                 format!("list_imports error: {e}"),
                 None,
             )),
+        }
+    }
+    // ── LLM output parser tools ─────────────────────────────────────────
+
+    #[cfg(feature = "llm-parser")]
+    #[tool(
+        description = "Parse JSON from raw LLM output. Handles think blocks, markdown fences, trailing text, and common JSON errors without an additional LLM call. Returns the extracted JSON as a string.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_parse_json(
+        &self,
+        Parameters(ParseJsonParams { raw_output }): Parameters<ParseJsonParams>,
+    ) -> Result<String, ErrorData> {
+        match llm_output_parser::parse_json::<serde_json::Value>(&raw_output) {
+            Ok(value) => {
+                Ok(serde_json::to_string_pretty(&value).unwrap_or_else(|_| "null".to_string()))
+            }
+            Err(e) => Ok(json_to_string(&serde_json::json!({
+                "ok": false,
+                "error": e.to_string(),
+                "input_preview": &raw_output.chars().take(200).collect::<String>(),
+            }))?),
+        }
+    }
+
+    #[cfg(feature = "llm-parser")]
+    #[tool(
+        description = "Parse JSON from raw LLM output as an untyped serde_json::Value. Useful when the expected schema is unknown.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_parse_json_value(
+        &self,
+        Parameters(ParseJsonValueParams { raw_output }): Parameters<ParseJsonValueParams>,
+    ) -> Result<String, ErrorData> {
+        match llm_output_parser::parse_json_value(&raw_output) {
+            Ok(value) => {
+                Ok(serde_json::to_string_pretty(&value).unwrap_or_else(|_| "null".to_string()))
+            }
+            Err(e) => Ok(json_to_string(&serde_json::json!({
+                "ok": false,
+                "error": e.to_string(),
+            }))?),
+        }
+    }
+
+    #[cfg(feature = "llm-parser")]
+    #[tool(
+        description = "Strip </think> blocks from text. Removes chain-of-thought reasoning that some models emit. Returns cleaned text.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_strip_think_tags(
+        &self,
+        Parameters(StripThinkTagsParams { text }): Parameters<StripThinkTagsParams>,
+    ) -> Result<String, ErrorData> {
+        Ok(llm_output_parser::strip_think_tags(&text))
+    }
+
+    #[cfg(feature = "llm-parser")]
+    #[tool(
+        description = "Attempt to repair common LLM JSON errors: trailing commas, unquoted keys, single quotes, missing brackets. Returns the repaired JSON string or an error.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_repair_json(
+        &self,
+        Parameters(RepairJsonParams { json_string }): Parameters<RepairJsonParams>,
+    ) -> Result<String, ErrorData> {
+        match llm_output_parser::try_repair_json(&json_string) {
+            Some(repaired) => Ok(repaired),
+            None => Ok(json_to_string(&serde_json::json!({
+                "ok": false,
+                "error": "Could not repair JSON. The input may not be valid JSON even after common fixes.",
+            }))?),
+        }
+    }
+
+    #[cfg(feature = "llm-parser")]
+    #[tool(
+        description = "Parse a string list from raw LLM output. Handles markdown bullet lists, numbered lists, comma-separated values, and JSON arrays. Returns a JSON array of cleaned strings.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_parse_string_list(
+        &self,
+        Parameters(ParseStringListParams { raw_output }): Parameters<ParseStringListParams>,
+    ) -> Result<String, ErrorData> {
+        match llm_output_parser::parse_string_list(&raw_output) {
+            Ok(list) => {
+                Ok(serde_json::to_string_pretty(&list).unwrap_or_else(|_| "[]".to_string()))
+            }
+            Err(e) => Ok(json_to_string(&serde_json::json!({
+                "ok": false,
+                "error": e.to_string(),
+            }))?),
+        }
+    }
+
+    #[cfg(feature = "llm-parser")]
+    #[tool(
+        description = "Parse a choice from raw LLM output given a list of valid options. Handles extra text, casing differences, and partial matches. Returns the matched option or an error.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_parse_choice(
+        &self,
+        Parameters(ParseChoiceParams {
+            raw_output,
+            options,
+        }): Parameters<ParseChoiceParams>,
+    ) -> Result<String, ErrorData> {
+        let opt_refs: Vec<&str> = options.iter().map(|s| s.as_str()).collect();
+        match llm_output_parser::parse_choice(&raw_output, &opt_refs) {
+            Ok(choice) => Ok(choice.to_string()),
+            Err(e) => Ok(json_to_string(&serde_json::json!({
+                "ok": false,
+                "error": e.to_string(),
+                "options": options,
+            }))?),
+        }
+    }
+
+    #[cfg(feature = "llm-parser")]
+    #[tool(
+        description = "Parse a number from raw LLM output. Handles text like 'The answer is 42' or 'Score: 0.85'. Returns the number as a string.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_parse_number(
+        &self,
+        Parameters(ParseNumberParams { raw_output }): Parameters<ParseNumberParams>,
+    ) -> Result<String, ErrorData> {
+        match llm_output_parser::parse_number::<f64>(&raw_output) {
+            Ok(n) => Ok(n.to_string()),
+            Err(e) => Ok(json_to_string(&serde_json::json!({
+                "ok": false,
+                "error": e.to_string(),
+            }))?),
         }
     }
 }

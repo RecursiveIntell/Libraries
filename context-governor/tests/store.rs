@@ -87,11 +87,99 @@ fn file_context_store_status_reports_lifecycle_bytes_and_cleans_tmp_files() {
 
     let store = FileContextStore::new(dir.path());
     store.save(&response).unwrap();
+    std::fs::write(dir.path().join("stale.json.tmp"), "partial").unwrap();
     let status = store.status().unwrap();
 
     assert_eq!(status.schema, "FileContextStoreStatusV1");
     assert_eq!(status.receipt_count, 1);
     assert!(status.total_bytes > 0);
     assert!(status.stale_tmp_files_removed >= 1);
+    assert!(status.index_built);
+    assert!(status.searchable);
+    assert_eq!(
+        status.last_receipt.as_deref(),
+        Some(response.receipt.receipt_id.as_str())
+    );
     assert!(!dir.path().join("stale.json.tmp").exists());
+}
+
+#[test]
+fn file_context_store_persists_search_index_across_instances_and_prunes() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FileContextStore::new(dir.path());
+    let mut receipt_ids = Vec::new();
+
+    for (session_id, needle) in [
+        ("persist-a", "PERSIST_FIRST_NEEDLE"),
+        ("persist-b", "PERSIST_SECOND_NEEDLE"),
+    ] {
+        let response = compact_context(CompactRequest {
+            session_id: session_id.into(),
+            messages: vec![
+                msg("tool", &format!("{} {needle}", "bulk ".repeat(350))),
+                msg("user", "latest"),
+            ],
+            policy: CompactionPolicy {
+                target_tokens: 100,
+                protect_last_n: 1,
+                ..Default::default()
+            },
+            focus: None,
+        })
+        .unwrap();
+        receipt_ids.push(response.receipt.receipt_id.clone());
+        store.save(&response).unwrap();
+    }
+
+    let fresh_store = FileContextStore::new(dir.path());
+    let status = fresh_store.status().unwrap();
+    assert_eq!(status.receipt_count, 2);
+    assert!(
+        status.index_built,
+        "save should persist an index usable by fresh processes"
+    );
+    assert!(status.searchable);
+    assert_eq!(
+        status.last_receipt.as_deref(),
+        receipt_ids.last().map(String::as_str)
+    );
+
+    let hits = fresh_store
+        .search(
+            "PERSIST_FIRST_NEEDLE",
+            5,
+            context_governor::SearchScope::All,
+        )
+        .unwrap();
+    assert_eq!(hits.len(), 1);
+    assert_eq!(hits[0].receipt_id, receipt_ids[0]);
+
+    let pruned = fresh_store.prune_receipts_keep_last(1).unwrap();
+    assert_eq!(pruned.removed_receipts, 1);
+    let after = fresh_store.status().unwrap();
+    assert_eq!(after.receipt_count, 1);
+    assert_eq!(
+        after.last_receipt.as_deref(),
+        receipt_ids.last().map(String::as_str)
+    );
+    assert!(after.index_built);
+    assert!(after.searchable);
+
+    let first_hits = fresh_store
+        .search(
+            "PERSIST_FIRST_NEEDLE",
+            5,
+            context_governor::SearchScope::All,
+        )
+        .unwrap();
+    assert!(first_hits.is_empty());
+    let second_hits = fresh_store
+        .search(
+            "PERSIST_SECOND_NEEDLE",
+            5,
+            context_governor::SearchScope::All,
+        )
+        .unwrap();
+    assert_eq!(second_hits.len(), 1);
+    assert_eq!(second_hits[0].receipt_id, receipt_ids[1]);
 }

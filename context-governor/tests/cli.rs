@@ -80,6 +80,12 @@ fn cli_compact_diff_store_search_and_expand_round_trip() {
     );
     assert!(store_json.contains(&receipt_id));
 
+    let status_json = run_cli(&["status", "--dir", dir.path().to_str().unwrap()], "");
+    assert!(status_json.contains("\"receipt_count\": 1"));
+    assert!(status_json.contains("\"index_built\": true"));
+    assert!(status_json.contains("\"searchable\": true"));
+    assert!(status_json.contains(&receipt_id));
+
     let search_json = run_cli(
         &[
             "search",
@@ -106,6 +112,20 @@ fn cli_compact_diff_store_search_and_expand_round_trip() {
         "",
     );
     assert!(expand_json.contains("CLI_NEEDLE"));
+
+    let prune_json = run_cli(
+        &[
+            "prune",
+            "--dir",
+            dir.path().to_str().unwrap(),
+            "--keep-last",
+            "0",
+        ],
+        "",
+    );
+    assert!(prune_json.contains("\"removed_receipts\": 1"));
+    let post_prune_status = run_cli(&["status", "--dir", dir.path().to_str().unwrap()], "");
+    assert!(post_prune_status.contains("\"receipt_count\": 0"));
 }
 
 #[test]

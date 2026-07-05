@@ -31,7 +31,7 @@ Your agent gets a persistent knowledge base that:
 
 - **Searches by meaning, not just keywords** — hybrid BM25 + vector
   similarity + Reciprocal Rank Fusion, with the full score breakdown
-  exposed via `sm_search_explained`.
+  returned directly by `sm_search`.
 - **Tracks evidence confidence** — every item can carry algebraic
   provenance (semiring confidence scores with support counts).
 - **Detects and corrects contradictions** — syndrome detection and
@@ -101,49 +101,15 @@ knowledge management, not just vector search.
 cargo install semantic-memory-mcp
 ```
 
-This pulls semantic-memory 0.5.3 and all dependencies from crates.io
+This pulls semantic-memory 0.5.8 and all dependencies from crates.io
 automatically. No need to clone any repos.
 
 ### Option 2: Build from source
 
-The MCP server depends on [semantic-memory](https://github.com/RecursiveIntell/semantic-memory),
-which in turn depends on several crates from the same stack. All of
-them are published on crates.io, so `cargo build` from the standalone
-repo will resolve them from the registry.
-
-```bash
-git clone https://github.com/RecursiveIntell/semantic-memory-mcp.git
-cd semantic-memory-mcp
-cargo build --release
-# Binary: target/release/semantic-memory-mcp
-```
-
-If you prefer to build the full stack from source (all repos
-cloned as siblings), see the [dependency table](#dependencies)
-below for the complete list.
-
-### Dependencies
-
-The MCP server depends on one crate: `semantic-memory`. That crate
-in turn depends on several stack crates. All are on both crates.io
-and GitHub:
-
-| Crate | crates.io | GitHub | Purpose |
-|-------|-----------|--------|---------|
-| [semantic-memory](https://github.com/RecursiveIntell/semantic-memory) | [0.5.3](https://crates.io/crates/semantic-memory) | [GitHub](https://github.com/RecursiveIntell/semantic-memory) | Core search engine, storage, graph, reasoning |
-| [stack-ids](https://github.com/RecursiveIntell/stack-ids) | [0.1.1](https://crates.io/crates/stack-ids) | [GitHub](https://github.com/RecursiveIntell/stack-ids) | Typed IDs, scopes, trace context, BLAKE3 digests |
-| [bitemporal-runtime](https://github.com/RecursiveIntell/bitemporal-runtime) | [0.1.0](https://crates.io/crates/bitemporal-runtime) | [GitHub](https://github.com/RecursiveIntell/bitemporal-runtime) | Bitemporal truth (valid_time / recorded_time) |
-| [boundary-compiler](https://github.com/RecursiveIntell/boundary-compiler) | [0.1.0](https://crates.io/crates/boundary-compiler) | [GitHub](https://github.com/RecursiveIntell/boundary-compiler) | RFC 8785 JSON Canonicalization (JCS) |
-| [forge-memory-bridge](https://github.com/RecursiveIntell/forge-memory-bridge) | [0.1.1](https://crates.io/crates/forge-memory-bridge) | [GitHub](https://github.com/RecursiveIntell/forge-memory-bridge) | Projection import transforms |
-
-All of these are published on crates.io. If you install via
-`cargo install semantic-memory-mcp`, cargo resolves them
-automatically — you do not need to clone anything.
-
-### Building the full stack from source
-
-If you want to modify the underlying library alongside the MCP
-server, clone all repos as siblings:
+The source checkout is meant for full-stack development with sibling
+path dependencies. Clone `semantic-memory-mcp` alongside
+`semantic-memory` and the supporting RecursiveIntell crates, then build
+from the MCP repo.
 
 ```bash
 mkdir semantic-memory-stack && cd semantic-memory-stack
@@ -155,18 +121,40 @@ git clone https://github.com/RecursiveIntell/bitemporal-runtime.git
 git clone https://github.com/RecursiveIntell/boundary-compiler.git
 git clone https://github.com/RecursiveIntell/forge-memory-bridge.git
 
-# The path deps in semantic-memory/Cargo.toml use ../stack-ids, ../bitemporal-runtime, etc.
-# With all repos cloned as siblings, these paths resolve correctly.
-
 cd semantic-memory-mcp
 cargo build --release
+# Binary: target/release/semantic-memory-mcp
 ```
 
-The `semantic-memory/Cargo.toml` has `path = "../stack-ids"` (and
-similar) with version requirements alongside. Cargo prefers the
-path dep when it exists, falls back to crates.io when it doesn't.
-So you can clone just `semantic-memory-mcp` for a standalone build,
-or clone all siblings for full-stack development.
+For normal users, `cargo install semantic-memory-mcp` is simpler because
+it resolves published registry crates automatically.
+
+### Dependencies
+
+The MCP server depends on one crate: `semantic-memory`. That crate
+in turn depends on several stack crates. All are on both crates.io
+and GitHub:
+
+| Crate | crates.io | GitHub | Purpose |
+|-------|-----------|--------|---------|
+| [semantic-memory](https://github.com/RecursiveIntell/semantic-memory) | [0.5.8](https://crates.io/crates/semantic-memory) | [GitHub](https://github.com/RecursiveIntell/semantic-memory) | Core search engine, storage, graph, reasoning |
+| [stack-ids](https://github.com/RecursiveIntell/stack-ids) | [0.1.1](https://crates.io/crates/stack-ids) | [GitHub](https://github.com/RecursiveIntell/stack-ids) | Typed IDs, scopes, trace context, BLAKE3 digests |
+| [bitemporal-runtime](https://github.com/RecursiveIntell/bitemporal-runtime) | [0.1.0](https://crates.io/crates/bitemporal-runtime) | [GitHub](https://github.com/RecursiveIntell/bitemporal-runtime) | Bitemporal truth (valid_time / recorded_time) |
+| [boundary-compiler](https://github.com/RecursiveIntell/boundary-compiler) | [0.1.0](https://crates.io/crates/boundary-compiler) | [GitHub](https://github.com/RecursiveIntell/boundary-compiler) | RFC 8785 JSON Canonicalization (JCS) |
+| [forge-memory-bridge](https://github.com/RecursiveIntell/forge-memory-bridge) | [0.1.1](https://crates.io/crates/forge-memory-bridge) | [GitHub](https://github.com/RecursiveIntell/forge-memory-bridge) | Projection import transforms |
+
+All of these are published on crates.io. If you install via
+`cargo install semantic-memory-mcp`, cargo resolves registry versions
+automatically — you do not need to clone anything. A source checkout
+uses sibling `path` dependencies when they are present, which is the
+recommended layout for full-stack development.
+
+### Building the full stack from source
+
+The `semantic-memory-mcp/Cargo.toml` and `semantic-memory/Cargo.toml`
+use sibling `path` dependencies for active development. Keep the stack
+repos cloned side-by-side so those paths resolve. If you only want to
+run the published server, prefer `cargo install semantic-memory-mcp`.
 
 ## Prerequisites
 
@@ -316,7 +304,8 @@ When the agent calls `sm_search`, the query flows through:
 
 ## Tools
 
-The server exposes 38 MCP tools. Use `tools/list` as the source of
+The server exposes 33 MCP tools in the default `lean` profile, 39 in
+`standard`, and 48 in `full`. Use `tools/list` as the source of
 truth for the available tool surface on your build.
 
 ### Core tools (always available)
@@ -340,12 +329,13 @@ Returns ranked results with content, scores, and stable result IDs
 (`result_id` field) for downstream tool chaining (e.g., passing to
 `sm_graph_path` or `sm_set_provenance`).
 
-#### sm_search_explained
+#### Search scoring
 
-Same as `sm_search` but with the full per-signal score breakdown:
-BM25 score, vector score, recency score, RRF score, weights, and
-contribution percentages. Useful for debugging retrieval quality.
-It applies the same superseded-result filtering as `sm_search`.
+`sm_search` returns the score fields needed to debug ranking: BM25,
+vector, recency, RRF, weights, and contribution percentages where the
+underlying store provides them. Superseded-result filtering is applied
+unless the query explicitly asks for stale, old, historical, or
+superseded facts.
 
 #### sm_add_fact
 
@@ -640,7 +630,7 @@ sm_discord_search(["fact:abc123-...", "fact:def456-..."])
 
 | Feature | Default | Description |
 |---------|---------|-------------|
-| `full` | yes | All features — the full 38-tool surface + Candle embedder + late-interaction + TurboQuant codec. This is the default build. |
+| `full` | yes | All features — the full 48-tool surface + Candle embedder + late-interaction + TurboQuant codec. This is the default build. |
 | `search` | no | Core search only (BM25 + vector + RRF, add facts, stats, graph path, graph edges, provenance) + Candle embedder. Minimal build with no external codec deps. |
 | `candle-embedder` | yes (via full/search) | In-process pure-Rust Candle embedder (CPU-only, no Ollama required). |
 
@@ -661,7 +651,7 @@ the MCP server's functionality.
 
 ```
 semantic-memory-mcp (MCP stdio server, rmcp SDK)
-  └── semantic-memory (Rust library, 0.5.3)
+  └── semantic-memory (Rust library, 0.5.8)
         ├── Candle embedder (pure-Rust, CPU-only, default — no Ollama required)
         ├── SQLite (authoritative storage, FTS5, WAL)
         ├── usearch 2.25 (vector sidecar, default backend)
@@ -691,7 +681,7 @@ decision: the store is the single source of truth for graph state.
 ## Underlying crate
 
 This server wraps the [semantic-memory](https://crates.io/crates/semantic-memory)
-crate (0.5.3), which provides the storage engine, search pipeline,
+crate (0.5.8), which provides the storage engine, search pipeline,
 and all feature modules. See the
 [semantic-memory crate documentation](https://github.com/RecursiveIntell/Libraries/tree/main/semantic-memory)
 for the full library API, including direct usage without an MCP

@@ -589,6 +589,59 @@ pub struct ImportEnvelopeParams {
     pub envelope_json: String,
 }
 
+// ─── LLM output parser tools ──────────────────────────────────────────
+
+/// Parameters for sm_parse_json
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ParseJsonParams {
+    /// The raw LLM output text that should contain JSON (may include think blocks, markdown fences, trailing text).
+    pub raw_output: String,
+}
+
+/// Parameters for sm_parse_json_value
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ParseJsonValueParams {
+    /// The raw LLM output text that should contain JSON.
+    pub raw_output: String,
+}
+
+/// Parameters for sm_strip_think_tags
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct StripThinkTagsParams {
+    /// The text that may contain <think>...</think> blocks.
+    pub text: String,
+}
+
+/// Parameters for sm_repair_json
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct RepairJsonParams {
+    /// The malformed JSON string to attempt repair on.
+    pub json_string: String,
+}
+
+/// Parameters for sm_parse_string_list
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ParseStringListParams {
+    /// The raw LLM output text that should contain a list of items.
+    pub raw_output: String,
+}
+
+/// Parameters for sm_parse_choice
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ParseChoiceParams {
+    /// The raw LLM output text that should contain a choice.
+    pub raw_output: String,
+    /// Valid options to choose from.
+    pub options: Vec<String>,
+}
+
+/// Parameters for sm_parse_number
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ParseNumberParams {
+    /// The raw LLM output text that should contain a number.
+    pub raw_output: String,
+}
+
 // ─── Projection query tools ───────────────────────────────────────────
 
 /// Parameters for projection query tools (sm_query_claim_versions, etc.)

@@ -1,6 +1,9 @@
 use context_governor::{
-    audit_compression_boundary, compact_context, context_diff, CompactRequest, CompactResponse,
-    ContextGovernorError, FileContextStore, SearchScope,
+    audit_compression_boundary, audit_mcp_tool_surface, compact_context, context_diff,
+    evaluate_governed_memory, evaluate_leakage_free_rag, screen_knowledge_conflicts,
+    select_retrieval_route, CompactRequest, CompactResponse, ContextGovernorError, EvidenceClaim,
+    FileContextStore, GovernanceCase, GovernanceFailureMode, RagEvalInput, SearchScope,
+    ToolManifestEntry,
 };
 
 use serde::Serialize;
@@ -67,6 +70,14 @@ fn run() -> Result<(), ContextGovernorError> {
             let store = FileContextStore::new(dir);
             print_json(&store.status()?)
         }
+        "prune" => {
+            let dir = required_arg(&args, "--dir")?;
+            let keep_last = arg_value(&args, "--keep-last")
+                .and_then(|value| value.parse::<usize>().ok())
+                .unwrap_or(100);
+            let store = FileContextStore::new(dir);
+            print_json(&store.prune_receipts_keep_last(keep_last)?)
+        }
         "diff" => {
             let response: CompactResponse = read_json_stdin("CompactResponse")?;
             print_json(&context_diff(&response))
@@ -78,9 +89,74 @@ fn run() -> Result<(), ContextGovernorError> {
                 &request.compressed_summary,
             ))
         }
+        "audit-tool-surface" => {
+            let tools_json = arg_value(&args, "--tools-json").unwrap_or_else(|| "[]".to_string());
+            let tools: Vec<ToolManifestEntry> =
+                serde_json::from_str(&tools_json).map_err(|err| {
+                    ContextGovernorError::Io(std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        format!("failed to parse tools JSON: {err}"),
+                    ))
+                })?;
+            print_json(&audit_mcp_tool_surface(&tools))
+        }
+        "eval-governed-memory" => {
+            let harness_id =
+                arg_value(&args, "--harness-id").unwrap_or_else(|| "default".to_string());
+            let cases_json = arg_value(&args, "--cases-json").unwrap_or_else(|| "[]".to_string());
+            let cases: Vec<GovernanceCaseJson> =
+                serde_json::from_str(&cases_json).map_err(|err| {
+                    ContextGovernorError::Io(std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        format!("failed to parse cases JSON: {err}"),
+                    ))
+                })?;
+            let cases: Vec<GovernanceCase> = cases
+                .into_iter()
+                .map(|c| GovernanceCase::new(c.case_id, c.mode, c.passed))
+                .collect();
+            print_json(&evaluate_governed_memory(&harness_id, &cases))
+        }
+        "eval-rag-leakage" => {
+            let task_id = arg_value(&args, "--task-id").unwrap_or_else(|| "default".to_string());
+            let closed_book = arg_value(&args, "--closed-book-correct")
+                .map(|v| v == "true" || v == "1")
+                .unwrap_or(false);
+            let retrieved_correct = arg_value(&args, "--retrieved-correct")
+                .map(|v| v == "true" || v == "1")
+                .unwrap_or(false);
+            let retrieval_used = arg_value(&args, "--retrieval-used")
+                .map(|v| v == "true" || v == "1")
+                .unwrap_or(true);
+            let input = RagEvalInput {
+                task_id,
+                closed_book_correct: closed_book,
+                retrieved_answer_correct: retrieved_correct,
+                retrieval_used,
+            };
+            print_json(&evaluate_leakage_free_rag(input))
+        }
+        "screen-conflicts" => {
+            let claims_json = arg_value(&args, "--claims-json").unwrap_or_else(|| "[]".to_string());
+            let claims_raw: Vec<ClaimJson> = serde_json::from_str(&claims_json).map_err(|err| {
+                ContextGovernorError::Io(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    format!("failed to parse claims JSON: {err}"),
+                ))
+            })?;
+            let claims: Vec<EvidenceClaim> = claims_raw
+                .into_iter()
+                .map(|c| EvidenceClaim::new(c.id, c.text))
+                .collect();
+            print_json(&screen_knowledge_conflicts(&claims))
+        }
+        "select-route" => {
+            let query = required_arg(&args, "--query")?;
+            print_json(&select_retrieval_route(&query))
+        }
         "help" | "--help" | "-h" => {
             println!(
-                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  diff < response.json\n  boundary-audit < request.json"
+                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q"
             );
             Ok(())
         }
@@ -95,6 +171,19 @@ fn run() -> Result<(), ContextGovernorError> {
 struct BoundaryAuditRequest {
     source_fragments: Vec<String>,
     compressed_summary: String,
+}
+
+#[derive(serde::Deserialize)]
+struct GovernanceCaseJson {
+    case_id: String,
+    mode: GovernanceFailureMode,
+    passed: bool,
+}
+
+#[derive(serde::Deserialize)]
+struct ClaimJson {
+    id: String,
+    text: String,
 }
 
 fn read_json_stdin<T: serde::de::DeserializeOwned>(label: &str) -> Result<T, ContextGovernorError> {
