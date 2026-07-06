@@ -271,7 +271,7 @@ mod tests {
         let out = cache.attention_topk(&[1.0, 0.0], 1).unwrap();
         assert_eq!(out.decompression_count, 1);
         assert_eq!(out.top_k_indices, vec![0]);
-        assert_eq!(out.output[0] > 0.0, true);
+        assert!(out.output[0] > 0.0);
         assert_eq!(out.output[1], 0.0);
     }
 

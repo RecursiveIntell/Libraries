@@ -5186,6 +5186,7 @@ version = "0.1.1"
 dependencies = [
  "blake3",
  "chrono",
+ "compressed-scorer",
  "hyperquant",
  "serde",
  "serde_json",

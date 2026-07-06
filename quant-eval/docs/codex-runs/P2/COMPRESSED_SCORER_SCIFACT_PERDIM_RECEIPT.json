@@ -1,0 +1,60 @@
+{
+  "schema": "compressed-scorer-real-corpus-eval-v1",
+  "corpus_id": "beir-scifact-test-v1",
+  "embedding_model": "all-minilm:latest",
+  "metadata": {
+    "doc_count": 5183,
+    "max_chars": 700,
+    "normalized": true,
+    "qrels_digest": "sha256:0864bb985e0ca2367ba217977e72004d549054b2b06666ed9d4825ac7c21284c",
+    "query_count": 300,
+    "source_url": "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip"
+  },
+  "config": {
+    "top_k": 10,
+    "candidate_k": 40,
+    "bits": 8,
+    "min_top_k_overlap": 0.3,
+    "min_exact_rerank_recovery_at_1": 0.8
+  },
+  "profiles": [
+    {
+      "name": "per_dim_8bit",
+      "family": "compressed-scorer",
+      "scoring_path": "compressed_domain_score_then_exact_f32_rerank",
+      "query_count": 300,
+      "doc_count": 5183,
+      "bits_per_component": 8.0,
+      "raw_recall_at_1": 0.4578889,
+      "raw_recall_at_5": 0.6921666,
+      "raw_recall_at_10": 0.78,
+      "raw_recall_at_k": 0.78,
+      "codec_recall_at_1": 0.4578889,
+      "codec_recall_at_5": 0.6921666,
+      "codec_recall_at_10": 0.77666664,
+      "codec_recall_at_k": 0.77666664,
+      "raw_ndcg_at_k": 0.6259076,
+      "codec_ndcg_at_k": 0.624713,
+      "top_k_overlap": 0.9890908,
+      "exact_rerank_recovery_at_1": 0.87666667,
+      "rank_drift_mean": 596.8567,
+      "rank_drift_p95": 5097.0,
+      "rank_drift_max": 5142,
+      "mean_score_error_at_k": 0.0006221034,
+      "score_error_p95_at_k": 0.0016937256,
+      "score_error_max_at_k": 0.008042872,
+      "raw_search_ns_total": 5672938687,
+      "codec_search_ns_total": 16627149708,
+      "raw_bytes": 7961088,
+      "compressed_bytes": 2011004,
+      "scorer_internal_bytes": 3072,
+      "compression_ratio": 3.958763,
+      "decoded_doc_count": 0,
+      "exact_rerank_count": 12000,
+      "passed": true,
+      "blockers": []
+    }
+  ],
+  "verdict": "compressed-scorer per-dim candidate scoring passed the declared real-corpus gate; keep exact f32 rerank mandatory",
+  "claim_boundary": "candidate-gate evidence only; compressed candidates are not authoritative results and must be exact-f32 reranked before semantic-memory/product use"
+}

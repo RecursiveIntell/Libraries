@@ -4,6 +4,12 @@ Codec-agnostic compressed-domain scoring for retrieval and attention.
 
 The crate defines one shared trait, `CompressedScorer`, plus adapters for `fib-quant` and `turbo-quant`. The point is simple: prepare a query once, score compressed vectors directly, and decode only the small top-k set when exact verification or value aggregation is required.
 
+## Canonical role in the RecursiveIntell stack
+
+`compressed-scorer` is the compression substrate. Codec crates such as `turbo-quant`, `fib-quant`, and experimental `hyperquant` should plug into this trait instead of wiring directly into product search paths. Runtime users should treat compressed scores as candidate-generation evidence, then exact-rerank or exact-decode the selected top-k.
+
+Current receipt-backed product lane: PerDim/int8-style compressed-domain candidate scoring. HyperQuant remains an experimental lattice backend candidate until it implements this trait and beats or meaningfully differs from baselines under the same corpus receipts.
+
 ## Why this exists
 
 Normal compressed retrieval does this:
@@ -95,5 +101,6 @@ cargo +esp check -p compressed-scorer --no-default-features --features no_std --
 
 - This crate does not own codec truth; it wraps codec implementations.
 - This crate does not own semantic-memory search semantics or raw-vector authority.
+- HyperQuant should be a backend behind this trait, not a direct semantic-memory default path.
 - Approximate scores are candidate-generation evidence unless the caller explicitly chooses compressed-only mode.
 - Exact rerank/decode remains a caller policy decision.

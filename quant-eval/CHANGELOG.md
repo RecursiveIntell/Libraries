@@ -9,6 +9,7 @@ All notable changes to `quant-eval` are documented here.
 - HyperQuant real-corpus/qrels retrieval gate: `run_hyperquant_real_corpus_eval` compares exact f32 retrieval against HyperQuant Z1/A2 reconstructed-vector retrieval and emits `hyperquant-real-corpus-eval-v1` receipts.
 - BEIR/Scifact all-minilm receipt: 5,183 documents, 300 test queries, Z1 exact-rerank recovery@1 0.8667 / top-K overlap 0.5514, A2 exact-rerank recovery@1 0.8733 / top-K overlap 0.5910, both passing declared candidate-gate thresholds.
 - Scifact codec-comparison receipt: simple int8 baselines outperform current HyperQuant Z1/A2 for embedding retrieval quality and compression ratio; HyperQuant still passes the candidate gate and beats the 1-bit sign control.
+- compressed-scorer real-corpus gate: `run_compressed_scorer_real_corpus_eval` evaluates true compressed-domain PerDim candidate scoring with exact f32 rerank, zero document decodes during candidate scoring, and `compressed-scorer-real-corpus-eval-v1` receipts. Stored Scifact/all-minilm result: R@10 0.7767, top-K overlap 0.9891, exact-rerank recovery@1 0.8767, compression 3.9588x, passed.
 - Receipt metrics now include recall@1/5/10/K, NDCG@K, top-K overlap, exact-rerank recovery@1, rank-drift mean/p95/max, score-error mean/p95/max, search timing, byte accounting, compression ratio, and explicit blockers.
 - Runnable examples `hyperquant_real_corpus_receipt`, `hyperquant_scifact_eval`, and `hyperquant_scifact_compare`, plus Scifact Ollama builder `tools/hyperquant_scifact/build_scifact_ollama.py` and stored receipts/summaries under `docs/codex-runs/`.
 
@@ -17,6 +18,7 @@ All notable changes to `quant-eval` are documented here.
 - The in-tree tiny fixture proves the reusable gate/API/receipt path. It is not BEIR/Scifact quality evidence or production admissibility.
 - The P2 Scifact receipt is BEIR/Scifact candidate-gate evidence for all-minilm embeddings only; it is not model-quality preservation evidence or production admissibility.
 - The comparison receipt says current HyperQuant is worth pursuing as a research/evidence-bearing lattice primitive, not as the first production embedding codec over int8.
+- The compressed-scorer receipt supports the product architecture claim that compressed-scorer, not HyperQuant directly, should be the canonical scoring substrate; it does not prove KV-cache/model-quality preservation.
 
 ## [0.1.0] — 2026-06-02
 

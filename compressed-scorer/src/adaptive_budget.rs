@@ -201,6 +201,7 @@ pub fn allocate_head_budgets(
 
 /// Default fragility data from the 256-token top_k=64 diagnostic run
 /// on SmolLM2-1.7B-Instruct / WikiText-2 (per-layer cosine_p05).
+#[allow(clippy::vec_init_then_push)]
 pub fn default_fragility_256tok() -> Vec<LayerFragilityEntry> {
     let mut v = Vec::new();
     v.push(LayerFragilityEntry {
@@ -311,6 +312,7 @@ pub fn default_fragility_256tok() -> Vec<LayerFragilityEntry> {
 ///   128 tokens: 0.922
 ///   256 tokens: 0.712
 ///   512 tokens: 0.390
+#[allow(clippy::vec_init_then_push)]
 pub fn default_fragility_512tok() -> Vec<LayerFragilityEntry> {
     let mut v = Vec::new();
     v.push(LayerFragilityEntry {
