@@ -14,10 +14,11 @@ All notable changes to `poly-kv` are documented here.
 - `capture_tiny_transformer_replay.py` generates a deterministic NumPy tiny-transformer captured replay fixture when torch/transformers are unavailable.
 - `capture_distilgpt2_replay.py` generates a pretrained DistilGPT2 safetensors/tokenizer captured replay fixture via manual NumPy forward pass; the stored receipt is a diagnostic negative showing the current single-head projection proxy is insufficient for KV-cache preservation claims.
 - `distilgpt2_full_forward_intervention.py` reinjects compressed sparse attention outputs into a downstream manual DistilGPT2 forward pass and stores the first full-forward intervention receipt: candidate_k=8, final-logit KL 0.000832, top-1 agreement 1.0, and 4.7956x fewer decoded value vectors on the deterministic prompt/window.
+- `distilgpt2_full_forward_suite.py` extends the gate to three fixed held-out prompts × two heads: 6/6 pass, final-logit KL mean 0.000980 / max 0.003947, top-1 agreement 1.0, and decode-reduction mean/min 4.2975x.
 
 ### Claim boundary
 
-- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The tiny-transformer receipt uses deterministic NumPy tensors. The DistilGPT2 captured projection receipt uses pretrained tensors but fails the strict logit/PPL-proxy gate. The DistilGPT2 full-forward intervention receipt passes on one deterministic prompt/window, layer 0, head 0, but it is still not real-corpus PPL preservation or production KV-cache evidence without held-out prompts and broader layer/head coverage.
+- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The tiny-transformer receipt uses deterministic NumPy tensors. The DistilGPT2 captured projection receipt uses pretrained tensors but fails the strict logit/PPL-proxy gate. The DistilGPT2 full-forward intervention suite passes across a small fixed prompt/head set, but it is still not real-corpus PPL preservation or production KV-cache evidence without broader prompt, layer, head, and latency coverage.
 
 ## [0.1.0-alpha.1] — 2026-06-02
 

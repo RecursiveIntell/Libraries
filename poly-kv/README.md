@@ -219,7 +219,26 @@ Stored artifacts:
 
 Current stored result: pass at candidate_k=8 on the deterministic DistilGPT2 prompt/window. The compressed sparse intervention decodes 548 selected value vectors vs 2,628 full-decode value vectors (4.7956x decode reduction), with final-logit KL 0.000832, top-1 agreement 1.0, attention-output cosine 0.8916, and PPL-proxy delta -0.0062.
 
-Claim boundary: this is a pretrained DistilGPT2 full-forward intervention receipt for one deterministic prompt/window, layer 0, head 0, with a per-vector int8 compressed candidate selector. It is not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, or a replacement for KIVI/KVQuant/Quest. The next gate is a larger held-out prompt suite and multi-layer/head intervention.
+Claim boundary: this is a pretrained DistilGPT2 full-forward intervention receipt for one deterministic prompt/window, layer 0, head 0, with a per-vector int8 compressed candidate selector. It is not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, or a replacement for KIVI/KVQuant/Quest.
+
+### Pretrained DistilGPT2 held-out full-forward suite
+
+The next coverage gate runs the same full-forward intervention over three fixed held-out prompts and two heads:
+
+```bash
+.venv-capture/bin/python tools/distilgpt2_full_forward_suite.py \
+  --out docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_SUITE_RECEIPT.json \
+  --summary docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_SUITE_SUMMARY.md
+```
+
+Stored artifacts:
+
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_SUITE_RECEIPT.json`
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_SUITE_SUMMARY.md`
+
+Current stored result: pass across 6 prompt/head cases. Aggregate pass rate 1.0, final-logit KL mean 0.000980 / max 0.003947, final top-1 agreement mean/min 1.0, attention-output cosine mean 0.9649 / min 0.9264, abs PPL-proxy delta mean 0.01395 / max 0.04752, decode-reduction mean/min 4.2975x.
+
+Claim boundary: this is held-out DistilGPT2 full-forward intervention evidence over a small fixed prompt/head suite. It is stronger than one-prompt replay but still not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, all-layer/all-head validity, or a replacement for KIVI/KVQuant/Quest.
 
 ## Quick Start
 

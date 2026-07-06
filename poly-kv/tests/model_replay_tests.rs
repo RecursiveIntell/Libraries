@@ -163,6 +163,35 @@ fn test_distilgpt2_full_forward_intervention_receipt_is_stored_and_bounded() {
 }
 
 #[test]
+fn test_distilgpt2_full_forward_suite_receipt_is_stored_and_aggregated() {
+    let receipt_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_SUITE_RECEIPT.json");
+    let receipt: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(&receipt_path)
+            .expect("distilgpt2 full-forward suite receipt must exist"),
+    )
+    .unwrap();
+
+    assert_eq!(
+        receipt["schema_version"],
+        "poly_kv_distilgpt2_full_forward_suite_v1"
+    );
+    assert!(receipt["model_id"].as_str().unwrap().contains("distilgpt2"));
+    assert!(receipt["cases"].as_array().unwrap().len() >= 6);
+    assert!(receipt["aggregate"]["pass_rate"].as_f64().unwrap() >= 0.0);
+    assert!(
+        receipt["aggregate"]["decode_reduction_mean"]
+            .as_f64()
+            .unwrap()
+            >= 1.0
+    );
+    assert!(receipt["claim_boundary"]
+        .as_str()
+        .unwrap()
+        .contains("held-out"));
+}
+
+#[test]
 fn test_captured_model_replay_uses_captured_logits_and_adaptive_candidates() {
     let keys = vec![
         vec![1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
