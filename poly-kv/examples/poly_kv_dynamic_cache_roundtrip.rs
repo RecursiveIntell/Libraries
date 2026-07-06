@@ -115,7 +115,7 @@ fn main() {
         input.tokens.into_iter().map(|t| (t.id, t.vector)).collect();
     let seed = input.seed.unwrap_or(42);
 
-    let policy = CompressionPolicy::default_two_tier();
+    let _policy = CompressionPolicy::default_two_tier();
     eprintln!(
         "[poly-kv] building pool: shape={:?} num_tokens={} num_layers={} num_kv_heads={} head_dim={}",
         attn_type,

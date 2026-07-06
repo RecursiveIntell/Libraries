@@ -108,6 +108,26 @@ back to its raw input. If a caller asks for
 `Admissibility::Exact` and the codec can't deliver, the
 adapter falls back to raw and emits a `FallbackReceiptV1`.
 
+### Compressed candidate read path
+
+`poly-kv` now has two compressed-domain attention selection APIs:
+
+- `SharedKVPool::attention_topk_compressed(...)` scores cold-pool Fib codes, selects top-k tokens, and decodes only selected values.
+- `AgentShell::attention_topk_compressed(...)` scores both the Fib cold pool and the Turbo hot shell, performs one global top-k, and decodes only selected values.
+
+The shell path is the proveKV bridge:
+
+```text
+query
+  -> compressed Fib cold-pool key scores
+  -> compressed Turbo hot-shell key scores
+  -> global top-k
+  -> decode selected values only
+  -> CompressedAttentionSelectionReceipt
+```
+
+Receipt fields include candidate/source counts, selected pool/shell counts, decoded value count, `full_layer_decoded=false`, and an explicit claim boundary. This is compressed candidate-selection evidence only; model-quality/KV-cache preservation claims require exact attention and logit/PPL replay receipts.
+
 ## Quick Start
 
 ```rust

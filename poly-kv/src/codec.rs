@@ -376,6 +376,44 @@ impl FibQuantAdapter {
             ))
         })
     }
+
+    /// Decode one or more `FibCodeV1` values from a pool/shell payload without
+    /// reconstructing the f32 vector values. This is the cold-pool compressed
+    /// read path used by query-aware attention selection.
+    pub fn decode_codes_payload(
+        &self,
+        payload: &[u8],
+        seed: u64,
+    ) -> Result<Vec<fib_quant::FibCodeV1>> {
+        let quantizer = self.build_quantizer(seed)?;
+        let profile = quantizer.profile().clone();
+        let profile_digest = profile.digest().map_err(|e| {
+            crate::error::PolyKvError::DecompressionFailed(format!("fib profile digest: {e}"))
+        })?;
+        let mut codes = if payload.len() >= 4 && payload[0..4] == FIB_WIRE_BATCH_MAGIC {
+            decode_fib_batch_payload_wire(payload)?
+        } else if payload.len() >= 3 && payload[0..3] == FIB_BATCHED_MAGIC {
+            decode_fib_batch_payload(payload, &profile)?
+        } else if payload.len() >= 3 && payload[0..3] == fib_quant::COMPACT_MAGIC {
+            vec![
+                fib_quant::FibCodeV1::from_compact_bytes(payload, &profile).map_err(|e| {
+                    crate::error::PolyKvError::DecompressionFailed(format!(
+                        "fib compact decode failed: {e}"
+                    ))
+                })?,
+            ]
+        } else {
+            vec![serde_json::from_slice(payload).map_err(|e| {
+                crate::error::PolyKvError::DecompressionFailed(format!(
+                    "fib code deserialize failed: {e}"
+                ))
+            })?]
+        };
+        for code in &mut codes {
+            code.profile_digest = profile_digest.clone();
+        }
+        Ok(codes)
+    }
 }
 
 /// Magic for the new self-describing wire batch format: "FBWB" (Fib Wire Batch v1).
@@ -568,8 +606,8 @@ fn decode_fib_batch_payload(
             profile_digest: profile_digest.clone(),
             codebook_digest: String::new(),
             rotation_digest: String::new(),
-            ambient_dim: profile.ambient_dim as u32,
-            block_dim: profile.block_dim as u32,
+            ambient_dim: profile.ambient_dim,
+            block_dim: profile.block_dim,
             norm_format: profile.norm_format.clone(),
             norm_payload,
             wire_index_bits,
@@ -691,9 +729,7 @@ impl KVecCodec for FibQuantAdapter {
             let mut codes = decode_fib_batch_payload_wire(payload)?;
             let quantizer = self.build_quantizer(seed)?;
             let profile_digest = quantizer.profile().digest().map_err(|e| {
-                crate::error::PolyKvError::DecompressionFailed(format!(
-                    "fib profile digest: {e}"
-                ))
+                crate::error::PolyKvError::DecompressionFailed(format!("fib profile digest: {e}"))
             })?;
             for code in &mut codes {
                 code.profile_digest = profile_digest.clone();

@@ -11,6 +11,9 @@ pub const POOL_BUILD_RECEIPT_SCHEMA: &str = "pool_build_receipt_v1";
 pub const SHELL_MATERIALIZE_RECEIPT_SCHEMA: &str = "shell_materialize_receipt_v1";
 /// Schema version for injection receipts.
 pub const INJECTION_RECEIPT_SCHEMA: &str = "injection_receipt_v1";
+/// Schema version for compressed attention selection receipts.
+pub const COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA: &str =
+    "compressed_attention_selection_receipt_v1";
 
 /// Receipt produced when building a SharedKVPool.
 ///
@@ -193,6 +196,175 @@ impl ShellMaterializeReceipt {
     }
 
     /// Compute the canonical digest of this receipt.
+    pub fn digest(&self) -> crate::error::Result<Digest> {
+        crate::digest_compat::compute_json(self)
+    }
+}
+
+/// Receipt produced when selecting attention candidates from compressed KV artifacts.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CompressedAttentionSelectionReceipt {
+    /// Stable schema marker.
+    pub schema_version: String,
+    /// Pool digest used for candidate selection.
+    pub pool_digest: Digest,
+    /// Layer index.
+    pub layer: u32,
+    /// KV head index.
+    pub head: u32,
+    /// Number of candidate tokens scored in compressed form.
+    pub candidate_count: u32,
+    /// Number of selected hits returned.
+    pub selected_count: u32,
+    /// Number of cold-pool candidates scored.
+    #[serde(default)]
+    pub pool_candidate_count: u32,
+    /// Number of hot-shell candidates scored.
+    #[serde(default)]
+    pub shell_candidate_count: u32,
+    /// Number of selected hits from the cold pool.
+    #[serde(default)]
+    pub selected_pool_count: u32,
+    /// Number of selected hits from the hot shell.
+    #[serde(default)]
+    pub selected_shell_count: u32,
+    /// Number of compressed key codes scored.
+    pub compressed_key_scores: u64,
+    /// Number of value vectors decoded after top-k selection.
+    pub decoded_value_vectors: u64,
+    /// True only when the full layer was decoded before scoring.
+    pub full_layer_decoded: bool,
+    /// Whether downstream model-quality claims require exact/logit/PPL fallback.
+    #[serde(default = "default_exact_fallback_required")]
+    pub exact_fallback_required: bool,
+    /// Human-readable scoring path / claim boundary.
+    pub scoring_path: String,
+    /// Codec used by the cold shared pool.
+    pub codec_id: String,
+    /// Optional agent id when the selection includes a hot shell.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub agent_id: Option<String>,
+    /// Optional hot-shell digest when the selection includes a hot shell.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shell_digest: Option<Digest>,
+    /// Explicit claim boundary for this selection receipt.
+    #[serde(default = "default_compressed_attention_claim_boundary")]
+    pub claim_boundary: String,
+    /// Unix timestamp when selected.
+    pub selected_at_unix: i64,
+}
+
+fn default_exact_fallback_required() -> bool {
+    true
+}
+
+fn default_compressed_attention_claim_boundary() -> String {
+    "compressed candidate selection only; model-quality/KV-cache preservation claims require exact attention and logit/PPL replay receipts".to_string()
+}
+
+impl CompressedAttentionSelectionReceipt {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        pool_digest: Digest,
+        layer: u32,
+        head: u32,
+        candidate_count: u32,
+        selected_count: u32,
+        compressed_key_scores: u64,
+        decoded_value_vectors: u64,
+        full_layer_decoded: bool,
+        scoring_path: impl Into<String>,
+        codec_id: impl Into<String>,
+        selected_at_unix: i64,
+    ) -> Self {
+        Self {
+            schema_version: COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA.into(),
+            pool_digest,
+            layer,
+            head,
+            candidate_count,
+            selected_count,
+            pool_candidate_count: candidate_count,
+            shell_candidate_count: 0,
+            selected_pool_count: selected_count,
+            selected_shell_count: 0,
+            compressed_key_scores,
+            decoded_value_vectors,
+            full_layer_decoded,
+            exact_fallback_required: true,
+            scoring_path: scoring_path.into(),
+            codec_id: codec_id.into(),
+            agent_id: None,
+            shell_digest: None,
+            claim_boundary: default_compressed_attention_claim_boundary(),
+            selected_at_unix,
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn with_shell_source_counts(
+        mut self,
+        agent_id: impl Into<String>,
+        shell_digest: Digest,
+        pool_candidate_count: u32,
+        shell_candidate_count: u32,
+        selected_pool_count: u32,
+        selected_shell_count: u32,
+    ) -> Self {
+        self.agent_id = Some(agent_id.into());
+        self.shell_digest = Some(shell_digest);
+        self.pool_candidate_count = pool_candidate_count;
+        self.shell_candidate_count = shell_candidate_count;
+        self.selected_pool_count = selected_pool_count;
+        self.selected_shell_count = selected_shell_count;
+        self
+    }
+
+    pub fn validate(&self) -> crate::error::Result<()> {
+        if self.schema_version != COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA {
+            return Err(crate::error::PolyKvError::InvalidReceipt(format!(
+                "expected schema {}, got {}",
+                COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA, self.schema_version
+            )));
+        }
+        if self.pool_digest.hex().is_empty() {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "pool_digest is empty".into(),
+            ));
+        }
+        if self.full_layer_decoded {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "compressed attention selection receipt must not claim full_layer_decoded".into(),
+            ));
+        }
+        if self.selected_count as u64 != self.decoded_value_vectors {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "selected_count must equal decoded_value_vectors for top-k value decode".into(),
+            ));
+        }
+        if self.pool_candidate_count + self.shell_candidate_count != self.candidate_count {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "source candidate counts must sum to candidate_count".into(),
+            ));
+        }
+        if self.selected_pool_count + self.selected_shell_count != self.selected_count {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "selected source counts must sum to selected_count".into(),
+            ));
+        }
+        if self.agent_id.is_some() != self.shell_digest.is_some() {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "agent_id and shell_digest must be present together".into(),
+            ));
+        }
+        if self.claim_boundary.trim().is_empty() {
+            return Err(crate::error::PolyKvError::InvalidReceipt(
+                "claim_boundary is empty".into(),
+            ));
+        }
+        Ok(())
+    }
+
     pub fn digest(&self) -> crate::error::Result<Digest> {
         crate::digest_compat::compute_json(self)
     }

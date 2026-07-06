@@ -4,6 +4,15 @@ All notable changes to `poly-kv` are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- `AgentShell::attention_topk_compressed(...)` scores Fib cold-pool keys and Turbo hot-shell keys in compressed form, performs global top-k selection, and decodes only selected values.
+- `CompressedAttentionSelectionReceipt` now carries source candidate counts, selected pool/shell counts, optional agent/shell identity, exact-fallback requirement, and a claim boundary.
+
+### Claim boundary
+
+- The compressed shell attention path is candidate-selection plumbing. It does not prove model-quality or KV-cache preservation without exact attention/logit/PPL replay receipts.
+
 ## [0.1.0-alpha.1] — 2026-06-02
 
 First crates.io release.

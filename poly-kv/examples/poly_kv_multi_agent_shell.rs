@@ -213,7 +213,7 @@ fn main() {
         shared_tokens.len()
     );
     let t_build = Instant::now();
-    let (mut pool, pool_receipt) =
+    let (mut pool, _pool_receipt) =
         SharedKVPool::build(&shared_tokens, &shape, seed).expect("build shared pool");
     let build_ms = t_build.elapsed().as_millis() as u64;
     eprintln!(
@@ -327,9 +327,8 @@ fn main() {
 
     // For each agent, materialize a shell and write per-agent K/V.
     let mut agent_receipts: Vec<AgentReceipt> = Vec::with_capacity(n_agents);
-    for agent_idx in 0..n_agents {
+    for (agent_idx, tokens) in agent_tokens.iter().enumerate().take(n_agents) {
         let agent_id = format!("agent_{}", agent_idx);
-        let tokens = &agent_tokens[agent_idx];
         eprintln!(
             "[multi-agent] materializing shell for {} ({} unique tokens)...",
             agent_id,

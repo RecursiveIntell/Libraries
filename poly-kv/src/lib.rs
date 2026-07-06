@@ -53,11 +53,18 @@ pub use policy::{
     CodecId, CompressionPolicy, FibConfig, TurboConfig, CODEC_EXACT_FALLBACK, CODEC_FIB_K4_N32,
     CODEC_TURBO_8BIT,
 };
-pub use pool::{CacheTarget, DecompressedLayer, PoolLayer, SharedKVPool};
+pub use pool::{
+    CacheTarget, CompressedAttentionHit, CompressedAttentionSelection, DecompressedLayer,
+    PoolLayer, SharedKVPool,
+};
 pub use receipt::{
-    BlockInjectionTrace, InjectionReceipt, PoolBuildReceipt, ShellMaterializeReceipt,
+    BlockInjectionTrace, CompressedAttentionSelectionReceipt, InjectionReceipt, PoolBuildReceipt,
+    ShellMaterializeReceipt, COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA,
     INJECTION_RECEIPT_SCHEMA, POOL_BUILD_RECEIPT_SCHEMA, RECEIPT_SCHEMA,
     SHELL_MATERIALIZE_RECEIPT_SCHEMA,
 };
 pub use shape::{AttentionType, KvTensorShape};
-pub use shell::{AgentShell, AttentionHit, ShellLayer};
+pub use shell::{
+    AgentShell, AttentionHit, CompressedShellAttentionHit, CompressedShellAttentionSelection,
+    ShellLayer,
+};

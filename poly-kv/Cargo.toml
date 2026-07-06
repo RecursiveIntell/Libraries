@@ -49,6 +49,7 @@ gpu_codebook_lookup = ["fib-quant?/gpu_codebook_lookup", "gpu-backend?/gpu"]
 # in qwen3 are independent; spreading them across cores compounds the
 # fib-quant Rayon wins.
 parallel_pool = ["fib-quant?/parallel"]
+gpu = ["gpu_codebook_lookup"]
 # Use stack-ids typed IDs (EntityId, ScopeKey, TraceCtx) instead of bare strings.
 typed-ids = ["dep:stack-ids"]
 temporal-truth = ["dep:bitemporal-runtime", "dep:chrono"]

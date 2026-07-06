@@ -16,6 +16,7 @@ ALLOWED_DIRECT_COMPRESSION_CRATES = {
     "poly-kv",
     "poly-kv-core",
     "poly-kv-python",
+    "compressed-scorer",
     "fib-quant",
     "turbo-quant",
     "turbo-quant-semantic-memory-harness",

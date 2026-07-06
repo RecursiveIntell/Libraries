@@ -23,11 +23,6 @@ impl AgentId {
         &self.0
     }
 
-    /// Clone the inner string.
-    pub fn to_string(&self) -> String {
-        self.0.clone()
-    }
-
     /// Returns true if the inner string is empty.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
