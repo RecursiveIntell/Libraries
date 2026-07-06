@@ -37,6 +37,7 @@ pub mod manifest;
 pub mod policy;
 pub mod pool;
 pub mod receipt;
+pub mod replay;
 pub mod shape;
 pub mod shell;
 
@@ -62,6 +63,10 @@ pub use receipt::{
     ShellMaterializeReceipt, COMPRESSED_ATTENTION_SELECTION_RECEIPT_SCHEMA,
     INJECTION_RECEIPT_SCHEMA, POOL_BUILD_RECEIPT_SCHEMA, RECEIPT_SCHEMA,
     SHELL_MATERIALIZE_RECEIPT_SCHEMA,
+};
+pub use replay::{
+    run_model_replay, CandidateReplayMetrics, ModelReplayConfig, ModelReplayMetrics,
+    ModelReplayQuery, ModelReplayReceipt, MODEL_REPLAY_RECEIPT_SCHEMA,
 };
 pub use shape::{AttentionType, KvTensorShape};
 pub use shell::{

@@ -128,6 +128,26 @@ query
 
 Receipt fields include candidate/source counts, selected pool/shell counts, decoded value count, `full_layer_decoded=false`, and an explicit claim boundary. This is compressed candidate-selection evidence only; model-quality/KV-cache preservation claims require exact attention and logit/PPL replay receipts.
 
+### Model-shaped replay gate
+
+`poly-kv` also includes a deterministic model-shaped replay harness:
+
+```bash
+cargo run --example poly_kv_model_replay_receipt \
+  > docs/codex-runs/P3/POLY_KV_MODEL_REPLAY_RECEIPT.json
+```
+
+The replay compares `AgentShell::attention_topk_compressed(...)` against an exact full-decode attention reference, then projects both attention outputs through a deterministic synthetic output head. The receipt records attention-output cosine/MSE, projected-logit KL, top-1 agreement, PPL-proxy delta, candidate-k sweep results, decoded value count, and full-decode value count.
+
+Stored receipt:
+
+- `docs/codex-runs/P3/POLY_KV_MODEL_REPLAY_RECEIPT.json`
+- `docs/codex-runs/P3/POLY_KV_MODEL_REPLAY_SUMMARY.md`
+
+Current stored result: candidate_k=32 passed the local synthetic replay gate with output cosine 0.9981, KL 0.00109, top-1 agreement 1.0, and 18.0x fewer decoded value vectors than full decode.
+
+Claim boundary: this is deterministic model-shaped replay over a synthetic projection. It is not real model PPL, production KV-cache preservation, production latency evidence, or provider/framework KV-cache byte-reduction evidence. The next gate is captured Q/K/V/logit replay from a small local model.
+
 ## Quick Start
 
 ```rust

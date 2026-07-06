@@ -1,0 +1,103 @@
+{
+  "schema_version": "poly_kv_model_replay_receipt_v1",
+  "claim_boundary": "deterministic model-shaped replay over synthetic projection; not real model PPL, not production KV-cache preservation, and not provider/framework KV-cache byte-reduction evidence",
+  "config": {
+    "layer": 0,
+    "head": 0,
+    "candidate_ks": [
+      32,
+      64,
+      128,
+      256
+    ],
+    "vocab_size": 128,
+    "projection_seed": 4247,
+    "min_output_cosine": 0.1,
+    "max_output_mse": 1.25,
+    "max_kl_divergence": 1.25,
+    "max_ppl_delta": 250.0,
+    "min_top1_agreement": 0.0
+  },
+  "selected_candidate_k": 32,
+  "candidate_results": [
+    {
+      "candidate_k": 32,
+      "output_cosine_mean": 0.9980746118314031,
+      "output_mse_mean": 0.0007535271070080325,
+      "kl_divergence_mean": 0.0010913290703438547,
+      "top1_agreement": 1.0,
+      "ppl_proxy_exact": 1725.819329119769,
+      "ppl_proxy_compressed": 1908.2444466038007,
+      "ppl_proxy_delta": 182.42511748403172,
+      "decoded_values_total": 256,
+      "full_decode_value_count": 4608,
+      "decode_reduction": 18.0,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "candidate_k": 64,
+      "output_cosine_mean": 0.9986396481121143,
+      "output_mse_mean": 0.0004498762925897611,
+      "kl_divergence_mean": 0.0005854088479665745,
+      "top1_agreement": 1.0,
+      "ppl_proxy_exact": 1725.819329119769,
+      "ppl_proxy_compressed": 1745.7155579889475,
+      "ppl_proxy_delta": 19.896228869178458,
+      "decoded_values_total": 512,
+      "full_decode_value_count": 4608,
+      "decode_reduction": 9.0,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "candidate_k": 128,
+      "output_cosine_mean": 0.9985835867171527,
+      "output_mse_mean": 0.0005778086811725144,
+      "kl_divergence_mean": 0.0011455616625796821,
+      "top1_agreement": 1.0,
+      "ppl_proxy_exact": 1725.819329119769,
+      "ppl_proxy_compressed": 1502.4883303520235,
+      "ppl_proxy_delta": -223.33099876774554,
+      "decoded_values_total": 1024,
+      "full_decode_value_count": 4608,
+      "decode_reduction": 4.5,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "candidate_k": 256,
+      "output_cosine_mean": 0.9985828540239969,
+      "output_mse_mean": 0.0008961362282899599,
+      "kl_divergence_mean": 0.0026607710218102226,
+      "top1_agreement": 1.0,
+      "ppl_proxy_exact": 1725.819329119769,
+      "ppl_proxy_compressed": 1379.8094069262766,
+      "ppl_proxy_delta": -346.00992219349246,
+      "decoded_values_total": 2048,
+      "full_decode_value_count": 4608,
+      "decode_reduction": 2.25,
+      "passed": false,
+      "blockers": [
+        "abs(ppl_proxy_delta) 346.0099 > 250.0000"
+      ]
+    }
+  ],
+  "metrics": {
+    "query_count": 8,
+    "exact_attention_outputs": 8,
+    "logit_vectors_compared": 8,
+    "output_cosine_mean": 0.9980746118314031,
+    "output_mse_mean": 0.0007535271070080325,
+    "kl_divergence_mean": 0.0010913290703438547,
+    "top1_agreement": 1.0,
+    "ppl_proxy_exact": 1725.819329119769,
+    "ppl_proxy_compressed": 1908.2444466038007,
+    "ppl_proxy_delta": 182.42511748403172,
+    "decoded_values_total": 256,
+    "full_decode_value_count": 4608,
+    "decode_reduction": 18.0
+  },
+  "passed": true,
+  "blockers": []
+}

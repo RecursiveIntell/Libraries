@@ -8,10 +8,12 @@ All notable changes to `poly-kv` are documented here.
 
 - `AgentShell::attention_topk_compressed(...)` scores Fib cold-pool keys and Turbo hot-shell keys in compressed form, performs global top-k selection, and decodes only selected values.
 - `CompressedAttentionSelectionReceipt` now carries source candidate counts, selected pool/shell counts, optional agent/shell identity, exact-fallback requirement, and a claim boundary.
+- `run_model_replay(...)` emits `poly_kv_model_replay_receipt_v1` receipts comparing compressed pool+shell selection against exact full-decode attention with synthetic projected-logit KL/top-1/PPL-proxy metrics and adaptive candidate-k selection.
+- `poly_kv_model_replay_receipt` example stores the current deterministic model-shaped replay receipt under `docs/codex-runs/P3/`.
 
 ### Claim boundary
 
-- The compressed shell attention path is candidate-selection plumbing. It does not prove model-quality or KV-cache preservation without exact attention/logit/PPL replay receipts.
+- The compressed shell attention path and model-shaped replay gate are candidate/replay plumbing. The stored replay receipt uses deterministic synthetic projection; it does not prove real model-quality or KV-cache preservation without captured Q/K/V/logit/PPL replay receipts.
 
 ## [0.1.0-alpha.1] — 2026-06-02
 
