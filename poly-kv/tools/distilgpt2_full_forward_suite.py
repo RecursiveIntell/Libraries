@@ -69,9 +69,11 @@ def main() -> None:
     ap.add_argument("--summary", default=None)
     ap.add_argument("--model-dir", default=None)
     ap.add_argument("--seq-len", type=int, default=64)
-    ap.add_argument("--layer", type=int, default=0)
+    ap.add_argument("--layer", type=int, default=0, help="Single layer to evaluate when --layers is omitted")
+    ap.add_argument("--layers", default=None, help="Comma-separated layer sweep; overrides --layer")
     ap.add_argument("--heads", default="0,1")
     ap.add_argument("--candidate-ks", default="8,16,32,48,64")
+    ap.add_argument("--suite-label", default="held-out", help="Claim-boundary label, e.g. held-out, all-head, layer-sweep")
     ap.add_argument("--min-attention-output-cosine", type=float, default=0.50)
     ap.add_argument("--max-attention-output-mse", type=float, default=0.10)
     ap.add_argument("--max-final-logit-kl", type=float, default=0.50)
@@ -82,6 +84,7 @@ def main() -> None:
     model_dir = resolve_model(args.model_dir)
     weights = load_weights(model_dir)
     heads = [int(x) for x in args.heads.split(",") if x.strip()]
+    layers = [int(x) for x in args.layers.split(",") if x.strip()] if args.layers else [args.layer]
     candidate_ks = [int(x) for x in args.candidate_ks.split(",") if x.strip()]
     thresholds = {
         "min_attention_output_cosine": args.min_attention_output_cosine,
@@ -96,25 +99,26 @@ def main() -> None:
     for prompt_idx, prompt in enumerate(PROMPTS):
         token_ids = token_ids_for_prompt(model_dir, prompt, args.seq_len)
         labels = token_ids[1 : args.seq_len + 1]
-        for head in heads:
-            exact = run_forward(weights, token_ids, args.layer, head, None)
-            candidate_results = []
-            for k in candidate_ks:
-                compressed = run_forward(weights, token_ids, args.layer, head, k)
-                candidate_results.append(evaluate_candidate(exact, compressed, labels, positions, thresholds, k))
-            selected = next((r for r in candidate_results if r["passed"]), candidate_results[-1])
-            cases.append({
-                "prompt_index": prompt_idx,
-                "prompt_sha256": "sha256:" + __import__("hashlib").sha256(prompt.encode()).hexdigest(),
-                "layer": args.layer,
-                "head": head,
-                "selected_candidate_k": selected["candidate_k"],
-                "passed": selected["passed"],
-                "blockers": selected["blockers"],
-                "selected": selected,
-                "candidate_results": candidate_results,
-            })
-            print(f"case prompt={prompt_idx} head={head} selected={selected['candidate_k']} passed={selected['passed']}", file=sys.stderr, flush=True)
+        for layer in layers:
+            for head in heads:
+                exact = run_forward(weights, token_ids, layer, head, None)
+                candidate_results = []
+                for k in candidate_ks:
+                    compressed = run_forward(weights, token_ids, layer, head, k)
+                    candidate_results.append(evaluate_candidate(exact, compressed, labels, positions, thresholds, k))
+                selected = next((r for r in candidate_results if r["passed"]), candidate_results[-1])
+                cases.append({
+                    "prompt_index": prompt_idx,
+                    "prompt_sha256": "sha256:" + __import__("hashlib").sha256(prompt.encode()).hexdigest(),
+                    "layer": layer,
+                    "head": head,
+                    "selected_candidate_k": selected["candidate_k"],
+                    "passed": selected["passed"],
+                    "blockers": selected["blockers"],
+                    "selected": selected,
+                    "candidate_results": candidate_results,
+                })
+                print(f"case prompt={prompt_idx} layer={layer} head={head} selected={selected['candidate_k']} passed={selected['passed']}", file=sys.stderr, flush=True)
 
     agg = aggregate(cases)
     passed = agg["pass_count"] == agg["case_count"] and agg["decode_reduction_min"] > 1.0
@@ -126,8 +130,8 @@ def main() -> None:
 
     receipt = {
         "schema_version": SCHEMA,
-        "model_id": f"distilgpt2-safetensors-full-forward-heldout-suite:{SNAPSHOT}:layer{args.layer}:heads{','.join(map(str, heads))}",
-        "claim_boundary": "held-out DistilGPT2 full-forward intervention suite over fixed prompts and selected heads; not real-corpus PPL preservation, not production KV-cache preservation, not production latency evidence",
+        "model_id": f"distilgpt2-safetensors-full-forward-{args.suite_label}-suite:{SNAPSHOT}:layers{','.join(map(str, layers))}:heads{','.join(map(str, heads))}",
+        "claim_boundary": f"{args.suite_label} DistilGPT2 full-forward intervention suite over fixed prompts, layers {layers}, and heads {heads}; not real-corpus PPL preservation, not production KV-cache preservation, not production latency evidence",
         "metadata": {
             "source_model": MODEL_ID,
             "model_snapshot": SNAPSHOT,
@@ -135,6 +139,7 @@ def main() -> None:
             "model_safetensors_sha256": sha256_file(model_dir / "model.safetensors"),
             "seq_len": args.seq_len,
             "prompt_count": len(PROMPTS),
+            "layers": layers,
             "heads": heads,
             "query_positions": positions,
             "runtime": "numpy+safetensors+tokenizers manual DistilGPT2 held-out full-forward intervention suite",

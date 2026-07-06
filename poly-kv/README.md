@@ -238,6 +238,41 @@ Stored artifacts:
 
 Current stored result: pass across 6 prompt/head cases. Aggregate pass rate 1.0, final-logit KL mean 0.000980 / max 0.003947, final top-1 agreement mean/min 1.0, attention-output cosine mean 0.9649 / min 0.9264, abs PPL-proxy delta mean 0.01395 / max 0.04752, decode-reduction mean/min 4.2975x.
 
+### Pretrained DistilGPT2 layer/head coverage suites
+
+The broader coverage gate reuses the full-forward intervention suite with explicit layer/head coverage:
+
+```bash
+.venv-capture/bin/python tools/distilgpt2_full_forward_suite.py \
+  --suite-label all-head \
+  --layer 0 \
+  --heads 0,1,2,3,4,5,6,7,8,9,10,11 \
+  --candidate-ks 8 \
+  --out docs/codex-runs/P3/POLY_KV_DISTILGPT2_LAYER0_ALL_HEADS_SUITE_RECEIPT.json \
+  --summary docs/codex-runs/P3/POLY_KV_DISTILGPT2_LAYER0_ALL_HEADS_SUITE_SUMMARY.md
+
+.venv-capture/bin/python tools/distilgpt2_full_forward_suite.py \
+  --suite-label layer-sweep \
+  --layers 0,1,2,3,4,5 \
+  --heads 0 \
+  --candidate-ks 8 \
+  --out docs/codex-runs/P3/POLY_KV_DISTILGPT2_LAYER_SWEEP_SUITE_RECEIPT.json \
+  --summary docs/codex-runs/P3/POLY_KV_DISTILGPT2_LAYER_SWEEP_SUITE_SUMMARY.md
+```
+
+Stored artifacts:
+
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_LAYER0_ALL_HEADS_SUITE_RECEIPT.json`
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_LAYER0_ALL_HEADS_SUITE_SUMMARY.md`
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_LAYER_SWEEP_SUITE_RECEIPT.json`
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_LAYER_SWEEP_SUITE_SUMMARY.md`
+
+Layer-0 all-head result: pass across 36 prompt/head cases, final-logit KL mean 0.02151 / max 0.33674, final top-1 agreement mean 0.9792 / min 0.5, attention-output cosine mean 0.9168 / min 0.5972, abs PPL-proxy delta mean 0.09590 / max 1.6993, decode-reduction mean/min 4.2975x.
+
+Layer-sweep result: pass across 18 prompt/layer cases over layers 0-5 head 0, final-logit KL mean 0.000661 / max 0.003947, final top-1 agreement mean/min 1.0, attention-output cosine mean 0.9707 / min 0.9264, abs PPL-proxy delta mean 0.01140 / max 0.04752, decode-reduction mean/min 4.2975x.
+
+Claim boundary: these are broader DistilGPT2 full-forward intervention coverage receipts over fixed prompts, layer 0 all heads, and all layers for head 0. They are stronger than the 2-head suite but still not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, simultaneous multi-head/multi-layer intervention, or a replacement for KIVI/KVQuant/Quest.
+
 Claim boundary: this is held-out DistilGPT2 full-forward intervention evidence over a small fixed prompt/head suite. It is stronger than one-prompt replay but still not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, all-layer/all-head validity, or a replacement for KIVI/KVQuant/Quest.
 
 ## Quick Start

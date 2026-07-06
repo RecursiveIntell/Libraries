@@ -15,10 +15,11 @@ All notable changes to `poly-kv` are documented here.
 - `capture_distilgpt2_replay.py` generates a pretrained DistilGPT2 safetensors/tokenizer captured replay fixture via manual NumPy forward pass; the stored receipt is a diagnostic negative showing the current single-head projection proxy is insufficient for KV-cache preservation claims.
 - `distilgpt2_full_forward_intervention.py` reinjects compressed sparse attention outputs into a downstream manual DistilGPT2 forward pass and stores the first full-forward intervention receipt: candidate_k=8, final-logit KL 0.000832, top-1 agreement 1.0, and 4.7956x fewer decoded value vectors on the deterministic prompt/window.
 - `distilgpt2_full_forward_suite.py` extends the gate to three fixed held-out prompts × two heads: 6/6 pass, final-logit KL mean 0.000980 / max 0.003947, top-1 agreement 1.0, and decode-reduction mean/min 4.2975x.
+- The same suite now stores broader coverage receipts: layer-0 all heads (36/36 pass, final-logit KL mean 0.02151, decode-reduction 4.2975x) and layer sweep over layers 0-5 head 0 (18/18 pass, final-logit KL mean 0.000661, decode-reduction 4.2975x).
 
 ### Claim boundary
 
-- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The tiny-transformer receipt uses deterministic NumPy tensors. The DistilGPT2 captured projection receipt uses pretrained tensors but fails the strict logit/PPL-proxy gate. The DistilGPT2 full-forward intervention suite passes across a small fixed prompt/head set, but it is still not real-corpus PPL preservation or production KV-cache evidence without broader prompt, layer, head, and latency coverage.
+- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The tiny-transformer receipt uses deterministic NumPy tensors. The DistilGPT2 captured projection receipt uses pretrained tensors but fails the strict logit/PPL-proxy gate. The DistilGPT2 full-forward intervention suites now cover a small fixed prompt set, layer 0 all heads, and all layers for head 0, but they are still not real-corpus PPL preservation or production KV-cache evidence without broader prompt, simultaneous multi-head/multi-layer intervention, and latency coverage.
 
 ## [0.1.0-alpha.1] — 2026-06-02
 
