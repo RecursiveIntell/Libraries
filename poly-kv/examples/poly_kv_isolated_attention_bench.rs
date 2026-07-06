@@ -4,6 +4,7 @@
 //! - pre-decoded exact dense attention (keys already decompressed, just matmul + topk)
 //! - regular compressed attention (rebuilds codec per call)
 //! - prepared compressed attention (pre-built index, only query prep per call)
+//! - fully prepared compressed attention (pre-unpacked indices + norms, just Gram lookups)
 //!
 //! Runs a scale sweep over multiple token counts.
 //! Emits a JSON receipt with per-scale timing, speed ratios, and quality metrics.
@@ -37,7 +38,6 @@ fn make_corpus(n: usize, shape: &KvTensorShape, seed: u64) -> Vec<(String, Vec<f
 }
 
 /// Pre-decoded exact dense attention: keys already decompressed, just matmul + topk.
-/// This is the FAIR comparison — no decompress cost, just the scoring operator.
 fn pre_decoded_exact_attention(
     keys: &[f32],
     head_dim: usize,
@@ -118,18 +118,31 @@ fn run_scale(
         repeat,
     );
 
-    // Quality: compare prepared vs pre-decoded exact
+    // Fully prepared compressed attention (pre-unpacked indices + norms)
+    let fully_index = pool.prepare_fully_compressed_index(0, 0).unwrap();
+    let fully_prepared_ns = bench_fn(
+        || {
+            let _ = pool
+                .attention_topk_fully_prepared(&fully_index, &query, top_k)
+                .unwrap();
+        },
+        warmup,
+        repeat,
+    );
+
+    // Quality: compare fully prepared vs pre-decoded exact
     let exact_hits = pre_decoded_exact_attention(&pre_decoded_keys, head_dim, &query, top_k);
-    let prepared_result = pool
-        .attention_topk_compressed_prepared(&index, &query, top_k)
+    let fully_result = pool
+        .attention_topk_fully_prepared(&fully_index, &query, top_k)
         .unwrap();
     let exact_top: std::collections::HashSet<usize> = exact_hits.iter().map(|(i, _)| *i).collect();
-    let prepared_top: std::collections::HashSet<usize> =
-        prepared_result.hits.iter().map(|h| h.token_index).collect();
-    let union_count = exact_top.union(&prepared_top).count().max(1);
-    let overlap = exact_top.intersection(&prepared_top).count() as f64 / union_count as f64;
+    let fully_top: std::collections::HashSet<usize> =
+        fully_result.hits.iter().map(|h| h.token_index).collect();
+    let union_count = exact_top.union(&fully_top).count().max(1);
+    let overlap = exact_top.intersection(&fully_top).count() as f64 / union_count as f64;
 
     let speed_ratio_pre_decoded_over_prepared = pre_decoded_ns as f64 / prepared_ns as f64;
+    let speed_ratio_pre_decoded_over_fully = pre_decoded_ns as f64 / fully_prepared_ns as f64;
     let speed_ratio_pre_decoded_over_regular = pre_decoded_ns as f64 / regular_ns as f64;
 
     json!({
@@ -140,40 +153,60 @@ fn run_scale(
         "pre_decoded_exact_ns_mean": pre_decoded_ns,
         "regular_compressed_ns_mean": regular_ns,
         "prepared_compressed_ns_mean": prepared_ns,
+        "fully_prepared_compressed_ns_mean": fully_prepared_ns,
         "speed_ratio_pre_decoded_over_regular": speed_ratio_pre_decoded_over_regular,
         "speed_ratio_pre_decoded_over_prepared": speed_ratio_pre_decoded_over_prepared,
+        "speed_ratio_pre_decoded_over_fully_prepared": speed_ratio_pre_decoded_over_fully,
         "topk_overlap": overlap,
     })
 }
 
 fn main() {
     let warmup = 10;
-    let repeat = 50;
     let top_k = 8;
-    let head_dim = 8;
-    let num_heads = 4;
 
-    let scales = [64, 128, 256, 512];
-    let mut results = Vec::new();
+    // Run at head_dim=8 (current) and head_dim=64 (DistilGPT2 real)
+    let configs = [
+        (
+            8usize,
+            4usize,
+            [64, 128, 256, 512, 1024, 2048].as_slice(),
+            50usize,
+        ),
+        (
+            64usize,
+            12usize,
+            [64, 128, 256, 512, 1024, 2048].as_slice(),
+            20usize,
+        ),
+    ];
 
-    for &n in &scales {
-        eprintln!("running scale n={n}...");
-        results.push(run_scale(n, head_dim, num_heads, top_k, warmup, repeat));
+    let mut all_results = Vec::new();
+
+    for &(head_dim, num_heads, scales, base_repeat) in &configs {
+        eprintln!("\n=== head_dim={head_dim} num_heads={num_heads} ===");
+        for &n in scales {
+            // Reduce repeat for large scales to stay within time
+            let repeat = if n >= 1024 {
+                base_repeat / 4
+            } else {
+                base_repeat
+            };
+            let repeat = repeat.max(5);
+            eprintln!("running scale n={n} repeat={repeat}...");
+            all_results.push(run_scale(n, head_dim, num_heads, top_k, warmup, repeat));
+        }
     }
 
     let receipt = json!({
-        "schema_version": "poly_kv_fair_rust_attention_bench_v1",
-        "claim_boundary": "fair isolated Rust CPU attention-operator benchmark; pre-decoded exact dense (no decompress cost) vs prepared compressed (pre-built index) vs regular compressed (rebuilds per call); synthetic random vectors; not production runtime speedup, not GPU evidence, not real-model quality evidence",
+        "schema_version": "poly_kv_fair_rust_attention_bench_v2",
+        "claim_boundary": "fair isolated Rust CPU attention-operator benchmark; pre-decoded exact dense (no decompress cost) vs prepared compressed (pre-built index) vs fully prepared (pre-unpacked indices+norms, Gram-lookups only) vs regular compressed (rebuilds per call); synthetic random vectors; not production runtime speedup, not GPU evidence, not real-model quality evidence",
         "config": {
-            "head_dim": head_dim,
-            "num_heads": num_heads,
-            "num_layers": 2,
             "top_k": top_k,
             "warmup": warmup,
-            "repeat": repeat,
-            "scales": scales,
+            "build_mode": "release",
         },
-        "results": results,
+        "results": all_results,
         "passed": true,
         "blockers": [],
     });
@@ -182,18 +215,34 @@ fn main() {
 
     eprintln!("\n=== FAIR BENCHMARK SUMMARY ===");
     eprintln!(
-        "{:>8} {:>12} {:>12} {:>12} {:>10} {:>10} {:>8}",
-        "tokens", "pre_dec_ns", "reg_comp_ns", "prep_comp_ns", "ratio_reg", "ratio_prep", "overlap"
+        "{:>8} {:>4} {:>4} {:>12} {:>12} {:>12} {:>12} {:>10} {:>10} {:>10} {:>8}",
+        "tokens",
+        "dim",
+        "heads",
+        "pre_dec_ns",
+        "reg_comp_ns",
+        "prep_comp_ns",
+        "fully_prep_ns",
+        "ratio_reg",
+        "ratio_prep",
+        "ratio_full",
+        "overlap"
     );
-    for r in &results {
+    for r in &all_results {
         eprintln!(
-            "{:>8} {:>12} {:>12} {:>12} {:>10.4} {:>10.4} {:>8.4}",
+            "{:>8} {:>4} {:>4} {:>12} {:>12} {:>12} {:>12} {:>10.4} {:>10.4} {:>10.4} {:>8.4}",
             r["num_tokens"].as_u64().unwrap(),
+            r["head_dim"].as_u64().unwrap(),
+            r["num_heads"].as_u64().unwrap(),
             r["pre_decoded_exact_ns_mean"].as_u64().unwrap(),
             r["regular_compressed_ns_mean"].as_u64().unwrap(),
             r["prepared_compressed_ns_mean"].as_u64().unwrap(),
+            r["fully_prepared_compressed_ns_mean"].as_u64().unwrap(),
             r["speed_ratio_pre_decoded_over_regular"].as_f64().unwrap(),
             r["speed_ratio_pre_decoded_over_prepared"].as_f64().unwrap(),
+            r["speed_ratio_pre_decoded_over_fully_prepared"]
+                .as_f64()
+                .unwrap(),
             r["topk_overlap"].as_f64().unwrap(),
         );
     }

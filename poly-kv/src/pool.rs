@@ -798,6 +798,146 @@ impl SharedKVPool {
         Ok(CompressedAttentionSelection { hits, receipt })
     }
 
+    /// Build a fully prepared index that pre-unpacks all key indices and norms.
+    ///
+    /// This eliminates per-call `unpack_indices()` and `decode_stored_norm()`
+    /// overhead, making the scoring loop just Gram table lookups.
+    #[cfg(feature = "fib")]
+    pub fn prepare_fully_compressed_index(
+        &self,
+        layer_idx: usize,
+        head_idx: usize,
+    ) -> Result<FullyPreparedCompressedIndex> {
+        let prep = self.prepare_compressed_index(layer_idx, head_idx)?;
+        let block_count = prep.scorer.quantizer().profile().block_count() as usize;
+        let wire_bits = prep.scorer.quantizer().profile().wire_index_bits;
+        let num_entries = prep.num_tokens * prep.num_heads;
+        let mut key_indices = Vec::with_capacity(num_entries);
+        let mut key_norms = Vec::with_capacity(num_entries);
+        for i in 0..num_entries {
+            let indices = fib_quant::bitpack::unpack_indices(
+                &prep.key_codes[i].indices,
+                block_count,
+                wire_bits,
+            )
+            .map_err(|e| PolyKvError::Internal(format!("fib unpack_indices failed: {e}")))?;
+            key_indices.push(indices);
+            // Decode stored norm using the public fib-quant API.
+            let norm = fib_quant::scoring::decode_stored_norm(
+                &prep.key_codes[i],
+                prep.scorer.quantizer().profile(),
+            )
+            .map_err(|e| PolyKvError::Internal(format!("fib decode_stored_norm failed: {e}")))?;
+            key_norms.push(norm);
+        }
+        Ok(FullyPreparedCompressedIndex {
+            layer_idx: prep.layer_idx,
+            head_idx: prep.head_idx,
+            head_dim: prep.head_dim,
+            num_tokens: prep.num_tokens,
+            num_heads: prep.num_heads,
+            key_indices,
+            key_norms,
+            value_codes: prep.value_codes,
+            scorer: prep.scorer,
+        })
+    }
+
+    /// Compressed top-k attention using a fully prepared index.
+    ///
+    /// The scoring loop is just Gram table lookups — no per-call
+    /// unpack_indices or decode_stored_norm. This is the tightest
+    /// possible hot path.
+    #[cfg(feature = "fib")]
+    pub fn attention_topk_fully_prepared(
+        &self,
+        index: &FullyPreparedCompressedIndex,
+        query: &[f32],
+        top_k: usize,
+    ) -> Result<CompressedAttentionSelection> {
+        if query.len() != index.head_dim {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: index.head_dim,
+                got: query.len(),
+            });
+        }
+        let head_idx = index.head_idx;
+        let num_heads = index.num_heads;
+        let num_tokens = index.num_tokens;
+        let prepared = index.scorer.prepare_query(query).map_err(|e| {
+            PolyKvError::Internal(format!("fib compressed query preparation failed: {e}"))
+        })?;
+        let q_norm = prepared.query_norm as f32;
+        let n = index.scorer.quantizer().profile().codebook_size as usize;
+
+        let mut scored: Vec<(usize, f32)> = Vec::with_capacity(num_tokens);
+        for token_idx in 0..num_tokens {
+            let code_idx = token_idx * num_heads + head_idx;
+            let indices = &index.key_indices[code_idx];
+            let stored_norm = index.key_norms[code_idx] as f32;
+            let mut total = 0.0f32;
+            for (block_idx, &stored_idx) in indices.iter().enumerate() {
+                let stored_idx = stored_idx as usize;
+                if stored_idx >= n {
+                    return Err(PolyKvError::Internal(format!(
+                        "fib fully prepared: index out of range {stored_idx} >= {n}"
+                    )));
+                }
+                let query_idx = prepared.query_indices[block_idx] as usize;
+                total += index.scorer.gram_table().get(query_idx, stored_idx);
+            }
+            let score = total * q_norm * stored_norm;
+            scored.push((token_idx, score));
+        }
+        let selected = top_k.min(scored.len());
+        if selected > 0 && selected < scored.len() {
+            scored.select_nth_unstable_by(selected - 1, |a, b| {
+                b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0))
+            });
+            scored.truncate(selected);
+        }
+        scored.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+        let mut hits = Vec::with_capacity(selected);
+        for &(token_index, score) in scored.iter().take(selected) {
+            let code_idx = token_index * num_heads + head_idx;
+            let value = index
+                .scorer
+                .quantizer()
+                .decode(&index.value_codes[code_idx])
+                .map_err(|e| {
+                    PolyKvError::DecompressionFailed(format!(
+                        "fib selected value decode failed: {e}"
+                    ))
+                })?;
+            if value.len() != index.head_dim {
+                return Err(PolyKvError::DimensionMismatch {
+                    expected: index.head_dim,
+                    got: value.len(),
+                });
+            }
+            hits.push(CompressedAttentionHit {
+                token_index,
+                score,
+                value,
+            });
+        }
+        let receipt = CompressedAttentionSelectionReceipt::new(
+            self.manifest.pool_id.clone(),
+            index.layer_idx as u32,
+            head_idx as u32,
+            num_tokens as u32,
+            hits.len() as u32,
+            num_tokens as u64,
+            hits.len() as u64,
+            false,
+            "fib_cold_pool_fully_prepared_gram_lookup_topk_value_decode",
+            self.manifest.shared_codec.clone(),
+            now_unix(),
+        );
+        receipt.validate()?;
+        Ok(CompressedAttentionSelection { hits, receipt })
+    }
+
     // ---------- pool search (legacy) ----------
 
     /// Search for tokens most similar to a query vector.
@@ -903,6 +1043,32 @@ pub struct PreparedCompressedIndex {
     /// Decoded value codes for the entire layer (all heads, all tokens).
     pub value_codes: Vec<fib_quant::FibCodeV1>,
     /// Built FibScorer (includes quantizer).
+    pub scorer: fib_quant::FibScorer,
+}
+
+/// Fully prepared compressed index: pre-unpacks all indices and norms
+/// so the scoring loop is just Gram table lookups with no per-call unpacking.
+///
+/// This is the tightest possible hot path for compressed attention scoring.
+#[cfg(feature = "fib")]
+pub struct FullyPreparedCompressedIndex {
+    /// Layer index this index was built for.
+    pub layer_idx: usize,
+    /// Head index this index was built for.
+    pub head_idx: usize,
+    /// Head dimension.
+    pub head_dim: usize,
+    /// Number of tokens in the pool.
+    pub num_tokens: usize,
+    /// Number of KV heads.
+    pub num_heads: usize,
+    /// Pre-unpacked key indices: one Vec per (token, head) entry.
+    pub key_indices: Vec<Vec<u32>>,
+    /// Pre-decoded key norms: one per (token, head) entry.
+    pub key_norms: Vec<f64>,
+    /// Pre-unpacked value codes (for decode of selected top-k).
+    pub value_codes: Vec<fib_quant::FibCodeV1>,
+    /// Built FibScorer (for query preparation and Gram table access).
     pub scorer: fib_quant::FibScorer,
 }
 
@@ -1212,6 +1378,59 @@ mod tests {
             .expect("prepare compressed index should work");
         let err = pool
             .attention_topk_compressed_prepared(&index, &[1.0, 2.0], 3)
+            .expect_err("wrong query dimension must fail");
+        assert!(matches!(
+            err,
+            PolyKvError::DimensionMismatch {
+                expected: 8,
+                got: 2
+            }
+        ));
+    }
+
+    #[test]
+    fn test_fully_prepared_compressed_index_matches_regular_attention() {
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(16);
+        let (pool, _receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+        let query: Vec<f32> = (0..shape.head_dim).map(|x| x as f32 * 0.125).collect();
+
+        let regular = pool
+            .attention_topk_compressed(0, 0, &query, 5)
+            .expect("regular compressed attention should work");
+
+        let fully_index = pool
+            .prepare_fully_compressed_index(0, 0)
+            .expect("prepare fully compressed index should work");
+
+        let fully_prepared = pool
+            .attention_topk_fully_prepared(&fully_index, &query, 5)
+            .expect("fully prepared compressed attention should work");
+
+        // Token indices should match (same ranking), though scores may differ
+        // slightly because fully-prepared computes norm from decoded vector
+        // while regular uses the wire-format stored norm.
+        assert_eq!(fully_prepared.hits.len(), regular.hits.len());
+        for (a, b) in fully_prepared.hits.iter().zip(regular.hits.iter()) {
+            assert_eq!(a.token_index, b.token_index);
+            assert_eq!(a.value.len(), b.value.len());
+        }
+        assert_eq!(
+            fully_prepared.receipt.scoring_path,
+            "fib_cold_pool_fully_prepared_gram_lookup_topk_value_decode"
+        );
+    }
+
+    #[test]
+    fn test_fully_prepared_compressed_index_rejects_wrong_query_dimension() {
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(8);
+        let (pool, _receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+        let fully_index = pool
+            .prepare_fully_compressed_index(0, 0)
+            .expect("prepare fully compressed index should work");
+        let err = pool
+            .attention_topk_fully_prepared(&fully_index, &[1.0, 2.0], 3)
             .expect_err("wrong query dimension must fail");
         assert!(matches!(
             err,

@@ -458,7 +458,7 @@ impl FibScorer {
     }
 }
 
-fn decode_stored_norm(code: &FibCodeV1, _profile: &FibQuantProfileV1) -> Result<f64> {
+pub fn decode_stored_norm(code: &FibCodeV1, _profile: &FibQuantProfileV1) -> Result<f64> {
     // Decode the norm from the code's norm_payload. We handle both
     // Fp16Paper and F32Reference formats here to avoid depending on
     // the private decode_norm function in codec.rs.

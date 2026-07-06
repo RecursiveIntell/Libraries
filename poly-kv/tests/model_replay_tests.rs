@@ -353,6 +353,56 @@ fn test_fair_rust_attention_bench_receipt_is_stored_and_bounded() {
 }
 
 #[test]
+fn test_fair_rust_attention_bench_v2_receipt_is_stored_and_bounded() {
+    let receipt_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/codex-runs/P3/POLY_KV_FAIR_RUST_ATTENTION_BENCH_V2_RECEIPT.json");
+    let receipt: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(&receipt_path)
+            .expect("fair rust attention bench v2 receipt must exist"),
+    )
+    .unwrap();
+
+    assert_eq!(
+        receipt["schema_version"],
+        "poly_kv_fair_rust_attention_bench_v2"
+    );
+    assert!(receipt["results"].as_array().unwrap().len() >= 8);
+    let mut found_break_even = false;
+    for r in receipt["results"].as_array().unwrap() {
+        assert!(
+            r["pre_decoded_exact_ns_mean"].as_u64().unwrap() > 0,
+            "pre_decoded timing must be positive"
+        );
+        assert!(
+            r["fully_prepared_compressed_ns_mean"].as_u64().unwrap() > 0,
+            "fully prepared timing must be positive"
+        );
+        assert!(
+            r["speed_ratio_pre_decoded_over_fully_prepared"]
+                .as_f64()
+                .unwrap()
+                > 0.0,
+            "fully prepared speed ratio must be positive"
+        );
+        if r["speed_ratio_pre_decoded_over_fully_prepared"]
+            .as_f64()
+            .unwrap()
+            > 1.0
+        {
+            found_break_even = true;
+        }
+    }
+    assert!(
+        found_break_even,
+        "at least one case should show fully prepared faster than exact (ratio > 1.0)"
+    );
+    assert!(receipt["claim_boundary"]
+        .as_str()
+        .unwrap()
+        .contains("fully prepared"));
+}
+
+#[test]
 fn test_captured_model_replay_uses_captured_logits_and_adaptive_candidates() {
     let keys = vec![
         vec![1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
