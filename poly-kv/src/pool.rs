@@ -587,8 +587,14 @@ impl SharedKVPool {
                     })?;
                 scored.push((token_idx, code_idx, score));
             }
-            scored.sort_by(|a, b| b.2.total_cmp(&a.2).then_with(|| a.0.cmp(&b.0)));
             let selected = top_k.min(scored.len());
+            if selected > 0 && selected < scored.len() {
+                scored.select_nth_unstable_by(selected - 1, |a, b| {
+                    b.2.total_cmp(&a.2).then_with(|| a.0.cmp(&b.0))
+                });
+                scored.truncate(selected);
+            }
+            scored.sort_by(|a, b| b.2.total_cmp(&a.2).then_with(|| a.0.cmp(&b.0)));
             let mut hits = Vec::with_capacity(selected);
             for &(token_index, code_idx, score) in scored.iter().take(selected) {
                 let value = scorer

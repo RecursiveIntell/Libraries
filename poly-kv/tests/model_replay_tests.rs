@@ -270,10 +270,22 @@ fn test_distilgpt2_attention_speed_bench_receipt_is_stored_and_bounded() {
             .unwrap()
             > 0.0
     );
+    assert!(
+        receipt["aggregate"]["optimized_prequantized_compressed_attention_ns_mean"]
+            .as_f64()
+            .expect("optimized prequantized timing must be present")
+            > 0.0
+    );
+    assert!(
+        receipt["aggregate"]["speed_ratio_exact_over_optimized_prequantized"]
+            .as_f64()
+            .expect("optimized prequantized speed ratio must be present")
+            > 0.0
+    );
     assert!(receipt["claim_boundary"]
         .as_str()
         .unwrap()
-        .contains("isolated NumPy attention-operator benchmark"));
+        .contains("quality diagnostics excluded from timed hot paths"));
 }
 
 #[test]

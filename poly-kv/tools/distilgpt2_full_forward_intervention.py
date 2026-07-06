@@ -50,20 +50,38 @@ def topk_indices(values: np.ndarray, k: int) -> np.ndarray:
     return part[np.argsort(values[part])[::-1]]
 
 
+def prepare_quantized_keys(keys: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Precompute per-vector int8 key codes/scales once per layer/head."""
+    scales = np.maximum(np.max(np.abs(keys), axis=1) / 127.0, 1e-8).astype(np.float32)
+    codes = np.clip(np.round(keys / scales[:, None]), -127, 127).astype(np.int16)
+    return codes, scales
+
+
 def quantized_scores(query: np.ndarray, keys: np.ndarray) -> np.ndarray:
     """Per-vector int8-ish quantized dot scores for candidate selection."""
+    key_codes, key_scales = prepare_quantized_keys(keys)
+    return quantized_scores_prepared(query, key_codes, key_scales)
+
+
+def quantized_scores_prepared(query: np.ndarray, key_codes: np.ndarray, key_scales: np.ndarray) -> np.ndarray:
     q_scale = max(float(np.max(np.abs(query))) / 127.0, 1e-8)
     q = np.clip(np.round(query / q_scale), -127, 127).astype(np.int16)
-    out = []
-    for key in keys:
-        k_scale = max(float(np.max(np.abs(key))) / 127.0, 1e-8)
-        kk = np.clip(np.round(key / k_scale), -127, 127).astype(np.int16)
-        out.append(float(np.dot(q.astype(np.float64), kk.astype(np.float64)) * q_scale * k_scale))
-    return np.asarray(out, dtype=np.float64)
+    approx = key_codes.astype(np.float32) @ q.astype(np.float32)
+    return (approx * key_scales * q_scale).astype(np.float64)
 
 
-def sparse_attention_output(query: np.ndarray, keys: np.ndarray, values: np.ndarray, candidate_k: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    approx = quantized_scores(query, keys) / math.sqrt(query.shape[-1])
+def sparse_attention_output(
+    query: np.ndarray,
+    keys: np.ndarray,
+    values: np.ndarray,
+    candidate_k: int,
+    key_codes: np.ndarray | None = None,
+    key_scales: np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    if key_codes is None or key_scales is None:
+        approx = quantized_scores(query, keys) / math.sqrt(query.shape[-1])
+    else:
+        approx = quantized_scores_prepared(query, key_codes, key_scales) / math.sqrt(query.shape[-1])
     selected = topk_indices(approx, candidate_k)
     exact_scores = (keys[selected] @ query) / math.sqrt(query.shape[-1])
     weights = softmax(exact_scores, axis=-1)
@@ -132,10 +150,19 @@ def run_forward(
 
         if layer == capture_layer:
             if candidate_k is not None:
+                capture_keys = kh[capture_head]
+                capture_key_codes, capture_key_scales = prepare_quantized_keys(capture_keys)
                 for p in range(seq_len):
-                    keys = kh[capture_head, : p + 1]
+                    keys = capture_keys[: p + 1]
                     values = vh[capture_head, : p + 1]
-                    sparse_out, selected, approx = sparse_attention_output(qh[capture_head, p], keys, values, candidate_k)
+                    sparse_out, selected, approx = sparse_attention_output(
+                        qh[capture_head, p],
+                        keys,
+                        values,
+                        candidate_k,
+                        capture_key_codes[: p + 1],
+                        capture_key_scales[: p + 1],
+                    )
                     exact_top = set(topk_indices(scores[capture_head, p, : p + 1], min(candidate_k, p + 1)).tolist())
                     selected_set = set(selected.tolist())
                     union = exact_top | selected_set

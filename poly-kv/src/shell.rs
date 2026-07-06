@@ -281,13 +281,22 @@ impl AgentShell {
             });
         }
 
+        let selected = top_k.min(scored.len());
+        if selected > 0 && selected < scored.len() {
+            scored.select_nth_unstable_by(selected - 1, |a, b| {
+                b.score
+                    .total_cmp(&a.score)
+                    .then_with(|| a.from_shell.cmp(&b.from_shell))
+                    .then_with(|| a.token_index.cmp(&b.token_index))
+            });
+            scored.truncate(selected);
+        }
         scored.sort_by(|a, b| {
             b.score
                 .total_cmp(&a.score)
                 .then_with(|| a.from_shell.cmp(&b.from_shell))
                 .then_with(|| a.token_index.cmp(&b.token_index))
         });
-        let selected = top_k.min(scored.len());
         let mut hits = Vec::with_capacity(selected);
         let mut selected_pool_count = 0u32;
         let mut selected_shell_count = 0u32;

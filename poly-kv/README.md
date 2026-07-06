@@ -294,9 +294,9 @@ Stored artifacts:
 - `docs/codex-runs/P3/POLY_KV_DISTILGPT2_ATTENTION_SPEED_BENCH_RECEIPT.json`
 - `docs/codex-runs/P3/POLY_KV_DISTILGPT2_ATTENTION_SPEED_BENCH_SUMMARY.md`
 
-Current stored result: negative speed result. The benchmark shows 20.59x fewer selected value decodes, but the current NumPy CPU implementation is slower than exact dense attention: scalar compressed speed ratio 0.0134x and vectorized/prequantized compressed speed ratio 0.2322x, where ratio is exact_time / compressed_time. This proves decode-work reduction, not runtime speedup.
+Current stored result: still a negative speed result, but the benchmark methodology is now corrected. It shows 20.59x fewer selected value decodes. After excluding setup and quality diagnostics from the timed hot path, optimized/prequantized compressed timing improves to speed_ratio_exact_over_optimized_prequantized=0.4251x (exact_time / compressed_time). Scalar diagnostic path is 0.1619x and vectorized-with-setup diagnostic path is 0.2028x. This proves decode-work reduction and removes two benchmark overhead bugs, but it still does not prove runtime speedup.
 
-Claim boundary: isolated NumPy CPU attention-operator benchmark over precomputed DistilGPT2 Q/K/V tensors. It is not production runtime speedup, not GPU/kernel evidence, and not end-to-end generation latency evidence.
+Claim boundary: isolated NumPy CPU attention-operator benchmark over precomputed DistilGPT2 Q/K/V tensors. Setup/full-forward cost is excluded, and the optimized/prequantized timing excludes quality diagnostics from timed hot paths. It is not production runtime speedup, not GPU/kernel evidence, and not end-to-end generation latency evidence.
 
 Claim boundary: this is held-out DistilGPT2 full-forward intervention evidence over a small fixed prompt/head suite. It is stronger than one-prompt replay but still not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, all-layer/all-head validity, or a replacement for KIVI/KVQuant/Quest.
 
