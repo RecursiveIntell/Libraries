@@ -1,0 +1,74 @@
+{
+  "blockers": [],
+  "build": {
+    "pool_backend": "cpu",
+    "pool_build_ns": 45412516,
+    "pool_bytes": 98596,
+    "pool_compression_ratio": 21.27015294738123,
+    "pool_raw_bytes": 2097152,
+    "shell_bytes": 210944,
+    "shell_materialize_ns": 14548027,
+    "shell_unique_tokens": 64
+  },
+  "claim_boundary": "local synthetic benchmark of compressed candidate selection over reconstructed KV artifacts; not model-quality, logit, PPL, or production latency evidence",
+  "config": {
+    "head_dim": 64,
+    "num_heads": 4,
+    "num_layers": 2,
+    "num_queries": 8,
+    "seed": 42,
+    "shared_tokens": 512,
+    "shell_tokens": 64,
+    "top_k": 128
+  },
+  "last_selection_receipt": {
+    "agent_id": "bench_agent",
+    "candidate_count": 576,
+    "claim_boundary": "compressed candidate selection only; model-quality/KV-cache preservation claims require exact attention and logit/PPL replay receipts",
+    "codec_id": "fib_k4_n32+turbo_8bit",
+    "compressed_key_scores": 576,
+    "decoded_value_vectors": 128,
+    "exact_fallback_required": true,
+    "full_layer_decoded": false,
+    "head": 0,
+    "layer": 0,
+    "pool_candidate_count": 512,
+    "pool_digest": "fae8e4865e43cc8638c888c75e4ea0c54b73fc0ac61ec94aa2b54c2c72f9dcc8",
+    "schema_version": "compressed_attention_selection_receipt_v1",
+    "scoring_path": "fib_pool_and_turbo_shell_compressed_score_topk_value_decode",
+    "selected_at_unix": 1783322328,
+    "selected_count": 128,
+    "selected_pool_count": 128,
+    "selected_shell_count": 0,
+    "shell_candidate_count": 64,
+    "shell_digest": "c2e32ac37f14b9e869ce986d0299bffb7841b1a314eea2b58f914f61ae3dde67"
+  },
+  "metrics": {
+    "compressed_candidate_latency": {
+      "max_ns": 18889355,
+      "mean_ns": 18329512,
+      "p50_ns": 18680084,
+      "p95_ns": 18889355
+    },
+    "decoded_possible_full_values": 4608,
+    "decoded_values_total": 1024,
+    "legacy_full_decode_score_latency": {
+      "max_ns": 28094811,
+      "mean_ns": 27343117,
+      "p50_ns": 27520186,
+      "p95_ns": 28094811
+    },
+    "legacy_over_compressed_speed_ratio": 1.4917536811672891,
+    "selected_pool_total": 1024,
+    "selected_shell_total": 0,
+    "top_k_overlap_mean_vs_legacy": 0.3376963350785341,
+    "top_k_overlap_min_vs_legacy": 0.3333333333333333,
+    "value_decode_reduction_vs_full_value_decode": 4.5
+  },
+  "passed": true,
+  "paths": {
+    "compressed_candidate_score": "AgentShell::attention_topk_compressed(Fib cold-pool codes + Turbo hot-shell codes + selected value decode)",
+    "legacy_full_decode_key_score": "AgentShell::attention_topk(pool decompress_layer + shell key decode)"
+  },
+  "schema": "poly-kv-compressed-attention-bench-v1"
+}
