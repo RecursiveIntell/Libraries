@@ -16,6 +16,7 @@ All notable changes to `poly-kv` are documented here.
 - `distilgpt2_full_forward_intervention.py` reinjects compressed sparse attention outputs into a downstream manual DistilGPT2 forward pass and stores the first full-forward intervention receipt: candidate_k=8, final-logit KL 0.000832, top-1 agreement 1.0, and 4.7956x fewer decoded value vectors on the deterministic prompt/window.
 - `distilgpt2_full_forward_suite.py` extends the gate to three fixed held-out prompts × two heads: 6/6 pass, final-logit KL mean 0.000980 / max 0.003947, top-1 agreement 1.0, and decode-reduction mean/min 4.2975x.
 - The same suite now stores broader coverage receipts: layer-0 all heads (36/36 pass, final-logit KL mean 0.02151, decode-reduction 4.2975x) and layer sweep over layers 0-5 head 0 (18/18 pass, final-logit KL mean 0.000661, decode-reduction 4.2975x).
+- `distilgpt2_attention_speed_bench.py` isolates exact dense attention vs compressed sparse candidate attention over precomputed DistilGPT2 Q/K/V tensors. Current receipt is a negative speed result: 20.59x decode-work reduction but scalar compressed speed ratio 0.0134x and vectorized/prequantized speed ratio 0.2322x on NumPy CPU, so it proves decode reduction but not runtime speedup.
 
 ### Claim boundary
 

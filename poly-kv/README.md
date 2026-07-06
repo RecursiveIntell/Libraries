@@ -273,6 +273,31 @@ Layer-sweep result: pass across 18 prompt/layer cases over layers 0-5 head 0, fi
 
 Claim boundary: these are broader DistilGPT2 full-forward intervention coverage receipts over fixed prompts, layer 0 all heads, and all layers for head 0. They are stronger than the 2-head suite but still not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, simultaneous multi-head/multi-layer intervention, or a replacement for KIVI/KVQuant/Quest.
 
+### Isolated attention speed benchmark
+
+The speed benchmark isolates the operation being optimized: exact dense single-head attention over precomputed DistilGPT2 Q/K/V tensors vs the current compressed sparse candidate path. It excludes setup/full-forward cost and records timing separately from decode-work reduction.
+
+```bash
+.venv-capture/bin/python tools/distilgpt2_attention_speed_bench.py \
+  --seq-len 512 \
+  --layers 0 \
+  --heads 0,1,2,3,4,5,6,7,8,9,10,11 \
+  --candidate-k 8 \
+  --warmup 5 \
+  --repeat 30 \
+  --out docs/codex-runs/P3/POLY_KV_DISTILGPT2_ATTENTION_SPEED_BENCH_RECEIPT.json \
+  --summary docs/codex-runs/P3/POLY_KV_DISTILGPT2_ATTENTION_SPEED_BENCH_SUMMARY.md
+```
+
+Stored artifacts:
+
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_ATTENTION_SPEED_BENCH_RECEIPT.json`
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_ATTENTION_SPEED_BENCH_SUMMARY.md`
+
+Current stored result: negative speed result. The benchmark shows 20.59x fewer selected value decodes, but the current NumPy CPU implementation is slower than exact dense attention: scalar compressed speed ratio 0.0134x and vectorized/prequantized compressed speed ratio 0.2322x, where ratio is exact_time / compressed_time. This proves decode-work reduction, not runtime speedup.
+
+Claim boundary: isolated NumPy CPU attention-operator benchmark over precomputed DistilGPT2 Q/K/V tensors. It is not production runtime speedup, not GPU/kernel evidence, and not end-to-end generation latency evidence.
+
 Claim boundary: this is held-out DistilGPT2 full-forward intervention evidence over a small fixed prompt/head suite. It is stronger than one-prompt replay but still not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, all-layer/all-head validity, or a replacement for KIVI/KVQuant/Quest.
 
 ## Quick Start
