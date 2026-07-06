@@ -1,10 +1,12 @@
-//! Isolated Rust attention-operator speed benchmark for poly-kv.
+//! Fair isolated Rust attention-operator speed benchmark for poly-kv.
 //!
-//! Compares exact dense attention vs:
+//! Compares:
+//! - pre-decoded exact dense attention (keys already decompressed, just matmul + topk)
 //! - regular compressed attention (rebuilds codec per call)
 //! - prepared compressed attention (pre-built index, only query prep per call)
 //!
-//! Emits a JSON receipt with timing, speed ratios, and quality metrics.
+//! Runs a scale sweep over multiple token counts.
+//! Emits a JSON receipt with per-scale timing, speed ratios, and quality metrics.
 
 use poly_kv::{AttentionType, KvTensorShape, SharedKVPool};
 use rand::{Rng, SeedableRng};
@@ -12,14 +14,14 @@ use rand_chacha::ChaCha8Rng;
 use serde_json::json;
 use std::time::Instant;
 
-fn make_shape() -> KvTensorShape {
+fn make_shape(head_dim: usize, num_heads: usize) -> KvTensorShape {
     KvTensorShape {
         attention_type: AttentionType::MHA,
         num_layers: 2,
-        num_heads: 4,
-        num_kv_heads: 4,
-        head_dim: 8,
-        hidden_size: 32,
+        num_heads: num_heads as u32,
+        num_kv_heads: num_heads as u32,
+        head_dim,
+        hidden_size: head_dim * num_heads,
     }
 }
 
@@ -34,15 +36,14 @@ fn make_corpus(n: usize, shape: &KvTensorShape, seed: u64) -> Vec<(String, Vec<f
         .collect()
 }
 
-fn exact_dense_attention(
-    pool: &SharedKVPool,
-    layer_idx: usize,
+/// Pre-decoded exact dense attention: keys already decompressed, just matmul + topk.
+/// This is the FAIR comparison — no decompress cost, just the scoring operator.
+fn pre_decoded_exact_attention(
+    keys: &[f32],
+    head_dim: usize,
     query: &[f32],
     top_k: usize,
 ) -> Vec<(usize, f32)> {
-    let decompressed = pool.decompress_layer(layer_idx).unwrap();
-    let keys = decompressed.keys.first().unwrap();
-    let head_dim = decompressed.head_dim;
     let num_tokens = keys.len() / head_dim;
     let mut scored: Vec<(usize, f32)> = Vec::with_capacity(num_tokens);
     for i in 0..num_tokens {
@@ -59,7 +60,7 @@ fn exact_dense_attention(
     scored
 }
 
-fn bench_fn<F: FnMut()>(mut f: F, warmup: usize, repeat: usize) -> (u128, u128) {
+fn bench_fn<F: FnMut()>(mut f: F, warmup: usize, repeat: usize) -> u128 {
     for _ in 0..warmup {
         f();
     }
@@ -67,30 +68,37 @@ fn bench_fn<F: FnMut()>(mut f: F, warmup: usize, repeat: usize) -> (u128, u128) 
     for _ in 0..repeat {
         f();
     }
-    let elapsed = start.elapsed();
-    (elapsed.as_nanos() / repeat as u128, elapsed.as_nanos())
+    start.elapsed().as_nanos() / repeat as u128
 }
 
-fn main() {
-    let shape = make_shape();
-    let corpus = make_corpus(128, &shape, 42);
+fn run_scale(
+    num_tokens: usize,
+    head_dim: usize,
+    num_heads: usize,
+    top_k: usize,
+    warmup: usize,
+    repeat: usize,
+) -> serde_json::Value {
+    let shape = make_shape(head_dim, num_heads);
+    let corpus = make_corpus(num_tokens, &shape, 42);
     let (pool, _) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
-    let query: Vec<f32> = (0..shape.head_dim).map(|x| x as f32 * 0.125).collect();
-    let top_k = 8;
-    let warmup = 10;
-    let repeat = 100;
+    let query: Vec<f32> = (0..head_dim).map(|x| x as f32 * 0.125).collect();
 
-    // Exact dense attention timing
-    let (exact_ns, _) = bench_fn(
+    // Pre-decode keys once for fair comparison
+    let decompressed = pool.decompress_layer(0).unwrap();
+    let pre_decoded_keys = decompressed.keys[0].clone();
+
+    // Pre-decoded exact dense (fair: no decompress cost)
+    let pre_decoded_ns = bench_fn(
         || {
-            let _ = exact_dense_attention(&pool, 0, &query, top_k);
+            let _ = pre_decoded_exact_attention(&pre_decoded_keys, head_dim, &query, top_k);
         },
         warmup,
         repeat,
     );
 
     // Regular compressed attention (rebuilds codec per call)
-    let (regular_ns, _) = bench_fn(
+    let regular_ns = bench_fn(
         || {
             let _ = pool.attention_topk_compressed(0, 0, &query, top_k).unwrap();
         },
@@ -100,7 +108,7 @@ fn main() {
 
     // Prepared compressed attention (pre-built index)
     let index = pool.prepare_compressed_index(0, 0).unwrap();
-    let (prepared_ns, _) = bench_fn(
+    let prepared_ns = bench_fn(
         || {
             let _ = pool
                 .attention_topk_compressed_prepared(&index, &query, top_k)
@@ -110,49 +118,83 @@ fn main() {
         repeat,
     );
 
-    // Quality: compare prepared vs exact
-    let exact_hits = exact_dense_attention(&pool, 0, &query, top_k);
+    // Quality: compare prepared vs pre-decoded exact
+    let exact_hits = pre_decoded_exact_attention(&pre_decoded_keys, head_dim, &query, top_k);
     let prepared_result = pool
         .attention_topk_compressed_prepared(&index, &query, top_k)
         .unwrap();
     let exact_top: std::collections::HashSet<usize> = exact_hits.iter().map(|(i, _)| *i).collect();
     let prepared_top: std::collections::HashSet<usize> =
         prepared_result.hits.iter().map(|h| h.token_index).collect();
-    let overlap = exact_top.intersection(&prepared_top).count() as f64
-        / exact_top.union(&prepared_top).count().max(1) as f64;
+    let union_count = exact_top.union(&prepared_top).count().max(1);
+    let overlap = exact_top.intersection(&prepared_top).count() as f64 / union_count as f64;
 
-    let speed_ratio_regular = exact_ns as f64 / regular_ns as f64;
-    let speed_ratio_prepared = exact_ns as f64 / prepared_ns as f64;
+    let speed_ratio_pre_decoded_over_prepared = pre_decoded_ns as f64 / prepared_ns as f64;
+    let speed_ratio_pre_decoded_over_regular = pre_decoded_ns as f64 / regular_ns as f64;
+
+    json!({
+        "num_tokens": num_tokens,
+        "head_dim": head_dim,
+        "num_heads": num_heads,
+        "top_k": top_k,
+        "pre_decoded_exact_ns_mean": pre_decoded_ns,
+        "regular_compressed_ns_mean": regular_ns,
+        "prepared_compressed_ns_mean": prepared_ns,
+        "speed_ratio_pre_decoded_over_regular": speed_ratio_pre_decoded_over_regular,
+        "speed_ratio_pre_decoded_over_prepared": speed_ratio_pre_decoded_over_prepared,
+        "topk_overlap": overlap,
+    })
+}
+
+fn main() {
+    let warmup = 10;
+    let repeat = 50;
+    let top_k = 8;
+    let head_dim = 8;
+    let num_heads = 4;
+
+    let scales = [64, 128, 256, 512];
+    let mut results = Vec::new();
+
+    for &n in &scales {
+        eprintln!("running scale n={n}...");
+        results.push(run_scale(n, head_dim, num_heads, top_k, warmup, repeat));
+    }
 
     let receipt = json!({
-        "schema_version": "poly_kv_isolated_rust_attention_bench_v1",
-        "claim_boundary": "isolated Rust CPU attention-operator benchmark over synthetic pool; not production runtime speedup, not GPU evidence, not end-to-end latency evidence",
+        "schema_version": "poly_kv_fair_rust_attention_bench_v1",
+        "claim_boundary": "fair isolated Rust CPU attention-operator benchmark; pre-decoded exact dense (no decompress cost) vs prepared compressed (pre-built index) vs regular compressed (rebuilds per call); synthetic random vectors; not production runtime speedup, not GPU evidence, not real-model quality evidence",
         "config": {
-            "num_tokens": corpus.len(),
-            "head_dim": shape.head_dim,
-            "num_heads": shape.num_heads,
-            "num_layers": shape.num_layers,
+            "head_dim": head_dim,
+            "num_heads": num_heads,
+            "num_layers": 2,
             "top_k": top_k,
             "warmup": warmup,
             "repeat": repeat,
+            "scales": scales,
         },
-        "results": {
-            "exact_dense_ns_mean": exact_ns,
-            "regular_compressed_ns_mean": regular_ns,
-            "prepared_compressed_ns_mean": prepared_ns,
-            "speed_ratio_exact_over_regular": speed_ratio_regular,
-            "speed_ratio_exact_over_prepared": speed_ratio_prepared,
-            "topk_overlap": overlap,
-        },
+        "results": results,
         "passed": true,
         "blockers": [],
     });
 
     println!("{}", serde_json::to_string_pretty(&receipt).unwrap());
 
+    eprintln!("\n=== FAIR BENCHMARK SUMMARY ===");
     eprintln!(
-        "exact={exact_ns}ns regular={regular_ns}ns prepared={prepared_ns}ns \
-         ratio_regular={speed_ratio_regular:.4}x ratio_prepared={speed_ratio_prepared:.4}x \
-         overlap={overlap:.4}"
+        "{:>8} {:>12} {:>12} {:>12} {:>10} {:>10} {:>8}",
+        "tokens", "pre_dec_ns", "reg_comp_ns", "prep_comp_ns", "ratio_reg", "ratio_prep", "overlap"
     );
+    for r in &results {
+        eprintln!(
+            "{:>8} {:>12} {:>12} {:>12} {:>10.4} {:>10.4} {:>8.4}",
+            r["num_tokens"].as_u64().unwrap(),
+            r["pre_decoded_exact_ns_mean"].as_u64().unwrap(),
+            r["regular_compressed_ns_mean"].as_u64().unwrap(),
+            r["prepared_compressed_ns_mean"].as_u64().unwrap(),
+            r["speed_ratio_pre_decoded_over_regular"].as_f64().unwrap(),
+            r["speed_ratio_pre_decoded_over_prepared"].as_f64().unwrap(),
+            r["topk_overlap"].as_f64().unwrap(),
+        );
+    }
 }

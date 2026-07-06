@@ -313,6 +313,46 @@ fn test_distilgpt2_attention_speed_bench_receipt_is_stored_and_bounded() {
 }
 
 #[test]
+fn test_fair_rust_attention_bench_receipt_is_stored_and_bounded() {
+    let receipt_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/codex-runs/P3/POLY_KV_FAIR_RUST_ATTENTION_BENCH_RECEIPT.json");
+    let receipt: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(&receipt_path)
+            .expect("fair rust attention bench receipt must exist"),
+    )
+    .unwrap();
+
+    assert_eq!(
+        receipt["schema_version"],
+        "poly_kv_fair_rust_attention_bench_v1"
+    );
+    assert!(receipt["results"].as_array().unwrap().len() >= 4);
+    for r in receipt["results"].as_array().unwrap() {
+        assert!(
+            r["pre_decoded_exact_ns_mean"].as_u64().unwrap() > 0,
+            "pre_decoded timing must be positive"
+        );
+        assert!(
+            r["prepared_compressed_ns_mean"].as_u64().unwrap() > 0,
+            "prepared timing must be positive"
+        );
+        assert!(
+            r["speed_ratio_pre_decoded_over_prepared"].as_f64().unwrap() > 0.0,
+            "prepared speed ratio must be positive"
+        );
+        assert!(
+            r["topk_overlap"].as_f64().unwrap() >= 0.0
+                && r["topk_overlap"].as_f64().unwrap() <= 1.0,
+            "overlap must be in [0,1]"
+        );
+    }
+    assert!(receipt["claim_boundary"]
+        .as_str()
+        .unwrap()
+        .contains("fair isolated Rust CPU attention-operator benchmark"));
+}
+
+#[test]
 fn test_captured_model_replay_uses_captured_logits_and_adaptive_candidates() {
     let keys = vec![
         vec![1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
