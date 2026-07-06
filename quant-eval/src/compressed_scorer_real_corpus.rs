@@ -301,7 +301,7 @@ fn evaluate_per_dim_profile(
     Ok(CompressedScorerRealCorpusProfile {
         name: format!("per_dim_{}bit", config.bits),
         family: "compressed-scorer".to_string(),
-        scoring_path: "compressed_domain_score_then_exact_f32_rerank".to_string(),
+        scoring_path: "lookup_table_compressed_domain_score_then_exact_f32_rerank".to_string(),
         query_count: corpus.queries.len(),
         doc_count: corpus.documents.len(),
         bits_per_component: config.bits as f32,

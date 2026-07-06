@@ -75,7 +75,7 @@ fn compressed_scorer_real_corpus_eval_emits_candidate_receipt() {
     assert_eq!(profile.family, "compressed-scorer");
     assert_eq!(
         profile.scoring_path,
-        "compressed_domain_score_then_exact_f32_rerank"
+        "lookup_table_compressed_domain_score_then_exact_f32_rerank"
     );
     assert_eq!(profile.query_count, 3);
     assert_eq!(profile.doc_count, 4);

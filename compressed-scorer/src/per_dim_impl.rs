@@ -32,6 +32,25 @@ pub struct PerDimCompressed {
 pub struct PerDimPrepared {
     dim: usize,
     query_codes: Vec<u8>,
+    levels: usize,
+    contribution_lut: Vec<f32>,
+}
+
+impl PerDimPrepared {
+    /// Number of quantization levels represented in the contribution table.
+    pub fn levels(&self) -> usize {
+        self.levels
+    }
+
+    /// Number of scalar entries in the query-prepared contribution table.
+    pub fn lookup_table_len(&self) -> usize {
+        self.contribution_lut.len()
+    }
+
+    /// Per-dimension query codes used to build the contribution table.
+    pub fn query_codes(&self) -> &[u8] {
+        &self.query_codes
+    }
 }
 
 impl PreparedQuery for PerDimPrepared {
@@ -161,9 +180,20 @@ impl CompressedScorer for PerDimScorer {
         }
         let normalized: Vec<f32> = query.iter().map(|&x| x / norm).collect();
         let codes = self.encode(&normalized)?;
+        let levels = self.levels as usize;
+        let mut contribution_lut = Vec::with_capacity(self.dim * levels);
+        for (i, query_code) in codes.iter().enumerate().take(self.dim) {
+            let qry_val = self.min[i] + self.step[i] * f32::from(*query_code);
+            for code in 0..levels {
+                let key_val = self.min[i] + self.step[i] * code as f32;
+                contribution_lut.push(qry_val * key_val);
+            }
+        }
         Ok(PerDimPrepared {
             dim: self.dim,
             query_codes: codes,
+            levels,
+            contribution_lut,
         })
     }
 
@@ -178,11 +208,22 @@ impl CompressedScorer for PerDimScorer {
                 got: compressed.codes.len(),
             });
         }
+        if prepared.dim != self.dim || prepared.levels != self.levels as usize {
+            return Err(ScorerError::DimensionMismatch {
+                expected: self.dim,
+                got: prepared.dim,
+            });
+        }
+        let expected_lut_len = self.dim * prepared.levels;
+        if prepared.contribution_lut.len() != expected_lut_len {
+            return Err(ScorerError::CorruptPayload(
+                "per-dim prepared query lookup table has invalid length".into(),
+            ));
+        }
         let mut sum = 0.0f64;
         for i in 0..self.dim {
-            let key_val = self.min[i] + self.step[i] * compressed.codes[i] as f32;
-            let qry_val = self.min[i] + self.step[i] * prepared.query_codes[i] as f32;
-            sum += (key_val as f64) * (qry_val as f64);
+            let code = compressed.codes[i] as usize;
+            sum += f64::from(prepared.contribution_lut[i * prepared.levels + code]);
         }
         let score = sum as f32;
         Ok(score)
@@ -218,6 +259,41 @@ mod tests {
 
     fn sine_vec(dim: usize) -> Vec<f32> {
         (0..dim).map(|i| libm::sinf(i as f32)).collect()
+    }
+
+    #[test]
+    fn per_dim_lookup_table_is_prepared_once_per_query() {
+        let dim = 8;
+        let mut scorer = PerDimScorer::new(dim, 4).unwrap();
+        let v = sine_vec(dim);
+        let v2: Vec<f32> = (0..dim).map(|i| libm::cosf(i as f32)).collect();
+        scorer.fit(&[&v, &v2]).unwrap();
+
+        let prepared = scorer.prepare_query(&v).unwrap();
+
+        assert_eq!(prepared.levels(), 16);
+        assert_eq!(prepared.lookup_table_len(), dim * 16);
+    }
+
+    #[test]
+    fn per_dim_lookup_score_matches_direct_reconstruction_formula() {
+        let dim = 8;
+        let mut scorer = PerDimScorer::new(dim, 4).unwrap();
+        let v = sine_vec(dim);
+        let v2: Vec<f32> = (0..dim).map(|i| libm::cosf(i as f32)).collect();
+        scorer.fit(&[&v, &v2]).unwrap();
+        let compressed = scorer.compress(&v2).unwrap();
+        let prepared = scorer.prepare_query(&v).unwrap();
+
+        let lookup_score = scorer.score_prepared(&prepared, &compressed).unwrap();
+        let mut direct_score = 0.0f64;
+        for i in 0..dim {
+            let key_val = scorer.min[i] + scorer.step[i] * compressed.codes[i] as f32;
+            let query_val = scorer.min[i] + scorer.step[i] * prepared.query_codes()[i] as f32;
+            direct_score += f64::from(key_val) * f64::from(query_val);
+        }
+
+        assert!((lookup_score - direct_score as f32).abs() < 1e-6);
     }
 
     #[test]

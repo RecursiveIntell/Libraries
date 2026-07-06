@@ -17,7 +17,7 @@ Current status: prototype-to-evidence benchmark substrate. It contains real metr
 - **RAG fixture metrics** — local recall@K, NDCG@K, and exact-rerank recovery over caller-supplied query/retrieval fixtures.
 - **HyperQuant primitive evaluation** — deterministic Z1/A2 evaluation through the published `hyperquant` crate, with mean/max MSE, estimated bytes, rejected-vector counts, receipt counts, and explicit claim boundaries.
 - **HyperQuant real-corpus retrieval gate** — caller-supplied document/query embeddings and qrels compared across exact f32 retrieval and HyperQuant-reconstructed retrieval, with recall@1/5/10/K, NDCG@K, top-K overlap, exact-rerank recovery, rank drift, score error, compression ratio, timing, and pass/fail blockers. A BEIR/Scifact all-minilm receipt is stored under `docs/codex-runs/P2/`.
-- **compressed-scorer real-corpus gate** — evaluates true compressed-domain candidate scoring through `compressed-scorer::PerDimScorer`, emits `compressed-scorer-real-corpus-eval-v1`, records zero document decodes during candidate scoring, and keeps exact f32 rerank mandatory.
+- **compressed-scorer real-corpus gate** — evaluates true compressed-domain candidate scoring through `compressed-scorer::PerDimScorer`, emits `compressed-scorer-real-corpus-eval-v1`, records zero document decodes during candidate scoring, and keeps exact f32 rerank mandatory. PerDim now uses query-prepared lookup-table contribution scoring.
 - **Conservative public surface** — measurement APIs first; no silent production claims.
 
 ## Evidence pipeline
@@ -230,6 +230,7 @@ Implemented:
 - caller-supplied document/query embeddings plus explicit qrels;
 - exact f32 retrieval baseline;
 - candidate retrieval through `compressed-scorer::PerDimScorer` without decoding documents during candidate scoring;
+- query-prepared lookup-table contribution scoring for PerDim, so query-dependent reconstruction math is paid once per query instead of per candidate;
 - exact-rerank recovery against authoritative f32 vectors;
 - recall@1/5/10/K, NDCG@K, top-K overlap, rank drift, score error, timing, byte accounting, decoded-doc count, exact-rerank count, and pass/fail blockers;
 - conservative receipt schema `compressed-scorer-real-corpus-eval-v1`.

@@ -39,8 +39,10 @@ That is the shared seam for:
 - **turbo-quant**: Polar-coordinate inner product estimate after seeded
   rotation. Data-oblivious — no trained codebook needed.
 - **per-dim**: Asymmetric per-dimension uniform quantization over
-  unit-normalized vectors. Useful when the key distribution has very different
-  per-dimension ranges.
+  unit-normalized vectors. `prepare_query()` builds a query-side contribution
+  lookup table, then `score_prepared()` sums table entries indexed by document
+  codes. This is ADC-style compressed-domain candidate scoring, not a
+  SIMD/QuickADC production-speed claim yet.
 
 ## Core API
 
