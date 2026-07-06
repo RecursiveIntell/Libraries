@@ -153,6 +153,7 @@ fn handle_connection(mut stream: std::net::TcpStream, bridge: MemoryBridge, hand
         ("POST", "/maintenance/reconcile") => {
             handle_maintenance_reconcile(&body_str, &bridge, &handle)
         }
+        ("POST", "/maintenance/rebuild-hnsw") => handle_maintenance_rebuild_hnsw(&bridge, &handle),
         ("POST", "/maintenance/compact-hnsw") => handle_maintenance_compact_hnsw(&bridge, &handle),
         _ => (
             "404 Not Found",
@@ -1178,6 +1179,56 @@ fn handle_maintenance_reconcile(
             "500 Internal Server Error",
             serde_json::json!({"ok": false, "error": format!("reconcile error: {e}")}),
         ),
+    }
+}
+
+/// Handle POST /maintenance/rebuild-hnsw: calls store.rebuild_hnsw_index().
+///
+/// Rebuilds the HNSW sidecar from current SQLite embeddings. Use this when
+/// the index is stale (e.g. after bulk imports, model changes, or long periods
+/// without automatic sync).
+fn handle_maintenance_rebuild_hnsw(
+    bridge: &MemoryBridge,
+    handle: &Handle,
+) -> (&'static str,
+    serde_json::Value,
+) {
+    #[cfg(feature = "hnsw")]
+    {
+        let store = &bridge.store;
+        let result = block_in_place(|| handle.block_on(store.rebuild_hnsw_index()));
+
+        return match result {
+            Ok(receipt) => (
+                "200 OK",
+                serde_json::json!({
+                    "ok": true,
+                    "action": "rebuild-hnsw",
+                    "message": "HNSW index rebuilt successfully",
+                    "generation_id": receipt.generation_id,
+                    "vector_count": receipt.vector_count,
+                }),
+            ),
+            Err(e) => (
+                "500 Internal Server Error",
+                serde_json::json!({"ok": false, "error": format!("rebuild_hnsw error: {e}")}),
+            ),
+        };
+    }
+
+    #[cfg(not(feature = "hnsw"))]
+    {
+        let _ = bridge;
+        let _ = handle;
+        (
+            "200 OK",
+            serde_json::json!({
+                "ok": true,
+                "action": "rebuild-hnsw",
+                "message": "HNSW rebuild not applicable — usearch backend does not require rebuild",
+                "skipped": true,
+            }),
+        )
     }
 }
 
