@@ -476,11 +476,28 @@ const MIGRATION_V28: &str = "";
 fn run_migration_v28(conn: &Connection) -> Result<(), rusqlite::Error> {
     add_column_if_missing(conn, "graph_edges", "valid_time", "TEXT")?;
     add_column_if_missing(conn, "graph_edges", "recorded_time", "TEXT")?;
-    conn.execute_batch(
+    // Backfill missing bitemporal timestamps with recorded_at.
+    conn.execute(
         "UPDATE graph_edges
          SET valid_time = COALESCE(valid_time, recorded_at),
-             recorded_time = COALESCE(recorded_time, recorded_at);
-         CREATE INDEX IF NOT EXISTS idx_graph_edges_bitemporal
+             recorded_time = COALESCE(recorded_time, recorded_at)",
+        [],
+    )?;
+    // Canonicalize any RFC3339 values to fixed-width SQL microseconds so
+    // lexicographic ordering equals chronological ordering. Mixed formats
+    // can otherwise make as-of queries wrong.
+    conn.execute(
+        "UPDATE graph_edges
+         SET valid_time = format('%Y-%m-%d %H:%M:%f', valid_time),
+             recorded_time = format('%Y-%m-%d %H:%M:%f', recorded_time),
+             invalidated_at = CASE
+                 WHEN invalidated_at IS NULL THEN NULL
+                 ELSE format('%Y-%m-%d %H:%M:%f', invalidated_at)
+             END",
+        [],
+    )?;
+    conn.execute_batch(
+        "CREATE INDEX IF NOT EXISTS idx_graph_edges_bitemporal
              ON graph_edges(valid_time, recorded_time);
          CREATE INDEX IF NOT EXISTS idx_graph_edges_recorded_time
              ON graph_edges(recorded_time);",

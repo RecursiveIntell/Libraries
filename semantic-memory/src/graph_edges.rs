@@ -25,9 +25,44 @@
 
 use crate::error::MemoryError;
 use crate::types::{GraphEdge, GraphEdgeType};
-use chrono::Utc;
+use chrono::{DateTime, NaiveDateTime, Utc};
 use rusqlite::{params, Connection};
 use std::collections::HashSet;
+
+/// Canonical timestamp format used for all bitemporal graph-edge columns.
+///
+/// Fixed-width, lexicographically sortable, and unambiguous.
+const CANONICAL_TS_FMT: &str = "%Y-%m-%d %H:%M:%S%.6f";
+
+/// Normalize a caller-provided timestamp into the canonical sortable format.
+///
+/// Accepts:
+/// - `%Y-%m-%d %H:%M:%S%.6f` (canonical)
+/// - `%Y-%m-%d %H:%M:%S` (SQLite default)
+/// - RFC3339 / ISO 8601 (`2026-01-01T00:00:00Z`)
+///
+/// Returns `None` if the input cannot be parsed.
+pub(crate) fn canonicalize_timestamp(s: &str) -> Option<String> {
+    // Already canonical?
+    if NaiveDateTime::parse_from_str(s, CANONICAL_TS_FMT).is_ok() {
+        return Some(s.to_string());
+    }
+    // SQLite datetime format with seconds precision.
+    if let Ok(dt) = NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S") {
+        return Some(dt.format(CANONICAL_TS_FMT).to_string());
+    }
+    // RFC3339 / ISO 8601.
+    if let Ok(dt) = DateTime::parse_from_rfc3339(s) {
+        return Some(dt.naive_utc().format(CANONICAL_TS_FMT).to_string());
+    }
+    None
+}
+
+/// Normalize a timestamp for storage. If parsing fails, returns the
+/// original input unchanged so the caller can decide whether to reject it.
+fn normalize_or_pass_through(s: &str) -> String {
+    canonicalize_timestamp(s).unwrap_or_else(|| s.to_string())
+}
 
 /// A stored graph edge row.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -133,11 +168,13 @@ pub(crate) fn insert_graph_edge(
             invalidation_reason: None,
             valid_time: params
                 .valid_time
-                .clone()
+                .as_deref()
+                .map(normalize_or_pass_through)
                 .or_else(|| Some(recorded_at.clone())),
             recorded_time: params
                 .recorded_time
-                .clone()
+                .as_deref()
+                .map(normalize_or_pass_through)
                 .or_else(|| Some(recorded_at.clone())),
         });
     }
@@ -146,11 +183,13 @@ pub(crate) fn insert_graph_edge(
     let recorded_at = Utc::now().format("%Y-%m-%d %H:%M:%S%.6f").to_string();
     let valid_time = params
         .valid_time
-        .clone()
+        .as_deref()
+        .map(normalize_or_pass_through)
         .unwrap_or_else(|| recorded_at.clone());
     let recorded_time = params
         .recorded_time
-        .clone()
+        .as_deref()
+        .map(normalize_or_pass_through)
         .unwrap_or_else(|| recorded_at.clone());
 
     conn.execute(
@@ -267,6 +306,18 @@ pub(crate) fn list_graph_edges_for_node_as_of(
     as_of_valid_time: &str,
     as_of_recorded_time: &str,
 ) -> Result<Vec<StoredGraphEdge>, MemoryError> {
+    // Normalize as-of inputs so mixed SQL/RFC3339 formats compare correctly.
+    let as_of_valid_time = canonicalize_timestamp(as_of_valid_time).ok_or_else(|| {
+        MemoryError::Other(format!(
+            "invalid as_of_valid_time timestamp: {as_of_valid_time}"
+        ))
+    })?;
+    let as_of_recorded_time = canonicalize_timestamp(as_of_recorded_time).ok_or_else(|| {
+        MemoryError::Other(format!(
+            "invalid as_of_recorded_time timestamp: {as_of_recorded_time}"
+        ))
+    })?;
+
     let mut stmt = conn.prepare(
         "SELECT id, source, target, edge_type, weight, metadata, content_digest, recorded_at,
                 is_invalidated, invalidated_at, invalidation_reason, valid_time, recorded_time
@@ -372,7 +423,8 @@ pub(crate) fn invalidate_graph_edge(
     edge_id: &str,
     reason: &str,
 ) -> Result<(), MemoryError> {
-    let invalidated_at = Utc::now().format("%Y-%m-%d %H:%M:%S%.6f").to_string();
+    let invalidated_at =
+        normalize_or_pass_through(&Utc::now().format("%Y-%m-%d %H:%M:%S%.6f").to_string());
     let count = conn.execute(
         "UPDATE graph_edges SET is_invalidated = 1, invalidated_at = ?1, invalidation_reason = ?2
          WHERE id = ?3 AND is_invalidated = 0",
@@ -617,13 +669,68 @@ mod tests {
 
         assert_eq!(visible.len(), 1);
         assert_eq!(visible[0].target, "fact:b");
+        // Stored RFC3339 values must be canonicalized to fixed-width SQL format.
         assert_eq!(
             visible[0].valid_time.as_deref(),
-            Some("2026-01-01T00:00:00Z")
+            Some("2026-01-01 00:00:00.000000")
         );
         assert_eq!(
             visible[0].recorded_time.as_deref(),
-            Some("2026-01-02T00:00:00Z")
+            Some("2026-01-02 00:00:00.000000")
         );
+    }
+
+    #[test]
+    fn graph_edges_as_of_handles_mixed_timestamp_formats() {
+        // Edge inserted with canonical SQL timestamp; query with RFC3339.
+        let conn = migrated_conn();
+        let edge = AddGraphEdgeParams {
+            source: "fact:x".to_string(),
+            target: "fact:y".to_string(),
+            edge_type: GraphEdgeType::Semantic {
+                cosine_similarity: 0.9,
+            },
+            weight: 1.0,
+            metadata: None,
+            valid_time: Some("2026-01-01 00:00:00.000000".to_string()),
+            recorded_time: Some("2026-01-01 00:00:00.000000".to_string()),
+        };
+        insert_graph_edge(&conn, &edge).unwrap();
+
+        let visible = list_graph_edges_for_node_as_of(
+            &conn,
+            "fact:x",
+            "2026-01-01T23:59:59Z",
+            "2026-01-01T23:59:59Z",
+        )
+        .unwrap();
+        assert_eq!(visible.len(), 1);
+        assert_eq!(visible[0].target, "fact:y");
+    }
+
+    #[test]
+    fn graph_edges_as_of_rejects_invalid_timestamp() {
+        let conn = migrated_conn();
+        let edge = AddGraphEdgeParams {
+            source: "fact:x".to_string(),
+            target: "fact:y".to_string(),
+            edge_type: GraphEdgeType::Semantic {
+                cosine_similarity: 0.9,
+            },
+            weight: 1.0,
+            metadata: None,
+            valid_time: None,
+            recorded_time: None,
+        };
+        insert_graph_edge(&conn, &edge).unwrap();
+
+        let err = list_graph_edges_for_node_as_of(
+            &conn,
+            "fact:x",
+            "not-a-timestamp",
+            "2026-01-01T00:00:00Z",
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("invalid as_of_valid_time"));
     }
 }
