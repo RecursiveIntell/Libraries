@@ -148,6 +148,31 @@ Current stored result: candidate_k=32 passed the local synthetic replay gate wit
 
 Claim boundary: this is deterministic model-shaped replay over a synthetic projection. It is not real model PPL, production KV-cache preservation, production latency evidence, or provider/framework KV-cache byte-reduction evidence. The next gate is captured Q/K/V/logit replay from a small local model.
 
+### Captured-tensor replay gate
+
+`poly-kv` now has a captured-tensor replay API and fixture path:
+
+```bash
+python3 tools/capture_tiny_transformer_replay.py \
+  --out docs/codex-runs/P3/POLY_KV_CAPTURED_TINY_TRANSFORMER_FIXTURE.json
+
+cargo run --example poly_kv_captured_model_replay -- \
+  docs/codex-runs/P3/POLY_KV_CAPTURED_TINY_TRANSFORMER_FIXTURE.json \
+  > docs/codex-runs/P3/POLY_KV_CAPTURED_MODEL_REPLAY_RECEIPT.json
+```
+
+The capture script emits Q/K/V rows, exact attention output, output projection, exact logits, and labels from a deterministic NumPy tiny-transformer forward pass. The Rust replay API rebuilds the Fib cold pool and Turbo hot shell from those captured tensors, runs compressed candidate selection, and compares compressed outputs against the captured exact tensors/logits.
+
+Stored receipt:
+
+- `docs/codex-runs/P3/POLY_KV_CAPTURED_TINY_TRANSFORMER_FIXTURE.json`
+- `docs/codex-runs/P3/POLY_KV_CAPTURED_MODEL_REPLAY_RECEIPT.json`
+- `docs/codex-runs/P3/POLY_KV_CAPTURED_MODEL_REPLAY_SUMMARY.md`
+
+Current stored result: selected candidate_k=16, output cosine 0.5847, KL 0.00622, top-1 agreement 0.25, PPL-proxy delta -4.6746, and 4.5x fewer decoded value vectors than full decode.
+
+Claim boundary: this is captured-tensor fixture evidence from a deterministic NumPy tiny transformer, not pretrained LLM PPL preservation. `torch` and `transformers` were not installed on the host, and Ollama does not expose Q/K/V tensors/logits via its normal API. The next gate is a pretrained small-model capture through torch/transformers, patched llama.cpp, or a Candle/safetensors path.
+
 ## Quick Start
 
 ```rust

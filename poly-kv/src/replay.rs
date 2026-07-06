@@ -107,6 +107,57 @@ pub struct ModelReplayReceipt {
     pub blockers: Vec<String>,
 }
 
+/// Schema for captured-tensor model replay receipts.
+pub const CAPTURED_MODEL_REPLAY_RECEIPT_SCHEMA: &str = "poly_kv_captured_model_replay_v1";
+
+/// One captured query/key/value/logit sample.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CapturedReplayQuery {
+    pub query: Vec<f32>,
+    pub keys: Vec<Vec<f32>>,
+    pub values: Vec<Vec<f32>>,
+    pub exact_attention_output: Vec<f32>,
+    pub exact_logits: Vec<f32>,
+    pub label_token: usize,
+}
+
+/// Captured tensor replay fixture.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CapturedReplayFixture {
+    pub schema_version: String,
+    pub model_id: String,
+    pub head_dim: usize,
+    pub shared_tokens: usize,
+    pub seed: u64,
+    pub output_projection: Vec<Vec<f32>>,
+    pub queries: Vec<CapturedReplayQuery>,
+}
+
+/// Captured replay gate config.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CapturedReplayConfig {
+    pub candidate_ks: Vec<usize>,
+    pub min_output_cosine: f64,
+    pub max_output_mse: f64,
+    pub max_kl_divergence: f64,
+    pub max_ppl_delta: f64,
+    pub min_top1_agreement: f64,
+}
+
+/// Captured tensor replay receipt.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CapturedReplayReceipt {
+    pub schema_version: String,
+    pub model_id: String,
+    pub claim_boundary: String,
+    pub config: CapturedReplayConfig,
+    pub selected_candidate_k: usize,
+    pub candidate_results: Vec<CandidateReplayMetrics>,
+    pub metrics: ModelReplayMetrics,
+    pub passed: bool,
+    pub blockers: Vec<String>,
+}
+
 #[derive(Clone)]
 struct ExactCandidate {
     key: Vec<f32>,
@@ -195,6 +246,61 @@ pub fn run_model_replay(
             query_count: queries.len(),
             exact_attention_outputs: queries.len() as u64,
             logit_vectors_compared: queries.len() as u64,
+            output_cosine_mean: selected.output_cosine_mean,
+            output_mse_mean: selected.output_mse_mean,
+            kl_divergence_mean: selected.kl_divergence_mean,
+            top1_agreement: selected.top1_agreement,
+            ppl_proxy_exact: selected.ppl_proxy_exact,
+            ppl_proxy_compressed: selected.ppl_proxy_compressed,
+            ppl_proxy_delta: selected.ppl_proxy_delta,
+            decoded_values_total: selected.decoded_values_total,
+            full_decode_value_count,
+            decode_reduction: selected.decode_reduction,
+        },
+        candidate_results,
+        passed,
+        blockers,
+    })
+}
+
+/// Run captured-tensor replay through the existing compressed pool+shell path.
+pub fn run_captured_model_replay(
+    fixture: &CapturedReplayFixture,
+    config: CapturedReplayConfig,
+) -> Result<CapturedReplayReceipt> {
+    validate_captured_fixture(fixture, &config)?;
+    let full_decode_value_count = (fixture
+        .queries
+        .iter()
+        .map(|query| query.values.len())
+        .sum::<usize>()
+        * config.candidate_ks.len().max(1)
+        / config.candidate_ks.len().max(1)) as u64;
+    let mut candidate_results = Vec::with_capacity(config.candidate_ks.len());
+    for &candidate_k in &config.candidate_ks {
+        candidate_results.push(eval_captured_candidate_k(fixture, &config, candidate_k)?);
+    }
+    let selected_idx = candidate_results
+        .iter()
+        .position(|result| result.passed)
+        .unwrap_or(candidate_results.len() - 1);
+    let selected = candidate_results[selected_idx].clone();
+    let passed = selected.passed;
+    let blockers = if passed {
+        Vec::new()
+    } else {
+        selected.blockers.clone()
+    };
+    Ok(CapturedReplayReceipt {
+        schema_version: CAPTURED_MODEL_REPLAY_RECEIPT_SCHEMA.to_string(),
+        model_id: fixture.model_id.clone(),
+        claim_boundary: "captured tensor replay against fixture Q/K/V/logits; not pretrained LLM PPL, not production KV-cache preservation, and not provider/framework KV-cache byte-reduction evidence".to_string(),
+        config,
+        selected_candidate_k: selected.candidate_k,
+        metrics: ModelReplayMetrics {
+            query_count: fixture.queries.len(),
+            exact_attention_outputs: fixture.queries.len() as u64,
+            logit_vectors_compared: fixture.queries.len() as u64,
             output_cosine_mean: selected.output_cosine_mean,
             output_mse_mean: selected.output_mse_mean,
             kl_divergence_mean: selected.kl_divergence_mean,
@@ -321,6 +427,223 @@ fn eval_candidate_k(
         passed: blockers.is_empty(),
         blockers,
     })
+}
+
+fn validate_captured_fixture(
+    fixture: &CapturedReplayFixture,
+    config: &CapturedReplayConfig,
+) -> Result<()> {
+    if config.candidate_ks.is_empty() {
+        return Err(PolyKvError::InvalidPolicy(
+            "candidate_ks must not be empty".to_string(),
+        ));
+    }
+    if fixture.queries.is_empty() {
+        return Err(PolyKvError::InvalidPolicy(
+            "captured fixture must contain at least one query".to_string(),
+        ));
+    }
+    if fixture.head_dim == 0 {
+        return Err(PolyKvError::InvalidPolicy(
+            "head_dim must be greater than zero".to_string(),
+        ));
+    }
+    if fixture.output_projection.is_empty() {
+        return Err(PolyKvError::InvalidPolicy(
+            "output_projection must not be empty".to_string(),
+        ));
+    }
+    for row in &fixture.output_projection {
+        if row.len() != fixture.head_dim {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: fixture.head_dim,
+                got: row.len(),
+            });
+        }
+    }
+    for query in &fixture.queries {
+        if query.query.len() != fixture.head_dim
+            || query.exact_attention_output.len() != fixture.head_dim
+        {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: fixture.head_dim,
+                got: query.query.len(),
+            });
+        }
+        if query.keys.len() != query.values.len() || query.keys.is_empty() {
+            return Err(PolyKvError::InvalidPolicy(
+                "captured keys/values must be non-empty and same length".to_string(),
+            ));
+        }
+        if fixture.shared_tokens == 0 || fixture.shared_tokens >= query.keys.len() {
+            return Err(PolyKvError::InvalidPolicy(
+                "shared_tokens must split captured rows into non-empty pool and shell tiers"
+                    .to_string(),
+            ));
+        }
+        if query.exact_logits.len() != fixture.output_projection.len() {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: fixture.output_projection.len(),
+                got: query.exact_logits.len(),
+            });
+        }
+        if query.label_token >= query.exact_logits.len() {
+            return Err(PolyKvError::InvalidPolicy(format!(
+                "label_token {} >= logits len {}",
+                query.label_token,
+                query.exact_logits.len()
+            )));
+        }
+        for row in query.keys.iter().chain(query.values.iter()) {
+            if row.len() != fixture.head_dim {
+                return Err(PolyKvError::DimensionMismatch {
+                    expected: fixture.head_dim,
+                    got: row.len(),
+                });
+            }
+        }
+    }
+    Ok(())
+}
+
+fn eval_captured_candidate_k(
+    fixture: &CapturedReplayFixture,
+    config: &CapturedReplayConfig,
+    candidate_k: usize,
+) -> Result<CandidateReplayMetrics> {
+    let mut cosines = Vec::with_capacity(fixture.queries.len());
+    let mut mses = Vec::with_capacity(fixture.queries.len());
+    let mut kls = Vec::with_capacity(fixture.queries.len());
+    let mut exact_nlls = Vec::with_capacity(fixture.queries.len());
+    let mut compressed_nlls = Vec::with_capacity(fixture.queries.len());
+    let mut top1_matches = 0usize;
+    let mut decoded_values_total = 0u64;
+    let mut full_decode_value_count = 0u64;
+
+    for (query_idx, query) in fixture.queries.iter().enumerate() {
+        let (pool, shell) = build_captured_pool_shell(fixture, query, query_idx)?;
+        let compressed = shell.attention_topk_compressed(&pool, 0, 0, &query.query, candidate_k)?;
+        decoded_values_total += compressed.receipt.decoded_value_vectors;
+        full_decode_value_count += query.values.len() as u64;
+
+        let compressed_output = compressed_attention_output(&compressed.hits);
+        let compressed_logits = project_logits(&compressed_output, &fixture.output_projection);
+        let exact_probs = softmax(&query.exact_logits);
+        let compressed_probs = softmax(&compressed_logits);
+        let exact_nll = nll(&exact_probs, query.label_token);
+        let compressed_nll = nll(&compressed_probs, query.label_token);
+        cosines.push(cosine(&query.exact_attention_output, &compressed_output));
+        mses.push(mse(&query.exact_attention_output, &compressed_output));
+        kls.push(kl_divergence(&exact_probs, &compressed_probs));
+        exact_nlls.push(exact_nll);
+        compressed_nlls.push(compressed_nll);
+        if argmax(&query.exact_logits) == argmax(&compressed_logits) {
+            top1_matches += 1;
+        }
+    }
+
+    let output_cosine_mean = mean(&cosines);
+    let output_mse_mean = mean(&mses);
+    let kl_divergence_mean = mean(&kls);
+    let ppl_proxy_exact = mean(&exact_nlls).exp();
+    let ppl_proxy_compressed = mean(&compressed_nlls).exp();
+    let ppl_proxy_delta = ppl_proxy_compressed - ppl_proxy_exact;
+    let top1_agreement = top1_matches as f64 / fixture.queries.len() as f64;
+    let decode_reduction = full_decode_value_count as f64 / decoded_values_total.max(1) as f64;
+
+    let mut blockers = Vec::new();
+    if output_cosine_mean < config.min_output_cosine {
+        blockers.push(format!(
+            "output_cosine_mean {output_cosine_mean:.4} < {:.4}",
+            config.min_output_cosine
+        ));
+    }
+    if output_mse_mean > config.max_output_mse {
+        blockers.push(format!(
+            "output_mse_mean {output_mse_mean:.4} > {:.4}",
+            config.max_output_mse
+        ));
+    }
+    if kl_divergence_mean > config.max_kl_divergence {
+        blockers.push(format!(
+            "kl_divergence_mean {kl_divergence_mean:.4} > {:.4}",
+            config.max_kl_divergence
+        ));
+    }
+    let ppl_proxy_delta_abs = ppl_proxy_delta.abs();
+    if ppl_proxy_delta_abs > config.max_ppl_delta {
+        blockers.push(format!(
+            "abs(ppl_proxy_delta) {ppl_proxy_delta_abs:.4} > {:.4}",
+            config.max_ppl_delta
+        ));
+    }
+    if top1_agreement < config.min_top1_agreement {
+        blockers.push(format!(
+            "top1_agreement {top1_agreement:.4} < {:.4}",
+            config.min_top1_agreement
+        ));
+    }
+
+    Ok(CandidateReplayMetrics {
+        candidate_k,
+        output_cosine_mean,
+        output_mse_mean,
+        kl_divergence_mean,
+        top1_agreement,
+        ppl_proxy_exact,
+        ppl_proxy_compressed,
+        ppl_proxy_delta,
+        decoded_values_total,
+        full_decode_value_count,
+        decode_reduction,
+        passed: blockers.is_empty(),
+        blockers,
+    })
+}
+
+fn build_captured_pool_shell(
+    fixture: &CapturedReplayFixture,
+    query: &CapturedReplayQuery,
+    query_idx: usize,
+) -> Result<(SharedKVPool, AgentShell)> {
+    let shape = crate::KvTensorShape {
+        attention_type: crate::AttentionType::MHA,
+        num_layers: 1,
+        num_heads: 1,
+        num_kv_heads: 1,
+        head_dim: fixture.head_dim,
+        hidden_size: fixture.head_dim,
+    };
+    let rows: Vec<Vec<f32>> = query
+        .keys
+        .iter()
+        .zip(&query.values)
+        .map(|(key, value)| {
+            let mut row = Vec::with_capacity(fixture.head_dim * 2);
+            row.extend_from_slice(key);
+            row.extend_from_slice(value);
+            row
+        })
+        .collect();
+    let shared: Vec<(String, Vec<f32>)> = rows
+        .iter()
+        .take(fixture.shared_tokens)
+        .enumerate()
+        .map(|(idx, row)| (format!("q{query_idx}_shared_{idx}"), row.clone()))
+        .collect();
+    let hot: Vec<(String, Vec<f32>)> = rows
+        .iter()
+        .skip(fixture.shared_tokens)
+        .enumerate()
+        .map(|(idx, row)| (format!("q{query_idx}_hot_{idx}"), row.clone()))
+        .collect();
+    let (pool, _) = SharedKVPool::build(&shared, &shape, fixture.seed + query_idx as u64)?;
+    let (shell, _) = pool.materialize_shell(
+        &format!("captured_{}_{query_idx}", fixture.model_id),
+        &hot,
+        fixture.seed + 10_000 + query_idx as u64,
+    )?;
+    Ok((pool, shell))
 }
 
 fn exact_candidates(

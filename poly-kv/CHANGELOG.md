@@ -10,10 +10,12 @@ All notable changes to `poly-kv` are documented here.
 - `CompressedAttentionSelectionReceipt` now carries source candidate counts, selected pool/shell counts, optional agent/shell identity, exact-fallback requirement, and a claim boundary.
 - `run_model_replay(...)` emits `poly_kv_model_replay_receipt_v1` receipts comparing compressed pool+shell selection against exact full-decode attention with synthetic projected-logit KL/top-1/PPL-proxy metrics and adaptive candidate-k selection.
 - `poly_kv_model_replay_receipt` example stores the current deterministic model-shaped replay receipt under `docs/codex-runs/P3/`.
+- `run_captured_model_replay(...)` emits `poly_kv_captured_model_replay_v1` receipts from captured Q/K/V/logit fixtures.
+- `capture_tiny_transformer_replay.py` generates a deterministic NumPy tiny-transformer captured replay fixture when torch/transformers are unavailable.
 
 ### Claim boundary
 
-- The compressed shell attention path and model-shaped replay gate are candidate/replay plumbing. The stored replay receipt uses deterministic synthetic projection; it does not prove real model-quality or KV-cache preservation without captured Q/K/V/logit/PPL replay receipts.
+- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The stored captured receipt uses deterministic NumPy tiny-transformer tensors; it does not prove pretrained LLM model-quality or KV-cache preservation without captured Q/K/V/logit/PPL replay from a real small model.
 
 ## [0.1.0-alpha.1] — 2026-06-02
 

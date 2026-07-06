@@ -1,0 +1,132 @@
+{
+  "schema_version": "poly_kv_captured_model_replay_v1",
+  "model_id": "numpy-tiny-transformer-deterministic-v1",
+  "claim_boundary": "captured tensor replay against fixture Q/K/V/logits; not pretrained LLM PPL, not production KV-cache preservation, and not provider/framework KV-cache byte-reduction evidence",
+  "config": {
+    "candidate_ks": [
+      8,
+      16,
+      32,
+      48,
+      64,
+      72
+    ],
+    "min_output_cosine": 0.1,
+    "max_output_mse": 4.0,
+    "max_kl_divergence": 4.0,
+    "max_ppl_delta": 10.0,
+    "min_top1_agreement": 0.25
+  },
+  "selected_candidate_k": 16,
+  "candidate_results": [
+    {
+      "candidate_k": 8,
+      "output_cosine_mean": 0.5659809931519458,
+      "output_mse_mean": 0.033996201390560886,
+      "kl_divergence_mean": 0.010410676995795764,
+      "top1_agreement": 0.0,
+      "ppl_proxy_exact": 58.594327734894456,
+      "ppl_proxy_compressed": 53.29456335224383,
+      "ppl_proxy_delta": -5.299764382650629,
+      "decoded_values_total": 32,
+      "full_decode_value_count": 288,
+      "decode_reduction": 9.0,
+      "passed": false,
+      "blockers": [
+        "top1_agreement 0.0000 < 0.2500"
+      ]
+    },
+    {
+      "candidate_k": 16,
+      "output_cosine_mean": 0.5846792523209496,
+      "output_mse_mean": 0.022120423327733757,
+      "kl_divergence_mean": 0.006219839521381997,
+      "top1_agreement": 0.25,
+      "ppl_proxy_exact": 58.594327734894456,
+      "ppl_proxy_compressed": 53.91976119656167,
+      "ppl_proxy_delta": -4.674566538332783,
+      "decoded_values_total": 64,
+      "full_decode_value_count": 288,
+      "decode_reduction": 4.5,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "candidate_k": 32,
+      "output_cosine_mean": 0.6651212511189485,
+      "output_mse_mean": 0.012458471557384875,
+      "kl_divergence_mean": 0.003853299967269805,
+      "top1_agreement": 0.25,
+      "ppl_proxy_exact": 58.594327734894456,
+      "ppl_proxy_compressed": 53.85161437216803,
+      "ppl_proxy_delta": -4.742713362726427,
+      "decoded_values_total": 128,
+      "full_decode_value_count": 288,
+      "decode_reduction": 2.25,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "candidate_k": 48,
+      "output_cosine_mean": 0.7214903618208333,
+      "output_mse_mean": 0.007826777516343395,
+      "kl_divergence_mean": 0.0024716085584932505,
+      "top1_agreement": 0.25,
+      "ppl_proxy_exact": 58.594327734894456,
+      "ppl_proxy_compressed": 55.1440702100095,
+      "ppl_proxy_delta": -3.450257524884954,
+      "decoded_values_total": 192,
+      "full_decode_value_count": 288,
+      "decode_reduction": 1.5,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "candidate_k": 64,
+      "output_cosine_mean": 0.740168265219022,
+      "output_mse_mean": 0.006405329237047126,
+      "kl_divergence_mean": 0.0020261058659851636,
+      "top1_agreement": 0.25,
+      "ppl_proxy_exact": 58.594327734894456,
+      "ppl_proxy_compressed": 55.72793867231973,
+      "ppl_proxy_delta": -2.8663890625747257,
+      "decoded_values_total": 256,
+      "full_decode_value_count": 288,
+      "decode_reduction": 1.125,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "candidate_k": 72,
+      "output_cosine_mean": 0.7502542204914275,
+      "output_mse_mean": 0.006026009104206255,
+      "kl_divergence_mean": 0.0018820057510057144,
+      "top1_agreement": 0.25,
+      "ppl_proxy_exact": 58.594327734894456,
+      "ppl_proxy_compressed": 55.902204302734,
+      "ppl_proxy_delta": -2.6921234321604572,
+      "decoded_values_total": 288,
+      "full_decode_value_count": 288,
+      "decode_reduction": 1.0,
+      "passed": true,
+      "blockers": []
+    }
+  ],
+  "metrics": {
+    "query_count": 4,
+    "exact_attention_outputs": 4,
+    "logit_vectors_compared": 4,
+    "output_cosine_mean": 0.5846792523209496,
+    "output_mse_mean": 0.022120423327733757,
+    "kl_divergence_mean": 0.006219839521381997,
+    "top1_agreement": 0.25,
+    "ppl_proxy_exact": 58.594327734894456,
+    "ppl_proxy_compressed": 53.91976119656167,
+    "ppl_proxy_delta": -4.674566538332783,
+    "decoded_values_total": 64,
+    "full_decode_value_count": 288,
+    "decode_reduction": 4.5
+  },
+  "passed": true,
+  "blockers": []
+}

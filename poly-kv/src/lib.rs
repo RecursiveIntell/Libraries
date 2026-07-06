@@ -65,8 +65,10 @@ pub use receipt::{
     SHELL_MATERIALIZE_RECEIPT_SCHEMA,
 };
 pub use replay::{
-    run_model_replay, CandidateReplayMetrics, ModelReplayConfig, ModelReplayMetrics,
-    ModelReplayQuery, ModelReplayReceipt, MODEL_REPLAY_RECEIPT_SCHEMA,
+    run_captured_model_replay, run_model_replay, CandidateReplayMetrics, CapturedReplayConfig,
+    CapturedReplayFixture, CapturedReplayQuery, CapturedReplayReceipt, ModelReplayConfig,
+    ModelReplayMetrics, ModelReplayQuery, ModelReplayReceipt, CAPTURED_MODEL_REPLAY_RECEIPT_SCHEMA,
+    MODEL_REPLAY_RECEIPT_SCHEMA,
 };
 pub use shape::{AttentionType, KvTensorShape};
 pub use shell::{
