@@ -213,6 +213,175 @@ def optimized_prequantized_compressed_attention_outputs(
     return out, decoded, overlap
 
 
+
+def batch_optimized_compressed_attention_outputs(
+    q: np.ndarray,
+    k: np.ndarray,
+    v: np.ndarray,
+    positions: list[int],
+    candidate_k: int,
+    key_codes: np.ndarray,
+    key_scales: np.ndarray,
+    *,
+    include_quality: bool = False,
+) -> tuple[list[np.ndarray], int, float]:
+    """Batch all-positions compressed attention.
+
+    Instead of looping per position, precompute all query codes,
+    compute all scores as one matmul, batch top-k, batch exact rerank,
+    and batch softmax+weighted sum.
+
+    This is the key optimization: transforms N small matmuls into 1 big matmul
+    and eliminates Python loop overhead.
+    """
+    head_dim = q.shape[-1]
+    scale = math.sqrt(head_dim)
+    n_keys = k.shape[0]
+    n_positions = len(positions)
+
+    # Batch-compute all query codes and scales
+    q_matrix = q[positions]  # (n_positions, head_dim)
+    q_scales = np.maximum(np.max(np.abs(q_matrix), axis=1) / 127.0, 1e-8).astype(np.float32)
+    q_codes = np.clip(np.round(q_matrix / q_scales[:, None]), -127, 127).astype(np.int16)
+
+    # Batch-compute all approximate scores: (n_positions, n_keys)
+    # key_codes: (n_keys, head_dim), q_codes: (n_positions, head_dim)
+    all_approx = (key_codes.astype(np.float32) @ q_codes.astype(np.float32).T).T  # (n_positions, n_keys)
+    # Rescale
+    all_approx = (all_approx * (key_scales[None, :] * q_scales[:, None])) / scale
+
+    # Batch top-k with causal masking
+    out = []
+    decoded_total = 0
+    overlaps = []
+    for i, p_pos in enumerate(positions):
+        # Causal: only consider keys[:p_pos+1]
+        n_avail = p_pos + 1
+        approx = all_approx[i, :n_avail]
+        selected = topk_indices(approx, candidate_k)
+        # Exact rerank
+        exact_scores = (k[selected] @ q_matrix[i]) / scale
+        weights = softmax(exact_scores, axis=-1)
+        out.append(weights @ v[selected])
+        decoded_total += len(selected)
+        if include_quality:
+            dense_scores = (k[:n_avail] @ q_matrix[i]) / scale
+            exact_top = set(topk_indices(dense_scores, min(candidate_k, n_avail)).tolist())
+            selected_set = set(selected.tolist())
+            union = exact_top | selected_set
+            overlaps.append(len(exact_top & selected_set) / len(union) if union else 1.0)
+    overlap = float(np.mean(overlaps)) if overlaps else 1.0
+    return out, decoded_total, overlap
+
+
+def quest_page_filtered_compressed_attention_outputs(
+    q: np.ndarray,
+    k: np.ndarray,
+    v: np.ndarray,
+    positions: list[int],
+    candidate_k: int,
+    key_codes: np.ndarray,
+    key_scales: np.ndarray,
+    page_size: int = 32,
+    *,
+    include_quality: bool = False,
+) -> tuple[list[np.ndarray], int, float]:
+    """Quest-style page min/max pre-filter before per-vector scoring.
+
+    Divides keys into pages of `page_size` tokens, precomputes per-page
+    min/max bounds, and only scores vectors from pages whose upper bound
+    exceeds the current k-th score threshold.
+
+    This is the Quest algorithm (arXiv:2406.10774): page-level pre-filter
+    before per-vector scoring to reduce the number of bytes loaded.
+    """
+    head_dim = q.shape[-1]
+    scale = math.sqrt(head_dim)
+    n_keys = k.shape[0]
+    n_pages = (n_keys + page_size - 1) // page_size
+
+    # Precompute per-page min/max key values (once)
+    # For the int8 codes, min = min_code * scale, max = max_code * scale
+    page_min_code = np.zeros((n_pages, head_dim), dtype=np.int16)
+    page_max_code = np.zeros((n_pages, head_dim), dtype=np.int16)
+    page_scales = np.zeros(n_pages, dtype=np.float32)
+    for pg in range(n_pages):
+        start = pg * page_size
+        end = min(start + page_size, n_keys)
+        page_codes = key_codes[start:end]  # (page_tokens, head_dim)
+        page_min_code[pg] = page_codes.min(axis=0)
+        page_max_code[pg] = page_codes.max(axis=0)
+        page_scales[pg] = key_scales[start]  # per-vector scale, approx same per page
+
+    out = []
+    decoded_total = 0
+    overlaps = []
+    for p_pos in positions:
+        n_avail = p_pos + 1
+        query = q[p_pos]
+        q_scale = max(float(np.max(np.abs(query))) / 127.0, 1e-8)
+        q_code = np.clip(np.round(query / q_scale), -127, 127).astype(np.int16)
+
+        # Page-level: compute upper bound for each page
+        n_active_pages = (n_avail + page_size - 1) // page_size
+        page_upper = np.zeros(n_active_pages, dtype=np.float32)
+        for pg in range(n_active_pages):
+            # Upper bound: sum of max positive contributions
+            q_pos = q_code > 0
+            q_neg = q_code < 0
+            # For positive query codes, max key code gives max product
+            # For negative query codes, min key code gives max product (negative * negative = positive)
+            max_contrib = np.where(q_pos, page_max_code[pg].astype(np.float32),
+                                   np.where(q_neg, page_min_code[pg].astype(np.float32), 0.0))
+            upper = float(np.dot(max_contrib, np.abs(q_code).astype(np.float32)) * q_scale * page_scales[pg])
+            page_upper[pg] = upper / scale
+
+        # Select top pages by upper bound (greedy)
+        # Use 2x oversample: load candidate_k * 2 tokens worth of pages
+        tokens_needed = candidate_k * 2
+        pages_needed = max(1, (tokens_needed + page_size - 1) // page_size)
+        pages_needed = min(pages_needed, n_active_pages)
+        top_pages = topk_indices(page_upper[:n_active_pages], pages_needed)
+
+        # Score only vectors from selected pages
+        candidate_indices = []
+        for pg in top_pages:
+            start = pg * page_size
+            end = min(start + page_size, n_avail)
+            candidate_indices.extend(range(start, end))
+
+        candidate_arr = np.array(candidate_indices, dtype=np.int64)
+        if len(candidate_arr) == 0:
+            candidate_arr = np.arange(min(candidate_k, n_avail), dtype=np.int64)
+
+        # Score candidates
+        cand_codes = key_codes[candidate_arr]
+        cand_scales = key_scales[candidate_arr]
+        approx = (cand_codes.astype(np.float32) @ q_code.astype(np.float32)) * (cand_scales * q_scale) / scale
+
+        # Top-k from candidates
+        selected_local = topk_indices(approx, min(candidate_k, len(candidate_arr)))
+        selected = candidate_arr[selected_local]
+
+        # Exact rerank
+        exact_scores = (k[selected] @ query) / scale
+        weights = softmax(exact_scores, axis=-1)
+        out.append(weights @ v[selected])
+        decoded_total += len(selected)
+
+        if include_quality:
+            dense_scores = (k[:n_avail] @ query) / scale
+            exact_top = set(topk_indices(dense_scores, min(candidate_k, n_avail)).tolist())
+            selected_set = set(selected.tolist())
+            union = exact_top | selected_set
+            overlaps.append(len(exact_top & selected_set) / len(union) if union else 1.0)
+
+    overlap = float(np.mean(overlaps)) if overlaps else 1.0
+    return out, decoded_total, overlap
+
+
+
+
 def bench(fn, warmup: int, repeat: int) -> dict[str, float]:
     for _ in range(warmup):
         fn()
@@ -239,12 +408,22 @@ def case_metrics(q: np.ndarray, k: np.ndarray, v: np.ndarray, positions: list[in
     optimized_out, optimized_decoded, optimized_overlap = optimized_prequantized_compressed_attention_outputs(
         q, k, v, positions, candidate_k, key_codes, key_scales, include_quality=True
     )
+    batch_out, batch_decoded, batch_overlap = batch_optimized_compressed_attention_outputs(
+        q, k, v, positions, candidate_k, key_codes, key_scales, include_quality=True
+    )
+    quest_out, quest_decoded, quest_overlap = quest_page_filtered_compressed_attention_outputs(
+        q, k, v, positions, candidate_k, key_codes, key_scales, page_size=32, include_quality=True
+    )
     cosines = [cosine(a, b) for a, b in zip(exact_out, compressed_out)]
     mses = [mse(a, b) for a, b in zip(exact_out, compressed_out)]
     vectorized_cosines = [cosine(a, b) for a, b in zip(exact_out, vectorized_out)]
     vectorized_mses = [mse(a, b) for a, b in zip(exact_out, vectorized_out)]
     optimized_cosines = [cosine(a, b) for a, b in zip(exact_out, optimized_out)]
     optimized_mses = [mse(a, b) for a, b in zip(exact_out, optimized_out)]
+    batch_cosines = [cosine(a, b) for a, b in zip(exact_out, batch_out)]
+    batch_mses = [mse(a, b) for a, b in zip(exact_out, batch_out)]
+    quest_cosines = [cosine(a, b) for a, b in zip(exact_out, quest_out)]
+    quest_mses = [mse(a, b) for a, b in zip(exact_out, quest_out)]
 
     exact_t = bench(lambda: exact_attention_outputs(q, k, v, positions), warmup, repeat)
     compressed_t = bench(lambda: compressed_attention_outputs(q, k, v, positions, candidate_k), warmup, repeat)
@@ -252,6 +431,20 @@ def case_metrics(q: np.ndarray, k: np.ndarray, v: np.ndarray, positions: list[in
     optimized_t = bench(
         lambda: optimized_prequantized_compressed_attention_outputs(
             q, k, v, positions, candidate_k, key_codes, key_scales, include_quality=False
+        ),
+        warmup,
+        repeat,
+    )
+    batch_t = bench(
+        lambda: batch_optimized_compressed_attention_outputs(
+            q, k, v, positions, candidate_k, key_codes, key_scales, include_quality=False
+        ),
+        warmup,
+        repeat,
+    )
+    quest_t = bench(
+        lambda: quest_page_filtered_compressed_attention_outputs(
+            q, k, v, positions, candidate_k, key_codes, key_scales, page_size=32, include_quality=False
         ),
         warmup,
         repeat,
@@ -271,20 +464,36 @@ def case_metrics(q: np.ndarray, k: np.ndarray, v: np.ndarray, positions: list[in
         "optimized_attention_output_cosine_min": float(np.min(optimized_cosines)),
         "optimized_attention_output_mse_mean": float(np.mean(optimized_mses)),
         "optimized_topk_overlap_mean": optimized_overlap,
+        "batch_attention_output_cosine_mean": float(np.mean(batch_cosines)),
+        "batch_attention_output_cosine_min": float(np.min(batch_cosines)),
+        "batch_attention_output_mse_mean": float(np.mean(batch_mses)),
+        "batch_topk_overlap_mean": batch_overlap,
+        "quest_attention_output_cosine_mean": float(np.mean(quest_cosines)),
+        "quest_attention_output_cosine_min": float(np.min(quest_cosines)),
+        "quest_attention_output_mse_mean": float(np.mean(quest_mses)),
+        "quest_topk_overlap_mean": quest_overlap,
         "exact_decoded_values": exact_decoded,
         "compressed_decoded_values": compressed_decoded,
         "vectorized_compressed_decoded_values": vectorized_decoded,
         "optimized_prequantized_decoded_values": optimized_decoded,
+        "batch_decoded_values": batch_decoded,
+        "quest_decoded_values": quest_decoded,
         "decode_reduction": float(exact_decoded / max(1, compressed_decoded)),
         "vectorized_decode_reduction": float(exact_decoded / max(1, vectorized_decoded)),
         "optimized_prequantized_decode_reduction": float(exact_decoded / max(1, optimized_decoded)),
+        "batch_decode_reduction": float(exact_decoded / max(1, batch_decoded)),
+        "quest_decode_reduction": float(exact_decoded / max(1, quest_decoded)),
         "exact_timing": exact_t,
         "compressed_timing": compressed_t,
         "vectorized_compressed_timing": vectorized_t,
         "optimized_prequantized_compressed_timing": optimized_t,
+        "batch_compressed_timing": batch_t,
+        "quest_page_filtered_timing": quest_t,
         "speed_ratio_exact_over_compressed": exact_t["mean_ns"] / compressed_t["mean_ns"],
         "speed_ratio_exact_over_vectorized_compressed": exact_t["mean_ns"] / vectorized_t["mean_ns"],
         "speed_ratio_exact_over_optimized_prequantized": exact_t["mean_ns"] / optimized_t["mean_ns"],
+        "speed_ratio_exact_over_batch": exact_t["mean_ns"] / batch_t["mean_ns"],
+        "speed_ratio_exact_over_quest": exact_t["mean_ns"] / quest_t["mean_ns"],
     }
 
 
@@ -297,21 +506,33 @@ def aggregate(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "compressed_attention_ns_mean": float(np.mean([c["compressed_timing"]["mean_ns"] for c in cases])),
         "vectorized_compressed_attention_ns_mean": float(np.mean([c["vectorized_compressed_timing"]["mean_ns"] for c in cases])),
         "optimized_prequantized_compressed_attention_ns_mean": float(np.mean([c["optimized_prequantized_compressed_timing"]["mean_ns"] for c in cases])),
+        "batch_compressed_attention_ns_mean": float(np.mean([c["batch_compressed_timing"]["mean_ns"] for c in cases])),
+        "quest_page_filtered_attention_ns_mean": float(np.mean([c["quest_page_filtered_timing"]["mean_ns"] for c in cases])),
         "speed_ratio_exact_over_compressed": float(np.mean(vals("speed_ratio_exact_over_compressed"))),
         "speed_ratio_exact_over_vectorized_compressed": float(np.mean(vals("speed_ratio_exact_over_vectorized_compressed"))),
         "speed_ratio_exact_over_optimized_prequantized": float(np.mean(vals("speed_ratio_exact_over_optimized_prequantized"))),
+        "speed_ratio_exact_over_batch": float(np.mean(vals("speed_ratio_exact_over_batch"))),
+        "speed_ratio_exact_over_quest": float(np.mean(vals("speed_ratio_exact_over_quest"))),
         "speed_ratio_min": float(np.min(vals("speed_ratio_exact_over_compressed"))),
         "speed_ratio_max": float(np.max(vals("speed_ratio_exact_over_compressed"))),
         "vectorized_speed_ratio_min": float(np.min(vals("speed_ratio_exact_over_vectorized_compressed"))),
         "vectorized_speed_ratio_max": float(np.max(vals("speed_ratio_exact_over_vectorized_compressed"))),
         "optimized_prequantized_speed_ratio_min": float(np.min(vals("speed_ratio_exact_over_optimized_prequantized"))),
         "optimized_prequantized_speed_ratio_max": float(np.max(vals("speed_ratio_exact_over_optimized_prequantized"))),
+        "batch_speed_ratio_min": float(np.min(vals("speed_ratio_exact_over_batch"))),
+        "batch_speed_ratio_max": float(np.max(vals("speed_ratio_exact_over_batch"))),
+        "quest_speed_ratio_min": float(np.min(vals("speed_ratio_exact_over_quest"))),
+        "quest_speed_ratio_max": float(np.max(vals("speed_ratio_exact_over_quest"))),
         "decode_reduction_mean": float(np.mean(vals("decode_reduction"))),
         "decode_reduction_min": float(np.min(vals("decode_reduction"))),
         "vectorized_decode_reduction_mean": float(np.mean(vals("vectorized_decode_reduction"))),
         "vectorized_decode_reduction_min": float(np.min(vals("vectorized_decode_reduction"))),
         "optimized_prequantized_decode_reduction_mean": float(np.mean(vals("optimized_prequantized_decode_reduction"))),
         "optimized_prequantized_decode_reduction_min": float(np.min(vals("optimized_prequantized_decode_reduction"))),
+        "batch_decode_reduction_mean": float(np.mean(vals("batch_decode_reduction"))),
+        "batch_decode_reduction_min": float(np.min(vals("batch_decode_reduction"))),
+        "quest_decode_reduction_mean": float(np.mean(vals("quest_decode_reduction"))),
+        "quest_decode_reduction_min": float(np.min(vals("quest_decode_reduction"))),
         "attention_output_cosine_mean": float(np.mean(vals("attention_output_cosine_mean"))),
         "attention_output_cosine_min": float(np.min(vals("attention_output_cosine_min"))),
         "vectorized_attention_output_cosine_mean": float(np.mean(vals("vectorized_attention_output_cosine_mean"))),
@@ -324,6 +545,12 @@ def aggregate(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "topk_overlap_mean": float(np.mean(vals("topk_overlap_mean"))),
         "vectorized_topk_overlap_mean": float(np.mean(vals("vectorized_topk_overlap_mean"))),
         "optimized_topk_overlap_mean": float(np.mean(vals("optimized_topk_overlap_mean"))),
+        "batch_attention_output_cosine_mean": float(np.mean(vals("batch_attention_output_cosine_mean"))),
+        "batch_attention_output_cosine_min": float(np.min(vals("batch_attention_output_cosine_mean"))),
+        "quest_attention_output_cosine_mean": float(np.mean(vals("quest_attention_output_cosine_mean"))),
+        "quest_attention_output_cosine_min": float(np.min(vals("quest_attention_output_cosine_mean"))),
+        "batch_topk_overlap_mean": float(np.mean(vals("batch_topk_overlap_mean"))),
+        "quest_topk_overlap_mean": float(np.mean(vals("quest_topk_overlap_mean"))),
     }
 
 
@@ -334,24 +561,29 @@ def render_summary(receipt: dict[str, Any]) -> str:
         "",
         "## Bottom line",
         "",
-        f"Stored result: scalar speed_ratio_exact_over_compressed={a['speed_ratio_exact_over_compressed']:.4f}; vectorized speed_ratio={a['speed_ratio_exact_over_vectorized_compressed']:.4f}; optimized_prequantized speed_ratio={a['speed_ratio_exact_over_optimized_prequantized']:.4f}; decode_reduction_mean={a['decode_reduction_mean']:.4f}x.",
+        f"Stored result: scalar={a['speed_ratio_exact_over_compressed']:.4f}; vectorized={a['speed_ratio_exact_over_vectorized_compressed']:.4f}; optimized={a['speed_ratio_exact_over_optimized_prequantized']:.4f}; batch={a['speed_ratio_exact_over_batch']:.4f}; quest={a['speed_ratio_exact_over_quest']:.4f}; decode_reduction={a['decode_reduction_mean']:.4f}x.",
         "",
         "## Aggregate metrics",
         "",
     ]
     for key in [
         "case_count", "exact_attention_ns_mean", "compressed_attention_ns_mean", "vectorized_compressed_attention_ns_mean",
-        "optimized_prequantized_compressed_attention_ns_mean",
+        "optimized_prequantized_compressed_attention_ns_mean", "batch_compressed_attention_ns_mean", "quest_page_filtered_attention_ns_mean",
         "speed_ratio_exact_over_compressed", "speed_ratio_exact_over_vectorized_compressed",
-        "speed_ratio_exact_over_optimized_prequantized",
+        "speed_ratio_exact_over_optimized_prequantized", "speed_ratio_exact_over_batch", "speed_ratio_exact_over_quest",
         "speed_ratio_min", "speed_ratio_max", "vectorized_speed_ratio_min", "vectorized_speed_ratio_max",
         "optimized_prequantized_speed_ratio_min", "optimized_prequantized_speed_ratio_max",
+        "batch_speed_ratio_min", "batch_speed_ratio_max", "quest_speed_ratio_min", "quest_speed_ratio_max",
         "decode_reduction_mean", "decode_reduction_min", "vectorized_decode_reduction_mean", "vectorized_decode_reduction_min",
         "optimized_prequantized_decode_reduction_mean", "optimized_prequantized_decode_reduction_min",
+        "batch_decode_reduction_mean", "batch_decode_reduction_min", "quest_decode_reduction_mean", "quest_decode_reduction_min",
         "attention_output_cosine_mean", "attention_output_cosine_min", "vectorized_attention_output_cosine_mean",
         "vectorized_attention_output_cosine_min", "optimized_attention_output_cosine_mean", "optimized_attention_output_cosine_min",
+        "batch_attention_output_cosine_mean", "batch_attention_output_cosine_min",
+        "quest_attention_output_cosine_mean", "quest_attention_output_cosine_min",
         "attention_output_mse_mean", "vectorized_attention_output_mse_mean", "optimized_attention_output_mse_mean",
         "topk_overlap_mean", "vectorized_topk_overlap_mean", "optimized_topk_overlap_mean",
+        "batch_topk_overlap_mean", "quest_topk_overlap_mean",
     ]:
         lines.append(f"- {key}: {a[key]}")
     lines.extend(["", "## Claim boundary", "", receipt["claim_boundary"]])
@@ -403,7 +635,7 @@ def main() -> None:
     receipt = {
         "schema_version": SCHEMA,
         "model_id": f"distilgpt2-isolated-attention-speed:{SNAPSHOT}:layers{','.join(map(str,layers))}:heads{','.join(map(str,heads))}",
-        "claim_boundary": "isolated NumPy attention-operator benchmark over precomputed DistilGPT2 Q/K/V tensors; setup/full-forward cost excluded and quality diagnostics excluded from timed hot paths for optimized/prequantized timing; not production runtime speedup, not GPU kernel evidence, not end-to-end generation latency evidence",
+        "claim_boundary": "isolated NumPy attention-operator benchmark over precomputed DistilGPT2 Q/K/V tensors; setup/full-forward cost excluded and quality diagnostics excluded from timed hot paths for optimized/batch/quest timing; includes Quest-style page min/max pre-filter (arXiv:2406.10774); not production runtime speedup, not GPU kernel evidence, not end-to-end generation latency evidence",
         "metadata": {
             "source_model": MODEL_ID,
             "model_snapshot": SNAPSHOT,

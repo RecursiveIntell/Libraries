@@ -282,6 +282,30 @@ fn test_distilgpt2_attention_speed_bench_receipt_is_stored_and_bounded() {
             .expect("optimized prequantized speed ratio must be present")
             > 0.0
     );
+    assert!(
+        receipt["aggregate"]["batch_compressed_attention_ns_mean"]
+            .as_f64()
+            .expect("batch timing must be present")
+            > 0.0
+    );
+    assert!(
+        receipt["aggregate"]["speed_ratio_exact_over_batch"]
+            .as_f64()
+            .expect("batch speed ratio must be present")
+            > 0.0
+    );
+    assert!(
+        receipt["aggregate"]["quest_page_filtered_attention_ns_mean"]
+            .as_f64()
+            .expect("quest page filtered timing must be present")
+            > 0.0
+    );
+    assert!(
+        receipt["aggregate"]["speed_ratio_exact_over_quest"]
+            .as_f64()
+            .expect("quest speed ratio must be present")
+            > 0.0
+    );
     assert!(receipt["claim_boundary"]
         .as_str()
         .unwrap()
