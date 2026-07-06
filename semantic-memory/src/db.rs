@@ -466,6 +466,28 @@ CREATE INDEX IF NOT EXISTS idx_graph_edges_digest
     ON graph_edges(content_digest) WHERE is_invalidated = 0;
 "#;
 
+/// V28 migration: bitemporal semantics for first-class graph edges.
+///
+/// `valid_time` is domain/business time. `recorded_time` is system knowledge
+/// time. Existing V27 edges are backfilled from `recorded_at`, preserving the
+/// original append-only insertion timestamp as their initial bitemporal point.
+const MIGRATION_V28: &str = "";
+
+fn run_migration_v28(conn: &Connection) -> Result<(), rusqlite::Error> {
+    add_column_if_missing(conn, "graph_edges", "valid_time", "TEXT")?;
+    add_column_if_missing(conn, "graph_edges", "recorded_time", "TEXT")?;
+    conn.execute_batch(
+        "UPDATE graph_edges
+         SET valid_time = COALESCE(valid_time, recorded_at),
+             recorded_time = COALESCE(recorded_time, recorded_at);
+         CREATE INDEX IF NOT EXISTS idx_graph_edges_bitemporal
+             ON graph_edges(valid_time, recorded_time);
+         CREATE INDEX IF NOT EXISTS idx_graph_edges_recorded_time
+             ON graph_edges(recorded_time);",
+    )?;
+    Ok(())
+}
+
 /// Ordered list of migrations.
 #[allow(deprecated)]
 const MIGRATIONS: &[(u32, &str)] = &[
@@ -496,10 +518,11 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (25, MIGRATION_V25),
     (26, MIGRATION_V26),
     (27, MIGRATION_V27),
+    (28, MIGRATION_V28),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 27;
+pub const MAX_SCHEMA_VERSION: u32 = 28;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {
@@ -901,6 +924,10 @@ pub fn run_migrations(conn: &Connection) -> Result<(), MemoryError> {
                     reason: e.to_string(),
                 })?,
                 26 => run_migration_v26(tx).map_err(|e| MemoryError::MigrationFailed {
+                    version,
+                    reason: e.to_string(),
+                })?,
+                28 => run_migration_v28(tx).map_err(|e| MemoryError::MigrationFailed {
                     version,
                     reason: e.to_string(),
                 })?,

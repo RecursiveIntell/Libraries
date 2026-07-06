@@ -1424,6 +1424,35 @@ impl MemoryStore {
             edge_type,
             weight,
             metadata,
+            valid_time: None,
+            recorded_time: None,
+        };
+        self.with_write_conn(move |conn| graph_edges::insert_graph_edge(conn, &params))
+            .await
+    }
+
+    /// Add a durable graph edge with explicit bitemporal timestamps.
+    ///
+    /// Use this when importing or correcting historical relationships where
+    /// domain validity and system record time differ from the current wall clock.
+    pub async fn add_graph_edge_at(
+        &self,
+        source: &str,
+        target: &str,
+        edge_type: GraphEdgeType,
+        weight: f64,
+        metadata: Option<serde_json::Value>,
+        valid_time: &str,
+        recorded_time: &str,
+    ) -> Result<graph_edges::StoredGraphEdge, MemoryError> {
+        let params = graph_edges::AddGraphEdgeParams {
+            source: source.to_string(),
+            target: target.to_string(),
+            edge_type,
+            weight,
+            metadata,
+            valid_time: Some(valid_time.to_string()),
+            recorded_time: Some(recorded_time.to_string()),
         };
         self.with_write_conn(move |conn| graph_edges::insert_graph_edge(conn, &params))
             .await
@@ -1438,6 +1467,32 @@ impl MemoryStore {
         let node_id = node_id.to_string();
         self.with_read_conn(move |conn| graph_edges::list_graph_edges_for_node(conn, &node_id))
             .await
+    }
+
+    /// List graph edges involving a node as of explicit bitemporal cutoffs.
+    ///
+    /// `as_of_valid_time` is domain/business time; `as_of_recorded_time` is
+    /// system knowledge time. This is the graph analogue of bitemporal as-of
+    /// fact queries: it can reconstruct what the relationship graph knew at a
+    /// prior recorded time, including edges invalidated later.
+    pub async fn list_graph_edges_for_node_as_of(
+        &self,
+        node_id: &str,
+        as_of_valid_time: &str,
+        as_of_recorded_time: &str,
+    ) -> Result<Vec<graph_edges::StoredGraphEdge>, MemoryError> {
+        let node_id = node_id.to_string();
+        let as_of_valid_time = as_of_valid_time.to_string();
+        let as_of_recorded_time = as_of_recorded_time.to_string();
+        self.with_read_conn(move |conn| {
+            graph_edges::list_graph_edges_for_node_as_of(
+                conn,
+                &node_id,
+                &as_of_valid_time,
+                &as_of_recorded_time,
+            )
+        })
+        .await
     }
 
     /// List ALL stored graph edges, excluding invalidated ones.
