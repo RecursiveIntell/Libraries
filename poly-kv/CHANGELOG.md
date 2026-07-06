@@ -13,10 +13,11 @@ All notable changes to `poly-kv` are documented here.
 - `run_captured_model_replay(...)` emits `poly_kv_captured_model_replay_v1` receipts from captured Q/K/V/logit fixtures.
 - `capture_tiny_transformer_replay.py` generates a deterministic NumPy tiny-transformer captured replay fixture when torch/transformers are unavailable.
 - `capture_distilgpt2_replay.py` generates a pretrained DistilGPT2 safetensors/tokenizer captured replay fixture via manual NumPy forward pass; the stored receipt is a diagnostic negative showing the current single-head projection proxy is insufficient for KV-cache preservation claims.
+- `distilgpt2_full_forward_intervention.py` reinjects compressed sparse attention outputs into a downstream manual DistilGPT2 forward pass and stores the first full-forward intervention receipt: candidate_k=8, final-logit KL 0.000832, top-1 agreement 1.0, and 4.7956x fewer decoded value vectors on the deterministic prompt/window.
 
 ### Claim boundary
 
-- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The stored tiny-transformer captured receipt uses deterministic NumPy tensors. The stored DistilGPT2 captured receipt uses pretrained model tensors but fails the strict logit/PPL-proxy gate. Neither proves pretrained LLM model-quality or KV-cache preservation without full-forward intervention/replay from a real small model.
+- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The tiny-transformer receipt uses deterministic NumPy tensors. The DistilGPT2 captured projection receipt uses pretrained tensors but fails the strict logit/PPL-proxy gate. The DistilGPT2 full-forward intervention receipt passes on one deterministic prompt/window, layer 0, head 0, but it is still not real-corpus PPL preservation or production KV-cache evidence without held-out prompts and broader layer/head coverage.
 
 ## [0.1.0-alpha.1] — 2026-06-02
 

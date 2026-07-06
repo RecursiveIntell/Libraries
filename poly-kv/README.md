@@ -200,7 +200,26 @@ The capture script loads pretrained `distilgpt2` safetensors and tokenizer files
 
 Current stored result: diagnostic negative. The strict captured replay gate fails at candidate_k=72 with output cosine 0.6512, KL 6.2431, top-1 agreement 0.0, PPL-proxy delta 573.3435, and no decode reduction at the selected fallback budget. This says the current single-head projection proxy is not sufficient evidence for KV-cache preservation.
 
-Claim boundary: this is pretrained DistilGPT2 captured-tensor evidence and a negative diagnostic receipt. It is not full-forward model-quality preservation, real corpus PPL preservation, production KV-cache preservation, production latency evidence, or a replacement for KIVI/KVQuant/Quest. The next gate is full-forward intervention/replay that reinjects compressed attention outputs into the downstream pretrained model path.
+Claim boundary: this is pretrained DistilGPT2 captured-tensor evidence and a negative diagnostic receipt. It is not full-forward model-quality preservation, real corpus PPL preservation, production KV-cache preservation, production latency evidence, or a replacement for KIVI/KVQuant/Quest.
+
+### Pretrained DistilGPT2 full-forward intervention gate
+
+`poly-kv` now has the next replay gate: compressed candidate attention is reinjected into the downstream manual DistilGPT2 forward path before comparing final logits.
+
+```bash
+.venv-capture/bin/python tools/distilgpt2_full_forward_intervention.py \
+  --out docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_INTERVENTION_RECEIPT.json \
+  --summary docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_INTERVENTION_SUMMARY.md
+```
+
+Stored artifacts:
+
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_INTERVENTION_RECEIPT.json`
+- `docs/codex-runs/P3/POLY_KV_DISTILGPT2_FULL_FORWARD_INTERVENTION_SUMMARY.md`
+
+Current stored result: pass at candidate_k=8 on the deterministic DistilGPT2 prompt/window. The compressed sparse intervention decodes 548 selected value vectors vs 2,628 full-decode value vectors (4.7956x decode reduction), with final-logit KL 0.000832, top-1 agreement 1.0, attention-output cosine 0.8916, and PPL-proxy delta -0.0062.
+
+Claim boundary: this is a pretrained DistilGPT2 full-forward intervention receipt for one deterministic prompt/window, layer 0, head 0, with a per-vector int8 compressed candidate selector. It is not real-corpus PPL preservation, production KV-cache preservation, production latency evidence, or a replacement for KIVI/KVQuant/Quest. The next gate is a larger held-out prompt suite and multi-layer/head intervention.
 
 ## Quick Start
 
