@@ -56,7 +56,7 @@ pub use policy::{
 };
 pub use pool::{
     CacheTarget, CompressedAttentionHit, CompressedAttentionSelection, DecompressedLayer,
-    PoolLayer, SharedKVPool,
+    PoolLayer, PreparedCompressedIndex, SharedKVPool,
 };
 pub use receipt::{
     BlockInjectionTrace, CompressedAttentionSelectionReceipt, InjectionReceipt, PoolBuildReceipt,

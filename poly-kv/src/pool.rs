@@ -637,6 +637,169 @@ impl SharedKVPool {
 
     // ---------- pool search ----------
 
+    /// Build a prepared compressed index for one layer/head.
+    ///
+    /// This decodes key/value codes and builds the FibScorer once, so that
+    /// subsequent `attention_topk_compressed_prepared` calls only need to
+    /// prepare the query and score candidates without rebuilding codec state.
+    #[cfg(feature = "fib")]
+    pub fn prepare_compressed_index(
+        &self,
+        layer_idx: usize,
+        head_idx: usize,
+    ) -> Result<PreparedCompressedIndex> {
+        if layer_idx >= self.layers.len() {
+            return Err(PolyKvError::LayerIndexOutOfBounds {
+                index: layer_idx as u32,
+                total: self.layers.len() as u32,
+            });
+        }
+        let head_dim = self.manifest.shape.head_dim;
+        let num_heads = self.manifest.shape.num_kv_heads as usize;
+        if head_idx >= num_heads {
+            return Err(PolyKvError::Internal(format!(
+                "head_idx {head_idx} out of range (have {num_heads})"
+            )));
+        }
+        if self.manifest.shared_codec != CODEC_FIB_K4_N32 {
+            return Err(PolyKvError::InvalidPolicy(format!(
+                "compressed cold-pool attention requires shared codec {CODEC_FIB_K4_N32}, got {}",
+                self.manifest.shared_codec
+            )));
+        }
+        let layer = &self.layers[layer_idx];
+        if layer.key_blocks.len() != layer.value_blocks.len() {
+            return Err(PolyKvError::Internal(format!(
+                "layer {layer_idx}: key/value block count mismatch ({} vs {})",
+                layer.key_blocks.len(),
+                layer.value_blocks.len()
+            )));
+        }
+        let num_tokens = self.manifest.num_shared_tokens as usize;
+        let expected_codes = num_tokens * num_heads;
+        let adapter = crate::codec::FibQuantAdapter::new(
+            head_dim,
+            self.manifest.policy.fib_config.k,
+            self.manifest.policy.fib_config.n,
+            self.manifest.policy.fib_config.training_samples,
+            self.manifest.policy.fib_config.lloyd_restarts,
+            self.manifest.policy.fib_config.lloyd_iterations,
+        )?;
+        let seed = self.manifest.build_seed;
+        let mut key_codes = Vec::with_capacity(expected_codes);
+        for block in &layer.key_blocks {
+            key_codes.extend(adapter.decode_codes_payload(&block.encoded_payload, seed)?);
+        }
+        let mut value_codes = Vec::with_capacity(expected_codes);
+        for block in &layer.value_blocks {
+            value_codes.extend(adapter.decode_codes_payload(&block.encoded_payload, seed)?);
+        }
+        if key_codes.len() != expected_codes || value_codes.len() != expected_codes {
+            return Err(PolyKvError::Internal(format!(
+                "layer {layer_idx}: decoded {} key codes / {} value codes, expected {expected_codes}",
+                key_codes.len(),
+                value_codes.len()
+            )));
+        }
+        let quantizer = adapter.build_quantizer(seed)?;
+        let scorer = fib_quant::FibScorer::new(quantizer).map_err(|e| {
+            PolyKvError::Internal(format!("fib compressed scorer construction failed: {e}"))
+        })?;
+        Ok(PreparedCompressedIndex {
+            layer_idx,
+            head_idx,
+            head_dim,
+            num_tokens,
+            num_heads,
+            key_codes,
+            value_codes,
+            scorer,
+        })
+    }
+
+    /// Compressed top-k attention using a pre-built index.
+    ///
+    /// This avoids rebuilding the codec adapter, decoding codes, and
+    /// constructing the scorer on every call. Only the query is prepared
+    /// per call (O(dim)), then candidates are scored (O(num_tokens)).
+    #[cfg(feature = "fib")]
+    pub fn attention_topk_compressed_prepared(
+        &self,
+        index: &PreparedCompressedIndex,
+        query: &[f32],
+        top_k: usize,
+    ) -> Result<CompressedAttentionSelection> {
+        if query.len() != index.head_dim {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: index.head_dim,
+                got: query.len(),
+            });
+        }
+        let head_idx = index.head_idx;
+        let num_heads = index.num_heads;
+        let num_tokens = index.num_tokens;
+        let prepared = index.scorer.prepare_query(query).map_err(|e| {
+            PolyKvError::Internal(format!("fib compressed query preparation failed: {e}"))
+        })?;
+        let mut scored: Vec<(usize, usize, f32)> = Vec::with_capacity(num_tokens);
+        for token_idx in 0..num_tokens {
+            let code_idx = token_idx * num_heads + head_idx;
+            let score = index
+                .scorer
+                .score_prepared(&prepared, &index.key_codes[code_idx])
+                .map_err(|e| PolyKvError::Internal(format!("fib compressed score failed: {e}")))?;
+            scored.push((token_idx, code_idx, score));
+        }
+        let selected = top_k.min(scored.len());
+        if selected > 0 && selected < scored.len() {
+            scored.select_nth_unstable_by(selected - 1, |a, b| {
+                b.2.total_cmp(&a.2).then_with(|| a.0.cmp(&b.0))
+            });
+            scored.truncate(selected);
+        }
+        scored.sort_by(|a, b| b.2.total_cmp(&a.2).then_with(|| a.0.cmp(&b.0)));
+        let mut hits = Vec::with_capacity(selected);
+        for &(token_index, code_idx, score) in scored.iter().take(selected) {
+            let value = index
+                .scorer
+                .quantizer()
+                .decode(&index.value_codes[code_idx])
+                .map_err(|e| {
+                    PolyKvError::DecompressionFailed(format!(
+                        "fib selected value decode failed: {e}"
+                    ))
+                })?;
+            if value.len() != index.head_dim {
+                return Err(PolyKvError::DimensionMismatch {
+                    expected: index.head_dim,
+                    got: value.len(),
+                });
+            }
+            hits.push(CompressedAttentionHit {
+                token_index,
+                score,
+                value,
+            });
+        }
+        let receipt = CompressedAttentionSelectionReceipt::new(
+            self.manifest.pool_id.clone(),
+            index.layer_idx as u32,
+            head_idx as u32,
+            num_tokens as u32,
+            hits.len() as u32,
+            num_tokens as u64,
+            hits.len() as u64,
+            false,
+            "fib_cold_pool_prepared_compressed_score_topk_value_decode",
+            self.manifest.shared_codec.clone(),
+            now_unix(),
+        );
+        receipt.validate()?;
+        Ok(CompressedAttentionSelection { hits, receipt })
+    }
+
+    // ---------- pool search (legacy) ----------
+
     /// Search for tokens most similar to a query vector.
     ///
     /// Decompresses the specified layer's key blocks and returns the
@@ -716,6 +879,31 @@ struct PoolFileEnvelope {
     manifest: PoolManifest,
     layers: Vec<PoolLayer>,
     policy: CompressionPolicy,
+}
+
+/// Pre-built compressed index for one layer/head, avoiding per-call reconstruction.
+///
+/// Caches decoded key codes, value codes, and a built FibScorer so that
+/// `attention_topk_compressed_prepared` only needs to prepare the query
+/// (O(dim)) and score (O(num_tokens)) without rebuilding codec state.
+#[cfg(feature = "fib")]
+pub struct PreparedCompressedIndex {
+    /// Layer index this index was built for.
+    pub layer_idx: usize,
+    /// Head index this index was built for.
+    pub head_idx: usize,
+    /// Head dimension.
+    pub head_dim: usize,
+    /// Number of tokens in the pool.
+    pub num_tokens: usize,
+    /// Number of KV heads.
+    pub num_heads: usize,
+    /// Decoded key codes for the entire layer (all heads, all tokens).
+    pub key_codes: Vec<fib_quant::FibCodeV1>,
+    /// Decoded value codes for the entire layer (all heads, all tokens).
+    pub value_codes: Vec<fib_quant::FibCodeV1>,
+    /// Built FibScorer (includes quantizer).
+    pub scorer: fib_quant::FibScorer,
 }
 
 /// Reconstructed K/V tensors for one layer of the shared pool.
@@ -981,6 +1169,57 @@ mod tests {
         for w in results.windows(2) {
             assert!(w[0].1 >= w[1].1, "scores should be descending");
         }
+    }
+
+    #[test]
+    fn test_prepared_compressed_index_matches_regular_attention() {
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(16);
+        let (pool, _receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+        let query: Vec<f32> = (0..shape.head_dim).map(|x| x as f32 * 0.125).collect();
+
+        let regular = pool
+            .attention_topk_compressed(0, 0, &query, 5)
+            .expect("regular compressed attention should work");
+
+        let index = pool
+            .prepare_compressed_index(0, 0)
+            .expect("prepare compressed index should work");
+
+        let prepared = pool
+            .attention_topk_compressed_prepared(&index, &query, 5)
+            .expect("prepared compressed attention should work");
+
+        assert_eq!(prepared.hits.len(), regular.hits.len());
+        for (a, b) in prepared.hits.iter().zip(regular.hits.iter()) {
+            assert_eq!(a.token_index, b.token_index);
+            assert!((a.score - b.score).abs() < 1e-5);
+            assert_eq!(a.value.len(), b.value.len());
+        }
+        assert_eq!(
+            prepared.receipt.scoring_path,
+            "fib_cold_pool_prepared_compressed_score_topk_value_decode"
+        );
+    }
+
+    #[test]
+    fn test_prepared_compressed_index_rejects_wrong_query_dimension() {
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(8);
+        let (pool, _receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+        let index = pool
+            .prepare_compressed_index(0, 0)
+            .expect("prepare compressed index should work");
+        let err = pool
+            .attention_topk_compressed_prepared(&index, &[1.0, 2.0], 3)
+            .expect_err("wrong query dimension must fail");
+        assert!(matches!(
+            err,
+            PolyKvError::DimensionMismatch {
+                expected: 8,
+                got: 2
+            }
+        ));
     }
 
     #[test]
