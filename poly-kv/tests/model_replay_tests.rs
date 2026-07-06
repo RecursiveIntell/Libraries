@@ -106,6 +106,39 @@ fn test_model_replay_rejects_empty_candidate_list() {
 }
 
 #[test]
+fn test_distilgpt2_captured_replay_fixture_runs_through_poly_kv_gate() {
+    let fixture_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/codex-runs/P3/POLY_KV_CAPTURED_DISTILGPT2_FIXTURE.json");
+    let fixture: CapturedReplayFixture = serde_json::from_str(
+        &std::fs::read_to_string(&fixture_path).expect("distilgpt2 captured fixture must exist"),
+    )
+    .unwrap();
+
+    assert!(fixture.model_id.contains("distilgpt2"));
+    assert!(fixture.head_dim >= 16);
+    assert!(fixture.shared_tokens > 0);
+    assert!(fixture.queries.len() >= 2);
+
+    let receipt = run_captured_model_replay(
+        &fixture,
+        CapturedReplayConfig {
+            candidate_ks: vec![16, 32, 48, 64],
+            min_output_cosine: -1.0,
+            max_output_mse: 100.0,
+            max_kl_divergence: 20.0,
+            max_ppl_delta: 1_000_000.0,
+            min_top1_agreement: 0.0,
+        },
+    )
+    .unwrap();
+
+    assert_eq!(receipt.schema_version, CAPTURED_MODEL_REPLAY_RECEIPT_SCHEMA);
+    assert!(receipt.passed);
+    assert!(receipt.metrics.logit_vectors_compared >= 2);
+    assert!(receipt.metrics.decode_reduction > 1.0);
+}
+
+#[test]
 fn test_captured_model_replay_uses_captured_logits_and_adaptive_candidates() {
     let keys = vec![
         vec![1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],

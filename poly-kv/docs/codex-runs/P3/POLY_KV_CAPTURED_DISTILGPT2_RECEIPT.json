@@ -1,0 +1,158 @@
+{
+  "schema_version": "poly_kv_captured_model_replay_v1",
+  "model_id": "distilgpt2-safetensors-manual-forward:2290a62682d06624634c1f46a6ad5be0f47f38aa:layer0:head0",
+  "claim_boundary": "captured tensor replay against fixture Q/K/V/logits; not pretrained LLM PPL, not production KV-cache preservation, and not provider/framework KV-cache byte-reduction evidence",
+  "config": {
+    "candidate_ks": [
+      8,
+      16,
+      32,
+      48,
+      64,
+      72
+    ],
+    "min_output_cosine": 0.1,
+    "max_output_mse": 4.0,
+    "max_kl_divergence": 4.0,
+    "max_ppl_delta": 10.0,
+    "min_top1_agreement": 0.25
+  },
+  "selected_candidate_k": 72,
+  "candidate_results": [
+    {
+      "candidate_k": 8,
+      "output_cosine_mean": 0.6506851258086941,
+      "output_mse_mean": 0.02417410559707968,
+      "kl_divergence_mean": 6.2438611030389595,
+      "top1_agreement": 0.0,
+      "ppl_proxy_exact": 1.01550793250192,
+      "ppl_proxy_compressed": 574.821311718857,
+      "ppl_proxy_delta": 573.8058037863551,
+      "decoded_values_total": 32,
+      "full_decode_value_count": 243,
+      "decode_reduction": 7.59375,
+      "passed": false,
+      "blockers": [
+        "kl_divergence_mean 6.2439 > 4.0000",
+        "abs(ppl_proxy_delta) 573.8058 > 10.0000",
+        "top1_agreement 0.0000 < 0.2500"
+      ]
+    },
+    {
+      "candidate_k": 16,
+      "output_cosine_mean": 0.6511233873542692,
+      "output_mse_mean": 0.024131752325799775,
+      "kl_divergence_mean": 6.243097159596684,
+      "top1_agreement": 0.0,
+      "ppl_proxy_exact": 1.01550793250192,
+      "ppl_proxy_compressed": 574.383274535317,
+      "ppl_proxy_delta": 573.3677666028151,
+      "decoded_values_total": 64,
+      "full_decode_value_count": 243,
+      "decode_reduction": 3.796875,
+      "passed": false,
+      "blockers": [
+        "kl_divergence_mean 6.2431 > 4.0000",
+        "abs(ppl_proxy_delta) 573.3678 > 10.0000",
+        "top1_agreement 0.0000 < 0.2500"
+      ]
+    },
+    {
+      "candidate_k": 32,
+      "output_cosine_mean": 0.6511601571213785,
+      "output_mse_mean": 0.02412633695886352,
+      "kl_divergence_mean": 6.243051191183424,
+      "top1_agreement": 0.0,
+      "ppl_proxy_exact": 1.01550793250192,
+      "ppl_proxy_compressed": 574.3571999491924,
+      "ppl_proxy_delta": 573.3416920166904,
+      "decoded_values_total": 128,
+      "full_decode_value_count": 243,
+      "decode_reduction": 1.8984375,
+      "passed": false,
+      "blockers": [
+        "kl_divergence_mean 6.2431 > 4.0000",
+        "abs(ppl_proxy_delta) 573.3417 > 10.0000",
+        "top1_agreement 0.0000 < 0.2500"
+      ]
+    },
+    {
+      "candidate_k": 48,
+      "output_cosine_mean": 0.6511621917506246,
+      "output_mse_mean": 0.02412596522793184,
+      "kl_divergence_mean": 6.243054238589646,
+      "top1_agreement": 0.0,
+      "ppl_proxy_exact": 1.01550793250192,
+      "ppl_proxy_compressed": 574.3589715695608,
+      "ppl_proxy_delta": 573.3434636370589,
+      "decoded_values_total": 192,
+      "full_decode_value_count": 243,
+      "decode_reduction": 1.265625,
+      "passed": false,
+      "blockers": [
+        "kl_divergence_mean 6.2431 > 4.0000",
+        "abs(ppl_proxy_delta) 573.3435 > 10.0000",
+        "top1_agreement 0.0000 < 0.2500"
+      ]
+    },
+    {
+      "candidate_k": 64,
+      "output_cosine_mean": 0.6511622520951619,
+      "output_mse_mean": 0.024125953285276707,
+      "kl_divergence_mean": 6.243054406745949,
+      "top1_agreement": 0.0,
+      "ppl_proxy_exact": 1.01550793250192,
+      "ppl_proxy_compressed": 574.3590686375319,
+      "ppl_proxy_delta": 573.34356070503,
+      "decoded_values_total": 234,
+      "full_decode_value_count": 243,
+      "decode_reduction": 1.0384615384615385,
+      "passed": false,
+      "blockers": [
+        "kl_divergence_mean 6.2431 > 4.0000",
+        "abs(ppl_proxy_delta) 573.3436 > 10.0000",
+        "top1_agreement 0.0000 < 0.2500"
+      ]
+    },
+    {
+      "candidate_k": 72,
+      "output_cosine_mean": 0.6511622521629038,
+      "output_mse_mean": 0.024125953283932373,
+      "kl_divergence_mean": 6.243054382079233,
+      "top1_agreement": 0.0,
+      "ppl_proxy_exact": 1.01550793250192,
+      "ppl_proxy_compressed": 574.3590544658935,
+      "ppl_proxy_delta": 573.3435465333915,
+      "decoded_values_total": 243,
+      "full_decode_value_count": 243,
+      "decode_reduction": 1.0,
+      "passed": false,
+      "blockers": [
+        "kl_divergence_mean 6.2431 > 4.0000",
+        "abs(ppl_proxy_delta) 573.3435 > 10.0000",
+        "top1_agreement 0.0000 < 0.2500"
+      ]
+    }
+  ],
+  "metrics": {
+    "query_count": 4,
+    "exact_attention_outputs": 4,
+    "logit_vectors_compared": 4,
+    "output_cosine_mean": 0.6511622521629038,
+    "output_mse_mean": 0.024125953283932373,
+    "kl_divergence_mean": 6.243054382079233,
+    "top1_agreement": 0.0,
+    "ppl_proxy_exact": 1.01550793250192,
+    "ppl_proxy_compressed": 574.3590544658935,
+    "ppl_proxy_delta": 573.3435465333915,
+    "decoded_values_total": 243,
+    "full_decode_value_count": 243,
+    "decode_reduction": 1.0
+  },
+  "passed": false,
+  "blockers": [
+    "kl_divergence_mean 6.2431 > 4.0000",
+    "abs(ppl_proxy_delta) 573.3435 > 10.0000",
+    "top1_agreement 0.0000 < 0.2500"
+  ]
+}

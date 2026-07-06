@@ -12,10 +12,11 @@ All notable changes to `poly-kv` are documented here.
 - `poly_kv_model_replay_receipt` example stores the current deterministic model-shaped replay receipt under `docs/codex-runs/P3/`.
 - `run_captured_model_replay(...)` emits `poly_kv_captured_model_replay_v1` receipts from captured Q/K/V/logit fixtures.
 - `capture_tiny_transformer_replay.py` generates a deterministic NumPy tiny-transformer captured replay fixture when torch/transformers are unavailable.
+- `capture_distilgpt2_replay.py` generates a pretrained DistilGPT2 safetensors/tokenizer captured replay fixture via manual NumPy forward pass; the stored receipt is a diagnostic negative showing the current single-head projection proxy is insufficient for KV-cache preservation claims.
 
 ### Claim boundary
 
-- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The stored captured receipt uses deterministic NumPy tiny-transformer tensors; it does not prove pretrained LLM model-quality or KV-cache preservation without captured Q/K/V/logit/PPL replay from a real small model.
+- The compressed shell attention path and model-shaped/captured replay gates are candidate/replay plumbing. The stored tiny-transformer captured receipt uses deterministic NumPy tensors. The stored DistilGPT2 captured receipt uses pretrained model tensors but fails the strict logit/PPL-proxy gate. Neither proves pretrained LLM model-quality or KV-cache preservation without full-forward intervention/replay from a real small model.
 
 ## [0.1.0-alpha.1] — 2026-06-02
 

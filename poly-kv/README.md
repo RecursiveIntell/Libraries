@@ -171,7 +171,36 @@ Stored receipt:
 
 Current stored result: selected candidate_k=16, output cosine 0.5847, KL 0.00622, top-1 agreement 0.25, PPL-proxy delta -4.6746, and 4.5x fewer decoded value vectors than full decode.
 
-Claim boundary: this is captured-tensor fixture evidence from a deterministic NumPy tiny transformer, not pretrained LLM PPL preservation. `torch` and `transformers` were not installed on the host, and Ollama does not expose Q/K/V tensors/logits via its normal API. The next gate is a pretrained small-model capture through torch/transformers, patched llama.cpp, or a Candle/safetensors path.
+Claim boundary: this is captured-tensor fixture evidence from a deterministic NumPy tiny transformer, not pretrained LLM PPL preservation. `torch` and `transformers` were not installed on the host, and Ollama does not expose Q/K/V tensors/logits via its normal API.
+
+### Pretrained DistilGPT2 captured replay gate
+
+`poly-kv` now includes a dependency-light pretrained capture path for `distilgpt2`:
+
+```bash
+# one-time tiny dependency env used by the capture script
+python3 -m venv .venv-capture
+.venv-capture/bin/pip install safetensors tokenizers sentencepiece huggingface_hub numpy
+
+HF_HUB_DISABLE_XET=1 .venv-capture/bin/python tools/capture_distilgpt2_replay.py \
+  --out docs/codex-runs/P3/POLY_KV_CAPTURED_DISTILGPT2_FIXTURE.json
+
+cargo run --example poly_kv_captured_model_replay -- \
+  docs/codex-runs/P3/POLY_KV_CAPTURED_DISTILGPT2_FIXTURE.json \
+  > docs/codex-runs/P3/POLY_KV_CAPTURED_DISTILGPT2_RECEIPT.json
+```
+
+Stored artifacts:
+
+- `docs/codex-runs/P3/POLY_KV_CAPTURED_DISTILGPT2_FIXTURE.json`
+- `docs/codex-runs/P3/POLY_KV_CAPTURED_DISTILGPT2_RECEIPT.json`
+- `docs/codex-runs/P3/POLY_KV_CAPTURED_DISTILGPT2_SUMMARY.md`
+
+The capture script loads pretrained `distilgpt2` safetensors and tokenizer files, runs a manual NumPy forward pass, captures layer-0/head-0 Q/K/V rows and exact model logits, and emits a replay fixture for the Rust gate. This closes the "real pretrained captured tensors" setup gap without requiring torch/transformers.
+
+Current stored result: diagnostic negative. The strict captured replay gate fails at candidate_k=72 with output cosine 0.6512, KL 6.2431, top-1 agreement 0.0, PPL-proxy delta 573.3435, and no decode reduction at the selected fallback budget. This says the current single-head projection proxy is not sufficient evidence for KV-cache preservation.
+
+Claim boundary: this is pretrained DistilGPT2 captured-tensor evidence and a negative diagnostic receipt. It is not full-forward model-quality preservation, real corpus PPL preservation, production KV-cache preservation, production latency evidence, or a replacement for KIVI/KVQuant/Quest. The next gate is full-forward intervention/replay that reinjects compressed attention outputs into the downstream pretrained model path.
 
 ## Quick Start
 
