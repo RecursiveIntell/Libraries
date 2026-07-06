@@ -1,6 +1,7 @@
 //! quant-eval: Compression and semantic search evaluation benchmark suite.
 
 mod benchmarks;
+mod compressed_attention;
 mod compressed_scorer_real_corpus;
 mod error;
 mod fingerprint;
@@ -12,6 +13,9 @@ mod receipt;
 pub use benchmarks::{
     AdmissibilityTest, CodecProfile, CompressionBenchmark, CompressionBenchmarkConfig,
     SemanticMemoryBenchmark, SemanticMemoryConfig,
+};
+pub use compressed_attention::{
+    run_compressed_attention_eval, CompressedAttentionConfig, CompressedAttentionReceipt,
 };
 pub use compressed_scorer_real_corpus::{
     run_compressed_scorer_real_corpus_eval, CompressedScorerRealCorpusConfig,

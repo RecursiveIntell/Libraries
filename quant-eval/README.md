@@ -18,6 +18,7 @@ Current status: prototype-to-evidence benchmark substrate. It contains real metr
 - **HyperQuant primitive evaluation** — deterministic Z1/A2 evaluation through the published `hyperquant` crate, with mean/max MSE, estimated bytes, rejected-vector counts, receipt counts, and explicit claim boundaries.
 - **HyperQuant real-corpus retrieval gate** — caller-supplied document/query embeddings and qrels compared across exact f32 retrieval and HyperQuant-reconstructed retrieval, with recall@1/5/10/K, NDCG@K, top-K overlap, exact-rerank recovery, rank drift, score error, compression ratio, timing, and pass/fail blockers. A BEIR/Scifact all-minilm receipt is stored under `docs/codex-runs/P2/`.
 - **compressed-scorer real-corpus gate** — evaluates true compressed-domain candidate scoring through `compressed-scorer::PerDimScorer`, emits `compressed-scorer-real-corpus-eval-v1`, records zero document decodes during candidate scoring, and keeps exact f32 rerank mandatory. PerDim now uses query-prepared lookup-table contribution scoring.
+- **compressed attention fixture gate** — compares exact top-k attention aggregation against `compressed-scorer::AttentionCache`, emits `compressed-attention-eval-v1`, records top-k value decodes, and keeps the claim boundary at fixture evidence only.
 - **Conservative public surface** — measurement APIs first; no silent production claims.
 
 ## Evidence pipeline
@@ -119,6 +120,9 @@ The crate re-exports:
 - `RagEvalResult`
 - `RagQueryFixture`
 - `RagRetrievedDoc`
+- `run_compressed_attention_eval`
+- `CompressedAttentionConfig`
+- `CompressedAttentionReceipt`
 - `run_compressed_scorer_real_corpus_eval`
 - `CompressedScorerRealCorpusConfig`
 - `CompressedScorerRealCorpusProfile`
@@ -259,6 +263,34 @@ Current stored Scifact/all-minilm result:
 | Profile | Compression | R@10 | Top-K overlap | Exact-rerank recovery@1 | Decoded docs during candidate scoring | Verdict |
 |---|---:|---:|---:|---:|---:|---|
 | per_dim_8bit | 3.9588x | 0.7767 | 0.9891 | 0.8767 | 0 | strongest current compressed-scorer product lane |
+
+### compressed attention fixture gate
+
+Files: `src/compressed_attention.rs`, `tests/compressed_attention.rs`
+
+Implemented:
+
+- exact top-k attention aggregation reference over caller-supplied keys, values, and queries;
+- compressed key logits through `compressed-scorer::AttentionCache`;
+- top-k compressed value decode accounting;
+- mean output cosine, mean output MSE, mean top-K overlap, decompressed value count, and pass/fail blockers;
+- conservative receipt schema `compressed-attention-eval-v1`.
+
+Important limitation:
+
+- This is attention fixture evidence only. It does not prove model-quality preservation, perplexity, latency, or production KV-cache behavior.
+
+Stored fixture receipt:
+
+- `docs/codex-runs/P2/COMPRESSED_ATTENTION_FIXTURE_RECEIPT.json`
+- `docs/codex-runs/P2/COMPRESSED_ATTENTION_FIXTURE_SUMMARY.md`
+
+Reproduce:
+
+```bash
+cargo run -p quant-eval --example compressed_attention_receipt -- \
+  quant-eval/docs/codex-runs/P2/COMPRESSED_ATTENTION_FIXTURE_RECEIPT.json
+```
 
 ### HyperQuant real-corpus retrieval gate
 

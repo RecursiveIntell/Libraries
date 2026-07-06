@@ -120,7 +120,28 @@ Gate:
 - `cargo clippy -p compressed-scorer --all-targets -- -D warnings`
 - `cargo clippy -p quant-eval --all-targets -- -D warnings`
 
-## Task 5: Full verification and commit
+## Task 5: Compressed attention fixture gate
+
+Objective: turn the existing `AttentionCache` direction into a receipt-backed fixture harness without making KV-cache quality claims.
+
+Files:
+- Create: `quant-eval/src/compressed_attention.rs`
+- Create: `quant-eval/tests/compressed_attention.rs`
+- Create: `quant-eval/examples/compressed_attention_receipt.rs`
+- Modify: `quant-eval/src/lib.rs`
+- Add receipts under `quant-eval/docs/codex-runs/P2/`
+
+Steps:
+1. RED: add tests expecting `run_compressed_attention_eval` and `CompressedAttentionConfig`.
+2. Implement exact top-k attention reference, compressed `AttentionCache` path, output cosine/MSE/top-k overlap/decode-count metrics, and `compressed-attention-eval-v1` receipt.
+3. Generate a stored fixture receipt.
+4. Keep the claim boundary at fixture evidence only.
+
+Gate:
+- `cargo test -p quant-eval --test compressed_attention -- --nocapture`
+- `cargo run -p quant-eval --example compressed_attention_receipt -- quant-eval/docs/codex-runs/P2/COMPRESSED_ATTENTION_FIXTURE_RECEIPT.json`
+
+## Task 6: Full verification and commit
 
 Objective: finish with reproducible receipts.
 

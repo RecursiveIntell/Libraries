@@ -1,0 +1,23 @@
+{
+  "schema": "compressed-attention-eval-v1",
+  "scoring_path": "compressed_key_logits_topk_value_decode",
+  "config": {
+    "bits": 8,
+    "top_k": 2,
+    "min_mean_output_cosine": 0.8,
+    "max_mean_output_mse": 0.1,
+    "min_top_k_overlap": 0.5
+  },
+  "query_count": 2,
+  "cache_len": 4,
+  "dim": 4,
+  "top_k": 2,
+  "mean_output_cosine": 0.99998665,
+  "mean_output_mse": 0.0000049287687,
+  "mean_top_k_overlap": 1.0,
+  "decompressed_value_count": 4,
+  "passed": true,
+  "blockers": [],
+  "verdict": "compressed attention fixture passed declared top-k decode gate",
+  "claim_boundary": "attention fixture evidence only; not model-quality, perplexity, latency, or production KV-cache preservation evidence"
+}
