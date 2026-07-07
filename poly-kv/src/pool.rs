@@ -938,7 +938,217 @@ impl SharedKVPool {
         Ok(CompressedAttentionSelection { hits, receipt })
     }
 
-    // ---------- pool search (legacy) ----------
+    /// Compressed top-k attention using pre-fetched Gram rows.
+    ///
+    /// This is the fastest scoring path: query preparation + Gram row
+    /// pre-fetch happens once, then the per-token scoring loop is just
+    /// sequential gathers from a small contiguous buffer.
+    #[cfg(feature = "fib")]
+    pub fn attention_topk_prefetched(
+        &self,
+        index: &FullyPreparedCompressedIndex,
+        query: &[f32],
+        top_k: usize,
+    ) -> Result<CompressedAttentionSelection> {
+        let prefetched = index.prepare_gram_rows(query)?;
+        let mut scored = index.score_all_tokens(&prefetched)?;
+
+        let selected = top_k.min(scored.len());
+        if selected > 0 && selected < scored.len() {
+            scored.select_nth_unstable_by(selected - 1, |a, b| {
+                b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0))
+            });
+            scored.truncate(selected);
+        }
+        scored.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+
+        let num_tokens = index.num_tokens;
+        let head_idx = index.head_idx;
+        let num_heads = index.num_heads;
+        let mut hits = Vec::with_capacity(selected);
+        for &(token_index, score) in scored.iter().take(selected) {
+            let code_idx = token_index * num_heads + head_idx;
+            let value = index
+                .scorer
+                .quantizer()
+                .decode(&index.value_codes[code_idx])
+                .map_err(|e| {
+                    PolyKvError::DecompressionFailed(format!(
+                        "fib selected value decode failed: {e}"
+                    ))
+                })?;
+            if value.len() != index.head_dim {
+                return Err(PolyKvError::DimensionMismatch {
+                    expected: index.head_dim,
+                    got: value.len(),
+                });
+            }
+            hits.push(CompressedAttentionHit {
+                token_index,
+                score,
+                value,
+            });
+        }
+        let receipt = CompressedAttentionSelectionReceipt::new(
+            self.manifest.pool_id.clone(),
+            index.layer_idx as u32,
+            head_idx as u32,
+            num_tokens as u32,
+            hits.len() as u32,
+            num_tokens as u64,
+            hits.len() as u64,
+            false,
+            "fib_cold_pool_prefetched_gram_rows_topk_value_decode",
+            self.manifest.shared_codec.clone(),
+            now_unix(),
+        );
+        receipt.validate()?;
+        Ok(CompressedAttentionSelection { hits, receipt })
+    }
+
+    /// Batch multi-head compressed top-k attention using pre-fetched Gram rows.
+    ///
+    /// Scores all heads in one pass: prepares gram rows for each head's query,
+    /// then iterates tokens once, scoring all heads per token. This amortizes
+    /// the token loop overhead across heads and improves cache utilization.
+    #[cfg(feature = "fib")]
+    pub fn attention_topk_batch_heads(
+        &self,
+        index: &FullyPreparedCompressedIndex,
+        queries: &[&[f32]],
+        top_k: usize,
+    ) -> Result<Vec<CompressedAttentionSelection>> {
+        let num_heads = index.num_heads;
+        let num_tokens = index.num_tokens;
+        let head_dim = index.head_dim;
+        if queries.len() != num_heads {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: num_heads,
+                got: queries.len(),
+            });
+        }
+
+        // Prepare gram rows for each head's query
+        let mut all_prefetched: Vec<PrefetchedGramRows> = Vec::with_capacity(num_heads);
+        for q in queries.iter() {
+            if q.len() != head_dim {
+                return Err(PolyKvError::DimensionMismatch {
+                    expected: head_dim,
+                    got: q.len(),
+                });
+            }
+            // Build a per-head index view by temporarily using prepare_gram_rows
+            // with the head_idx set. But prepare_gram_rows uses self.head_idx.
+            // We need a different approach: prepare gram rows directly.
+            let prepared = index
+                .scorer
+                .prepare_query(q)
+                .map_err(|e| PolyKvError::Internal(format!("fib batch query prep failed: {e}")))?;
+            let n = index.scorer.quantizer().profile().codebook_size as usize;
+            let block_count = index.scorer.quantizer().profile().block_count() as usize;
+            let gram = index.scorer.gram_table();
+            let mut gram_rows = vec![0.0f32; block_count * n];
+            for (block_idx, &query_idx) in prepared.query_indices.iter().enumerate() {
+                let qi = query_idx as usize;
+                if qi >= n {
+                    return Err(PolyKvError::Internal(format!(
+                        "fib batch: query_idx {qi} >= {n}"
+                    )));
+                }
+                let src = &gram.values()[qi * n..(qi + 1) * n];
+                gram_rows[block_idx * n..(block_idx + 1) * n].copy_from_slice(src);
+            }
+            all_prefetched.push(PrefetchedGramRows {
+                gram_rows,
+                block_count,
+                n,
+                query_norm: prepared.query_norm,
+            });
+        }
+
+        // Score all heads for all tokens in one pass
+        let n = all_prefetched[0].n;
+        let block_count = all_prefetched[0].block_count;
+        let mut all_scored: Vec<Vec<(usize, f32)>> =
+            vec![Vec::with_capacity(num_tokens); num_heads];
+
+        for token_idx in 0..num_tokens {
+            for head_idx in 0..num_heads {
+                let code_idx = token_idx * num_heads + head_idx;
+                let indices = &index.key_indices[code_idx];
+                let stored_norm = index.key_norms[code_idx] as f32;
+                let q_norm = all_prefetched[head_idx].query_norm as f32;
+                let gram_rows = &all_prefetched[head_idx].gram_rows;
+
+                let mut total = 0.0f32;
+                for (block_idx, &stored_idx) in indices.iter().enumerate().take(block_count) {
+                    let si = stored_idx as usize;
+                    if si >= n {
+                        return Err(PolyKvError::Internal(format!(
+                            "fib batch: stored_idx {si} >= {n}"
+                        )));
+                    }
+                    total += gram_rows[block_idx * n + si];
+                }
+                let score = total * q_norm * stored_norm;
+                all_scored[head_idx].push((token_idx, score));
+            }
+        }
+
+        // Top-k selection per head
+        let mut results = Vec::with_capacity(num_heads);
+        for (head_idx, scored) in all_scored.iter_mut().enumerate() {
+            let selected = top_k.min(scored.len());
+            if selected > 0 && selected < scored.len() {
+                scored.select_nth_unstable_by(selected - 1, |a, b| {
+                    b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0))
+                });
+                scored.truncate(selected);
+            }
+            scored.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+
+            let mut hits = Vec::with_capacity(selected);
+            for &(token_index, score) in scored.iter().take(selected) {
+                let code_idx = token_index * num_heads + head_idx;
+                let value = index
+                    .scorer
+                    .quantizer()
+                    .decode(&index.value_codes[code_idx])
+                    .map_err(|e| {
+                        PolyKvError::DecompressionFailed(format!(
+                            "fib batch value decode failed: {e}"
+                        ))
+                    })?;
+                if value.len() != head_dim {
+                    return Err(PolyKvError::DimensionMismatch {
+                        expected: head_dim,
+                        got: value.len(),
+                    });
+                }
+                hits.push(CompressedAttentionHit {
+                    token_index,
+                    score,
+                    value,
+                });
+            }
+            let receipt = CompressedAttentionSelectionReceipt::new(
+                self.manifest.pool_id.clone(),
+                index.layer_idx as u32,
+                head_idx as u32,
+                num_tokens as u32,
+                hits.len() as u32,
+                num_tokens as u64,
+                hits.len() as u64,
+                false,
+                "fib_cold_pool_batch_heads_prefetched_gram_topk_value_decode",
+                self.manifest.shared_codec.clone(),
+                now_unix(),
+            );
+            receipt.validate()?;
+            results.push(CompressedAttentionSelection { hits, receipt });
+        }
+        Ok(results)
+    }
 
     /// Search for tokens most similar to a query vector.
     ///
@@ -1070,6 +1280,109 @@ pub struct FullyPreparedCompressedIndex {
     pub value_codes: Vec<fib_quant::FibCodeV1>,
     /// Built FibScorer (for query preparation and Gram table access).
     pub scorer: fib_quant::FibScorer,
+}
+
+/// Pre-fetched Gram rows for a specific query, enabling cache-friendly scoring.
+///
+/// After preparing a query, the relevant Gram table rows (one per block)
+/// are copied into a contiguous buffer. The scoring loop then gathers
+/// from this buffer using `stored_idx` as offset, eliminating the
+/// `query_idx * N` multiply and improving cache locality.
+#[cfg(feature = "fib")]
+pub struct PrefetchedGramRows {
+    /// Contiguous `block_count * N` f32 buffer.
+    /// Row `b` is at `gram_rows[b * N .. (b+1) * N]`.
+    pub gram_rows: Vec<f32>,
+    /// Number of blocks per vector.
+    pub block_count: usize,
+    /// Codebook size N.
+    pub n: usize,
+    /// Prepared query norm.
+    pub query_norm: f64,
+}
+
+#[cfg(feature = "fib")]
+impl FullyPreparedCompressedIndex {
+    /// Prepare a query and pre-fetch the relevant Gram rows.
+    ///
+    /// This copies `block_count` rows from the Gram table into a contiguous
+    /// buffer, so the per-token scoring loop becomes sequential gathers
+    /// from a 2KB working set instead of scattered accesses across 4KB+.
+    pub fn prepare_gram_rows(&self, query: &[f32]) -> Result<PrefetchedGramRows> {
+        if query.len() != self.head_dim {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: self.head_dim,
+                got: query.len(),
+            });
+        }
+        let prepared = self
+            .scorer
+            .prepare_query(query)
+            .map_err(|e| PolyKvError::Internal(format!("fib query preparation failed: {e}")))?;
+        let n = self.scorer.quantizer().profile().codebook_size as usize;
+        let block_count = self.scorer.quantizer().profile().block_count() as usize;
+        let gram = self.scorer.gram_table();
+
+        // Pre-fetch: copy gram row `query_indices[block]` into gram_rows[block * N..]
+        let mut gram_rows = vec![0.0f32; block_count * n];
+        for (block_idx, &query_idx) in prepared.query_indices.iter().enumerate() {
+            let qi = query_idx as usize;
+            if qi >= n {
+                return Err(PolyKvError::Internal(format!(
+                    "fib prepare_gram_rows: query_idx {qi} >= {n}"
+                )));
+            }
+            let src = &gram.values()[qi * n..(qi + 1) * n];
+            gram_rows[block_idx * n..(block_idx + 1) * n].copy_from_slice(src);
+        }
+
+        Ok(PrefetchedGramRows {
+            gram_rows,
+            block_count,
+            n,
+            query_norm: prepared.query_norm,
+        })
+    }
+
+    /// Score all tokens against pre-fetched Gram rows.
+    ///
+    /// The hot loop is:
+    /// ```text
+    /// for block in 0..block_count:
+    ///     total += gram_rows[block * N + stored_idx]
+    /// ```
+    /// This is sequential access into a small contiguous buffer —
+    /// auto-vectorizable and cache-friendly.
+    pub fn score_all_tokens(&self, prefetched: &PrefetchedGramRows) -> Result<Vec<(usize, f32)>> {
+        let head_idx = self.head_idx;
+        let num_heads = self.num_heads;
+        let num_tokens = self.num_tokens;
+        let q_norm = prefetched.query_norm as f32;
+        let n = prefetched.n;
+        let block_count = prefetched.block_count;
+        let gram_rows = &prefetched.gram_rows;
+
+        let mut scored: Vec<(usize, f32)> = Vec::with_capacity(num_tokens);
+        for token_idx in 0..num_tokens {
+            let code_idx = token_idx * num_heads + head_idx;
+            let indices = &self.key_indices[code_idx];
+            let stored_norm = self.key_norms[code_idx] as f32;
+
+            let mut total = 0.0f32;
+            for (block_idx, &stored_idx) in indices.iter().enumerate().take(block_count) {
+                let si = stored_idx as usize;
+                if si >= n {
+                    return Err(PolyKvError::Internal(format!(
+                        "fib score_all_tokens: stored_idx {si} >= {n}"
+                    )));
+                }
+                total += gram_rows[block_idx * n + si];
+            }
+            let score = total * q_norm * stored_norm;
+            scored.push((token_idx, score));
+        }
+        Ok(scored)
+    }
 }
 
 /// Reconstructed K/V tensors for one layer of the shared pool.
@@ -1439,6 +1752,68 @@ mod tests {
                 got: 2
             }
         ));
+    }
+
+    #[test]
+    fn test_prefetched_gram_rows_matches_regular_attention() {
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(16);
+        let (pool, _receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+        let query: Vec<f32> = (0..shape.head_dim).map(|x| x as f32 * 0.125).collect();
+
+        let regular = pool
+            .attention_topk_compressed(0, 0, &query, 5)
+            .expect("regular compressed attention should work");
+
+        let fully_index = pool
+            .prepare_fully_compressed_index(0, 0)
+            .expect("prepare fully compressed index should work");
+
+        let prefetched = pool
+            .attention_topk_prefetched(&fully_index, &query, 5)
+            .expect("prefetched compressed attention should work");
+
+        assert_eq!(prefetched.hits.len(), regular.hits.len());
+        for (a, b) in prefetched.hits.iter().zip(regular.hits.iter()) {
+            assert_eq!(a.token_index, b.token_index);
+        }
+        assert_eq!(
+            prefetched.receipt.scoring_path,
+            "fib_cold_pool_prefetched_gram_rows_topk_value_decode"
+        );
+    }
+
+    #[test]
+    fn test_batch_heads_returns_correct_count() {
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(16);
+        let (pool, _receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+
+        let fully_index = pool
+            .prepare_fully_compressed_index(0, 0)
+            .expect("prepare fully compressed index should work");
+
+        let queries: Vec<Vec<f32>> = (0..shape.num_kv_heads as usize)
+            .map(|h| {
+                (0..shape.head_dim)
+                    .map(|x| x as f32 * 0.125 + h as f32 * 0.01)
+                    .collect()
+            })
+            .collect();
+        let query_refs: Vec<&[f32]> = queries.iter().map(|q| q.as_slice()).collect();
+
+        let results = pool
+            .attention_topk_batch_heads(&fully_index, &query_refs, 5)
+            .expect("batch heads should work");
+
+        assert_eq!(results.len(), shape.num_kv_heads as usize);
+        for r in &results {
+            assert_eq!(r.hits.len(), 5);
+            assert_eq!(
+                r.receipt.scoring_path,
+                "fib_cold_pool_batch_heads_prefetched_gram_topk_value_decode"
+            );
+        }
     }
 
     #[test]
