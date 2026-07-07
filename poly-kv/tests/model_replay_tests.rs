@@ -403,6 +403,57 @@ fn test_fair_rust_attention_bench_v2_receipt_is_stored_and_bounded() {
 }
 
 #[test]
+fn test_real_data_and_large_scale_bench_receipt_is_stored_and_bounded() {
+    let receipt_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/codex-runs/P3/POLY_KV_REAL_DATA_LARGE_SCALE_BENCH_RECEIPT.json");
+    let receipt: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(&receipt_path)
+            .expect("real data large scale bench receipt must exist"),
+    )
+    .unwrap();
+
+    assert_eq!(
+        receipt["schema_version"],
+        "poly_kv_real_data_and_large_scale_bench_v1"
+    );
+
+    // Quality section
+    let q = &receipt["quality"];
+    assert!(
+        q["avg_topk_overlap"].as_f64().unwrap() >= 0.0
+            && q["avg_topk_overlap"].as_f64().unwrap() <= 1.0,
+        "overlap must be in [0,1]"
+    );
+    assert!(
+        q["avg_exact_rerank_recovery_at_1"].as_f64().unwrap() >= 0.0
+            && q["avg_exact_rerank_recovery_at_1"].as_f64().unwrap() <= 1.0,
+        "recovery must be in [0,1]"
+    );
+
+    // Speed section
+    let s = &receipt["speed"];
+    assert!(s["results"].as_array().unwrap().len() >= 5);
+    let mut found_positive = false;
+    for r in s["results"].as_array().unwrap() {
+        assert!(
+            r["exact_ns"].as_u64().unwrap() > 0,
+            "exact timing must be positive"
+        );
+        assert!(
+            r["fully_prepared_ns"].as_u64().unwrap() > 0,
+            "fully prepared timing must be positive"
+        );
+        if r["ratio_fully"].as_f64().unwrap() > 1.0 {
+            found_positive = true;
+        }
+    }
+    assert!(
+        found_positive,
+        "at least one scale should show fully prepared faster than exact"
+    );
+}
+
+#[test]
 fn test_captured_model_replay_uses_captured_logits_and_adaptive_candidates() {
     let keys = vec![
         vec![1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
