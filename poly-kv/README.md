@@ -9,6 +9,14 @@ storing that prompt 10 times in VRAM. With `poly-kv`, you
 store it once, compress it 50×, and give each agent a 17ms
 shell for its unique tokens.
 
+**Compressed-domain scoring** scores attention candidates from
+compressed codebook indices without decompressing to f32, then
+decodes only the selected top-k values. On CPU, multi-head batch
+scoring is **4.98x faster** than optimized exact f32 attention at
+16K tokens, and **5.81x faster** at 32K (AMD Ryzen 7 7730U, release
+mode). Quality is near-lossless at candidate_k=48 (+0.67% PPL on
+DistilGPT2/WikiText-103).
+
 This is the **production target** of the governed
 compression workspace: a typed, receipted, two-tier pool
 where the shared tier is built once and read by everyone.
@@ -428,6 +436,49 @@ exists in `turbo-quant`. `PackedFibCode` is next.
 ## MSRV
 
 Rust 1.75 (2021 edition). Stable features only.
+
+## Benchmarks
+
+### Speed — compressed vs exact attention (CPU)
+
+Real-kernel comparison on AMD Ryzen 7 7730U (8 cores, release mode).
+Baseline: optimized cache-blocked exact f32 attention with partial top-k heap sort.
+
+**Multi-head batch scoring** (the production-relevant path):
+
+| tokens | head_dim | heads | ratio (compressed/opt exact) |
+|--------|----------|-------|-------------------------------|
+| 2,048 | 64 | 12 | 1.14x |
+| 4,096 | 64 | 12 | 1.55x |
+| 8,192 | 64 | 12 | 2.54x |
+| 16,384 | 64 | 12 | **4.98x** |
+| 32,768 | 64 | 12 | **5.81x** |
+| 4,096 | 128 | 8 | 1.22x |
+| 8,192 | 128 | 8 | 2.47x |
+| 16,384 | 128 | 8 | **3.54x** |
+
+The win region is 4K–32K tokens — exactly where multi-agent serving workloads live.
+
+### Quality — real-corpus PPL (DistilGPT2)
+
+WikiText-103 sample, all 6 layers × 12 heads compressed, top-k candidate selection:
+
+| candidate_k | delta PPL | KL divergence | top-1 agreement |
+|-------------|-----------|---------------|-----------------|
+| 8 | +71.77% | 0.825 | 0.54 |
+| 16 | +34.90% | 0.541 | 0.56 |
+| 32 | +7.15% | 0.178 | 0.77 |
+| **48** | **+0.67%** | **0.040** | **0.87** |
+| **64** | **-0.13%** | **0.010** | **0.95** |
+
+Break-even at k=48 (near-lossless), effectively lossless at k=64.
+
+### Claim boundaries
+
+- Speed: synthetic random vectors, isolated attention operator, CPU only, not end-to-end latency
+- Quality: DistilGPT2 only (6 layers, 12 heads), NumPy CPU forward, exact f32 scoring (not compressed Gram estimates), single WikiText-103 sample, seq_len=128
+- Not production serving, not GPU, not large model evidence
+- All receipts stored as typed JSON in `docs/codex-runs/P3/`
 
 ## Dependencies
 

@@ -288,7 +288,7 @@ checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
 
 [[package]]
 name = "fib-quant"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.3"
 dependencies = [
  "blake3",
  "gpu-backend",
@@ -667,7 +667,7 @@ checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
 name = "poly-kv"
-version = "0.1.0-alpha.2"
+version = "0.1.0-alpha.3"
 dependencies = [
  "bitemporal-runtime",
  "blake3",

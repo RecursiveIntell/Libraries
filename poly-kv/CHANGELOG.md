@@ -4,6 +4,46 @@ All notable changes to `poly-kv` are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-alpha.3] — 2026-07-10
+
+### Performance — compressed attention hot path optimized
+
+- **Flattened `Vec<Vec<u32>>` → `Vec<u32>`** in `FullyPreparedCompressedIndex`: eliminates up to 393K scattered heap allocations at 32K tokens. Fixes the large-scale regression (single-head 0.65x → 1.43x at 32K head_dim=64).
+- **`attention_topk_fully_prepared` now delegates to `attention_topk_prefetched`**: the slow path that re-derived `query_idx` per token is gone. The fast path pre-fetches Gram rows into a contiguous 2KB buffer for cache-friendly scoring.
+- **Precomputed f32 norms**: `Vec<f64>` → `Vec<f32>`, no per-token `as f32` conversion.
+- **Preallocated scored arrays**: `vec![...; num_tokens]` + index assignment instead of `Vec::push`.
+
+### Benchmark — real-kernel comparison
+
+- New benchmark (`examples/poly_kv_real_kernel_bench.rs`) compares proveKV against an optimized cache-blocked exact f32 attention baseline (production-like CPU kernel with partial top-k heap sort).
+- **Multi-head batch results** (AMD Ryzen 7 7730U, release mode):
+  - head_dim=64, 12 heads: 1.14x at 2K, 2.54x at 8K, **4.98x at 16K**, **5.81x at 32K**
+  - head_dim=128, 8 heads: 1.22x at 4K, 2.47x at 8K, **3.54x at 16K**
+- Single-head at parity or winning at 8K+ for head_dim=128 (1.02x at 8K, 1.03x at 16K).
+- Receipts: `docs/codex-runs/P3/POLY_KV_REAL_KERNEL_OPTIMIZED_RECEIPT.json`
+
+### Quality — real-corpus PPL evaluation
+
+- New script (`tools/real_corpus_ppl.py`) evaluates PPL on real WikiText-103 text with DistilGPT2, all 6 layers × 12 heads compressed.
+- **K-sweep results** (seq_len=128, top-k candidate selection + softmax over candidates):
+  - k=8 → +71.77% PPL (too aggressive)
+  - k=32 → +7.15% PPL (marginal)
+  - k=48 → +0.67% PPL (**near-lossless**)
+  - k=64 → -0.13% PPL (**effectively lossless**, 95% top-1 agreement, KL=0.01)
+- Receipts: `docs/codex-runs/P3/POLY_KV_PPL_KSWEEP_RECEIPT.json`
+
+### Changed
+
+- `FullyPreparedCompressedIndex.key_indices: Vec<Vec<u32>>` → `key_indices_flat: Vec<u32>` + `block_count: usize` + `key_block(code_idx)` method.
+- `FullyPreparedCompressedIndex.key_norms: Vec<f64>` → `Vec<f32>`.
+- `fib-quant` dependency pinned to `0.1.0-beta.3` (published).
+
+### Claim boundary
+
+- Speed benchmarks use synthetic random vectors, not real model weights. Isolated attention operator, not end-to-end generation latency. CPU only (AMD Ryzen 7 7730U), no GPU.
+- PPL evaluation uses DistilGPT2 only (6 layers, 12 heads, head_dim=64). NumPy CPU forward, not torch/transformers. Exact f32 scoring (not compressed Gram estimates) — upper bound on quality. Single WikiText-103 sample, not full corpus. seq_len=128 — short context.
+- Not production serving, not GPU, not large model evidence.
+
 ### Added
 
 - `AgentShell::attention_topk_compressed(...)` scores Fib cold-pool keys and Turbo hot-shell keys in compressed form, performs global top-k selection, and decodes only selected values.
