@@ -812,7 +812,7 @@ impl SharedKVPool {
         let block_count = prep.scorer.quantizer().profile().block_count() as usize;
         let wire_bits = prep.scorer.quantizer().profile().wire_index_bits;
         let num_entries = prep.num_tokens * prep.num_heads;
-        let mut key_indices = Vec::with_capacity(num_entries);
+        let mut key_indices_flat = Vec::with_capacity(num_entries * block_count);
         let mut key_norms = Vec::with_capacity(num_entries);
         for i in 0..num_entries {
             let indices = fib_quant::bitpack::unpack_indices(
@@ -821,14 +821,14 @@ impl SharedKVPool {
                 wire_bits,
             )
             .map_err(|e| PolyKvError::Internal(format!("fib unpack_indices failed: {e}")))?;
-            key_indices.push(indices);
+            key_indices_flat.extend_from_slice(&indices);
             // Decode stored norm using the public fib-quant API.
             let norm = fib_quant::scoring::decode_stored_norm(
                 &prep.key_codes[i],
                 prep.scorer.quantizer().profile(),
             )
             .map_err(|e| PolyKvError::Internal(format!("fib decode_stored_norm failed: {e}")))?;
-            key_norms.push(norm);
+            key_norms.push(norm as f32);
         }
         Ok(FullyPreparedCompressedIndex {
             layer_idx: prep.layer_idx,
@@ -836,8 +836,9 @@ impl SharedKVPool {
             head_dim: prep.head_dim,
             num_tokens: prep.num_tokens,
             num_heads: prep.num_heads,
-            key_indices,
+            key_indices_flat,
             key_norms,
+            block_count,
             value_codes: prep.value_codes,
             scorer: prep.scorer,
         })
@@ -845,9 +846,9 @@ impl SharedKVPool {
 
     /// Compressed top-k attention using a fully prepared index.
     ///
-    /// The scoring loop is just Gram table lookups — no per-call
-    /// unpack_indices or decode_stored_norm. This is the tightest
-    /// possible hot path.
+    /// Delegates to `attention_topk_prefetched` which pre-fetches Gram rows
+    /// into a contiguous buffer for cache-friendly scoring. This is the
+    /// fastest single-head path.
     #[cfg(feature = "fib")]
     pub fn attention_topk_fully_prepared(
         &self,
@@ -855,87 +856,7 @@ impl SharedKVPool {
         query: &[f32],
         top_k: usize,
     ) -> Result<CompressedAttentionSelection> {
-        if query.len() != index.head_dim {
-            return Err(PolyKvError::DimensionMismatch {
-                expected: index.head_dim,
-                got: query.len(),
-            });
-        }
-        let head_idx = index.head_idx;
-        let num_heads = index.num_heads;
-        let num_tokens = index.num_tokens;
-        let prepared = index.scorer.prepare_query(query).map_err(|e| {
-            PolyKvError::Internal(format!("fib compressed query preparation failed: {e}"))
-        })?;
-        let q_norm = prepared.query_norm as f32;
-        let n = index.scorer.quantizer().profile().codebook_size as usize;
-
-        let mut scored: Vec<(usize, f32)> = Vec::with_capacity(num_tokens);
-        for token_idx in 0..num_tokens {
-            let code_idx = token_idx * num_heads + head_idx;
-            let indices = &index.key_indices[code_idx];
-            let stored_norm = index.key_norms[code_idx] as f32;
-            let mut total = 0.0f32;
-            for (block_idx, &stored_idx) in indices.iter().enumerate() {
-                let stored_idx = stored_idx as usize;
-                if stored_idx >= n {
-                    return Err(PolyKvError::Internal(format!(
-                        "fib fully prepared: index out of range {stored_idx} >= {n}"
-                    )));
-                }
-                let query_idx = prepared.query_indices[block_idx] as usize;
-                total += index.scorer.gram_table().get(query_idx, stored_idx);
-            }
-            let score = total * q_norm * stored_norm;
-            scored.push((token_idx, score));
-        }
-        let selected = top_k.min(scored.len());
-        if selected > 0 && selected < scored.len() {
-            scored.select_nth_unstable_by(selected - 1, |a, b| {
-                b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0))
-            });
-            scored.truncate(selected);
-        }
-        scored.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-        let mut hits = Vec::with_capacity(selected);
-        for &(token_index, score) in scored.iter().take(selected) {
-            let code_idx = token_index * num_heads + head_idx;
-            let value = index
-                .scorer
-                .quantizer()
-                .decode(&index.value_codes[code_idx])
-                .map_err(|e| {
-                    PolyKvError::DecompressionFailed(format!(
-                        "fib selected value decode failed: {e}"
-                    ))
-                })?;
-            if value.len() != index.head_dim {
-                return Err(PolyKvError::DimensionMismatch {
-                    expected: index.head_dim,
-                    got: value.len(),
-                });
-            }
-            hits.push(CompressedAttentionHit {
-                token_index,
-                score,
-                value,
-            });
-        }
-        let receipt = CompressedAttentionSelectionReceipt::new(
-            self.manifest.pool_id.clone(),
-            index.layer_idx as u32,
-            head_idx as u32,
-            num_tokens as u32,
-            hits.len() as u32,
-            num_tokens as u64,
-            hits.len() as u64,
-            false,
-            "fib_cold_pool_fully_prepared_gram_lookup_topk_value_decode",
-            self.manifest.shared_codec.clone(),
-            now_unix(),
-        );
-        receipt.validate()?;
-        Ok(CompressedAttentionSelection { hits, receipt })
+        self.attention_topk_prefetched(index, query, top_k)
     }
 
     /// Compressed top-k attention using pre-fetched Gram rows.
@@ -1070,13 +991,13 @@ impl SharedKVPool {
         let n = all_prefetched[0].n;
         let block_count = all_prefetched[0].block_count;
         let mut all_scored: Vec<Vec<(usize, f32)>> =
-            vec![Vec::with_capacity(num_tokens); num_heads];
+            vec![vec![(0usize, 0.0f32); num_tokens]; num_heads];
 
         for token_idx in 0..num_tokens {
             for head_idx in 0..num_heads {
                 let code_idx = token_idx * num_heads + head_idx;
-                let indices = &index.key_indices[code_idx];
-                let stored_norm = index.key_norms[code_idx] as f32;
+                let indices = index.key_block(code_idx);
+                let stored_norm = index.key_norms[code_idx];
                 let q_norm = all_prefetched[head_idx].query_norm as f32;
                 let gram_rows = &all_prefetched[head_idx].gram_rows;
 
@@ -1091,7 +1012,7 @@ impl SharedKVPool {
                     total += gram_rows[block_idx * n + si];
                 }
                 let score = total * q_norm * stored_norm;
-                all_scored[head_idx].push((token_idx, score));
+                all_scored[head_idx][token_idx] = (token_idx, score);
             }
         }
 
@@ -1272,10 +1193,14 @@ pub struct FullyPreparedCompressedIndex {
     pub num_tokens: usize,
     /// Number of KV heads.
     pub num_heads: usize,
-    /// Pre-unpacked key indices: one Vec per (token, head) entry.
-    pub key_indices: Vec<Vec<u32>>,
-    /// Pre-decoded key norms: one per (token, head) entry.
-    pub key_norms: Vec<f64>,
+    /// Pre-unpacked key indices: flat `num_entries * block_count` u32 buffer,
+    /// row-major by `code_idx = token_idx * num_heads + head_idx`.
+    /// Use `key_block(code_idx)` to get the slice for one entry.
+    pub key_indices_flat: Vec<u32>,
+    /// Pre-decoded key norms as f32: one per (token, head) entry.
+    pub key_norms: Vec<f32>,
+    /// Number of blocks per vector (= head_dim / k where k is the block dim).
+    pub block_count: usize,
     /// Pre-unpacked value codes (for decode of selected top-k).
     pub value_codes: Vec<fib_quant::FibCodeV1>,
     /// Built FibScorer (for query preparation and Gram table access).
@@ -1303,6 +1228,13 @@ pub struct PrefetchedGramRows {
 
 #[cfg(feature = "fib")]
 impl FullyPreparedCompressedIndex {
+    /// Get the key indices for one (token, head) entry as a slice.
+    #[inline]
+    pub fn key_block(&self, code_idx: usize) -> &[u32] {
+        let start = code_idx * self.block_count;
+        &self.key_indices_flat[start..start + self.block_count]
+    }
+
     /// Prepare a query and pre-fetch the relevant Gram rows.
     ///
     /// This copies `block_count` rows from the Gram table into a contiguous
@@ -1362,11 +1294,11 @@ impl FullyPreparedCompressedIndex {
         let block_count = prefetched.block_count;
         let gram_rows = &prefetched.gram_rows;
 
-        let mut scored: Vec<(usize, f32)> = Vec::with_capacity(num_tokens);
+        let mut scored: Vec<(usize, f32)> = vec![(0usize, 0.0f32); num_tokens];
         for token_idx in 0..num_tokens {
             let code_idx = token_idx * num_heads + head_idx;
-            let indices = &self.key_indices[code_idx];
-            let stored_norm = self.key_norms[code_idx] as f32;
+            let indices = self.key_block(code_idx);
+            let stored_norm = self.key_norms[code_idx];
 
             let mut total = 0.0f32;
             for (block_idx, &stored_idx) in indices.iter().enumerate().take(block_count) {
@@ -1379,7 +1311,7 @@ impl FullyPreparedCompressedIndex {
                 total += gram_rows[block_idx * n + si];
             }
             let score = total * q_norm * stored_norm;
-            scored.push((token_idx, score));
+            scored[token_idx] = (token_idx, score);
         }
         Ok(scored)
     }
@@ -1730,7 +1662,7 @@ mod tests {
         }
         assert_eq!(
             fully_prepared.receipt.scoring_path,
-            "fib_cold_pool_fully_prepared_gram_lookup_topk_value_decode"
+            "fib_cold_pool_prefetched_gram_rows_topk_value_decode"
         );
     }
 
