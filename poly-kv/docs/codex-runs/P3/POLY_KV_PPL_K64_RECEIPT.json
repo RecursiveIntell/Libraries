@@ -1,0 +1,27 @@
+{
+  "schema_version": "poly_kv_real_corpus_ppl_v1",
+  "claim_boundary": "DistilGPT2 real-corpus PPL evaluation; seq_len=128, candidate_k=64, all 6 layers x 12 heads compressed; corpus=WikiText-103 sample (thylacine article); NumPy CPU forward (not torch/transformers); compressed attention = top-k candidate selection + softmax over candidates; scoring uses exact f32 dot products (not compressed Gram estimates); PPL over last 30% of sequence; not production serving, not GPU, not large model, not full corpus",
+  "config": {
+    "model": "distilgpt2",
+    "model_snapshot": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+    "seq_len": 128,
+    "candidate_k": 64,
+    "eval_frac": 0.3,
+    "n_layers": 6,
+    "n_heads": 12,
+    "head_dim": 64,
+    "hidden_size": 768,
+    "corpus": "WikiText-103 sample (thylacine article)"
+  },
+  "results": {
+    "oracle_ppl": 48.698409575387814,
+    "compressed_ppl": 48.63371473187544,
+    "delta_ppl_pct": -0.13284795966944105,
+    "kl_divergence": 0.009635711147567125,
+    "top1_agreement": 0.9487179487179487,
+    "exact_forward_time_s": 0.392333984375,
+    "compressed_forward_time_s": 0.6311044692993164
+  },
+  "passed": true,
+  "blockers": []
+}
