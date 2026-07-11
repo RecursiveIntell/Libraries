@@ -23,25 +23,104 @@ use crate::tools::{
     ListGraphEdgesParams, RecordOutcomeParams, SearchProofDebtParams, TopologyParams,
 };
 
-/// Best-effort, process-local index from semantic-memory facts to claim-ledger
-/// support judgments. Populated by `sm_create_claim`/`sm_judge_support` and
-/// consulted by search-time trust enrichment. Never a source of truth — the
-/// claim ledger itself is; this is just a lookup cache for wiring the two
-/// systems together at the MCP layer.
+/// A single durable record in the claim-trust JSONL log: either a fact→claim
+/// link or a claim support judgment. Replayed in order on startup to rebuild
+/// the in-memory index.
+#[cfg(feature = "claim-integration")]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+enum ClaimTrustRecord {
+    Link {
+        fact_id: String,
+        claim_id: String,
+    },
+    Judgment {
+        claim_id: String,
+        state: claim_ledger::SupportState,
+    },
+}
+
+/// Process-local index from semantic-memory facts to claim-ledger support
+/// judgments, backed by a JSONL file under the memory dir so it survives
+/// restarts. Populated by `sm_create_claim`/`sm_judge_support` and consulted
+/// by search-time trust enrichment. Never a source of truth — the claim
+/// ledger itself is; this is a lookup cache for wiring the two systems
+/// together at the MCP layer, persisted so the cache doesn't cold-start
+/// after every restart.
 #[cfg(feature = "claim-integration")]
 #[derive(Default)]
 struct ClaimTrustIndex {
     fact_to_claim: HashMap<String, String>,
     claim_support: HashMap<String, claim_ledger::SupportState>,
+    path: Option<std::path::PathBuf>,
 }
 
 #[cfg(feature = "claim-integration")]
 impl ClaimTrustIndex {
+    /// Load persisted links/judgments from `path` (a JSONL file under the
+    /// memory dir) and keep appending to it as new state is recorded. A
+    /// missing or empty file just means a fresh index.
+    fn open(path: std::path::PathBuf) -> Self {
+        let mut idx = Self {
+            path: Some(path.clone()),
+            ..Self::default()
+        };
+        if let Ok(contents) = std::fs::read_to_string(&path) {
+            for line in contents.lines() {
+                if line.trim().is_empty() {
+                    continue;
+                }
+                match serde_json::from_str::<ClaimTrustRecord>(line) {
+                    Ok(ClaimTrustRecord::Link { fact_id, claim_id }) => {
+                        idx.fact_to_claim.insert(fact_id, claim_id);
+                    }
+                    Ok(ClaimTrustRecord::Judgment { claim_id, state }) => {
+                        idx.claim_support.insert(claim_id, state);
+                    }
+                    Err(e) => {
+                        tracing::warn!(error = %e, "skipping malformed claim_trust record");
+                    }
+                }
+            }
+        }
+        idx
+    }
+
+    /// Best-effort append of a record to the backing file. The in-memory
+    /// maps are updated regardless of whether the write succeeds — this is
+    /// a cache, so a transient disk error degrades durability, not
+    /// correctness of the current process.
+    fn persist(&self, record: &ClaimTrustRecord) {
+        let Some(path) = &self.path else { return };
+        let Ok(line) = serde_json::to_string(record) else {
+            return;
+        };
+        use std::io::Write;
+        match std::fs::OpenOptions::new().create(true).append(true).open(path) {
+            Ok(mut file) => {
+                if let Err(e) = writeln!(file, "{line}") {
+                    tracing::warn!(error = %e, "failed to persist claim_trust record");
+                }
+            }
+            Err(e) => {
+                tracing::warn!(error = %e, "failed to open claim_trust.jsonl for append");
+            }
+        }
+    }
+
     fn link_fact(&mut self, bare_fact_id: String, claim_id: String) {
+        self.persist(&ClaimTrustRecord::Link {
+            fact_id: bare_fact_id.clone(),
+            claim_id: claim_id.clone(),
+        });
         self.fact_to_claim.insert(bare_fact_id, claim_id);
     }
 
     fn record_judgment(&mut self, claim_id: String, state: claim_ledger::SupportState) {
+        self.persist(&ClaimTrustRecord::Judgment {
+            claim_id: claim_id.clone(),
+            state,
+        });
         self.claim_support.insert(claim_id, state);
     }
 
@@ -53,6 +132,52 @@ impl ClaimTrustIndex {
             return "persisted_unjudged".to_string();
         };
         support_state_label(*state).to_string()
+    }
+}
+
+/// Append-only, hash-chained store for claim-ledger entries. Backed by a
+/// JSONL file under the memory dir; loaded on startup and appended to as
+/// entries are recorded. The in-memory `entries` vec mirrors the file and is
+/// the source for computing the next hash-chain link — the file itself is
+/// the durable record.
+#[cfg(feature = "claim-integration")]
+struct ClaimLedgerStore {
+    entries: Vec<claim_ledger::LedgerEntry>,
+    path: std::path::PathBuf,
+}
+
+#[cfg(feature = "claim-integration")]
+impl ClaimLedgerStore {
+    fn open(path: std::path::PathBuf) -> Self {
+        let entries = std::fs::read_to_string(&path)
+            .ok()
+            .and_then(|contents| claim_ledger::parse_ledger_entries(&contents).ok())
+            .unwrap_or_default();
+        Self { entries, path }
+    }
+
+    fn next_sequence(&self) -> u64 {
+        self.entries.len() as u64 + 1
+    }
+
+    fn last_digest(&self) -> Option<String> {
+        self.entries.last().map(|e| e.entry_digest.clone())
+    }
+
+    /// Append a new entry to the in-memory chain and the backing file.
+    /// Returns the entry's digest on success.
+    fn append(&mut self, entry: claim_ledger::LedgerEntry) -> Result<String, String> {
+        let line = claim_ledger::serialize_entry(&entry).map_err(|e| e.to_string())?;
+        use std::io::Write;
+        let mut file = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.path)
+            .map_err(|e| format!("failed to open claim ledger file: {e}"))?;
+        writeln!(file, "{line}").map_err(|e| format!("failed to write claim ledger entry: {e}"))?;
+        let digest = entry.entry_digest.clone();
+        self.entries.push(entry);
+        Ok(digest)
     }
 }
 
@@ -74,6 +199,8 @@ pub struct SemanticMemoryServer {
     tool_router: ToolRouter<Self>,
     #[cfg(feature = "claim-integration")]
     claim_trust: Mutex<ClaimTrustIndex>,
+    #[cfg(feature = "claim-integration")]
+    claim_ledger_store: Mutex<ClaimLedgerStore>,
 }
 
 impl SemanticMemoryServer {
@@ -145,11 +272,17 @@ impl SemanticMemoryServer {
             router.list_all().len()
         );
 
+        #[cfg(feature = "claim-integration")]
+        let claim_ledger_store =
+            Mutex::new(ClaimLedgerStore::open(bridge.memory_dir.join("claim_ledger.jsonl")));
+
         Self {
             bridge: Arc::new(bridge),
             tool_router: router,
             #[cfg(feature = "claim-integration")]
             claim_trust: Mutex::new(ClaimTrustIndex::default()),
+            #[cfg(feature = "claim-integration")]
+            claim_ledger_store,
         }
     }
 
@@ -2313,31 +2446,75 @@ impl SemanticMemoryServer {
 
         let pairs = detect_contradictions(&items, &DetectorConfig::default());
 
-        // T2.4: Optionally record detected contradictions to the claim-ledger
-        // via the in-process ClaimTrustIndex. Each contradiction pair links
-        // both facts so that future trust lookups can reflect the conflict.
-        let ledger_recorded = if record_to_ledger.unwrap_or(false) {
+        // T2.4/D2: Optionally record detected contradictions as real,
+        // hash-chained claim-ledger entries (LedgerEvent::ContradictionCandidate)
+        // and update the in-process ClaimTrustIndex so search-time trust
+        // lookups reflect the conflict. The trust index is a lookup cache
+        // only — the ledger entries below are the durable record.
+        let (ledger_recorded, ledger_entries) = if record_to_ledger.unwrap_or(false) {
             #[cfg(feature = "claim-integration")]
             {
-                use claim_ledger::SupportState;
+                use claim_ledger::{LedgerEntryBuilder, SupportState};
                 let mut count = 0usize;
+                let mut entries = Vec::new();
                 for p in &pairs {
-                    // Record both facts as contradicted in the trust index
                     let fact_a = p.a.strip_prefix("fact:").unwrap_or(&p.a).to_string();
                     let fact_b = p.b.strip_prefix("fact:").unwrap_or(&p.b).to_string();
-                    let mut idx = self.claim_trust.lock().unwrap();
-                    idx.record_judgment(fact_a.clone(), SupportState::Contradicted);
-                    idx.record_judgment(fact_b.clone(), SupportState::Contradicted);
-                    count += 1;
+                    {
+                        let mut idx = self.claim_trust.lock().unwrap();
+                        idx.record_judgment(fact_a.clone(), SupportState::Contradicted);
+                        idx.record_judgment(fact_b.clone(), SupportState::Contradicted);
+                    }
+
+                    let pattern = p
+                        .signals
+                        .iter()
+                        .map(|s| format!("{s:?}"))
+                        .collect::<Vec<_>>()
+                        .join(",");
+                    let contradiction_id =
+                        claim_ledger::ids::contradiction_id(&fact_a, &fact_b, &pattern);
+
+                    let mut ledger = self.claim_ledger_store.lock().unwrap();
+                    let sequence = ledger.next_sequence();
+                    let previous_digest = ledger.last_digest();
+                    let append_result = LedgerEntryBuilder::new(sequence, previous_digest)
+                        .add_contradiction_candidate(
+                            &contradiction_id,
+                            vec![fact_a.clone(), fact_b.clone()],
+                            &pattern,
+                            &p.reason,
+                        )
+                        .map_err(|e| e.to_string())
+                        .and_then(|entry| ledger.append(entry));
+                    drop(ledger);
+
+                    match append_result {
+                        Ok(entry_hash) => {
+                            count += 1;
+                            entries.push(serde_json::json!({
+                                "contradiction_id": contradiction_id,
+                                "claim_refs": [fact_a, fact_b],
+                                "sequence": sequence,
+                                "entry_hash": entry_hash,
+                            }));
+                        }
+                        Err(e) => {
+                            return Err(ErrorData::internal_error(
+                                format!("failed to record contradiction to ledger: {e}"),
+                                None,
+                            ));
+                        }
+                    }
                 }
-                count
+                (count, entries)
             }
             #[cfg(not(feature = "claim-integration"))]
             {
-                0
+                (0, Vec::new())
             }
         } else {
-            0
+            (0, Vec::new())
         };
 
         json_to_string(&serde_json::json!({
@@ -2353,6 +2530,7 @@ impl SemanticMemoryServer {
             })).collect::<Vec<_>>(),
             "count": pairs.len(),
             "ledger_recorded": ledger_recorded,
+            "ledger_entries": ledger_entries,
             "receipt": mcp_receipt("sm_detect_contradictions"),
         }))
     }
