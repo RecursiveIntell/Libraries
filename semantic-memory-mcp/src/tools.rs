@@ -628,6 +628,18 @@ pub struct BenchmarkTrustParams {
     pub namespaces: Option<Vec<String>>,
 }
 
+/// Parameters for sm_subgraph_prune
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SubgraphPruneParams {
+    /// When true, only identify subgraphs and report priority without pruning.
+    /// Default: true (dry run).
+    #[serde(default)]
+    pub dry_run: Option<bool>,
+    /// Maximum number of subgraphs to prune (default: 5).
+    #[serde(default)]
+    pub max_prune: Option<u32>,
+}
+
 // ─── Bitemporal search ─────────────────────────────────────────────────
 
 /// Parameters for sm_search_as_of

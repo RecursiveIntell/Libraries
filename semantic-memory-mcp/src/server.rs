@@ -21,7 +21,7 @@ static WITNESS_REQUEST_SEQUENCE: AtomicU64 = AtomicU64::new(1);
 use crate::tools::{
     AddGraphEdgeParams, BenchmarkTrustParams, CommunityParams, FactorGraphParams,
     InvalidateGraphEdgeParams, ListGraphEdgesParams, RecordOutcomeParams, SearchProofDebtParams,
-    TopologyParams,
+    SubgraphPruneParams, TopologyParams,
 };
 
 /// Process-local index from semantic-memory facts to claim-ledger support
@@ -3480,6 +3480,76 @@ impl SemanticMemoryServer {
     // Governed forgetting. Corrected facts should still use supersession; this
     // tool closes the selected fact and all derived access paths while retaining
     // a content-free tombstone receipt.
+
+    #[tool(
+        description = "Identify and optionally prune reasoning subgraphs in the knowledge graph. Runs autonomous subgraph maintenance: identifies connected subgraphs, ranks by access frequency (least-accessed first), and optionally prunes. Dry-run by default. Returns identified subgraphs, pruning priority, and pruning receipts.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_subgraph_prune(
+        &self,
+        Parameters(SubgraphPruneParams { dry_run, max_prune }): Parameters<SubgraphPruneParams>,
+    ) -> Result<String, ErrorData> {
+        #[cfg(feature = "subgraph-pruning")]
+        {
+            use semantic_memory::integration::autonomous_subgraph_maintenance;
+            use semantic_memory::subgraph_pruning::AccessLog;
+
+            let dry = dry_run.unwrap_or(true);
+            let max = max_prune.map(|v| v as usize).unwrap_or(5);
+
+            // Load edges from store
+            let edges = load_stored_edge_pairs(&self.bridge.store)?;
+
+            // No access logs available — derive empty (all subgraphs treated as equally stale)
+            let access_logs: Vec<AccessLog> = Vec::new();
+
+            // Load contradictions from contradiction graph edges
+            let raw_edges =
+                tokio::task::block_in_place(|| Handle::current().block_on(self.bridge.store.list_all_graph_edges()))
+                    .map_err(|e| ErrorData::internal_error(format!("load edges failed: {e}"), None))?;
+            let contradictions: Vec<(String, String)> = raw_edges
+                .iter()
+                .filter_map(|e| {
+                    let parsed = e.edge_type_parsed
+                        .clone()
+                        .or_else(|| serde_json::from_str(&e.edge_type).ok());
+                    match parsed {
+                        Some(semantic_memory::GraphEdgeType::Entity { relation })
+                            if relation == "contradicts" =>
+                        {
+                            Some((e.source.clone(), e.target.clone()))
+                        }
+                        _ => None,
+                    }
+                })
+                .collect();
+
+            let prune_count = if dry { 0 } else { max };
+            let report = autonomous_subgraph_maintenance(&edges, &access_logs, &contradictions, prune_count);
+
+            json_to_string(&serde_json::json!({
+                "ok": true,
+                "dry_run": dry,
+                "subgraphs_identified": report.subgraphs_identified,
+                "subgraphs_pruned": report.subgraphs_pruned,
+                "receipts": report.receipts.iter().map(|r| serde_json::json!({
+                    "subgraph_root": r.subgraph_root,
+                    "pruned_nodes": r.pruned_nodes,
+                })).collect::<Vec<_>>(),
+                "summary": report.summary,
+                "receipt_field": mcp_receipt("sm_subgraph_prune"),
+            }))
+        }
+        #[cfg(not(feature = "subgraph-pruning"))]
+        {
+            let _ = (dry_run, max_prune);
+            json_to_string(&serde_json::json!({
+                "ok": true,
+                "note": "subgraph-pruning feature not enabled",
+                "receipt": mcp_receipt("sm_subgraph_prune"),
+            }))
+        }
+    }
 
     #[tool(
         description = "Forget a single fact by id through the governed dependency-closure path. Scrubs canonical content and derived FTS/vector/graph/cache/export/replay surfaces while retaining a content-free tombstone receipt. Prefer sm_supersede_fact for corrections.",
