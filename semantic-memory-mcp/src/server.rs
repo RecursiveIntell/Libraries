@@ -19,8 +19,9 @@ static WITNESS_REQUEST_SEQUENCE: AtomicU64 = AtomicU64::new(1);
 
 // Re-export the specific parameter types we use in tool signatures.
 use crate::tools::{
-    AddGraphEdgeParams, CommunityParams, FactorGraphParams, InvalidateGraphEdgeParams,
-    ListGraphEdgesParams, RecordOutcomeParams, SearchProofDebtParams, TopologyParams,
+    AddGraphEdgeParams, BenchmarkTrustParams, CommunityParams, FactorGraphParams,
+    InvalidateGraphEdgeParams, ListGraphEdgesParams, RecordOutcomeParams, SearchProofDebtParams,
+    TopologyParams,
 };
 
 /// Process-local index from semantic-memory facts to claim-ledger support
@@ -1270,6 +1271,94 @@ impl SemanticMemoryServer {
                     "note": "claim-integration feature not enabled",
                 },
                 "receipt": mcp_receipt("sm_search_proof_debt"),
+            }))
+        }
+    }
+
+    #[tool(
+        description = "Benchmark trust quality across search results. Runs multiple queries and measures the trust distribution (supported/partially_supported/unsupported/contradicted/heuristic_only/persisted_unjudged) of returned results. Shows what fraction of retrieved facts have claim-ledger backing vs unjudged.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_benchmark_trust(
+        &self,
+        Parameters(BenchmarkTrustParams { query_count, top_k, namespaces }): Parameters<
+            BenchmarkTrustParams,
+        >,
+    ) -> Result<String, ErrorData> {
+        let n = query_count.map(|v| v as usize).unwrap_or(10);
+        let k = top_k.map(|v| v as usize).unwrap_or(5);
+        let store = &self.bridge.store;
+        let ns: Option<Vec<&str>> = namespaces
+            .as_ref()
+            .map(|v| v.iter().map(String::as_str).collect());
+
+        // Use recent facts as benchmark queries (search for their own content).
+        let facts = tokio::task::block_in_place(|| {
+            Handle::current().block_on(store.list_facts("", n, 0))
+        })
+        .map_err(|e| ErrorData::internal_error(format!("list_facts failed: {e}"), None))?;
+
+        #[cfg(feature = "claim-integration")]
+        {
+            let idx = self.claim_trust.lock().unwrap();
+            let mut trust_counts: HashMap<String, usize> = HashMap::new();
+            for label in &["supported", "partially_supported", "unsupported", "contradicted", "heuristic_only", "persisted_unjudged"] {
+                trust_counts.insert(label.to_string(), 0);
+            }
+
+            let mut total_results = 0usize;
+            let mut per_query = Vec::new();
+
+            for fact in &facts {
+                let query = &fact.content;
+                let results = tokio::task::block_in_place(|| {
+                    Handle::current().block_on(store.search(query, Some(k), ns.as_deref(), None))
+                })
+                .unwrap_or_default();
+
+                let mut query_trust: HashMap<String, usize> = HashMap::new();
+                for r in &results {
+                    let bare_id = r.source.result_id();
+                    let bare = bare_id.strip_prefix("fact:").unwrap_or(&bare_id);
+                    let trust = idx.trust_for_fact(bare);
+                    *trust_counts.entry(trust.clone()).or_insert(0) += 1;
+                    *query_trust.entry(trust.clone()).or_insert(0) += 1;
+                    total_results += 1;
+                }
+                per_query.push(serde_json::json!({
+                    "query": query,
+                    "result_count": results.len(),
+                    "trust_distribution": query_trust,
+                }));
+            }
+
+            json_to_string(&serde_json::json!({
+                "ok": true,
+                "queries_run": facts.len(),
+                "top_k": k,
+                "total_results": total_results,
+                "trust_distribution": trust_counts,
+                "judged_pct": if total_results > 0 {
+                    let judged = trust_counts.get("supported").copied().unwrap_or(0)
+                        + trust_counts.get("partially_supported").copied().unwrap_or(0)
+                        + trust_counts.get("contradicted").copied().unwrap_or(0)
+                        + trust_counts.get("unsupported").copied().unwrap_or(0);
+                    (judged as f64 / total_results as f64) * 100.0
+                } else { 0.0 },
+                "per_query": per_query,
+                "receipt": mcp_receipt("sm_benchmark_trust"),
+            }))
+        }
+        #[cfg(not(feature = "claim-integration"))]
+        {
+            json_to_string(&serde_json::json!({
+                "ok": true,
+                "queries_run": facts.len(),
+                "top_k": k,
+                "trust_distribution": {"persisted_unjudged": facts.len()},
+                "judged_pct": 0.0,
+                "note": "claim-integration feature not enabled",
+                "receipt": mcp_receipt("sm_benchmark_trust"),
             }))
         }
     }

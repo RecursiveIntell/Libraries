@@ -614,6 +614,20 @@ pub struct SearchProofDebtParams {
     pub budget_micros: Option<u64>,
 }
 
+/// Parameters for sm_benchmark_trust
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct BenchmarkTrustParams {
+    /// Number of benchmark queries to run (default 10).
+    #[serde(default)]
+    pub query_count: Option<u32>,
+    /// Top-k for each search (default 5).
+    #[serde(default)]
+    pub top_k: Option<u32>,
+    /// Optional namespace filter.
+    #[serde(default)]
+    pub namespaces: Option<Vec<String>>,
+}
+
 // ─── Bitemporal search ─────────────────────────────────────────────────
 
 /// Parameters for sm_search_as_of
