@@ -11,7 +11,8 @@
 
 use claim_ledger::{
     budget_for_claim, evaluate_proof_debt_gate, evaluate_proof_debt_gate_with_config,
-    proof_debt_weight, total_proof_debt_weight, ExpectedLedgerHead, LedgerEntryBuilder, ProofDebt,
+    evaluate_proof_debt_gate_with_waiver, proof_debt_weight, total_proof_debt_weight,
+    verify_proof_debt_waiver, ExpectedLedgerHead, LedgerEntryBuilder, ProofDebt,
     ProofDebtBudgetConfig, ProofDebtBudgetV1, ProofDebtGateDecision, ProofDebtSummaryV1,
     ProofDebtWaiverReceipt,
 };
@@ -110,7 +111,10 @@ fn operator_waiver_preserves_debt() {
     assert_eq!(budget.consumed_micros, 500_000);
     assert!(budget.is_exhausted());
 
-    let gate = claim_ledger::evaluate_proof_debt_gate_with_waiver(&budget, Some(&waiver));
+    let verified =
+        verify_proof_debt_waiver(&budget, waiver, |operator| operator == "operator:josh")
+            .expect("authorized operator should produce a verified waiver");
+    let gate = evaluate_proof_debt_gate_with_waiver(&budget, Some(&verified));
     assert_eq!(gate.decision, ProofDebtGateDecision::Waived);
 }
 
@@ -318,8 +322,11 @@ fn automated_pipeline_full_lifecycle_with_ledger() {
         "advisory-only claim, accepting risk",
     );
     assert_eq!(budget.consumed_micros, 400_000);
+    let verified =
+        verify_proof_debt_waiver(&budget, waiver, |operator| operator == "operator:josh")
+            .expect("authorized operator should produce a verified waiver");
     assert_eq!(
-        claim_ledger::evaluate_proof_debt_gate_with_waiver(&budget, Some(&waiver)).decision,
+        evaluate_proof_debt_gate_with_waiver(&budget, Some(&verified)).decision,
         ProofDebtGateDecision::Waived
     );
 
@@ -355,4 +362,148 @@ fn automated_pipeline_full_lifecycle_with_ledger() {
     )
     .unwrap();
     assert_eq!(verification.last_sequence, entries.len() as u64);
+}
+
+#[test]
+fn consumed_pct_handles_u64_max_without_wrapping_and_gates_correctly() {
+    let mut exact = ProofDebtBudgetV1::new("claim:percent-max", u64::MAX);
+    exact.consumed_micros = u64::MAX;
+    assert_eq!(exact.consumed_pct(), 100);
+    assert_eq!(
+        evaluate_proof_debt_gate(&exact).decision,
+        ProofDebtGateDecision::Degrade
+    );
+
+    let mut near_overflow = ProofDebtBudgetV1::new("claim:percent-near-max", u64::MAX - 1);
+    near_overflow.consumed_micros = u64::MAX;
+    assert_eq!(near_overflow.consumed_pct(), 100);
+    assert_eq!(
+        evaluate_proof_debt_gate(&near_overflow).decision,
+        ProofDebtGateDecision::Degrade
+    );
+
+    let mut doubled = ProofDebtBudgetV1::new("claim:percent-double", u64::MAX / 2);
+    doubled.consumed_micros = u64::MAX;
+    assert_eq!(doubled.consumed_pct(), 200);
+    assert_eq!(
+        evaluate_proof_debt_gate(&doubled).decision,
+        ProofDebtGateDecision::Retract
+    );
+
+    let zero_budget = ProofDebtBudgetV1::new("claim:percent-zero", 0);
+    assert_eq!(zero_budget.consumed_pct(), 100);
+    assert_eq!(
+        evaluate_proof_debt_gate(&zero_budget).decision,
+        ProofDebtGateDecision::Degrade
+    );
+}
+
+#[test]
+fn waiver_requires_integrity_authority_and_an_exact_budget_debt_snapshot() {
+    let time = chrono::Utc::now();
+    let mut budget = ProofDebtBudgetV1::new_at("claim:waiver-integrity", 500_000, time);
+    budget.consume_at(500_000, "claim", "unproven", false, time);
+    let waiver = ProofDebtWaiverReceipt::new_at(
+        &budget,
+        500_000,
+        "operator:authorized",
+        "bounded advisory exception",
+        time,
+    );
+
+    let serialized = serde_json::to_string(&waiver).unwrap();
+    let deserialized: ProofDebtWaiverReceipt = serde_json::from_str(&serialized).unwrap();
+    assert!(verify_proof_debt_waiver(&budget, deserialized, |_| false).is_err());
+    assert_eq!(
+        evaluate_proof_debt_gate(&budget).decision,
+        ProofDebtGateDecision::Degrade
+    );
+
+    let forged = ProofDebtWaiverReceipt::new_at(
+        &budget,
+        500_000,
+        "operator:forged",
+        "attacker-created public data",
+        time,
+    );
+    assert!(forged.has_valid_integrity());
+    assert!(verify_proof_debt_waiver(&budget, forged, |_| false).is_err());
+
+    let verified = verify_proof_debt_waiver(&budget, waiver.clone(), |operator| {
+        operator == "operator:authorized"
+    })
+    .expect("explicit operator authorization should verify an intact receipt");
+    assert_eq!(
+        evaluate_proof_debt_gate_with_waiver(&budget, Some(&verified)).decision,
+        ProofDebtGateDecision::Waived
+    );
+    assert_eq!(budget.consumed_micros, 500_000, "waivers never reduce debt");
+
+    let mut cases = Vec::new();
+    let mut wrong_schema = waiver.clone();
+    wrong_schema.schema_version = "ProofDebtWaiverReceiptV0".into();
+    cases.push(wrong_schema);
+    let mut wrong_domain = waiver.clone();
+    wrong_domain.authorization_domain = "other.domain".into();
+    cases.push(wrong_domain);
+    let mut changed_budget_id = waiver.clone();
+    changed_budget_id.budget_id = "pdb_other".into();
+    cases.push(changed_budget_id);
+    let mut changed_scope = waiver.clone();
+    changed_scope.scope = "claim:other-scope".into();
+    cases.push(changed_scope);
+    let mut changed_ceiling = waiver.clone();
+    changed_ceiling.budget_micros = 500_001;
+    cases.push(changed_ceiling);
+    let mut wrong_id = waiver.clone();
+    wrong_id.waiver_id = "pdw_forged".into();
+    cases.push(wrong_id);
+    let mut changed_amount = waiver.clone();
+    changed_amount.waived_amount_micros = 1;
+    cases.push(changed_amount);
+    let mut changed_rationale = waiver.clone();
+    changed_rationale.rationale = "tampered rationale".into();
+    cases.push(changed_rationale);
+    let mut changed_time = waiver.clone();
+    changed_time.recorded_time = time + chrono::Duration::seconds(1);
+    cases.push(changed_time);
+    let mut changed_snapshot = waiver.clone();
+    changed_snapshot.outstanding_debt_micros = 499_999;
+    cases.push(changed_snapshot);
+
+    for tampered in cases {
+        assert!(
+            verify_proof_debt_waiver(&budget, tampered, |operator| operator
+                == "operator:authorized")
+            .is_err(),
+            "tampered public waiver data must not become a verified authorization"
+        );
+    }
+
+    let mut changed_budget = budget.clone();
+    changed_budget.consume_at(1, "claim", "new debt", false, time);
+    assert!(
+        verify_proof_debt_waiver(&changed_budget, waiver, |operator| {
+            operator == "operator:authorized"
+        })
+        .is_err()
+    );
+    assert_eq!(
+        evaluate_proof_debt_gate_with_waiver(&changed_budget, Some(&verified)).decision,
+        ProofDebtGateDecision::Degrade
+    );
+
+    let mut changed_scope = budget.clone();
+    changed_scope.scope = "claim:waiver-integrity-other-scope".into();
+    assert_ne!(
+        evaluate_proof_debt_gate_with_waiver(&changed_scope, Some(&verified)).decision,
+        ProofDebtGateDecision::Waived
+    );
+
+    let mut changed_ceiling = budget;
+    changed_ceiling.budget_micros = 500_001;
+    assert_ne!(
+        evaluate_proof_debt_gate_with_waiver(&changed_ceiling, Some(&verified)).decision,
+        ProofDebtGateDecision::Waived
+    );
 }

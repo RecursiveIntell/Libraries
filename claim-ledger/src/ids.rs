@@ -175,11 +175,52 @@ pub fn proof_debt_credit_id(budget_id: &str, source: &str, amount_micros: u64) -
     stable_id("pdc", &[budget_id, source, &amount_micros.to_string()], 20)
 }
 
-/// Build a proof-debt waiver ID from budget, operator, and amount.
-pub fn proof_debt_waiver_id(budget_id: &str, operator_ref: &str, amount_micros: u64) -> String {
+/// Complete deterministic input for a proof-debt waiver identity.
+///
+/// `recorded_time` must use the canonical RFC 3339 UTC representation from
+/// [`crate::budget::ProofDebtWaiverReceipt::canonical_recorded_time`].
+pub struct ProofDebtWaiverIdParts<'a> {
+    /// Receipt schema version.
+    pub schema_version: &'a str,
+    /// Authorization domain.
+    pub authorization_domain: &'a str,
+    /// Bound budget identity.
+    pub budget_id: &'a str,
+    /// Bound budget scope.
+    pub scope: &'a str,
+    /// Bound budget ceiling.
+    pub budget_micros: u64,
+    /// Outstanding debt captured when issuing the waiver.
+    pub outstanding_debt_micros: u64,
+    /// Amount authorized by the waiver.
+    pub waived_amount_micros: u64,
+    /// Operator recorded as the waiver issuer.
+    pub operator_ref: &'a str,
+    /// Reason recorded for the waiver.
+    pub rationale: &'a str,
+    /// Canonical recorded time.
+    pub recorded_time: &'a str,
+}
+
+/// Build a proof-debt waiver ID from its complete authorization semantics.
+pub fn proof_debt_waiver_id(parts: ProofDebtWaiverIdParts<'_>) -> String {
+    let budget_micros = parts.budget_micros.to_string();
+    let outstanding_debt_micros = parts.outstanding_debt_micros.to_string();
+    let waived_amount_micros = parts.waived_amount_micros.to_string();
     stable_id(
         "pdw",
-        &[budget_id, operator_ref, &amount_micros.to_string()],
+        &[
+            parts.schema_version,
+            parts.authorization_domain,
+            parts.budget_id,
+            parts.scope,
+            &budget_micros,
+            &outstanding_debt_micros,
+            &waived_amount_micros,
+            parts.operator_ref,
+            parts.rationale,
+            parts.recorded_time,
+        ],
         20,
     )
 }

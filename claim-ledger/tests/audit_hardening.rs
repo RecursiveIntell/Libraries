@@ -1,9 +1,9 @@
 use chrono::{TimeZone, Utc};
 use claim_ledger::{
     compute_entry_digest, evaluate_proof_debt_gate_with_waiver, parse_ledger_entries,
-    serialize_entry, stable_id, verify_ledger, ExpectedLedgerHead, ExportReceipt,
-    LedgerAppendReceipt, LedgerEntryBuilder, ProofDebtBudgetV1, ProofDebtGateDecision,
-    ProofDebtSummaryV1, ProofDebtWaiverReceipt,
+    serialize_entry, stable_id, verify_ledger, verify_proof_debt_waiver, ExpectedLedgerHead,
+    ExportReceipt, LedgerAppendReceipt, LedgerEntryBuilder, ProofDebtBudgetV1,
+    ProofDebtGateDecision, ProofDebtSummaryV1, ProofDebtWaiverReceipt,
 };
 
 fn entry(sequence: u64, previous: Option<String>) -> claim_ledger::LedgerEntry {
@@ -115,9 +115,13 @@ fn waiver_authorizes_bounded_proceeding_without_erasing_debt() {
     );
 
     assert_eq!(budget.consumed_micros, 500_000);
-    let gate = evaluate_proof_debt_gate_with_waiver(&budget, Some(&waiver));
+    let verified = verify_proof_debt_waiver(&budget, waiver.clone(), |operator| {
+        operator == "operator:test"
+    })
+    .unwrap();
+    let gate = evaluate_proof_debt_gate_with_waiver(&budget, Some(&verified));
     assert_eq!(gate.decision, ProofDebtGateDecision::Waived);
-    let summary = ProofDebtSummaryV1::from_budget_with_waiver(&budget, Some(&waiver));
+    let summary = ProofDebtSummaryV1::from_budget_with_waiver(&budget, Some(&verified));
     assert_eq!(summary.consumed_micros, 500_000);
     assert_eq!(
         summary.waiver_id.as_deref(),

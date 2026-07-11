@@ -141,12 +141,13 @@ impl ProofDebtBudgetV1 {
         self.consumed_micros >= self.budget_micros
     }
 
-    /// Percentage of budget consumed (0-100).
+    /// Percentage of budget consumed, which can exceed 100 when overdrawn.
     pub fn consumed_pct(&self) -> u64 {
         if self.budget_micros == 0 {
             return 100;
         }
-        (self.consumed_micros * 100) / self.budget_micros
+        let percentage = (u128::from(self.consumed_micros) * 100) / u128::from(self.budget_micros);
+        percentage.min(u128::from(u64::MAX)) as u64
     }
 
     /// Consume proof debt from the budget. Returns the debit record.
@@ -355,8 +356,9 @@ impl ProofDebtDebitV1 {
 
 /// A credit (replenishment) to a proof-debt budget.
 ///
-/// When evidence is added, a claim is admitted, or proof debt is waived,
-/// the budget is replenished. This is the receipt for budget restoration.
+/// When evidence is added or a proof obligation is otherwise resolved,
+/// the budget is replenished. Waivers are separate authorizations and never create credits.
+/// This is the receipt for budget restoration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProofDebtCreditV1 {
     /// Schema version.
@@ -466,7 +468,7 @@ pub fn evaluate_proof_debt_gate(budget: &ProofDebtBudgetV1) -> ProofDebtGateResu
 /// The waiver is only an authorization: it does not change `consumed_micros`.
 pub fn evaluate_proof_debt_gate_with_waiver(
     budget: &ProofDebtBudgetV1,
-    waiver: Option<&ProofDebtWaiverReceipt>,
+    waiver: Option<&VerifiedProofDebtWaiver>,
 ) -> ProofDebtGateResult {
     evaluate_proof_debt_gate_with_waiver_and_config(
         budget,
@@ -486,24 +488,24 @@ pub fn evaluate_proof_debt_gate_with_config(
 /// Evaluate a proof-debt gate using custom thresholds and an optional waiver.
 pub fn evaluate_proof_debt_gate_with_waiver_and_config(
     budget: &ProofDebtBudgetV1,
-    waiver: Option<&ProofDebtWaiverReceipt>,
+    waiver: Option<&VerifiedProofDebtWaiver>,
     config: &ProofDebtBudgetConfig,
 ) -> ProofDebtGateResult {
     let pct = budget.consumed_pct();
     let exhausted = budget.is_exhausted();
     let _overdrawn = budget.consumed_micros > budget.budget_micros;
 
-    let (decision, summary, waiver_id, waived_amount_micros) = if let Some(receipt) =
-        waiver.filter(|receipt| receipt.applies_to(budget))
+    let (decision, summary, waiver_id, waived_amount_micros) = if let Some(verified) =
+        waiver.filter(|verified| verified.applies_to(budget))
     {
         (
             ProofDebtGateDecision::Waived,
             format!(
                 "proof debt waived for bounded proceeding: {}% consumed ({} / {} micros), waiver {} authorizes {} micros",
-                pct, budget.consumed_micros, budget.budget_micros, receipt.waiver_id, receipt.waived_amount_micros
+                pct, budget.consumed_micros, budget.budget_micros, verified.waiver_id(), verified.waived_amount_micros()
             ),
-            Some(receipt.waiver_id.clone()),
-            Some(receipt.waived_amount_micros),
+            Some(verified.waiver_id().to_string()),
+            Some(verified.waived_amount_micros()),
         )
     } else if pct >= config.retract_threshold_pct {
         (
@@ -558,6 +560,12 @@ pub fn evaluate_proof_debt_gate_with_waiver_and_config(
     }
 }
 
+/// Schema version accepted for proof-debt waiver authorization.
+pub const PROOF_DEBT_WAIVER_SCHEMA_VERSION: &str = "ProofDebtWaiverReceiptV1";
+
+/// Domain separating proof-debt waiver authorization from other receipt types.
+pub const PROOF_DEBT_WAIVER_AUTHORIZATION_DOMAIN: &str = "claim-ledger.proof-debt-waiver.v1";
+
 /// A proof-debt waiver receipt.
 ///
 /// When an operator explicitly waives proof debt (accepting the risk),
@@ -566,6 +574,8 @@ pub fn evaluate_proof_debt_gate_with_waiver_and_config(
 pub struct ProofDebtWaiverReceipt {
     /// Schema version.
     pub schema_version: String,
+    /// Domain in which this authorization is meaningful.
+    pub authorization_domain: String,
     /// Unique identifier for this waiver.
     pub waiver_id: String,
     /// Budget this waiver applies to.
@@ -574,6 +584,8 @@ pub struct ProofDebtWaiverReceipt {
     pub scope: String,
     /// Budget ceiling in micros at the time the waiver was issued.
     pub budget_micros: u64,
+    /// Outstanding debt captured when this waiver was issued.
+    pub outstanding_debt_micros: u64,
     /// Amount of debt being waived in micros.
     pub waived_amount_micros: u64,
     /// Operator who approved the waiver.
@@ -609,16 +621,29 @@ impl ProofDebtWaiverReceipt {
         rationale: &str,
         recorded_time: DateTime<Utc>,
     ) -> Self {
+        let schema_version = PROOF_DEBT_WAIVER_SCHEMA_VERSION.to_string();
+        let authorization_domain = PROOF_DEBT_WAIVER_AUTHORIZATION_DOMAIN.to_string();
+        let outstanding_debt_micros = budget.consumed_micros;
+        let canonical_recorded_time = Self::canonical_recorded_time(recorded_time);
         Self {
-            schema_version: "ProofDebtWaiverReceiptV1".to_string(),
-            waiver_id: ids::proof_debt_waiver_id(
-                &budget.budget_id,
-                operator_ref,
+            waiver_id: ids::proof_debt_waiver_id(ids::ProofDebtWaiverIdParts {
+                schema_version: &schema_version,
+                authorization_domain: &authorization_domain,
+                budget_id: &budget.budget_id,
+                scope: &budget.scope,
+                budget_micros: budget.budget_micros,
+                outstanding_debt_micros,
                 waived_amount_micros,
-            ),
+                operator_ref,
+                rationale,
+                recorded_time: &canonical_recorded_time,
+            }),
+            schema_version,
+            authorization_domain,
             budget_id: budget.budget_id.clone(),
             scope: budget.scope.clone(),
             budget_micros: budget.budget_micros,
+            outstanding_debt_micros,
             waived_amount_micros,
             operator_ref: operator_ref.to_string(),
             rationale: rationale.to_string(),
@@ -626,13 +651,120 @@ impl ProofDebtWaiverReceipt {
         }
     }
 
-    /// Whether this waiver authorizes the current outstanding amount on this budget.
-    pub fn applies_to(&self, budget: &ProofDebtBudgetV1) -> bool {
-        self.budget_id == budget.budget_id
-            && self.scope == budget.scope
-            && self.budget_micros == budget.budget_micros
-            && self.waived_amount_micros >= budget.consumed_micros
+    /// Return the canonical timestamp representation bound into this receipt's identity.
+    pub fn canonical_recorded_time(recorded_time: DateTime<Utc>) -> String {
+        recorded_time.to_rfc3339_opts(chrono::SecondsFormat::Nanos, true)
     }
+
+    /// Recompute this receipt's deterministic integrity identity.
+    pub fn expected_waiver_id(&self) -> String {
+        let canonical_recorded_time = Self::canonical_recorded_time(self.recorded_time);
+        ids::proof_debt_waiver_id(ids::ProofDebtWaiverIdParts {
+            schema_version: &self.schema_version,
+            authorization_domain: &self.authorization_domain,
+            budget_id: &self.budget_id,
+            scope: &self.scope,
+            budget_micros: self.budget_micros,
+            outstanding_debt_micros: self.outstanding_debt_micros,
+            waived_amount_micros: self.waived_amount_micros,
+            operator_ref: &self.operator_ref,
+            rationale: &self.rationale,
+            recorded_time: &canonical_recorded_time,
+        })
+    }
+
+    /// Check that the schema, domain, and deterministic receipt identity are intact.
+    pub fn has_valid_integrity(&self) -> bool {
+        self.schema_version == PROOF_DEBT_WAIVER_SCHEMA_VERSION
+            && self.authorization_domain == PROOF_DEBT_WAIVER_AUTHORIZATION_DOMAIN
+            && self.waiver_id == self.expected_waiver_id()
+    }
+}
+
+/// Why a raw waiver receipt could not become a verified authorization.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProofDebtWaiverValidationError {
+    /// The receipt uses an unsupported schema version.
+    UnsupportedSchema,
+    /// The receipt belongs to a different authorization domain.
+    WrongAuthorizationDomain,
+    /// The receipt fields do not recompute to its declared identity.
+    IntegrityMismatch,
+    /// The receipt is not bound to this exact budget identity and ceiling.
+    BudgetMismatch,
+    /// The debt changed after the receipt was issued.
+    DebtSnapshotMismatch,
+    /// The receipt does not cover its captured outstanding debt.
+    InsufficientWaivedAmount,
+    /// The caller did not explicitly authorize the named operator.
+    UnauthorizedOperator,
+}
+
+/// A waiver authenticated by the caller for one immutable budget/debt snapshot.
+///
+/// This type deliberately has private fields, no public constructor, and no serde
+/// implementation. It can only be created by [`verify_proof_debt_waiver`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VerifiedProofDebtWaiver {
+    receipt: ProofDebtWaiverReceipt,
+}
+
+impl VerifiedProofDebtWaiver {
+    fn applies_to(&self, budget: &ProofDebtBudgetV1) -> bool {
+        self.receipt.has_valid_integrity()
+            && self.receipt.budget_id == budget.budget_id
+            && self.receipt.scope == budget.scope
+            && self.receipt.budget_micros == budget.budget_micros
+            && self.receipt.outstanding_debt_micros == budget.consumed_micros
+            && self.receipt.waived_amount_micros >= self.receipt.outstanding_debt_micros
+    }
+
+    fn waiver_id(&self) -> &str {
+        &self.receipt.waiver_id
+    }
+
+    fn waived_amount_micros(&self) -> u64 {
+        self.receipt.waived_amount_micros
+    }
+}
+
+/// Verify a raw waiver's integrity, exact budget/debt binding, and operator authority.
+///
+/// `authorize_operator` is deliberately supplied by the caller; an `operator_ref`
+/// string is provenance only and never grants authority by itself.
+pub fn verify_proof_debt_waiver<F>(
+    budget: &ProofDebtBudgetV1,
+    receipt: ProofDebtWaiverReceipt,
+    authorize_operator: F,
+) -> Result<VerifiedProofDebtWaiver, ProofDebtWaiverValidationError>
+where
+    F: FnOnce(&str) -> bool,
+{
+    if receipt.schema_version != PROOF_DEBT_WAIVER_SCHEMA_VERSION {
+        return Err(ProofDebtWaiverValidationError::UnsupportedSchema);
+    }
+    if receipt.authorization_domain != PROOF_DEBT_WAIVER_AUTHORIZATION_DOMAIN {
+        return Err(ProofDebtWaiverValidationError::WrongAuthorizationDomain);
+    }
+    if !receipt.has_valid_integrity() {
+        return Err(ProofDebtWaiverValidationError::IntegrityMismatch);
+    }
+    if receipt.budget_id != budget.budget_id
+        || receipt.scope != budget.scope
+        || receipt.budget_micros != budget.budget_micros
+    {
+        return Err(ProofDebtWaiverValidationError::BudgetMismatch);
+    }
+    if receipt.outstanding_debt_micros != budget.consumed_micros {
+        return Err(ProofDebtWaiverValidationError::DebtSnapshotMismatch);
+    }
+    if receipt.waived_amount_micros < receipt.outstanding_debt_micros {
+        return Err(ProofDebtWaiverValidationError::InsufficientWaivedAmount);
+    }
+    if !authorize_operator(&receipt.operator_ref) {
+        return Err(ProofDebtWaiverValidationError::UnauthorizedOperator);
+    }
+    Ok(VerifiedProofDebtWaiver { receipt })
 }
 
 #[cfg(test)]
@@ -756,6 +888,9 @@ mod tests {
         );
         assert_eq!(budget.consumed_micros, 400_000);
         assert_eq!(budget.available_micros(), 100_000);
+        let waiver =
+            verify_proof_debt_waiver(&budget, waiver, |operator| operator == "operator:josh")
+                .unwrap();
         let gate = evaluate_proof_debt_gate_with_waiver(&budget, Some(&waiver));
         assert_eq!(gate.decision, ProofDebtGateDecision::Waived);
     }
@@ -870,7 +1005,7 @@ impl ProofDebtSummaryV1 {
     /// Build a summary that exposes both outstanding debt and an optional waiver.
     pub fn from_budget_with_waiver(
         budget: &ProofDebtBudgetV1,
-        waiver: Option<&ProofDebtWaiverReceipt>,
+        waiver: Option<&VerifiedProofDebtWaiver>,
     ) -> Self {
         let gate = evaluate_proof_debt_gate_with_waiver(budget, waiver);
         Self {

@@ -37,8 +37,10 @@ pub use budget::{
     budget_for_claim, evaluate_proof_debt_gate, evaluate_proof_debt_gate_with_config,
     evaluate_proof_debt_gate_with_waiver, evaluate_proof_debt_gate_with_waiver_and_config,
     proof_debt_weight, total_proof_debt_weight, total_proof_debt_weight_with_config,
-    ProofDebtBudgetConfig, ProofDebtBudgetV1, ProofDebtCreditV1, ProofDebtDebitV1,
-    ProofDebtGateDecision, ProofDebtGateResult, ProofDebtSummaryV1, ProofDebtWaiverReceipt,
+    verify_proof_debt_waiver, ProofDebtBudgetConfig, ProofDebtBudgetV1, ProofDebtCreditV1,
+    ProofDebtDebitV1, ProofDebtGateDecision, ProofDebtGateResult, ProofDebtSummaryV1,
+    ProofDebtWaiverReceipt, ProofDebtWaiverValidationError, VerifiedProofDebtWaiver,
+    PROOF_DEBT_WAIVER_AUTHORIZATION_DOMAIN, PROOF_DEBT_WAIVER_SCHEMA_VERSION,
 };
 pub use candidate::{
     ProofPacketCandidateProvenanceV1, SimilarClaimCandidateV1,
