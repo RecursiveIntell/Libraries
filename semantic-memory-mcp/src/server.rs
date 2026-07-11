@@ -1129,6 +1129,49 @@ impl SemanticMemoryServer {
         // T2.6: Enrich search results with claim-ledger support state.
         // Best-effort: falls back to "persisted_unjudged" when no claim exists.
         self.enrich_results_with_trust(&mut results);
+
+        // P1.3: Factor graph reranking (opt-in via integration feature).
+        // When graph edges exist in the store, build a factor graph with
+        // search scores as initial beliefs, run belief propagation, and
+        // rerank results by refined beliefs. Items connected by multiple
+        // relationship types get compounded confidence.
+        #[cfg(feature = "integration")]
+        {
+            use semantic_memory::factor_graph::{factors_from_edges, FactorGraph, FactorGraphConfig};
+            let edge_tuples = load_neighborhood_factor_edges(&self.bridge.store, &[]);
+            if !edge_tuples.is_empty() {
+                let result_ids: Vec<String> = results
+                    .iter()
+                    .filter_map(|r| r.get("memory_id").and_then(|v| v.as_str()).map(String::from))
+                    .collect();
+                if !result_ids.is_empty() {
+                    let mut fg = FactorGraph::new(FactorGraphConfig::default());
+                    for id in &result_ids {
+                        let score = results
+                            .iter()
+                            .find(|r| r.get("memory_id").and_then(|v| v.as_str()) == Some(id))
+                            .and_then(|r| r.get("score").and_then(|v| v.as_f64()))
+                            .unwrap_or(0.5);
+                        fg.add_node(id.clone(), score);
+                    }
+                    let factors = factors_from_edges(&edge_tuples);
+                    for factor in factors {
+                        let _ = fg.add_factor(factor);
+                    }
+                    let result_beliefs = fg.propagate();
+                    let reranked = result_beliefs.top_k(result_ids.len());
+                    // Reorder results by factor graph beliefs (higher = better).
+                    results.sort_by(|a, b| {
+                        let a_id = a.get("memory_id").and_then(|v| v.as_str()).unwrap_or("");
+                        let b_id = b.get("memory_id").and_then(|v| v.as_str()).unwrap_or("");
+                        let a_belief = reranked.iter().find(|(id, _)| id == a_id).map(|(_, b)| *b).unwrap_or(0.0);
+                        let b_belief = reranked.iter().find(|(id, _)| id == b_id).map(|(_, b)| *b).unwrap_or(0.0);
+                        b_belief.partial_cmp(&a_belief).unwrap_or(std::cmp::Ordering::Equal)
+                    });
+                }
+            }
+        }
+
         let ordered_results: Vec<_> = results.iter().map(|r| serde_json::json!({"result_id": r["result_id"], "result_digest": digest(&r.to_string())})).collect();
         let exactness = if receipt.approximate {
             "approximate_candidates"
