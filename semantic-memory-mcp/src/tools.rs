@@ -48,6 +48,9 @@ pub struct SearchWitnessedParams {
     /// Retrieval stage selection. Defaults to the current hybrid behavior.
     #[serde(default)]
     pub retrieval_mode: Option<RetrievalModeParam>,
+    /// Replay input retention. Defaults to no_replay for privacy.
+    #[serde(default)]
+    pub replay_mode: Option<ReplayModeParam>,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, JsonSchema)]
@@ -56,6 +59,14 @@ pub enum RetrievalModeParam {
     Hybrid,
     FtsOnly,
     VectorOnly,
+}
+
+/// Opt-in retention policy for complete search replay.
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ReplayModeParam {
+    NoReplay,
+    StoreInputs,
 }
 
 /// Exact namespace/resource scope used by governed authority decisions.
@@ -695,6 +706,13 @@ pub struct ReplaySearchReceiptParams {
     /// Optional namespace filter for replay.
     #[serde(default)]
     pub namespaces: Option<Vec<String>>,
+}
+
+/// Parameters for sm_replay_search using opt-in stored inputs.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ReplayStoredSearchParams {
+    /// The receipt/request ID whose stored inputs should be replayed.
+    pub receipt_id: String,
 }
 
 // ─── Reconcile tool ───────────────────────────────────────────────────

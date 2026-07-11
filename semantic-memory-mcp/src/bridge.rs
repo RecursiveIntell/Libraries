@@ -46,6 +46,7 @@ pub struct MemoryBridge {
     pub memory_dir: PathBuf,
 }
 
+#[derive(Clone)]
 pub struct BridgeConfig {
     /// MCP-005: renamed from db_path to memory_dir — this is a directory,
     /// not a SQLite file path. semantic-memory creates base_dir/memory.db

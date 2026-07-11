@@ -7,8 +7,8 @@ use crate::quantize::unpack_quantized;
 use crate::types::{DerivedVectorArtifactGenerationV1, VectorArtifactBuildReceiptV1};
 use crate::types::{
     EpisodeOutcome, ProveKvPoolArtifactStatusV1, ProveKvPoolGenerationStatus,
-    ProveKvPoolGenerationV1, ProveKvPoolItemMapEntryV1, Role, VectorSearchReceiptV1,
-    VerificationStatus,
+    ProveKvPoolGenerationV1, ProveKvPoolItemMapEntryV1, Role, SearchSourceType,
+    VectorSearchReceiptV1, VerificationStatus,
 };
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, OpenFlags, OptionalExtension};
@@ -846,6 +846,17 @@ BEFORE DELETE ON procedural_memory_receipts BEGIN
 END;
 "#;
 
+/// V35 migration: opt-in, privacy-sensitive inputs for complete search replay.
+const MIGRATION_V35: &str = r#"
+CREATE TABLE IF NOT EXISTS replay_inputs (
+    receipt_id TEXT PRIMARY KEY,
+    query_text TEXT NOT NULL,
+    namespaces_json TEXT,
+    source_types_json TEXT,
+    stored_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+"#;
+
 /// Ordered list of migrations.
 #[allow(deprecated)]
 const MIGRATIONS: &[(u32, &str)] = &[
@@ -883,10 +894,11 @@ const MIGRATIONS: &[(u32, &str)] = &[
     (32, MIGRATION_V32),
     (33, MIGRATION_V33),
     (34, MIGRATION_V34),
+    (35, MIGRATION_V35),
 ];
 
 /// Maximum schema version this build supports.
-pub const MAX_SCHEMA_VERSION: u32 = 34;
+pub const MAX_SCHEMA_VERSION: u32 = 35;
 
 /// Procedural migration for V9: rebuild episodes table with episode_id PK.
 fn run_migration_v9(conn: &Connection) -> Result<(), MemoryError> {
@@ -2406,6 +2418,102 @@ pub fn get_search_receipt(
     let mut receipt = search_receipt_from_stored(stored)?;
     receipt.receipt_digest = Some(receipt_digest);
     Ok(Some(receipt))
+}
+
+/// Privacy-sensitive inputs retained by explicit replay opt-in.
+pub(crate) struct ReplayInputs {
+    pub query_text: String,
+    pub namespaces: Option<Vec<String>>,
+    pub source_types: Option<Vec<SearchSourceType>>,
+}
+
+/// Persist the inputs needed to replay a durable search receipt.
+pub(crate) fn store_replay_inputs(
+    conn: &Connection,
+    receipt_id: &str,
+    query_text: &str,
+    namespaces: Option<&[&str]>,
+    source_types: Option<&[SearchSourceType]>,
+) -> Result<(), MemoryError> {
+    let namespaces_json = namespaces
+        .map(serde_json::to_string)
+        .transpose()
+        .map_err(|error| {
+            MemoryError::Other(format!("failed to serialize replay namespaces: {error}"))
+        })?;
+    let source_types_json = source_types
+        .map(serde_json::to_string)
+        .transpose()
+        .map_err(|error| {
+            MemoryError::Other(format!("failed to serialize replay source types: {error}"))
+        })?;
+
+    let existing: Option<(String, Option<String>, Option<String>)> = conn
+        .query_row(
+            "SELECT query_text, namespaces_json, source_types_json
+             FROM replay_inputs WHERE receipt_id = ?1",
+            params![receipt_id],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .optional()?;
+    if let Some(existing) = existing {
+        if existing.0 == query_text
+            && existing.1.as_ref() == namespaces_json.as_ref()
+            && existing.2.as_ref() == source_types_json.as_ref()
+        {
+            return Ok(());
+        }
+        return Err(MemoryError::SearchReceiptConflict {
+            receipt_id: receipt_id.to_string(),
+        });
+    }
+
+    conn.execute(
+        "INSERT INTO replay_inputs
+            (receipt_id, query_text, namespaces_json, source_types_json)
+         VALUES (?1, ?2, ?3, ?4)",
+        params![receipt_id, query_text, namespaces_json, source_types_json],
+    )?;
+    Ok(())
+}
+
+/// Load opt-in inputs for complete replay, if present.
+pub(crate) fn get_replay_inputs(
+    conn: &Connection,
+    receipt_id: &str,
+) -> Result<Option<ReplayInputs>, MemoryError> {
+    let row: Option<(String, Option<String>, Option<String>)> = conn
+        .query_row(
+            "SELECT query_text, namespaces_json, source_types_json
+             FROM replay_inputs WHERE receipt_id = ?1",
+            params![receipt_id],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .optional()?;
+    let Some((query_text, namespaces_json, source_types_json)) = row else {
+        return Ok(None);
+    };
+    let namespaces = namespaces_json
+        .map(|json| serde_json::from_str(&json))
+        .transpose()
+        .map_err(|error| MemoryError::CorruptData {
+            table: "replay_inputs",
+            row_id: receipt_id.to_string(),
+            detail: format!("invalid namespaces JSON: {error}"),
+        })?;
+    let source_types = source_types_json
+        .map(|json| serde_json::from_str(&json))
+        .transpose()
+        .map_err(|error| MemoryError::CorruptData {
+            table: "replay_inputs",
+            row_id: receipt_id.to_string(),
+            detail: format!("invalid source types JSON: {error}"),
+        })?;
+    Ok(Some(ReplayInputs {
+        query_text,
+        namespaces,
+        source_types,
+    }))
 }
 
 fn add_column_if_missing(

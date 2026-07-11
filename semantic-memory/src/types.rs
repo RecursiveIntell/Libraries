@@ -105,7 +105,8 @@ impl std::str::FromStr for Role {
 }
 
 /// Indicates whether a search result came from a fact, document chunk, message, or episode.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SearchSourceType {
     /// Result is from the facts table.
     Facts,
@@ -115,6 +116,17 @@ pub enum SearchSourceType {
     Messages,
     /// Result is from the episodes table.
     Episodes,
+}
+
+/// Controls whether privacy-sensitive search inputs are retained for replay.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ReplayMode {
+    /// Keep only receipt digests; callers must supply inputs to replay.
+    #[default]
+    NoReplay,
+    /// Persist query text and filters alongside the durable receipt.
+    StoreInputs,
 }
 
 /// Controls whether search receipt metadata is produced.
@@ -150,6 +162,9 @@ pub struct SearchContext {
     pub evaluation_time: DateTime<Utc>,
     /// Receipt metadata mode.
     pub receipt_mode: ReceiptMode,
+    /// Opt-in policy for storing privacy-sensitive inputs for complete replay.
+    #[serde(default)]
+    pub replay_mode: ReplayMode,
     /// Exactness policy for vector candidate generation.
     pub exactness_profile: ExactnessProfile,
     /// Optional caller-provided request/receipt correlation ID.
@@ -192,6 +207,7 @@ impl SearchContext {
         Self {
             evaluation_time: Utc::now(),
             receipt_mode: ReceiptMode::Disabled,
+            replay_mode: ReplayMode::NoReplay,
             exactness_profile: ExactnessProfile::Default,
             request_id: None,
             trace_id: None,

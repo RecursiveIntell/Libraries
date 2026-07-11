@@ -308,7 +308,7 @@ pub use types::{
     ProjectionEntityAlias, ProjectionEpisode, ProjectionEvidenceRef, ProjectionQuery,
     ProjectionRelationVersion, ProveKvPoolArtifactBuildReceiptV1, ProveKvPoolArtifactStatusV1,
     ProveKvPoolGenerationStatus, ProveKvPoolGenerationV1, ProveKvPoolItemMapEntryV1, ReceiptMode,
-    Role, ScoreBreakdown, SearchContext, SearchReceiptAnswersV1, SearchReplayReportV1,
+    ReplayMode, Role, ScoreBreakdown, SearchContext, SearchReceiptAnswersV1, SearchReplayReportV1,
     SearchResponse, SearchResult, SearchSource, SearchSourceType, Session, TextChunk,
     VectorArtifactBuildReceiptV1, VectorSearchReceiptV1, VerificationStatus,
 };
@@ -814,10 +814,30 @@ impl MemoryStore {
     async fn persist_search_receipt(
         &self,
         receipt: &VectorSearchReceiptV1,
+        query: &str,
+        namespaces: Option<&[&str]>,
+        source_types: Option<&[SearchSourceType]>,
+        replay_mode: ReplayMode,
     ) -> Result<(), MemoryError> {
         let receipt = receipt.clone();
-        self.with_write_conn(move |conn| db::store_search_receipt(conn, &receipt))
-            .await
+        let query = query.to_string();
+        let namespaces = to_owned_string_vec(namespaces);
+        let source_types = source_types.map(|values| values.to_vec());
+        self.with_write_conn(move |conn| {
+            db::store_search_receipt(conn, &receipt)?;
+            if replay_mode == ReplayMode::StoreInputs {
+                let namespace_refs = as_str_slice(&namespaces);
+                db::store_replay_inputs(
+                    conn,
+                    &receipt.receipt_id,
+                    &query,
+                    namespace_refs.as_deref(),
+                    source_types.as_deref(),
+                )?;
+            }
+            Ok(())
+        })
+        .await
     }
 
     /// Run HNSW search on a blocking thread to avoid holding std::sync::RwLock
@@ -1894,7 +1914,14 @@ impl MemoryStore {
             .await?;
         response.results.truncate(k);
         if let Some(receipt) = &response.receipt {
-            self.persist_search_receipt(receipt).await?;
+            self.persist_search_receipt(
+                receipt,
+                query,
+                namespaces,
+                source_types,
+                context.replay_mode,
+            )
+            .await?;
         }
         if let (Some(ref key), Some(retrieval_epoch)) = (cache_key.as_ref(), cache_epoch) {
             match self.inner.search_cache.lock() {
@@ -2035,7 +2062,14 @@ impl MemoryStore {
             .filter_search_results(response.results, StateView::Current)
             .await?;
         if let Some(receipt) = &response.receipt {
-            self.persist_search_receipt(receipt).await?;
+            self.persist_search_receipt(
+                receipt,
+                query,
+                namespaces,
+                source_types,
+                context.replay_mode,
+            )
+            .await?;
         }
         Ok(response)
     }
@@ -2180,7 +2214,14 @@ impl MemoryStore {
             .filter_search_results(response.results, StateView::Current)
             .await?;
         if let Some(receipt) = &response.receipt {
-            self.persist_search_receipt(receipt).await?;
+            self.persist_search_receipt(
+                receipt,
+                query,
+                namespaces,
+                source_types,
+                context.replay_mode,
+            )
+            .await?;
         }
         Ok(response)
     }
@@ -2312,7 +2353,14 @@ impl MemoryStore {
             })
             .await?;
         if let Some(receipt) = &response.receipt {
-            self.persist_search_receipt(receipt).await?;
+            self.persist_search_receipt(
+                receipt,
+                query,
+                namespaces,
+                source_types,
+                context.replay_mode,
+            )
+            .await?;
         }
         Ok(response)
     }
@@ -2325,6 +2373,49 @@ impl MemoryStore {
         let receipt_id = receipt_id.to_string();
         self.with_read_conn(move |conn| db::get_search_receipt(conn, &receipt_id))
             .await
+    }
+
+    /// Return whether a durable receipt has opt-in inputs for complete replay.
+    pub async fn search_replay_inputs_available(
+        &self,
+        receipt_id: &str,
+    ) -> Result<bool, MemoryError> {
+        let receipt_id = receipt_id.to_string();
+        self.with_read_conn(move |conn| Ok(db::get_replay_inputs(conn, &receipt_id)?.is_some()))
+            .await
+    }
+
+    /// Replay a durable receipt using its opt-in stored query and filters.
+    pub async fn replay_search_from_stored_inputs(
+        &self,
+        receipt_id: &str,
+    ) -> Result<SearchReplayReportV1, MemoryError> {
+        self.get_search_receipt(receipt_id).await?.ok_or_else(|| {
+            MemoryError::SearchReceiptNotFound {
+                receipt_id: receipt_id.to_string(),
+            }
+        })?;
+        let replay_receipt_id = receipt_id.to_string();
+        let inputs = self
+            .with_read_conn(move |conn| db::get_replay_inputs(conn, &replay_receipt_id))
+            .await?
+            .ok_or_else(|| {
+                MemoryError::Other(format!(
+                    "search receipt '{receipt_id}' has no stored replay inputs"
+                ))
+            })?;
+        let namespace_refs: Option<Vec<&str>> = inputs
+            .namespaces
+            .as_ref()
+            .map(|values| values.iter().map(String::as_str).collect());
+        self.replay_search_receipt(
+            receipt_id,
+            &inputs.query_text,
+            None,
+            namespace_refs.as_deref(),
+            inputs.source_types.as_deref(),
+        )
+        .await
     }
 
     /// Replay a durable search receipt with caller-supplied query text and filters.
@@ -2368,6 +2459,7 @@ impl MemoryStore {
         })?;
 
         let vector_only = original_receipt.search_profile.starts_with("vector_only");
+        let fts_only = original_receipt.search_profile.starts_with("fts_only");
         let replay_top_k = top_k.or_else(|| Some(original_receipt.result_ids.len().max(1)));
         let replay_receipt_id = format!("{receipt_id}:replay:{}", uuid::Uuid::new_v4());
         let mut context = SearchContext::at(original_receipt.evaluation_time);
@@ -2393,6 +2485,15 @@ impl MemoryStore {
 
         let replay_response = if vector_only {
             self.search_vector_only_with_context(
+                query,
+                replay_top_k,
+                namespaces,
+                source_types,
+                context,
+            )
+            .await?
+        } else if fts_only {
+            self.search_fts_only_with_context(
                 query,
                 replay_top_k,
                 namespaces,

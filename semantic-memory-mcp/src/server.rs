@@ -16,6 +16,13 @@ use std::sync::{Arc, Mutex};
 use tokio::runtime::Handle;
 
 static WITNESS_REQUEST_SEQUENCE: AtomicU64 = AtomicU64::new(1);
+const ROUTING_POLICY_PERSIST_BATCH: usize = 10;
+
+#[derive(Default)]
+struct RoutingPolicyBatchState {
+    policy: Option<semantic_memory::rl_routing::RoutingPolicy>,
+    pending_outcomes: usize,
+}
 
 // Re-export the specific parameter types we use in tool signatures.
 use crate::tools::{
@@ -108,7 +115,10 @@ impl ClaimTrustIndex {
             return;
         }
         for trigram in Self::trigrams(&normalized_content) {
-            self.trigram_index.entry(trigram).or_default().push(claim_id.clone());
+            self.trigram_index
+                .entry(trigram)
+                .or_default()
+                .push(claim_id.clone());
         }
         self.content_to_claim.insert(normalized_content, claim_id);
     }
@@ -221,7 +231,9 @@ impl ClaimTrustIndex {
 /// same missing-source-basis debt plus a missing-repro debt, so the real
 /// claim-ledger weights (not a hardcoded number) rank them strictly worse.
 #[cfg(feature = "claim-integration")]
-fn proof_debts_for_support_state(state: claim_ledger::SupportState) -> Vec<claim_ledger::ProofDebt> {
+fn proof_debts_for_support_state(
+    state: claim_ledger::SupportState,
+) -> Vec<claim_ledger::ProofDebt> {
     use claim_ledger::{ProofDebt, SupportState};
     match state {
         SupportState::Supported | SupportState::PartiallySupported => Vec::new(),
@@ -315,6 +327,7 @@ fn support_state_label(state: claim_ledger::SupportState) -> &'static str {
 pub struct SemanticMemoryServer {
     bridge: Arc<MemoryBridge>,
     tool_router: ToolRouter<Self>,
+    routing_policy_batch: Mutex<RoutingPolicyBatchState>,
     #[cfg(feature = "claim-integration")]
     claim_trust: Mutex<ClaimTrustIndex>,
     #[cfg(feature = "claim-integration")]
@@ -343,6 +356,7 @@ impl SemanticMemoryServer {
                     "sm_graph_path",
                     "sm_list_namespaces",
                     "sm_search_conversations",
+                    "sm_replay_search",
                     "sm_search_witnessed",
                     "sm_set_provenance",
                     "sm_stats",
@@ -375,6 +389,7 @@ impl SemanticMemoryServer {
                     if !matches!(
                         name.as_str(),
                         "sm_search_witnessed"
+                            | "sm_replay_search"
                             | "sm_decide_assertion_authority"
                             | "sm_decide_action_authority"
                     ) {
@@ -401,6 +416,7 @@ impl SemanticMemoryServer {
         Self {
             bridge: Arc::new(bridge),
             tool_router: router,
+            routing_policy_batch: Mutex::new(RoutingPolicyBatchState::default()),
             #[cfg(feature = "claim-integration")]
             claim_trust: Mutex::new(claim_trust),
             #[cfg(feature = "claim-integration")]
@@ -950,7 +966,10 @@ impl SemanticMemoryServer {
     /// exists for the fact, or no support judgment has been recorded yet.
     #[cfg(feature = "claim-integration")]
     fn trust_for_fact(&self, bare_fact_id: &str) -> String {
-        self.claim_trust.lock().unwrap().trust_for_fact(bare_fact_id)
+        self.claim_trust
+            .lock()
+            .unwrap()
+            .trust_for_fact(bare_fact_id)
     }
 
     #[cfg(not(feature = "claim-integration"))]
@@ -1000,7 +1019,7 @@ impl SemanticMemoryServer {
     }
 
     #[tool(
-        description = "Mandatory witnessed hybrid retrieval. Bypasses cache, verifies durable receipt persistence, defaults to Current state, and explicitly reports unavailable authority/replay data.",
+        description = "Mandatory witnessed retrieval. Bypasses cache, verifies durable receipt persistence, defaults to Current state, and supports privacy-preserving opt-in storage for complete replay.",
         annotations(read_only_hint = true)
     )]
     fn sm_search_witnessed(
@@ -1011,9 +1030,10 @@ impl SemanticMemoryServer {
             namespaces,
             request_id,
             retrieval_mode,
+            replay_mode,
         }): Parameters<SearchWitnessedParams>,
     ) -> Result<String, ErrorData> {
-        use semantic_memory::{ExactnessProfile, ReceiptMode, SearchContext};
+        use semantic_memory::{ExactnessProfile, ReceiptMode, ReplayMode, SearchContext};
         let k = top_k.map(|v| v as usize).unwrap_or(5);
         let request_id = request_id.unwrap_or_else(|| {
             format!(
@@ -1043,6 +1063,10 @@ impl SemanticMemoryServer {
             .map(|v| v.iter().map(String::as_str).collect());
         let mut context = SearchContext::default_now();
         context.receipt_mode = ReceiptMode::ReturnReceipt;
+        context.replay_mode = match replay_mode.unwrap_or(ReplayModeParam::NoReplay) {
+            ReplayModeParam::NoReplay => ReplayMode::NoReplay,
+            ReplayModeParam::StoreInputs => ReplayMode::StoreInputs,
+        };
         context.exactness_profile = ExactnessProfile::PreferExact;
         context.request_id = Some(request_id.clone());
         context.query_text_digest = Some(query_digest.clone());
@@ -1112,6 +1136,16 @@ impl SemanticMemoryServer {
                 None,
             ));
         }
+        let complete_replay_available = tokio::task::block_in_place(|| {
+            Handle::current().block_on(
+                self.bridge
+                    .store
+                    .search_replay_inputs_available(&receipt.receipt_id),
+            )
+        })
+        .map_err(|e| {
+            ErrorData::internal_error(format!("replay input verification failed: {e}"), None)
+        })?;
         let stats =
             tokio::task::block_in_place(|| Handle::current().block_on(self.bridge.store.stats()))
                 .map_err(|e| {
@@ -1137,12 +1171,18 @@ impl SemanticMemoryServer {
         // relationship types get compounded confidence.
         #[cfg(feature = "integration")]
         {
-            use semantic_memory::factor_graph::{factors_from_edges, FactorGraph, FactorGraphConfig};
+            use semantic_memory::factor_graph::{
+                factors_from_edges, FactorGraph, FactorGraphConfig,
+            };
             let edge_tuples = load_neighborhood_factor_edges(&self.bridge.store, &[]);
             if !edge_tuples.is_empty() {
                 let result_ids: Vec<String> = results
                     .iter()
-                    .filter_map(|r| r.get("memory_id").and_then(|v| v.as_str()).map(String::from))
+                    .filter_map(|r| {
+                        r.get("memory_id")
+                            .and_then(|v| v.as_str())
+                            .map(String::from)
+                    })
                     .collect();
                 if !result_ids.is_empty() {
                     let mut fg = FactorGraph::new(FactorGraphConfig::default());
@@ -1164,9 +1204,19 @@ impl SemanticMemoryServer {
                     results.sort_by(|a, b| {
                         let a_id = a.get("memory_id").and_then(|v| v.as_str()).unwrap_or("");
                         let b_id = b.get("memory_id").and_then(|v| v.as_str()).unwrap_or("");
-                        let a_belief = reranked.iter().find(|(id, _)| id == a_id).map(|(_, b)| *b).unwrap_or(0.0);
-                        let b_belief = reranked.iter().find(|(id, _)| id == b_id).map(|(_, b)| *b).unwrap_or(0.0);
-                        b_belief.partial_cmp(&a_belief).unwrap_or(std::cmp::Ordering::Equal)
+                        let a_belief = reranked
+                            .iter()
+                            .find(|(id, _)| id == a_id)
+                            .map(|(_, b)| *b)
+                            .unwrap_or(0.0);
+                        let b_belief = reranked
+                            .iter()
+                            .find(|(id, _)| id == b_id)
+                            .map(|(_, b)| *b)
+                            .unwrap_or(0.0);
+                        b_belief
+                            .partial_cmp(&a_belief)
+                            .unwrap_or(std::cmp::Ordering::Equal)
                     });
                 }
             }
@@ -1200,9 +1250,14 @@ impl SemanticMemoryServer {
                 "selected_retrieval": {"outcome": "Applied", "degradation": null, "mode": retrieval_mode_name},
                 "receipt_persistence": {"outcome": "Applied", "degradation": null},
                 "cache": {"outcome": "Skipped", "degradation": "witnessed retrieval bypasses cache"},
-                "replay": {"outcome": "AnalysisOnly", "degradation": "complete replay inputs are not available"}
+                "replay": if complete_replay_available {
+                    serde_json::json!({"outcome": "Applied", "degradation": null})
+                } else {
+                    serde_json::json!({"outcome": "AnalysisOnly", "degradation": "complete replay inputs are not available"})
+                }
             },
-            "degradations": receipt.degradations, "complete_replay_available": false
+            "degradations": receipt.degradations,
+            "complete_replay_available": complete_replay_available
         }))
     }
 
@@ -1212,9 +1267,12 @@ impl SemanticMemoryServer {
     )]
     fn sm_search_proof_debt(
         &self,
-        Parameters(SearchProofDebtParams { query, top_k, namespaces, budget_micros }): Parameters<
-            SearchProofDebtParams,
-        >,
+        Parameters(SearchProofDebtParams {
+            query,
+            top_k,
+            namespaces,
+            budget_micros,
+        }): Parameters<SearchProofDebtParams>,
     ) -> Result<String, ErrorData> {
         let k = top_k.map(|v| v as usize).unwrap_or(5);
         let store = &self.bridge.store;
@@ -1324,9 +1382,11 @@ impl SemanticMemoryServer {
     )]
     fn sm_benchmark_trust(
         &self,
-        Parameters(BenchmarkTrustParams { query_count, top_k, namespaces }): Parameters<
-            BenchmarkTrustParams,
-        >,
+        Parameters(BenchmarkTrustParams {
+            query_count,
+            top_k,
+            namespaces,
+        }): Parameters<BenchmarkTrustParams>,
     ) -> Result<String, ErrorData> {
         let n = query_count.map(|v| v as usize).unwrap_or(10);
         let k = top_k.map(|v| v as usize).unwrap_or(5);
@@ -1336,16 +1396,22 @@ impl SemanticMemoryServer {
             .map(|v| v.iter().map(String::as_str).collect());
 
         // Use recent facts as benchmark queries (search for their own content).
-        let facts = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.list_facts("", n, 0))
-        })
-        .map_err(|e| ErrorData::internal_error(format!("list_facts failed: {e}"), None))?;
+        let facts =
+            tokio::task::block_in_place(|| Handle::current().block_on(store.list_facts("", n, 0)))
+                .map_err(|e| ErrorData::internal_error(format!("list_facts failed: {e}"), None))?;
 
         #[cfg(feature = "claim-integration")]
         {
             let idx = self.claim_trust.lock().unwrap();
             let mut trust_counts: HashMap<String, usize> = HashMap::new();
-            for label in &["supported", "partially_supported", "unsupported", "contradicted", "heuristic_only", "persisted_unjudged"] {
+            for label in &[
+                "supported",
+                "partially_supported",
+                "unsupported",
+                "contradicted",
+                "heuristic_only",
+                "persisted_unjudged",
+            ] {
                 trust_counts.insert(label.to_string(), 0);
             }
 
@@ -2277,7 +2343,8 @@ impl SemanticMemoryServer {
         &self,
         Parameters(RouteQueryParams { query }): Parameters<RouteQueryParams>,
     ) -> Result<String, ErrorData> {
-        use semantic_memory::routing::RetrievalRouter;
+        use semantic_memory::rl_routing::{is_trained, route_with_policy};
+        use semantic_memory::routing::{QueryProfile, RetrievalRouter};
 
         let router = RetrievalRouter {
             decoder_enabled: true,
@@ -2286,9 +2353,18 @@ impl SemanticMemoryServer {
             ..Default::default()
         };
 
-        let decision = router.route_query(&query);
+        let profile = QueryProfile::from_query(&query);
+        let policy = tokio::task::block_in_place(|| {
+            Handle::current().block_on(self.bridge.store.load_routing_policy())
+        })
+        .map_err(|e| ErrorData::internal_error(format!("load routing policy error: {e}"), None))?;
+        let (decision, routing_source) = match policy.as_ref().filter(|p| is_trained(p)) {
+            Some(policy) => (route_with_policy(policy, &profile), "trained_policy"),
+            None => (router.route(&profile), "heuristic"),
+        };
         json_to_string(&serde_json::json!({
             "ok": true,
+            "routing_source": routing_source,
             "bm25_coarse": decision.bm25_coarse,
             "vector_medium": decision.vector_medium,
             "rerank_fine": decision.rerank_fine,
@@ -2314,22 +2390,33 @@ impl SemanticMemoryServer {
         }): Parameters<SearchWithRoutingParams>,
     ) -> Result<String, ErrorData> {
         use semantic_memory::integration::plan_execution;
-        use semantic_memory::rl_routing::route_with_rl;
-        use semantic_memory::routing::QueryProfile;
+        use semantic_memory::rl_routing::{is_trained, route_with_policy};
+        use semantic_memory::routing::{QueryProfile, RetrievalRouter};
 
         let k = top_k.map(|v| v as usize).unwrap_or(5);
         let allow_superseded = query_allows_superseded(&query);
         let search_k = if allow_superseded { k } else { (k * 4).max(20) };
 
-        // Load persisted RL routing policy (or default if none saved yet)
+        let router = RetrievalRouter {
+            decoder_enabled: true,
+            discord_enabled: true,
+            corpus_density: 0.5,
+            ..Default::default()
+        };
+
+        // Select learned routing only after enough examples have been durably
+        // persisted. A missing or still-untrained policy uses heuristics.
         let store = &self.bridge.store;
         let policy =
             tokio::task::block_in_place(|| Handle::current().block_on(store.load_routing_policy()))
-                .ok()
-                .flatten()
-                .unwrap_or_default();
+                .map_err(|e| {
+                    ErrorData::internal_error(format!("load routing policy error: {e}"), None)
+                })?;
         let profile = QueryProfile::from_query(&query);
-        let decision = route_with_rl(&policy, &profile);
+        let (decision, routing_source) = match policy.as_ref().filter(|p| is_trained(p)) {
+            Some(policy) => (route_with_policy(policy, &profile), "trained_policy"),
+            None => (router.route(&profile), "heuristic"),
+        };
         let contras = contradictions.unwrap_or_default();
         let plan = plan_execution(&decision, contras.clone());
 
@@ -2635,6 +2722,7 @@ impl SemanticMemoryServer {
                 json_to_string(&serde_json::json!({
                     "ok": true,
                     "routing_decision": {
+                        "source": routing_source,
                         "bm25_coarse": decision.bm25_coarse,
                         "vector_medium": decision.vector_medium,
                         "rerank_fine": decision.rerank_fine,
@@ -2717,9 +2805,11 @@ impl SemanticMemoryServer {
     )]
     fn sm_detect_contradictions(
         &self,
-        Parameters(DetectContradictionsParams { query, top_k, record_to_ledger }): Parameters<
-            DetectContradictionsParams,
-        >,
+        Parameters(DetectContradictionsParams {
+            query,
+            top_k,
+            record_to_ledger,
+        }): Parameters<DetectContradictionsParams>,
     ) -> Result<String, ErrorData> {
         use semantic_memory::contradiction_detect::{detect_contradictions, DetectorConfig};
 
@@ -3547,13 +3637,15 @@ impl SemanticMemoryServer {
             let access_logs: Vec<AccessLog> = Vec::new();
 
             // Load contradictions from contradiction graph edges
-            let raw_edges =
-                tokio::task::block_in_place(|| Handle::current().block_on(self.bridge.store.list_all_graph_edges()))
-                    .map_err(|e| ErrorData::internal_error(format!("load edges failed: {e}"), None))?;
+            let raw_edges = tokio::task::block_in_place(|| {
+                Handle::current().block_on(self.bridge.store.list_all_graph_edges())
+            })
+            .map_err(|e| ErrorData::internal_error(format!("load edges failed: {e}"), None))?;
             let contradictions: Vec<(String, String)> = raw_edges
                 .iter()
                 .filter_map(|e| {
-                    let parsed = e.edge_type_parsed
+                    let parsed = e
+                        .edge_type_parsed
                         .clone()
                         .or_else(|| serde_json::from_str(&e.edge_type).ok());
                     match parsed {
@@ -3568,7 +3660,8 @@ impl SemanticMemoryServer {
                 .collect();
 
             let prune_count = if dry { 0 } else { max };
-            let report = autonomous_subgraph_maintenance(&edges, &access_logs, &contradictions, prune_count);
+            let report =
+                autonomous_subgraph_maintenance(&edges, &access_logs, &contradictions, prune_count);
 
             json_to_string(&serde_json::json!({
                 "ok": true,
@@ -3839,7 +3932,36 @@ impl SemanticMemoryServer {
     // ── RL routing feedback ────────────────────────────────────────────
 
     #[tool(
-        description = "MUTATING: record a caller-supplied proxy feedback label for retrieval routing. This is not a verified outcome. Persists an updated tabular routing policy.",
+        description = "Return the current persisted RL routing policy, including weights, training example count, and last update time.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_get_routing_policy(&self) -> Result<String, ErrorData> {
+        use semantic_memory::rl_routing::is_trained;
+
+        let policy = tokio::task::block_in_place(|| {
+            Handle::current().block_on(self.bridge.store.load_routing_policy())
+        })
+        .map_err(|e| ErrorData::internal_error(format!("load routing policy error: {e}"), None))?;
+
+        match policy {
+            Some(policy) => json_to_string(&serde_json::json!({
+                "ok": true,
+                "policy": {
+                    "weights": policy.weights,
+                    "training_examples_count": policy.trained_examples,
+                    "trained": is_trained(&policy),
+                    "last_updated": policy.last_updated,
+                }
+            })),
+            None => json_to_string(&serde_json::json!({
+                "ok": true,
+                "policy": null,
+            })),
+        }
+    }
+
+    #[tool(
+        description = "MUTATING: record a caller-supplied proxy feedback label for retrieval routing. This is not a verified outcome. Persists the updated tabular routing policy every 10 outcomes.",
         annotations(
             read_only_hint = false,
             destructive_hint = false,
@@ -3850,7 +3972,9 @@ impl SemanticMemoryServer {
         &self,
         Parameters(RecordOutcomeParams { query, outcome }): Parameters<RecordOutcomeParams>,
     ) -> Result<String, ErrorData> {
-        use semantic_memory::rl_routing::{record_routing_outcome, RoutingOutcome};
+        use semantic_memory::rl_routing::{
+            is_trained, record_routing_outcome, route_with_policy, RoutingOutcome,
+        };
         use semantic_memory::routing::{QueryProfile, RetrievalRouter};
 
         let outcome_enum = match outcome.to_lowercase().as_str() {
@@ -3867,24 +3991,43 @@ impl SemanticMemoryServer {
 
         let profile = QueryProfile::from_query(&query);
         let router = RetrievalRouter::default();
-        let decision = router.route(&profile);
-
         let store = &self.bridge.store;
-        // Load persisted policy (or default if none saved yet)
-        let mut policy =
-            tokio::task::block_in_place(|| Handle::current().block_on(store.load_routing_policy()))
-                .map_err(|e| {
-                    ErrorData::internal_error(format!("load routing policy error: {e}"), None)
-                })?
-                .unwrap_or_default();
+        let mut batch = self
+            .routing_policy_batch
+            .lock()
+            .map_err(|_| ErrorData::internal_error("routing policy batch lock poisoned", None))?;
+        let mut policy = match batch.policy.take() {
+            Some(policy) => policy,
+            None => tokio::task::block_in_place(|| {
+                Handle::current().block_on(store.load_routing_policy())
+            })
+            .map_err(|e| {
+                ErrorData::internal_error(format!("load routing policy error: {e}"), None)
+            })?
+            .unwrap_or_default(),
+        };
+        let decision = if is_trained(&policy) {
+            route_with_policy(&policy, &profile)
+        } else {
+            router.route(&profile)
+        };
         record_routing_outcome(&mut policy, &profile, &decision, outcome_enum);
-        // Save updated policy
-        tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.save_routing_policy(&policy))
-        })
-        .map_err(|e| {
-            ErrorData::internal_error(format!("persist routing policy error: {e}"), None)
-        })?;
+        batch.pending_outcomes += 1;
+        let persisted = batch.pending_outcomes >= ROUTING_POLICY_PERSIST_BATCH;
+        if persisted {
+            if let Err(e) = tokio::task::block_in_place(|| {
+                Handle::current().block_on(store.save_routing_policy(&policy))
+            }) {
+                batch.policy = Some(policy);
+                return Err(ErrorData::internal_error(
+                    format!("persist routing policy error: {e}"),
+                    None,
+                ));
+            }
+            batch.pending_outcomes = 0;
+        }
+        let pending_outcomes = batch.pending_outcomes;
+        batch.policy = Some(policy.clone());
 
         json_to_string(&serde_json::json!({
             "ok": true,
@@ -3906,8 +4049,15 @@ impl SemanticMemoryServer {
                 "trained_examples": policy.trained_examples,
                 "baseline": policy.baseline,
                 "weights": policy.weights,
+                "last_updated": policy.last_updated,
+                "persisted": persisted,
+                "pending_outcomes": pending_outcomes,
             },
-            "message": "Routing outcome recorded and policy updated (persisted to DB)",
+            "message": if persisted {
+                "Routing outcome recorded and policy batch persisted to DB"
+            } else {
+                "Routing outcome recorded; policy persistence batch pending"
+            },
         }))
     }
 
@@ -3959,10 +4109,15 @@ impl SemanticMemoryServer {
             let previous_digest = ledger.last_digest();
             let entry = claim_ledger::LedgerEntryBuilder::new(sequence, previous_digest)
                 .add_claim(&claim_id, &source_id, &span_id, normalized)
-                .map_err(|e| ErrorData::internal_error(format!("failed to build claim ledger entry: {e}"), None))?;
-            ledger
-                .append(entry)
-                .map_err(|e| ErrorData::internal_error(format!("failed to record claim to ledger: {e}"), None))?;
+                .map_err(|e| {
+                    ErrorData::internal_error(
+                        format!("failed to build claim ledger entry: {e}"),
+                        None,
+                    )
+                })?;
+            ledger.append(entry).map_err(|e| {
+                ErrorData::internal_error(format!("failed to record claim to ledger: {e}"), None)
+            })?;
         }
 
         {
@@ -4068,10 +4223,18 @@ impl SemanticMemoryServer {
                     state,
                     &j.method,
                 )
-                .map_err(|e| ErrorData::internal_error(format!("failed to build support judgment ledger entry: {e}"), None))?;
-            ledger
-                .append(entry)
-                .map_err(|e| ErrorData::internal_error(format!("failed to record support judgment to ledger: {e}"), None))?;
+                .map_err(|e| {
+                    ErrorData::internal_error(
+                        format!("failed to build support judgment ledger entry: {e}"),
+                        None,
+                    )
+                })?;
+            ledger.append(entry).map_err(|e| {
+                ErrorData::internal_error(
+                    format!("failed to record support judgment to ledger: {e}"),
+                    None,
+                )
+            })?;
         }
 
         self.claim_trust
@@ -4346,6 +4509,40 @@ impl SemanticMemoryServer {
             })),
             Err(e) => Err(ErrorData::internal_error(
                 format!("replay_search_receipt error: {e}"),
+                None,
+            )),
+        }
+    }
+
+    #[tool(
+        description = "Replay a durable search receipt using query text and filters retained by explicit opt-in. Returns the replay comparison report.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_replay_search(
+        &self,
+        Parameters(ReplayStoredSearchParams { receipt_id }): Parameters<ReplayStoredSearchParams>,
+    ) -> Result<String, ErrorData> {
+        let result = tokio::task::block_in_place(|| {
+            Handle::current().block_on(
+                self.bridge
+                    .store
+                    .replay_search_from_stored_inputs(&receipt_id),
+            )
+        });
+        match result {
+            Ok(report) => json_to_string(&serde_json::json!({
+                "ok": true,
+                "receipt_id": report.receipt_id,
+                "replay_receipt_id": report.replay_receipt_id,
+                "query_embedding_digest_matches": report.query_embedding_digest_matches,
+                "result_ids_match": report.result_ids_match,
+                "missing_result_ids": report.missing_result_ids,
+                "added_result_ids": report.added_result_ids,
+                "original_result_ids": report.original_receipt.result_ids,
+                "replay_result_ids": report.replay_receipt.result_ids,
+            })),
+            Err(e) => Err(ErrorData::internal_error(
+                format!("replay_search error: {e}"),
                 None,
             )),
         }
@@ -4930,6 +5127,91 @@ mod correctness_contract_tests {
         runtime.block_on(async {
             tokio::task::block_in_place(|| server.sm_add_fact(Parameters(params)))
         })
+    }
+
+    fn invoke_record_outcome(
+        runtime: &tokio::runtime::Runtime,
+        server: &SemanticMemoryServer,
+        query: &str,
+        outcome: &str,
+    ) -> serde_json::Value {
+        let body = runtime
+            .block_on(async {
+                tokio::task::block_in_place(|| {
+                    server.sm_record_outcome(Parameters(RecordOutcomeParams {
+                        query: query.to_string(),
+                        outcome: outcome.to_string(),
+                    }))
+                })
+            })
+            .expect("record routing outcome");
+        serde_json::from_str(&body).expect("routing outcome JSON")
+    }
+
+    #[test]
+    fn routing_feedback_batch_persists_and_survives_restart() {
+        use semantic_memory::rl_routing::{is_trained, route_with_policy};
+        use semantic_memory::routing::{QueryProfile, RetrievalRouter};
+
+        let dir = tempfile::tempdir().unwrap();
+        let memory_dir = dir.path().to_path_buf();
+        let make_config = || BridgeConfig {
+            memory_dir: memory_dir.clone(),
+            embedder_backend: EmbedderBackend::Mock,
+            embedding_url: String::new(),
+            embedding_model: "mock".into(),
+            embedding_dims: 768,
+            turbo_quant_enabled: false,
+            turbo_quant_bits: None,
+            turbo_quant_projections: None,
+        };
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let server = SemanticMemoryServer::new(MemoryBridge::open(make_config()).unwrap(), "full");
+        let query = "compare rust vs python performance";
+
+        for index in 0..ROUTING_POLICY_PERSIST_BATCH {
+            let receipt = invoke_record_outcome(&runtime, &server, query, "bad");
+            assert_eq!(
+                receipt["policy_state"]["persisted"],
+                index + 1 == ROUTING_POLICY_PERSIST_BATCH
+            );
+        }
+
+        let persisted = runtime
+            .block_on(server.bridge.store.load_routing_policy())
+            .unwrap()
+            .expect("batched routing policy persisted");
+        assert_eq!(persisted.trained_examples, ROUTING_POLICY_PERSIST_BATCH);
+        assert!(persisted.last_updated.is_some());
+        assert!(is_trained(&persisted));
+
+        let profile = QueryProfile::from_query(query);
+        let heuristic = RetrievalRouter::default().route(&profile);
+        let before_restart = route_with_policy(&persisted, &profile);
+        assert_ne!(before_restart.rerank_fine, heuristic.rerank_fine);
+
+        let policy_json = runtime
+            .block_on(async { tokio::task::block_in_place(|| server.sm_get_routing_policy()) })
+            .unwrap();
+        let policy_json: serde_json::Value = serde_json::from_str(&policy_json).unwrap();
+        assert_eq!(
+            policy_json["policy"]["training_examples_count"],
+            ROUTING_POLICY_PERSIST_BATCH
+        );
+        assert!(policy_json["policy"]["last_updated"].is_string());
+
+        drop(server);
+        let restarted =
+            SemanticMemoryServer::new(MemoryBridge::open(make_config()).unwrap(), "full");
+        let loaded = runtime
+            .block_on(restarted.bridge.store.load_routing_policy())
+            .unwrap()
+            .expect("routing policy loaded after restart");
+        let after_restart = route_with_policy(&loaded, &profile);
+        assert_eq!(after_restart.bm25_coarse, before_restart.bm25_coarse);
+        assert_eq!(after_restart.vector_medium, before_restart.vector_medium);
+        assert_eq!(after_restart.rerank_fine, before_restart.rerank_fine);
+        assert_eq!(after_restart.decoder, before_restart.decoder);
     }
 
     fn governed_decision_server(
@@ -5554,6 +5836,7 @@ mod correctness_contract_tests {
                         namespaces: Some(vec!["provenance-test".into()]),
                         request_id: Some("witnessed-provenance-test".into()),
                         retrieval_mode: None,
+                        replay_mode: None,
                     }))
                 })
             })
@@ -5609,6 +5892,7 @@ mod correctness_contract_tests {
                         namespaces: Some(vec!["provenance-test".into()]),
                         request_id: Some("witnessed-source-less-test".into()),
                         retrieval_mode: None,
+                        replay_mode: None,
                     }))
                 })
             })
@@ -5657,6 +5941,7 @@ mod correctness_contract_tests {
                         namespaces: Some(vec!["stateful".into()]),
                         request_id: Some("witnessed-state-request".into()),
                         retrieval_mode: None,
+                        replay_mode: None,
                     }))
                 })
             })
@@ -5741,6 +6026,7 @@ mod correctness_contract_tests {
                         namespaces: Some(vec!["modes".into()]),
                         request_id: None,
                         retrieval_mode: Some(retrieval_mode),
+                        replay_mode: None,
                     }))
                 })
                 .unwrap();
@@ -5752,6 +6038,58 @@ mod correctness_contract_tests {
                 serde_json::to_value(retrieval_mode).unwrap()
             );
         }
+    }
+
+    #[test]
+    fn witnessed_search_opt_in_enables_complete_replay() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = MemoryBridge::open(BridgeConfig {
+            memory_dir: dir.path().to_path_buf(),
+            embedder_backend: EmbedderBackend::Mock,
+            embedding_url: String::new(),
+            embedding_model: "mock".into(),
+            embedding_dims: 768,
+            turbo_quant_enabled: false,
+            turbo_quant_bits: None,
+            turbo_quant_projections: None,
+        })
+        .unwrap();
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        runtime
+            .block_on(bridge.store.add_fact(
+                "stored-replay",
+                "complete replay uses explicitly retained inputs",
+                Some("tests/stored-replay.md"),
+                None,
+            ))
+            .unwrap();
+        let server = SemanticMemoryServer::new(bridge, "full");
+        let body = runtime
+            .block_on(async {
+                server.sm_search_witnessed(Parameters(SearchWitnessedParams {
+                    query: "complete replay explicitly retained inputs".into(),
+                    top_k: Some(1),
+                    namespaces: Some(vec!["stored-replay".into()]),
+                    request_id: Some("mcp-stored-replay".into()),
+                    retrieval_mode: None,
+                    replay_mode: Some(ReplayModeParam::StoreInputs),
+                }))
+            })
+            .unwrap();
+        let witnessed: serde_json::Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(witnessed["complete_replay_available"], true);
+        assert_eq!(witnessed["stage_outcomes"]["replay"]["outcome"], "Applied");
+
+        let replay = runtime
+            .block_on(async {
+                server.sm_replay_search(Parameters(ReplayStoredSearchParams {
+                    receipt_id: "mcp-stored-replay".into(),
+                }))
+            })
+            .unwrap();
+        let replay: serde_json::Value = serde_json::from_str(&replay).unwrap();
+        assert_eq!(replay["result_ids_match"], true);
+        assert_eq!(replay["query_embedding_digest_matches"], true);
     }
 }
 
