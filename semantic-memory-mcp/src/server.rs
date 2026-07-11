@@ -23,34 +23,11 @@ use crate::tools::{
     ListGraphEdgesParams, RecordOutcomeParams, SearchProofDebtParams, TopologyParams,
 };
 
-/// A single durable record in the claim-trust JSONL log: either a fact→claim
-/// link or a claim support judgment. Replayed in order on startup to rebuild
-/// the in-memory index.
-#[cfg(feature = "claim-integration")]
-#[derive(serde::Serialize, serde::Deserialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
-enum ClaimTrustRecord {
-    Link {
-        fact_id: String,
-        claim_id: String,
-    },
-    Judgment {
-        claim_id: String,
-        state: claim_ledger::SupportState,
-    },
-    ClaimRegistered {
-        claim_id: String,
-        normalized_content: String,
-    },
-}
-
 /// Process-local index from semantic-memory facts to claim-ledger support
-/// judgments, backed by a JSONL file under the memory dir so it survives
-/// restarts. Populated by `sm_create_claim`/`sm_judge_support` and consulted
-/// by search-time trust enrichment. Never a source of truth — the claim
-/// ledger itself is; this is a lookup cache for wiring the two systems
-/// together at the MCP layer, persisted so the cache doesn't cold-start
-/// after every restart.
+/// judgments, consulted by search-time trust enrichment. Never a source of
+/// truth itself — the claim ledger is; this is a pure in-memory projection
+/// rebuilt from the ledger's hash-chained entries on every startup via
+/// `rebuild_from_ledger`, so there is nothing here to persist independently.
 #[cfg(feature = "claim-integration")]
 #[derive(Default)]
 struct ClaimTrustIndex {
@@ -60,93 +37,103 @@ struct ClaimTrustIndex {
     /// to auto-link newly added facts whose content matches an existing
     /// claim without requiring an explicit sm_create_claim call.
     content_to_claim: HashMap<String, String>,
-    path: Option<std::path::PathBuf>,
+    /// Trigram → claim ids index over normalized claim content, used for
+    /// fuzzy (Jaccard-similarity) auto-linking when no exact match exists.
+    trigram_index: HashMap<String, Vec<String>>,
 }
 
 #[cfg(feature = "claim-integration")]
 impl ClaimTrustIndex {
-    /// Load persisted links/judgments from `path` (a JSONL file under the
-    /// memory dir) and keep appending to it as new state is recorded. A
-    /// missing or empty file just means a fresh index.
-    fn open(path: std::path::PathBuf) -> Self {
-        let mut idx = Self {
-            path: Some(path.clone()),
-            ..Self::default()
-        };
-        if let Ok(contents) = std::fs::read_to_string(&path) {
-            for line in contents.lines() {
-                if line.trim().is_empty() {
-                    continue;
+    /// Rebuild the index from the claim ledger's entries. The ledger is the
+    /// source of truth; this replays every `ClaimAdded`, `SupportJudgment`,
+    /// and `ContradictionCandidate` event in order to reconstruct the
+    /// process-local lookup cache.
+    fn rebuild_from_ledger(entries: &[claim_ledger::LedgerEntry]) -> Self {
+        use claim_ledger::{LedgerEvent, SupportState};
+        let mut idx = Self::default();
+        for entry in entries {
+            match &entry.event {
+                LedgerEvent::ClaimAdded {
+                    claim_id,
+                    source_id,
+                    normalized_claim,
+                    ..
+                } => {
+                    if let Some(fact_id) = source_id.strip_prefix("semantic-memory:fact:") {
+                        idx.link_fact(fact_id.to_string(), claim_id.clone());
+                    }
+                    idx.register_claim(claim_id.clone(), normalized_claim.clone());
                 }
-                match serde_json::from_str::<ClaimTrustRecord>(line) {
-                    Ok(ClaimTrustRecord::Link { fact_id, claim_id }) => {
-                        idx.fact_to_claim.insert(fact_id, claim_id);
-                    }
-                    Ok(ClaimTrustRecord::Judgment { claim_id, state }) => {
-                        idx.claim_support.insert(claim_id, state);
-                    }
-                    Ok(ClaimTrustRecord::ClaimRegistered {
-                        claim_id,
-                        normalized_content,
-                    }) => {
-                        idx.content_to_claim.insert(normalized_content, claim_id);
-                    }
-                    Err(e) => {
-                        tracing::warn!(error = %e, "skipping malformed claim_trust record");
+                LedgerEvent::SupportJudgment {
+                    claim_id,
+                    support_state,
+                    ..
+                } => {
+                    idx.record_judgment(claim_id.clone(), *support_state);
+                }
+                LedgerEvent::ContradictionCandidate { claim_refs, .. } => {
+                    for claim_ref in claim_refs {
+                        idx.record_judgment(claim_ref.clone(), SupportState::Contradicted);
                     }
                 }
+                _ => {}
             }
         }
         idx
     }
 
-    /// Best-effort append of a record to the backing file. The in-memory
-    /// maps are updated regardless of whether the write succeeds — this is
-    /// a cache, so a transient disk error degrades durability, not
-    /// correctness of the current process.
-    fn persist(&self, record: &ClaimTrustRecord) {
-        let Some(path) = &self.path else { return };
-        let Ok(line) = serde_json::to_string(record) else {
-            return;
-        };
-        use std::io::Write;
-        match std::fs::OpenOptions::new().create(true).append(true).open(path) {
-            Ok(mut file) => {
-                if let Err(e) = writeln!(file, "{line}") {
-                    tracing::warn!(error = %e, "failed to persist claim_trust record");
-                }
-            }
-            Err(e) => {
-                tracing::warn!(error = %e, "failed to open claim_trust.jsonl for append");
-            }
-        }
-    }
-
     fn link_fact(&mut self, bare_fact_id: String, claim_id: String) {
-        self.persist(&ClaimTrustRecord::Link {
-            fact_id: bare_fact_id.clone(),
-            claim_id: claim_id.clone(),
-        });
         self.fact_to_claim.insert(bare_fact_id, claim_id);
     }
 
-    /// Record a claim's normalized content in the reverse index so future
-    /// facts with matching content can be auto-linked without an explicit
-    /// sm_create_claim call.
+    /// Record a claim's normalized content in the reverse and trigram
+    /// indexes so future facts with matching (or fuzzy-matching) content can
+    /// be auto-linked without an explicit sm_create_claim call.
     fn register_claim(&mut self, claim_id: String, normalized_content: String) {
         if normalized_content.is_empty() {
             return;
         }
-        self.persist(&ClaimTrustRecord::ClaimRegistered {
-            claim_id: claim_id.clone(),
-            normalized_content: normalized_content.clone(),
-        });
+        for trigram in Self::trigrams(&normalized_content) {
+            self.trigram_index.entry(trigram).or_default().push(claim_id.clone());
+        }
         self.content_to_claim.insert(normalized_content, claim_id);
     }
 
-    /// Best-effort: if `bare_fact_id` isn't already linked to a claim, check
-    /// whether its normalized content matches a known claim and link it if
-    /// so. No-op if the fact is already linked or no claim matches.
+    /// Character 3-grams of `text`, lowercased. Text shorter than 3 chars
+    /// yields the whole (lowercased) text as its only "trigram".
+    fn trigrams(text: &str) -> HashSet<String> {
+        let lower = text.to_lowercase();
+        let chars: Vec<char> = lower.chars().collect();
+        if chars.len() < 3 {
+            let mut set = HashSet::new();
+            if !lower.is_empty() {
+                set.insert(lower);
+            }
+            return set;
+        }
+        chars
+            .windows(3)
+            .map(|w| w.iter().collect::<String>())
+            .collect()
+    }
+
+    fn jaccard(a: &HashSet<String>, b: &HashSet<String>) -> f64 {
+        if a.is_empty() && b.is_empty() {
+            return 0.0;
+        }
+        let intersection = a.intersection(b).count();
+        let union = a.union(b).count();
+        if union == 0 {
+            0.0
+        } else {
+            intersection as f64 / union as f64
+        }
+    }
+
+    /// Best-effort: if `bare_fact_id` isn't already linked to a claim, look
+    /// for the best fuzzy (trigram-Jaccard) content match among known
+    /// claims, falling back to an exact normalized-text match. No-op if the
+    /// fact is already linked or no candidate reaches the similarity bar.
     fn auto_link_content(&mut self, bare_fact_id: &str, content: &str) -> Option<String> {
         if self.fact_to_claim.contains_key(bare_fact_id) {
             return None;
@@ -155,16 +142,39 @@ impl ClaimTrustIndex {
         if normalized.is_empty() {
             return None;
         }
-        let claim_id = self.content_to_claim.get(&normalized)?.clone();
+
+        const SIMILARITY_THRESHOLD: f64 = 0.7;
+        let query_trigrams = Self::trigrams(&normalized);
+        let mut candidate_ids: HashSet<&String> = HashSet::new();
+        for trigram in &query_trigrams {
+            if let Some(ids) = self.trigram_index.get(trigram) {
+                candidate_ids.extend(ids.iter());
+            }
+        }
+
+        let mut best: Option<(String, f64)> = None;
+        for claim_id in &candidate_ids {
+            if let Some((existing_content, existing_claim_id)) = self
+                .content_to_claim
+                .iter()
+                .find(|(_, cid)| *cid == *claim_id)
+            {
+                let similarity = Self::jaccard(&query_trigrams, &Self::trigrams(existing_content));
+                if best.as_ref().map(|(_, s)| similarity > *s).unwrap_or(true) {
+                    best = Some((existing_claim_id.clone(), similarity));
+                }
+            }
+        }
+
+        let claim_id = match best {
+            Some((claim_id, similarity)) if similarity >= SIMILARITY_THRESHOLD => claim_id,
+            _ => self.content_to_claim.get(&normalized)?.clone(),
+        };
         self.link_fact(bare_fact_id.to_string(), claim_id.clone());
         Some(claim_id)
     }
 
     fn record_judgment(&mut self, claim_id: String, state: claim_ledger::SupportState) {
-        self.persist(&ClaimTrustRecord::Judgment {
-            claim_id: claim_id.clone(),
-            state,
-        });
         self.claim_support.insert(claim_id, state);
     }
 
@@ -226,6 +236,27 @@ impl ClaimLedgerStore {
             .ok()
             .and_then(|contents| claim_ledger::parse_ledger_entries(&contents).ok())
             .unwrap_or_default();
+
+        let expected_head = match entries.last() {
+            None => claim_ledger::ExpectedLedgerHead::Empty,
+            Some(last) => claim_ledger::ExpectedLedgerHead::Entry {
+                sequence: entries.len() as u64,
+                entry_digest: last.entry_digest.clone(),
+            },
+        };
+        match claim_ledger::verify_ledger(&entries, &expected_head) {
+            Ok(verification) => {
+                tracing::info!(entries = verification.last_sequence, "ledger verified");
+            }
+            Err(e) => {
+                tracing::error!(error = %e, "LEDGER CORRUPT");
+                return Self {
+                    entries: Vec::new(),
+                    path,
+                };
+            }
+        }
+
         Self { entries, path }
     }
 
@@ -347,15 +378,17 @@ impl SemanticMemoryServer {
 
         #[cfg(feature = "claim-integration")]
         let claim_ledger_store =
-            Mutex::new(ClaimLedgerStore::open(bridge.memory_dir.join("claim_ledger.jsonl")));
+            ClaimLedgerStore::open(bridge.memory_dir.join("claim_ledger.jsonl"));
+        #[cfg(feature = "claim-integration")]
+        let claim_trust = ClaimTrustIndex::rebuild_from_ledger(&claim_ledger_store.entries);
 
         Self {
             bridge: Arc::new(bridge),
             tool_router: router,
             #[cfg(feature = "claim-integration")]
-            claim_trust: Mutex::new(ClaimTrustIndex::default()),
+            claim_trust: Mutex::new(claim_trust),
             #[cfg(feature = "claim-integration")]
-            claim_ledger_store,
+            claim_ledger_store: Mutex::new(claim_ledger_store),
         }
     }
 
@@ -3704,6 +3737,18 @@ impl SemanticMemoryServer {
         let normalized = &claim.normalized_claim;
 
         {
+            let mut ledger = self.claim_ledger_store.lock().unwrap();
+            let sequence = ledger.next_sequence();
+            let previous_digest = ledger.last_digest();
+            let entry = claim_ledger::LedgerEntryBuilder::new(sequence, previous_digest)
+                .add_claim(&claim_id, &source_id, &span_id, normalized)
+                .map_err(|e| ErrorData::internal_error(format!("failed to build claim ledger entry: {e}"), None))?;
+            ledger
+                .append(entry)
+                .map_err(|e| ErrorData::internal_error(format!("failed to record claim to ledger: {e}"), None))?;
+        }
+
+        {
             let mut idx = self.claim_trust.lock().unwrap();
             idx.link_fact(bare.clone(), claim_id.clone());
             idx.register_claim(claim_id.clone(), normalized.clone());
@@ -3793,6 +3838,24 @@ impl SemanticMemoryServer {
             proof_debt: Vec::new(),
             created_recorded_time: chrono::Utc::now(),
         };
+
+        {
+            let mut ledger = self.claim_ledger_store.lock().unwrap();
+            let sequence = ledger.next_sequence();
+            let previous_digest = ledger.last_digest();
+            let entry = claim_ledger::LedgerEntryBuilder::new(sequence, previous_digest)
+                .add_support_judgment(
+                    &j.support_judgment_id,
+                    &claim_id,
+                    &j.evidence_bundle_ref,
+                    state,
+                    &j.method,
+                )
+                .map_err(|e| ErrorData::internal_error(format!("failed to build support judgment ledger entry: {e}"), None))?;
+            ledger
+                .append(entry)
+                .map_err(|e| ErrorData::internal_error(format!("failed to record support judgment to ledger: {e}"), None))?;
+        }
 
         self.claim_trust
             .lock()
