@@ -15,7 +15,7 @@ default = []
 danger-sm-write = []
 
 [dependencies]
-claim-ledger = { version = "0.1.1", path = "../../claim-ledger" }
+claim-ledger = { version = "0.2.0", path = "../../claim-ledger" }
 llm-tool-runtime = { version = "0.1.0", path = "../../llm-tool-runtime" }
 semantic-memory = { version = "0.5.8", path = "../../semantic-memory" }
 semantic-memory-forge = { version = "0.1.1", path = "../../semantic-memory-forge" }

@@ -35,6 +35,7 @@ pub mod types;
 // Re-export commonly used types at the crate root for ergonomic access.
 pub use budget::{
     budget_for_claim, evaluate_proof_debt_gate, evaluate_proof_debt_gate_with_config,
+    evaluate_proof_debt_gate_with_waiver, evaluate_proof_debt_gate_with_waiver_and_config,
     proof_debt_weight, total_proof_debt_weight, total_proof_debt_weight_with_config,
     ProofDebtBudgetConfig, ProofDebtBudgetV1, ProofDebtCreditV1, ProofDebtDebitV1,
     ProofDebtGateDecision, ProofDebtGateResult, ProofDebtSummaryV1, ProofDebtWaiverReceipt,
@@ -46,8 +47,9 @@ pub use candidate::{
 pub use error::ClaimLedgerError;
 pub use ids::{normalize_text, sha256_bytes, sha256_text, stable_id, ulid};
 pub use ledger::{
-    parse_ledger_entries, serialize_entry, verify_ledger, LedgerEntry, LedgerEntryBuilder,
-    LedgerEvent, LedgerVerification,
+    compute_entry_digest, entry_digest_preimage, parse_ledger_entries, serialize_entry,
+    verify_ledger, ExpectedLedgerHead, LedgerEntry, LedgerEntryBuilder, LedgerEvent,
+    LedgerVerification,
 };
 pub use receipt::{
     ContradictionResolutionReceipt, ExportReceipt, LedgerAppendReceipt, SupersessionReceipt,

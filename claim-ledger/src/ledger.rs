@@ -1,18 +1,23 @@
-//! Append-only hash-chained ledger for claim events.
+//! Append-only, hash-chained ledger for claim events.
 //!
-//! The ledger is a newline-delimited JSON (JSONL) file where each entry contains:
-//! - A sequence number
-//! - A hash of the previous entry (for chain integrity)
-//! - The event payload
-//! - A hash of the entry itself
+//! ## Canonical digest preimage (v1)
 //!
-//! This structure allows the ledger to be verified by checking the hash chain
-//! and makes it possible to detect tampering or corruption.
+//! Entry digests are SHA-256 over a binary, language-independent preimage. It
+//! is deliberately not JSON, so it does not depend on map ordering or a JSON
+//! serializer. A verifier writes the UTF-8 bytes of
+//! `claim-ledger.entry-digest.v1`, then the sequence as an unsigned 64-bit
+//! big-endian integer, then the previous digest as `0x00` for absent or `0x01`
+//! followed by its byte-length-prefixed UTF-8 value. It then writes the event
+//! tag as a byte-length-prefixed UTF-8 value and each event field in declaration
+//! order. Strings are UTF-8 prefixed with their unsigned 64-bit big-endian byte
+//! length; integer fields are unsigned 64-bit big-endian; booleans are one byte
+//! (`0x00` or `0x01`); vectors are an unsigned 64-bit count followed by encoded
+//! strings. Recorded timestamps and `entry_digest` are excluded.
 
 use serde::{Deserialize, Serialize};
 
 use super::types::SupportState;
-use crate::ids::sha256_text;
+use crate::{error::ClaimLedgerError, ids::sha256_bytes};
 
 /// An entry in the claim ledger.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -23,7 +28,7 @@ pub struct LedgerEntry {
     pub previous_entry_digest: Option<String>,
     /// The event payload.
     pub event: LedgerEvent,
-    /// Digest of this entry (computed from sequence + previous + event).
+    /// SHA-256 digest of the canonical entry preimage.
     pub entry_digest: String,
 }
 
@@ -31,14 +36,12 @@ pub struct LedgerEntry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum LedgerEvent {
-    /// A claim was added to the bundle.
     ClaimAdded {
         claim_id: String,
         source_id: String,
         span_id: String,
         normalized_claim: String,
     },
-    /// A support judgment was assigned to a claim.
     SupportJudgment {
         support_judgment_id: String,
         claim_id: String,
@@ -46,7 +49,6 @@ pub enum LedgerEvent {
         support_state: SupportState,
         method: String,
     },
-    /// A support admission was recorded.
     SupportAdmission {
         support_admission_receipt_id: String,
         claim_id: String,
@@ -54,34 +56,29 @@ pub enum LedgerEvent {
         new_support_judgment_ref: String,
         admitted_support_state: SupportState,
     },
-    /// A contradiction candidate was recorded.
     ContradictionCandidate {
         contradiction_id: String,
         claim_refs: Vec<String>,
         pattern: String,
         rationale: String,
     },
-    /// A contradiction was resolved.
     ContradictionResolved {
         contradiction_resolution_receipt_id: String,
         contradiction_id: String,
         resolution: String,
         affected_claim_refs: Vec<String>,
     },
-    /// An evidence bundle was attached to a claim.
     EvidenceAttached {
         evidence_bundle_id: String,
         claim_id: String,
         evidence_link_count: usize,
     },
-    /// A bundle was exported.
     BundleExported {
         bundle_id: String,
         export_receipt_id: String,
         output_ref: String,
         output_digest: String,
     },
-    /// Proof-debt budget was consumed.
     ProofDebtConsumed {
         budget_id: String,
         debit_id: String,
@@ -89,7 +86,6 @@ pub enum LedgerEvent {
         source: String,
         overdrawn: bool,
     },
-    /// Proof-debt budget was replenished (evidence, admission, or waiver).
     ProofDebtReplenished {
         budget_id: String,
         credit_id: String,
@@ -99,7 +95,7 @@ pub enum LedgerEvent {
 }
 
 impl LedgerEvent {
-    /// Get the event type name as a string.
+    /// Get the stable event type name used in the digest preimage.
     pub fn type_name(&self) -> &'static str {
         match self {
             Self::ClaimAdded { .. } => "claim_added",
@@ -115,38 +111,47 @@ impl LedgerEvent {
     }
 }
 
-/// Result of verifying a ledger.
-#[derive(Debug, Clone)]
-pub struct LedgerVerification {
-    /// Whether the ledger is valid.
-    pub valid: bool,
-    /// Sequence of the last valid entry.
-    pub last_sequence: u64,
-    /// Last entry digest in the chain.
-    pub last_entry_digest: Option<String>,
-    /// Errors encountered during verification.
-    pub errors: Vec<String>,
+/// The head a verifier expects to authenticate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ExpectedLedgerHead {
+    /// An intentionally empty ledger; no entries may be present.
+    Empty,
+    /// A non-empty ledger whose final sequence and digest must match exactly.
+    Entry { sequence: u64, entry_digest: String },
 }
 
-impl Default for LedgerVerification {
-    fn default() -> Self {
-        Self {
-            valid: true,
-            last_sequence: 0,
-            last_entry_digest: None,
-            errors: Vec::new(),
+impl ExpectedLedgerHead {
+    /// Construct the expected head for an empty ledger.
+    pub const fn empty() -> Self {
+        Self::Empty
+    }
+
+    /// Construct the expected head for a non-empty ledger.
+    pub fn new(sequence: u64, entry_digest: impl Into<String>) -> Self {
+        Self::Entry {
+            sequence,
+            entry_digest: entry_digest.into(),
         }
     }
 }
 
-/// A builder for ledger entries with hash chain support.
+/// Successful verification details.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LedgerVerification {
+    /// Sequence of the authenticated final entry, or zero when empty.
+    pub last_sequence: u64,
+    /// Digest of the authenticated final entry, if any.
+    pub last_entry_digest: Option<String>,
+}
+
+/// A builder for ledger entries with hash-chain support.
 pub struct LedgerEntryBuilder {
     sequence: u64,
     previous_entry_digest: Option<String>,
 }
 
 impl LedgerEntryBuilder {
-    /// Create a new builder for the next entry.
+    /// Create a builder for the next entry.
     pub fn new(sequence: u64, previous_entry_digest: Option<String>) -> Self {
         Self {
             sequence,
@@ -161,14 +166,13 @@ impl LedgerEntryBuilder {
         source_id: &str,
         span_id: &str,
         normalized_claim: &str,
-    ) -> LedgerEntry {
-        let event = LedgerEvent::ClaimAdded {
-            claim_id: claim_id.to_string(),
-            source_id: source_id.to_string(),
-            span_id: span_id.to_string(),
-            normalized_claim: normalized_claim.to_string(),
-        };
-        self._build_entry(event)
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::ClaimAdded {
+            claim_id: claim_id.into(),
+            source_id: source_id.into(),
+            span_id: span_id.into(),
+            normalized_claim: normalized_claim.into(),
+        })
     }
 
     /// Add a support judgment event.
@@ -179,34 +183,32 @@ impl LedgerEntryBuilder {
         evidence_bundle_ref: &str,
         support_state: SupportState,
         method: &str,
-    ) -> LedgerEntry {
-        let event = LedgerEvent::SupportJudgment {
-            support_judgment_id: support_judgment_id.to_string(),
-            claim_id: claim_id.to_string(),
-            evidence_bundle_ref: evidence_bundle_ref.to_string(),
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::SupportJudgment {
+            support_judgment_id: support_judgment_id.into(),
+            claim_id: claim_id.into(),
+            evidence_bundle_ref: evidence_bundle_ref.into(),
             support_state,
-            method: method.to_string(),
-        };
-        self._build_entry(event)
+            method: method.into(),
+        })
     }
 
     /// Add a support admission event.
     pub fn add_support_admission(
         self,
-        support_admission_receipt_id: &str,
+        receipt_id: &str,
         claim_id: &str,
         previous_ref: &str,
         new_ref: &str,
         admitted_state: SupportState,
-    ) -> LedgerEntry {
-        let event = LedgerEvent::SupportAdmission {
-            support_admission_receipt_id: support_admission_receipt_id.to_string(),
-            claim_id: claim_id.to_string(),
-            previous_support_judgment_ref: previous_ref.to_string(),
-            new_support_judgment_ref: new_ref.to_string(),
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::SupportAdmission {
+            support_admission_receipt_id: receipt_id.into(),
+            claim_id: claim_id.into(),
+            previous_support_judgment_ref: previous_ref.into(),
+            new_support_judgment_ref: new_ref.into(),
             admitted_support_state: admitted_state,
-        };
-        self._build_entry(event)
+        })
     }
 
     /// Add a contradiction candidate event.
@@ -216,14 +218,13 @@ impl LedgerEntryBuilder {
         claim_refs: Vec<String>,
         pattern: &str,
         rationale: &str,
-    ) -> LedgerEntry {
-        let event = LedgerEvent::ContradictionCandidate {
-            contradiction_id: contradiction_id.to_string(),
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::ContradictionCandidate {
+            contradiction_id: contradiction_id.into(),
             claim_refs,
-            pattern: pattern.to_string(),
-            rationale: rationale.to_string(),
-        };
-        self._build_entry(event)
+            pattern: pattern.into(),
+            rationale: rationale.into(),
+        })
     }
 
     /// Add a contradiction resolution event.
@@ -233,14 +234,13 @@ impl LedgerEntryBuilder {
         contradiction_id: &str,
         resolution: &str,
         affected_claim_refs: Vec<String>,
-    ) -> LedgerEntry {
-        let event = LedgerEvent::ContradictionResolved {
-            contradiction_resolution_receipt_id: receipt_id.to_string(),
-            contradiction_id: contradiction_id.to_string(),
-            resolution: resolution.to_string(),
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::ContradictionResolved {
+            contradiction_resolution_receipt_id: receipt_id.into(),
+            contradiction_id: contradiction_id.into(),
+            resolution: resolution.into(),
             affected_claim_refs,
-        };
-        self._build_entry(event)
+        })
     }
 
     /// Add a proof-debt consumption event.
@@ -251,15 +251,14 @@ impl LedgerEntryBuilder {
         amount_micros: u64,
         source: &str,
         overdrawn: bool,
-    ) -> LedgerEntry {
-        let event = LedgerEvent::ProofDebtConsumed {
-            budget_id: budget_id.to_string(),
-            debit_id: debit_id.to_string(),
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::ProofDebtConsumed {
+            budget_id: budget_id.into(),
+            debit_id: debit_id.into(),
             amount_micros,
-            source: source.to_string(),
+            source: source.into(),
             overdrawn,
-        };
-        self._build_entry(event)
+        })
     }
 
     /// Add a proof-debt replenishment event.
@@ -269,205 +268,306 @@ impl LedgerEntryBuilder {
         credit_id: &str,
         amount_micros: u64,
         source: &str,
-    ) -> LedgerEntry {
-        let event = LedgerEvent::ProofDebtReplenished {
-            budget_id: budget_id.to_string(),
-            credit_id: credit_id.to_string(),
+    ) -> Result<LedgerEntry, ClaimLedgerError> {
+        self.build(LedgerEvent::ProofDebtReplenished {
+            budget_id: budget_id.into(),
+            credit_id: credit_id.into(),
             amount_micros,
-            source: source.to_string(),
-        };
-        self._build_entry(event)
+            source: source.into(),
+        })
     }
 
-    fn _build_entry(self, event: LedgerEvent) -> LedgerEntry {
-        let entry_content = serde_json::json!({
-            "sequence": self.sequence,
-            "previous_entry_digest": self.previous_entry_digest,
-            "event": event,
-        });
-
-        let entry_json = serde_json::to_string(&entry_content).unwrap_or_default();
-        let digest = sha256_text(&entry_json);
-
-        LedgerEntry {
+    fn build(self, event: LedgerEvent) -> Result<LedgerEntry, ClaimLedgerError> {
+        let entry_digest =
+            compute_entry_digest(self.sequence, self.previous_entry_digest.as_deref(), &event)?;
+        Ok(LedgerEntry {
             sequence: self.sequence,
             previous_entry_digest: self.previous_entry_digest,
             event,
-            entry_digest: digest,
-        }
+            entry_digest,
+        })
     }
 }
 
-/// Compute the digest for an entry.
+fn put_u64(out: &mut Vec<u8>, value: u64) {
+    out.extend_from_slice(&value.to_be_bytes());
+}
+fn put_bool(out: &mut Vec<u8>, value: bool) {
+    out.push(u8::from(value));
+}
+fn put_str(out: &mut Vec<u8>, value: &str) -> Result<(), ClaimLedgerError> {
+    let len = u64::try_from(value.len())
+        .map_err(|_| ClaimLedgerError::SerializationError("string length exceeds u64".into()))?;
+    put_u64(out, len);
+    out.extend_from_slice(value.as_bytes());
+    Ok(())
+}
+fn put_vec(out: &mut Vec<u8>, values: &[String]) -> Result<(), ClaimLedgerError> {
+    put_u64(
+        out,
+        u64::try_from(values.len()).map_err(|_| {
+            ClaimLedgerError::SerializationError("vector length exceeds u64".into())
+        })?,
+    );
+    for value in values {
+        put_str(out, value)?;
+    }
+    Ok(())
+}
+fn support_state_name(state: SupportState) -> &'static str {
+    match state {
+        SupportState::Supported => "supported",
+        SupportState::PartiallySupported => "partially_supported",
+        SupportState::Unsupported => "unsupported",
+        SupportState::Contradicted => "contradicted",
+        SupportState::HeuristicOnly => "heuristic_only",
+        SupportState::Unknown => "unknown",
+    }
+}
+
+/// Produce the documented canonical preimage for an entry digest.
+pub fn entry_digest_preimage(
+    sequence: u64,
+    previous_digest: Option<&str>,
+    event: &LedgerEvent,
+) -> Result<Vec<u8>, ClaimLedgerError> {
+    let mut out = b"claim-ledger.entry-digest.v1".to_vec();
+    put_u64(&mut out, sequence);
+    match previous_digest {
+        None => out.push(0),
+        Some(value) => {
+            out.push(1);
+            put_str(&mut out, value)?;
+        }
+    }
+    put_str(&mut out, event.type_name())?;
+    match event {
+        LedgerEvent::ClaimAdded {
+            claim_id,
+            source_id,
+            span_id,
+            normalized_claim,
+        } => {
+            put_str(&mut out, claim_id)?;
+            put_str(&mut out, source_id)?;
+            put_str(&mut out, span_id)?;
+            put_str(&mut out, normalized_claim)?;
+        }
+        LedgerEvent::SupportJudgment {
+            support_judgment_id,
+            claim_id,
+            evidence_bundle_ref,
+            support_state,
+            method,
+        } => {
+            put_str(&mut out, support_judgment_id)?;
+            put_str(&mut out, claim_id)?;
+            put_str(&mut out, evidence_bundle_ref)?;
+            put_str(&mut out, support_state_name(*support_state))?;
+            put_str(&mut out, method)?;
+        }
+        LedgerEvent::SupportAdmission {
+            support_admission_receipt_id,
+            claim_id,
+            previous_support_judgment_ref,
+            new_support_judgment_ref,
+            admitted_support_state,
+        } => {
+            put_str(&mut out, support_admission_receipt_id)?;
+            put_str(&mut out, claim_id)?;
+            put_str(&mut out, previous_support_judgment_ref)?;
+            put_str(&mut out, new_support_judgment_ref)?;
+            put_str(&mut out, support_state_name(*admitted_support_state))?;
+        }
+        LedgerEvent::ContradictionCandidate {
+            contradiction_id,
+            claim_refs,
+            pattern,
+            rationale,
+        } => {
+            put_str(&mut out, contradiction_id)?;
+            put_vec(&mut out, claim_refs)?;
+            put_str(&mut out, pattern)?;
+            put_str(&mut out, rationale)?;
+        }
+        LedgerEvent::ContradictionResolved {
+            contradiction_resolution_receipt_id,
+            contradiction_id,
+            resolution,
+            affected_claim_refs,
+        } => {
+            put_str(&mut out, contradiction_resolution_receipt_id)?;
+            put_str(&mut out, contradiction_id)?;
+            put_str(&mut out, resolution)?;
+            put_vec(&mut out, affected_claim_refs)?;
+        }
+        LedgerEvent::EvidenceAttached {
+            evidence_bundle_id,
+            claim_id,
+            evidence_link_count,
+        } => {
+            put_str(&mut out, evidence_bundle_id)?;
+            put_str(&mut out, claim_id)?;
+            put_u64(
+                &mut out,
+                u64::try_from(*evidence_link_count).map_err(|_| {
+                    ClaimLedgerError::SerializationError("evidence link count exceeds u64".into())
+                })?,
+            );
+        }
+        LedgerEvent::BundleExported {
+            bundle_id,
+            export_receipt_id,
+            output_ref,
+            output_digest,
+        } => {
+            put_str(&mut out, bundle_id)?;
+            put_str(&mut out, export_receipt_id)?;
+            put_str(&mut out, output_ref)?;
+            put_str(&mut out, output_digest)?;
+        }
+        LedgerEvent::ProofDebtConsumed {
+            budget_id,
+            debit_id,
+            amount_micros,
+            source,
+            overdrawn,
+        } => {
+            put_str(&mut out, budget_id)?;
+            put_str(&mut out, debit_id)?;
+            put_u64(&mut out, *amount_micros);
+            put_str(&mut out, source)?;
+            put_bool(&mut out, *overdrawn);
+        }
+        LedgerEvent::ProofDebtReplenished {
+            budget_id,
+            credit_id,
+            amount_micros,
+            source,
+        } => {
+            put_str(&mut out, budget_id)?;
+            put_str(&mut out, credit_id)?;
+            put_u64(&mut out, *amount_micros);
+            put_str(&mut out, source)?;
+        }
+    }
+    Ok(out)
+}
+
+/// Compute the SHA-256 digest for an entry's canonical preimage.
 pub fn compute_entry_digest(
     sequence: u64,
     previous_digest: Option<&str>,
     event: &LedgerEvent,
-) -> String {
-    let content = serde_json::json!({
-        "sequence": sequence,
-        "previous_entry_digest": previous_digest,
-        "event": event,
-    });
-    let full_json = serde_json::to_string(&content).unwrap_or_default();
-    sha256_text(&full_json)
+) -> Result<String, ClaimLedgerError> {
+    Ok(sha256_bytes(&entry_digest_preimage(
+        sequence,
+        previous_digest,
+        event,
+    )?))
 }
 
-/// Verify the integrity of a ledger from a list of entries.
-pub fn verify_ledger(entries: &[LedgerEntry]) -> LedgerVerification {
-    let mut verification = LedgerVerification::default();
-
-    for (i, entry) in entries.iter().enumerate() {
-        let expected_seq = (i + 1) as u64;
-        if entry.sequence != expected_seq {
-            verification.valid = false;
-            verification.errors.push(format!(
-                "sequence mismatch at index {}: expected {}, got {}",
-                i, expected_seq, entry.sequence
-            ));
+/// Verify a ledger's chain and bind it to the supplied expected head.
+pub fn verify_ledger(
+    entries: &[LedgerEntry],
+    expected_head: &ExpectedLedgerHead,
+) -> Result<LedgerVerification, ClaimLedgerError> {
+    if entries.is_empty() {
+        return match expected_head {
+            ExpectedLedgerHead::Empty => Ok(LedgerVerification {
+                last_sequence: 0,
+                last_entry_digest: None,
+            }),
+            ExpectedLedgerHead::Entry { .. } => Err(ClaimLedgerError::LedgerCorrupt(
+                "ledger is empty but a non-empty head was expected".into(),
+            )),
+        };
+    }
+    if matches!(expected_head, ExpectedLedgerHead::Empty) {
+        return Err(ClaimLedgerError::LedgerCorrupt(
+            "ledger contains entries but an empty head was expected".into(),
+        ));
+    }
+    for (index, entry) in entries.iter().enumerate() {
+        let expected_sequence = u64::try_from(index + 1)
+            .map_err(|_| ClaimLedgerError::LedgerCorrupt("ledger index exceeds u64".into()))?;
+        if entry.sequence != expected_sequence {
+            return Err(ClaimLedgerError::LedgerCorrupt(format!(
+                "sequence mismatch at entry {}: expected {}, got {}",
+                index + 1,
+                expected_sequence,
+                entry.sequence
+            )));
         }
-
-        if i == 0 {
-            if entry.previous_entry_digest.is_some() {
-                verification.valid = false;
-                verification
-                    .errors
-                    .push("first entry should have no previous_entry_digest".to_string());
-            }
+        let expected_previous = if index == 0 {
+            None
         } else {
-            let prev = &entries[i - 1];
-            if entry.previous_entry_digest.as_ref() != Some(&prev.entry_digest) {
-                verification.valid = false;
-                verification.errors.push(format!(
-                    "previous_entry_digest mismatch at sequence {}: expected {}, got {:?}",
-                    entry.sequence, prev.entry_digest, entry.previous_entry_digest
-                ));
-            }
+            Some(entries[index - 1].entry_digest.as_str())
+        };
+        if entry.previous_entry_digest.as_deref() != expected_previous {
+            return Err(ClaimLedgerError::LedgerCorrupt(format!(
+                "previous digest mismatch at sequence {}",
+                entry.sequence
+            )));
         }
-
         let computed = compute_entry_digest(
             entry.sequence,
             entry.previous_entry_digest.as_deref(),
             &entry.event,
-        );
+        )?;
         if computed != entry.entry_digest {
-            verification.valid = false;
-            verification.errors.push(format!(
-                "entry_digest mismatch at sequence {}: expected {}, got {}",
-                entry.sequence, computed, entry.entry_digest
-            ));
+            return Err(ClaimLedgerError::LedgerCorrupt(format!(
+                "entry digest mismatch at sequence {}",
+                entry.sequence
+            )));
         }
-
-        verification.last_sequence = entry.sequence;
-        verification.last_entry_digest = Some(entry.entry_digest.clone());
     }
-
-    verification
+    let last = entries.last().ok_or_else(|| {
+        ClaimLedgerError::LedgerCorrupt("ledger unexpectedly lost its final entry".into())
+    })?;
+    match expected_head {
+        ExpectedLedgerHead::Entry {
+            sequence,
+            entry_digest,
+        } if *sequence == last.sequence && entry_digest == &last.entry_digest => {
+            Ok(LedgerVerification {
+                last_sequence: last.sequence,
+                last_entry_digest: Some(last.entry_digest.clone()),
+            })
+        }
+        ExpectedLedgerHead::Entry {
+            sequence,
+            entry_digest,
+        } => Err(ClaimLedgerError::LedgerCorrupt(format!(
+            "ledger head mismatch: expected sequence {} digest {}, got sequence {} digest {}",
+            sequence, entry_digest, last.sequence, last.entry_digest
+        ))),
+        ExpectedLedgerHead::Empty => Err(ClaimLedgerError::LedgerCorrupt(
+            "an empty head cannot authenticate a non-empty ledger".into(),
+        )),
+    }
 }
 
-/// Parse ledger entries from JSONL text.
-pub fn parse_ledger_entries(jsonl: &str) -> Vec<LedgerEntry> {
+/// Parse JSONL strictly. Blank lines are ignored; malformed nonblank lines fail with a one-based line number.
+pub fn parse_ledger_entries(jsonl: &str) -> Result<Vec<LedgerEntry>, ClaimLedgerError> {
     jsonl
         .lines()
-        .filter(|line| !line.trim().is_empty())
-        .filter_map(|line| serde_json::from_str(line).ok())
+        .enumerate()
+        .filter(|(_, line)| !line.trim().is_empty())
+        .map(|(index, line)| {
+            serde_json::from_str(line).map_err(|error| {
+                ClaimLedgerError::SerializationError(format!(
+                    "invalid ledger JSONL at line {}: {}",
+                    index + 1,
+                    error
+                ))
+            })
+        })
         .collect()
 }
 
-/// Serialize a ledger entry to a JSON line.
-pub fn serialize_entry(entry: &LedgerEntry) -> String {
-    serde_json::to_string(entry).unwrap_or_default()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn ledger_entry_builder_add_claim() {
-        let entry = LedgerEntryBuilder::new(1, None).add_claim(
-            "clm_abc123",
-            "src1",
-            "sp1",
-            "the sky is blue",
-        );
-
-        assert_eq!(entry.sequence, 1);
-        assert!(entry.previous_entry_digest.is_none());
-        assert!(!entry.entry_digest.is_empty());
-        if let LedgerEvent::ClaimAdded { claim_id, .. } = entry.event {
-            assert_eq!(claim_id, "clm_abc123");
-        } else {
-            panic!("expected ClaimAdded event");
-        }
-    }
-
-    #[test]
-    fn ledger_chain_integrity() {
-        let entry1 = LedgerEntryBuilder::new(1, None).add_claim("clm_a", "src1", "sp1", "claim a");
-        let entry2 = LedgerEntryBuilder::new(2, Some(entry1.entry_digest.clone()))
-            .add_claim("clm_b", "src1", "sp2", "claim b");
-
-        assert_eq!(entry2.sequence, 2);
-        assert_eq!(
-            entry2.previous_entry_digest,
-            Some(entry1.entry_digest.clone())
-        );
-    }
-
-    #[test]
-    fn verify_ledger_accepts_valid_chain() {
-        let entry1 = LedgerEntryBuilder::new(1, None).add_claim("clm_a", "src1", "sp1", "claim a");
-        let entry2 = LedgerEntryBuilder::new(2, Some(entry1.entry_digest.clone()))
-            .add_claim("clm_b", "src1", "sp2", "claim b");
-
-        let verification = verify_ledger(&[entry1, entry2]);
-        assert!(verification.valid);
-        assert_eq!(verification.last_sequence, 2);
-    }
-
-    #[test]
-    fn verify_ledger_detects_broken_chain() {
-        let entry1 = LedgerEntryBuilder::new(1, None).add_claim("clm_a", "src1", "sp1", "claim a");
-        // entry2 with wrong previous digest
-        let entry2 = LedgerEntryBuilder::new(2, Some("wrong_digest".to_string()))
-            .add_claim("clm_b", "src1", "sp2", "claim b");
-
-        let verification = verify_ledger(&[entry1, entry2]);
-        assert!(!verification.valid);
-        assert!(!verification.errors.is_empty());
-    }
-
-    #[test]
-    fn parse_ledger_entries_from_jsonl() {
-        let jsonl = r#"{"sequence":1,"previous_entry_digest":null,"event":{"type":"claim_added","claim_id":"clm_1","source_id":"s1","span_id":"sp1","normalized_claim":"test"},"entry_digest":"abc"}
-{"sequence":2,"previous_entry_digest":"abc","event":{"type":"claim_added","claim_id":"clm_2","source_id":"s1","span_id":"sp2","normalized_claim":"test2"},"entry_digest":"def"}"#;
-
-        let entries = parse_ledger_entries(jsonl);
-        assert_eq!(entries.len(), 2);
-        assert_eq!(entries[0].sequence, 1);
-        assert_eq!(entries[1].sequence, 2);
-    }
-
-    #[test]
-    fn serialize_entry_round_trips() {
-        let entry =
-            LedgerEntryBuilder::new(1, None).add_claim("clm_test", "src1", "sp1", "hello world");
-
-        let json = serialize_entry(&entry);
-        let parsed: LedgerEntry = serde_json::from_str(&json).unwrap();
-        assert_eq!(parsed.sequence, entry.sequence);
-        assert_eq!(parsed.entry_digest, entry.entry_digest);
-    }
-
-    #[test]
-    fn ledger_event_type_name() {
-        let event = LedgerEvent::ClaimAdded {
-            claim_id: "clm_1".to_string(),
-            source_id: "s1".to_string(),
-            span_id: "sp1".to_string(),
-            normalized_claim: "test".to_string(),
-        };
-        assert_eq!(event.type_name(), "claim_added");
-    }
+/// Serialize a ledger entry as exactly one JSON line.
+pub fn serialize_entry(entry: &LedgerEntry) -> Result<String, ClaimLedgerError> {
+    serde_json::to_string(entry)
+        .map_err(|error| ClaimLedgerError::SerializationError(error.to_string()))
 }

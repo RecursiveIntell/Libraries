@@ -92,7 +92,8 @@ pub fn proof_debt_weight(debt: &ProofDebt) -> u64 {
 ///
 /// Sets the maximum allowed proof debt for a scope (claim, case, or session).
 /// The budget is consumed by operations that incur proof debt and replenished
-/// by evidence, admissions, and waivers.
+/// by evidence and admissions. Waivers authorize bounded proceeding but never
+/// alter the outstanding debt.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProofDebtBudgetV1 {
     /// Schema version.
@@ -114,15 +115,19 @@ pub struct ProofDebtBudgetV1 {
 impl ProofDebtBudgetV1 {
     /// Create a new proof-debt budget for a scope.
     pub fn new(scope: &str, budget_micros: u64) -> Self {
-        let now = Utc::now();
+        Self::new_at(scope, budget_micros, Utc::now())
+    }
+
+    /// Create a budget with an explicit recorded time for reproducible artifacts.
+    pub fn new_at(scope: &str, budget_micros: u64, recorded_time: DateTime<Utc>) -> Self {
         Self {
             schema_version: "ProofDebtBudgetV1".to_string(),
             budget_id: ids::proof_debt_budget_id(scope),
             scope: scope.to_string(),
             budget_micros,
             consumed_micros: 0,
-            created_at: now,
-            updated_at: now,
+            created_at: recorded_time,
+            updated_at: recorded_time,
         }
     }
 
@@ -156,6 +161,18 @@ impl ProofDebtBudgetV1 {
         rationale: &str,
         strict: bool,
     ) -> Option<ProofDebtDebitV1> {
+        self.consume_at(amount_micros, source, rationale, strict, Utc::now())
+    }
+
+    /// Consume proof debt with an explicit recorded time.
+    pub fn consume_at(
+        &mut self,
+        amount_micros: u64,
+        source: &str,
+        rationale: &str,
+        strict: bool,
+        recorded_time: DateTime<Utc>,
+    ) -> Option<ProofDebtDebitV1> {
         let new_consumed = self.consumed_micros.saturating_add(amount_micros);
         let overdrawn = new_consumed > self.budget_micros;
         if overdrawn && strict {
@@ -163,22 +180,45 @@ impl ProofDebtBudgetV1 {
         }
         let remaining = self.budget_micros.saturating_sub(new_consumed);
         self.consumed_micros = new_consumed;
-        self.updated_at = Utc::now();
-        Some(ProofDebtDebitV1::new(
+        self.updated_at = recorded_time;
+        Some(ProofDebtDebitV1::new_at(
             &self.budget_id,
             amount_micros,
             remaining,
             overdrawn,
             source,
             rationale,
+            recorded_time,
         ))
     }
 
     /// Replenish proof debt (e.g., when evidence is added or a claim is admitted).
-    pub fn replenish(&mut self, amount_micros: u64, source: &str, rationale: &str) -> ProofDebtCreditV1 {
+    pub fn replenish(
+        &mut self,
+        amount_micros: u64,
+        source: &str,
+        rationale: &str,
+    ) -> ProofDebtCreditV1 {
+        self.replenish_at(amount_micros, source, rationale, Utc::now())
+    }
+
+    /// Replenish proof debt with an explicit recorded time.
+    pub fn replenish_at(
+        &mut self,
+        amount_micros: u64,
+        source: &str,
+        rationale: &str,
+        recorded_time: DateTime<Utc>,
+    ) -> ProofDebtCreditV1 {
         self.consumed_micros = self.consumed_micros.saturating_sub(amount_micros);
-        self.updated_at = Utc::now();
-        ProofDebtCreditV1::new(&self.budget_id, amount_micros, source, rationale)
+        self.updated_at = recorded_time;
+        ProofDebtCreditV1::new_at(
+            &self.budget_id,
+            amount_micros,
+            source,
+            rationale,
+            recorded_time,
+        )
     }
 
     /// Consume debt for a specific ProofDebt kind, using the standard weight.
@@ -278,6 +318,27 @@ impl ProofDebtDebitV1 {
         source: &str,
         rationale: &str,
     ) -> Self {
+        Self::new_at(
+            budget_id,
+            amount_micros,
+            remaining_micros,
+            overdrawn,
+            source,
+            rationale,
+            Utc::now(),
+        )
+    }
+
+    /// Create a debit record with an explicit recorded time.
+    pub fn new_at(
+        budget_id: &str,
+        amount_micros: u64,
+        remaining_micros: u64,
+        overdrawn: bool,
+        source: &str,
+        rationale: &str,
+        recorded_time: DateTime<Utc>,
+    ) -> Self {
         Self {
             schema_version: "ProofDebtDebitV1".to_string(),
             debit_id: ids::proof_debt_debit_id(budget_id, source, amount_micros),
@@ -287,7 +348,7 @@ impl ProofDebtDebitV1 {
             overdrawn,
             source: source.to_string(),
             rationale: rationale.to_string(),
-            recorded_time: Utc::now(),
+            recorded_time,
         }
     }
 }
@@ -317,6 +378,17 @@ pub struct ProofDebtCreditV1 {
 impl ProofDebtCreditV1 {
     /// Create a new proof-debt credit record.
     pub fn new(budget_id: &str, amount_micros: u64, source: &str, rationale: &str) -> Self {
+        Self::new_at(budget_id, amount_micros, source, rationale, Utc::now())
+    }
+
+    /// Create a credit record with an explicit recorded time.
+    pub fn new_at(
+        budget_id: &str,
+        amount_micros: u64,
+        source: &str,
+        rationale: &str,
+        recorded_time: DateTime<Utc>,
+    ) -> Self {
         Self {
             schema_version: "ProofDebtCreditV1".to_string(),
             credit_id: ids::proof_debt_credit_id(budget_id, source, amount_micros),
@@ -324,7 +396,7 @@ impl ProofDebtCreditV1 {
             amount_micros,
             source: source.to_string(),
             rationale: rationale.to_string(),
-            recorded_time: Utc::now(),
+            recorded_time,
         }
     }
 }
@@ -371,6 +443,10 @@ pub struct ProofDebtGateResult {
     pub consumed_pct: u64,
     /// Whether the budget was exhausted at gate check time.
     pub exhausted: bool,
+    /// Applicable waiver that authorized this result, if any. Debt remains outstanding.
+    pub waiver_id: Option<String>,
+    /// Amount authorized by the applicable waiver, if any.
+    pub waived_amount_micros: Option<u64>,
     /// Human-readable summary of the gate evaluation.
     pub summary: String,
 }
@@ -383,7 +459,20 @@ pub struct ProofDebtGateResult {
 /// - Degrade: consumed >= 100% (exhausted)
 /// - Retract: consumed >= 120% (severely overdrawn)
 pub fn evaluate_proof_debt_gate(budget: &ProofDebtBudgetV1) -> ProofDebtGateResult {
-    evaluate_proof_debt_gate_with_config(budget, &ProofDebtBudgetConfig::default())
+    evaluate_proof_debt_gate_with_waiver_and_config(budget, None, &ProofDebtBudgetConfig::default())
+}
+
+/// Evaluate a proof-debt gate, allowing a matching bounded waiver to authorize proceeding.
+/// The waiver is only an authorization: it does not change `consumed_micros`.
+pub fn evaluate_proof_debt_gate_with_waiver(
+    budget: &ProofDebtBudgetV1,
+    waiver: Option<&ProofDebtWaiverReceipt>,
+) -> ProofDebtGateResult {
+    evaluate_proof_debt_gate_with_waiver_and_config(
+        budget,
+        waiver,
+        &ProofDebtBudgetConfig::default(),
+    )
 }
 
 /// Evaluate a proof-debt budget gate using custom thresholds.
@@ -391,17 +480,40 @@ pub fn evaluate_proof_debt_gate_with_config(
     budget: &ProofDebtBudgetV1,
     config: &ProofDebtBudgetConfig,
 ) -> ProofDebtGateResult {
+    evaluate_proof_debt_gate_with_waiver_and_config(budget, None, config)
+}
+
+/// Evaluate a proof-debt gate using custom thresholds and an optional waiver.
+pub fn evaluate_proof_debt_gate_with_waiver_and_config(
+    budget: &ProofDebtBudgetV1,
+    waiver: Option<&ProofDebtWaiverReceipt>,
+    config: &ProofDebtBudgetConfig,
+) -> ProofDebtGateResult {
     let pct = budget.consumed_pct();
     let exhausted = budget.is_exhausted();
     let _overdrawn = budget.consumed_micros > budget.budget_micros;
 
-    let (decision, summary) = if pct >= config.retract_threshold_pct {
+    let (decision, summary, waiver_id, waived_amount_micros) = if let Some(receipt) =
+        waiver.filter(|receipt| receipt.applies_to(budget))
+    {
+        (
+            ProofDebtGateDecision::Waived,
+            format!(
+                "proof debt waived for bounded proceeding: {}% consumed ({} / {} micros), waiver {} authorizes {} micros",
+                pct, budget.consumed_micros, budget.budget_micros, receipt.waiver_id, receipt.waived_amount_micros
+            ),
+            Some(receipt.waiver_id.clone()),
+            Some(receipt.waived_amount_micros),
+        )
+    } else if pct >= config.retract_threshold_pct {
         (
             ProofDebtGateDecision::Retract,
             format!(
                 "proof debt severely overdrawn: {}% consumed ({} / {} micros)",
                 pct, budget.consumed_micros, budget.budget_micros
             ),
+            None,
+            None,
         )
     } else if pct >= config.degrade_threshold_pct {
         (
@@ -410,6 +522,8 @@ pub fn evaluate_proof_debt_gate_with_config(
                 "proof debt exhausted: {}% consumed ({} / {} micros)",
                 pct, budget.consumed_micros, budget.budget_micros
             ),
+            None,
+            None,
         )
     } else if pct >= config.warn_threshold_pct {
         (
@@ -418,6 +532,8 @@ pub fn evaluate_proof_debt_gate_with_config(
                 "proof debt warning: {}% consumed ({} / {} micros)",
                 pct, budget.consumed_micros, budget.budget_micros
             ),
+            None,
+            None,
         )
     } else {
         (
@@ -426,6 +542,8 @@ pub fn evaluate_proof_debt_gate_with_config(
                 "proof debt ok: {}% consumed ({} / {} micros)",
                 pct, budget.consumed_micros, budget.budget_micros
             ),
+            None,
+            None,
         )
     };
 
@@ -434,6 +552,8 @@ pub fn evaluate_proof_debt_gate_with_config(
         decision,
         consumed_pct: pct,
         exhausted,
+        waiver_id,
+        waived_amount_micros,
         summary,
     }
 }
@@ -450,6 +570,10 @@ pub struct ProofDebtWaiverReceipt {
     pub waiver_id: String,
     /// Budget this waiver applies to.
     pub budget_id: String,
+    /// Scope covered by this waiver.
+    pub scope: String,
+    /// Budget ceiling in micros at the time the waiver was issued.
+    pub budget_micros: u64,
     /// Amount of debt being waived in micros.
     pub waived_amount_micros: u64,
     /// Operator who approved the waiver.
@@ -463,29 +587,51 @@ pub struct ProofDebtWaiverReceipt {
 impl ProofDebtWaiverReceipt {
     /// Create a new proof-debt waiver receipt.
     pub fn new(
-        budget_id: &str,
+        budget: &ProofDebtBudgetV1,
         waived_amount_micros: u64,
         operator_ref: &str,
         rationale: &str,
     ) -> Self {
+        Self::new_at(
+            budget,
+            waived_amount_micros,
+            operator_ref,
+            rationale,
+            Utc::now(),
+        )
+    }
+
+    /// Create a waiver with an explicit recorded time for reproducible artifacts.
+    pub fn new_at(
+        budget: &ProofDebtBudgetV1,
+        waived_amount_micros: u64,
+        operator_ref: &str,
+        rationale: &str,
+        recorded_time: DateTime<Utc>,
+    ) -> Self {
         Self {
             schema_version: "ProofDebtWaiverReceiptV1".to_string(),
-            waiver_id: ids::proof_debt_waiver_id(budget_id, operator_ref, waived_amount_micros),
-            budget_id: budget_id.to_string(),
+            waiver_id: ids::proof_debt_waiver_id(
+                &budget.budget_id,
+                operator_ref,
+                waived_amount_micros,
+            ),
+            budget_id: budget.budget_id.clone(),
+            scope: budget.scope.clone(),
+            budget_micros: budget.budget_micros,
             waived_amount_micros,
             operator_ref: operator_ref.to_string(),
             rationale: rationale.to_string(),
-            recorded_time: Utc::now(),
+            recorded_time,
         }
     }
 
-    /// Apply this waiver to a budget, replenishing the waived amount.
-    pub fn apply(&self, budget: &mut ProofDebtBudgetV1) -> ProofDebtCreditV1 {
-        budget.replenish(
-            self.waived_amount_micros,
-            &format!("waiver:{}", self.waiver_id),
-            &self.rationale,
-        )
+    /// Whether this waiver authorizes the current outstanding amount on this budget.
+    pub fn applies_to(&self, budget: &ProofDebtBudgetV1) -> bool {
+        self.budget_id == budget.budget_id
+            && self.scope == budget.scope
+            && self.budget_micros == budget.budget_micros
+            && self.waived_amount_micros >= budget.consumed_micros
     }
 }
 
@@ -544,10 +690,19 @@ mod tests {
     #[test]
     fn resolve_debt_replenishes() {
         let mut budget = ProofDebtBudgetV1::new("claim:clm_abc", 500_000);
-        budget.consume_debt(&ProofDebt::MissingSourceBasis, "claim:clm_abc", "initial", false);
+        budget.consume_debt(
+            &ProofDebt::MissingSourceBasis,
+            "claim:clm_abc",
+            "initial",
+            false,
+        );
         assert_eq!(budget.consumed_micros, 250_000);
 
-        let credit = budget.resolve_debt(&ProofDebt::MissingSourceBasis, "evidence:evb_xyz", "source basis found");
+        let credit = budget.resolve_debt(
+            &ProofDebt::MissingSourceBasis,
+            "evidence:evb_xyz",
+            "source basis found",
+        );
         assert!(credit.is_some());
         assert_eq!(budget.consumed_micros, 0);
     }
@@ -588,20 +743,21 @@ mod tests {
     }
 
     #[test]
-    fn waiver_replenishes_budget() {
+    fn waiver_preserves_debt_and_authorizes_bounded_proceeding() {
         let mut budget = ProofDebtBudgetV1::new("claim:clm_abc", 500_000);
         budget.consume(400_000, "test", "debt", false);
         assert_eq!(budget.available_micros(), 100_000);
 
         let waiver = ProofDebtWaiverReceipt::new(
-            &budget.budget_id,
-            200_000,
+            &budget,
+            400_000,
             "operator:josh",
             "accepting risk on missing benchmark",
         );
-        let _credit = waiver.apply(&mut budget);
-        assert_eq!(budget.consumed_micros, 200_000);
-        assert_eq!(budget.available_micros(), 300_000);
+        assert_eq!(budget.consumed_micros, 400_000);
+        assert_eq!(budget.available_micros(), 100_000);
+        let gate = evaluate_proof_debt_gate_with_waiver(&budget, Some(&waiver));
+        assert_eq!(gate.decision, ProofDebtGateDecision::Waived);
     }
 
     #[test]
@@ -699,12 +855,24 @@ pub struct ProofDebtSummaryV1 {
     pub gate_decision: ProofDebtGateDecision,
     /// Human-readable gate summary.
     pub gate_summary: String,
+    /// Applicable waiver ID, if any. This never changes outstanding debt.
+    pub waiver_id: Option<String>,
+    /// Amount authorized by the applicable waiver, if any.
+    pub waived_amount_micros: Option<u64>,
 }
 
 impl ProofDebtSummaryV1 {
     /// Build a summary from a budget and its gate evaluation.
     pub fn from_budget(budget: &ProofDebtBudgetV1) -> Self {
-        let gate = evaluate_proof_debt_gate(budget);
+        Self::from_budget_with_waiver(budget, None)
+    }
+
+    /// Build a summary that exposes both outstanding debt and an optional waiver.
+    pub fn from_budget_with_waiver(
+        budget: &ProofDebtBudgetV1,
+        waiver: Option<&ProofDebtWaiverReceipt>,
+    ) -> Self {
+        let gate = evaluate_proof_debt_gate_with_waiver(budget, waiver);
         Self {
             schema_version: "ProofDebtSummaryV1".to_string(),
             budget_id: budget.budget_id.clone(),
@@ -716,6 +884,8 @@ impl ProofDebtSummaryV1 {
             exhausted: budget.is_exhausted(),
             gate_decision: gate.decision,
             gate_summary: gate.summary,
+            waiver_id: gate.waiver_id,
+            waived_amount_micros: gate.waived_amount_micros,
         }
     }
 }
@@ -790,10 +960,7 @@ mod summary_tests {
 
     #[test]
     fn budget_for_claim_consumes_all_debts() {
-        let debts = vec![
-            ProofDebt::MissingSourceBasis,
-            ProofDebt::MissingBenchmark,
-        ];
+        let debts = vec![ProofDebt::MissingSourceBasis, ProofDebt::MissingBenchmark];
         let (budget, debits) = budget_for_claim("claim:clm_auto", &debts, 1_000_000);
         // 250k + 100k = 350k consumed
         assert_eq!(budget.consumed_micros, 350_000);

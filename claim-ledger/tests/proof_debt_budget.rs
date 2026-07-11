@@ -6,12 +6,12 @@
 //! 3. Gate fires when budget is exhausted
 //! 4. Replenish when evidence is added
 //! 5. Gate allows proceed after replenishment
-//! 6. Operator waiver works
+//! 6. Operator waiver authorizes bounded proceeding without reducing debt
 //! 7. Ledger records all proof-debt events
 
 use claim_ledger::{
     budget_for_claim, evaluate_proof_debt_gate, evaluate_proof_debt_gate_with_config,
-    proof_debt_weight, total_proof_debt_weight, LedgerEntryBuilder, ProofDebt,
+    proof_debt_weight, total_proof_debt_weight, ExpectedLedgerHead, LedgerEntryBuilder, ProofDebt,
     ProofDebtBudgetConfig, ProofDebtBudgetV1, ProofDebtGateDecision, ProofDebtSummaryV1,
     ProofDebtWaiverReceipt,
 };
@@ -94,25 +94,24 @@ fn strict_mode_blocks_overdraw() {
 }
 
 #[test]
-fn operator_waiver_clears_debt() {
+fn operator_waiver_preserves_debt() {
     let mut budget = ProofDebtBudgetV1::new("claim:clm_waiver", 500_000);
     budget.consume(500_000, "claim", "full debt", false);
     assert!(budget.is_exhausted());
 
     // Operator waives the debt
     let waiver = ProofDebtWaiverReceipt::new(
-        &budget.budget_id,
+        &budget,
         500_000,
         "operator:josh",
         "accepting risk: claim is advisory-only and won't be used for public assertions",
     );
 
-    let _credit = waiver.apply(&mut budget);
-    assert_eq!(budget.consumed_micros, 0);
-    assert!(!budget.is_exhausted());
+    assert_eq!(budget.consumed_micros, 500_000);
+    assert!(budget.is_exhausted());
 
-    let gate = evaluate_proof_debt_gate(&budget);
-    assert_eq!(gate.decision, ProofDebtGateDecision::Proceed);
+    let gate = claim_ledger::evaluate_proof_debt_gate_with_waiver(&budget, Some(&waiver));
+    assert_eq!(gate.decision, ProofDebtGateDecision::Waived);
 }
 
 #[test]
@@ -120,12 +119,9 @@ fn ledger_records_proof_debt_events() {
     let mut budget = ProofDebtBudgetV1::new("claim:clm_ledger_test", 500_000);
 
     // Build ledger entries for proof-debt events
-    let entry1 = LedgerEntryBuilder::new(1, None).add_claim(
-        "clm_ledger_test",
-        "src1",
-        "sp1",
-        "test claim",
-    );
+    let entry1 = LedgerEntryBuilder::new(1, None)
+        .add_claim("clm_ledger_test", "src1", "sp1", "test claim")
+        .unwrap();
 
     // Consume debt
     let debit = budget
@@ -144,7 +140,8 @@ fn ledger_records_proof_debt_events() {
             debit.amount_micros,
             "claim:clm_ledger_test",
             debit.overdrawn,
-        );
+        )
+        .unwrap();
 
     // Replenish debt
     let credit = budget.resolve_debt(
@@ -159,12 +156,16 @@ fn ledger_records_proof_debt_events() {
             &credit.as_ref().expect("credit should exist").credit_id,
             credit.as_ref().expect("credit should exist").amount_micros,
             "evidence:evb_found",
-        );
+        )
+        .unwrap();
 
     // Verify ledger chain
     let entries = vec![entry1, entry2, entry3];
-    let verification = claim_ledger::verify_ledger(&entries);
-    assert!(verification.valid);
+    let verification = claim_ledger::verify_ledger(
+        &entries,
+        &ExpectedLedgerHead::new(3, entries[2].entry_digest.clone()),
+    )
+    .unwrap();
     assert_eq!(verification.last_sequence, 3);
 }
 
@@ -238,7 +239,7 @@ fn automated_pipeline_custom_config() {
         weight_missing_source_basis: 400_000, // heavier than default 250k
         weight_missing_repro: 200_000,
         weight_missing_benchmark: 100_000,
-        warn_threshold_pct: 60,  // warn earlier
+        warn_threshold_pct: 60, // warn earlier
         ..ProofDebtBudgetConfig::default()
     };
 
@@ -298,9 +299,9 @@ fn automated_pipeline_summary_serializable() {
 
 #[test]
 fn automated_pipeline_full_lifecycle_with_ledger() {
-    // Full automated lifecycle: create budget -> consume -> gate -> waive -> ledger
+    // Full automated lifecycle: create budget -> consume -> waive authorization -> ledger
     let debts = vec![ProofDebt::MissingSourceBasis, ProofDebt::MissingRepro];
-    let (mut budget, debits) = budget_for_claim("claim:clm_full_cycle", &debts, 300_000);
+    let (budget, debits) = budget_for_claim("claim:clm_full_cycle", &debts, 300_000);
 
     // Budget exhausted (250k + 150k = 400k > 300k budget = 133%)
     assert!(budget.is_exhausted());
@@ -311,19 +312,21 @@ fn automated_pipeline_full_lifecycle_with_ledger() {
 
     // Operator waives the overdrawn amount
     let waiver = ProofDebtWaiverReceipt::new(
-        &budget.budget_id,
+        &budget,
         budget.consumed_micros,
         "operator:josh",
         "advisory-only claim, accepting risk",
     );
-    let credit = waiver.apply(&mut budget);
-
-    // Budget restored
-    assert_eq!(budget.consumed_micros, 0);
+    assert_eq!(budget.consumed_micros, 400_000);
+    assert_eq!(
+        claim_ledger::evaluate_proof_debt_gate_with_waiver(&budget, Some(&waiver)).decision,
+        ProofDebtGateDecision::Waived
+    );
 
     // Build ledger entries for the full lifecycle
     let entry1 = LedgerEntryBuilder::new(1, None)
-        .add_claim("clm_full_cycle", "src1", "sp1", "test claim");
+        .add_claim("clm_full_cycle", "src1", "sp1", "test claim")
+        .unwrap();
 
     let mut entries = vec![entry1.clone()];
     let mut prev_digest = entry1.entry_digest.clone();
@@ -336,25 +339,20 @@ fn automated_pipeline_full_lifecycle_with_ledger() {
                 debit.amount_micros,
                 &debit.source,
                 debit.overdrawn,
-            );
+            )
+            .unwrap();
         prev_digest = entry.entry_digest.clone();
         entries.push(entry);
     }
 
-    let entry_waiver = LedgerEntryBuilder::new(entries.len() as u64 + 1, Some(prev_digest))
-        .add_proof_debt_replenished(
-            &budget.budget_id,
-            &credit.credit_id,
-            credit.amount_micros,
-            &credit.source,
-        );
-    entries.push(entry_waiver);
-
-    // Verify the ledger chain
-    let verification = claim_ledger::verify_ledger(&entries);
-    assert!(verification.valid);
-    assert_eq!(
-        verification.last_sequence,
-        entries.len() as u64
-    );
+    // Waivers are separate authorizations; they are not replenishment events.
+    let verification = claim_ledger::verify_ledger(
+        &entries,
+        &ExpectedLedgerHead::new(
+            entries.len() as u64,
+            entries.last().unwrap().entry_digest.clone(),
+        ),
+    )
+    .unwrap();
+    assert_eq!(verification.last_sequence, entries.len() as u64);
 }

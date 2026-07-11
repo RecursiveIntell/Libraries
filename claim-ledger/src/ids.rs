@@ -34,7 +34,12 @@ pub fn normalize_text(text: &str) -> String {
 
 /// Generate a stable identifier from a prefix and variable parts.
 ///
-/// Uses SHA-256 of the joined parts, truncated to `length` characters.
+/// Uses SHA-256 of a versioned, domain-separated binary preimage, truncated to
+/// `length` characters. The preimage is `claim-ledger.stable-id.v2` followed by
+/// a byte-length-prefixed UTF-8 prefix, an unsigned 64-bit big-endian part
+/// count, and each part as an unsigned 64-bit big-endian byte length followed
+/// by its UTF-8 bytes. This distinguishes embedded newlines, empty parts, and
+/// differing partitions of the same text.
 /// The result is prefixed with `{prefix}_` so it is easy to identify the kind of ID.
 ///
 /// # Arguments
@@ -52,11 +57,21 @@ pub fn normalize_text(text: &str) -> String {
 /// assert!(id.starts_with("clm_"));
 /// ```
 pub fn stable_id(prefix: &str, parts: &[&str], length: usize) -> String {
-    let input = parts.join("\n");
-    let hash = Sha256::digest(input.as_bytes());
+    let mut input = b"claim-ledger.stable-id.v2".to_vec();
+    put_length_prefixed(&mut input, prefix);
+    input.extend_from_slice(&(parts.len() as u64).to_be_bytes());
+    for part in parts {
+        put_length_prefixed(&mut input, part);
+    }
+    let hash = Sha256::digest(&input);
     let hex = hex::encode(hash);
     let truncated = &hex[..length.min(hex.len())];
     format!("{}_{}", prefix, truncated)
+}
+
+fn put_length_prefixed(out: &mut Vec<u8>, value: &str) {
+    out.extend_from_slice(&(value.len() as u64).to_be_bytes());
+    out.extend_from_slice(value.as_bytes());
 }
 
 /// Generate a new unique ULID.
@@ -152,20 +167,12 @@ pub fn proof_debt_budget_id(scope: &str) -> String {
 
 /// Build a proof-debt debit ID from budget, source, and amount.
 pub fn proof_debt_debit_id(budget_id: &str, source: &str, amount_micros: u64) -> String {
-    stable_id(
-        "pdd",
-        &[budget_id, source, &amount_micros.to_string()],
-        20,
-    )
+    stable_id("pdd", &[budget_id, source, &amount_micros.to_string()], 20)
 }
 
 /// Build a proof-debt credit ID from budget, source, and amount.
 pub fn proof_debt_credit_id(budget_id: &str, source: &str, amount_micros: u64) -> String {
-    stable_id(
-        "pdc",
-        &[budget_id, source, &amount_micros.to_string()],
-        20,
-    )
+    stable_id("pdc", &[budget_id, source, &amount_micros.to_string()], 20)
 }
 
 /// Build a proof-debt waiver ID from budget, operator, and amount.
@@ -200,6 +207,27 @@ mod tests {
         let id1 = stable_id("aaa", &["x"], 16);
         let id2 = stable_id("bbb", &["x"], 16);
         assert_ne!(id1, id2);
+    }
+
+    #[test]
+    fn stable_id_distinguishes_part_boundaries_and_empty_parts() {
+        assert_ne!(
+            stable_id("test", &["a\nb"], 16),
+            stable_id("test", &["a", "b"], 16)
+        );
+        assert_ne!(stable_id("test", &[], 16), stable_id("test", &[""], 16));
+        assert_ne!(
+            stable_id("test", &["", "a"], 16),
+            stable_id("test", &["a", ""], 16)
+        );
+    }
+
+    #[test]
+    fn stable_id_is_deterministic_for_unicode() {
+        assert_eq!(
+            stable_id("test", &["東京🙂"], 16),
+            stable_id("test", &["東京🙂"], 16)
+        );
     }
 
     #[test]

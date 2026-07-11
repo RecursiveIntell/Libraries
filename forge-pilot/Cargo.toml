@@ -30,7 +30,7 @@ governance = [
 assurance-runtime = { version = "0.1.0", path = "../assurance-runtime", optional = true }
 attestation-exchange = { version = "0.1.0", path = "../attestation-exchange", optional = true }
 authority-delegation = { version = "0.1.0", path = "../authority-delegation", optional = true }
-claim-ledger = { version = "0.1.1", path = "../claim-ledger", optional = true }
+claim-ledger = { version = "0.2.0", path = "../claim-ledger", optional = true }
 constitutional-memory = { version = "0.1.0", path = "../constitutional-memory", optional = true }
 continuity-runtime = { version = "0.1.0", path = "../continuity-runtime", optional = true }
 effect-runtime = { version = "0.1.0", path = "../effect-runtime", optional = true }
