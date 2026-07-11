@@ -49,9 +49,13 @@ pub use candidate::{
 pub use error::ClaimLedgerError;
 pub use ids::{normalize_text, sha256_bytes, sha256_text, stable_id, ulid};
 pub use ledger::{
-    compute_entry_digest, entry_digest_preimage, parse_ledger_entries, serialize_entry,
-    verify_ledger, ExpectedLedgerHead, LedgerEntry, LedgerEntryBuilder, LedgerEvent,
-    LedgerVerification,
+    compact_ledger, compact_ledger_from_snapshot, compute_entry_digest, compute_snapshot_digest,
+    entry_digest_preimage, parse_ledger_entries, serialize_entry, verify_compaction, verify_ledger,
+    verify_ledger_tail, verify_snapshot, CompactedLedger, CompactionPolicy, CompactionReceipt,
+    ExpectedLedgerHead, LedgerEntry, LedgerEntryBuilder, LedgerEvent, LedgerSnapshot,
+    LedgerVerification, SnapshotClaim, SnapshotClaimSupport, SnapshotContentClaimLink,
+    SnapshotContradictionState, SnapshotFactClaimLink, SnapshotSupportJudgment,
+    UnprojectableEventPolicy,
 };
 pub use receipt::{
     ContradictionResolutionReceipt, ExportReceipt, LedgerAppendReceipt, SupersessionReceipt,

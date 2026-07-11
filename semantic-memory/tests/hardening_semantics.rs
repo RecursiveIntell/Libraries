@@ -288,10 +288,7 @@ async fn graph_traversal_respects_node_budget() {
     // We should see 600 namespace->fact edges plus some semantic edges from
     // the <= 500 expanded facts, but the key invariant is we don't hang.
     // The test verifies the traversal terminates in reasonable time.
-    assert!(
-        !edges.is_empty(),
-        "expected non-empty edges from 600 facts"
-    );
+    assert!(!edges.is_empty(), "expected non-empty edges from 600 facts");
     // At least the namespace->fact edges should be present (from hop 1).
     let ns_edges: Vec<_> = edges
         .iter()
@@ -332,12 +329,7 @@ async fn graph_semantic_candidates_uses_sql_limit() {
     // well under 100.
     let semantic_count = edges
         .iter()
-        .filter(|e| {
-            matches!(
-                e.edge_type,
-                semantic_memory::GraphEdgeType::Semantic { .. }
-            )
-        })
+        .filter(|e| matches!(e.edge_type, semantic_memory::GraphEdgeType::Semantic { .. }))
         .count();
     assert!(
         semantic_count <= 5,

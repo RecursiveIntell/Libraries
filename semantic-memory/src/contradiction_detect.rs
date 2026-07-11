@@ -319,9 +319,15 @@ pub fn detect_contradictions(
     let mut out = Vec::new();
     for i in 0..items.len() {
         for j in (i + 1)..items.len() {
-            if let Some(pair) =
-                evaluate_pair(&items[i].0, &items[i].1, &items[j].0, &items[j].1, cfg, None, None)
-            {
+            if let Some(pair) = evaluate_pair(
+                &items[i].0,
+                &items[i].1,
+                &items[j].0,
+                &items[j].1,
+                cfg,
+                None,
+                None,
+            ) {
                 out.push(pair);
             }
         }
@@ -550,7 +556,11 @@ mod tests {
         let emb_b = vec![0.79, 0.1, 0.1];
         let items = vec![
             ("a".to_string(), "The server is fast.".to_string(), emb_a),
-            ("b".to_string(), "The server is reliable.".to_string(), emb_b),
+            (
+                "b".to_string(),
+                "The server is reliable.".to_string(),
+                emb_b,
+            ),
         ];
         let cfg = DetectorConfig {
             use_embeddings: true,

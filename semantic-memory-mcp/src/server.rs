@@ -39,6 +39,7 @@ use crate::tools::{
 #[cfg(feature = "claim-integration")]
 #[derive(Default)]
 struct ClaimTrustIndex {
+    enabled: bool,
     fact_to_claim: HashMap<String, String>,
     claim_support: HashMap<String, claim_ledger::SupportState>,
     /// Reverse index from a claim's normalized content to its claim id, used
@@ -56,6 +57,28 @@ struct ClaimTrustIndex {
 
 #[cfg(feature = "claim-integration")]
 impl ClaimTrustIndex {
+    fn load_snapshot(&mut self, snapshot: &claim_ledger::LedgerSnapshot) {
+        self.fact_to_claim.clear();
+        self.claim_support.clear();
+        self.content_to_claim.clear();
+        self.trigram_index.clear();
+        for link in &snapshot.content_to_claim_links {
+            self.register_claim(link.claim_id.clone(), link.normalized_claim.clone());
+        }
+        for link in &snapshot.fact_to_claim_links {
+            self.link_fact(link.fact_id.clone(), link.claim_id.clone());
+        }
+        for support in &snapshot.claim_support {
+            self.record_judgment(support.claim_id.clone(), support.support_state);
+        }
+        self.last_processed_sequence = snapshot.last_compacted_sequence;
+        self.enabled = true;
+    }
+
+    fn disable(&mut self) {
+        *self = Self::default();
+    }
+
     /// Fold a single ledger entry into the index. The ledger is the source
     /// of truth; this is the sole code path (used both at startup replay and
     /// at write time) that projects `ClaimAdded`, `SupportJudgment`, and
@@ -159,6 +182,9 @@ impl ClaimTrustIndex {
     /// claims, falling back to an exact normalized-text match. No-op if the
     /// fact is already linked or no candidate reaches the similarity bar.
     fn auto_link_content(&mut self, bare_fact_id: &str, content: &str) -> Option<String> {
+        if !self.enabled {
+            return None;
+        }
         if self.fact_to_claim.contains_key(bare_fact_id) {
             return None;
         }
@@ -203,6 +229,9 @@ impl ClaimTrustIndex {
     }
 
     fn trust_for_fact(&self, bare_fact_id: &str) -> String {
+        if !self.enabled {
+            return "trust_enrichment_disabled".to_string();
+        }
         let Some(claim_id) = self.fact_to_claim.get(bare_fact_id) else {
             return "persisted_unjudged".to_string();
         };
@@ -220,6 +249,9 @@ impl ClaimTrustIndex {
         &self,
         bare_fact_id: &str,
     ) -> Option<(String, Option<claim_ledger::SupportState>)> {
+        if !self.enabled {
+            return None;
+        }
         let claim_id = self.fact_to_claim.get(bare_fact_id)?;
         Some((claim_id.clone(), self.claim_support.get(claim_id).copied()))
     }
@@ -244,59 +276,192 @@ fn proof_debts_for_support_state(
     }
 }
 
-/// Append-only, hash-chained store for claim-ledger entries. Backed by a
-/// JSONL file under the memory dir; loaded on startup and appended to as
-/// entries are recorded. The in-memory `entries` vec mirrors the file and is
-/// the source for computing the next hash-chain link — the file itself is
-/// the durable record.
+#[cfg(feature = "claim-integration")]
+#[derive(serde::Serialize, serde::Deserialize)]
+struct ClaimLedgerManifest {
+    format_version: String,
+    generation: String,
+    snapshot_path: String,
+    tail_path: String,
+    receipt_path: String,
+}
+
+#[cfg(feature = "claim-integration")]
+struct ClaimLedgerCompactionConfig {
+    dry_run: bool,
+    max_entries: usize,
+    max_bytes: u64,
+    retain_tail_entries: usize,
+    max_backups: usize,
+}
+
+/// Hash-chained claim-ledger store. Before the first compaction `path` is the
+/// legacy JSONL file. Afterwards an atomically replaced manifest selects one
+/// verified snapshot/retained-tail generation; the snapshot is a checkpoint,
+/// never an independent source of truth.
 #[cfg(feature = "claim-integration")]
 struct ClaimLedgerStore {
     entries: Vec<claim_ledger::LedgerEntry>,
     path: std::path::PathBuf,
+    legacy_path: std::path::PathBuf,
+    snapshot: Option<claim_ledger::LedgerSnapshot>,
+    receipt: Option<claim_ledger::CompactionReceipt>,
+    trust_enabled: bool,
 }
 
 #[cfg(feature = "claim-integration")]
 impl ClaimLedgerStore {
     fn open(path: std::path::PathBuf) -> Self {
-        let entries = std::fs::read_to_string(&path)
-            .ok()
-            .and_then(|contents| claim_ledger::parse_ledger_entries(&contents).ok())
-            .unwrap_or_default();
+        match Self::open_verified(&path) {
+            Ok(store) => store,
+            Err(error) => {
+                tracing::error!(error = %error, "CRITICAL: claim ledger verification failed; trust enrichment disabled");
+                Self {
+                    entries: Vec::new(),
+                    path: path.clone(),
+                    legacy_path: path,
+                    snapshot: None,
+                    receipt: None,
+                    trust_enabled: false,
+                }
+            }
+        }
+    }
 
+    fn open_verified(legacy_path: &std::path::Path) -> Result<Self, String> {
+        let memory_dir = legacy_path
+            .parent()
+            .ok_or("claim ledger has no parent directory")?;
+        let manifest_path = memory_dir.join("claim_ledger.active_compaction.json");
+        if manifest_path.exists() {
+            let manifest: ClaimLedgerManifest = serde_json::from_slice(
+                &std::fs::read(&manifest_path)
+                    .map_err(|e| format!("failed to read compaction manifest: {e}"))?,
+            )
+            .map_err(|e| format!("invalid compaction manifest: {e}"))?;
+            if manifest.format_version != "claim-ledger.active-compaction.v1" {
+                return Err(format!(
+                    "unsupported compaction manifest format {}",
+                    manifest.format_version
+                ));
+            }
+            let snapshot_path = Self::resolve_relative(memory_dir, &manifest.snapshot_path)?;
+            let tail_path = Self::resolve_relative(memory_dir, &manifest.tail_path)?;
+            let receipt_path = Self::resolve_relative(memory_dir, &manifest.receipt_path)?;
+            let snapshot: claim_ledger::LedgerSnapshot = serde_json::from_slice(
+                &std::fs::read(&snapshot_path)
+                    .map_err(|e| format!("failed to read ledger snapshot: {e}"))?,
+            )
+            .map_err(|e| format!("invalid ledger snapshot: {e}"))?;
+            let receipt: claim_ledger::CompactionReceipt = serde_json::from_slice(
+                &std::fs::read(&receipt_path)
+                    .map_err(|e| format!("failed to read compaction receipt: {e}"))?,
+            )
+            .map_err(|e| format!("invalid compaction receipt: {e}"))?;
+            let tail_contents = std::fs::read_to_string(&tail_path)
+                .map_err(|e| format!("failed to read retained ledger tail: {e}"))?;
+            let entries = claim_ledger::parse_ledger_entries(&tail_contents)
+                .map_err(|e| format!("invalid retained ledger tail: {e}"))?;
+            let verification = claim_ledger::verify_compaction(&snapshot, &entries, &receipt)
+                .map_err(|e| e.to_string())?;
+            tracing::info!(
+                generation = %manifest.generation,
+                entries = verification.last_sequence,
+                "claim ledger snapshot and retained tail verified"
+            );
+            return Ok(Self {
+                entries,
+                path: tail_path,
+                legacy_path: legacy_path.to_path_buf(),
+                snapshot: Some(snapshot),
+                receipt: Some(receipt),
+                trust_enabled: true,
+            });
+        }
+
+        let contents = match std::fs::read_to_string(legacy_path) {
+            Ok(contents) => contents,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => String::new(),
+            Err(error) => return Err(format!("failed to read claim ledger: {error}")),
+        };
+        let entries = claim_ledger::parse_ledger_entries(&contents)
+            .map_err(|e| format!("invalid claim ledger: {e}"))?;
         let expected_head = match entries.last() {
             None => claim_ledger::ExpectedLedgerHead::Empty,
             Some(last) => claim_ledger::ExpectedLedgerHead::Entry {
-                sequence: entries.len() as u64,
+                sequence: last.sequence,
                 entry_digest: last.entry_digest.clone(),
             },
         };
-        match claim_ledger::verify_ledger(&entries, &expected_head) {
-            Ok(verification) => {
-                tracing::info!(entries = verification.last_sequence, "ledger verified");
-            }
-            Err(e) => {
-                tracing::error!(error = %e, "LEDGER CORRUPT");
-                return Self {
-                    entries: Vec::new(),
-                    path,
-                };
-            }
-        }
+        let verification =
+            claim_ledger::verify_ledger(&entries, &expected_head).map_err(|e| e.to_string())?;
+        tracing::info!(
+            entries = verification.last_sequence,
+            "claim ledger verified"
+        );
+        Ok(Self {
+            entries,
+            path: legacy_path.to_path_buf(),
+            legacy_path: legacy_path.to_path_buf(),
+            snapshot: None,
+            receipt: None,
+            trust_enabled: true,
+        })
+    }
 
-        Self { entries, path }
+    fn resolve_relative(
+        base: &std::path::Path,
+        relative: &str,
+    ) -> Result<std::path::PathBuf, String> {
+        let path = std::path::Path::new(relative);
+        if path.is_absolute()
+            || path.components().any(|component| {
+                !matches!(
+                    component,
+                    std::path::Component::Normal(_) | std::path::Component::CurDir
+                )
+            })
+        {
+            return Err(format!("unsafe path in compaction manifest: {relative}"));
+        }
+        Ok(base.join(path))
     }
 
     fn next_sequence(&self) -> u64 {
-        self.entries.len() as u64 + 1
+        self.entries
+            .last()
+            .map(|entry| entry.sequence)
+            .or_else(|| {
+                self.snapshot
+                    .as_ref()
+                    .map(|snapshot| snapshot.last_compacted_sequence)
+            })
+            .unwrap_or(0)
+            .saturating_add(1)
     }
 
     fn last_digest(&self) -> Option<String> {
-        self.entries.last().map(|e| e.entry_digest.clone())
+        self.entries
+            .last()
+            .map(|entry| entry.entry_digest.clone())
+            .or_else(|| {
+                self.snapshot
+                    .as_ref()
+                    .and_then(|snapshot| snapshot.last_compacted_entry_digest.clone())
+            })
     }
 
     /// Append a new entry to the in-memory chain and the backing file.
     /// Returns the entry's digest on success.
     fn append(&mut self, entry: claim_ledger::LedgerEntry) -> Result<String, String> {
+        if !self.trust_enabled {
+            return Err("claim ledger is disabled after verification failure".into());
+        }
+        if entry.sequence != self.next_sequence()
+            || entry.previous_entry_digest != self.last_digest()
+        {
+            return Err("claim ledger append does not continue the verified head".into());
+        }
         let line = claim_ledger::serialize_entry(&entry).map_err(|e| e.to_string())?;
         use std::io::Write;
         let mut file = std::fs::OpenOptions::new()
@@ -305,9 +470,205 @@ impl ClaimLedgerStore {
             .open(&self.path)
             .map_err(|e| format!("failed to open claim ledger file: {e}"))?;
         writeln!(file, "{line}").map_err(|e| format!("failed to write claim ledger entry: {e}"))?;
+        file.sync_data()
+            .map_err(|e| format!("failed to fsync claim ledger entry: {e}"))?;
         let digest = entry.entry_digest.clone();
         self.entries.push(entry);
         Ok(digest)
+    }
+
+    fn compact(
+        &mut self,
+        config: ClaimLedgerCompactionConfig,
+    ) -> Result<serde_json::Value, String> {
+        if !self.trust_enabled {
+            return Err("claim ledger trust is disabled; refusing compaction".into());
+        }
+        let current_bytes = std::fs::metadata(&self.path)
+            .map(|metadata| metadata.len())
+            .unwrap_or(0);
+        let threshold_exceeded =
+            self.entries.len() > config.max_entries || current_bytes > config.max_bytes;
+        if !threshold_exceeded {
+            return Ok(serde_json::json!({
+                "ok": true,
+                "dry_run": config.dry_run,
+                "compacted": false,
+                "reason": "threshold_not_exceeded",
+                "entries": self.entries.len(),
+                "bytes": current_bytes,
+                "max_entries": config.max_entries,
+                "max_bytes": config.max_bytes,
+            }));
+        }
+
+        let compacted = claim_ledger::compact_ledger_from_snapshot(
+            self.snapshot.as_ref(),
+            &self.entries,
+            &claim_ledger::CompactionPolicy {
+                retain_tail_entries: config.retain_tail_entries,
+                unprojectable_events: claim_ledger::UnprojectableEventPolicy::Retain,
+            },
+        )
+        .map_err(|e| e.to_string())?;
+        let compacted_entries = self
+            .entries
+            .len()
+            .saturating_sub(compacted.retained_tail.len());
+        let result = serde_json::json!({
+            "ok": true,
+            "dry_run": config.dry_run,
+            "compacted": !config.dry_run && compacted_entries > 0,
+            "entries_before": self.entries.len(),
+            "bytes_before": current_bytes,
+            "entries_checkpointed": compacted_entries,
+            "retained_tail_entries": compacted.retained_tail.len(),
+            "snapshot_sequence": compacted.snapshot.last_compacted_sequence,
+            "snapshot_digest": compacted.snapshot.snapshot_digest,
+            "receipt": compacted.receipt,
+        });
+        if config.dry_run || compacted_entries == 0 {
+            return Ok(result);
+        }
+
+        let memory_dir = self
+            .legacy_path
+            .parent()
+            .ok_or("claim ledger has no parent directory")?;
+        let generation = compacted.receipt.receipt_digest[..16].to_string();
+        let generations_dir = memory_dir.join("claim_ledger_generations");
+        std::fs::create_dir_all(&generations_dir)
+            .map_err(|e| format!("failed to create ledger generation directory: {e}"))?;
+        let final_dir = generations_dir.join(&generation);
+        let temp_dir = generations_dir.join(format!(".tmp-{generation}"));
+        if temp_dir.exists() {
+            std::fs::remove_dir_all(&temp_dir)
+                .map_err(|e| format!("failed to clear stale compaction temp directory: {e}"))?;
+        }
+        std::fs::create_dir(&temp_dir)
+            .map_err(|e| format!("failed to create compaction temp directory: {e}"))?;
+
+        let snapshot_bytes = serde_json::to_vec_pretty(&compacted.snapshot)
+            .map_err(|e| format!("failed to serialize ledger snapshot: {e}"))?;
+        let receipt_bytes = serde_json::to_vec_pretty(&compacted.receipt)
+            .map_err(|e| format!("failed to serialize compaction receipt: {e}"))?;
+        let mut tail_bytes = Vec::new();
+        for entry in &compacted.retained_tail {
+            tail_bytes.extend_from_slice(
+                claim_ledger::serialize_entry(entry)
+                    .map_err(|e| e.to_string())?
+                    .as_bytes(),
+            );
+            tail_bytes.push(b'\n');
+        }
+        Self::write_synced(&temp_dir.join("snapshot.json"), &snapshot_bytes)?;
+        Self::write_synced(&temp_dir.join("tail.jsonl"), &tail_bytes)?;
+        Self::write_synced(&temp_dir.join("receipt.json"), &receipt_bytes)?;
+        Self::sync_directory(&temp_dir)?;
+        std::fs::rename(&temp_dir, &final_dir)
+            .map_err(|e| format!("failed to publish ledger generation: {e}"))?;
+        Self::sync_directory(&generations_dir)?;
+
+        let manifest = ClaimLedgerManifest {
+            format_version: "claim-ledger.active-compaction.v1".into(),
+            generation: generation.clone(),
+            snapshot_path: format!("claim_ledger_generations/{generation}/snapshot.json"),
+            tail_path: format!("claim_ledger_generations/{generation}/tail.jsonl"),
+            receipt_path: format!("claim_ledger_generations/{generation}/receipt.json"),
+        };
+        let manifest_bytes = serde_json::to_vec_pretty(&manifest)
+            .map_err(|e| format!("failed to serialize compaction manifest: {e}"))?;
+        let manifest_path = memory_dir.join("claim_ledger.active_compaction.json");
+        let manifest_temp = memory_dir.join(format!(".claim_ledger.manifest.{generation}.tmp"));
+        Self::write_synced(&manifest_temp, &manifest_bytes)?;
+        std::fs::rename(&manifest_temp, &manifest_path)
+            .map_err(|e| format!("failed to atomically activate compaction: {e}"))?;
+        Self::sync_directory(memory_dir)?;
+
+        let previous_path = self.path.clone();
+        self.path = final_dir.join("tail.jsonl");
+        self.entries = compacted.retained_tail;
+        self.snapshot = Some(compacted.snapshot);
+        self.receipt = Some(compacted.receipt);
+
+        if previous_path == self.legacy_path && previous_path.exists() {
+            let backups_dir = memory_dir.join("claim_ledger_backups");
+            if std::fs::create_dir_all(&backups_dir).is_ok() {
+                let backup_path = backups_dir.join(format!("{generation}-pre-compaction.jsonl"));
+                if let Err(error) = std::fs::rename(&previous_path, &backup_path) {
+                    tracing::error!(error = %error, "failed to rotate legacy claim ledger backup");
+                }
+            }
+        }
+        Self::rotate_backups(memory_dir, &generation, config.max_backups);
+        Ok(result)
+    }
+
+    fn write_synced(path: &std::path::Path, bytes: &[u8]) -> Result<(), String> {
+        use std::io::Write;
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(path)
+            .map_err(|e| format!("failed to create {}: {e}", path.display()))?;
+        file.write_all(bytes)
+            .map_err(|e| format!("failed to write {}: {e}", path.display()))?;
+        file.sync_all()
+            .map_err(|e| format!("failed to fsync {}: {e}", path.display()))
+    }
+
+    fn sync_directory(path: &std::path::Path) -> Result<(), String> {
+        std::fs::File::open(path)
+            .and_then(|directory| directory.sync_all())
+            .map_err(|e| format!("failed to fsync directory {}: {e}", path.display()))
+    }
+
+    fn rotate_backups(memory_dir: &std::path::Path, active: &str, max_backups: usize) {
+        let generations_dir = memory_dir.join("claim_ledger_generations");
+        let mut generations: Vec<_> = std::fs::read_dir(&generations_dir)
+            .into_iter()
+            .flatten()
+            .flatten()
+            .filter(|entry| entry.file_type().map(|kind| kind.is_dir()).unwrap_or(false))
+            .filter(|entry| entry.file_name() != active)
+            .collect();
+        generations.sort_by_key(|entry| {
+            entry
+                .metadata()
+                .and_then(|metadata| metadata.modified())
+                .unwrap_or(std::time::SystemTime::UNIX_EPOCH)
+        });
+        let remove_count = generations.len().saturating_sub(max_backups);
+        for entry in generations.into_iter().take(remove_count) {
+            if let Err(error) = std::fs::remove_dir_all(entry.path()) {
+                tracing::error!(error = %error, "failed to remove old claim-ledger generation");
+            }
+        }
+
+        let backups_dir = memory_dir.join("claim_ledger_backups");
+        let mut backups: Vec<_> = std::fs::read_dir(&backups_dir)
+            .into_iter()
+            .flatten()
+            .flatten()
+            .filter(|entry| {
+                entry
+                    .file_type()
+                    .map(|kind| kind.is_file())
+                    .unwrap_or(false)
+            })
+            .collect();
+        backups.sort_by_key(|entry| {
+            entry
+                .metadata()
+                .and_then(|metadata| metadata.modified())
+                .unwrap_or(std::time::SystemTime::UNIX_EPOCH)
+        });
+        let remove_count = backups.len().saturating_sub(max_backups);
+        for entry in backups.into_iter().take(remove_count) {
+            if let Err(error) = std::fs::remove_file(entry.path()) {
+                tracing::error!(error = %error, "failed to remove old claim-ledger backup");
+            }
+        }
     }
 }
 
@@ -411,7 +772,15 @@ impl SemanticMemoryServer {
         #[cfg(feature = "claim-integration")]
         let mut claim_trust = ClaimTrustIndex::default();
         #[cfg(feature = "claim-integration")]
-        claim_trust.rebuild_from_ledger_incremental(&claim_ledger_store.entries);
+        if claim_ledger_store.trust_enabled {
+            claim_trust.enabled = true;
+            if let Some(snapshot) = &claim_ledger_store.snapshot {
+                claim_trust.load_snapshot(snapshot);
+            }
+            claim_trust.rebuild_from_ledger_incremental(&claim_ledger_store.entries);
+        } else {
+            claim_trust.disable();
+        }
 
         Self {
             bridge: Arc::new(bridge),
@@ -1174,32 +1543,32 @@ impl SemanticMemoryServer {
             use semantic_memory::factor_graph::{
                 factors_from_edges, FactorGraph, FactorGraphConfig,
             };
-            let edge_tuples = load_neighborhood_factor_edges(&self.bridge.store, &[]);
-            if !edge_tuples.is_empty() {
-                let result_ids: Vec<String> = results
+            let result_nodes: Vec<(String, f64)> = results
+                .iter()
+                .filter_map(|result| {
+                    let id = result
+                        .get("memory_id")
+                        .and_then(|value| value.as_str())?
+                        .to_string();
+                    let score = result
+                        .get("score")
+                        .and_then(|value| value.as_f64())
+                        .unwrap_or(0.5);
+                    Some((id, score))
+                })
+                .collect();
+            if !result_nodes.is_empty() {
+                let seed_ids: Vec<String> = result_nodes
                     .iter()
-                    .filter_map(|r| {
-                        r.get("memory_id")
-                            .and_then(|v| v.as_str())
-                            .map(String::from)
-                    })
+                    .map(|(item_id, _)| item_id.clone())
                     .collect();
-                if !result_ids.is_empty() {
-                    let mut fg = FactorGraph::new(FactorGraphConfig::default());
-                    for id in &result_ids {
-                        let score = results
-                            .iter()
-                            .find(|r| r.get("memory_id").and_then(|v| v.as_str()) == Some(id))
-                            .and_then(|r| r.get("score").and_then(|v| v.as_f64()))
-                            .unwrap_or(0.5);
-                        fg.add_node(id.clone(), score);
-                    }
+                let edge_tuples = load_neighborhood_factor_edges(&self.bridge.store, &seed_ids)?;
+                if !edge_tuples.is_empty() {
                     let factors = factors_from_edges(&edge_tuples);
-                    for factor in factors {
-                        let _ = fg.add_factor(factor);
-                    }
-                    let result_beliefs = fg.propagate();
-                    let reranked = result_beliefs.top_k(result_ids.len());
+                    let factor_graph =
+                        FactorGraph::new(&result_nodes, factors, FactorGraphConfig::default());
+                    let result_beliefs = factor_graph.propagate();
+                    let reranked = result_beliefs.top_k(result_nodes.len());
                     // Reorder results by factor graph beliefs (higher = better).
                     results.sort_by(|a, b| {
                         let a_id = a.get("memory_id").and_then(|v| v.as_str()).unwrap_or("");
@@ -4065,6 +4434,45 @@ impl SemanticMemoryServer {
 
     #[cfg(feature = "claim-integration")]
     #[tool(
+        description = "Verify and checkpoint the claim ledger when configured entry/byte thresholds are exceeded. Defaults to dry_run=true. A successful rotation atomically activates a digest-verified snapshot and retained tail, emits a compaction receipt bound to the prior ledger head, and keeps bounded backups.",
+        annotations(read_only_hint = false, destructive_hint = true)
+    )]
+    fn sm_compact_claim_ledger(
+        &self,
+        Parameters(CompactClaimLedgerParams {
+            dry_run,
+            max_entries,
+            max_bytes,
+            retain_tail_entries,
+            max_backups,
+        }): Parameters<CompactClaimLedgerParams>,
+    ) -> Result<String, ErrorData> {
+        let mut ledger = self.claim_ledger_store.lock().unwrap();
+        let result = ledger
+            .compact(ClaimLedgerCompactionConfig {
+                dry_run: dry_run.unwrap_or(true),
+                max_entries: max_entries.unwrap_or(10_000),
+                max_bytes: max_bytes.unwrap_or(16 * 1024 * 1024),
+                retain_tail_entries: retain_tail_entries.unwrap_or(256),
+                max_backups: max_backups.unwrap_or(3),
+            })
+            .map_err(|error| ErrorData::internal_error(error, None))?;
+        if result["compacted"].as_bool().unwrap_or(false) {
+            let mut index = self.claim_trust.lock().unwrap();
+            index.disable();
+            if ledger.trust_enabled {
+                index.enabled = true;
+                if let Some(snapshot) = &ledger.snapshot {
+                    index.load_snapshot(snapshot);
+                }
+                index.rebuild_from_ledger_incremental(&ledger.entries);
+            }
+        }
+        json_to_string(&result)
+    }
+
+    #[cfg(feature = "claim-integration")]
+    #[tool(
         description = "Create a typed Claim from a semantic-memory fact. The claim gets a source-spanned provenance record from the fact's metadata. Returns the claim ID.",
         annotations(read_only_hint = false, idempotent_hint = true)
     )]
@@ -6090,6 +6498,159 @@ mod correctness_contract_tests {
         let replay: serde_json::Value = serde_json::from_str(&replay).unwrap();
         assert_eq!(replay["result_ids_match"], true);
         assert_eq!(replay["query_embedding_digest_matches"], true);
+    }
+
+    #[cfg(feature = "claim-integration")]
+    fn claim_test_entries() -> Vec<claim_ledger::LedgerEntry> {
+        let first = claim_ledger::LedgerEntryBuilder::new(1, None)
+            .add_claim(
+                "claim-1",
+                "semantic-memory:fact:fact-1",
+                "full",
+                "verified claim",
+            )
+            .unwrap();
+        let second = claim_ledger::LedgerEntryBuilder::new(2, Some(first.entry_digest.clone()))
+            .add_support_judgment(
+                "judgment-1",
+                "claim-1",
+                "bundle-1",
+                claim_ledger::SupportState::Supported,
+                "test",
+            )
+            .unwrap();
+        vec![first, second]
+    }
+
+    #[cfg(feature = "claim-integration")]
+    fn write_claim_jsonl(path: &std::path::Path, entries: &[claim_ledger::LedgerEntry]) {
+        let mut contents = String::new();
+        for entry in entries {
+            contents.push_str(&claim_ledger::serialize_entry(entry).unwrap());
+            contents.push('\n');
+        }
+        std::fs::write(path, contents).unwrap();
+    }
+
+    #[cfg(feature = "claim-integration")]
+    #[test]
+    fn claim_ledger_startup_rebuilds_from_verified_snapshot_and_tail() {
+        let dir = tempfile::tempdir().unwrap();
+        let legacy = dir.path().join("claim_ledger.jsonl");
+        let entries = claim_test_entries();
+        write_claim_jsonl(&legacy, &entries);
+        let mut store = ClaimLedgerStore::open(legacy.clone());
+        let result = store
+            .compact(ClaimLedgerCompactionConfig {
+                dry_run: false,
+                max_entries: 0,
+                max_bytes: 0,
+                retain_tail_entries: 1,
+                max_backups: 2,
+            })
+            .unwrap();
+        assert_eq!(result["compacted"], true);
+
+        let reopened = ClaimLedgerStore::open(legacy);
+        assert!(reopened.trust_enabled);
+        assert!(reopened.snapshot.is_some());
+        assert_eq!(reopened.entries.len(), 1);
+        let mut index = ClaimTrustIndex::default();
+        index.load_snapshot(reopened.snapshot.as_ref().unwrap());
+        index.rebuild_from_ledger_incremental(&reopened.entries);
+        assert_eq!(index.trust_for_fact("fact-1"), "supported");
+        assert_eq!(index.last_processed_sequence, 2);
+    }
+
+    #[cfg(feature = "claim-integration")]
+    #[test]
+    fn interrupted_compaction_files_leave_old_ledger_usable() {
+        let dir = tempfile::tempdir().unwrap();
+        let legacy = dir.path().join("claim_ledger.jsonl");
+        let entries = claim_test_entries();
+        write_claim_jsonl(&legacy, &entries);
+        let interrupted = dir.path().join("claim_ledger_generations/.tmp-interrupted");
+        std::fs::create_dir_all(&interrupted).unwrap();
+        std::fs::write(interrupted.join("snapshot.json"), b"incomplete").unwrap();
+
+        let reopened = ClaimLedgerStore::open(legacy);
+        assert!(reopened.trust_enabled);
+        assert!(reopened.snapshot.is_none());
+        assert_eq!(reopened.entries.len(), entries.len());
+    }
+
+    #[cfg(feature = "claim-integration")]
+    #[test]
+    fn tampered_active_snapshot_disables_claim_trust() {
+        let dir = tempfile::tempdir().unwrap();
+        let legacy = dir.path().join("claim_ledger.jsonl");
+        write_claim_jsonl(&legacy, &claim_test_entries());
+        let mut store = ClaimLedgerStore::open(legacy.clone());
+        store
+            .compact(ClaimLedgerCompactionConfig {
+                dry_run: false,
+                max_entries: 0,
+                max_bytes: 0,
+                retain_tail_entries: 1,
+                max_backups: 2,
+            })
+            .unwrap();
+        let snapshot_path = store.path.parent().unwrap().join("snapshot.json");
+        let mut snapshot: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&snapshot_path).unwrap()).unwrap();
+        snapshot["claims"][0]["normalized_claim"] = serde_json::json!("tampered");
+        std::fs::write(&snapshot_path, serde_json::to_vec(&snapshot).unwrap()).unwrap();
+
+        let reopened = ClaimLedgerStore::open(legacy);
+        assert!(!reopened.trust_enabled);
+        assert!(reopened.entries.is_empty());
+    }
+
+    #[cfg(feature = "claim-integration")]
+    #[test]
+    fn compact_claim_ledger_defaults_to_dry_run_without_writes() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = MemoryBridge::open(BridgeConfig {
+            memory_dir: dir.path().to_path_buf(),
+            embedder_backend: EmbedderBackend::Mock,
+            embedding_url: String::new(),
+            embedding_model: "mock".into(),
+            embedding_dims: 768,
+            turbo_quant_enabled: false,
+            turbo_quant_bits: None,
+            turbo_quant_projections: None,
+        })
+        .unwrap();
+        let server = SemanticMemoryServer::new(bridge, "full");
+        assert!(server.exposes_tool("sm_compact_claim_ledger"));
+        {
+            let mut store = server.claim_ledger_store.lock().unwrap();
+            for entry in claim_test_entries() {
+                store.append(entry).unwrap();
+            }
+        }
+        let before = std::fs::read(dir.path().join("claim_ledger.jsonl")).unwrap();
+        let response = server
+            .sm_compact_claim_ledger(Parameters(CompactClaimLedgerParams {
+                dry_run: None,
+                max_entries: Some(0),
+                max_bytes: Some(0),
+                retain_tail_entries: Some(1),
+                max_backups: Some(2),
+            }))
+            .unwrap();
+        let response: serde_json::Value = serde_json::from_str(&response).unwrap();
+        assert_eq!(response["dry_run"], true);
+        assert_eq!(response["compacted"], false);
+        assert_eq!(
+            before,
+            std::fs::read(dir.path().join("claim_ledger.jsonl")).unwrap()
+        );
+        assert!(!dir
+            .path()
+            .join("claim_ledger.active_compaction.json")
+            .exists());
+        assert!(!dir.path().join("claim_ledger_generations").exists());
     }
 }
 

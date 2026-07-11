@@ -355,6 +355,24 @@ pub struct VectorSearchReceiptV1 {
     pub returned_candidates: usize,
     /// Number of vector candidates remaining after SQL filters and exact rerank.
     pub post_filter_candidates: usize,
+    /// Whether a genuine sparse retrieval lane participated in fusion.
+    #[serde(default)]
+    pub sparse_enabled: bool,
+    /// Configured sparse RRF weight when the lane was enabled.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sparse_weight: Option<f64>,
+    /// Number of sparse query entries used for dot-product retrieval.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sparse_query_nonzero_count: Option<usize>,
+    /// Number of filtered sparse candidates admitted to fusion.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sparse_candidate_count: Option<usize>,
+    /// Sparse representation labels observed among admitted candidates.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sparse_representations: Vec<String>,
+    /// Per-result sparse ranks, allowing the third signal to be audited.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sparse_result_ranks: Vec<SparseRankReceiptV1>,
     /// Fallback path, if approximate retrieval degraded or was bypassed.
     pub fallback: Option<String>,
     /// Whether exact f32 rerank/reference scoring was used.
@@ -363,6 +381,15 @@ pub struct VectorSearchReceiptV1 {
     pub result_ids: Vec<String>,
     /// Degradation notes visible to explain/audit paths.
     pub degradations: Vec<String>,
+}
+
+/// Inspectable sparse rank recorded in a durable search receipt.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SparseRankReceiptV1 {
+    /// Canonical result ID.
+    pub result_id: String,
+    /// One-based sparse rank.
+    pub rank: usize,
 }
 
 /// Stable generation-level manifest for derived vector acceleration artifacts.
@@ -581,6 +608,12 @@ impl VectorSearchReceiptV1 {
         ));
         if self.exact_rerank {
             why_results_appeared.push("final vector ordering used exact f32 scoring".to_string());
+        }
+        if self.sparse_enabled {
+            why_results_appeared.push(format!(
+                "sparse dot-product retrieval admitted {} candidates",
+                self.sparse_candidate_count.unwrap_or(0)
+            ));
         }
         if let Some(fallback) = &self.fallback {
             why_results_appeared.push(format!("fallback path '{}' was used", fallback));
@@ -1218,12 +1251,18 @@ pub struct ScoreBreakdown {
     pub bm25_score: Option<f64>,
     /// Raw vector similarity used for the final vector ordering.
     pub vector_score: Option<f64>,
+    /// Raw sparse dot-product score used for sparse ordering.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sparse_score: Option<f64>,
     /// Recency contribution added during fusion.
     pub recency_score: Option<f64>,
     /// BM25 rank (1-based).
     pub bm25_rank: Option<usize>,
     /// Vector rank (1-based).
     pub vector_rank: Option<usize>,
+    /// Sparse rank (1-based).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sparse_rank: Option<usize>,
     /// Rank from the underlying vector retrieval source before any exact rerank.
     pub vector_source_rank: Option<usize>,
     /// Similarity score from the underlying vector retrieval source before rerank.
@@ -1232,12 +1271,18 @@ pub struct ScoreBreakdown {
     pub bm25_contribution: Option<f64>,
     /// Vector RRF contribution to the final score.
     pub vector_contribution: Option<f64>,
+    /// Sparse RRF contribution to the final score.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sparse_contribution: Option<f64>,
     /// Whether the vector ordering was reranked with exact f32 cosine similarity.
     pub vector_reranked_from_f32: bool,
     /// Configured BM25 fusion weight.
     pub bm25_weight: f64,
     /// Configured vector fusion weight.
     pub vector_weight: f64,
+    /// Configured sparse fusion weight.
+    #[serde(default)]
+    pub sparse_weight: f64,
     /// Configured recency weight when recency is enabled.
     pub recency_weight: Option<f64>,
     /// Configured RRF decay constant.
@@ -1289,6 +1334,9 @@ impl ExplainedResult {
         }
         if let Some(rank) = self.breakdown.vector_rank {
             why_this_result.push(format!("vector match rank {rank} contributed to fusion"));
+        }
+        if let Some(rank) = self.breakdown.sparse_rank {
+            why_this_result.push(format!("sparse match rank {rank} contributed to fusion"));
         }
         if recency_applied {
             why_this_result.push("recency contributed to the fused score".to_string());

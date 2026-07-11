@@ -609,6 +609,26 @@ pub struct JudgeSupportParams {
     pub rationale: Option<String>,
 }
 
+/// Parameters for sm_compact_claim_ledger.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CompactClaimLedgerParams {
+    /// Preview the verified compaction without writing. Defaults to true.
+    #[serde(default)]
+    pub dry_run: Option<bool>,
+    /// Compact only when the active tail exceeds this entry count (default 10,000).
+    #[serde(default)]
+    pub max_entries: Option<usize>,
+    /// Compact only when the active tail exceeds this byte count (default 16 MiB).
+    #[serde(default)]
+    pub max_bytes: Option<u64>,
+    /// Minimum number of recent entries retained verbatim (default 256).
+    #[serde(default)]
+    pub retain_tail_entries: Option<usize>,
+    /// Number of prior verified generations/backups to retain (default 3).
+    #[serde(default)]
+    pub max_backups: Option<usize>,
+}
+
 /// Parameters for sm_search_proof_debt
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SearchProofDebtParams {

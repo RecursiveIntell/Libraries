@@ -284,7 +284,7 @@ pub use embedder::CandleEmbedder;
 pub use embedder::{
     BgeM3DeriveConfig, BgeM3Embedder, Embedder, MockEmbedder, MultiEmbedBatchFuture,
     MultiEmbedFuture, MultiFunctionEmbedder, MultiFunctionEmbedding, MultiVectorEmbedding,
-    OllamaEmbedder, SparseWeights,
+    OllamaEmbedder, OptionalMultiEmbedBatchFuture, OptionalMultiEmbedFuture, SparseWeights,
 };
 pub use error::MemoryError;
 #[cfg(feature = "hnsw")]
@@ -309,8 +309,8 @@ pub use types::{
     ProjectionRelationVersion, ProveKvPoolArtifactBuildReceiptV1, ProveKvPoolArtifactStatusV1,
     ProveKvPoolGenerationStatus, ProveKvPoolGenerationV1, ProveKvPoolItemMapEntryV1, ReceiptMode,
     ReplayMode, Role, ScoreBreakdown, SearchContext, SearchReceiptAnswersV1, SearchReplayReportV1,
-    SearchResponse, SearchResult, SearchSource, SearchSourceType, Session, TextChunk,
-    VectorArtifactBuildReceiptV1, VectorSearchReceiptV1, VerificationStatus,
+    SearchResponse, SearchResult, SearchSource, SearchSourceType, Session, SparseRankReceiptV1,
+    TextChunk, VectorArtifactBuildReceiptV1, VectorSearchReceiptV1, VerificationStatus,
 };
 pub use vector_backend::{VectorBackend, VectorHit, VectorIndex, VectorIndexConfig};
 #[cfg(feature = "turbo-quant-codec")]
@@ -1155,6 +1155,129 @@ impl MemoryStore {
         Ok(embedding)
     }
 
+    /// Embed text while retaining an embedder-provided sparse representation.
+    /// Dense-only derivation is possible only through the explicit search config.
+    async fn embed_text_with_sparse_internal(
+        &self,
+        text: &str,
+    ) -> Result<(Vec<f32>, Option<SparseWeights>, Option<String>), MemoryError> {
+        let _permit = self.with_embedding_permit().await?;
+        // Keep the established prefix used by embed_text_internal so enabling
+        // sparse persistence does not silently change dense embedding semantics.
+        let prefixed = format!("search_query: {text}");
+        if let Some(multi) = self.inner.embedder.embed_multi_optional(&prefixed).await? {
+            db::validate_embedding(&multi.dense, self.inner.config.embedding.dimensions)?;
+            if multi
+                .sparse
+                .entries
+                .iter()
+                .any(|(_, weight)| !weight.is_finite())
+            {
+                return Err(MemoryError::Other(
+                    "embedder returned non-finite sparse weights".to_string(),
+                ));
+            }
+            return Ok((
+                multi.dense,
+                Some(multi.sparse),
+                Some(if self.inner.embedder.model_name().contains("bge-m3") {
+                    "bge_m3_generated_sparse".to_string()
+                } else {
+                    "native_sparse".to_string()
+                }),
+            ));
+        }
+
+        let dense = self.inner.embedder.embed(&prefixed).await?;
+        db::validate_embedding(&dense, self.inner.config.embedding.dimensions)?;
+        if self.inner.config.search.derive_sparse_from_dense {
+            let sparse = SparseWeights::from_dense(
+                &dense,
+                self.inner.config.search.sparse_derive_top_k,
+                self.inner.config.search.sparse_derive_min_weight,
+            );
+            Ok((
+                dense,
+                Some(sparse),
+                Some("generic_dense_derived_sparse".to_string()),
+            ))
+        } else {
+            Ok((dense, None, None))
+        }
+    }
+
+    async fn embed_batch_with_sparse_internal(
+        &self,
+        texts: Vec<String>,
+    ) -> Result<Vec<(Vec<f32>, Option<SparseWeights>, Option<String>)>, MemoryError> {
+        let requested = texts.len();
+        let _permit = self.with_embedding_permit().await?;
+        let prefixed: Vec<String> = texts
+            .iter()
+            .map(|text| format!("search_document: {text}"))
+            .collect();
+        if let Some(multi) = self
+            .inner
+            .embedder
+            .embed_batch_multi_optional(prefixed.clone())
+            .await?
+        {
+            if multi.len() != requested {
+                return Err(MemoryError::EmbeddingBatchCountMismatch {
+                    requested,
+                    returned: multi.len(),
+                });
+            }
+            let representation = if self.inner.embedder.model_name().contains("bge-m3") {
+                "bge_m3_generated_sparse"
+            } else {
+                "native_sparse"
+            };
+            let mut output = Vec::with_capacity(requested);
+            for value in multi {
+                db::validate_embedding(&value.dense, self.inner.config.embedding.dimensions)?;
+                if value
+                    .sparse
+                    .entries
+                    .iter()
+                    .any(|(_, weight)| !weight.is_finite())
+                {
+                    return Err(MemoryError::Other(
+                        "embedder returned non-finite sparse weights".to_string(),
+                    ));
+                }
+                output.push((
+                    value.dense,
+                    Some(value.sparse),
+                    Some(representation.to_string()),
+                ));
+            }
+            return Ok(output);
+        }
+
+        let dense = self.inner.embedder.embed_batch(prefixed).await?;
+        db::validate_embedding_batch(&dense, requested, self.inner.config.embedding.dimensions)?;
+        Ok(dense
+            .into_iter()
+            .map(|dense| {
+                if self.inner.config.search.derive_sparse_from_dense {
+                    let sparse = SparseWeights::from_dense(
+                        &dense,
+                        self.inner.config.search.sparse_derive_top_k,
+                        self.inner.config.search.sparse_derive_min_weight,
+                    );
+                    (
+                        dense,
+                        Some(sparse),
+                        Some("generic_dense_derived_sparse".to_string()),
+                    )
+                } else {
+                    (dense, None, None)
+                }
+            })
+            .collect())
+    }
+
     async fn embed_batch_internal(&self, texts: Vec<String>) -> Result<Vec<Vec<f32>>, MemoryError> {
         let requested = texts.len();
 
@@ -1796,7 +1919,12 @@ impl MemoryStore {
             }
         }
 
-        let query_embedding = self.embed_text_internal(query).await?;
+        let (query_embedding, query_sparse) = if self.inner.config.search.sparse_weight > 0.0 {
+            let (dense, sparse, _) = self.embed_text_with_sparse_internal(query).await?;
+            (dense, sparse)
+        } else {
+            (self.embed_text_internal(query).await?, None)
+        };
 
         #[cfg(feature = "hnsw")]
         let hnsw_hits = if context.exactness_profile == ExactnessProfile::PreferExact
@@ -1843,6 +1971,7 @@ impl MemoryStore {
                             conn,
                             &q,
                             &query_embedding,
+                            query_sparse.as_ref(),
                             &config,
                             &context_owned,
                             k,
@@ -1855,6 +1984,7 @@ impl MemoryStore {
                             conn,
                             &q,
                             &query_embedding,
+                            query_sparse.as_ref(),
                             &config,
                             &context_owned,
                             k,
@@ -1888,6 +2018,7 @@ impl MemoryStore {
                         conn,
                         &q,
                         &query_embedding,
+                        query_sparse.as_ref(),
                         &config,
                         &context_owned,
                         k,
@@ -2260,7 +2391,12 @@ impl MemoryStore {
         let k = top_k
             .unwrap_or(self.inner.config.search.default_top_k)
             .min(MAX_TOP_K);
-        let query_embedding = self.embed_text_internal(query).await?;
+        let (query_embedding, query_sparse) = if self.inner.config.search.sparse_weight > 0.0 {
+            let (dense, sparse, _) = self.embed_text_with_sparse_internal(query).await?;
+            (dense, sparse)
+        } else {
+            (self.embed_text_internal(query).await?, None)
+        };
 
         #[cfg(feature = "hnsw")]
         let hnsw_hits = if context.exactness_profile == ExactnessProfile::PreferExact {
@@ -2299,6 +2435,7 @@ impl MemoryStore {
                             conn,
                             &q,
                             &query_embedding,
+                            query_sparse.as_ref(),
                             &config,
                             &context_owned,
                             k,
@@ -2311,6 +2448,7 @@ impl MemoryStore {
                             conn,
                             &q,
                             &query_embedding,
+                            query_sparse.as_ref(),
                             &config,
                             &context_owned,
                             k,
@@ -2338,6 +2476,7 @@ impl MemoryStore {
                         conn,
                         &q,
                         &query_embedding,
+                        query_sparse.as_ref(),
                         &config,
                         &context_owned,
                         k,
@@ -2689,28 +2828,31 @@ impl MemoryStore {
         let mut fact_count = 0usize;
         for batch in fact_contents.chunks(batch_size) {
             let texts: Vec<String> = batch.iter().map(|(_, c)| c.clone()).collect();
-            let embeddings = self.embed_batch_internal(texts).await?;
-            for embedding in &embeddings {
-                self.validate_embedding_dimensions(embedding)?;
-            }
+            let embeddings = self.embed_batch_with_sparse_internal(texts).await?;
 
             let quantizer = Quantizer::new(dims);
-            let updates: Vec<(String, Vec<u8>, Option<Vec<u8>>)> = batch
+            let updates: Vec<_> = batch
                 .iter()
                 .zip(embeddings.iter())
-                .map(|((id, _), emb)| {
+                .map(|((id, _), (emb, sparse, representation))| {
                     // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                     let q8 = quantizer
                         .quantize(emb)
                         .map(|qv| quantize::pack_quantized(&qv))
                         .ok();
-                    (id.clone(), db::embedding_to_bytes(emb), q8)
+                    (
+                        id.clone(),
+                        db::embedding_to_bytes(emb),
+                        q8,
+                        sparse.clone(),
+                        representation.clone(),
+                    )
                 })
                 .collect();
 
             self.with_write_conn(move |conn| {
                 db::with_transaction(conn, |tx| {
-                    for (fid, bytes, q8) in &updates {
+                    for (fid, bytes, q8, sparse, representation) in &updates {
                         tx.execute(
                             "UPDATE facts SET embedding = ?1, embedding_q8 = ?2, updated_at = datetime('now') WHERE id = ?3",
                             rusqlite::params![bytes, q8.as_deref(), fid],
@@ -2723,6 +2865,18 @@ impl MemoryStore {
                             db::IndexOpKind::Upsert,
                         )?;
                         db::invalidate_derived_vector_artifact(tx, &format!("fact:{fid}"))?;
+                        if let Some((weights, representation)) =
+                            sparse.as_ref().zip(representation.as_deref())
+                        {
+                            db::store_sparse_vector(
+                                tx,
+                                &format!("fact:{fid}"),
+                                weights,
+                                representation,
+                            )?;
+                        } else {
+                            db::delete_sparse_vector(tx, &format!("fact:{fid}"))?;
+                        }
                     }
                     Ok(())
                 })
@@ -2750,28 +2904,31 @@ impl MemoryStore {
         let mut chunk_count = 0usize;
         for batch in chunk_data.chunks(batch_size) {
             let texts: Vec<String> = batch.iter().map(|(_, c)| c.clone()).collect();
-            let embeddings = self.embed_batch_internal(texts).await?;
-            for embedding in &embeddings {
-                self.validate_embedding_dimensions(embedding)?;
-            }
+            let embeddings = self.embed_batch_with_sparse_internal(texts).await?;
 
             let quantizer = Quantizer::new(dims);
-            let updates: Vec<(String, Vec<u8>, Option<Vec<u8>>)> = batch
+            let updates: Vec<_> = batch
                 .iter()
                 .zip(embeddings.iter())
-                .map(|((id, _), emb)| {
+                .map(|((id, _), (emb, sparse, representation))| {
                     // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                     let q8 = quantizer
                         .quantize(emb)
                         .map(|qv| quantize::pack_quantized(&qv))
                         .ok();
-                    (id.clone(), db::embedding_to_bytes(emb), q8)
+                    (
+                        id.clone(),
+                        db::embedding_to_bytes(emb),
+                        q8,
+                        sparse.clone(),
+                        representation.clone(),
+                    )
                 })
                 .collect();
 
             self.with_write_conn(move |conn| {
                 db::with_transaction(conn, |tx| {
-                    for (cid, bytes, q8) in &updates {
+                    for (cid, bytes, q8, sparse, representation) in &updates {
                         tx.execute(
                             "UPDATE chunks SET embedding = ?1, embedding_q8 = ?2 WHERE id = ?3",
                             rusqlite::params![bytes, q8.as_deref(), cid],
@@ -2784,6 +2941,18 @@ impl MemoryStore {
                             db::IndexOpKind::Upsert,
                         )?;
                         db::invalidate_derived_vector_artifact(tx, &format!("chunk:{cid}"))?;
+                        if let Some((weights, representation)) =
+                            sparse.as_ref().zip(representation.as_deref())
+                        {
+                            db::store_sparse_vector(
+                                tx,
+                                &format!("chunk:{cid}"),
+                                weights,
+                                representation,
+                            )?;
+                        } else {
+                            db::delete_sparse_vector(tx, &format!("chunk:{cid}"))?;
+                        }
                     }
                     Ok(())
                 })
@@ -2811,28 +2980,31 @@ impl MemoryStore {
         let mut msg_count = 0usize;
         for batch in message_data.chunks(batch_size) {
             let texts: Vec<String> = batch.iter().map(|(_, c)| c.clone()).collect();
-            let embeddings = self.embed_batch_internal(texts).await?;
-            for embedding in &embeddings {
-                self.validate_embedding_dimensions(embedding)?;
-            }
+            let embeddings = self.embed_batch_with_sparse_internal(texts).await?;
 
             let quantizer = Quantizer::new(dims);
-            let updates: Vec<(i64, Vec<u8>, Option<Vec<u8>>)> = batch
+            let updates: Vec<_> = batch
                 .iter()
                 .zip(embeddings.iter())
-                .map(|((id, _), emb)| {
+                .map(|((id, _), (emb, sparse, representation))| {
                     // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                     let q8 = quantizer
                         .quantize(emb)
                         .map(|qv| quantize::pack_quantized(&qv))
                         .ok();
-                    (*id, db::embedding_to_bytes(emb), q8)
+                    (
+                        *id,
+                        db::embedding_to_bytes(emb),
+                        q8,
+                        sparse.clone(),
+                        representation.clone(),
+                    )
                 })
                 .collect();
 
             self.with_write_conn(move |conn| {
                 db::with_transaction(conn, |tx| {
-                    for (mid, bytes, q8) in &updates {
+                    for (mid, bytes, q8, sparse, representation) in &updates {
                         tx.execute(
                             "UPDATE messages SET embedding = ?1, embedding_q8 = ?2 WHERE id = ?3",
                             rusqlite::params![bytes, q8.as_deref(), mid],
@@ -2845,6 +3017,18 @@ impl MemoryStore {
                             db::IndexOpKind::Upsert,
                         )?;
                         db::invalidate_derived_vector_artifact(tx, &format!("msg:{mid}"))?;
+                        if let Some((weights, representation)) =
+                            sparse.as_ref().zip(representation.as_deref())
+                        {
+                            db::store_sparse_vector(
+                                tx,
+                                &format!("msg:{mid}"),
+                                weights,
+                                representation,
+                            )?;
+                        } else {
+                            db::delete_sparse_vector(tx, &format!("msg:{mid}"))?;
+                        }
                     }
                     Ok(())
                 })
@@ -2872,28 +3056,31 @@ impl MemoryStore {
         let mut episode_count = 0usize;
         for batch in episode_data.chunks(batch_size) {
             let texts: Vec<String> = batch.iter().map(|(_, text)| text.clone()).collect();
-            let embeddings = self.embed_batch_internal(texts).await?;
-            for embedding in &embeddings {
-                self.validate_embedding_dimensions(embedding)?;
-            }
+            let embeddings = self.embed_batch_with_sparse_internal(texts).await?;
 
             let quantizer = Quantizer::new(dims);
-            let updates: Vec<(String, Vec<u8>, Option<Vec<u8>>)> = batch
+            let updates: Vec<_> = batch
                 .iter()
                 .zip(embeddings.iter())
-                .map(|((episode_id, _), embedding)| {
+                .map(|((episode_id, _), (embedding, sparse, representation))| {
                     // INTENTIONAL: q8 quantization is an optional search optimization; missing q8 is non-fatal
                     let q8 = quantizer
                         .quantize(embedding)
                         .map(|vector| quantize::pack_quantized(&vector))
                         .ok();
-                    (episode_id.clone(), db::embedding_to_bytes(embedding), q8)
+                    (
+                        episode_id.clone(),
+                        db::embedding_to_bytes(embedding),
+                        q8,
+                        sparse.clone(),
+                        representation.clone(),
+                    )
                 })
                 .collect();
 
             self.with_write_conn(move |conn| {
                 db::with_transaction(conn, |tx| {
-                    for (episode_id, bytes, q8) in &updates {
+                    for (episode_id, bytes, q8, sparse, representation) in &updates {
                         tx.execute(
                             "UPDATE episodes
                              SET embedding = ?1,
@@ -2913,6 +3100,14 @@ impl MemoryStore {
                             tx,
                             &episodes::episode_item_key(episode_id),
                         )?;
+                        let item_key = episodes::episode_item_key(episode_id);
+                        if let Some((weights, representation)) =
+                            sparse.as_ref().zip(representation.as_deref())
+                        {
+                            db::store_sparse_vector(tx, &item_key, weights, representation)?;
+                        } else {
+                            db::delete_sparse_vector(tx, &item_key)?;
+                        }
                     }
                     Ok(())
                 })
