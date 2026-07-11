@@ -50,9 +50,7 @@ fn main() {
             })
         }
         (None, None) => {
-            eprintln!(
-                "ERROR: specify --fixtures-dir <DIR> or --fixtures-file <FILE>"
-            );
+            eprintln!("ERROR: specify --fixtures-dir <DIR> or --fixtures-file <FILE>");
             std::process::exit(1);
         }
     };
@@ -87,9 +85,16 @@ fn main() {
     report.print_summary();
 
     // Save JSONL receipt.
-    let output_dir = cfg.output_dir.as_deref().unwrap_or_else(|| Path::new("reports"));
+    let output_dir = cfg
+        .output_dir
+        .as_deref()
+        .unwrap_or_else(|| Path::new("reports"));
     if let Err(e) = std::fs::create_dir_all(output_dir) {
-        eprintln!("WARN: could not create output dir {}: {}", output_dir.display(), e);
+        eprintln!(
+            "WARN: could not create output dir {}: {}",
+            output_dir.display(),
+            e
+        );
     }
 
     let filename = format!(
@@ -112,8 +117,8 @@ fn main() {
                 let comp = compare_reports(&before, &report);
                 println!();
                 comp.print_summary();
-                let comp_json = serde_json::to_string_pretty(&comp)
-                    .unwrap_or_else(|_| "{}".to_string());
+                let comp_json =
+                    serde_json::to_string_pretty(&comp).unwrap_or_else(|_| "{}".to_string());
                 let comp_path = output_dir.join(format!(
                     "sm_bench_diff_{}_vs_{}.json",
                     sanitize_label(&before.suite_name),
@@ -235,7 +240,13 @@ fn default_suite_name() -> String {
 
 fn sanitize_label(s: &str) -> String {
     s.chars()
-        .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect()
 }
 

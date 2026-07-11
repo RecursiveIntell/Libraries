@@ -83,11 +83,26 @@ compile_error!(
     "At least one search backend feature must be enabled: 'hnsw', 'usearch-backend', or 'brute-force'"
 );
 
+mod authority;
+pub mod authority_contracts;
 pub mod chunker;
 pub mod config;
 pub(crate) mod conversation;
 pub(crate) mod db;
+/// Bounded evidence-gap retrieval and state-aware reranking over existing authority/search paths.
+pub mod evidence_gap;
+mod forgetting;
+mod procedural_memory;
+pub mod transition_contracts;
+mod transition_verifier;
 pub use db::{bytes_to_embedding, decode_f32_le, embedding_to_bytes};
+pub use evidence_gap::{
+    rerank_state_aware, EvidenceAblationReceiptV1, EvidenceGapOutcomeV1, EvidenceGapReasonV1,
+    EvidenceGapRequestV1, EvidenceGapV1, EvidencePacketItemV1, EvidencePacketV1,
+    EvidenceRetrievalRouteV1, EvidenceRouteReceiptV1, EvidenceTerminalOutcome,
+    EvidenceTerminalOutcomeV1, StateRerankCandidateV1, StateRerankWeightsV1, EVIDENCE_GAP_V1,
+    EVIDENCE_PACKET_V1, EVIDENCE_ROUTE_RECEIPT_V1,
+};
 /// Phase 9b: benchmark harness for routing quality.
 #[cfg(feature = "benchmark")]
 pub mod benchmark;
@@ -127,6 +142,8 @@ pub mod hnsw;
 mod hnsw_backend;
 #[cfg(feature = "hnsw")]
 mod hnsw_ops;
+/// Claim-bounded scoring and receipt invariants for the hostile memory benchmark.
+pub mod hostile_benchmark;
 /// Deterministic CPU-only hubness scoring over dense embedding collections.
 pub mod hubness;
 /// Phase 10: cross-feature integration wiring.
@@ -134,6 +151,64 @@ pub mod hubness;
 pub mod integration;
 mod json_compat_import;
 pub(crate) mod knowledge;
+/// Immutable origin-bound authority labels and governed access decisions.
+pub mod origin_authority;
+pub use authority::MemoryAuthority;
+pub use authority_contracts::{
+    AuthorityAdmission, AuthorityFaultStage, AuthorityOperationKind, AuthorityPermit,
+    AuthorityReceiptV1, AuthoritySnapshotId, AuthorityStateV1, CapabilityManifestV1, Confidence,
+    CosineSimilarity, InjectionDecisionV1, InjectionDisposition, MemoryEnvelopeV1,
+    NonNegativeWeight, Probability, RetrievalEpoch, RetrievalResponseV1, RetrievalWitnessV1,
+    StageOutcomeV1, SupersessionReceiptV1,
+};
+pub use forgetting::{
+    ForgettingClosureReceiptV1, ForgettingClosureRequestV1, ForgettingDispositionV1,
+    ForgettingEpochsV1, ForgettingSurfaceRefV1, ForgettingVerificationV1,
+    FORGETTING_CLOSURE_RECEIPT_V1,
+};
+pub use knowledge::StateView;
+pub use origin_authority::{
+    evaluate_governed_access_v1, AudienceV1, AuthorityScopeV1, AuthorityScopesV1,
+    CallerPrincipalV1, DelegationElevationLeaseV1, ElevationRequirementV1, GovernedAccessPurposeV1,
+    GovernedAccessRequestV1, GovernedFactAccessV1, GovernedFactListResponseV1,
+    GovernedGraphResponseV1, GovernedProjectionResponseV1, GovernedReplayResponseV1,
+    GovernedSearchResponseV1, GovernedStateResolutionResponseV1, NamespaceScopeV1,
+    OriginAuthorityDecisionV1, OriginAuthorityLabelV1, OriginAuthorityRecordV1, OriginClassV1,
+    OriginDerivationKindV1, OriginRiskV1, PolicyDecisionV1, RevocationStatusV1, SubjectPrincipalV1,
+};
+pub use procedural_memory::{
+    validate_procedure_artifact_v1, verify_procedure_lifecycle_receipt_v1,
+    verify_procedure_test_receipt_v1, AllowedProcedureToolV1, ApplicabilityOperatorV1,
+    ApplicabilityPredicateV1, GovernedProcedureDecisionV1, GovernedProcedureRetrievalV1,
+    ProceduralMemoryArtifactV1, ProcedureAccessPathV1, ProcedureActionPermitV1, ProcedureActionV1,
+    ProcedureCapabilityV1, ProcedureEffectV1, ProcedureEvidenceTestEnvelopeV1,
+    ProcedureFixtureReceiptV1, ProcedureFixtureV1, ProcedureLifecycleDispositionV1,
+    ProcedureLifecyclePermitV1, ProcedureLifecycleReceiptV1, ProcedurePreconditionV1,
+    ProcedureRetrievalRequestV1, ProcedureRevocationV1, ProcedureRiskV1, ProcedureStepV1,
+    ProcedureTestReceiptV1, ProcedureValidationV1, PROCEDURAL_MEMORY_ARTIFACT_V1,
+    PROCEDURE_LIFECYCLE_RECEIPT_V1, PROCEDURE_TEST_RECEIPT_V1,
+};
+pub use shadow_policy::{
+    compare_shadow_execution_v1, evaluate_shadow_policy_promotion_v1, shadow_policy_digest,
+    ActiveShadowPolicyV1, PromotionDecisionReceiptV1, PromotionDispositionV1, PromotionEvidenceV1,
+    PromotionGateDecisionV1, ShadowEvaluationWindowV1, ShadowExecutionComparisonV1,
+    ShadowPolicyKindV1, ShadowPolicyPromotionPermitV1, ShadowPolicyProposalV1,
+    ShadowPolicyProvenanceV1, ShadowPolicyRiskV1, ShadowPolicyStatusV1,
+    PROMOTION_DECISION_RECEIPT_V1, SHADOW_POLICY_PROPOSAL_V1,
+};
+pub use state_epistemics::{
+    answer_policy_for, resolve_dependency_states, AnswerDisposition, AnswerPolicy,
+    AnswerPolicyDecision, BeliefAlternativeV1, DependencyResolutionV1, DependencyState,
+    PremiseStatus, ResolvedAssertionV1, ResolvedMemoryAnswerV1, StateDependencyEdgeV1,
+    StateResolutionMode, StateResolutionReceiptV1, StateResolvedRetrievalResponseV1,
+    STATE_RESOLUTION_RECEIPT_V1, STATE_RESOLVED_RETRIEVAL_V1,
+};
+pub use transition_contracts::{
+    ActiveHeadSimulationV1, AssertionDraftV1, DependencySimulationV1, MemoryTransitionCandidateV1,
+    MemoryTransitionOutcomeV1, MemoryTransitionRecordV1, MemoryTransitionVerificationV1,
+    OmittedSourceSpanV1, SourceArtifactV1, SourceSpanRefV1, SupersessionDraftV1,
+    TransitionDisposition, TransitionOperation, UnsupportedAssertionSpanV1, VerificationScore,
+};
 /// ColBERT-style late interaction multi-vector retrieval.
 #[cfg(feature = "late-interaction")]
 pub mod late_interaction;
@@ -174,6 +249,8 @@ pub mod rl_routing;
 #[cfg(feature = "routing")]
 pub mod routing;
 pub mod search;
+pub mod shadow_policy;
+pub mod state_epistemics;
 pub mod storage;
 mod store_support;
 /// Reasoning subgraph pruning with lawful subtraction.
@@ -606,9 +683,17 @@ struct MemoryStoreInner {
     embedding_cache: std::sync::Mutex<lru::LruCache<String, Vec<f32>>>,
     /// LRU cache for search results. Key is "query:top_k", value is results.
     /// Capped at 64 entries.
-    search_cache: std::sync::Mutex<lru::LruCache<String, Vec<types::SearchResult>>>,
+    search_cache: std::sync::Mutex<lru::LruCache<String, CachedSearchResult>>,
+    pub(crate) authority_fault:
+        Arc<std::sync::Mutex<Option<authority_contracts::AuthorityFaultStage>>>,
     #[cfg(feature = "hnsw")]
     hnsw_index: std::sync::RwLock<HnswIndex>,
+}
+
+#[derive(Clone)]
+struct CachedSearchResult {
+    results: Vec<types::SearchResult>,
+    retrieval_epoch: RetrievalEpoch,
 }
 
 #[cfg(feature = "hnsw")]
@@ -673,6 +758,11 @@ fn nonzero_cache_capacity(value: usize) -> std::num::NonZeroUsize {
 }
 
 impl MemoryStore {
+    /// Return the capability-gated, append-only authority mutation surface.
+    pub fn authority(&self) -> MemoryAuthority {
+        MemoryAuthority::new(self.clone())
+    }
+
     /// Run read-only work on a pooled reader connection on a blocking thread.
     ///
     /// This prevents SQLite I/O from stalling the tokio executor while allowing
@@ -709,6 +799,16 @@ impl MemoryStore {
             Ok(mut cache) => cache.clear(),
             Err(err) => tracing::warn!(error = %err, "search cache lock poisoned; clear skipped"),
         }
+    }
+
+    pub(crate) fn clear_search_cache_strict(&self) -> Result<(), MemoryError> {
+        let mut cache = self.inner.search_cache.lock().map_err(|_| {
+            MemoryError::ForgettingClosureIncomplete {
+                detail: "search cache lock is poisoned".into(),
+            }
+        })?;
+        cache.clear();
+        Ok(())
     }
 
     async fn persist_search_receipt(
@@ -966,6 +1066,7 @@ impl MemoryStore {
                     256,
                 ))),
                 search_cache: std::sync::Mutex::new(lru::LruCache::new(nonzero_cache_capacity(64))),
+                authority_fault: Arc::new(std::sync::Mutex::new(None)),
                 #[cfg(feature = "hnsw")]
                 hnsw_index: std::sync::RwLock::new(hnsw_index),
             }),
@@ -1427,8 +1528,11 @@ impl MemoryStore {
             valid_time: None,
             recorded_time: None,
         };
-        self.with_write_conn(move |conn| graph_edges::insert_graph_edge(conn, &params))
-            .await
+        let edge = self
+            .with_write_conn(move |conn| graph_edges::insert_graph_edge(conn, &params))
+            .await?;
+        self.clear_search_cache();
+        Ok(edge)
     }
 
     /// Add a durable graph edge with explicit bitemporal timestamps.
@@ -1454,8 +1558,11 @@ impl MemoryStore {
             valid_time: Some(valid_time.to_string()),
             recorded_time: Some(recorded_time.to_string()),
         };
-        self.with_write_conn(move |conn| graph_edges::insert_graph_edge(conn, &params))
-            .await
+        let edge = self
+            .with_write_conn(move |conn| graph_edges::insert_graph_edge(conn, &params))
+            .await?;
+        self.clear_search_cache();
+        Ok(edge)
     }
 
     /// List all stored graph edges involving a given node (as source or target),
@@ -1579,6 +1686,48 @@ impl MemoryStore {
         source_types: Option<&[SearchSourceType]>,
         context: SearchContext,
     ) -> Result<SearchResponse, MemoryError> {
+        self.search_with_context_for_view(
+            query,
+            top_k,
+            namespaces,
+            source_types,
+            context,
+            StateView::Current,
+        )
+        .await
+    }
+
+    /// Hybrid fact search under an explicit authority-state view.
+    pub async fn search_with_view(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+        namespaces: Option<&[&str]>,
+        source_types: Option<&[SearchSourceType]>,
+        view: StateView,
+    ) -> Result<Vec<SearchResult>, MemoryError> {
+        Ok(self
+            .search_with_context_for_view(
+                query,
+                top_k,
+                namespaces,
+                source_types,
+                SearchContext::default_now(),
+                view,
+            )
+            .await?
+            .results)
+    }
+
+    async fn search_with_context_for_view(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+        namespaces: Option<&[&str]>,
+        source_types: Option<&[SearchSourceType]>,
+        context: SearchContext,
+        view: StateView,
+    ) -> Result<SearchResponse, MemoryError> {
         let k = top_k
             .unwrap_or(self.inner.config.search.default_top_k)
             .min(MAX_TOP_K);
@@ -1587,7 +1736,8 @@ impl MemoryStore {
         // Cache is keyed by (query, k) and only used when no namespace/source_type
         // filters are applied AND receipt mode is not requested. Cleared on any
         // mutating operation (update/delete).
-        let cache_key = if namespaces.is_none()
+        let cache_key = if matches!(view, StateView::Current)
+            && namespaces.is_none()
             && source_types.is_none()
             && context.receipt_mode != ReceiptMode::ReturnReceipt
         {
@@ -1595,14 +1745,29 @@ impl MemoryStore {
         } else {
             None
         };
+        let cache_epoch = if cache_key.is_some() {
+            Some(self.authority().current_retrieval_epoch().await?)
+        } else {
+            None
+        };
         if let Some(ref key) = cache_key {
             match self.inner.search_cache.lock() {
                 Ok(mut cache) => {
-                    if let Some(cached) = cache.get(key).cloned() {
-                        return Ok(SearchResponse {
-                            results: cached,
-                            receipt: None,
-                        });
+                    if let Some(cached) = cache.get(key) {
+                        if let Some(retrieval_epoch) = &cache_epoch {
+                            if *retrieval_epoch == cached.retrieval_epoch {
+                                return Ok(SearchResponse {
+                                    results: cached.results.clone(),
+                                    receipt: None,
+                                });
+                            }
+                        } else {
+                            return Ok(SearchResponse {
+                                results: cached.results.clone(),
+                                receipt: None,
+                            });
+                        }
+                        cache.pop(key);
                     }
                 }
                 Err(err) => {
@@ -1639,7 +1804,7 @@ impl MemoryStore {
         #[cfg(feature = "hnsw")]
         let hnsw_hits_owned = hnsw_hits;
 
-        let response = self
+        let mut response = self
             .with_read_conn(move |conn| {
                 if db::is_embeddings_dirty(conn)? {
                     tracing::warn!(
@@ -1723,13 +1888,24 @@ impl MemoryStore {
                 }
             })
             .await?;
+        let raw_results = std::mem::take(&mut response.results);
+        response.results = self
+            .filter_search_results(raw_results, view.clone())
+            .await?;
+        response.results.truncate(k);
         if let Some(receipt) = &response.receipt {
             self.persist_search_receipt(receipt).await?;
         }
-        if let Some(ref key) = cache_key {
+        if let (Some(ref key), Some(retrieval_epoch)) = (cache_key.as_ref(), cache_epoch) {
             match self.inner.search_cache.lock() {
                 Ok(mut cache) => {
-                    cache.put(key.clone(), response.results.clone());
+                    cache.put(
+                        key.to_string(),
+                        CachedSearchResult {
+                            results: response.results.clone(),
+                            retrieval_epoch,
+                        },
+                    );
                 }
                 Err(err) => {
                     tracing::warn!(error = %err, "search cache lock poisoned; insert skipped")
@@ -1737,6 +1913,55 @@ impl MemoryStore {
             }
         }
         Ok(response)
+    }
+
+    async fn filter_search_results(
+        &self,
+        results: Vec<SearchResult>,
+        view: StateView,
+    ) -> Result<Vec<SearchResult>, MemoryError> {
+        self.with_read_conn(move |conn| {
+            results
+                .into_iter()
+                .filter_map(|result| match &result.source {
+                    SearchSource::Fact { fact_id, .. } => {
+                        match knowledge::fact_is_visible_with_view(conn, fact_id, &view) {
+                            Ok(true) => Some(Ok(result)),
+                            Ok(false) => None,
+                            Err(error) => Some(Err(error)),
+                        }
+                    }
+                    SearchSource::Episode { episode_id, .. } => {
+                        let invalidated = conn.query_row(
+                            "SELECT EXISTS(SELECT 1 FROM forgetting_artifact_invalidations
+                             WHERE surface_kind = 'episode' AND artifact_id = ?1)",
+                            rusqlite::params![episode_id],
+                            |row| row.get::<_, bool>(0),
+                        );
+                        match invalidated {
+                            Ok(false) => Some(Ok(result)),
+                            Ok(true) => None,
+                            Err(error) => Some(Err(MemoryError::from(error))),
+                        }
+                    }
+                    SearchSource::Projection { projection_id, .. } => {
+                        let invalidated = conn.query_row(
+                            "SELECT EXISTS(SELECT 1 FROM forgetting_artifact_invalidations
+                             WHERE surface_kind = 'projection' AND artifact_id = ?1)",
+                            rusqlite::params![projection_id],
+                            |row| row.get::<_, bool>(0),
+                        );
+                        match invalidated {
+                            Ok(false) => Some(Ok(result)),
+                            Ok(true) => None,
+                            Err(error) => Some(Err(MemoryError::from(error))),
+                        }
+                    }
+                    _ => Some(Ok(result)),
+                })
+                .collect()
+        })
+        .await
     }
 
     /// Full-text search only (no embeddings needed).
@@ -1754,13 +1979,65 @@ impl MemoryStore {
         let config = self.inner.config.search.clone();
         let ns_owned = to_owned_string_vec(namespaces);
         let st_owned: Option<Vec<SearchSourceType>> = source_types.map(|s| s.to_vec());
-        self.with_read_conn(move |conn| {
-            let ns_refs = as_str_slice(&ns_owned);
-            let ns_slice: Option<&[&str]> = ns_refs.as_deref();
-            let st_slice: Option<&[SearchSourceType]> = st_owned.as_deref();
-            search::fts_only_search(conn, &q, &config, k, ns_slice, st_slice, None)
-        })
-        .await
+        let results = self
+            .with_read_conn(move |conn| {
+                let ns_refs = as_str_slice(&ns_owned);
+                let ns_slice: Option<&[&str]> = ns_refs.as_deref();
+                let st_slice: Option<&[SearchSourceType]> = st_owned.as_deref();
+                search::fts_only_search(conn, &q, &config, k, ns_slice, st_slice, None)
+            })
+            .await?;
+        self.filter_search_results(results, StateView::Current)
+            .await
+    }
+
+    /// Full-text-only search with an explicit deterministic context and optional receipt.
+    pub async fn search_fts_only_with_context(
+        &self,
+        query: &str,
+        top_k: Option<usize>,
+        namespaces: Option<&[&str]>,
+        source_types: Option<&[SearchSourceType]>,
+        context: SearchContext,
+    ) -> Result<SearchResponse, MemoryError> {
+        let k = top_k
+            .unwrap_or(self.inner.config.search.default_top_k)
+            .min(MAX_TOP_K);
+        let q = query.to_string();
+        let config = self.inner.config.search.clone();
+        let ns_owned = to_owned_string_vec(namespaces);
+        let st_owned: Option<Vec<SearchSourceType>> = source_types.map(|s| s.to_vec());
+        let context_owned = context.clone();
+        let mut response = self
+            .with_read_conn(move |conn| {
+                let ns_refs = as_str_slice(&ns_owned);
+                let execution = search::fts_only_search_detailed_with_context(
+                    conn,
+                    &q,
+                    &config,
+                    &context_owned,
+                    k,
+                    ns_refs.as_deref(),
+                    st_owned.as_deref(),
+                    None,
+                )?;
+                Ok(SearchResponse {
+                    results: execution
+                        .results
+                        .into_iter()
+                        .map(|result| result.result)
+                        .collect(),
+                    receipt: execution.receipt,
+                })
+            })
+            .await?;
+        response.results = self
+            .filter_search_results(response.results, StateView::Current)
+            .await?;
+        if let Some(receipt) = &response.receipt {
+            self.persist_search_receipt(receipt).await?;
+        }
+        Ok(response)
     }
 
     /// Vector similarity search only (no FTS).
@@ -1822,7 +2099,7 @@ impl MemoryStore {
         #[cfg(feature = "hnsw")]
         let hnsw_hits_owned = hnsw_hits;
 
-        let response = self
+        let mut response = self
             .with_read_conn(move |conn| {
                 if db::is_embeddings_dirty(conn)? {
                     tracing::warn!(
@@ -1898,6 +2175,9 @@ impl MemoryStore {
                     })
                 }
             })
+            .await?;
+        response.results = self
+            .filter_search_results(response.results, StateView::Current)
             .await?;
         if let Some(receipt) = &response.receipt {
             self.persist_search_receipt(receipt).await?;
@@ -2060,6 +2340,27 @@ impl MemoryStore {
         namespaces: Option<&[&str]>,
         source_types: Option<&[SearchSourceType]>,
     ) -> Result<SearchReplayReportV1, MemoryError> {
+        let invalidation_id = receipt_id.to_string();
+        let invalidated = self
+            .with_read_conn(move |conn| {
+                conn.query_row(
+                    "SELECT EXISTS(
+                         SELECT 1 FROM forgetting_artifact_invalidations
+                         WHERE surface_kind = 'search_receipt' AND artifact_id = ?1
+                     )",
+                    rusqlite::params![invalidation_id],
+                    |row| row.get::<_, bool>(0),
+                )
+                .map_err(MemoryError::from)
+            })
+            .await?;
+        if invalidated {
+            return Err(MemoryError::ForgettingClosureIncomplete {
+                detail: format!(
+                    "search receipt '{receipt_id}' was invalidated by selective forgetting"
+                ),
+            });
+        }
         let original_receipt = self.get_search_receipt(receipt_id).await?.ok_or_else(|| {
             MemoryError::SearchReceiptNotFound {
                 receipt_id: receipt_id.to_string(),
@@ -2740,6 +3041,204 @@ impl MemoryStore {
     ) -> Result<Vec<ProjectionEvidenceRef>, MemoryError> {
         self.with_read_conn(move |conn| projection_storage::query_evidence_refs(conn, &query))
             .await
+    }
+
+    /// Governed projection reads fail closed until imported rows have durable origin labels.
+    /// The ungoverned projection methods above remain the explicit storage compatibility surface;
+    /// no governed method delegates to them after authorization.
+    pub async fn query_claim_versions_governed(
+        &self,
+        query: ProjectionQuery,
+        request: GovernedAccessRequestV1,
+    ) -> Result<GovernedProjectionResponseV1<ProjectionClaimVersion>, MemoryError> {
+        let query_namespace = query.scope.namespace.clone();
+        let rows = if query_namespace == request.scope.namespace {
+            self.with_read_conn(move |conn| projection_storage::query_claim_versions(conn, &query))
+                .await?
+        } else {
+            Vec::new()
+        };
+        let mut decisions = Vec::new();
+        for row in &rows {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                row.claim_version_id.as_str(),
+                Some(&row.scope_key.namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        if query_namespace != request.scope.namespace {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                "projection:query",
+                Some(&query_namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        Ok(GovernedProjectionResponseV1 {
+            items: Vec::new(),
+            decisions,
+        })
+    }
+
+    pub async fn query_relation_versions_governed(
+        &self,
+        query: ProjectionQuery,
+        request: GovernedAccessRequestV1,
+    ) -> Result<GovernedProjectionResponseV1<ProjectionRelationVersion>, MemoryError> {
+        let query_namespace = query.scope.namespace.clone();
+        let rows = if query_namespace == request.scope.namespace {
+            self.with_read_conn(move |conn| {
+                projection_storage::query_relation_versions(conn, &query)
+            })
+            .await?
+        } else {
+            Vec::new()
+        };
+        let mut decisions = Vec::new();
+        for row in &rows {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                row.relation_version_id.as_str(),
+                Some(&row.scope_key.namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        if query_namespace != request.scope.namespace {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                "projection:query",
+                Some(&query_namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        Ok(GovernedProjectionResponseV1 {
+            items: Vec::new(),
+            decisions,
+        })
+    }
+
+    pub async fn query_episodes_governed(
+        &self,
+        query: ProjectionQuery,
+        request: GovernedAccessRequestV1,
+    ) -> Result<GovernedProjectionResponseV1<ProjectionEpisode>, MemoryError> {
+        let query_namespace = query.scope.namespace.clone();
+        let rows = if query_namespace == request.scope.namespace {
+            self.with_read_conn(move |conn| projection_storage::query_episode_rows(conn, &query))
+                .await?
+        } else {
+            Vec::new()
+        };
+        let mut decisions = Vec::new();
+        for row in &rows {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                row.episode_id.as_str(),
+                Some(&row.scope_key.namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        if query_namespace != request.scope.namespace {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                "projection:query",
+                Some(&query_namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        Ok(GovernedProjectionResponseV1 {
+            items: Vec::new(),
+            decisions,
+        })
+    }
+
+    pub async fn query_entity_aliases_governed(
+        &self,
+        query: ProjectionQuery,
+        request: GovernedAccessRequestV1,
+    ) -> Result<GovernedProjectionResponseV1<ProjectionEntityAlias>, MemoryError> {
+        let query_namespace = query.scope.namespace.clone();
+        let rows = if query_namespace == request.scope.namespace {
+            self.with_read_conn(move |conn| projection_storage::query_entity_aliases(conn, &query))
+                .await?
+        } else {
+            Vec::new()
+        };
+        let mut decisions = Vec::new();
+        for row in &rows {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                &format!(
+                    "entity_alias:{}:{}",
+                    row.canonical_entity_id.as_str(),
+                    row.alias_text
+                ),
+                Some(&row.scope_key.namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        if query_namespace != request.scope.namespace {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                "projection:query",
+                Some(&query_namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        Ok(GovernedProjectionResponseV1 {
+            items: Vec::new(),
+            decisions,
+        })
+    }
+
+    pub async fn query_evidence_refs_governed(
+        &self,
+        query: ProjectionQuery,
+        request: GovernedAccessRequestV1,
+    ) -> Result<GovernedProjectionResponseV1<ProjectionEvidenceRef>, MemoryError> {
+        let query_namespace = query.scope.namespace.clone();
+        let rows = if query_namespace == request.scope.namespace {
+            self.with_read_conn(move |conn| projection_storage::query_evidence_refs(conn, &query))
+                .await?
+        } else {
+            Vec::new()
+        };
+        let mut decisions = Vec::new();
+        for row in &rows {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                &format!(
+                    "evidence_ref:{}:{}",
+                    row.claim_id.as_str(),
+                    row.fetch_handle
+                ),
+                Some(&row.scope_key.namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        if query_namespace != request.scope.namespace {
+            decisions.push(origin_authority::evaluate_governed_access_v1(
+                "projection:query",
+                Some(&query_namespace),
+                None,
+                None,
+                &request,
+            ));
+        }
+        Ok(GovernedProjectionResponseV1 {
+            items: Vec::new(),
+            decisions,
+        })
     }
 
     /// Execute raw SQL. For testing only — not part of the stable public API.

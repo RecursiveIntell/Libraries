@@ -80,8 +80,8 @@ struct Cli {
     #[arg(long)]
     turbo_quant_projections: Option<usize>,
 
-    /// Tool profile: lean (33 tools, default), standard (39 tools), full (48 tools).
-    /// Lean hides admin/audit/bitemporal/import tools for better agent efficiency.
+    /// Tool profile: lean/standard (3 governed read-only tools; lean is default),
+    /// agent (15 bounded daily tools), or full (60 operator/admin tools).
     #[arg(long, default_value = "lean")]
     tool_profile: String,
 }

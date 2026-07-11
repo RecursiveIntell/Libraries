@@ -70,8 +70,13 @@ pub fn load_fixtures_from_jsonl(path: &std::path::Path) -> Result<Vec<SMQueryFix
         .lines()
         .filter(|l| !l.trim().is_empty() && !l.trim_start().starts_with("//"))
         .map(|line| {
-            serde_json::from_str::<SMQueryFixture>(line)
-                .map_err(|e| format!("fixture parse error ({}): {}", e, &line[..line.len().min(80)]))
+            serde_json::from_str::<SMQueryFixture>(line).map_err(|e| {
+                format!(
+                    "fixture parse error ({}): {}",
+                    e,
+                    &line[..line.len().min(80)]
+                )
+            })
         })
         .collect()
 }
@@ -199,9 +204,7 @@ impl SMBenchmarkReport {
             for id in &r.returned_ids {
                 hasher.update(id.as_bytes());
             }
-            hasher.update(
-                format!("{:.4}{:.4}{:.4}", r.recall_at_5, r.ndcg_at_5, r.mrr).as_bytes(),
-            );
+            hasher.update(format!("{:.4}{:.4}{:.4}", r.recall_at_5, r.ndcg_at_5, r.mrr).as_bytes());
         }
         let bytes = hasher.finalize();
         encode_hex_16(&bytes[..16])
@@ -541,7 +544,11 @@ fn query_server(
         Ok(r) => r,
     };
 
-    let returned_ids: Vec<String> = search_resp.results.into_iter().map(|r| r.result_id).collect();
+    let returned_ids: Vec<String> = search_resp
+        .results
+        .into_iter()
+        .map(|r| r.result_id)
+        .collect();
     let rel = &fixture.relevant_ids;
 
     SMRunResult {
@@ -674,7 +681,11 @@ mod tests {
     }
 
     fn make_report(suite: &str, commit: &str, results: Vec<SMRunResult>) -> SMBenchmarkReport {
-        let latencies: Vec<f64> = results.iter().filter(|r| !r.errored).map(|r| r.latency_ms).collect();
+        let latencies: Vec<f64> = results
+            .iter()
+            .filter(|r| !r.errored)
+            .map(|r| r.latency_ms)
+            .collect();
         let summary = compute_summary(&results, &latencies);
         SMBenchmarkReport {
             suite_name: suite.to_string(),
@@ -734,9 +745,20 @@ mod tests {
         let returned_partial = vec!["x".to_string(), "a".to_string()];
         let ndcg_perfect = ndcg_at_k(&returned_perfect, &relevant, 2);
         let ndcg_partial = ndcg_at_k(&returned_partial, &relevant, 2);
-        assert!((ndcg_perfect - 1.0).abs() < 1e-6, "perfect nDCG should be 1.0");
-        assert!(ndcg_partial < 1.0, "partial hit nDCG should be < 1.0, got {}", ndcg_partial);
-        assert!(ndcg_partial > 0.0, "partial hit nDCG should be > 0.0, got {}", ndcg_partial);
+        assert!(
+            (ndcg_perfect - 1.0).abs() < 1e-6,
+            "perfect nDCG should be 1.0"
+        );
+        assert!(
+            ndcg_partial < 1.0,
+            "partial hit nDCG should be < 1.0, got {}",
+            ndcg_partial
+        );
+        assert!(
+            ndcg_partial > 0.0,
+            "partial hit nDCG should be > 0.0, got {}",
+            ndcg_partial
+        );
     }
 
     #[test]
@@ -863,7 +885,10 @@ mod tests {
         let after = make_report("a", "aaa", vec![r2]);
         let comp = compare_reports(&before, &after);
         assert!((comp.delta_mrr).abs() < 1e-9);
-        assert!(comp.improved, "identical runs should be considered 'improved'");
+        assert!(
+            comp.improved,
+            "identical runs should be considered 'improved'"
+        );
     }
 
     // ─── JSONL loader test ────────────────────────────────────────────────

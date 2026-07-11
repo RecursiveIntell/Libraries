@@ -4,8 +4,9 @@
 //! the mock embedder (no model download, no Ollama, no network).
 //! Each test gets a fresh temp directory so there is no cross-test state.
 
-use semantic_memory::GraphEdgeType;
+use semantic_memory::{AuthorityPermit, GraphEdgeType};
 use semantic_memory_mcp::bridge::{BridgeConfig, EmbedderBackend, MemoryBridge};
+use semantic_memory_mcp::server::SemanticMemoryServer;
 
 /// Open a MemoryBridge with the mock embedder in a temp directory.
 fn open_bridge(dir: &std::path::Path) -> MemoryBridge {
@@ -20,6 +21,136 @@ fn open_bridge(dir: &std::path::Path) -> MemoryBridge {
         turbo_quant_projections: None,
     };
     MemoryBridge::open(config).expect("bridge should open")
+}
+
+#[test]
+fn autonomous_profiles_expose_only_witnessed_search() {
+    for profile in ["lean", "standard"] {
+        let dir = tempfile::tempdir().unwrap();
+        let server = SemanticMemoryServer::new(open_bridge(dir.path()), profile);
+        assert!(server.exposes_tool("sm_search_witnessed"));
+        assert!(server.exposes_tool("sm_decide_assertion_authority"));
+        assert!(server.exposes_tool("sm_decide_action_authority"));
+        assert!(!server.exposes_tool("sm_search"));
+        assert_eq!(
+            server.exposed_tool_names(),
+            vec![
+                "sm_decide_action_authority",
+                "sm_decide_assertion_authority",
+                "sm_search_witnessed",
+            ]
+        );
+        for name in [
+            "sm_decide_assertion_authority",
+            "sm_decide_action_authority",
+        ] {
+            let annotations = server.tool_annotations(name).expect("decision metadata");
+            assert_eq!(annotations.read_only_hint, Some(true));
+            assert_ne!(annotations.destructive_hint, Some(true));
+        }
+        for forbidden in [
+            "sm_add_fact",
+            "sm_delete_fact",
+            "sm_delete_namespace",
+            "sm_update_fact",
+            "sm_set_provenance",
+            "sm_record_outcome",
+        ] {
+            assert!(
+                !server.exposes_tool(forbidden),
+                "{profile} exposed {forbidden}"
+            );
+        }
+    }
+
+    let dir = tempfile::tempdir().unwrap();
+    let bridge = open_bridge(dir.path());
+    let runtime = tokio::runtime::Runtime::new().unwrap();
+    let permit = AuthorityPermit::operator_system(
+        "lean-principal",
+        "lean-caller",
+        AuthorityPermit::APPEND_CAPABILITY,
+    );
+    runtime
+        .block_on(bridge.store.authority().append(
+            permit,
+            "lean-canary".into(),
+            "lean".into(),
+            "lean profile canary should remain queryable by witnessed surfaces".into(),
+            Some("tests/canary.md".into()),
+        ))
+        .unwrap();
+    let lean_server = SemanticMemoryServer::new(open_bridge(dir.path()), "lean");
+    assert!(lean_server.exposes_tool("sm_search_witnessed"));
+    assert!(!lean_server.exposes_tool("sm_add_fact"));
+    let results = runtime
+        .block_on(
+            bridge
+                .store
+                .search("lean profile canary", Some(5), None, None),
+        )
+        .unwrap();
+    assert!(
+        results
+            .iter()
+            .any(|result| result.content.contains("lean profile canary")),
+        "Canary should be queryable in lean-profile environment"
+    );
+
+    let dir = tempfile::tempdir().unwrap();
+    let full = SemanticMemoryServer::new(open_bridge(dir.path()), "full");
+    assert!(full.exposes_tool("sm_search_witnessed"));
+    assert!(full.exposes_tool("sm_search"));
+}
+
+#[test]
+fn agent_profile_exposes_bounded_daily_memory_surface() {
+    let dir = tempfile::tempdir().unwrap();
+    let server = SemanticMemoryServer::new(open_bridge(dir.path()), "agent");
+    assert_eq!(
+        server.exposed_tool_names(),
+        vec![
+            "sm_add_fact",
+            "sm_add_graph_edge",
+            "sm_decide_action_authority",
+            "sm_decide_assertion_authority",
+            "sm_get_fact",
+            "sm_get_fact_neighbors",
+            "sm_get_search_receipt",
+            "sm_graph_path",
+            "sm_list_namespaces",
+            "sm_search_conversations",
+            "sm_search_witnessed",
+            "sm_set_provenance",
+            "sm_stats",
+            "sm_supersede_fact",
+            "sm_update_fact",
+        ]
+    );
+    for forbidden in [
+        "sm_delete_fact",
+        "sm_delete_namespace",
+        "sm_import_envelope",
+        "sm_reembed_all",
+        "sm_reconcile",
+        "sm_run_lifecycle",
+        "sm_search",
+        "sm_search_with_routing",
+        "sm_vacuum",
+    ] {
+        assert!(!server.exposes_tool(forbidden), "agent exposed {forbidden}");
+    }
+}
+
+#[test]
+fn routing_feedback_is_declared_mutating() {
+    let dir = tempfile::tempdir().unwrap();
+    let server = SemanticMemoryServer::new(open_bridge(dir.path()), "full");
+    let annotations = server
+        .tool_annotations("sm_record_outcome")
+        .expect("record outcome metadata");
+    assert_eq!(annotations.read_only_hint, Some(false));
+    assert_eq!(annotations.destructive_hint, Some(false));
 }
 
 /// Helper: add a fact via the underlying store and return its fact_id.
@@ -334,6 +465,23 @@ mod http_server_tests {
     }
 
     #[test]
+    fn routing_feedback_response_is_mutating_proxy_label() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let (port, _rt) = start_http(bridge);
+        let (_, body) = http_post(
+            port,
+            "/record-outcome",
+            r#"{"query":"test query","outcome":"good"}"#,
+        );
+        let json: serde_json::Value = serde_json::from_str(&body).expect("valid JSON");
+        assert_eq!(json["mutating"], true);
+        assert_eq!(json["feedback"]["kind"], "ProxyLabel");
+        assert_eq!(json["feedback"]["label"], "good");
+        assert!(json.get("outcome").is_none());
+    }
+
+    #[test]
     fn add_and_search_via_http() {
         let dir = tempfile::tempdir().unwrap();
         let bridge = open_bridge(dir.path());
@@ -354,6 +502,14 @@ mod http_server_tests {
         assert!(
             add_json["fact_id"].is_string(),
             "fact_id should be a string"
+        );
+        assert!(
+            add_json["authority_receipt"].is_object(),
+            "HTTP writes must return a durable authority receipt: {add_body}"
+        );
+        assert_eq!(
+            add_json["authority_receipt"]["affected_ids"][0], add_json["fact_id"],
+            "authority receipt must witness the returned fact"
         );
 
         // Search for it
@@ -379,6 +535,46 @@ mod http_server_tests {
     }
 
     #[test]
+    fn http_search_returns_current_supersession_head_only() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let old_id = add_fact(&bridge, "release train is indigo", "state");
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let new_id = rt
+            .block_on(
+                bridge
+                    .store
+                    .add_fact("state", "release train is coral", None, None),
+            )
+            .unwrap();
+        rt.block_on(bridge.store.add_graph_edge(
+            &format!("fact:{new_id}"),
+            &format!("fact:{old_id}"),
+            GraphEdgeType::Entity {
+                relation: "supersedes".into(),
+            },
+            1.0,
+            None,
+        ))
+        .unwrap();
+        let (port, _server_rt) = start_http(bridge);
+        let (_, body) = http_post(
+            port,
+            "/search",
+            r#"{"query":"release train","top_k":10,"namespaces":["state"]}"#,
+        );
+        let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+        let contents: Vec<&str> = json["results"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|r| r["content"].as_str())
+            .collect();
+        assert!(contents.iter().any(|value| value.contains("coral")));
+        assert!(!contents.iter().any(|value| value.contains("indigo")));
+    }
+
+    #[test]
     fn stats_endpoint_returns_counts() {
         let dir = tempfile::tempdir().unwrap();
         let bridge = open_bridge(dir.path());
@@ -398,6 +594,8 @@ mod http_server_tests {
         let (_, body) = http_post(port, "/stats", "{}");
         let json: serde_json::Value = serde_json::from_str(&body).expect("valid JSON");
         assert_eq!(json["ok"], serde_json::Value::Bool(true));
+        assert_eq!(json["components"]["core"]["health"], "healthy");
+        assert_eq!(json["components"]["graph"]["health"], "healthy");
         assert!(
             json["facts"].as_u64().unwrap_or(0) >= 1,
             "should have >= 1 fact, got: {}",

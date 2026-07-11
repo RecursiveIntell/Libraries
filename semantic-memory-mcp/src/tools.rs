@@ -3,7 +3,7 @@
 //! the JSON Schema for the tool's inputSchema.
 
 use schemars::JsonSchema;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Edge type for graph edges. JSON Schema enum helps LLMs pick the
 /// right value without guessing.
@@ -32,6 +32,84 @@ pub struct SearchParams {
     /// Optional namespace filter (restrict search to these namespaces)
     #[serde(default)]
     pub namespaces: Option<Vec<String>>,
+}
+
+/// Parameters for mandatory witnessed autonomous retrieval.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SearchWitnessedParams {
+    pub query: String,
+    #[serde(default)]
+    pub top_k: Option<u32>,
+    #[serde(default)]
+    pub namespaces: Option<Vec<String>>,
+    /// Optional caller correlation ID; generated when omitted.
+    #[serde(default)]
+    pub request_id: Option<String>,
+    /// Retrieval stage selection. Defaults to the current hybrid behavior.
+    #[serde(default)]
+    pub retrieval_mode: Option<RetrievalModeParam>,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum RetrievalModeParam {
+    Hybrid,
+    FtsOnly,
+    VectorOnly,
+}
+
+/// Exact namespace/resource scope used by governed authority decisions.
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct GovernedNamespaceScopeParams {
+    pub namespace: String,
+    #[serde(default)]
+    pub domain: Option<String>,
+    #[serde(default)]
+    pub workspace_id: Option<String>,
+    #[serde(default)]
+    pub repo_id: Option<String>,
+}
+
+/// Purpose values carried by a delegation/elevation lease. The MCP tool fixes
+/// the decision purpose independently, so callers cannot substitute recall.
+#[derive(Debug, Clone, Copy, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum GovernedAccessPurposeParam {
+    Recall,
+    Assertion,
+    Action,
+    Export,
+    Replay,
+    Admin,
+}
+
+/// Existing multi-principal delegation/elevation lease contract in MCP-safe fields.
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct GovernedLeaseParams {
+    pub lease_id: String,
+    pub delegator: String,
+    pub delegatee: String,
+    pub purposes: Vec<GovernedAccessPurposeParam>,
+    pub scope: GovernedNamespaceScopeParams,
+    #[serde(default)]
+    pub audiences: Vec<String>,
+    pub expires_at: String,
+    #[serde(default)]
+    pub revoked: bool,
+    #[serde(default)]
+    pub elevation: bool,
+}
+
+/// Multi-principal request for a fixed-purpose assertion or action decision.
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct GovernedDecisionParams {
+    pub fact_id: String,
+    pub caller: String,
+    pub subject: String,
+    pub audiences: Vec<String>,
+    pub scope: GovernedNamespaceScopeParams,
+    #[serde(default)]
+    pub delegation_or_elevation: Option<GovernedLeaseParams>,
 }
 
 /// Parameters for sm_search_explained
@@ -70,6 +148,28 @@ pub struct AddFactParams {
     /// Evidence references supporting this fact (URLs, fact IDs, source paths).
     #[serde(default)]
     pub evidence_refs: Option<Vec<String>>,
+    /// Optional caller-provided idempotency key. Retries with the same key and
+    /// payload return the original fact; omit it for a distinct append.
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[cfg(test)]
+mod add_fact_param_tests {
+    use super::AddFactParams;
+
+    #[test]
+    fn add_fact_idempotency_key_is_optional_and_backward_compatible() {
+        let legacy: AddFactParams =
+            serde_json::from_str(r#"{"content":"same fact","namespace":"general"}"#).unwrap();
+        assert_eq!(legacy.idempotency_key, None);
+
+        let keyed: AddFactParams = serde_json::from_str(
+            r#"{"content":"same fact","namespace":"general","idempotency_key":"request-42"}"#,
+        )
+        .unwrap();
+        assert_eq!(keyed.idempotency_key.as_deref(), Some("request-42"));
+    }
 }
 
 /// Parameters for sm_ingest_document
@@ -455,7 +555,8 @@ pub struct ConsolidateFactsParams {
 pub struct RecordOutcomeParams {
     /// The query string that was routed.
     pub query: String,
-    /// The outcome of the routing decision: "good", "bad", or "neutral".
+    /// Caller-supplied proxy feedback label: "good", "bad", or "neutral".
+    /// This is training input, not a verified retrieval outcome.
     pub outcome: String,
 }
 

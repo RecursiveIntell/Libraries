@@ -1,0 +1,1353 @@
+{
+  "agent-memory-kits": {
+    "continuity-runtime": [
+      "/home/sikmindz/Coding/agent-memory-kits/codex/plugins/semantic-memory/scripts/eval_recall.py"
+    ],
+    "receipt-bench": [
+      "/home/sikmindz/Coding/agent-memory-kits/codex/plugins/semantic-memory/scripts/eval_recall.py",
+      "/home/sikmindz/Coding/agent-memory-kits/docs/plans/2026-07-03-plugin-stack-roi-implementation-plan.md"
+    ]
+  },
+  "Libraries/semantic-memory-mcp": {
+    "hnsw-bench": [
+      "/home/sikmindz/Coding/Libraries/semantic-memory-mcp/semantic-memory-mcp-generic-rust-next-codex-context-20260620.manifest.json",
+      "/home/sikmindz/Coding/Libraries/semantic-memory-mcp/semantic-memory-mcp-generic-rust-next-codex-context-20260620.report.md"
+    ]
+  },
+  "Libraries/semantic-memory": {
+    "forge-pilot": [
+      "/home/sikmindz/Coding/Libraries/semantic-memory/README.md",
+      "/home/sikmindz/Coding/Libraries/semantic-memory/src/hnsw_backend.rs",
+      "/home/sikmindz/Coding/Libraries/semantic-memory/src/vector_backend.rs"
+    ],
+    "hnsw-bench": [
+      "/home/sikmindz/Coding/Libraries/semantic-memory/README.md"
+    ],
+    "kernel-conformance": [
+      "/home/sikmindz/Coding/Libraries/semantic-memory/src/hnsw_backend.rs",
+      "/home/sikmindz/Coding/Libraries/semantic-memory/src/vector_backend.rs"
+    ]
+  },
+  "Libraries/context-governor": {},
+  "Libraries/claim-ledger": {},
+  "Gloss": {
+    "ai-batch-queue": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/MASTER_CODEBASE_REFERENCE2.md",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/GLOSS_TOTAL_COMPLETION_AND_HARDENING_SUPERPASS_20260526/FINAL_HOSTILE_AUDITOR_HANDOFF_20260527.md",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "assurance-runtime": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory/docs/codex-runs/P31_TURBOQUANT_READINESS_BASELINE.md",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "attestation-exchange": [
+      "/home/sikmindz/Coding/Gloss/docs/EXTERNAL_CRATE_BOUNDARY_SCAN.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory-forge/src/envelope.rs",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "authority-delegation": [
+      "/home/sikmindz/Coding/Gloss/docs/EXTERNAL_CRATE_BOUNDARY_SCAN.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory/docs/codex-runs/P31_TURBOQUANT_READINESS_BASELINE.md",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "cea-core": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "cea-sqlite": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "cea-store": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "check-runner": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "check-runner-sys": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260531T044059Z/files/Gloss-generic-rust-next-codex-context-20260530T145921Z.manifest.json"
+    ],
+    "comfyui-rs": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/MASTER_CODEBASE_REFERENCE2.md",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "constitutional-memory": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "continuity-runtime": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory/docs/codex-runs/P31_TURBOQUANT_READINESS_BASELINE.md",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "contract-schema-gen": [
+      "/home/sikmindz/Coding/Gloss/docs/EXTERNAL_CRATE_BOUNDARY_SCAN.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory/docs/audits/codex-giga-pass-20260511-status.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory/docs/audits/codex-giga-pass-20260511.md",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory/docs/codex-runs/P31_TURBOQUANT_READINESS_BASELINE.md",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory/docs/codex-runs/P31_TURBOQUANT_READINESS_FINAL.md",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "discovery-portfolio": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "effect-runtime": [
+      "/home/sikmindz/Coding/Gloss/docs/EXTERNAL_CRATE_BOUNDARY_SCAN.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/scripts/assert_existing_crate_boundaries.py"
+    ],
+    "effect-signature": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "federated-settlement": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "forge-engine": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "forge-pilot": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "forge-policy": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "kernel-conformance": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "llm-tool-runtime": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/EXTERNAL_CRATE_BOUNDARY_SCAN.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json"
+    ],
+    "mechanism-runtime": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/semantic-memory-forge/src/envelope.rs",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "mindstate-core": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "ollama-vision": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/MASTER_CODEBASE_REFERENCE2.md",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "profile-runtime": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "remote-oracle-admission": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "sandbox-workspace": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "spec-execution": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "stabilizer-core": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "tauri-queue": [
+      "/home/sikmindz/Coding/Gloss/SPEC-gloss.md",
+      "/home/sikmindz/Coding/Gloss/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/README.md",
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/.claude/settings.local.json",
+      "/home/sikmindz/Coding/Gloss/src-tauri/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/HOSTILE_AUDIT_FINDINGS_GLOSS_TOTAL_20260529.md",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/unclassified/20260524T062522Z/files/docs/noncanonical-source-archive/20260524-p01-quarantine/root-artifacts/Gloss-generic-next-codex-context-20260512-hardening.manifest.json"
+    ],
+    "typed-patch": [
+      "/home/sikmindz/Coding/Gloss/Gloss-generic-rust-next-codex-context-20260612T145417Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/Gloss-generic-rust-next-codex-context-20260529T161549Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/gloss-next-codex-context.manifest.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json"
+    ],
+    "verification-adjudication": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "verification-calibration": [
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "verification-control": [
+      "/home/sikmindz/Coding/Gloss/docs/EXTERNAL_CRATE_BOUNDARY_SCAN.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/stack-ids/src/ids.rs",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json"
+    ],
+    "verification-policy": [
+      "/home/sikmindz/Coding/Gloss/docs/EXTERNAL_CRATE_BOUNDARY_SCAN.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Libraries/Cargo.toml",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_INTEGRATION_P0_20260512/logs/phase8_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/codex-runs/archive/p3-superseded-20260513/GLOSS_SEMANTIC_MEMORY_P2_PARITY_AND_UX_PROMOTION_20260513/fixtures/extracted-replay/Gloss/docs/codex-runs/GLOSS_SEMANTIC_MEMORY_RELEASE_HARDENING_P1_20260512/logs/phase0_semantic_memory_metadata.json",
+      "/home/sikmindz/Coding/Gloss/docs/source-packages/archive/20260528T014723Z/files/Gloss-generic-rust-next-codex-context-20260527T194500Z.manifest.json",
+      "/home/sikmindz/Coding/Gloss/scripts/assert_existing_crate_boundaries.py"
+    ]
+  },
+  "Recall": {
+    "assurance-runtime": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "attestation-exchange": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "authority-delegation": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "cea-core": [
+      "/home/sikmindz/Coding/Recall/PASS_COMPLETION_REPORT.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/docs-archive/CRATE_BOUNDARY_MAP.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/IMPLEMENTATION_PLAYBOOK.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json"
+    ],
+    "cea-sqlite": [
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "cea-store": [
+      "/home/sikmindz/Coding/Recall/PASS_COMPLETION_REPORT.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "check-runner": [
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "check-runner-sys": [
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "constitutional-memory": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/PASS_COMPLETION_REPORT.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "continuity-runtime": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "contract-schema-gen": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md"
+    ],
+    "discovery-portfolio": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md"
+    ],
+    "effect-runtime": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "effect-signature": [
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "federated-settlement": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md"
+    ],
+    "forge-engine": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/deps/llm-pipeline/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/docs-archive/CRATE_BOUNDARY_MAP.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/IMPLEMENTATION_PLAYBOOK.md"
+    ],
+    "forge-pilot": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/PASS_COMPLETION_REPORT.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/recall-session/src/governance.rs",
+      "/home/sikmindz/Coding/Recall/recall-session/src/graph_query.rs",
+      "/home/sikmindz/Coding/Recall/recall-session/src/session/tool_dispatch.rs",
+      "/home/sikmindz/Coding/Recall/recall-session/src/session/mod.rs",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md"
+    ],
+    "forge-policy": [
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "kernel-conformance": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md"
+    ],
+    "llm-tool-runtime": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/deps/llm-pipeline/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/docs-archive/CRATE_BOUNDARY_MAP.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/crown.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/DEPENDENCY_MANIFEST.md"
+    ],
+    "mechanism-runtime": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "mindstate-core": [
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "ollama-vision": [
+      "/home/sikmindz/Coding/Recall/deps/llm-output-parser/src/list.rs"
+    ],
+    "profile-runtime": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/recall-session/src/scope_governance.rs",
+      "/home/sikmindz/Coding/Recall/docs-archive/CRATE_BOUNDARY_MAP.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/IMPLEMENTATION_PLAYBOOK.md"
+    ],
+    "remote-oracle-admission": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md"
+    ],
+    "sandbox-workspace": [
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "spec-execution": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md"
+    ],
+    "stabilizer-core": [
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "tauri-queue": [
+      "/home/sikmindz/Coding/Recall/docs/archive/post-salvage-validation/Libraries2-vendor-20260525/agent-graph/AGENTS.md",
+      "/home/sikmindz/Coding/Recall/docs/archive/post-salvage-validation/Libraries2-vendor-20260525/agent-graph/ARCHITECTURE.md",
+      "/home/sikmindz/Coding/Recall/docs/archive/post-salvage-validation/Libraries2-vendor-20260525/agent-graph/src/executor.rs",
+      "/home/sikmindz/Coding/Recall/docs/archive/post-salvage-validation/Libraries2-vendor-20260525/job-queue/src/lib.rs"
+    ],
+    "typed-patch": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "verification-adjudication": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "verification-calibration": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222302Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222435Z/files/Recall-recall-next-codex-context-20260612T222422Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/docs/source-packages/archive/20260612T222608Z/files/Recall-recall-next-codex-context-20260612T222434Z.manifest.json"
+    ],
+    "verification-control": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/PASS_COMPLETION_REPORT.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/IMPLEMENTATION_PLAYBOOK.md",
+      "/home/sikmindz/Coding/Recall/recall-contracts/Cargo.toml"
+    ],
+    "verification-policy": [
+      "/home/sikmindz/Coding/Recall/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall/Recall-recall-next-codex-context-20260612T222607Z.manifest.json",
+      "/home/sikmindz/Coding/Recall/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall/docs-archive/RECALL_SPEC.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/HOSTILE_AUDIT_LIBRARIES_V2.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/CRATE_VECTOR.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/SEVERITY_VECTOR.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/IMPLEMENTATION_PLAYBOOK.md",
+      "/home/sikmindz/Coding/Recall/docs-archive/PROMPT.md"
+    ]
+  },
+  "Recall-Coding": {
+    "assurance-runtime": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "attestation-exchange": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/03_SHARED_CORE_AND_PRODUCT_BOUNDARY.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "authority-delegation": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "cea-core": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "cea-sqlite": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "cea-store": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "check-runner": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/03_SHARED_CORE_AND_PRODUCT_BOUNDARY.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/06_CARGO_PATH_SCRIPT_AND_PACKAGING_SPEC.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "check-runner-sys": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "constitutional-memory": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "continuity-runtime": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "contract-schema-gen": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md"
+    ],
+    "discovery-portfolio": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/03_SHARED_CORE_AND_PRODUCT_BOUNDARY.md"
+    ],
+    "effect-runtime": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "effect-signature": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "federated-settlement": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md"
+    ],
+    "forge-engine": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/deps/llm-pipeline/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md"
+    ],
+    "forge-pilot": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/src/governance.rs",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/src/graph_query.rs",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/src/session/tool_dispatch.rs",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/src/session/mod.rs",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/HARD_AUDIT.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "forge-policy": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "kernel-conformance": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md"
+    ],
+    "llm-tool-runtime": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/deps/llm-pipeline/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-daemon/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/CONTROL_PLANE_INTEGRATION.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_FINISHLINE_CONSTITUTION.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/SNAPSHOT_2026-04-11.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "mechanism-runtime": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "mindstate-core": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "ollama-vision": [
+      "/home/sikmindz/Coding/Recall-Coding/deps/llm-output-parser/src/list.rs"
+    ],
+    "profile-runtime": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/src/scope_governance.rs",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "remote-oracle-admission": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/03_SHARED_CORE_AND_PRODUCT_BOUNDARY.md"
+    ],
+    "sandbox-workspace": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/03_SHARED_CORE_AND_PRODUCT_BOUNDARY.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/06_CARGO_PATH_SCRIPT_AND_PACKAGING_SPEC.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "spec-execution": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/03_SHARED_CORE_AND_PRODUCT_BOUNDARY.md"
+    ],
+    "stabilizer-core": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "tauri-queue": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/archive/post-salvage-validation/Libraries2-vendor-20260525/agent-graph/AGENTS.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/archive/post-salvage-validation/Libraries2-vendor-20260525/agent-graph/ARCHITECTURE.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/archive/post-salvage-validation/Libraries2-vendor-20260525/agent-graph/src/executor.rs",
+      "/home/sikmindz/Coding/Recall-Coding/docs/archive/post-salvage-validation/Libraries2-vendor-20260525/job-queue/src/lib.rs"
+    ],
+    "typed-patch": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/03_SHARED_CORE_AND_PRODUCT_BOUNDARY.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/packets/recall-coding-fork-2026-04-22/06_CARGO_PATH_SCRIPT_AND_PACKAGING_SPEC.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "verification-adjudication": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_FINISHLINE_CONSTITUTION.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "verification-calibration": [
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ],
+    "verification-control": [
+      "/home/sikmindz/Coding/Recall-Coding/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-contracts/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/AGENTS.override.md",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/COMPLETION_NOTE.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/CONTROL_PLANE_INTEGRATION.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/EXECPLAN_RECALL_FINISHLINE.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/FILE_TOUCH_MAP.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md"
+    ],
+    "verification-policy": [
+      "/home/sikmindz/Coding/Recall-Coding/recall-contracts/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/recall-session/Cargo.toml",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/DEPENDENCY_MANIFEST.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_END_STATE_SPEC_V2.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/history/root-snapshot/2026-04-22/RECALL_FINISHLINE_CONSTITUTION.md",
+      "/home/sikmindz/Coding/Recall-Coding/docs/source-packages/archive/20260613T000132Z/files/Recall-Coding-recall-coding-next-codex-context-20260612T235717Z.manifest.json"
+    ]
+  },
+  "MiniRecall": {},
+  "Libraries/AiDENs": {
+    "ai-batch-queue": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json"
+    ],
+    "assurance-runtime": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/AGENTS.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_00_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/scripts/p20_scan_aidens.py",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P22/files/docs/p22/p20/reports/PHASE_00_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_07_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30/files/handoffs/p30/ISSUE_ABSORPTION_REPORT.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/IMPORT_PATH_REWRITE_PLAN.md"
+    ],
+    "attestation-exchange": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P0/files/CODEX_PROMPTS/PHASE_02_P0_EXACT_DUPLICATE_COLLAPSE.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md"
+    ],
+    "authority-delegation": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_00_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/scripts/p20_scan_aidens.py",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P22/files/docs/p22/p20/reports/PHASE_00_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P27/files/handoffs/p27/PHASE_07_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30/files/handoffs/p30/ISSUE_ABSORPTION_REPORT.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/unclassified/20260502T005849Z/files/CODEX_RUN_PROMPT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/IMPORT_PATH_REWRITE_PLAN.md"
+    ],
+    "cea-core": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30/files/handoffs/p30/ISSUE_ABSORPTION_REPORT.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json"
+    ],
+    "cea-sqlite": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.manifest.json"
+    ],
+    "cea-store": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.manifest.json"
+    ],
+    "check-runner": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30-20260513T081502Z/files/handoffs/p30/P30-08_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30/files/handoffs/p30/ISSUE_ABSORPTION_REPORT.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md"
+    ],
+    "comfyui-rs": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json"
+    ],
+    "constitutional-memory": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P22/files/docs/p22/p20/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/contract-ownership/quarantine/phase06-wrapper-canonical-record-gaps.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/MASTER_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.report.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.report.md"
+    ],
+    "continuity-runtime": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/MASTER_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.report.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.report.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.report.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json"
+    ],
+    "contract-schema-gen": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/HUMAN_GUARDRAIL_PROMPTS.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/RISK_REGISTER.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md"
+    ],
+    "discovery-portfolio": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/MASTER_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/ANTI_DUPLICATION_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.excluded.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.report.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.excluded.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.report.md"
+    ],
+    "effect-runtime": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30/files/handoffs/p30/ISSUE_ABSORPTION_REPORT.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/MASTER_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/04_PHASE_PLAN.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260513T081502Z/files/06_CLAUDE_AUDIT_INTEGRATION.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/03_PRIORITIZED_BUILD_ORDER.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/05_ACCEPTANCE_GATES_AND_COMMAND_BAR.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/06_CLAUDE_AUDIT_INTEGRATION.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/08_CRATE_AND_SURFACE_TARGET_MAP.md"
+    ],
+    "effect-signature": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.manifest.json"
+    ],
+    "federated-settlement": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P0/files/CODEX_PROMPTS/PHASE_02_P0_EXACT_DUPLICATE_COLLAPSE.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md"
+    ],
+    "forge-engine": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/IMPORT_PATH_REWRITE_PLAN.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/MASTER_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/ANTI_DUPLICATION_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json"
+    ],
+    "forge-pilot": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/P20_AGENTS_ADDENDUM.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/P20_AGENTS_ADDENDUM.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md"
+    ],
+    "forge-policy": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.manifest.json"
+    ],
+    "kernel-conformance": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/SOURCE_BASIS.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CURRENT_AIDENS_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/P20_DEPENDENCY_SOURCE_OF_TRUTH_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/P20_OWNERSHIP_SOURCE_OF_TRUTH_MAP.md"
+    ],
+    "llm-tool-runtime": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/AGENTS.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/SHADOW_SEMANTICS_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/01_SOURCE_AND_EXTRACTION_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/03_IMPLEMENTATION_PHASES.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/06_RECALL_SOURCE_TOUCH_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/15_CURRENT_RECALL_AUDIT_SUMMARY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/DEPENDENCY_AND_PATH_GUIDE.md"
+    ],
+    "mechanism-runtime": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P0/files/CODEX_PROMPTS/PHASE_02_P0_EXACT_DUPLICATE_COLLAPSE.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md"
+    ],
+    "mindstate-core": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/input_evidence/AiDENs-aidens-next-codex-context-20260508.manifest.json"
+    ],
+    "ollama-vision": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json"
+    ],
+    "profile-runtime": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P22/files/docs/p22/p20/prior-design-packet/00_EXECUTIVE_SUMMARY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P22/files/docs/p22/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P22/files/docs/p22/p20/prior-design-packet/09_MEMORY_KERNEL_AND_RUNTIME_MODEL.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P25-20260504T233808Z/files/docs/root-markdown-archive/20260504T231303Z/files/P25_LARGE_FILE_CONTAINMENT_PLAN.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P24-20260529T054601Z/files/docs/source-packages/archive/20260529T052138Z/files/P24_HARD_AUDIT.md"
+    ],
+    "remote-oracle-admission": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/FINAL_QUARANTINE_LEDGER.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/FINAL_UNRESOLVED_RISKS.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/quarantine/delegation-kit-attestation-settlement.md"
+    ],
+    "sandbox-workspace": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30/files/handoffs/p30/ISSUE_ABSORPTION_REPORT.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json"
+    ],
+    "spec-execution": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/MASTER_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.report.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.report.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.report.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json"
+    ],
+    "stabilizer-core": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30/files/handoffs/p30/ISSUE_ABSORPTION_REPORT.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json"
+    ],
+    "tauri-queue": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/CANONICAL_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/MASTER_INVENTORY.json"
+    ],
+    "typed-patch": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P30/files/handoffs/p30/ISSUE_ABSORPTION_REPORT.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/legacy-contract-ownership-03/files/.codex_evidence/contract_ownership/03/guardrail_03_to_04_cargo_metadata.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/20260503T225812Z/files/IMPORT_PATH_REWRITE_PLAN.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/ANTI_DUPLICATION_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260502.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260503.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T052944Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-codex-context-20260529T053209Z.manifest.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/root-markdown-archive/P31A_archive/AiDENs-aidens-next-codex-context-20260529T054601Z.manifest.json"
+    ],
+    "verification-adjudication": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CURRENT_AIDENS_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P12/files/handoffs/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.json",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CONTRACT_OWNERSHIP_INVENTORY.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_00_REPORT.md"
+    ],
+    "verification-calibration": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CURRENT_AIDENS_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/contract-ownership/DEPENDENCY_SOURCE_OF_TRUTH.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/prior-design-packet/01_SOURCE_BASIS_AND_RECALL_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_00_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/reports/PHASE_07_REPORT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/scripts/p20_scan_aidens.py"
+    ],
+    "verification-control": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/SHADOW_SEMANTICS_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CURRENT_AIDENS_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/DEPENDENCY_AND_PATH_GUIDE.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/HUMAN_GUARDRAIL_PROMPTS.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/SHADOW_OWNERSHIP_ISSUE_MATRIX.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/SOURCE_ROOTS_AND_TOUCH_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P12/files/handoffs/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md"
+    ],
+    "verification-policy": [
+      "/home/sikmindz/Coding/Libraries/AiDENs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/Cargo.toml",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/CURRENT_AIDENS_AUDIT.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/DEPENDENCY_AND_PATH_GUIDE.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/SOURCE_ROOTS_AND_TOUCH_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P12/files/handoffs/P12_VERIFICATION_PLANS_REPAIR_RECORDS_AND_GOVERNANCE.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/CANONICAL_OWNER_MAP.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/DEPENDENCY_AND_PATH_GUIDE.md",
+      "/home/sikmindz/Coding/Libraries/AiDENs/docs/codex-runs/archive/P20/files/docs/p20/SOURCE_ROOTS_AND_TOUCH_MAP.md"
+    ]
+  },
+  "benchmark": {},
+  "recursiveintell-web": {},
+  "Palisade": {},
+  "Rivot": {
+    "contract-schema-gen": [
+      "/home/sikmindz/Coding/Rivot/docs/19_STACK_INTEGRATION_NOTES.md"
+    ],
+    "forge-pilot": [
+      "/home/sikmindz/Coding/Rivot/docs/19_STACK_INTEGRATION_NOTES.md"
+    ],
+    "llm-tool-runtime": [
+      "/home/sikmindz/Coding/Rivot/AGENTS.md",
+      "/home/sikmindz/Coding/Rivot/README.md",
+      "/home/sikmindz/Coding/Rivot/Cargo.toml",
+      "/home/sikmindz/Coding/Rivot/00_HOSTILE_AUDIT_AND_SYNTHESIS.md",
+      "/home/sikmindz/Coding/Rivot/01_MASTER_ISSUE_EXECUTION_MATRIX.md",
+      "/home/sikmindz/Coding/Rivot/02_LIBRARY_INTEGRATION_BOUNDARY_AND_PACKAGE_MAP.md",
+      "/home/sikmindz/Coding/Rivot/SOURCE_BASIS.md",
+      "/home/sikmindz/Coding/Rivot/EXECUTIVE_SUMMARY.md",
+      "/home/sikmindz/Coding/Rivot/docs/19_STACK_INTEGRATION_NOTES.md",
+      "/home/sikmindz/Coding/Rivot/crates/rivet-exec/Cargo.toml"
+    ],
+    "verification-control": [
+      "/home/sikmindz/Coding/Rivot/README.md",
+      "/home/sikmindz/Coding/Rivot/Cargo.toml",
+      "/home/sikmindz/Coding/Rivot/02_LIBRARY_INTEGRATION_BOUNDARY_AND_PACKAGE_MAP.md",
+      "/home/sikmindz/Coding/Rivot/SOURCE_BASIS.md",
+      "/home/sikmindz/Coding/Rivot/EXECUTIVE_SUMMARY.md",
+      "/home/sikmindz/Coding/Rivot/docs/19_STACK_INTEGRATION_NOTES.md",
+      "/home/sikmindz/Coding/Rivot/crates/rivet-exec/Cargo.toml",
+      "/home/sikmindz/Coding/Rivot/crates/rivet-exec/src/lib.rs",
+      "/home/sikmindz/Coding/Rivot/crates/rivet-policy/Cargo.toml",
+      "/home/sikmindz/Coding/Rivot/crates/rivet-verify/Cargo.toml"
+    ],
+    "verification-policy": [
+      "/home/sikmindz/Coding/Rivot/README.md",
+      "/home/sikmindz/Coding/Rivot/Cargo.toml",
+      "/home/sikmindz/Coding/Rivot/02_LIBRARY_INTEGRATION_BOUNDARY_AND_PACKAGE_MAP.md",
+      "/home/sikmindz/Coding/Rivot/SOURCE_BASIS.md",
+      "/home/sikmindz/Coding/Rivot/EXECUTIVE_SUMMARY.md",
+      "/home/sikmindz/Coding/Rivot/docs/19_STACK_INTEGRATION_NOTES.md",
+      "/home/sikmindz/Coding/Rivot/crates/rivet-policy/Cargo.toml"
+    ]
+  },
+  "Forge-Audit": {
+    "ai-batch-queue": [
+      "/home/sikmindz/Coding/Forge-Audit/MASTER_CODEBASE_REFERENCE.md",
+      "/home/sikmindz/Coding/Forge-Audit/AI_LIBRARY_REFERENCE.md"
+    ],
+    "comfyui-rs": [
+      "/home/sikmindz/Coding/Forge-Audit/MASTER_CODEBASE_REFERENCE.md",
+      "/home/sikmindz/Coding/Forge-Audit/AI_LIBRARY_REFERENCE.md"
+    ],
+    "ollama-vision": [
+      "/home/sikmindz/Coding/Forge-Audit/MASTER_CODEBASE_REFERENCE.md",
+      "/home/sikmindz/Coding/Forge-Audit/AI_LIBRARY_REFERENCE.md"
+    ],
+    "tauri-queue": [
+      "/home/sikmindz/Coding/Forge-Audit/MASTER_CODEBASE_REFERENCE.md",
+      "/home/sikmindz/Coding/Forge-Audit/AI_LIBRARY_REFERENCE.md"
+    ]
+  },
+  "forge-workbench": {
+    "ai-batch-queue": [
+      "/home/sikmindz/Coding/forge-workbench/Cargo.toml",
+      "/home/sikmindz/Coding/forge-workbench/CANONICAL_STACK_SPEC_V6.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/02_system_architecture.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/03_agent_graph_and_state.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/06_queue_trace_retry_policy.md",
+      "/home/sikmindz/Coding/forge-workbench/plans/forge-workbench-v1.execplan.md"
+    ],
+    "forge-engine": [
+      "/home/sikmindz/Coding/forge-workbench/Cargo.toml",
+      "/home/sikmindz/Coding/forge-workbench/docs/02_system_architecture.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/10_codex_runbook.md",
+      "/home/sikmindz/Coding/forge-workbench/plans/forge-workbench-v1.execplan.md",
+      "/home/sikmindz/Coding/forge-workbench/plans/forge-workbench-next-pass.execplan.md",
+      "/home/sikmindz/Coding/forge-workbench/crates/forge-workbench-core/Cargo.toml"
+    ],
+    "tauri-queue": [
+      "/home/sikmindz/Coding/forge-workbench/Cargo.toml",
+      "/home/sikmindz/Coding/forge-workbench/docs/02_system_architecture.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/06_queue_trace_retry_policy.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/09_risk_register.md",
+      "/home/sikmindz/Coding/forge-workbench/plans/forge-workbench-v1.execplan.md",
+      "/home/sikmindz/Coding/forge-workbench/apps/forge-workbench/src-tauri/Cargo.toml"
+    ],
+    "typed-patch": [
+      "/home/sikmindz/Coding/forge-workbench/Cargo.toml",
+      "/home/sikmindz/Coding/forge-workbench/docs/04_data_models_and_contracts.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/09_risk_register.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/11_prompt_contracts.md",
+      "/home/sikmindz/Coding/forge-workbench/docs/workspace_requirements.md",
+      "/home/sikmindz/Coding/forge-workbench/plans/forge-workbench-v1.execplan.md"
+    ]
+  },
+  "projmind": {
+    "tauri-queue": [
+      "/home/sikmindz/Coding/projmind/CLAUDE.md",
+      "/home/sikmindz/Coding/projmind/BUILD_TASK.md",
+      "/home/sikmindz/Coding/projmind/SPEC.md"
+    ]
+  },
+  "chat-rs": {
+    "llm-tool-runtime": [
+      "/home/sikmindz/Coding/chat-rs/Cargo.toml",
+      "/home/sikmindz/Coding/chat-rs/README.md",
+      "/home/sikmindz/Coding/chat-rs/AGENTS.md",
+      "/home/sikmindz/Coding/chat-rs/00_START_HERE_NATIVE_OVERRIDE.md",
+      "/home/sikmindz/Coding/chat-rs/18_NATIVE_LIBRARY_WIRING_OVERRIDE.md",
+      "/home/sikmindz/Coding/chat-rs/19_APOLOGY_AND_RATIONALE.md",
+      "/home/sikmindz/Coding/chat-rs/docs/CANONICAL_CRATE_OWNER_MAP.md",
+      "/home/sikmindz/Coding/chat-rs/docs/RI_CHAT_LIBRARY_WIRING_PLAN.md",
+      "/home/sikmindz/Coding/chat-rs/docs/LOCAL_SUBSTITUTE_QUARANTINE_PLAN.md",
+      "/home/sikmindz/Coding/chat-rs/docs/PHASE_8_HOSTILE_AUDIT.md"
+    ]
+  },
+  "visionforge": {},
+  "Jacob": {},
+  "Kirsten": {}
+}

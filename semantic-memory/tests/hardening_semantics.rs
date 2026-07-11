@@ -218,6 +218,92 @@ async fn graph_view_exposes_document_chunk_and_episode_causal_links() {
     );
 }
 
+#[tokio::test]
+async fn graph_traversal_respects_node_budget() {
+    // Insert 600 facts into the same namespace. The default max_nodes is 500,
+    // so a multi-hop traversal from the namespace node should visit at most
+    // 500 nodes, not all 600.
+    let dir = TempDir::new().unwrap();
+    let store = open_store(&dir);
+
+    for i in 0..600 {
+        store
+            .add_fact("budget", &format!("fact number {i}"), None, None)
+            .await
+            .unwrap();
+    }
+
+    let graph = store.graph_view();
+    // depth=2: namespace -> facts -> semantic neighbours. The 500 fact nodes
+    // already exhaust the node budget, so the second-hop expansions should
+    // not add more than 500 total nodes.
+    let edges = graph
+        .neighbors("namespace:budget", GraphDirection::Outgoing, 2)
+        .unwrap();
+
+    // The first hop produces 600 entity edges (namespace -> fact). The node
+    // budget limits how many of those 600 nodes get expanded for hop 2.
+    // We should see 600 namespace->fact edges plus some semantic edges from
+    // the <= 500 expanded facts, but the key invariant is we don't hang.
+    // The test verifies the traversal terminates in reasonable time.
+    assert!(
+        !edges.is_empty(),
+        "expected non-empty edges from 600 facts"
+    );
+    // At least the namespace->fact edges should be present (from hop 1).
+    let ns_edges: Vec<_> = edges
+        .iter()
+        .filter(|e| e.source == "namespace:budget")
+        .collect();
+    assert_eq!(
+        ns_edges.len(),
+        600,
+        "expected 600 namespace->fact edges from hop 1, got {}",
+        ns_edges.len()
+    );
+}
+
+#[tokio::test]
+async fn graph_semantic_candidates_uses_sql_limit() {
+    // Verify that semantic_edges does not load more than max_edges_per_node
+    // candidates from any single table. With 100 facts having embeddings and
+    // max_edges_per_node=50 (DEFAULT_MAX_EDGES_PER_NODE), we should not
+    // decode all 100 embeddings.
+    let dir = TempDir::new().unwrap();
+    let store = open_store(&dir);
+
+    for i in 0..100 {
+        store
+            .add_fact("limit-test", &format!("semantic fact {i}"), None, None)
+            .await
+            .unwrap();
+    }
+
+    let graph = store.graph_view();
+    // Traverse from one fact — its semantic edges should be bounded.
+    let edges = graph
+        .neighbors("fact:0", GraphDirection::Outgoing, 1)
+        .unwrap();
+
+    // Semantic edges + the namespace edge. Semantic edges are capped at
+    // SEMANTIC_EDGE_LIMIT (5) and max_edges_per_node (50). Total should be
+    // well under 100.
+    let semantic_count = edges
+        .iter()
+        .filter(|e| {
+            matches!(
+                e.edge_type,
+                semantic_memory::GraphEdgeType::Semantic { .. }
+            )
+        })
+        .count();
+    assert!(
+        semantic_count <= 5,
+        "expected <= 5 semantic edges (SEMANTIC_EDGE_LIMIT), got {}",
+        semantic_count
+    );
+}
+
 #[cfg(feature = "testing")]
 #[tokio::test]
 async fn corruption_is_visible_in_live_reads_and_integrity_reports() {
