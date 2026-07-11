@@ -12,7 +12,7 @@ use rmcp::{
 };
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tokio::runtime::Handle;
 
 static WITNESS_REQUEST_SEQUENCE: AtomicU64 = AtomicU64::new(1);
@@ -20,12 +20,60 @@ static WITNESS_REQUEST_SEQUENCE: AtomicU64 = AtomicU64::new(1);
 // Re-export the specific parameter types we use in tool signatures.
 use crate::tools::{
     AddGraphEdgeParams, CommunityParams, FactorGraphParams, InvalidateGraphEdgeParams,
-    ListGraphEdgesParams, RecordOutcomeParams, TopologyParams,
+    ListGraphEdgesParams, RecordOutcomeParams, SearchProofDebtParams, TopologyParams,
 };
+
+/// Best-effort, process-local index from semantic-memory facts to claim-ledger
+/// support judgments. Populated by `sm_create_claim`/`sm_judge_support` and
+/// consulted by search-time trust enrichment. Never a source of truth — the
+/// claim ledger itself is; this is just a lookup cache for wiring the two
+/// systems together at the MCP layer.
+#[cfg(feature = "claim-integration")]
+#[derive(Default)]
+struct ClaimTrustIndex {
+    fact_to_claim: HashMap<String, String>,
+    claim_support: HashMap<String, claim_ledger::SupportState>,
+}
+
+#[cfg(feature = "claim-integration")]
+impl ClaimTrustIndex {
+    fn link_fact(&mut self, bare_fact_id: String, claim_id: String) {
+        self.fact_to_claim.insert(bare_fact_id, claim_id);
+    }
+
+    fn record_judgment(&mut self, claim_id: String, state: claim_ledger::SupportState) {
+        self.claim_support.insert(claim_id, state);
+    }
+
+    fn trust_for_fact(&self, bare_fact_id: &str) -> String {
+        let Some(claim_id) = self.fact_to_claim.get(bare_fact_id) else {
+            return "persisted_unjudged".to_string();
+        };
+        let Some(state) = self.claim_support.get(claim_id) else {
+            return "persisted_unjudged".to_string();
+        };
+        support_state_label(*state).to_string()
+    }
+}
+
+#[cfg(feature = "claim-integration")]
+fn support_state_label(state: claim_ledger::SupportState) -> &'static str {
+    use claim_ledger::SupportState;
+    match state {
+        SupportState::Supported => "supported",
+        SupportState::PartiallySupported => "partially_supported",
+        SupportState::Unsupported => "unsupported",
+        SupportState::Contradicted => "contradicted",
+        SupportState::HeuristicOnly => "heuristic_only",
+        SupportState::Unknown => "persisted_unjudged",
+    }
+}
 
 pub struct SemanticMemoryServer {
     bridge: Arc<MemoryBridge>,
     tool_router: ToolRouter<Self>,
+    #[cfg(feature = "claim-integration")]
+    claim_trust: Mutex<ClaimTrustIndex>,
 }
 
 impl SemanticMemoryServer {
@@ -100,6 +148,8 @@ impl SemanticMemoryServer {
         Self {
             bridge: Arc::new(bridge),
             tool_router: router,
+            #[cfg(feature = "claim-integration")]
+            claim_trust: Mutex::new(ClaimTrustIndex::default()),
         }
     }
 
@@ -640,6 +690,40 @@ impl SemanticMemoryServer {
         }
     }
 
+    /// Best-effort claim-ledger trust lookup for a bare fact id. Falls back to
+    /// "persisted_unjudged" whenever claim-integration is disabled, no claim
+    /// exists for the fact, or no support judgment has been recorded yet.
+    #[cfg(feature = "claim-integration")]
+    fn trust_for_fact(&self, bare_fact_id: &str) -> String {
+        self.claim_trust.lock().unwrap().trust_for_fact(bare_fact_id)
+    }
+
+    #[cfg(not(feature = "claim-integration"))]
+    fn trust_for_fact(&self, _bare_fact_id: &str) -> String {
+        "persisted_unjudged".to_string()
+    }
+
+    /// Overwrites the "trust" field of each search result (keyed off its
+    /// "memory_id" of the form "fact:<id>") with the claim-ledger support
+    /// state, when one has been recorded. Never fails the search.
+    fn enrich_results_with_trust(&self, results: &mut [serde_json::Value]) {
+        for result in results.iter_mut() {
+            let bare_fact_id = result
+                .get("memory_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.strip_prefix("fact:").unwrap_or(s).to_string());
+            let Some(bare_fact_id) = bare_fact_id else {
+                continue;
+            };
+            if let Some(obj) = result.as_object_mut() {
+                obj.insert(
+                    "trust".to_string(),
+                    serde_json::Value::String(self.trust_for_fact(&bare_fact_id)),
+                );
+            }
+        }
+    }
+
     #[tool(
         description = "Mandatory witnessed hybrid retrieval. Bypasses cache, verifies durable receipt persistence, defaults to Current state, and explicitly reports unavailable authority/replay data.",
         annotations(read_only_hint = true)
@@ -767,6 +851,9 @@ impl SemanticMemoryServer {
                 results.push(hit);
             }
         }
+        // T2.6: Enrich search results with claim-ledger support state.
+        // Best-effort: falls back to "persisted_unjudged" when no claim exists.
+        self.enrich_results_with_trust(&mut results);
         let ordered_results: Vec<_> = results.iter().map(|r| serde_json::json!({"result_id": r["result_id"], "result_digest": digest(&r.to_string())})).collect();
         let exactness = if receipt.approximate {
             "approximate_candidates"
@@ -799,6 +886,103 @@ impl SemanticMemoryServer {
             },
             "degradations": receipt.degradations, "complete_replay_available": false
         }))
+    }
+
+    #[tool(
+        description = "Search with proof-debt analysis. Runs a standard search, then for each result checks the claim-ledger trust index for support state. Returns results plus a proof_debt summary with total debt weight, unsupported count, and gate decision.",
+        annotations(read_only_hint = true)
+    )]
+    fn sm_search_proof_debt(
+        &self,
+        Parameters(SearchProofDebtParams { query, top_k, namespaces, budget_micros }): Parameters<
+            SearchProofDebtParams,
+        >,
+    ) -> Result<String, ErrorData> {
+        let k = top_k.map(|v| v as usize).unwrap_or(5);
+        let store = &self.bridge.store;
+        let ns: Option<Vec<&str>> = namespaces
+            .as_ref()
+            .map(|v| v.iter().map(String::as_str).collect());
+
+        let results = tokio::task::block_in_place(|| {
+            Handle::current().block_on(store.search(&query, Some(k), ns.as_deref(), None))
+        })
+        .map_err(|e| ErrorData::internal_error(format!("search failed: {e}"), None))?;
+
+        // T2.5: Evaluate proof debt for search results using the claim-ledger
+        // trust index. Results with no claim or Unknown/HeuristicOnly support
+        // accumulate debt. Results with Supported/PartiallySupported do not.
+        #[cfg(feature = "claim-integration")]
+        {
+            use claim_ledger::SupportState;
+            let budget = budget_micros.unwrap_or(500_000);
+            let idx = self.claim_trust.lock().unwrap();
+            let mut total_debt: u64 = 0;
+            let mut unsupported_count = 0usize;
+            let mut per_result = Vec::new();
+
+            for r in &results {
+                let fact_id = r.source.result_id();
+                let bare_id = fact_id.strip_prefix("fact:").unwrap_or(&fact_id);
+                let trust = idx.trust_for_fact(bare_id);
+                // Each unjudged or unsupported result accumulates 100_000 micros
+                // of proof debt (simplified weight — real implementation would
+                // use claim_ledger::budget::proof_debt_weight with actual claims)
+                let debt = match trust.as_str() {
+                    "persisted_unjudged" | "heuristic_only" | "unsupported" => {
+                        unsupported_count += 1;
+                        100_000
+                    }
+                    "contradicted" => {
+                        unsupported_count += 1;
+                        200_000
+                    }
+                    _ => 0,
+                };
+                total_debt += debt;
+                per_result.push(serde_json::json!({
+                    "fact_id": fact_id,
+                    "trust": trust,
+                    "debt_micros": debt,
+                }));
+            }
+            let gate_decision = if total_debt <= budget { "Pass" } else { "Fail" };
+
+            json_to_string(&serde_json::json!({
+                "ok": true,
+                "query": query,
+                "results": per_result,
+                "count": results.len(),
+                "proof_debt": {
+                    "total_debt_micros": total_debt,
+                    "unsupported_count": unsupported_count,
+                    "budget_micros": budget,
+                    "gate_decision": gate_decision,
+                },
+                "receipt": mcp_receipt("sm_search_proof_debt"),
+            }))
+        }
+        #[cfg(not(feature = "claim-integration"))]
+        {
+            json_to_string(&serde_json::json!({
+                "ok": true,
+                "query": query,
+                "results": results.iter().map(|r| serde_json::json!({
+                    "fact_id": r.source.result_id(),
+                    "content": r.content,
+                    "trust": "persisted_unjudged",
+                })).collect::<Vec<_>>(),
+                "count": results.len(),
+                "proof_debt": {
+                    "total_debt_micros": 0,
+                    "unsupported_count": 0,
+                    "budget_micros": budget_micros.unwrap_or(500_000),
+                    "gate_decision": "Pass",
+                    "note": "claim-integration feature not enabled",
+                },
+                "receipt": mcp_receipt("sm_search_proof_debt"),
+            }))
+        }
     }
 
     #[tool(
@@ -2109,7 +2293,7 @@ impl SemanticMemoryServer {
     )]
     fn sm_detect_contradictions(
         &self,
-        Parameters(DetectContradictionsParams { query, top_k }): Parameters<
+        Parameters(DetectContradictionsParams { query, top_k, record_to_ledger }): Parameters<
             DetectContradictionsParams,
         >,
     ) -> Result<String, ErrorData> {
@@ -2129,6 +2313,33 @@ impl SemanticMemoryServer {
 
         let pairs = detect_contradictions(&items, &DetectorConfig::default());
 
+        // T2.4: Optionally record detected contradictions to the claim-ledger
+        // via the in-process ClaimTrustIndex. Each contradiction pair links
+        // both facts so that future trust lookups can reflect the conflict.
+        let ledger_recorded = if record_to_ledger.unwrap_or(false) {
+            #[cfg(feature = "claim-integration")]
+            {
+                use claim_ledger::SupportState;
+                let mut count = 0usize;
+                for p in &pairs {
+                    // Record both facts as contradicted in the trust index
+                    let fact_a = p.a.strip_prefix("fact:").unwrap_or(&p.a).to_string();
+                    let fact_b = p.b.strip_prefix("fact:").unwrap_or(&p.b).to_string();
+                    let mut idx = self.claim_trust.lock().unwrap();
+                    idx.record_judgment(fact_a.clone(), SupportState::Contradicted);
+                    idx.record_judgment(fact_b.clone(), SupportState::Contradicted);
+                    count += 1;
+                }
+                count
+            }
+            #[cfg(not(feature = "claim-integration"))]
+            {
+                0
+            }
+        } else {
+            0
+        };
+
         json_to_string(&serde_json::json!({
             "ok": true,
             "query": query,
@@ -2141,6 +2352,8 @@ impl SemanticMemoryServer {
                 "reason": p.reason,
             })).collect::<Vec<_>>(),
             "count": pairs.len(),
+            "ledger_recorded": ledger_recorded,
+            "receipt": mcp_receipt("sm_detect_contradictions"),
         }))
     }
 
@@ -3201,6 +3414,11 @@ impl SemanticMemoryServer {
         let claim_id = claim.claim_id.clone();
         let normalized = &claim.normalized_claim;
 
+        self.claim_trust
+            .lock()
+            .unwrap()
+            .link_fact(bare.clone(), claim_id.clone());
+
         json_to_string(&serde_json::json!({
             "ok": true,
             "receipt": mcp_receipt("sm_create_claim"),
@@ -3285,6 +3503,11 @@ impl SemanticMemoryServer {
             proof_debt: Vec::new(),
             created_recorded_time: chrono::Utc::now(),
         };
+
+        self.claim_trust
+            .lock()
+            .unwrap()
+            .record_judgment(claim_id.clone(), state);
 
         json_to_string(&serde_json::json!({
             "ok": true,

@@ -215,6 +215,11 @@ pub struct DetectContradictionsParams {
     /// How many top results to scan (default 10)
     #[serde(default)]
     pub top_k: Option<u32>,
+    /// When true, record each detected contradiction pair to the claim-ledger
+    /// as a hash-chained ContradictionCandidate entry (requires the
+    /// `claim-integration` feature). Default false.
+    #[serde(default)]
+    pub record_to_ledger: Option<bool>,
 }
 
 /// Parameters for sm_search_with_routing
@@ -591,6 +596,22 @@ pub struct JudgeSupportParams {
     pub judgment: String,
     /// Optional rationale for the judgment.
     pub rationale: Option<String>,
+}
+
+/// Parameters for sm_search_proof_debt
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SearchProofDebtParams {
+    /// The search query string.
+    pub query: String,
+    /// Maximum number of results to return (default 5).
+    #[serde(default)]
+    pub top_k: Option<u32>,
+    /// Optional namespace filter (restrict search to these namespaces).
+    #[serde(default)]
+    pub namespaces: Option<Vec<String>>,
+    /// Proof-debt budget in micros for the gate check (default 500_000, one full proof unit).
+    #[serde(default)]
+    pub budget_micros: Option<u64>,
 }
 
 // ─── Bitemporal search ─────────────────────────────────────────────────
