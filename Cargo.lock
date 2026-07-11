@@ -6041,6 +6041,7 @@ dependencies = [
  "semantic-memory-forge",
  "serde",
  "serde_json",
+ "sha2 0.10.9",
  "stack-ids",
  "tempfile",
  "thiserror 2.0.18",
