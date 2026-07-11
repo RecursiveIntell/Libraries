@@ -38,6 +38,10 @@ enum ClaimTrustRecord {
         claim_id: String,
         state: claim_ledger::SupportState,
     },
+    ClaimRegistered {
+        claim_id: String,
+        normalized_content: String,
+    },
 }
 
 /// Process-local index from semantic-memory facts to claim-ledger support
@@ -52,6 +56,10 @@ enum ClaimTrustRecord {
 struct ClaimTrustIndex {
     fact_to_claim: HashMap<String, String>,
     claim_support: HashMap<String, claim_ledger::SupportState>,
+    /// Reverse index from a claim's normalized content to its claim id, used
+    /// to auto-link newly added facts whose content matches an existing
+    /// claim without requiring an explicit sm_create_claim call.
+    content_to_claim: HashMap<String, String>,
     path: Option<std::path::PathBuf>,
 }
 
@@ -76,6 +84,12 @@ impl ClaimTrustIndex {
                     }
                     Ok(ClaimTrustRecord::Judgment { claim_id, state }) => {
                         idx.claim_support.insert(claim_id, state);
+                    }
+                    Ok(ClaimTrustRecord::ClaimRegistered {
+                        claim_id,
+                        normalized_content,
+                    }) => {
+                        idx.content_to_claim.insert(normalized_content, claim_id);
                     }
                     Err(e) => {
                         tracing::warn!(error = %e, "skipping malformed claim_trust record");
@@ -116,6 +130,36 @@ impl ClaimTrustIndex {
         self.fact_to_claim.insert(bare_fact_id, claim_id);
     }
 
+    /// Record a claim's normalized content in the reverse index so future
+    /// facts with matching content can be auto-linked without an explicit
+    /// sm_create_claim call.
+    fn register_claim(&mut self, claim_id: String, normalized_content: String) {
+        if normalized_content.is_empty() {
+            return;
+        }
+        self.persist(&ClaimTrustRecord::ClaimRegistered {
+            claim_id: claim_id.clone(),
+            normalized_content: normalized_content.clone(),
+        });
+        self.content_to_claim.insert(normalized_content, claim_id);
+    }
+
+    /// Best-effort: if `bare_fact_id` isn't already linked to a claim, check
+    /// whether its normalized content matches a known claim and link it if
+    /// so. No-op if the fact is already linked or no claim matches.
+    fn auto_link_content(&mut self, bare_fact_id: &str, content: &str) -> Option<String> {
+        if self.fact_to_claim.contains_key(bare_fact_id) {
+            return None;
+        }
+        let normalized = claim_ledger::ids::normalize_text(content);
+        if normalized.is_empty() {
+            return None;
+        }
+        let claim_id = self.content_to_claim.get(&normalized)?.clone();
+        self.link_fact(bare_fact_id.to_string(), claim_id.clone());
+        Some(claim_id)
+    }
+
     fn record_judgment(&mut self, claim_id: String, state: claim_ledger::SupportState) {
         self.persist(&ClaimTrustRecord::Judgment {
             claim_id: claim_id.clone(),
@@ -132,6 +176,35 @@ impl ClaimTrustIndex {
             return "persisted_unjudged".to_string();
         };
         support_state_label(*state).to_string()
+    }
+
+    /// The claim linked to this fact (if any) and its recorded support
+    /// judgment (if any judgment has been made yet). Distinguishes "no claim
+    /// at all" (no proof debt to speak of) from "claim exists but unjudged"
+    /// (real proof debt, `SupportState::Unknown`).
+    fn claim_and_state_for_fact(
+        &self,
+        bare_fact_id: &str,
+    ) -> Option<(String, Option<claim_ledger::SupportState>)> {
+        let claim_id = self.fact_to_claim.get(bare_fact_id)?;
+        Some((claim_id.clone(), self.claim_support.get(claim_id).copied()))
+    }
+}
+
+/// Map a claim's support judgment to the proof-debt obligations it incurs.
+/// Supported/PartiallySupported claims carry no debt. Unjudged, heuristic, or
+/// unsupported claims lack a source basis. Contradicted claims carry that
+/// same missing-source-basis debt plus a missing-repro debt, so the real
+/// claim-ledger weights (not a hardcoded number) rank them strictly worse.
+#[cfg(feature = "claim-integration")]
+fn proof_debts_for_support_state(state: claim_ledger::SupportState) -> Vec<claim_ledger::ProofDebt> {
+    use claim_ledger::{ProofDebt, SupportState};
+    match state {
+        SupportState::Supported | SupportState::PartiallySupported => Vec::new(),
+        SupportState::Unknown | SupportState::HeuristicOnly | SupportState::Unsupported => {
+            vec![ProofDebt::MissingSourceBasis]
+        }
+        SupportState::Contradicted => vec![ProofDebt::MissingSourceBasis, ProofDebt::MissingRepro],
     }
 }
 
@@ -836,9 +909,26 @@ impl SemanticMemoryServer {
         "persisted_unjudged".to_string()
     }
 
+    /// Best-effort: link `bare_fact_id` to an existing claim whose normalized
+    /// content matches `content`, if one exists and the fact isn't already
+    /// linked. Never fails the caller — this is a convenience wiring, not a
+    /// truth-store operation.
+    #[cfg(feature = "claim-integration")]
+    fn auto_link_fact_to_claims(&self, bare_fact_id: &str, content: &str) {
+        self.claim_trust
+            .lock()
+            .unwrap()
+            .auto_link_content(bare_fact_id, content);
+    }
+
+    #[cfg(not(feature = "claim-integration"))]
+    fn auto_link_fact_to_claims(&self, _bare_fact_id: &str, _content: &str) {}
+
     /// Overwrites the "trust" field of each search result (keyed off its
     /// "memory_id" of the form "fact:<id>") with the claim-ledger support
-    /// state, when one has been recorded. Never fails the search.
+    /// state, when one has been recorded. Also attempts to auto-link any
+    /// still-unjudged result whose content now matches a claim created since
+    /// the fact was added. Never fails the search.
     fn enrich_results_with_trust(&self, results: &mut [serde_json::Value]) {
         for result in results.iter_mut() {
             let bare_fact_id = result
@@ -848,6 +938,9 @@ impl SemanticMemoryServer {
             let Some(bare_fact_id) = bare_fact_id else {
                 continue;
             };
+            if let Some(content) = result.get("content").and_then(|v| v.as_str()) {
+                self.auto_link_fact_to_claims(&bare_fact_id, content);
+            }
             if let Some(obj) = result.as_object_mut() {
                 obj.insert(
                     "trust".to_string(),
@@ -1042,15 +1135,21 @@ impl SemanticMemoryServer {
         })
         .map_err(|e| ErrorData::internal_error(format!("search failed: {e}"), None))?;
 
-        // T2.5: Evaluate proof debt for search results using the claim-ledger
-        // trust index. Results with no claim or Unknown/HeuristicOnly support
-        // accumulate debt. Results with Supported/PartiallySupported do not.
+        // T2.5/D3: Evaluate proof debt for search results using the real
+        // claim-ledger budget machinery. Results with no linked claim carry
+        // no debt (there is nothing to owe proof for). Results whose claim
+        // is unjudged, heuristic-only, unsupported, or contradicted incur
+        // the claim-ledger's real ProofDebt weights, and the aggregate is
+        // run through the real gate evaluator — no hardcoded weights.
         #[cfg(feature = "claim-integration")]
         {
-            use claim_ledger::SupportState;
+            use claim_ledger::{
+                budget_for_claim, evaluate_proof_debt_gate_with_config, total_proof_debt_weight,
+                ProofDebtBudgetConfig,
+            };
             let budget = budget_micros.unwrap_or(500_000);
             let idx = self.claim_trust.lock().unwrap();
-            let mut total_debt: u64 = 0;
+            let mut all_debts = Vec::new();
             let mut unsupported_count = 0usize;
             let mut per_result = Vec::new();
 
@@ -1058,28 +1157,33 @@ impl SemanticMemoryServer {
                 let fact_id = r.source.result_id();
                 let bare_id = fact_id.strip_prefix("fact:").unwrap_or(&fact_id);
                 let trust = idx.trust_for_fact(bare_id);
-                // Each unjudged or unsupported result accumulates 100_000 micros
-                // of proof debt (simplified weight — real implementation would
-                // use claim_ledger::budget::proof_debt_weight with actual claims)
-                let debt = match trust.as_str() {
-                    "persisted_unjudged" | "heuristic_only" | "unsupported" => {
-                        unsupported_count += 1;
-                        100_000
+                let (claim_id, debts) = match idx.claim_and_state_for_fact(bare_id) {
+                    Some((claim_id, state)) => {
+                        let debts = proof_debts_for_support_state(
+                            state.unwrap_or(claim_ledger::SupportState::Unknown),
+                        );
+                        (Some(claim_id), debts)
                     }
-                    "contradicted" => {
-                        unsupported_count += 1;
-                        200_000
-                    }
-                    _ => 0,
+                    None => (None, Vec::new()),
                 };
-                total_debt += debt;
+                if !debts.is_empty() {
+                    unsupported_count += 1;
+                }
+                let debt_micros = total_proof_debt_weight(&debts);
+                all_debts.extend(debts);
                 per_result.push(serde_json::json!({
                     "fact_id": fact_id,
+                    "claim_id": claim_id,
                     "trust": trust,
-                    "debt_micros": debt,
+                    "debt_micros": debt_micros,
                 }));
             }
-            let gate_decision = if total_debt <= budget { "Pass" } else { "Fail" };
+
+            let config = ProofDebtBudgetConfig::default();
+            let total_debt = total_proof_debt_weight(&all_debts);
+            let (proof_budget, debits) =
+                budget_for_claim("sm_search_proof_debt", &all_debts, budget);
+            let gate = evaluate_proof_debt_gate_with_config(&proof_budget, &config);
 
             json_to_string(&serde_json::json!({
                 "ok": true,
@@ -1090,7 +1194,11 @@ impl SemanticMemoryServer {
                     "total_debt_micros": total_debt,
                     "unsupported_count": unsupported_count,
                     "budget_micros": budget,
-                    "gate_decision": gate_decision,
+                    "consumed_pct": gate.consumed_pct,
+                    "exhausted": gate.exhausted,
+                    "gate_decision": gate.decision,
+                    "gate_summary": gate.summary,
+                    "debit_count": debits.len(),
                 },
                 "receipt": mcp_receipt("sm_search_proof_debt"),
             }))
@@ -1360,6 +1468,9 @@ impl SemanticMemoryServer {
                         None,
                     )
                 })?;
+                // D4: best-effort auto-link to an existing claim with matching
+                // normalized content. Never fails the whole operation.
+                self.auto_link_fact_to_claims(&id, &content);
                 // Optional entity extraction — best-effort, never fails the whole operation.
                 if extract_entities == Some(true) {
                     let prompt = format!(
@@ -3592,10 +3703,11 @@ impl SemanticMemoryServer {
         let claim_id = claim.claim_id.clone();
         let normalized = &claim.normalized_claim;
 
-        self.claim_trust
-            .lock()
-            .unwrap()
-            .link_fact(bare.clone(), claim_id.clone());
+        {
+            let mut idx = self.claim_trust.lock().unwrap();
+            idx.link_fact(bare.clone(), claim_id.clone());
+            idx.register_claim(claim_id.clone(), normalized.clone());
+        }
 
         json_to_string(&serde_json::json!({
             "ok": true,
