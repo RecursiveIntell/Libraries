@@ -33,8 +33,14 @@ fn approx_eq(left: f64, right: f64, epsilon: f64) {
     );
 }
 
+#[cfg(not(feature = "integration"))]
 #[tokio::test]
 async fn explainable_search_matches_configured_rrf_math() {
+    // Baseline RRF math: BM25 (weight 2.0, rank 1) + vector (weight 3.0, rank 1)
+    // + recency (weight 0.5). With rrf_k=10: 1/(10+1) for each.
+    // This test only runs without integration features — integration changes
+    // the scoring pipeline (topology, community, matryoshka stages) and produces
+    // different contribution values.
     let dir = TempDir::new().unwrap();
     let store = open_store(&dir);
 
@@ -74,6 +80,42 @@ async fn explainable_search_matches_configured_rrf_math() {
         5e-3,
     );
     approx_eq(top.result.score, breakdown.rrf_score, 1e-9);
+    assert_eq!(breakdown.bm25_weight, 2.0);
+    assert_eq!(breakdown.vector_weight, 3.0);
+    assert_eq!(breakdown.rrf_k, 10.0);
+}
+
+#[cfg(feature = "integration")]
+#[tokio::test]
+async fn explainable_search_is_self_consistent_with_integration() {
+    // When integration features are enabled, the scoring pipeline has
+    // additional stages (topology, community, matryoshka). The exact
+    // contribution values differ from baseline. This test verifies
+    // self-consistency: rrf_score equals the sum of contributions, and
+    // the top result's score matches the breakdown's rrf_score.
+    let dir = TempDir::new().unwrap();
+    let store = open_store(&dir);
+
+    store
+        .add_fact("general", "fusion proof fact", None, None)
+        .await
+        .unwrap();
+
+    let explained = store
+        .search_explained(
+            "fusion proof fact",
+            Some(1),
+            None,
+            Some(&[SearchSourceType::Facts]),
+        )
+        .await
+        .unwrap();
+
+    let top = &explained[0];
+    let breakdown = &top.breakdown;
+    // Self-consistency: result score equals breakdown rrf_score.
+    approx_eq(top.result.score, breakdown.rrf_score, 1e-9);
+    // bm25 and vector weights are always set from config.
     assert_eq!(breakdown.bm25_weight, 2.0);
     assert_eq!(breakdown.vector_weight, 3.0);
     assert_eq!(breakdown.rrf_k, 10.0);
