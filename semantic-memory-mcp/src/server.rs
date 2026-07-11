@@ -40,46 +40,59 @@ struct ClaimTrustIndex {
     /// Trigram → claim ids index over normalized claim content, used for
     /// fuzzy (Jaccard-similarity) auto-linking when no exact match exists.
     trigram_index: HashMap<String, Vec<String>>,
+    /// Sequence number of the last ledger entry folded into this index, so
+    /// `rebuild_from_ledger_incremental` only replays entries appended since
+    /// the last checkpoint instead of rescanning the whole ledger.
+    last_processed_sequence: u64,
 }
 
 #[cfg(feature = "claim-integration")]
 impl ClaimTrustIndex {
-    /// Rebuild the index from the claim ledger's entries. The ledger is the
-    /// source of truth; this replays every `ClaimAdded`, `SupportJudgment`,
-    /// and `ContradictionCandidate` event in order to reconstruct the
-    /// process-local lookup cache.
-    fn rebuild_from_ledger(entries: &[claim_ledger::LedgerEntry]) -> Self {
+    /// Fold a single ledger entry into the index. The ledger is the source
+    /// of truth; this is the sole code path (used both at startup replay and
+    /// at write time) that projects `ClaimAdded`, `SupportJudgment`, and
+    /// `ContradictionCandidate` events into the process-local lookup cache.
+    fn apply_entry(&mut self, entry: &claim_ledger::LedgerEntry) {
         use claim_ledger::{LedgerEvent, SupportState};
-        let mut idx = Self::default();
+        match &entry.event {
+            LedgerEvent::ClaimAdded {
+                claim_id,
+                source_id,
+                normalized_claim,
+                ..
+            } => {
+                if let Some(fact_id) = source_id.strip_prefix("semantic-memory:fact:") {
+                    self.link_fact(fact_id.to_string(), claim_id.clone());
+                }
+                self.register_claim(claim_id.clone(), normalized_claim.clone());
+            }
+            LedgerEvent::SupportJudgment {
+                claim_id,
+                support_state,
+                ..
+            } => {
+                self.record_judgment(claim_id.clone(), *support_state);
+            }
+            LedgerEvent::ContradictionCandidate { claim_refs, .. } => {
+                for claim_ref in claim_refs {
+                    self.record_judgment(claim_ref.clone(), SupportState::Contradicted);
+                }
+            }
+            _ => {}
+        }
+        self.last_processed_sequence = entry.sequence;
+    }
+
+    /// Rebuild (or catch up) the index from the claim ledger's entries,
+    /// replaying only entries with `sequence > last_processed_sequence`.
+    /// On a fresh index this processes the whole ledger once; called again
+    /// on an already-caught-up index it is O(new_entries).
+    fn rebuild_from_ledger_incremental(&mut self, entries: &[claim_ledger::LedgerEntry]) {
         for entry in entries {
-            match &entry.event {
-                LedgerEvent::ClaimAdded {
-                    claim_id,
-                    source_id,
-                    normalized_claim,
-                    ..
-                } => {
-                    if let Some(fact_id) = source_id.strip_prefix("semantic-memory:fact:") {
-                        idx.link_fact(fact_id.to_string(), claim_id.clone());
-                    }
-                    idx.register_claim(claim_id.clone(), normalized_claim.clone());
-                }
-                LedgerEvent::SupportJudgment {
-                    claim_id,
-                    support_state,
-                    ..
-                } => {
-                    idx.record_judgment(claim_id.clone(), *support_state);
-                }
-                LedgerEvent::ContradictionCandidate { claim_refs, .. } => {
-                    for claim_ref in claim_refs {
-                        idx.record_judgment(claim_ref.clone(), SupportState::Contradicted);
-                    }
-                }
-                _ => {}
+            if entry.sequence > self.last_processed_sequence {
+                self.apply_entry(entry);
             }
         }
-        idx
     }
 
     fn link_fact(&mut self, bare_fact_id: String, claim_id: String) {
@@ -380,7 +393,9 @@ impl SemanticMemoryServer {
         let claim_ledger_store =
             ClaimLedgerStore::open(bridge.memory_dir.join("claim_ledger.jsonl"));
         #[cfg(feature = "claim-integration")]
-        let claim_trust = ClaimTrustIndex::rebuild_from_ledger(&claim_ledger_store.entries);
+        let mut claim_trust = ClaimTrustIndex::default();
+        #[cfg(feature = "claim-integration")]
+        claim_trust.rebuild_from_ledger_incremental(&claim_ledger_store.entries);
 
         Self {
             bridge: Arc::new(bridge),
