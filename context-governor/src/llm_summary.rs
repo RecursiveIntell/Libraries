@@ -484,7 +484,7 @@ fn truncate_content(content: &str, max_chars: usize) -> String {
 /// Parse the LLM's structured output back into a `StructuredContextSummaryV1`
 /// and a loss report. This allows the compactor to ingest the LLM's response
 /// and feed it into the next compaction cycle.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub struct ParsedSummaryV1 {
     pub active_task: Option<String>,
     pub acceptance_gates: Vec<String>,

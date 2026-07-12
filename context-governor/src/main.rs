@@ -1,9 +1,9 @@
 use context_governor::{
     audit_compression_boundary, audit_mcp_tool_surface, compact_context, context_diff,
-    evaluate_governed_memory, evaluate_leakage_free_rag, screen_knowledge_conflicts,
-    select_retrieval_route, CompactRequest, CompactResponse, ContextGovernorError, EvidenceClaim,
-    FileContextStore, GovernanceCase, GovernanceFailureMode, RagEvalInput, SearchScope,
-    ToolManifestEntry,
+    evaluate_governed_memory, evaluate_leakage_free_rag, parse_summary_output,
+    render_summary_prompt, screen_knowledge_conflicts, select_retrieval_route, CompactRequest,
+    CompactResponse, ContextGovernorError, EvidenceClaim, FileContextStore, GovernanceCase,
+    GovernanceFailureMode, PromptConfigV1, RagEvalInput, SearchScope, ToolManifestEntry,
 };
 
 use serde::Serialize;
@@ -150,9 +150,24 @@ fn run() -> Result<(), ContextGovernorError> {
             let query = required_arg(&args, "--query")?;
             print_json(&select_retrieval_route(&query))
         }
+        "render-prompt" => {
+            let response: CompactResponse = read_json_stdin("CompactResponse")?;
+            let config = PromptConfigV1::default();
+            let prompt = render_summary_prompt(&response, &[], &config);
+            print_json(&RenderPromptOutput {
+                system: prompt.system,
+                user: prompt.user,
+            })
+        }
+        "parse-summary" => {
+            let mut input = String::new();
+            io::stdin().read_to_string(&mut input)?;
+            let parsed = parse_summary_output(&input);
+            print_json(&parsed)
+        }
         "help" | "--help" | "-h" => {
             println!(
-                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q"
+                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  parse-summary < summary.txt    (parses LLM output into structured fields)"
             );
             Ok(())
         }
@@ -161,6 +176,12 @@ fn run() -> Result<(), ContextGovernorError> {
             format!("unknown command: {other}"),
         ))),
     }
+}
+
+#[derive(serde::Serialize)]
+struct RenderPromptOutput {
+    system: String,
+    user: String,
 }
 
 #[derive(serde::Deserialize)]
