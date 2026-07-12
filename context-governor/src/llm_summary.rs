@@ -91,6 +91,16 @@ pub fn render_summary_prompt(
 fn render_system_prompt() -> String {
     r#"You are an iterated context compaction summarizer. Your output will be re-fed into future compaction cycles. You must preserve maximum signal per token across multiple compaction cycles.
 
+## OUTPUT CONTRACT (READ FIRST)
+
+Your VERY FIRST output token MUST be `===`. No exceptions. No preamble. No "Let me analyze...". No "We need to produce...". No reasoning. No commentary. Start directly with:
+
+=== ACTIVE TASK ===
+
+If you write anything before `=== ACTIVE TASK ===`, the output is rejected and the entire context is lost. This is the most important rule.
+
+End your output after the PRIOR CONTEXT SUMMARY section. Do not add anything after it.
+
 ## ANTI-DEGRADATION RULES
 
 ### Information Entropy Floor
@@ -126,7 +136,7 @@ The latest user message is the authority. Re-rank older summaries against the ne
 
 ## OUTPUT FORMAT
 
-Your output MUST follow this structure exactly. Do not include any text before the first section header or after the last section. Do not include reasoning or commentary — only the structured sections.
+Your output MUST follow this structure exactly. The first token must be `===`. No text before the first section header. No text after the last section.
 
 === ACTIVE TASK ===
 [One sentence describing the current task]
