@@ -62,8 +62,10 @@ invent missing lineage. It owns transformation only.
 
 ```toml
 [dependencies]
-forge-memory-bridge = "0.1.1"
+forge-memory-bridge = { path = "../forge-memory-bridge" }
 ```
+
+Use a registry version only after verifying that the intended release and its dependency closure are published.
 
 ## Quick start
 
@@ -79,7 +81,7 @@ fn bridge(envelope: &ExportEnvelopeV3) -> Result<ProjectionImportBatchV3, forge_
 The returned batch is ready for:
 
 ```rust
-let receipt = memory_store.import_projection_batch(batch).await?;
+let receipt = memory_store.import_projection_batch(&batch).await?;
 ```
 
 ## Authority boundary

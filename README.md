@@ -1,64 +1,89 @@
-# FibQuant Paper-Core Codex Bundle — 2026-05-16
+# RecursiveIntell Libraries
 
-Purpose: drive one Codex pass that creates a paper-faithful `fib-quant` Rust crate without mutating `semantic-memory`, `turbo-quant`, Gloss, or product behavior.
+A Rust workspace for local-first AI memory, evidence, retrieval, quantization, and runtime governance. The repository contains active libraries, integration crates, experiments, historical plans, and benchmark assets. A crate README and its source are authoritative for that crate; dated plans and archived Codex packets are historical evidence, not current runtime contracts.
 
-This bundle is designed for `~/Coding/Libraries` and the package `Libraries-libraries-next-codex-context-20260512.zip`.
+## Semantic-memory stack
 
-Current front-door verification for the repo is `make gate` from the repository root. Run it before claiming the full release surface is green.
+```mermaid
+flowchart LR
+    F[Forge / verification producers] -->|ExportEnvelopeV3| B[forge-memory-bridge]
+    B -->|ProjectionImportBatchV3| SM[semantic-memory]
+    A[Applications] --> SM
+    H[Hermes] --> MCP[semantic-memory-mcp]
+    C[Claude Code] --> MCP
+    X[Codex] --> MCP
+    MCP --> SM
+    MCP --> KR[knowledge-runtime]
+    MCP --> CL[claim-ledger]
+    SM --> DB[(SQLite V36 authoritative memory)]
+    SM --> IDX[FTS5 + rebuildable vector/sparse acceleration]
+    CL --> LEDGER[(Verified JSONL or snapshot + retained tail)]
+```
 
-Supersession note (2026-03-17): the earlier no-v25 terminal position is superseded by the current v25 repo truth surface and `scripts/check_v25_repo_truth.sh`.
+Authority boundaries:
 
-## What this pass must produce
+- Forge producers own raw verification/export truth.
+- `forge-memory-bridge` performs explicit projection transformation; it does not become the authority for source evidence.
+- `semantic-memory` owns searchable memory, governed memory state, retrieval evidence, and schema migrations through V36.
+- `claim-ledger` defines hash-chained claim/evidence/support authority, proof debt, verification, snapshots, and compaction. Persistence publication is caller-owned.
+- `semantic-memory-mcp` exposes bounded MCP profiles and combines witnessed retrieval with optional verified claim trust.
+- `knowledge-runtime` owns orchestration policy, not stored memory or claim truth.
 
-- A new workspace member `fib-quant`, not in `default-members`.
-- Paper-faithful FibQuant math core:
-  - normalize -> Haar rotate -> split into k-blocks;
-  - spherical-Beta source sampler;
-  - Beta-quantile radii;
-  - k=2 Fibonacci spiral, k=3 Fibonacci sphere, k>=4 Roberts-Kronecker directions;
-  - multi-restart Lloyd-Max refinement with deterministic empty-cell repair;
-  - fixed-rate index payload and fp16 norm header;
-  - decode by lookup + inverse rotation;
-  - deterministic profile/codebook/encoded digests;
-  - receipts and math conformance docs.
-- Tests proving math and failure behavior.
+See [`docs/semantic-memory-ecosystem.md`](docs/semantic-memory-ecosystem.md) for the detailed state, replay, trust, and integration diagrams.
 
-## What this pass must not do
+## Primary crates
 
-- No production integration into `semantic-memory`.
-- No changes to `semantic-memory/src/**` or `turbo-quant/src/**`.
-- No FEUT/SCR variant.
-- No default-on compression.
-- No “zero loss” or performance win claims.
-- No deletion/replacement of raw embeddings or canonical memory.
+| Crate | Role |
+| --- | --- |
+| [`semantic-memory`](semantic-memory/) | Durable hybrid retrieval, governed memory state, receipts, replay, graph/projection/procedural APIs |
+| [`semantic-memory-mcp`](semantic-memory-mcp/) | MCP server, runtime profiles, witnessed retrieval, authority decisions, agent integrations |
+| [`claim-ledger`](claim-ledger/) | Claim/evidence domain, hash-chain verification, proof debt, snapshots and compaction |
+| [`semantic-memory-forge`](semantic-memory-forge/) | Forge export envelope production |
+| [`forge-memory-bridge`](forge-memory-bridge/) | Forge export to semantic-memory projection transformation |
+| [`knowledge-runtime`](knowledge-runtime/) | Runtime orchestration and policy integration |
+| [`turbo-quant`](turbo-quant/) | Vector quantization and candidate-generation research/implementation |
+| [`fib-quant`](fib-quant/) | Fibonacci quantization research crate; already part of this workspace |
 
-## Recommended use
+The workspace contains additional crates. Inspect root `Cargo.toml` for the exact current member/default-member set rather than relying on a copied list.
 
-1. From repo root, install the optional context/hook overlay:
+## Build and test
 
-   ```bash
-   bash scripts/install_fibquant_codex_bundle.sh /path/to/this/bundle
-   ```
+From the repository root:
 
-   Or manually copy `overlays/.agents/skills/fibquant-paper-core` into `<repo>/.agents/skills/` and review `.codex/hooks.json` before use.
+```bash
+cargo check --workspace
+cargo test --workspace
+cargo fmt --all -- --check
+```
 
-2. Start Codex in `~/Coding/Libraries`.
-3. Open `/hooks` and approve only the two FibQuant hook scripts if installed.
-4. Use Plan mode first for a source-basis plan.
-5. Paste `OPERATOR_PASTE_FIRST.md`.
-6. After completion, run:
+Targeted semantic-memory verification:
 
-   ```bash
-   python3 scripts/fibquant_final_assert.py --repo .
-   cargo fmt --all --check
-   cargo test -p fib-quant
-   ```
+```bash
+cargo test -p semantic-memory
+cargo test -p semantic-memory --no-default-features --features brute-force
+cargo test -p claim-ledger
+cargo check -p semantic-memory-mcp --all-features
+cargo test -p semantic-memory-mcp --features full
+```
 
-## Why this bundle uses Codex features
+Some all-workspace or all-feature jobs require local model services, optional system libraries, GPUs, or substantial runtime. A passing targeted command is evidence only for the exact feature set and environment that command exercised.
 
-- `AGENTS.md` / skill: durable repo-local instructions.
-- Hooks: deterministic guardrails at prompt/stop boundaries.
-- Phase prompts: bounded work slices.
-- Final assertion script: executable closeout check.
-- Backstop prompts: human override when hooks are unavailable.
-- Matrices/fixtures: reduce ambiguity and prevent “creative” math substitution.
+## Documentation
+
+- [`docs/README.md`](docs/README.md) — active documentation index
+- [`docs/semantic-memory-ecosystem.md`](docs/semantic-memory-ecosystem.md) — semantic-memory authority and data-flow map
+- [`semantic-memory/docs/evaluation/scifact/README.md`](semantic-memory/docs/evaluation/scifact/README.md) — official BEIR SciFact retrieval evaluation protocol
+- [`docs/plans/`](docs/plans/) — dated implementation plans; source may have superseded them
+- [`docs/archive/`](docs/archive/) — explicitly historical material
+
+## Repository rules
+
+- SQLite/governed state and verified ledgers are authoritative; sidecars and compressed pools are rebuildable candidate accelerators.
+- Candidate discovery never mutates verification state by itself.
+- Recall authority does not imply assertion or action authority.
+- Benchmark claims must name the corpus, feature set, executable/configuration, and receipt basis.
+- Do not infer current behavior from archived plans, static tool counts, or old release packets.
+
+## License
+
+Individual crates declare their licenses in their manifests and crate-local license files. Do not assume one workspace-wide license where a crate states otherwise.

@@ -88,7 +88,7 @@
 | remote-oracle-admission | remote-oracle-admission | canonical | Oracle admission | App-level oracle | downstream | yes | harden |
 | scr-runtime-compression | scr-runtime-compression | canonical | SCR runtime compression | Codec math | downstream | yes | harden |
 | semantic-memory | semantic-memory | canonical | Semantic search, projection, query | TurboQuant math (owned by turbo-quant) | AiDENs, Gloss | yes | fix clippy |
-| semantic-memory-forge | semantic-memory-forge | canonical | Forge export from semantic memory | Query semantics | forge-memory-bridge | yes | harden |
+| semantic-memory-forge | semantic-memory-forge | canonical | Forge verification/export envelopes consumed through forge-memory-bridge | Query semantics | forge-memory-bridge | yes | harden |
 | spec-execution | spec-execution | canonical | Spec execution | App-level spec | downstream | yes | harden |
 | stack-ids | stack-ids | canonical | Stable IDs, digests | App-level IDs | ALL | yes | harden |
 | tauri-queue | tauri-queue | canonical | Tauri integration queue | Queue core (owned by job-queue) | downstream | yes | harden |

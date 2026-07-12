@@ -67,8 +67,10 @@ can validate, transform, import, and audit without inventing missing truth.
 
 ```toml
 [dependencies]
-semantic-memory-forge = "0.1.1"
+semantic-memory-forge = { path = "../semantic-memory-forge" }
 ```
+
+Use a registry version only after verifying that the intended release and its dependency closure are published.
 
 ## Quick start
 
@@ -83,7 +85,6 @@ fn inspect_export(envelope: &ExportEnvelopeV3) -> Result<usize, semantic_memory_
 fn inspect_record(record: &ExportRecordV3) -> bool {
     record.semantics.is_some()
 }
-# Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
 ## Authority boundary

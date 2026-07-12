@@ -1,6 +1,8 @@
 # Memory System Completion Plan
 Date: 2026-07-11
-Status: Active
+Status: Historical — executed and superseded by current source
+
+> Subgraph-pruning exposure, Matryoshka search wiring, V35 stored-input replay, RL routing persistence, V36 sparse retrieval, and verified ledger compaction were completed after this plan was written. Consult current crate READMEs and source for runtime status; the estimates below are preserved as historical planning evidence.
 
 ## Completed (this session)
 - [x] Tier 1: Graph SQL LIMIT, MCP receipts on 16 tools
