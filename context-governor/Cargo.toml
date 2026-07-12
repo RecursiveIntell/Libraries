@@ -43,5 +43,14 @@ serde_json = "1"
 thiserror = "2"
 uuid = { version = "1", features = ["v4", "serde"] }
 
+[dependencies.rusqlite]
+version = "0.32"
+features = ["bundled", "serde_json"]
+optional = true
+
+[features]
+default = []
+sqlite-store = ["dep:rusqlite"]
+
 [dev-dependencies]
 tempfile = "3"

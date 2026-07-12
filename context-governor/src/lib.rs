@@ -19,6 +19,11 @@ pub use high_roi::*;
 pub mod reducers;
 pub use reducers::*;
 
+#[cfg(feature = "sqlite-store")]
+pub mod sqlite_store;
+#[cfg(feature = "sqlite-store")]
+pub use sqlite_store::*;
+
 const CHARS_PER_TOKEN: usize = 4;
 const SUMMARY_PREFIX: &str = "[CONTEXT COMPACTION — RECEIPT-BACKED REFERENCE ONLY]";
 
@@ -34,6 +39,16 @@ pub enum ContextGovernorError {
     ReceiptNotFound(String),
     #[error("context budget exceeded: target {target} tokens, actual {actual} tokens")]
     BudgetExceeded { target: usize, actual: usize },
+    #[cfg(feature = "sqlite-store")]
+    #[error("sqlite store failed: {0}")]
+    Sqlite(String),
+}
+
+#[cfg(feature = "sqlite-store")]
+impl From<rusqlite::Error> for ContextGovernorError {
+    fn from(err: rusqlite::Error) -> Self {
+        ContextGovernorError::Sqlite(err.to_string())
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
