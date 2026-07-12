@@ -1,7 +1,7 @@
 fn main() {
     cc::Build::new()
         .file("c-kernels/fwht.c")
-                .file("c-kernels/qjl.c")
+        .file("c-kernels/qjl.c")
         .file("c-kernels/polar.c")
         .flag_if_supported("-O3")
         .flag_if_supported("-mavx2")

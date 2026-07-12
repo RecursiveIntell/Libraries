@@ -4,6 +4,30 @@ All notable changes to `fib-quant` are documented here.
 
 ## [Unreleased]
 
+## [0.1.0-beta.4] — 2026-07-12
+
+### Added
+
+- C kernels for codec encode/decode (`c-kernels/codec.c`) and
+  compressed attention logits + softmax (`c-kernels/attention.c`),
+  compiled at build time via `cc` crate with `-O3 -mavx2 -mfma`.
+- `src/ffi.rs` — FFI boundary module with `extern "C"` declarations.
+- `src/archive/codec_rust.rs`, `src/archive/attention_rust.rs` —
+  original Rust implementations preserved with headers.
+- `build.rs` and `cc` build dependency.
+- Fully prepared compressed index with pre-unpacked indices and norms.
+
+### Changed
+
+- `src/codec.rs`, `src/scoring.rs`, `src/kv/compressed_attention.rs`
+  now call through the FFI layer to C kernels.
+- `unsafe_code` lint allowed at crate level for the FFI module.
+
+### Verified
+
+- 122 tests pass with `cargo test --all-features`.
+- `cargo clippy --all-features --all-targets -- -D warnings` clean.
+
 ## [0.1.0-alpha.1] — 2026-06-02
 
 First crates.io release.

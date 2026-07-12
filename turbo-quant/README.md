@@ -68,10 +68,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-The `examples/` directory has runnable versions of this and three
+The `examples/` directory has runnable versions of this and four
 other flows: `bench_embeddings.rs`, `kv_shadow.rs`,
-`profile_receipt.rs`, and `compat_0_1_smoke.rs` (the P26
-release-gate smoke test).
+`profile_receipt.rs`, `compat_0_1_smoke.rs` (the P26
+release-gate smoke test), and `real_bench.rs` (real-embedding
+benchmark with semantic-memory harness).
 
 ## Benchmarks — measured
 
@@ -150,6 +151,27 @@ are at
 
 To reproduce: `cd turbo-quant && cargo run --release --example bench_embeddings`.
 
+## C Kernels
+
+Starting in v0.2.3, the hot paths in `turbo-quant` are backed by C kernels
+compiled with `-O3 -mavx2 -mfma` via the `cc` crate. The original Rust
+implementations are preserved in `src/archive/` with headers documenting the
+replacement.
+
+| Kernel | C file | Purpose | Speedup vs Rust |
+|--------|--------|---------|-----------------|
+| FWHT | `c-kernels/fwht.c` | Fast Walsh-Hadamard Transform | 2.75× |
+| Polar encode/decode | `c-kernels/polar.c` | `atan2` + angle quantize, dequantize | 1.8× |
+| QJL sketch/project/IP | `c-kernels/qjl.c` | Sign projection, query projection, inner-product estimate | 1.5× |
+| Bitpack | `c-kernels/bitpack.c` | Bit packing/unpacking | reverted to Rust (FFI overhead) |
+
+The bitpack kernel was reverted because branch-heavy bit manipulation has
+high FFI call overhead that negates the compiler advantage. The FWHT and
+scoring kernels benefit from GCC's auto-vectorization on AVX2 targets.
+
+All C kernels are compiled at build time via `build.rs`. No pre-built
+binaries. The `cc` build dependency is required.
+
 ## Scope and limits
 
 This crate is **experimental**. The following claims are explicitly
@@ -179,7 +201,7 @@ The full release-claim law is at
 ## What's verified
 
 - `cargo test --all-targets --all-features --locked` passes
-  (29 tests, 11.3s in CI).
+  (123 tests).
 - `cargo check --all-targets --all-features --locked` clean.
 - `cargo fmt --all -- --check` clean.
 - `python3 scripts/assert_p26_invariants.py .` passes — all
@@ -205,14 +227,20 @@ The full release-claim law is at
 
 Rust 1.75 (2021 edition). Stable features only.
 
+A C compiler (GCC or Clang with AVX2/FMA support) is required for the
+C kernel build step via the `cc` crate.
+
 ## Dependencies
 
 - `serde`, `nalgebra` (with `serde-serialize`).
 - `bitvec` (transitive, for `BitPack`).
+- `cc` (build dependency, for C kernel compilation).
 - Workspace `Cargo.toml` pin.
 
-Zero platform-specific code, zero FFI, zero unsafe (`unsafe_code`
-is denied at the workspace level).
+C kernels (FWHT, polar, QJL) are compiled at build time via `build.rs`
+with `-O3 -mavx2 -mfma`. The `unsafe` keyword is used in the FFI
+boundary (`extern "C"` calls); the `unsafe_code` lint is allowed at
+the crate level for these specific modules.
 
 ## License
 

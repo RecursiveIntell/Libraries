@@ -439,12 +439,8 @@ impl FibQuantizer {
         let _block_count = self.profile.block_count() as usize;
         let n = self.profile.codebook_size as usize;
         let k = self.profile.block_dim as usize;
-        let c_indices = crate::ffi::c_encode_vector_block(
-            &rotated_f32,
-            &self.codebook.codewords,
-            n,
-            k,
-        );
+        let c_indices =
+            crate::ffi::c_encode_vector_block(&rotated_f32, &self.codebook.codewords, n, k);
         let indices: Vec<u32> = c_indices.iter().map(|&i| i as u32).collect();
         Ok(FibCodeV1 {
             schema_version: CODE_SCHEMA.into(),
@@ -484,12 +480,8 @@ impl FibQuantizer {
         }
         // Gather codewords via C kernel — no f64 intermediate.
         let u16_indices: Vec<u16> = unpacked.iter().map(|&i| i as u16).collect();
-        let rotated_f32 = crate::ffi::c_decode_vector_block(
-            &u16_indices,
-            codewords,
-            codebook_size,
-            k,
-        );
+        let rotated_f32 =
+            crate::ffi::c_decode_vector_block(&u16_indices, codewords, codebook_size, k);
         if rotated_f32.len() != expected_len {
             return Err(FibQuantError::CorruptPayload(
                 "decoded rotated vector length mismatch".into(),

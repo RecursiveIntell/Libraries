@@ -30,13 +30,7 @@ use crate::{
 // C FFI: hot paths replaced by c-kernels/polar.c.
 // Rust originals archived in src/archive/polar_rust.rs
 extern "C" {
-    fn tq_polar_encode_pair(
-        a: f32,
-        b: f32,
-        bits: u8,
-        out_radius: *mut f32,
-        out_index: *mut u16,
-    );
+    fn tq_polar_encode_pair(a: f32, b: f32, bits: u8, out_radius: *mut f32, out_index: *mut u16);
     fn tq_polar_dequantize_angle(angle_index: u16, bits: u8) -> f32;
 }
 

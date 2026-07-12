@@ -356,11 +356,7 @@ impl QjlQuantizer {
 
         // SAFETY: signs and query.projected have exactly `projections` elements.
         let estimate: f32 = unsafe {
-            tq_qjl_ip_estimate(
-                signs.as_ptr(),
-                self.projections,
-                query.projected.as_ptr(),
-            )
+            tq_qjl_ip_estimate(signs.as_ptr(), self.projections, query.projected.as_ptr())
         };
 
         let score = scale * estimate;

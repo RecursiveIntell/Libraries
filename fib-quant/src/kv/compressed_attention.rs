@@ -85,7 +85,8 @@ pub fn compressed_attention_logits(
             block_count,
             scorer.quantizer().profile().wire_index_bits,
         )?;
-        let stored_norm = crate::scoring::decode_stored_norm(code, scorer.quantizer().profile())? as f32;
+        let stored_norm =
+            crate::scoring::decode_stored_norm(code, scorer.quantizer().profile())? as f32;
         for &idx in &stored_indices {
             all_key_indices.push(idx as u16);
         }
@@ -95,7 +96,7 @@ pub fn compressed_attention_logits(
     // Convert query indices to u16 for the C kernel.
     let query_indices_u16: Vec<u16> = prepared.query_indices.iter().map(|&i| i as u16).collect();
 
-    let mut logits = crate::ffi::c_compressed_attention_logits(
+    let logits = crate::ffi::c_compressed_attention_logits(
         &all_key_indices,
         n_keys,
         &key_norms,

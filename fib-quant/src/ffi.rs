@@ -109,6 +109,7 @@ pub fn c_decode_vector_block(
 ///
 /// For each key, sums Gram table lookups across all blocks, then scales
 /// by query_norm * stored_norm / scale.
+#[allow(clippy::too_many_arguments)]
 pub fn c_compressed_attention_logits(
     key_indices: &[u16],
     n_keys: usize,
@@ -142,6 +143,7 @@ pub fn c_compressed_attention_logits(
 /// Numerically stable softmax via C kernel.
 ///
 /// Returns `Ok(())` on success, `Err` on underflow or empty input.
+#[allow(clippy::result_unit_err)]
 pub fn c_softmax(logits: &mut [f32]) -> Result<(), ()> {
     if logits.is_empty() {
         return Err(());

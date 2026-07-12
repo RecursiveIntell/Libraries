@@ -219,12 +219,8 @@ impl FibScorer {
                 });
             }
             let query_block = &rotated_query_f32[block_idx * k..(block_idx + 1) * k];
-            let query_idx = crate::ffi::c_encode_vector_block(
-                query_block,
-                codewords,
-                n,
-                k,
-            )[0] as usize;
+            let query_idx =
+                crate::ffi::c_encode_vector_block(query_block, codewords, n, k)[0] as usize;
             // Gram table lookup: <cw_query, cw_stored>
             total += self.gram.get(query_idx, stored_idx);
         }
@@ -317,12 +313,7 @@ impl FibScorer {
         let _block_count = self.quantizer.profile().block_count() as usize;
         let codewords = &self.quantizer.codebook().codewords;
         let n = self.quantizer.profile().codebook_size as usize;
-        let c_indices = crate::ffi::c_encode_vector_block(
-            &rotated_query_f32,
-            codewords,
-            n,
-            k,
-        );
+        let c_indices = crate::ffi::c_encode_vector_block(&rotated_query_f32, codewords, n, k);
         let query_indices: Vec<u32> = c_indices.iter().map(|&i| i as u32).collect();
 
         Ok(FibPreparedQuery {

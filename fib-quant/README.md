@@ -246,6 +246,27 @@ identical to the batch `encode_kv_tensor` for the same input.
 Currently supports `batch = 1, layers = 1, kv_heads = 1` shapes
 (the common single-stream inference case).
 
+## C Kernels
+
+Starting in v0.1.0-beta.4, the encode/decode and compressed-attention
+hot paths in `fib-quant` are backed by C kernels compiled with
+`-O3 -mavx2 -mfma` via the `cc` crate. The original Rust implementations
+are preserved in `src/archive/` with headers documenting the replacement.
+
+| Kernel | C file | Purpose |
+|--------|--------|---------|
+| Codec | `c-kernels/codec.c` | `encode_vector_block` and `decode_vector_block` inner loops |
+| Compressed attention | `c-kernels/attention.c` | Compressed attention logits + softmax computation |
+
+The FFI boundary is in `src/ffi.rs` — `extern "C"` declarations wrapping
+the C functions. `src/codec.rs`, `src/scoring.rs`, and
+`src/kv/compressed_attention.rs` call through the FFI layer when the C
+kernels are available. The `unsafe_code` lint is allowed at the crate
+level for the FFI module.
+
+All C kernels are compiled at build time via `build.rs`. No pre-built
+binaries. The `cc` build dependency is required.
+
 ## Benchmarks — measured
 
 ### Compression ratios (768-dim nomic-embed-v1.5)
@@ -332,15 +353,19 @@ next step.
   `encode_decode`, `test_compact_decode`.
 - **4 benches** (criterion): `codebook_build`, `encode_decode`,
   `kv_attention_ref`, `kv_encode_decode`.
-- **105 tests** pass with `cargo test --all-features` (was 47
-  before the new module additions).
+- **122 tests** pass with `cargo test --all-features` (was 47
+  before the new module additions, 105 before C kernel integration).
 - `cargo clippy --all-features --all-targets -- -D warnings` clean
   (modulo upstream `gpu-backend` lints on newer toolchains).
 
 ## MSRV
 
 Rust 1.75 (2021 edition). `#![forbid(unsafe_code)]` at the
-crate level.
+crate level, except the FFI module (`src/ffi.rs`) which uses
+`unsafe` for `extern "C"` calls to the C kernels.
+
+A C compiler (GCC or Clang with AVX2/FMA support) is required for
+the C kernel build step via the `cc` crate.
 
 ## Dependencies
 
@@ -353,8 +378,9 @@ crate level.
 - `gpu-backend` (optional) — for the GPU Hadamard dispatch.
 - `rayon` (optional, behind the `parallel` feature) — for
   parallel batch encoding.
-- `quant-codec-core` (optional, behind the `compat` feature) —
-  for the shared codec trait boundary.
+- `quant-codec-core` (optional, behind the `compat` feature) — for
+  the shared codec trait boundary.
+- `cc` (build dependency, for C kernel compilation).
 - `proptest` (dev).
 - `criterion` (dev).
 
