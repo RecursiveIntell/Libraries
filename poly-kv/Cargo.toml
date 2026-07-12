@@ -32,6 +32,7 @@ stack-ids = { version = "0.1.1", path = "../stack-ids", optional = true }
 bitemporal-runtime = { version = "0.1.0", path = "../bitemporal-runtime", optional = true }
 chrono = { version = "0.4", optional = true }
 rayon = "1.10"
+compressed-scorer = { version = "0.1.0", path = "../compressed-scorer", optional = true }
 
 [features]
 # Default features: turbo + fib codec adapters + parallel pool build.
@@ -54,6 +55,9 @@ gpu = ["gpu_codebook_lookup"]
 typed-ids = ["dep:stack-ids"]
 temporal-truth = ["dep:bitemporal-runtime", "dep:chrono"]
 full-stack = ["typed-ids", "temporal-truth"]
+# Adaptive per-head budget allocation from compressed-scorer.
+# When enabled, attention_topk_batch_heads_adaptive is available.
+adaptive-budget = ["dep:compressed-scorer"]
 
 [dev-dependencies]
 proptest = "1"

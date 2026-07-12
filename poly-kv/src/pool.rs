@@ -1071,6 +1071,182 @@ impl SharedKVPool {
         Ok(results)
     }
 
+    /// Batch multi-head compressed top-k attention with adaptive per-head budgets.
+    ///
+    /// This is the adaptive-budget variant of `attention_topk_batch_heads`.
+    /// Instead of a fixed `top_k` for all heads, each head receives a
+    /// budget computed from its fragility score via `allocate_head_budgets`.
+    /// Fragile heads (low cosine p05) get more candidates; stable heads
+    /// get fewer, reducing total computation while preserving quality.
+    ///
+    /// # Arguments
+    /// * `index` - A fully prepared compressed index for one layer.
+    /// * `queries` - One query per head (length must equal `index.num_heads`).
+    /// * `fragility` - Per-(layer, head) fragility entries from a calibration pass.
+    /// * `budget_config` - Configuration for budget allocation.
+    ///
+    /// # Returns
+    /// One `CompressedAttentionSelection` per head, each with its own
+    /// potentially different `selected_count`.
+    #[cfg(feature = "fib")]
+    #[cfg(feature = "adaptive-budget")]
+    pub fn attention_topk_batch_heads_adaptive(
+        &self,
+        index: &FullyPreparedCompressedIndex,
+        queries: &[&[f32]],
+        fragility: &[compressed_scorer::HeadFragilityEntry],
+        budget_config: &compressed_scorer::BudgetConfig,
+    ) -> Result<Vec<CompressedAttentionSelection>> {
+        let num_heads = index.num_heads;
+        let num_tokens = index.num_tokens;
+        let head_dim = index.head_dim;
+        let layer_idx = index.layer_idx;
+
+        if queries.len() != num_heads {
+            return Err(PolyKvError::DimensionMismatch {
+                expected: num_heads,
+                got: queries.len(),
+            });
+        }
+
+        // Allocate per-head budgets from fragility data.
+        let head_budgets =
+            compressed_scorer::allocate_head_budgets(fragility, budget_config);
+
+        // Compute per-head k (excluding recent_guard — that's a layer-level
+        // concept; here we use the raw candidate budget clamped to num_tokens).
+        let per_head_k: Vec<usize> = (0..num_heads)
+            .map(|h| {
+                let k = head_budgets.get(layer_idx as u32, h as u32);
+                // Subtract recent_guard to get the candidate k (the guard
+                // tokens are always included separately in a full system,
+                // but here we just use the candidate portion for top-k
+                // selection).
+                let candidate_k = k.saturating_sub(budget_config.recent_guard);
+                candidate_k.min(num_tokens).max(1)
+            })
+            .collect();
+
+        // Prepare gram rows for each head's query (same as fixed-k path).
+        let mut all_prefetched: Vec<PrefetchedGramRows> = Vec::with_capacity(num_heads);
+        for q in queries.iter() {
+            if q.len() != head_dim {
+                return Err(PolyKvError::DimensionMismatch {
+                    expected: head_dim,
+                    got: q.len(),
+                });
+            }
+            let prepared = index
+                .scorer
+                .prepare_query(q)
+                .map_err(|e| PolyKvError::Internal(format!("fib batch query prep failed: {e}")))?;
+            let n = index.scorer.quantizer().profile().codebook_size as usize;
+            let block_count = index.scorer.quantizer().profile().block_count() as usize;
+            let gram = index.scorer.gram_table();
+            let mut gram_rows = vec![0.0f32; block_count * n];
+            for (block_idx, &query_idx) in prepared.query_indices.iter().enumerate() {
+                let qi = query_idx as usize;
+                if qi >= n {
+                    return Err(PolyKvError::Internal(format!(
+                        "fib batch: query_idx {qi} >= {n}"
+                    )));
+                }
+                let src = &gram.values()[qi * n..(qi + 1) * n];
+                gram_rows[block_idx * n..(block_idx + 1) * n].copy_from_slice(src);
+            }
+            all_prefetched.push(PrefetchedGramRows {
+                gram_rows,
+                block_count,
+                n,
+                query_norm: prepared.query_norm,
+            });
+        }
+
+        // Score all heads for all tokens in one pass (same as fixed-k path).
+        let n = all_prefetched[0].n;
+        let block_count = all_prefetched[0].block_count;
+        let mut all_scored: Vec<Vec<(usize, f32)>> =
+            vec![vec![(0usize, 0.0f32); num_tokens]; num_heads];
+
+        for token_idx in 0..num_tokens {
+            for head_idx in 0..num_heads {
+                let code_idx = token_idx * num_heads + head_idx;
+                let indices = index.key_block(code_idx);
+                let stored_norm = index.key_norms[code_idx];
+                let q_norm = all_prefetched[head_idx].query_norm as f32;
+                let gram_rows = &all_prefetched[head_idx].gram_rows;
+
+                let mut total = 0.0f32;
+                for (block_idx, &stored_idx) in indices.iter().enumerate().take(block_count) {
+                    let si = stored_idx as usize;
+                    if si >= n {
+                        return Err(PolyKvError::Internal(format!(
+                            "fib batch: stored_idx {si} >= {n}"
+                        )));
+                    }
+                    total += gram_rows[block_idx * n + si];
+                }
+                let score = total * q_norm * stored_norm;
+                all_scored[head_idx][token_idx] = (token_idx, score);
+            }
+        }
+
+        // Top-k selection per head using adaptive per-head k.
+        let mut results = Vec::with_capacity(num_heads);
+        for (head_idx, scored) in all_scored.iter_mut().enumerate() {
+            let head_k = per_head_k[head_idx];
+            let selected = head_k.min(scored.len());
+            if selected > 0 && selected < scored.len() {
+                scored.select_nth_unstable_by(selected - 1, |a, b| {
+                    b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0))
+                });
+                scored.truncate(selected);
+            }
+            scored.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+
+            let mut hits = Vec::with_capacity(selected);
+            for &(token_index, score) in scored.iter().take(selected) {
+                let code_idx = token_index * num_heads + head_idx;
+                let value = index
+                    .scorer
+                    .quantizer()
+                    .decode(&index.value_codes[code_idx])
+                    .map_err(|e| {
+                        PolyKvError::DecompressionFailed(format!(
+                            "fib batch value decode failed: {e}"
+                        ))
+                    })?;
+                if value.len() != head_dim {
+                    return Err(PolyKvError::DimensionMismatch {
+                        expected: head_dim,
+                        got: value.len(),
+                    });
+                }
+                hits.push(CompressedAttentionHit {
+                    token_index,
+                    score,
+                    value,
+                });
+            }
+            let receipt = CompressedAttentionSelectionReceipt::new(
+                self.manifest.pool_id.clone(),
+                layer_idx as u32,
+                head_idx as u32,
+                num_tokens as u32,
+                hits.len() as u32,
+                num_tokens as u64,
+                hits.len() as u64,
+                false,
+                "fib_cold_pool_batch_heads_adaptive_budget_topk_value_decode",
+                self.manifest.shared_codec.clone(),
+                now_unix(),
+            );
+            receipt.validate()?;
+            results.push(CompressedAttentionSelection { hits, receipt });
+        }
+        Ok(results)
+    }
+
     /// Search for tokens most similar to a query vector.
     ///
     /// Decompresses the specified layer's key blocks and returns the
@@ -1838,5 +2014,102 @@ mod tests {
         let orig_results = pool.search_similar_tokens(0, &query, 3).unwrap();
         let loaded_results = loaded.search_similar_tokens(0, &query, 3).unwrap();
         assert_eq!(orig_results, loaded_results);
+    }
+
+    #[cfg(feature = "adaptive-budget")]
+    #[test]
+    fn test_adaptive_budget_produces_different_k_per_head() {
+        use compressed_scorer::{allocate_head_budgets, BudgetConfig, HeadFragilityEntry};
+
+        let shape = make_test_shape();
+        let corpus = make_test_corpus(16);
+        let (pool, _receipt) = SharedKVPool::build(&corpus, &shape, 42).unwrap();
+
+        let fully_index = pool
+            .prepare_fully_compressed_index(0, 0)
+            .expect("prepare fully compressed index should work");
+
+        let queries: Vec<Vec<f32>> = (0..shape.num_kv_heads as usize)
+            .map(|h| {
+                (0..shape.head_dim)
+                    .map(|x| x as f32 * 0.125 + h as f32 * 0.01)
+                    .collect()
+            })
+            .collect();
+        let query_refs: Vec<&[f32]> = queries.iter().map(|q| q.as_slice()).collect();
+
+        // Create fragility entries: head 0 is fragile, head 1 is stable,
+        // heads 2 and 3 are in between.
+        let fragility = vec![
+            HeadFragilityEntry {
+                layer: 0,
+                head: 0,
+                cos_p05: 0.712, // very fragile
+            },
+            HeadFragilityEntry {
+                layer: 0,
+                head: 1,
+                cos_p05: 0.9999, // very stable
+            },
+            HeadFragilityEntry {
+                layer: 0,
+                head: 2,
+                cos_p05: 0.95,
+            },
+            HeadFragilityEntry {
+                layer: 0,
+                head: 3,
+                cos_p05: 0.98,
+            },
+        ];
+
+        let config = BudgetConfig {
+            ref_k: 8,
+            target_cosine: 0.995,
+            min_k: 2,
+            max_k: 14,
+            recent_guard: 4,
+        };
+
+        // Verify the budgets differ across heads before running attention.
+        let head_budgets = allocate_head_budgets(&fragility, &config);
+        let k0 = head_budgets.get(0, 0);
+        let k1 = head_budgets.get(0, 1);
+        assert!(
+            k0 > k1,
+            "fragile head 0 (k={k0}) should get more than stable head 1 (k={k1})"
+        );
+
+        let results = pool
+            .attention_topk_batch_heads_adaptive(&fully_index, &query_refs, &fragility, &config)
+            .expect("adaptive batch heads should work");
+
+        assert_eq!(results.len(), shape.num_kv_heads as usize);
+
+        // Verify different heads got different selected counts.
+        let selected_counts: Vec<u32> = results.iter().map(|r| r.receipt.selected_count).collect();
+        // Not all heads should have the same count (fragile head gets more).
+        let min_count = *selected_counts.iter().min().unwrap();
+        let max_count = *selected_counts.iter().max().unwrap();
+        assert!(
+            min_count != max_count,
+            "adaptive budget should produce different k per head, but all heads got {min_count}"
+        );
+
+        // Verify the fragile head (head 0) got at least as many as stable head (head 1).
+        assert!(
+            selected_counts[0] >= selected_counts[1],
+            "fragile head 0 should get at least as many candidates as stable head 1: {} vs {}",
+            selected_counts[0],
+            selected_counts[1]
+        );
+
+        // Verify the scoring path label.
+        for r in &results {
+            assert_eq!(
+                r.receipt.scoring_path,
+                "fib_cold_pool_batch_heads_adaptive_budget_topk_value_decode"
+            );
+        }
     }
 }
