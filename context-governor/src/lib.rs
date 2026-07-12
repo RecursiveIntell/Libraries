@@ -168,7 +168,7 @@ pub enum AllocatorMode {
 }
 
 impl AllocatorMode {
-    fn as_str(&self) -> &'static str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             Self::DeterministicV1 => "deterministic_v1",
             Self::AggressiveV1 => "aggressive_v1",
