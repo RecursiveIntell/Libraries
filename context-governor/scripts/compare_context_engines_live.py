@@ -142,6 +142,8 @@ def run_context_governor(messages: list[dict[str, Any]], target_tokens: int, cra
         "output_tokens": response.get("receipt", {}).get("compacted_approx_tokens") or approx_tokens(text),
         "warnings": response.get("receipt", {}).get("warnings") or [],
         "receipt_id": response.get("receipt", {}).get("receipt_id"),
+        "exact_fallback_available": bool(response.get("exact_store")),
+        "omitted_count": len(messages) - len(response.get("compacted_messages") or []),
     }
 
 
@@ -151,13 +153,14 @@ def run_core_engine(engine: str, fixture: dict[str, Any], target_tokens: int, cr
     if engine == "full":
         text = render_messages(messages)
         elapsed_ms = (time.perf_counter() - started) * 1000
-        return {"status": "ok", "elapsed_ms": elapsed_ms, "text": text, "recoverable_text": text, "output_tokens": message_tokens(messages), "warnings": []}
+        return {"status": "ok", "elapsed_ms": elapsed_ms, "text": text, "recoverable_text": text, "output_tokens": message_tokens(messages), "warnings": [], "exact_fallback_available": False, "omitted_count": 0}
     if engine == "head_tail":
         head = messages[:1]
         tail = messages[-1:]
         text = render_messages(head + tail)
         elapsed_ms = (time.perf_counter() - started) * 1000
-        return {"status": "ok", "elapsed_ms": elapsed_ms, "text": text, "recoverable_text": text, "output_tokens": message_tokens(head + tail), "warnings": []}
+        omitted_count = max(0, len(messages) - len(head) - len(tail))
+        return {"status": "ok", "elapsed_ms": elapsed_ms, "text": text, "recoverable_text": text, "output_tokens": message_tokens(head + tail), "warnings": [], "exact_fallback_available": False, "omitted_count": omitted_count}
     if engine == "context_governor":
         return run_context_governor(messages, target_tokens, crate_dir)
     raise ValueError(engine)
@@ -192,7 +195,7 @@ def score_result(fixture: dict[str, Any], result: dict[str, Any]) -> dict[str, A
     return {
         "answerability_rate": answerable / total,
         "visible_anchor_rate": visible / total,
-        "recoverable_anchor_rate": recoverable / total,
+        "recoverable_or_visible_anchor_rate": recoverable / total,
         "incorrect_action_risk": risk,
     }
 
@@ -227,6 +230,8 @@ def evaluate(target_tokens: int, crate_dir: Path, include_external: bool = True)
                 "warnings": result.get("warnings") or [],
                 "receipt_id": result.get("receipt_id"),
                 **scores,
+                "exact_fallback_available": result.get("exact_fallback_available", False),
+                "omitted_count": result.get("omitted_count", 0),
             })
     unsupported = [run_external_engine(engine) for engine in EXTERNAL_ENGINES] if include_external else []
     by_engine: dict[str, list[dict[str, Any]]] = {}
@@ -243,7 +248,7 @@ def evaluate(target_tokens: int, crate_dir: Path, include_external: bool = True)
             "avg_output_tokens": round(statistics.mean([r["output_tokens"] for r in rows]), 2),
             "avg_token_reduction": round(statistics.mean([r["token_reduction"] for r in rows]), 4),
             "visible_anchor_rate": round(statistics.mean([r["visible_anchor_rate"] for r in rows]), 4),
-            "recoverable_anchor_rate": round(statistics.mean([r["recoverable_anchor_rate"] for r in rows]), 4),
+            "recoverable_or_visible_anchor_rate": round(statistics.mean([r["recoverable_or_visible_anchor_rate"] for r in rows]), 4),
             "answerability_rate": round(statistics.mean([r["answerability_rate"] for r in rows]), 4),
             "incorrect_action_risk": sum(r["incorrect_action_risk"] for r in rows),
             "safety_warnings": sum(len(r.get("warnings") or []) for r in rows),
@@ -251,8 +256,8 @@ def evaluate(target_tokens: int, crate_dir: Path, include_external: bool = True)
     for item in unsupported:
         aggregate[item["engine"]] = {"runs": 0, "status": item["status"], "reason": item["reason"]}
     return {
-        "schema": "ContextGovernorSameTranscriptComparisonV1",
-        "claim_boundary": "Synthetic identical-input comparison. Unsupported external adapters are explicit. This is not proof of universal superiority or live downstream LLM quality.",
+        "schema": "ContextGovernorLocalPolicyComparisonV1",
+        "claim_boundary": "Local policy comparison only. External engines are not executed. This is not proof of cross-engine superiority or live downstream LLM quality.",
         "target_tokens": target_tokens,
         "fixture_count": len(fixtures),
         "fixture_families": [f["family"] for f in fixtures],
@@ -264,13 +269,13 @@ def evaluate(target_tokens: int, crate_dir: Path, include_external: bool = True)
 
 def render_markdown(report: dict[str, Any]) -> str:
     lines = [
-        "# context-governor same-transcript comparison",
+        "# context-governor local policy comparison",
         "",
         f"Claim boundary: {report['claim_boundary']}",
         "",
         "Raw synthetic fixture text and anchor strings are intentionally omitted from this markdown.",
         "",
-        "| engine | status | runs | p50 ms | p95 ms | avg input toks | avg output toks | reduction | visible anchors | recoverable anchors | answerability | incorrect risk | warnings / reason |",
+        "| engine | status | runs | p50 ms | p95 ms | avg input toks | avg output toks | reduction | visible anchors | recov/vis anchors | answerability | incorrect risk | warnings / reason |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for engine, row in report["aggregate"].items():
@@ -288,7 +293,7 @@ def render_markdown(report: dict[str, Any]) -> str:
                 out=row.get("avg_output_tokens", 0),
                 red=row.get("avg_token_reduction", 0),
                 vis=row.get("visible_anchor_rate", 0),
-                rec=row.get("recoverable_anchor_rate", 0),
+                rec=row.get("recoverable_or_visible_anchor_rate", 0),
                 ans=row.get("answerability_rate", 0),
                 risk=row.get("incorrect_action_risk", 0),
                 warnings=row.get("safety_warnings", 0),

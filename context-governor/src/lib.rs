@@ -142,6 +142,7 @@ pub enum AllocatorMode {
     #[default]
     DeterministicV1,
     AggressiveV1,
+    UtilityV2,
 }
 
 impl AllocatorMode {
@@ -149,6 +150,7 @@ impl AllocatorMode {
         match self {
             Self::DeterministicV1 => "deterministic_v1",
             Self::AggressiveV1 => "aggressive_v1",
+            Self::UtilityV2 => "utility_v2",
         }
     }
 }
@@ -173,6 +175,323 @@ pub struct ContextItemV1 {
     pub priority_score: i32,
 }
 
+/// A provider-neutral structured content part. Preserves provider-native
+/// unknown fields through metadata rather than dropping them.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct StructuredContentPartV1 {
+    /// The text content of this part, if any.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub text: String,
+    /// The kind of content part (text, tool_call, tool_result, image, etc.).
+    #[serde(default, rename = "part_kind")]
+    pub part_kind: ContentPartKind,
+    /// Provider-native tool call ID, if this part is a tool call or result.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tool_call_id: Option<String>,
+    /// Provider-native tool name, if this part is a tool call.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tool_name: Option<String>,
+    /// Provider-native arguments JSON, if this part is a tool call.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub tool_arguments_json: String,
+    /// Provider-native result content, if this part is a tool result.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub tool_result_content: String,
+    /// Provider-native exit code or status, if available.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tool_exit_code: Option<i32>,
+    /// Unknown provider-native fields preserved verbatim.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub provider_extras: BTreeMap<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ContentPartKind {
+    Text,
+    ToolCall,
+    ToolResult,
+    Image,
+    Audio,
+    #[default]
+    Unknown,
+}
+
+/// Links a tool call to its result within a step.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct ToolCallLinkV1 {
+    pub tool_call_id: String,
+    pub tool_name: String,
+    /// Index into the step's content parts for the call.
+    pub call_part_index: usize,
+    /// Index into the step's content parts for the result, if resolved.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub result_part_index: Option<usize>,
+    /// Whether the result has been received.
+    #[serde(default)]
+    pub result_received: bool,
+}
+
+/// A provider-neutral step in a conversation transcript.
+/// Groups a user intent, assistant action/tool calls, tool results, and state deltas.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct ContextStepV1 {
+    /// Unique step ID.
+    pub step_id: String,
+    /// Index of the first message in this step.
+    pub start_message_index: usize,
+    /// Index after the last message in this step.
+    pub end_message_index: usize,
+    /// The role that initiated this step (usually "user").
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub initiator_role: String,
+    /// Structured content parts extracted from the messages in this step.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub content_parts: Vec<StructuredContentPartV1>,
+    /// Tool call links within this step.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tool_call_links: Vec<ToolCallLinkV1>,
+    /// Whether this step contains an active instruction or acceptance gate.
+    #[serde(default)]
+    pub has_active_instruction: bool,
+    /// Whether this step contains an error or failure.
+    #[serde(default)]
+    pub has_error: bool,
+    /// Whether this step is the latest user turn.
+    #[serde(default)]
+    pub is_latest_user_step: bool,
+}
+
+/// Explicit plan state extracted from the transcript.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct PlanStateV1 {
+    /// Current active plan text, if any.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub current_plan: String,
+    /// Active acceptance gates.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub acceptance_gates: Vec<String>,
+    /// Active decisions.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub decisions: Vec<String>,
+    /// Unresolved questions.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub unresolved_questions: Vec<String>,
+    /// Step indices that contain active instructions.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub active_instruction_steps: Vec<usize>,
+}
+
+/// Monotonic authority floor — items that must never be downgraded.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct StructuralFloorV1 {
+    /// Step indices containing must-preserve-exact content.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub mandatory_steps: Vec<usize>,
+    /// Item IDs that form the authority floor.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub mandatory_item_ids: Vec<String>,
+    /// The latest user message item ID.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub latest_user_item_id: Option<String>,
+    /// Active acceptance gate item IDs.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub acceptance_gate_item_ids: Vec<String>,
+}
+
+/// Build provider-neutral steps from messages.
+/// Groups consecutive messages into intent-action-result steps.
+pub fn build_context_steps(messages: &[Message]) -> Vec<ContextStepV1> {
+    let mut steps = Vec::new();
+    let mut current_start = 0usize;
+    let mut initiator_role = String::new();
+
+    for (index, message) in messages.iter().enumerate() {
+        let role = message.role.as_str();
+        if role == "user" && index > current_start {
+            steps.push(build_step(messages, current_start, index, &initiator_role));
+            current_start = index;
+        }
+        if index == 0 || role == "user" {
+            initiator_role = role.to_string();
+        }
+    }
+    if current_start < messages.len() {
+        steps.push(build_step(
+            messages,
+            current_start,
+            messages.len(),
+            &initiator_role,
+        ));
+    }
+
+    // Mark the latest user step
+    if let Some(last_step) = steps.last_mut() {
+        last_step.is_latest_user_step = true;
+    }
+
+    steps
+}
+
+fn build_step(
+    messages: &[Message],
+    start: usize,
+    end: usize,
+    initiator_role: &str,
+) -> ContextStepV1 {
+    let mut content_parts = Vec::new();
+    let tool_call_links = Vec::new();
+    let mut has_active_instruction = false;
+    let mut has_error = false;
+
+    for message in messages[start..end].iter() {
+        let content_lower = message.content.to_lowercase();
+        if content_lower.contains("acceptance gate")
+            || content_lower.contains("must pass")
+            || content_lower.contains("must remain")
+        {
+            has_active_instruction = true;
+        }
+        if content_lower.contains("error")
+            || content_lower.contains("traceback")
+            || content_lower.contains("failed")
+        {
+            has_error = true;
+        }
+
+        if message.role == "tool" || message.role == "function" {
+            content_parts.push(StructuredContentPartV1 {
+                text: message.content.clone(),
+                part_kind: ContentPartKind::ToolResult,
+                tool_call_id: message
+                    .metadata
+                    .get("tool_call_id")
+                    .and_then(|v| v.as_str())
+                    .map(String::from),
+                tool_result_content: message.content.clone(),
+                tool_exit_code: message
+                    .metadata
+                    .get("exit_code")
+                    .and_then(|v| v.as_i64())
+                    .map(|i| i as i32),
+                ..Default::default()
+            });
+        } else if message.role == "assistant" {
+            // Check if content looks like a tool call (JSON with function/arguments)
+            let trimmed = message.content.trim();
+            if trimmed.starts_with('{')
+                && (trimmed.contains("\"function\"")
+                    || trimmed.contains("\"arguments\"")
+                    || trimmed.contains("\"tool\""))
+            {
+                content_parts.push(StructuredContentPartV1 {
+                    text: message.content.clone(),
+                    part_kind: ContentPartKind::ToolCall,
+                    tool_name: message
+                        .metadata
+                        .get("tool_name")
+                        .and_then(|v| v.as_str())
+                        .map(String::from),
+                    tool_arguments_json: message.content.clone(),
+                    ..Default::default()
+                });
+            } else {
+                content_parts.push(StructuredContentPartV1 {
+                    text: message.content.clone(),
+                    part_kind: ContentPartKind::Text,
+                    ..Default::default()
+                });
+            }
+        } else {
+            content_parts.push(StructuredContentPartV1 {
+                text: message.content.clone(),
+                part_kind: ContentPartKind::Text,
+                ..Default::default()
+            });
+        }
+    }
+
+    ContextStepV1 {
+        step_id: format!("step_{start}_{end}"),
+        start_message_index: start,
+        end_message_index: end,
+        initiator_role: initiator_role.to_string(),
+        content_parts,
+        tool_call_links,
+        has_active_instruction,
+        has_error,
+        is_latest_user_step: false,
+    }
+}
+
+/// Extract explicit plan state from context steps.
+pub fn extract_plan_state(steps: &[ContextStepV1], messages: &[Message]) -> PlanStateV1 {
+    let _ = messages;
+    let mut plan_state = PlanStateV1::default();
+
+    for (step_idx, step) in steps.iter().enumerate() {
+        if step.has_active_instruction {
+            plan_state.active_instruction_steps.push(step_idx);
+        }
+        for part in &step.content_parts {
+            let lower = part.text.to_lowercase();
+            if lower.contains("acceptance gate:")
+                || lower.contains("must pass")
+                || lower.contains("must remain")
+            {
+                if let Some(extracted) = extract_line_after(&part.text, "acceptance gate:") {
+                    plan_state.acceptance_gates.push(extracted);
+                }
+            }
+            if lower.contains("decision:") || lower.contains("decided") {
+                if let Some(extracted) = extract_line_after(&part.text, "decision:") {
+                    plan_state.decisions.push(extracted);
+                }
+            }
+            if lower.contains("unresolved question") || lower.contains('?') {
+                plan_state
+                    .unresolved_questions
+                    .push(compact_preview(&part.text, 240));
+            }
+            if lower.contains("plan:") || lower.contains("phase 1") || lower.contains("phase 2") {
+                plan_state.current_plan = compact_preview(&part.text, 500);
+            }
+        }
+    }
+
+    plan_state
+}
+
+fn extract_line_after(text: &str, marker: &str) -> Option<String> {
+    let lower = text.to_lowercase();
+    let pos = lower.find(marker)?;
+    let after = &text[pos + marker.len()..];
+    let line_end = after.find('\n').unwrap_or(after.len());
+    Some(after[..line_end].trim().to_string())
+}
+
+/// Build the structural floor from context items.
+pub fn build_structural_floor(items: &[ContextItemV1]) -> StructuralFloorV1 {
+    let mut floor = StructuralFloorV1::default();
+
+    for item in items.iter() {
+        match item.authority_class {
+            AuthorityClass::MustPreserveExact | AuthorityClass::ActiveTask => {
+                floor.mandatory_item_ids.push(item.item_id.clone());
+            }
+            _ => {}
+        }
+        if matches!(item.item_type, ItemType::LatestUserMessage) {
+            floor.latest_user_item_id = Some(item.item_id.clone());
+        }
+        if matches!(item.item_type, ItemType::AcceptanceGate) {
+            floor.acceptance_gate_item_ids.push(item.item_id.clone());
+        }
+    }
+
+    floor
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ContextAllocationPlanV1 {
     pub schema: String,
@@ -188,6 +507,56 @@ pub struct ContextAllocationPlanV1 {
     pub archived_item_ids: Vec<String>,
     pub omitted_item_ids: Vec<String>,
     pub quarantined_item_ids: Vec<String>,
+    /// Optional per-item audit trail for allocators that use scored selection.
+    /// Older plan payloads intentionally deserialize without it.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub selection_evidence: BTreeMap<String, UtilitySelectionEvidenceV1>,
+    /// Structural work counters for the compaction hot path. They count set/map
+    /// membership operations rather than elapsed time, so regression tests do
+    /// not depend on machine-specific timing.
+    #[serde(default, skip_serializing_if = "HotPathOperationCountsV1::is_empty")]
+    pub hot_path_operation_counts: HotPathOperationCountsV1,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct UtilitySelectionEvidenceV1 {
+    pub authority: i32,
+    pub focus_overlap: i32,
+    pub recency: i32,
+    pub unresolved_signal: i32,
+    pub novelty: i32,
+    pub redundancy: i32,
+    pub recoverability: i32,
+    pub utility: i32,
+    #[serde(default)]
+    pub selected: bool,
+    #[serde(default)]
+    pub mandatory: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selected_utility_per_token_milli: Option<u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct HotPathOperationCountsV1 {
+    pub disposition_membership_checks: usize,
+    pub fallback_ref_lookups: usize,
+    pub summary_membership_checks: usize,
+    pub emitted_message_membership_checks: usize,
+    pub unique_value_membership_checks: usize,
+}
+
+impl HotPathOperationCountsV1 {
+    pub fn total_membership_operations(&self) -> usize {
+        self.disposition_membership_checks
+            + self.fallback_ref_lookups
+            + self.summary_membership_checks
+            + self.emitted_message_membership_checks
+            + self.unique_value_membership_checks
+    }
+
+    fn is_empty(&self) -> bool {
+        self.total_membership_operations() == 0
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -362,14 +731,22 @@ pub fn compact_context_with_memory_sink(
     let original_tokens = count_tokens_messages(&request.messages, &request.policy);
     let original_hash = hash_messages(&request.messages)?;
     let mut items = classify_messages(&request.session_id, &request.messages, &request.policy);
-    score_items(&mut items, request.focus.as_deref());
     let allocator_mode = resolve_allocator(&request.policy);
+    score_items(
+        &mut items,
+        request.focus.as_deref(),
+        is_utility_allocator_mode(&allocator_mode).then_some(request.messages.as_slice()),
+    );
     let allocator_unknown = {
         let raw = request.policy.allocator.trim().to_lowercase();
         !raw.is_empty()
             && !matches!(
                 raw.as_str(),
-                "deterministic" | "deterministic_v1" | "aggressive" | "aggressive_v1"
+                "deterministic"
+                    | "deterministic_v1"
+                    | "aggressive"
+                    | "aggressive_v1"
+                    | "utility_v2"
             )
     };
     let mut warning_from_allocator = Vec::new();
@@ -380,7 +757,14 @@ pub fn compact_context_with_memory_sink(
             allocator_mode.as_str(),
         ));
     }
-    let plan = allocate_items(&request.session_id, items, &request.policy, allocator_mode);
+    let mut plan = allocate_items(
+        &request.session_id,
+        items,
+        &request.policy,
+        allocator_mode,
+        request.focus.as_deref(),
+        &request.messages,
+    );
     let mut warnings = warning_from_allocator;
     if matches!(
         request.policy.token_counter,
@@ -410,16 +794,21 @@ pub fn compact_context_with_memory_sink(
         );
     }
 
-    let exact_store = build_exact_store(&request.messages, &plan);
+    let (exact_store, exact_store_checks) = build_exact_store(&request.messages, &plan);
+    plan.hot_path_operation_counts.disposition_membership_checks = exact_store_checks;
     let receipt_id = format!("ctxr_{}", Uuid::new_v4().simple());
-    let structured_summary = build_structured_summary(&request.messages, &plan);
-    let mut summary = build_summary(
+    let (structured_summary, unique_value_checks) =
+        build_structured_summary(&request.messages, &plan);
+    plan.hot_path_operation_counts
+        .unique_value_membership_checks = unique_value_checks;
+    let (mut summary, summary_membership_checks) = build_summary(
         &request.messages,
         &plan,
         &request.policy,
         &structured_summary,
         &receipt_id,
     );
+    plan.hot_path_operation_counts.summary_membership_checks = summary_membership_checks;
     let boundary_sources = request
         .messages
         .iter()
@@ -433,8 +822,10 @@ pub fn compact_context_with_memory_sink(
                 .to_string(),
         );
     }
-    let mut compacted_messages =
+    let (mut compacted_messages, emitted_message_membership_checks) =
         assemble_compacted_messages(&request.messages, &plan, &summary, &request.policy);
+    plan.hot_path_operation_counts
+        .emitted_message_membership_checks = emitted_message_membership_checks;
     if matches!(request.policy.budget_mode, BudgetMode::HardCascade) {
         warnings.push("hard cascade budget mode active".to_string());
     }
@@ -448,12 +839,16 @@ pub fn compact_context_with_memory_sink(
 
     let compacted_tokens = count_tokens_messages(&compacted_messages, &request.policy);
     let compacted_hash = hash_messages(&compacted_messages)?;
+    let item_by_id = plan
+        .items
+        .iter()
+        .map(|item| (item.item_id.as_str(), item))
+        .collect::<BTreeMap<_, _>>();
     let exact_fallback_refs = exact_store
         .iter()
         .filter_map(|stored| {
-            plan.items
-                .iter()
-                .find(|i| i.item_id == stored.item_id)
+            item_by_id
+                .get(stored.item_id.as_str())
                 .map(|item| ExactFallbackRefV1 {
                     item_id: item.item_id.clone(),
                     start_index: item.start_index,
@@ -463,6 +858,7 @@ pub fn compact_context_with_memory_sink(
                 })
         })
         .collect::<Vec<_>>();
+    plan.hot_path_operation_counts.fallback_ref_lookups = exact_store.len();
 
     if compacted_tokens > request.policy.target_tokens {
         warnings.push(format!(
@@ -903,6 +1299,7 @@ fn resolve_allocator(policy: &CompactionPolicy) -> AllocatorMode {
     match policy.allocator.trim().to_lowercase().as_str() {
         "deterministic" | "deterministic_v1" => AllocatorMode::DeterministicV1,
         "aggressive" | "aggressive_v1" => AllocatorMode::AggressiveV1,
+        "utility_v2" => AllocatorMode::UtilityV2,
         _ => AllocatorMode::DeterministicV1,
     }
 }
@@ -914,7 +1311,16 @@ fn is_aggressive_allocator_mode(mode: &AllocatorMode) -> bool {
     matches!(mode, AllocatorMode::AggressiveV1)
 }
 
-fn score_items(items: &mut [ContextItemV1], focus: Option<&str>) {
+fn is_utility_allocator_mode(mode: &AllocatorMode) -> bool {
+    matches!(mode, AllocatorMode::UtilityV2)
+}
+
+fn score_items(
+    items: &mut [ContextItemV1],
+    focus: Option<&str>,
+    utility_messages: Option<&[Message]>,
+) {
+    let focus_terms = lexical_terms(focus.unwrap_or_default());
     for item in items {
         let mut score = match item.item_type {
             ItemType::LatestUserMessage => 1000,
@@ -940,13 +1346,41 @@ fn score_items(items: &mut [ContextItemV1], focus: Option<&str>) {
             score += 300;
         }
         if focus.is_some() && !matches!(item.preservation_policy, PreservationPolicy::Quarantine) {
-            score += 25;
+            let focus_matches = utility_messages.map_or(true, |messages| {
+                messages
+                    .get(item.start_index)
+                    .map(|message| {
+                        focus_terms
+                            .intersection(&lexical_terms(&message.content))
+                            .next()
+                            .is_some()
+                    })
+                    .unwrap_or(false)
+            });
+            if focus_matches {
+                score += 25;
+            }
         }
         item.priority_score = score;
     }
 }
 
 fn allocate_items(
+    session_id: &str,
+    items: Vec<ContextItemV1>,
+    policy: &CompactionPolicy,
+    allocator: AllocatorMode,
+    focus: Option<&str>,
+    messages: &[Message],
+) -> ContextAllocationPlanV1 {
+    if is_utility_allocator_mode(&allocator) {
+        return allocate_items_utility_v2(session_id, items, policy, focus, messages);
+    }
+
+    allocate_items_v1(session_id, items, policy, allocator)
+}
+
+fn allocate_items_v1(
     session_id: &str,
     items: Vec<ContextItemV1>,
     policy: &CompactionPolicy,
@@ -1034,21 +1468,309 @@ fn allocate_items(
         archived_item_ids: archived,
         omitted_item_ids: omitted,
         quarantined_item_ids: quarantined,
+        selection_evidence: BTreeMap::new(),
+        hot_path_operation_counts: HotPathOperationCountsV1::default(),
     }
+}
+
+#[derive(Debug)]
+struct UtilityCandidate {
+    index: usize,
+    cost: usize,
+    utility: i32,
+    authority: i32,
+}
+
+fn allocate_items_utility_v2(
+    session_id: &str,
+    items: Vec<ContextItemV1>,
+    policy: &CompactionPolicy,
+    focus: Option<&str>,
+    messages: &[Message],
+) -> ContextAllocationPlanV1 {
+    let focus_terms = lexical_terms(focus.unwrap_or_default());
+    let content_hash_counts = items.iter().fold(BTreeMap::new(), |mut counts, item| {
+        *counts.entry(item.content_blake3.as_str()).or_insert(0usize) += 1;
+        counts
+    });
+    let len = items.len();
+    let mut kept = BTreeSet::new();
+    let mut summarized = BTreeSet::new();
+    let mut archived = BTreeSet::new();
+    let mut omitted = BTreeSet::new();
+    let mut quarantined = BTreeSet::new();
+    let mut evidence = BTreeMap::new();
+    let mut used_tokens = 0usize;
+
+    for (index, item) in items.iter().enumerate() {
+        let protected = item.start_index < policy.protect_first_n
+            || item.start_index.saturating_add(policy.protect_last_n) >= len;
+        let mandatory = !matches!(
+            item.preservation_policy,
+            PreservationPolicy::Quarantine | PreservationPolicy::OmitDuplicate
+        ) && (protected
+            || matches!(
+                item.item_type,
+                ItemType::LatestUserMessage
+                    | ItemType::ActiveInstruction
+                    | ItemType::AcceptanceGate
+                    | ItemType::ErrorOutput
+                    | ItemType::SourceEvidence
+            )
+            || matches!(item.authority_class, AuthorityClass::MustPreserveExact));
+        let mut selection = utility_selection_evidence(
+            item,
+            messages
+                .get(item.start_index)
+                .map(|message| message.content.as_str())
+                .unwrap_or_default(),
+            index,
+            len,
+            &focus_terms,
+            *content_hash_counts
+                .get(item.content_blake3.as_str())
+                .unwrap_or(&1),
+        );
+        selection.mandatory = mandatory;
+
+        match item.preservation_policy {
+            PreservationPolicy::Quarantine => {
+                quarantined.insert(item.item_id.clone());
+            }
+            PreservationPolicy::OmitDuplicate => {
+                omitted.insert(item.item_id.clone());
+            }
+            PreservationPolicy::SemanticMemoryArchive => {
+                archived.insert(item.item_id.clone());
+                if mandatory {
+                    kept.insert(item.item_id.clone());
+                    used_tokens = used_tokens.saturating_add(item_total_tokens(item, policy));
+                    selection.selected = true;
+                } else {
+                    summarized.insert(item.item_id.clone());
+                }
+            }
+            PreservationPolicy::ReceiptOnly => {
+                summarized.insert(item.item_id.clone());
+            }
+            PreservationPolicy::KeepVerbatim
+            | PreservationPolicy::ExtractiveSummary
+            | PreservationPolicy::AbstractiveSummary => {
+                if mandatory {
+                    kept.insert(item.item_id.clone());
+                    used_tokens = used_tokens.saturating_add(item_total_tokens(item, policy));
+                    selection.selected = true;
+                } else {
+                    summarized.insert(item.item_id.clone());
+                }
+            }
+        }
+        if selection.selected {
+            selection.selected_utility_per_token_milli = Some(utility_per_token_milli(
+                selection.utility,
+                item_total_tokens(item, policy),
+            ));
+        }
+        evidence.insert(item.item_id.clone(), selection);
+    }
+
+    let reserve = estimated_synthetic_reserve_tokens(policy);
+    let optional_budget = policy.target_tokens.saturating_sub(reserve);
+    let mut candidates = items
+        .iter()
+        .enumerate()
+        .filter_map(|(index, item)| {
+            let selection = evidence.get(&item.item_id)?;
+            if selection.mandatory
+                || selection.utility <= 0
+                || !matches!(
+                    item.preservation_policy,
+                    PreservationPolicy::KeepVerbatim
+                        | PreservationPolicy::ExtractiveSummary
+                        | PreservationPolicy::AbstractiveSummary
+                        | PreservationPolicy::SemanticMemoryArchive
+                )
+            {
+                return None;
+            }
+            Some(UtilityCandidate {
+                index,
+                cost: item_total_tokens(item, policy),
+                utility: selection.utility,
+                authority: selection.authority,
+            })
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by(|left, right| {
+        let left_ratio = i64::from(left.utility) * right.cost as i64;
+        let right_ratio = i64::from(right.utility) * left.cost as i64;
+        right_ratio
+            .cmp(&left_ratio)
+            .then_with(|| right.authority.cmp(&left.authority))
+            .then_with(|| left.index.cmp(&right.index))
+            .then_with(|| items[left.index].item_id.cmp(&items[right.index].item_id))
+    });
+    for candidate in candidates {
+        if used_tokens.saturating_add(candidate.cost) > optional_budget {
+            continue;
+        }
+        let item = &items[candidate.index];
+        used_tokens = used_tokens.saturating_add(candidate.cost);
+        kept.insert(item.item_id.clone());
+        summarized.remove(&item.item_id);
+        if let Some(selection) = evidence.get_mut(&item.item_id) {
+            selection.selected = true;
+            selection.selected_utility_per_token_milli =
+                Some(utility_per_token_milli(selection.utility, candidate.cost));
+        }
+    }
+
+    let ordered = |ids: &BTreeSet<String>| {
+        items
+            .iter()
+            .filter(|item| ids.contains(&item.item_id))
+            .map(|item| item.item_id.clone())
+            .collect::<Vec<_>>()
+    };
+    let kept_item_ids = ordered(&kept);
+    let summarized_item_ids = ordered(&summarized);
+    let archived_item_ids = ordered(&archived);
+    let omitted_item_ids = ordered(&omitted);
+    let quarantined_item_ids = ordered(&quarantined);
+    ContextAllocationPlanV1 {
+        schema: "ContextAllocationPlanV1".to_string(),
+        plan_id: format!("ctxp_{}", Uuid::new_v4().simple()),
+        session_id: session_id.to_string(),
+        created_utc: Utc::now(),
+        context_budget_tokens: policy.target_tokens,
+        target_output_tokens: policy.target_tokens,
+        allocator: AllocatorMode::UtilityV2.as_str().to_string(),
+        items,
+        kept_item_ids,
+        summarized_item_ids,
+        archived_item_ids,
+        omitted_item_ids,
+        quarantined_item_ids,
+        selection_evidence: evidence,
+        hot_path_operation_counts: HotPathOperationCountsV1::default(),
+    }
+}
+
+fn item_total_tokens(item: &ContextItemV1, policy: &CompactionPolicy) -> usize {
+    item.approx_tokens.saturating_add(message_overhead_tokens(
+        policy,
+        item.role_set
+            .first()
+            .map(String::as_str)
+            .unwrap_or("assistant"),
+        None,
+    ))
+}
+
+fn estimated_synthetic_reserve_tokens(policy: &CompactionPolicy) -> usize {
+    let pointer = format!(
+        "{SUMMARY_PREFIX}\nEarlier context was compacted. Exact fallback remains available. \\
+Use context_expand(receipt_id=..., item_id=...) to recover omitted text."
+    );
+    count_tokens_text(&pointer, policy)
+        .saturating_add(message_overhead_tokens(
+            policy,
+            "assistant",
+            Some("context_governor"),
+        ))
+        .saturating_add(12)
+}
+
+fn lexical_terms(text: &str) -> BTreeSet<String> {
+    text.split(|ch: char| !ch.is_alphanumeric() && ch != '_')
+        .filter(|term| term.chars().count() >= 2)
+        .map(|term| term.to_lowercase())
+        .collect()
+}
+
+fn utility_selection_evidence(
+    item: &ContextItemV1,
+    content: &str,
+    index: usize,
+    len: usize,
+    focus_terms: &BTreeSet<String>,
+    duplicate_count: usize,
+) -> UtilitySelectionEvidenceV1 {
+    let authority = match item.authority_class {
+        AuthorityClass::MustPreserveExact => 1_000,
+        AuthorityClass::EvidenceCritical => 850,
+        AuthorityClass::ActiveTask => 900,
+        AuthorityClass::VerifiedToolReceipt => 600,
+        AuthorityClass::DurableMemoryCandidate => 400,
+        AuthorityClass::SummaryOk => 120,
+        AuthorityClass::ArchiveOk => 60,
+        AuthorityClass::Discardable => -300,
+        AuthorityClass::Quarantine => -500,
+    };
+    let item_terms = lexical_terms(content);
+    let focus_overlap_count = focus_terms.intersection(&item_terms).count();
+    let focus_overlap = i32::try_from(focus_overlap_count).unwrap_or(i32::MAX) * 100;
+    let recency = if len <= 1 {
+        100
+    } else {
+        i32::try_from(index.saturating_mul(100) / (len - 1)).unwrap_or(100)
+    };
+    let unresolved_signal = match item.item_type {
+        ItemType::UnresolvedQuestion => 100,
+        ItemType::ErrorOutput => 90,
+        ItemType::Decision => 50,
+        ItemType::LatestUserMessage => 100,
+        _ => 0,
+    };
+    let novelty = if duplicate_count == 1 { 35 } else { 0 };
+    let redundancy = if duplicate_count > 1 { -350 } else { 0 };
+    let recoverability = match item.preservation_policy {
+        PreservationPolicy::ReceiptOnly
+        | PreservationPolicy::SemanticMemoryArchive
+        | PreservationPolicy::OmitDuplicate
+        | PreservationPolicy::Quarantine => -20,
+        _ => 0,
+    };
+    UtilitySelectionEvidenceV1 {
+        authority,
+        focus_overlap,
+        recency,
+        unresolved_signal,
+        novelty,
+        redundancy,
+        recoverability,
+        utility: authority
+            + focus_overlap
+            + recency
+            + unresolved_signal
+            + novelty
+            + redundancy
+            + recoverability,
+        selected: false,
+        mandatory: false,
+        selected_utility_per_token_milli: None,
+    }
+}
+
+fn utility_per_token_milli(utility: i32, tokens: usize) -> u64 {
+    u64::try_from(utility.max(0))
+        .unwrap_or(0)
+        .saturating_mul(1_000)
+        .saturating_div(u64::try_from(tokens.max(1)).unwrap_or(1))
 }
 
 fn build_exact_store(
     messages: &[Message],
     plan: &ContextAllocationPlanV1,
-) -> Vec<ExactStoredItemV1> {
-    plan.items
+) -> (Vec<ExactStoredItemV1>, usize) {
+    let dispositions = PlanDispositionIndex::new(plan);
+    let mut checks = 0usize;
+    let store = plan
+        .items
         .iter()
         .filter(|item| {
-            plan.summarized_item_ids.contains(&item.item_id)
-                || plan.archived_item_ids.contains(&item.item_id)
-                || plan.omitted_item_ids.contains(&item.item_id)
-                || plan.quarantined_item_ids.contains(&item.item_id)
-                || matches!(item.preservation_policy, PreservationPolicy::ReceiptOnly)
+            checks += 1;
+            dispositions.requires_exact_store(item)
         })
         .filter_map(|item| {
             messages.get(item.start_index).map(|m| ExactStoredItemV1 {
@@ -1058,13 +1780,54 @@ fn build_exact_store(
                 content_blake3: item.content_blake3.clone(),
             })
         })
-        .collect()
+        .collect();
+    (store, checks)
+}
+
+struct PlanDispositionIndex<'a> {
+    kept: BTreeSet<&'a str>,
+    summarized: BTreeSet<&'a str>,
+    archived: BTreeSet<&'a str>,
+    omitted: BTreeSet<&'a str>,
+    quarantined: BTreeSet<&'a str>,
+}
+
+impl<'a> PlanDispositionIndex<'a> {
+    fn new(plan: &'a ContextAllocationPlanV1) -> Self {
+        let as_set = |ids: &'a [String]| ids.iter().map(String::as_str).collect();
+        Self {
+            kept: as_set(&plan.kept_item_ids),
+            summarized: as_set(&plan.summarized_item_ids),
+            archived: as_set(&plan.archived_item_ids),
+            omitted: as_set(&plan.omitted_item_ids),
+            quarantined: as_set(&plan.quarantined_item_ids),
+        }
+    }
+
+    fn is_kept(&self, item: &ContextItemV1) -> bool {
+        self.kept.contains(item.item_id.as_str())
+    }
+
+    fn is_summarized_or_archived(&self, item: &ContextItemV1) -> bool {
+        self.summarized.contains(item.item_id.as_str())
+            || self.archived.contains(item.item_id.as_str())
+    }
+
+    fn requires_exact_store(&self, item: &ContextItemV1) -> bool {
+        self.summarized.contains(item.item_id.as_str())
+            || self.archived.contains(item.item_id.as_str())
+            || self.omitted.contains(item.item_id.as_str())
+            || self.quarantined.contains(item.item_id.as_str())
+            || matches!(item.preservation_policy, PreservationPolicy::ReceiptOnly)
+    }
 }
 
 fn build_structured_summary(
     messages: &[Message],
     plan: &ContextAllocationPlanV1,
-) -> StructuredContextSummaryV1 {
+) -> (StructuredContextSummaryV1, usize) {
+    let mut unique_values = BTreeSet::new();
+    let mut checks = 0usize;
     let mut out = StructuredContextSummaryV1 {
         active_task: messages
             .iter()
@@ -1084,37 +1847,79 @@ fn build_structured_summary(
     for msg in messages {
         let content_l = msg.content.to_lowercase();
         if content_l.contains("acceptance gate") || content_l.contains("must pass") {
-            push_unique(
+            push_unique_indexed(
                 &mut out.acceptance_gates,
+                &mut unique_values,
+                "acceptance_gates",
                 compact_preview(&msg.content, 240),
+                &mut checks,
             );
         }
         if content_l.contains("decision:") || content_l.contains("decided") {
-            push_unique(&mut out.decisions, compact_preview(&msg.content, 240));
+            push_unique_indexed(
+                &mut out.decisions,
+                &mut unique_values,
+                "decisions",
+                compact_preview(&msg.content, 240),
+                &mut checks,
+            );
         }
         if content_l.contains("unresolved question") || content_l.contains('?') {
-            push_unique(
+            push_unique_indexed(
                 &mut out.unresolved_questions,
+                &mut unique_values,
+                "unresolved_questions",
                 compact_preview(&msg.content, 240),
+                &mut checks,
             );
         }
         if content_l.contains("error")
             || content_l.contains("traceback")
             || content_l.contains("failed")
         {
-            push_unique(
+            push_unique_indexed(
                 &mut out.errors,
+                &mut unique_values,
+                "errors",
                 important_lines(&msg.content, &["error", "failed", "traceback"], 240),
+                &mut checks,
             );
         }
         for file in extract_file_like_tokens(&msg.content) {
-            push_unique(&mut out.files, file);
+            push_unique_indexed(
+                &mut out.files,
+                &mut unique_values,
+                "files",
+                file,
+                &mut checks,
+            );
         }
         for command in extract_command_like_lines(&msg.content) {
-            push_unique(&mut out.commands, command);
+            push_unique_indexed(
+                &mut out.commands,
+                &mut unique_values,
+                "commands",
+                command,
+                &mut checks,
+            );
         }
     }
-    out
+    (out, checks)
+}
+
+fn push_unique_indexed(
+    values: &mut Vec<String>,
+    seen: &mut BTreeSet<(String, String)>,
+    category: &str,
+    value: String,
+    checks: &mut usize,
+) {
+    if !value.is_empty() {
+        *checks += 1;
+        if seen.insert((category.to_string(), value.clone())) {
+            values.push(value);
+        }
+    }
 }
 
 fn push_summary_list(lines: &mut Vec<String>, label: &str, values: &[String]) {
@@ -1124,12 +1929,6 @@ fn push_summary_list(lines: &mut Vec<String>, label: &str, values: &[String]) {
     lines.push(format!("- {label}:"));
     for value in values.iter().take(5) {
         lines.push(format!("  - {}", compact_preview(value, 220)));
-    }
-}
-
-fn push_unique(values: &mut Vec<String>, value: String) {
-    if !value.is_empty() && !values.contains(&value) {
-        values.push(value);
     }
 }
 
@@ -1205,7 +2004,9 @@ fn build_summary(
     policy: &CompactionPolicy,
     structured: &StructuredContextSummaryV1,
     receipt_id: &str,
-) -> String {
+) -> (String, usize) {
+    let dispositions = PlanDispositionIndex::new(plan);
+    let mut checks = 0usize;
     let mut lines = vec![
         format!("{SUMMARY_PREFIX}"),
         "Earlier turns were compacted. This summary is background, not an active task.".to_string(),
@@ -1256,8 +2057,8 @@ fn build_summary(
     lines.push(String::new());
     lines.push("## Preserved / summarized context".to_string());
     for item in &plan.items {
-        if plan.summarized_item_ids.contains(&item.item_id)
-            || plan.archived_item_ids.contains(&item.item_id)
+        checks += 1;
+        if dispositions.is_summarized_or_archived(item)
             || matches!(item.preservation_policy, PreservationPolicy::ReceiptOnly)
         {
             if let Some(msg) = messages.get(item.start_index) {
@@ -1288,7 +2089,7 @@ fn build_summary(
             .collect::<String>();
         summary.push_str("\n[summary truncated by context-governor budget]");
     }
-    summary
+    (summary, checks)
 }
 
 fn assemble_compacted_messages(
@@ -1296,9 +2097,11 @@ fn assemble_compacted_messages(
     plan: &ContextAllocationPlanV1,
     summary: &str,
     policy: &CompactionPolicy,
-) -> Vec<Message> {
+) -> (Vec<Message>, usize) {
     let mut out = Vec::new();
-    let kept_set = plan.kept_item_ids.iter().cloned().collect::<BTreeSet<_>>();
+    let dispositions = PlanDispositionIndex::new(plan);
+    let mut emitted = BTreeSet::new();
+    let mut checks = 0usize;
     let aggressive = is_aggressive_allocator(policy);
     let item_by_index = plan
         .items
@@ -1319,23 +2122,22 @@ fn assemble_compacted_messages(
         if idx < policy.protect_first_n {
             let Some(item) = item_by_index.get(&idx) else {
                 out.push(msg.clone());
+                emitted.insert((msg.role.clone(), msg.content.clone()));
                 continue;
             };
             let keep_head = matches!(item.item_type, ItemType::LatestUserMessage)
-                || (kept_set.contains(&item.item_id)
-                    && (!aggressive || item.approx_tokens <= 1_000))
+                || (dispositions.is_kept(item) && (!aggressive || item.approx_tokens <= 1_000))
                 || (matches!(
                     item.authority_class,
                     AuthorityClass::MustPreserveExact | AuthorityClass::ActiveTask
                 ) && (!aggressive || item.approx_tokens <= 1_000));
             if keep_head {
                 out.push(msg.clone());
+                emitted.insert((msg.role.clone(), msg.content.clone()));
             }
         } else if let Some(item) = item_by_index.get(&idx) {
-            if kept_set.contains(&item.item_id)
-                && !out
-                    .iter()
-                    .any(|m: &Message| m.content == msg.content && m.role == msg.role)
+            checks += 1;
+            if dispositions.is_kept(item) && emitted.insert((msg.role.clone(), msg.content.clone()))
             {
                 out.push(msg.clone());
             }
@@ -1349,6 +2151,7 @@ fn assemble_compacted_messages(
         name: Some("context_governor".to_string()),
         metadata: BTreeMap::from([("compressed_summary".to_string(), Value::Bool(true))]),
     };
+    emitted.insert((summary_msg.role.clone(), summary_msg.content.clone()));
     out.push(summary_msg);
 
     for (offset, msg) in messages[tail_start..].iter().enumerate() {
@@ -1361,10 +2164,8 @@ fn assemble_compacted_messages(
                                          // kept_set. The built-in compressor always includes the last N messages;
                                          // excluding them because the allocator summarized them causes data loss
                                          // of recent context the model needs.
-        let should_keep_tail = !out
-            .iter()
-            .any(|m: &Message| m.content == msg.content && m.role == msg.role);
-        if should_keep_tail {
+        checks += 1;
+        if emitted.insert((msg.role.clone(), msg.content.clone())) {
             out.push(msg.clone());
         }
     }
@@ -1373,7 +2174,7 @@ fn assemble_compacted_messages(
     if let Some(idx) = latest_user_idx {
         out.push(messages[idx].clone());
     }
-    out
+    (out, checks)
 }
 
 fn choose_summary_role(previous: Option<&str>) -> &'static str {

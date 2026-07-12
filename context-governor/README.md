@@ -211,11 +211,11 @@ python3 scripts/certify_all.py --quick --skip-hermes
 
 Latest next-level local receipts from 2026-07-01:
 
-- same-transcript comparison: `target/context-governor-comparisons/same-transcript-comparison.md`
+- local policy comparison: `target/context-governor-comparisons/same-transcript-comparison.md`
 - historical answerability replay: `target/historical-answerability/historical-answerability.md`
 - certification: `target/certification/20260701-031403/certification.md`
 
-Observed in that pass: same-transcript synthetic context-governor answerability 100.0%, recoverability 100.0%, token reduction 95.8%; historical 10-session answerability 100.0%, visible 28.0%, token reduction vs full 99.6%. These are local deterministic replay receipts, not universal downstream LLM quality or external-engine superiority proof.
+Observed in that pass: local policy comparison synthetic context-governor answerability 100.0%, recoverability 100.0%, token reduction 95.8%; historical 10-session answerability 100.0%, visible 28.0%, token reduction vs full 99.6%. These are local deterministic replay receipts, not universal downstream LLM quality or external-engine superiority proof.
 
 Latest local Hermes replay aggregate over the 8 largest active sessions by text volume:
 
