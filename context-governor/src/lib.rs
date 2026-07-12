@@ -19,6 +19,9 @@ pub use high_roi::*;
 pub mod reducers;
 pub use reducers::*;
 
+pub mod llm_summary;
+pub use llm_summary::*;
+
 #[cfg(feature = "sqlite-store")]
 pub mod sqlite_store;
 #[cfg(feature = "sqlite-store")]
