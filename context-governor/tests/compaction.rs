@@ -451,3 +451,47 @@ fn unsafe_relinked_summary_is_replaced_before_reinjection() {
         .iter()
         .any(|warning| warning.contains("boundary audit")));
 }
+
+#[test]
+fn latest_user_preserved_with_zero_tail_protection() {
+    let messages = vec![
+        Message {
+            id: None,
+            role: "system".into(),
+            content: "system constraint".into(),
+            name: None,
+            metadata: Default::default(),
+        },
+        Message {
+            id: None,
+            role: "assistant".into(),
+            content: "old history ".repeat(200),
+            name: None,
+            metadata: Default::default(),
+        },
+        Message {
+            id: None,
+            role: "user".into(),
+            content: "latest user instruction".into(),
+            name: None,
+            metadata: Default::default(),
+        },
+    ];
+    let response = compact_context(CompactRequest {
+        session_id: "adversarial-latest-user".into(),
+        messages,
+        policy: CompactionPolicy {
+            target_tokens: 50,
+            protect_first_n: 0,
+            protect_last_n: 0,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+
+    assert_eq!(
+        response.compacted_messages.last().unwrap().content,
+        "latest user instruction"
+    );
+}

@@ -29,11 +29,8 @@ pub enum ContextGovernorError {
     Io(#[from] std::io::Error),
     #[error("receipt not found: {0}")]
     ReceiptNotFound(String),
-    #[error("context budget exceeded: target {target_tokens} tokens, minimum required {minimum_required_tokens} tokens")]
-    BudgetExceeded {
-        target_tokens: usize,
-        minimum_required_tokens: usize,
-    },
+    #[error("context budget exceeded: target {target} tokens, actual {actual} tokens")]
+    BudgetExceeded { target: usize, actual: usize },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -121,6 +118,10 @@ pub enum BudgetMode {
     SoftWarn,
     HardCascade,
     FailClosed,
+    /// Strict budget contract: if the compacted transcript exceeds
+    /// `target_tokens`, compaction fails with `BudgetExceeded` instead of
+    /// returning over-budget content with a warning.
+    HardLimit,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -599,6 +600,28 @@ pub enum ExactRecoveryStateV1 {
     Persisted,
 }
 
+/// Durability of exact recovery for a compaction receipt. This replaces the
+/// previous boolean `exact_recovery_available` flag with an explicit state
+/// machine describing where the exact fallback content currently lives.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum RecoveryDurabilityV1 {
+    /// Exact fallback content is carried in the compaction response but has
+    /// not yet been persisted.
+    InResponse,
+    /// Compaction completed but persistence has not been attempted yet.
+    #[default]
+    PersistencePending,
+    /// Exact fallback content has been durably persisted by a store.
+    Persisted,
+    /// Exact fallback content was handed off to an external archive.
+    ExternallyArchived,
+    /// Exact fallback content was pruned and is no longer recoverable.
+    Pruned,
+    /// No exact fallback content exists for this receipt.
+    Unavailable,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct SummaryLossReportV1 {
     pub schema: String,
@@ -606,10 +629,6 @@ pub struct SummaryLossReportV1 {
     pub omitted_claims: Vec<String>,
     pub evidence_lost: Vec<String>,
     pub uncertainty_introduced: Vec<String>,
-    /// Compatibility boolean: whether exact fallback is available in the current
-    /// response or a finalized store. Consult `exact_recovery_state` for durability.
-    #[serde(default)]
-    pub exact_recovery_available: bool,
     #[serde(default)]
     pub exact_recovery_state: ExactRecoveryStateV1,
     pub high_risk_omissions: Vec<String>,
@@ -640,6 +659,11 @@ pub struct ContextCompactionReceiptV1 {
     pub exact_fallback_refs: Vec<ExactFallbackRefV1>,
     pub summary_loss_report: SummaryLossReportV1,
     pub warnings: Vec<String>,
+    /// Durability state of the exact fallback content. `compact_context` only
+    /// produces in-process data, so it defaults to `InResponse`; a store that
+    /// persists the receipt updates this to `Persisted`.
+    #[serde(default)]
+    pub recovery_durability: RecoveryDurabilityV1,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -691,6 +715,15 @@ pub struct CompactResponse {
     pub allocation_plan: ContextAllocationPlanV1,
     pub compacted_messages: Vec<Message>,
     pub exact_store: Vec<ExactStoredItemV1>,
+    /// Provider-neutral conversation steps built from the original messages.
+    #[serde(default)]
+    pub context_steps: Vec<ContextStepV1>,
+    /// Explicit plan state extracted from the transcript.
+    #[serde(default)]
+    pub plan_state: PlanStateV1,
+    /// Monotonic authority floor — items that must never be downgraded.
+    #[serde(default)]
+    pub structural_floor: StructuralFloorV1,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -757,6 +790,9 @@ pub fn compact_context_with_memory_sink(
             allocator_mode.as_str(),
         ));
     }
+    let context_steps = build_context_steps(&request.messages);
+    let plan_state = extract_plan_state(&context_steps, &request.messages);
+    let structural_floor = build_structural_floor(&items);
     let mut plan = allocate_items(
         &request.session_id,
         items,
@@ -838,6 +874,14 @@ pub fn compact_context_with_memory_sink(
     }
 
     let compacted_tokens = count_tokens_messages(&compacted_messages, &request.policy);
+    if matches!(request.policy.budget_mode, BudgetMode::HardLimit)
+        && compacted_tokens > request.policy.target_tokens
+    {
+        return Err(ContextGovernorError::BudgetExceeded {
+            target: request.policy.target_tokens,
+            actual: compacted_tokens,
+        });
+    }
     let compacted_hash = hash_messages(&compacted_messages)?;
     let item_by_id = plan
         .items
@@ -889,6 +933,7 @@ pub fn compact_context_with_memory_sink(
         exact_fallback_refs,
         summary_loss_report: build_loss_report(&plan, structured_summary, !exact_store.is_empty()),
         warnings,
+        recovery_durability: RecoveryDurabilityV1::InResponse,
     };
 
     if request.policy.archive_memory_enabled || request.policy.semantic_memory_enabled {
@@ -898,6 +943,9 @@ pub fn compact_context_with_memory_sink(
                 allocation_plan: plan.clone(),
                 compacted_messages: compacted_messages.clone(),
                 exact_store: exact_store.clone(),
+                context_steps: context_steps.clone(),
+                plan_state: plan_state.clone(),
+                structural_floor: structural_floor.clone(),
             };
             let outcome = archive_response_to_memory(&compact_response, sink)?;
             receipt.semantic_memory_fact_ids = outcome.record_ids;
@@ -923,6 +971,9 @@ pub fn compact_context_with_memory_sink(
         allocation_plan: plan,
         compacted_messages,
         exact_store,
+        context_steps,
+        plan_state,
+        structural_floor,
     })
 }
 
@@ -2200,7 +2251,6 @@ fn build_loss_report(
             .cloned()
             .collect(),
         uncertainty_introduced: plan.quarantined_item_ids.clone(),
-        exact_recovery_available: exact_fallback_in_response,
         exact_recovery_state: if exact_fallback_in_response {
             ExactRecoveryStateV1::InResponse
         } else {
@@ -2343,8 +2393,8 @@ fn enforce_budget(
     else {
         let minimum = count_tokens_messages(&messages, policy);
         return Err(ContextGovernorError::BudgetExceeded {
-            target_tokens: target,
-            minimum_required_tokens: minimum,
+            target,
+            actual: minimum,
         });
     };
 
@@ -2359,8 +2409,8 @@ fn enforce_budget(
             return Ok(without_summary);
         }
         return Err(ContextGovernorError::BudgetExceeded {
-            target_tokens: target,
-            minimum_required_tokens: required,
+            target,
+            actual: required,
         });
     }
 
@@ -3242,16 +3292,17 @@ impl FileContextStore {
         let path = self.path_for_receipt(&response.receipt.receipt_id);
         let tmp_path = path.with_extension("json.tmp");
         let mut persisted = response.clone();
-        persisted.receipt.summary_loss_report.exact_recovery_state =
-            if persisted.exact_store.is_empty() {
-                ExactRecoveryStateV1::Unavailable
-            } else {
-                ExactRecoveryStateV1::Persisted
-            };
-        persisted
-            .receipt
-            .summary_loss_report
-            .exact_recovery_available = !persisted.exact_store.is_empty();
+        let exact_recovered = !persisted.exact_store.is_empty();
+        persisted.receipt.summary_loss_report.exact_recovery_state = if exact_recovered {
+            ExactRecoveryStateV1::Persisted
+        } else {
+            ExactRecoveryStateV1::Unavailable
+        };
+        persisted.receipt.recovery_durability = if exact_recovered {
+            RecoveryDurabilityV1::Persisted
+        } else {
+            RecoveryDurabilityV1::Unavailable
+        };
         let json = serde_json::to_string_pretty(&persisted)?;
         std::fs::write(&tmp_path, json)?;
         std::fs::rename(&tmp_path, &path)?;
