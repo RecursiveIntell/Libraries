@@ -87,7 +87,7 @@ pub fn load_fixtures_from_dir(dir: &std::path::Path) -> Result<Vec<SMQueryFixtur
         .map_err(|e| format!("failed to read dir {}: {}", dir.display(), e))?
         .filter_map(|e| e.ok())
         .map(|e| e.path())
-        .filter(|p| p.extension().map_or(false, |ext| ext == "jsonl"))
+        .filter(|p| p.extension().is_some_and(|ext| ext == "jsonl"))
         .collect();
     paths.sort();
 
@@ -464,6 +464,30 @@ pub fn run_sm_benchmark(
     fixtures: Vec<SMQueryFixture>,
     config: SMBenchmarkConfig,
 ) -> Result<SMBenchmarkReport, String> {
+    run_sm_benchmark_with_auth(fixtures, config, None)
+}
+
+/// Run a retrieval benchmark with an optional bearer token.
+///
+/// This separate entry point preserves source compatibility for callers that
+/// construct [`SMBenchmarkConfig`] with struct literals.
+pub fn run_sm_benchmark_with_auth(
+    fixtures: Vec<SMQueryFixture>,
+    config: SMBenchmarkConfig,
+    http_auth_token: Option<&str>,
+) -> Result<SMBenchmarkReport, String> {
+    let http_auth_token = match http_auth_token {
+        Some(raw) => {
+            let token = raw.trim();
+            if token.is_empty() || token.chars().any(char::is_whitespace) {
+                return Err(
+                    "HTTP auth token must be non-empty and contain no whitespace".to_string(),
+                );
+            }
+            Some(token)
+        }
+        None => None,
+    };
     let client = reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(config.timeout_secs))
         .build()
@@ -474,11 +498,23 @@ pub fn run_sm_benchmark(
     let mut latencies: Vec<f64> = Vec::new();
 
     for fixture in fixtures.iter().take(config.warmup_queries) {
-        let _ = query_server(&client, &config.server_url, fixture, &config);
+        let _ = query_server(
+            &client,
+            &config.server_url,
+            fixture,
+            &config,
+            http_auth_token,
+        );
     }
 
     for fixture in &fixtures {
-        let result = query_server(&client, &config.server_url, fixture, &config);
+        let result = query_server(
+            &client,
+            &config.server_url,
+            fixture,
+            &config,
+            http_auth_token,
+        );
         if !result.errored {
             latencies.push(result.latency_ms);
         }
@@ -504,6 +540,7 @@ fn query_server(
     server_url: &str,
     fixture: &SMQueryFixture,
     config: &SMBenchmarkConfig,
+    http_auth_token: Option<&str>,
 ) -> SMRunResult {
     let top_k = fixture.top_k.unwrap_or(config.default_top_k);
     let mut payload = serde_json::json!({
@@ -515,10 +552,11 @@ fn query_server(
     }
 
     let start = Instant::now();
-    let response = client
-        .post(format!("{}/search", server_url))
-        .json(&payload)
-        .send();
+    let mut request = client.post(format!("{}/search", server_url)).json(&payload);
+    if let Some(token) = http_auth_token {
+        request = request.bearer_auth(token);
+    }
+    let response = request.send();
     let latency_ms = start.elapsed().as_secs_f64() * 1000.0;
 
     let err_result = |msg: String| SMRunResult {
@@ -538,6 +576,10 @@ fn query_server(
         Err(e) => return err_result(format!("request failed: {}", e)),
         Ok(r) => r,
     };
+    let status = resp.status();
+    if !status.is_success() {
+        return err_result(format!("server returned HTTP {status}"));
+    }
 
     let search_resp = match resp.json::<HttpSearchResponse>() {
         Err(e) => return err_result(format!("failed to parse response: {}", e)),
@@ -696,6 +738,63 @@ mod tests {
             machine_fingerprint: MachineFingerprint::from_hex(&"0".repeat(64)),
             elapsed_ms: 100,
         }
+    }
+
+    // ─── HTTP adapter tests ────────────────────────────────────────────────
+
+    #[test]
+    fn authenticated_runner_rejects_invalid_token_before_network_io() {
+        let error = run_sm_benchmark_with_auth(
+            vec![fixture("auth query", &["fact:a"])],
+            SMBenchmarkConfig::default(),
+            Some("first second"),
+        )
+        .expect_err("invalid token must fail");
+        assert!(error.contains("contain no whitespace"));
+    }
+
+    #[test]
+    fn authenticated_http_errors_are_reported_not_parsed_as_empty_success() {
+        use std::io::{Read, Write};
+        use std::net::TcpListener;
+
+        let listener = TcpListener::bind("127.0.0.1:0").expect("bind mock server");
+        let address = listener.local_addr().expect("mock address");
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().expect("accept request");
+            let mut request = [0_u8; 4096];
+            let bytes = stream.read(&mut request).expect("read request");
+            let request = String::from_utf8_lossy(&request[..bytes]);
+            assert!(request.contains("authorization: Bearer test-token\r\n"));
+            let body = r#"{"error":"unauthorized"}"#;
+            write!(
+                stream,
+                "HTTP/1.1 401 Unauthorized\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            )
+            .expect("write response");
+        });
+
+        let config = SMBenchmarkConfig {
+            server_url: format!("http://{address}"),
+            warmup_queries: 0,
+            ..SMBenchmarkConfig::default()
+        };
+        let report = run_sm_benchmark_with_auth(
+            vec![fixture("auth query", &["fact:a"])],
+            config,
+            Some("test-token"),
+        )
+        .expect("benchmark report");
+        server.join().expect("mock server thread");
+
+        assert_eq!(report.summary.num_errors, 1);
+        assert!(report.results[0].errored);
+        assert!(report.results[0]
+            .error
+            .as_deref()
+            .is_some_and(|error| error.contains("HTTP 401 Unauthorized")));
     }
 
     // ─── IR metric unit tests ─────────────────────────────────────────────
@@ -895,7 +994,7 @@ mod tests {
 
     #[test]
     fn load_fixtures_from_jsonl_roundtrip() {
-        let fixtures = vec![
+        let fixtures = [
             SMQueryFixture {
                 query: "test query one".to_string(),
                 relevant_ids: vec!["fact:aaa".to_string(), "chunk:bbb".to_string()],

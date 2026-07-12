@@ -8,6 +8,8 @@
 //!
 //! Options:
 //!   --server-url <URL>      HTTP base URL (default: http://127.0.0.1:1738)
+//!   --http-auth-token-file <FILE>  Read the bearer token from a private file
+//!   Environment: SM_BENCH_HTTP_AUTH_TOKEN or SEMANTIC_MEMORY_HTTP_TOKEN
 //!   --fixtures-dir <DIR>    Directory with .jsonl fixture files
 //!   --fixtures-file <FILE>  Single .jsonl fixture file
 //!   --suite-name <NAME>     Label for this run (default: timestamp-derived)
@@ -19,7 +21,7 @@
 use std::path::{Path, PathBuf};
 
 use receipt_bench::sm_adapter::{
-    compare_reports, load_fixtures_from_dir, load_fixtures_from_jsonl, run_sm_benchmark,
+    compare_reports, load_fixtures_from_dir, load_fixtures_from_jsonl, run_sm_benchmark_with_auth,
     SMBenchmarkConfig, SMBenchmarkReport,
 };
 
@@ -31,7 +33,10 @@ fn main() {
         return;
     }
 
-    let cfg = parse_args(&args);
+    let cfg = parse_args(&args).unwrap_or_else(|error| {
+        eprintln!("ERROR: {error}");
+        std::process::exit(2);
+    });
 
     // Load fixtures.
     let fixtures = match (&cfg.fixtures_file, &cfg.fixtures_dir) {
@@ -75,10 +80,11 @@ fn main() {
         timeout_secs: 30,
     };
 
-    let report = run_sm_benchmark(fixtures, bench_cfg).unwrap_or_else(|e| {
-        eprintln!("ERROR: benchmark failed: {}", e);
-        std::process::exit(1);
-    });
+    let report = run_sm_benchmark_with_auth(fixtures, bench_cfg, cfg.http_auth_token.as_deref())
+        .unwrap_or_else(|e| {
+            eprintln!("ERROR: benchmark failed: {}", e);
+            std::process::exit(1);
+        });
 
     // Print summary.
     println!();
@@ -139,6 +145,7 @@ fn main() {
 
 struct CliConfig {
     server_url: String,
+    http_auth_token: Option<String>,
     fixtures_file: Option<PathBuf>,
     fixtures_dir: Option<PathBuf>,
     suite_name: String,
@@ -147,8 +154,41 @@ struct CliConfig {
     compare: Option<PathBuf>,
 }
 
-fn parse_args(args: &[String]) -> CliConfig {
+fn take_value<'a>(args: &'a [String], index: &mut usize, flag: &str) -> Result<&'a str, String> {
+    *index += 1;
+    let value = args
+        .get(*index)
+        .ok_or_else(|| format!("{flag} requires a value"))?;
+    if value.trim().is_empty() || value.starts_with("--") {
+        return Err(format!("{flag} requires a value"));
+    }
+    Ok(value)
+}
+
+fn normalize_http_auth_token(raw: &str, source: &str) -> Result<Option<String>, String> {
+    let token = raw.trim();
+    if token.is_empty() {
+        return Ok(None);
+    }
+    if token.chars().any(char::is_whitespace) {
+        return Err(format!("HTTP auth token from {source} contains whitespace"));
+    }
+    Ok(Some(token.to_string()))
+}
+
+fn read_http_auth_token_file(path: &Path) -> Result<String, String> {
+    let raw = std::fs::read_to_string(path)
+        .map_err(|error| format!("failed to read {}: {error}", path.display()))?;
+    let Some(token) = normalize_http_auth_token(&raw, &path.display().to_string())? else {
+        return Err(format!("HTTP auth token file {} is empty", path.display()));
+    };
+    Ok(token)
+}
+
+fn parse_args(args: &[String]) -> Result<CliConfig, String> {
     let mut server_url = "http://127.0.0.1:1738".to_string();
+    let mut http_auth_token: Option<String> = None;
+    let mut http_auth_token_file: Option<PathBuf> = None;
     let mut fixtures_file: Option<PathBuf> = None;
     let mut fixtures_dir: Option<PathBuf> = None;
     let mut suite_name = default_suite_name();
@@ -159,62 +199,66 @@ fn parse_args(args: &[String]) -> CliConfig {
     let mut i = 1usize;
     while i < args.len() {
         match args[i].as_str() {
-            "--server-url" => {
-                i += 1;
-                if let Some(v) = args.get(i) {
-                    server_url = v.clone();
-                }
+            "--server-url" => server_url = take_value(args, &mut i, "--server-url")?.to_string(),
+            "--http-auth-token-file" => {
+                http_auth_token_file = Some(PathBuf::from(take_value(
+                    args,
+                    &mut i,
+                    "--http-auth-token-file",
+                )?));
             }
             "--fixtures-file" => {
-                i += 1;
-                if let Some(v) = args.get(i) {
-                    fixtures_file = Some(PathBuf::from(v));
-                }
+                fixtures_file = Some(PathBuf::from(take_value(args, &mut i, "--fixtures-file")?));
             }
             "--fixtures-dir" => {
-                i += 1;
-                if let Some(v) = args.get(i) {
-                    fixtures_dir = Some(PathBuf::from(v));
-                }
+                fixtures_dir = Some(PathBuf::from(take_value(args, &mut i, "--fixtures-dir")?));
             }
             "--suite-name" => {
-                i += 1;
-                if let Some(v) = args.get(i) {
-                    suite_name = v.clone();
-                }
+                suite_name = take_value(args, &mut i, "--suite-name")?.to_string();
             }
-            "--commit" => {
-                i += 1;
-                if let Some(v) = args.get(i) {
-                    commit = Some(v.clone());
-                }
-            }
+            "--commit" => commit = Some(take_value(args, &mut i, "--commit")?.to_string()),
             "--output-dir" => {
-                i += 1;
-                if let Some(v) = args.get(i) {
-                    output_dir = Some(PathBuf::from(v));
-                }
+                output_dir = Some(PathBuf::from(take_value(args, &mut i, "--output-dir")?));
             }
             "--compare" => {
-                i += 1;
-                if let Some(v) = args.get(i) {
-                    compare = Some(PathBuf::from(v));
-                }
+                compare = Some(PathBuf::from(take_value(args, &mut i, "--compare")?));
             }
-            _ => {}
+            unknown => return Err(format!("unknown option: {unknown}")),
         }
         i += 1;
     }
 
-    CliConfig {
+    if http_auth_token.is_none() {
+        if let Some(path) = http_auth_token_file {
+            http_auth_token = Some(read_http_auth_token_file(&path)?);
+        }
+    }
+    if http_auth_token.is_none() {
+        for name in ["SM_BENCH_HTTP_AUTH_TOKEN", "SEMANTIC_MEMORY_HTTP_TOKEN"] {
+            if let Ok(raw) = std::env::var(name) {
+                if let Some(token) = normalize_http_auth_token(&raw, name)? {
+                    http_auth_token = Some(token);
+                    break;
+                }
+            }
+        }
+    }
+    if http_auth_token.is_none() {
+        if let Ok(path) = std::env::var("SEMANTIC_MEMORY_HTTP_TOKEN_FILE") {
+            http_auth_token = Some(read_http_auth_token_file(Path::new(&path))?);
+        }
+    }
+
+    Ok(CliConfig {
         server_url,
+        http_auth_token,
         fixtures_file,
         fixtures_dir,
         suite_name,
         commit,
         output_dir,
         compare,
-    }
+    })
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -279,6 +323,8 @@ fn print_help() {
          \n\
          OPTIONS:\n\
          \t--server-url <URL>      HTTP base URL (default: http://127.0.0.1:1738)\n\
+         \t--http-auth-token-file <FILE>  Read bearer token from a private file\n\
+         \t    Env: SM_BENCH_HTTP_AUTH_TOKEN or SEMANTIC_MEMORY_HTTP_TOKEN\n\
          \t--fixtures-dir <DIR>    Directory with .jsonl fixture files\n\
          \t--fixtures-file <FILE>  Single .jsonl fixture file\n\
          \t--suite-name <NAME>     Label for this run (default: run-<epoch>)\n\
@@ -290,4 +336,56 @@ fn print_help() {
          The server must be running before invoking sm-bench.\n\
          Build with: cargo build --features sm-adapter"
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args(values: &[&str]) -> Vec<String> {
+        values.iter().map(|value| (*value).to_string()).collect()
+    }
+
+    #[test]
+    fn rejects_removed_token_argv_option() {
+        let error = parse_args(&args(&["sm-bench", "--http-auth-token", "secret-token"]))
+            .err()
+            .expect("token-bearing argv option must fail");
+        assert!(error.contains("unknown option"));
+    }
+
+    #[test]
+    fn rejects_unknown_options() {
+        let error = parse_args(&args(&["sm-bench", "--http-auth-tokne", "secret-token"]))
+            .err()
+            .expect("unknown option must fail");
+        assert!(error.contains("unknown option"));
+    }
+
+    #[test]
+    fn empty_candidate_is_absent_and_internal_whitespace_is_rejected() {
+        assert_eq!(
+            normalize_http_auth_token("   ", "test").expect("empty is absent"),
+            None
+        );
+        assert!(normalize_http_auth_token("first second", "test").is_err());
+        assert_eq!(
+            normalize_http_auth_token(" token-value\n", "test").expect("trim token"),
+            Some("token-value".to_string())
+        );
+    }
+
+    #[test]
+    fn reads_http_auth_token_file() {
+        let directory = tempfile::tempdir().expect("temporary directory");
+        let path = directory.path().join("token");
+        std::fs::write(&path, "file-token\n").expect("write token");
+        let config = parse_args(&args(&[
+            "sm-bench",
+            "--http-auth-token-file",
+            path.to_str().expect("utf-8 path"),
+        ]))
+        .expect("valid token file");
+        assert_eq!(config.http_auth_token.as_deref(), Some("file-token"));
+    }
 }
