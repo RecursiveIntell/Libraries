@@ -18,6 +18,10 @@ use std::vec::Vec;
 use crate::error::{ScorerError, ScorerResult};
 use crate::trait_def::{CompressedScorer, PreparedQuery};
 
+extern "C" {
+    fn cs_per_dim_score(codes: *const u8, dim: usize, lut: *const f32, levels: usize) -> f32;
+}
+
 /// Compressed vector using per-dimension uniform quantization.
 #[derive(Clone, Debug)]
 pub struct PerDimCompressed {
@@ -220,12 +224,14 @@ impl CompressedScorer for PerDimScorer {
                 "per-dim prepared query lookup table has invalid length".into(),
             ));
         }
-        let mut sum = 0.0f64;
-        for i in 0..self.dim {
-            let code = compressed.codes[i] as usize;
-            sum += f64::from(prepared.contribution_lut[i * prepared.levels + code]);
-        }
-        let score = sum as f32;
+        let score = unsafe {
+            cs_per_dim_score(
+                compressed.codes.as_ptr(),
+                self.dim,
+                prepared.contribution_lut.as_ptr(),
+                prepared.levels,
+            )
+        };
         Ok(score)
     }
 
