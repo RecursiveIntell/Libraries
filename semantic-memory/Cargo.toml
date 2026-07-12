@@ -1,6 +1,6 @@
 [package]
 name = "semantic-memory"
-version = "0.5.8"
+version = "0.5.10"
 edition = "2021"
 rust-version = "1.75"
 description = "Local-first hybrid semantic search (SQLite + FTS5 + usearch 2.25) with bitemporal truth and typed receipts"
@@ -135,6 +135,8 @@ hf-hub = { version = "1.0.0-rc.1", default-features = false, features = ["blocki
 tokenizers = { version = "0.23", default-features = false, features = ["onig"], optional = true }
 
 [build-dependencies]
+# cc compiles the C SIMD kernel (c-kernels/similarity.c) for cosine_similarity.
+cc = "1.0"
 # cxx-build is only needed when the usearch backend is enabled (it triggers
 # the C++ bridge compilation). Declared unconditionally so the build script
 # can switch behavior based on the active feature.

@@ -1,3 +1,9 @@
+// FFI: the workspace forbids unsafe, but this module calls a C kernel via FFI.
+// The `unsafe` is isolated to a single `extern "C"` call with validated inputs
+// (length + emptiness checked before the call).  The C side returns NaN for
+// degenerate inputs (zero norms), which we convert back to `None`.
+#![allow(unsafe_code)]
+
 /// Deterministic CPU-only hubness scoring over a set of dense embeddings.
 ///
 /// Hubness is the tendency of a small number of vectors to appear in the
@@ -16,21 +22,30 @@ pub struct HubnessScore {
     pub normalized_score: f32,
 }
 
+// FFI to the C SIMD kernel (c-kernels/similarity.c, compiled via build.rs).
+// The C function returns NaN for zero-norm or degenerate inputs; we convert
+// NaN back to `None` so the public API is unchanged.
+extern "C" {
+    fn sm_cosine_similarity(a: *const f32, b: *const f32, n: usize) -> f32;
+}
+
 /// Cosine similarity between two equal-length vectors.
 ///
 /// Returns `None` if the slices have different lengths, either has zero norm,
 /// or either is empty.
+///
+/// The actual computation is delegated to a C SIMD kernel
+/// (`c-kernels/similarity.c`) compiled with `-O3 -mavx2 -mfma` for
+/// auto-vectorized dot product and norm computation.
 pub fn cosine_similarity(a: &[f32], b: &[f32]) -> Option<f32> {
     if a.len() != b.len() || a.is_empty() {
         return None;
     }
-    let dot: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
-    let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
-    let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
-    if norm_a == 0.0 || norm_b == 0.0 {
+    let result = unsafe { sm_cosine_similarity(a.as_ptr(), b.as_ptr(), a.len()) };
+    if result.is_nan() {
         return None;
     }
-    Some(dot / (norm_a * norm_b))
+    Some(result)
 }
 
 /// Compute hubness scores for a collection of embeddings.
