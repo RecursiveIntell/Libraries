@@ -46,8 +46,8 @@ pub use transform::*;
 #[allow(deprecated)]
 pub mod compat {
     pub use crate::legacy::{
-        transform_legacy_envelope, upgrade_legacy_envelope, LegacyEpisodeMeta,
-        LegacyImportEnvelopeV1, LegacyImportRecord,
+        transform_legacy_envelope, transform_legacy_envelope_at, upgrade_legacy_envelope,
+        upgrade_legacy_envelope_at, LegacyEpisodeMeta, LegacyImportEnvelopeV1, LegacyImportRecord,
     };
 }
 

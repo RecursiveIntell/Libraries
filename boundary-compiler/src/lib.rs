@@ -8,7 +8,7 @@
 //! - Duplicate-key rejection (RFC 8785 mandates duplicate object keys are errors)
 //! - blake3 Content-Digest of the JCS string
 //! - Boundary profiles for dialect, schema ID+version, canonicalization profile, unknown-field policy, and resource ceilings
-//! - JSON Schema validation (stub — always passes)
+//! - Fail-closed schema admission when no validator/schema is configured
 //!
 //! # Integration
 //!

@@ -4,6 +4,43 @@
 #![allow(clippy::expect_used)]
 
 use bitemporal_runtime::{BitemporalRecord, SqliteDb};
+
+#[test]
+fn sqlite_preserves_multiple_subsecond_updates() {
+    let db = SqliteDb::open_in_memory().unwrap();
+    let base = chrono::DateTime::from_timestamp(1000, 100).unwrap();
+    for (n, value) in [(100, "a"), (200, "b")] {
+        db.insert(BitemporalRecord {
+            id: "x".into(),
+            valid_time: chrono::DateTime::from_timestamp(1000, n).unwrap(),
+            recorded_time: chrono::DateTime::from_timestamp(1000, n).unwrap(),
+            value: serde_json::json!(value),
+        })
+        .unwrap();
+    }
+    let snapshot = db
+        .snapshot_at(base + chrono::Duration::nanoseconds(100))
+        .unwrap();
+    assert_eq!(snapshot[0].value, serde_json::json!("b"));
+}
+
+#[test]
+fn sqlite_migrates_legacy_seconds_schema() {
+    let file = tempfile::NamedTempFile::new().unwrap();
+    {
+        let conn = rusqlite::Connection::open(file.path()).unwrap();
+        conn.execute_batch("CREATE TABLE bitemporal_records (record_id TEXT NOT NULL, valid_time INTEGER NOT NULL, recorded_time INTEGER NOT NULL, superseded_by TEXT, value_json BLOB NOT NULL, PRIMARY KEY(record_id, valid_time, recorded_time)); INSERT INTO bitemporal_records VALUES ('x', 1000, 1000, NULL, X'31');").unwrap();
+    }
+    let db = SqliteDb::open(file.path()).unwrap();
+    let snapshot = db
+        .snapshot_at(chrono::DateTime::from_timestamp(1000, 0).unwrap())
+        .unwrap();
+    assert_eq!(snapshot.len(), 1);
+    assert_eq!(
+        snapshot[0].recorded_time,
+        chrono::DateTime::from_timestamp(1000, 0).unwrap()
+    );
+}
 use chrono::TimeZone;
 
 fn record(

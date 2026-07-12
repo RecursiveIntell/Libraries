@@ -3,6 +3,40 @@
 use boundary_compiler::{parse_with_dup_check, Canonicalizer, ContentDigest};
 use serde_json::json;
 
+#[test]
+fn decoded_duplicate_keys_are_object_scoped() {
+    assert!(parse_with_dup_check(r#"{"a":1,"\u0061":2}"#).is_err());
+    assert!(parse_with_dup_check(r#"{"left":{"x":1},"right":{"x":2}}"#).is_ok());
+}
+
+#[test]
+fn jcs_utf16_and_ecmascript_number_vectors() {
+    let value = parse_with_dup_check(r#"{"\uE000":1,"\uD800\uDC00":2}"#).unwrap();
+    assert_eq!(
+        Canonicalizer::new().canonicalize(&value).unwrap(),
+        "{\"𐀀\":2,\"\":1}"
+    );
+    assert_eq!(
+        Canonicalizer::new()
+            .canonicalize(&parse_with_dup_check("-0").unwrap())
+            .unwrap(),
+        "0"
+    );
+    assert_eq!(
+        Canonicalizer::new()
+            .canonicalize(&parse_with_dup_check("9007199254740993").unwrap())
+            .unwrap(),
+        "9007199254740992"
+    );
+}
+
+#[test]
+fn schema_validator_fails_closed_without_schema() {
+    assert!(boundary_compiler::SchemaValidator::new()
+        .validate(&json!({}))
+        .is_err());
+}
+
 /// Test 1: rfc8785_basic_object — {"b":1,"a":2} → keys sorted to {"a":2,"b":1}.
 #[test]
 fn rfc8785_basic_object() {

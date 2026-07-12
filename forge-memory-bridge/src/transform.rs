@@ -45,10 +45,16 @@ use stack_ids::{ClaimId, ClaimVersionId, RelationVersionId, TraceCtx};
 pub fn transform_envelope(
     envelope: &ExportEnvelopeV1,
 ) -> Result<ProjectionImportBatchV1, BridgeError> {
+    transform_envelope_at(envelope, &chrono::Utc::now().to_rfc3339())
+}
+
+/// Deterministic V1 transform with an execution timestamp supplied by the caller.
+pub fn transform_envelope_at(
+    envelope: &ExportEnvelopeV1,
+    transformed_at: &str,
+) -> Result<ProjectionImportBatchV1, BridgeError> {
     // Step 1: Validate
     envelope.validate()?;
-
-    let now = chrono::Utc::now().to_rfc3339();
 
     // Step 2: Transform records
     let records = envelope
@@ -66,7 +72,7 @@ pub fn transform_envelope(
         scope_key: envelope.scope_key.clone(),
         trace_ctx: envelope.trace_ctx.clone(),
         source_exported_at: envelope.exported_at.clone(),
-        transformed_at: now,
+        transformed_at: transformed_at.into(),
         records,
     })
 }
@@ -90,9 +96,16 @@ pub fn transform_envelope(
 pub fn transform_envelope_v2(
     envelope: &ExportEnvelopeV2,
 ) -> Result<ProjectionImportBatchV2, BridgeError> {
+    transform_envelope_v2_at(envelope, &chrono::Utc::now().to_rfc3339())
+}
+
+/// Deterministic V2 transform with an execution timestamp supplied by the caller.
+pub fn transform_envelope_v2_at(
+    envelope: &ExportEnvelopeV2,
+    transformed_at: &str,
+) -> Result<ProjectionImportBatchV2, BridgeError> {
     envelope.validate()?;
 
-    let now = chrono::Utc::now().to_rfc3339();
     let records = envelope
         .records
         .iter()
@@ -111,7 +124,7 @@ pub fn transform_envelope_v2(
         scope_key: envelope.scope_key.clone(),
         trace_ctx: envelope.trace_ctx.clone(),
         source_exported_at: envelope.exported_at.clone(),
-        transformed_at: now,
+        transformed_at: transformed_at.into(),
         export_meta: envelope.export_meta.clone(),
         evidence_bundle: envelope.evidence_bundle.clone(),
         episode_bundle,
@@ -128,9 +141,16 @@ pub fn transform_envelope_v2(
 pub fn transform_envelope_v3(
     envelope: &ExportEnvelopeV3,
 ) -> Result<ProjectionImportBatchV3, BridgeError> {
+    transform_envelope_v3_at(envelope, &chrono::Utc::now().to_rfc3339())
+}
+
+/// Deterministic V3 transform with an execution timestamp supplied by the caller.
+pub fn transform_envelope_v3_at(
+    envelope: &ExportEnvelopeV3,
+    transformed_at: &str,
+) -> Result<ProjectionImportBatchV3, BridgeError> {
     envelope.validate()?;
 
-    let now = chrono::Utc::now().to_rfc3339();
     let records = envelope
         .records
         .iter()
@@ -149,7 +169,7 @@ pub fn transform_envelope_v3(
         scope_key: envelope.scope_key.clone(),
         trace_ctx: envelope.trace_ctx.clone(),
         source_exported_at: envelope.exported_at.clone(),
-        transformed_at: now,
+        transformed_at: transformed_at.into(),
         export_meta: envelope.export_meta.clone(),
         evidence_bundle: envelope.evidence_bundle.clone(),
         episode_bundle,
@@ -188,12 +208,13 @@ pub fn transform_envelope_v3(
 }
 
 fn derive_execution_context_v2(envelope: &ExportEnvelopeV2) -> ExecutionContextV1 {
-    let mut ctx = ExecutionContextV1::new(
-        envelope
-            .trace_ctx
-            .clone()
-            .unwrap_or_else(TraceCtx::generate),
-    );
+    let mut ctx = ExecutionContextV1::new(envelope.trace_ctx.clone().unwrap_or_else(|| {
+        TraceCtx::from_trace_id(derived_id(
+            "trace",
+            &envelope.envelope_id,
+            envelope.envelope_id.as_str(),
+        ))
+    }));
     ctx.replay_link = envelope
         .evidence_bundle
         .as_ref()
@@ -430,11 +451,16 @@ fn transform_record(
 ) -> Result<ImportProjectionRecord, BridgeError> {
     match record {
         ExportRecord::Claim(claim) => {
-            let claim_id = claim.claim_id.clone().unwrap_or_else(ClaimId::generate);
-            let claim_version_id = claim
-                .claim_version_id
-                .clone()
-                .unwrap_or_else(ClaimVersionId::generate);
+            let claim_id = claim.claim_id.clone().unwrap_or_else(|| {
+                ClaimId::new(derived_id("claim", record, envelope.envelope_id.as_str()))
+            });
+            let claim_version_id = claim.claim_version_id.clone().unwrap_or_else(|| {
+                ClaimVersionId::new(derived_id(
+                    "claim-version",
+                    record,
+                    envelope.envelope_id.as_str(),
+                ))
+            });
             let (claim_state, freshness, contradiction_status) =
                 claim_projection_state(claim.metadata.as_ref());
 
@@ -463,10 +489,13 @@ fn transform_record(
         }
 
         ExportRecord::Relation(rel) => {
-            let relation_version_id = rel
-                .relation_version_id
-                .clone()
-                .unwrap_or_else(RelationVersionId::generate);
+            let relation_version_id = rel.relation_version_id.clone().unwrap_or_else(|| {
+                RelationVersionId::new(derived_id(
+                    "relation-version",
+                    record,
+                    envelope.envelope_id.as_str(),
+                ))
+            });
 
             Ok(ImportProjectionRecord::RelationVersion(
                 ImportRelationVersion {
@@ -585,11 +614,16 @@ fn transform_record_v2(
 ) -> Result<ImportProjectionRecord, BridgeError> {
     match record {
         ExportRecord::Claim(claim) => {
-            let claim_id = claim.claim_id.clone().unwrap_or_else(ClaimId::generate);
-            let claim_version_id = claim
-                .claim_version_id
-                .clone()
-                .unwrap_or_else(ClaimVersionId::generate);
+            let claim_id = claim.claim_id.clone().unwrap_or_else(|| {
+                ClaimId::new(derived_id("claim", record, envelope.envelope_id.as_str()))
+            });
+            let claim_version_id = claim.claim_version_id.clone().unwrap_or_else(|| {
+                ClaimVersionId::new(derived_id(
+                    "claim-version",
+                    record,
+                    envelope.envelope_id.as_str(),
+                ))
+            });
             let (claim_state, freshness, contradiction_status) =
                 claim_projection_state(claim.metadata.as_ref());
 
@@ -617,10 +651,13 @@ fn transform_record_v2(
             }))
         }
         ExportRecord::Relation(rel) => {
-            let relation_version_id = rel
-                .relation_version_id
-                .clone()
-                .unwrap_or_else(RelationVersionId::generate);
+            let relation_version_id = rel.relation_version_id.clone().unwrap_or_else(|| {
+                RelationVersionId::new(derived_id(
+                    "relation-version",
+                    record,
+                    envelope.envelope_id.as_str(),
+                ))
+            });
 
             Ok(ImportProjectionRecord::RelationVersion(
                 ImportRelationVersion {
@@ -710,6 +747,19 @@ pub fn is_compatible_version(schema_version: &str) -> bool {
         schema_version,
         EXPORT_ENVELOPE_V1_SCHEMA | EXPORT_ENVELOPE_V2_SCHEMA | EXPORT_ENVELOPE_V3_SCHEMA
     )
+}
+
+fn derived_id<T: serde::Serialize>(domain: &str, value: &T, envelope_id: &str) -> String {
+    use sha2::{Digest, Sha256};
+    let bytes = serde_json::to_vec(value).unwrap_or_default();
+    let mut digest = Sha256::new();
+    digest.update(b"forge-memory-bridge:derived-id:v1\0");
+    digest.update(domain.as_bytes());
+    digest.update([0]);
+    digest.update(envelope_id.as_bytes());
+    digest.update([0]);
+    digest.update(bytes);
+    format!("{domain}-{:x}", digest.finalize())
 }
 
 /// Create a trace context for the bridge transformation, chaining from

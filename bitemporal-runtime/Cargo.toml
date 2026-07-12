@@ -21,6 +21,7 @@ sha2 = "0.10"
 thiserror = "2.0.18"
 schemars = { workspace = true, features = ["chrono"], optional = true }
 rusqlite = { workspace = true, optional = true }
+boundary-compiler = { version = "0.1.0", path = "../boundary-compiler" }
 
 [features]
 # Generate JSON Schema for the public types. Off by default to keep

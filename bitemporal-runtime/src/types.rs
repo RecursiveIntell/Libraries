@@ -113,21 +113,43 @@ impl SupersessionReceipt {
     where
         T: Serialize,
     {
-        let superseded_digest = Self::digest_record(&superseded);
-        let superseding_digest = Self::digest_record(&superseding);
+        Self::try_new(superseded, superseding).expect("record serialization failed")
+    }
+
+    /// Fallible receipt constructor used by append paths so serialization
+    /// failure cannot be confused with a digest of empty content.
+    pub fn try_new<T>(
+        superseded: BitemporalRecord<T>,
+        superseding: BitemporalRecord<T>,
+    ) -> Result<Self, crate::BitemporalError>
+    where
+        T: Serialize,
+    {
+        let superseded_digest = Self::digest_record(&superseded)?;
+        let superseding_digest = Self::digest_record(&superseding)?;
 
         let receipt_content = format!(
             "supersession:v1:{}:{}:{}:{}:{}:{}",
             superseding.id,
-            superseding.recorded_time.timestamp(),
+            superseding
+                .recorded_time
+                .timestamp_nanos_opt()
+                .ok_or_else(|| crate::BitemporalError::SerializationError(
+                    "superseding timestamp outside nanosecond range".into()
+                ))?,
             superseded.id,
-            superseded.recorded_time.timestamp(),
+            superseded
+                .recorded_time
+                .timestamp_nanos_opt()
+                .ok_or_else(|| crate::BitemporalError::SerializationError(
+                    "superseded timestamp outside nanosecond range".into()
+                ))?,
             superseding_digest,
             superseded_digest
         );
         let receipt_digest = format!("{:x}", Sha256::digest(receipt_content.as_bytes()));
 
-        Self {
+        Ok(Self {
             superseding_id: superseding.id,
             superseding_recorded_time: superseding.recorded_time,
             superseded: SupersessionTarget {
@@ -137,22 +159,25 @@ impl SupersessionReceipt {
             superseding_digest,
             superseded_digest,
             receipt_digest,
-        }
+        })
     }
 
     /// Compute the SHA-256 digest of a record's full content (id,
     /// temporal fields, and JSON-serialized value). Two records with
     /// different values produce different digests.
-    fn digest_record<T: Serialize>(record: &BitemporalRecord<T>) -> String {
-        let value_json = serde_json::to_string(&record.value).unwrap_or_default();
-        let content = format!(
-            "record:v1:{}:{}:{}:{}",
-            record.id,
-            record.valid_time.timestamp(),
-            record.recorded_time.timestamp(),
-            value_json
-        );
-        format!("{:x}", Sha256::digest(content.as_bytes()))
+    fn digest_record<T: Serialize>(
+        record: &BitemporalRecord<T>,
+    ) -> Result<String, crate::BitemporalError> {
+        let value = serde_json::to_value(record)
+            .map_err(|e| crate::BitemporalError::SerializationError(e.to_string()))?;
+        let encoded = boundary_compiler::Canonicalizer::new()
+            .canonicalize_bytes(&value)
+            .map_err(|e| crate::BitemporalError::SerializationError(e.to_string()))?;
+        let mut digest = Sha256::new();
+        digest.update(b"recursiveintell:bitemporal-record:v2\0");
+        digest.update((encoded.len() as u64).to_be_bytes());
+        digest.update(encoded);
+        Ok(format!("{:x}", digest.finalize()))
     }
 }
 

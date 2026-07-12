@@ -36,6 +36,14 @@ pub use types::{BitemporalRecord, RecordId, SupersessionReceipt, SupersessionTar
 use chrono::{DateTime, Utc};
 use std::collections::BTreeMap;
 
+fn record_order_key(record: &types::BitemporalRecord) -> (DateTime<Utc>, DateTime<Utc>, Vec<u8>) {
+    (
+        record.recorded_time,
+        record.valid_time,
+        serde_json::to_vec(&record.value).unwrap_or_default(),
+    )
+}
+
 /// In-memory bitemporal store for testing and development.
 #[derive(Debug, Clone)]
 pub struct InMemoryDb {
@@ -70,7 +78,7 @@ impl InMemoryDb {
             for v in versions {
                 if v.recorded_time <= recorded_time
                     && best
-                        .map(|b| v.recorded_time > b.recorded_time)
+                        .map(|b| record_order_key(v) > record_order_key(b))
                         .unwrap_or(true)
                 {
                     best = Some(v);
@@ -96,7 +104,7 @@ impl InMemoryDb {
                 if v.recorded_time <= recorded_time
                     && v.valid_time <= valid_time
                     && best
-                        .map(|b| v.recorded_time > b.recorded_time)
+                        .map(|b| record_order_key(v) > record_order_key(b))
                         .unwrap_or(true)
                 {
                     best = Some(v);

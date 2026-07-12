@@ -395,6 +395,7 @@ checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 name = "bitemporal-runtime"
 version = "0.1.0"
 dependencies = [
+ "boundary-compiler",
  "chrono",
  "rusqlite",
  "schemars 0.8.22",
@@ -491,6 +492,7 @@ name = "boundary-compiler"
 version = "0.1.0"
 dependencies = [
  "blake3",
+ "ryu-js",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -2228,6 +2230,7 @@ dependencies = [
  "semantic-memory-forge",
  "serde",
  "serde_json",
+ "sha2 0.10.9",
  "stack-ids",
  "thiserror 2.0.18",
  "uuid",
@@ -5835,6 +5838,12 @@ name = "ryu"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
+
+[[package]]
+name = "ryu-js"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04d056b875a9d2e6cb9a61d127afee9ac5999b9f87bcb32079d1318e505be714"
 
 [[package]]
 name = "safe-transmute"

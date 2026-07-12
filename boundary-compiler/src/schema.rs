@@ -5,26 +5,26 @@
 //! for boundary profiles that require schema conformance as part of
 //! their transformation pipeline.
 //!
-//! Note: Schema validation is a stub in the base crate. For full JSON Schema
-//! support, enable the `jsonschema` feature.
+//! The base crate has no schema engine, so schema-required admission fails closed.
 
 use crate::error::JcsError;
 
 /// JSON Schema validator companion to BoundaryProfile.
 ///
-/// Currently a stub that always passes validation.
-/// For full JSON Schema support, use a dedicated validator crate.
+/// Fail-closed marker for schema-required admission in the base crate.
 #[derive(Debug, Clone, Default)]
 pub struct SchemaValidator;
 
 impl SchemaValidator {
-    /// Creates a new validator (stub).
+    /// Creates a validator marker.
     pub fn new() -> Self {
         Self
     }
 
-    /// Validates a value (stub — always returns Ok).
+    /// Refuses admission because no schema engine/schema is configured.
     pub fn validate(&self, _value: &serde_json::Value) -> Result<(), JcsError> {
-        Ok(())
+        Err(JcsError::SchemaError(
+            "schema validation is unavailable; refusing schema-required admission".into(),
+        ))
     }
 }

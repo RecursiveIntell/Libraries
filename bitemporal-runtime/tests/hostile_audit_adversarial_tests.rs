@@ -9,6 +9,100 @@
 #![allow(clippy::unwrap_used)]
 
 use bitemporal_runtime::{append_supersede, as_of_query, temporal_snapshot, BitemporalRecord};
+use serde::Serialize;
+
+#[test]
+fn append_receipts_bind_values_and_subseconds() {
+    let t = chrono::Utc.timestamp_opt(1000, 123_456_789).unwrap();
+    let mut a = vec![BitemporalRecord {
+        id: "x".into(),
+        valid_time: t,
+        recorded_time: t,
+        value: "old-a",
+    }];
+    let mut b = vec![BitemporalRecord {
+        id: "x".into(),
+        valid_time: t,
+        recorded_time: t,
+        value: "old-b",
+    }];
+    let ra = append_supersede(
+        &mut a,
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: t,
+            recorded_time: t,
+            value: "new-a",
+        },
+    )
+    .unwrap();
+    let rb = append_supersede(
+        &mut b,
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: t,
+            recorded_time: t,
+            value: "new-b",
+        },
+    )
+    .unwrap();
+    assert_ne!(ra[0].receipt_digest, rb[0].receipt_digest);
+}
+
+#[derive(Clone)]
+struct NeverSerializes;
+impl Serialize for NeverSerializes {
+    fn serialize<S>(&self, _serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        Err(serde::ser::Error::custom("nope"))
+    }
+}
+
+#[test]
+fn failed_receipt_serialization_does_not_append() {
+    let t = chrono::Utc.timestamp_opt(1000, 0).unwrap();
+    let mut records = vec![BitemporalRecord {
+        id: "x".into(),
+        valid_time: t,
+        recorded_time: t,
+        value: NeverSerializes,
+    }];
+    assert!(append_supersede(
+        &mut records,
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: t,
+            recorded_time: t,
+            value: NeverSerializes
+        }
+    )
+    .is_err());
+    assert_eq!(records.len(), 1);
+}
+
+#[test]
+fn equal_recorded_time_selection_is_permutation_stable() {
+    let t = chrono::Utc.timestamp_opt(1000, 1).unwrap();
+    let a = BitemporalRecord {
+        id: "x".into(),
+        valid_time: t,
+        recorded_time: t,
+        value: "a".to_string(),
+    };
+    let b = BitemporalRecord {
+        id: "x".into(),
+        valid_time: t,
+        recorded_time: t,
+        value: "b".to_string(),
+    };
+    let q = t + chrono::Duration::seconds(1);
+    assert_eq!(
+        as_of_query(&[a.clone(), b.clone()], q, q),
+        as_of_query(&[b, a], q, q)
+    );
+}
 use chrono::TimeZone;
 
 fn r(id: &str, v_time: i64, rec_time: i64) -> BitemporalRecord<String> {

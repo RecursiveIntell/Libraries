@@ -94,12 +94,22 @@ pub struct LegacyEpisodeMeta {
 pub fn upgrade_legacy_envelope(
     legacy: &LegacyImportEnvelopeV1,
 ) -> Result<ExportEnvelopeV1, BridgeError> {
+    upgrade_legacy_envelope_at(legacy, &chrono::Utc::now().to_rfc3339())
+}
+
+/// Deterministic legacy upgrade with the exporter timestamp supplied by the caller.
+#[allow(deprecated)]
+pub fn upgrade_legacy_envelope_at(
+    legacy: &LegacyImportEnvelopeV1,
+    exported_at: &str,
+) -> Result<ExportEnvelopeV1, BridgeError> {
     let scope_key = ScopeKey::from_legacy_namespace(&legacy.namespace);
 
     let records: Vec<ExportRecord> = legacy
         .records
         .iter()
-        .map(|r| match r {
+        .enumerate()
+        .map(|(index, r)| match r {
             LegacyImportRecord::Fact {
                 content,
                 source,
@@ -128,7 +138,12 @@ pub fn upgrade_legacy_envelope(
             }),
             LegacyImportRecord::Episode { document_id, meta } => {
                 ExportRecord::Episode(ExportEpisode {
-                    episode_id: Some(EpisodeId::generate()),
+                    episode_id: Some(EpisodeId::new(derived_legacy_id(
+                        "episode",
+                        legacy.envelope_id.as_str(),
+                        index,
+                        r,
+                    ))),
                     document_id: document_id.clone(),
                     cause_ids: meta.cause_ids.clone(),
                     effect_type: meta.effect_type.clone(),
@@ -155,7 +170,7 @@ pub fn upgrade_legacy_envelope(
         source_authority: legacy.source_authority.clone(),
         scope_key,
         trace_ctx,
-        exported_at: chrono::Utc::now().to_rfc3339(),
+        exported_at: exported_at.into(),
         records,
     })
 }
@@ -175,6 +190,34 @@ pub fn transform_legacy_envelope(
 ) -> Result<ProjectionImportBatchV1, BridgeError> {
     let upgraded = upgrade_legacy_envelope(legacy)?;
     crate::transform::transform_envelope(&upgraded)
+}
+
+/// Deterministic legacy transform with both execution timestamps supplied.
+#[allow(deprecated)]
+pub fn transform_legacy_envelope_at(
+    legacy: &LegacyImportEnvelopeV1,
+    exported_at: &str,
+    transformed_at: &str,
+) -> Result<ProjectionImportBatchV1, BridgeError> {
+    let upgraded = upgrade_legacy_envelope_at(legacy, exported_at)?;
+    crate::transform::transform_envelope_at(&upgraded, transformed_at)
+}
+
+fn derived_legacy_id<T: Serialize>(
+    domain: &str,
+    envelope_id: &str,
+    index: usize,
+    value: &T,
+) -> String {
+    use sha2::{Digest, Sha256};
+    let mut digest = Sha256::new();
+    digest.update(b"forge-memory-bridge:legacy-derived-id:v1\0");
+    digest.update(domain.as_bytes());
+    digest.update([0]);
+    digest.update(envelope_id.as_bytes());
+    digest.update((index as u64).to_be_bytes());
+    digest.update(serde_json::to_vec(value).unwrap_or_default());
+    format!("{domain}-{:x}", digest.finalize())
 }
 
 #[cfg(test)]

@@ -53,17 +53,49 @@ impl SqliteDb {
     }
 
     fn migrate(&self) -> Result<(), BitemporalError> {
+        let has_table: bool = self.conn.query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='bitemporal_records')",
+            [], |row| row.get(0),
+        ).map_err(|e| BitemporalError::DatabaseError(format!("migration probe failed: {e}")))?;
+        if has_table {
+            let has_event_id: bool = self.conn.query_row(
+                "SELECT EXISTS(SELECT 1 FROM pragma_table_info('bitemporal_records') WHERE name='event_id')",
+                [], |row| row.get(0),
+            ).map_err(|e| BitemporalError::DatabaseError(format!("migration probe failed: {e}")))?;
+            if !has_event_id {
+                self.conn.execute_batch(
+                    "DROP INDEX IF EXISTS idx_bt_recorded;
+                     DROP INDEX IF EXISTS idx_bt_superseded;
+                     ALTER TABLE bitemporal_records RENAME TO bitemporal_records_seconds_v1;
+                     CREATE TABLE bitemporal_records (
+                       event_id TEXT NOT NULL PRIMARY KEY,
+                       record_id TEXT NOT NULL,
+                       valid_time_ns INTEGER NOT NULL,
+                       recorded_time_ns INTEGER NOT NULL,
+                       superseded_by TEXT,
+                       value_json BLOB NOT NULL
+                     );
+                     INSERT INTO bitemporal_records
+                       (event_id, record_id, valid_time_ns, recorded_time_ns, superseded_by, value_json)
+                     SELECT printf('legacy-v1-%016x', rowid), record_id,
+                            valid_time * 1000000000, recorded_time * 1000000000,
+                            superseded_by, value_json
+                     FROM bitemporal_records_seconds_v1;
+                     DROP TABLE bitemporal_records_seconds_v1;"
+                ).map_err(|e| BitemporalError::DatabaseError(format!("legacy migration failed: {e}")))?;
+            }
+        }
         self.conn
             .execute_batch(
                 "CREATE TABLE IF NOT EXISTS bitemporal_records (
+                    event_id       TEXT NOT NULL PRIMARY KEY,
                     record_id      TEXT NOT NULL,
-                    valid_time     INTEGER NOT NULL,
-                    recorded_time  INTEGER NOT NULL,
+                    valid_time_ns  INTEGER NOT NULL,
+                    recorded_time_ns INTEGER NOT NULL,
                     superseded_by  TEXT,
-                    value_json     BLOB NOT NULL,
-                    PRIMARY KEY (record_id, valid_time, recorded_time)
+                    value_json     BLOB NOT NULL
                 );
-                CREATE INDEX IF NOT EXISTS idx_bt_recorded ON bitemporal_records(recorded_time);
+                CREATE INDEX IF NOT EXISTS idx_bt_recorded ON bitemporal_records(recorded_time_ns, event_id);
                 CREATE INDEX IF NOT EXISTS idx_bt_superseded ON bitemporal_records(superseded_by);",
             )
             .map_err(|e| BitemporalError::DatabaseError(format!("migration failed: {e}")))?;
@@ -79,6 +111,26 @@ impl SqliteDb {
         let value_bytes = serde_json::to_vec(&record.value).map_err(|e| {
             BitemporalError::SerializationError(format!("value serialization failed: {e}"))
         })?;
+        let valid_ns = record.valid_time.timestamp_nanos_opt().ok_or_else(|| {
+            BitemporalError::SerializationError("valid_time outside nanosecond range".into())
+        })?;
+        let recorded_ns = record.recorded_time.timestamp_nanos_opt().ok_or_else(|| {
+            BitemporalError::SerializationError("recorded_time outside nanosecond range".into())
+        })?;
+        use sha2::{Digest, Sha256};
+        let event_id = format!(
+            "{:x}",
+            Sha256::digest(
+                [
+                    b"bitemporal-event:v2\0".as_slice(),
+                    record.id.as_bytes(),
+                    &valid_ns.to_be_bytes(),
+                    &recorded_ns.to_be_bytes(),
+                    &value_bytes
+                ]
+                .concat()
+            )
+        );
 
         let tx = self
             .conn
@@ -103,14 +155,9 @@ impl SqliteDb {
         // Step 2: insert the new row.
         tx.execute(
             "INSERT INTO bitemporal_records
-             (record_id, valid_time, recorded_time, superseded_by, value_json)
-             VALUES (?1, ?2, ?3, NULL, ?4)",
-            params![
-                record.id,
-                record.valid_time.timestamp(),
-                record.recorded_time.timestamp(),
-                value_bytes,
-            ],
+             (event_id, record_id, valid_time_ns, recorded_time_ns, superseded_by, value_json)
+             VALUES (?1, ?2, ?3, ?4, NULL, ?5)",
+            params![event_id, record.id, valid_ns, recorded_ns, value_bytes,],
         )
         .map_err(|e| BitemporalError::DatabaseError(format!("insert failed: {e}")))?;
 
@@ -130,18 +177,21 @@ impl SqliteDb {
         &self,
         recorded_time: chrono::DateTime<chrono::Utc>,
     ) -> Result<Vec<crate::BitemporalRecord<serde_json::Value>>, BitemporalError> {
+        let query_ns = recorded_time.timestamp_nanos_opt().ok_or_else(|| {
+            BitemporalError::DatabaseError("snapshot timestamp outside nanosecond range".into())
+        })?;
         let mut stmt = self
             .conn
             .prepare(
-                "SELECT record_id, valid_time, recorded_time, value_json
+                "SELECT record_id, valid_time_ns, recorded_time_ns, value_json
                  FROM bitemporal_records
-                 WHERE recorded_time <= ?1
-                 ORDER BY record_id, recorded_time DESC",
+                 WHERE recorded_time_ns <= ?1
+                 ORDER BY record_id, recorded_time_ns DESC, event_id DESC",
             )
             .map_err(|e| BitemporalError::DatabaseError(format!("snapshot prepare failed: {e}")))?;
 
         let rows = stmt
-            .query_map(params![recorded_time.timestamp()], |row| {
+            .query_map(params![query_ns], |row| {
                 let id: String = row.get(0)?;
                 let valid_ts: i64 = row.get(1)?;
                 let recorded_ts: i64 = row.get(2)?;
@@ -154,10 +204,16 @@ impl SqliteDb {
                             Box::new(e),
                         )
                     })?;
-                let valid_time = chrono::DateTime::<chrono::Utc>::from_timestamp(valid_ts, 0)
-                    .ok_or_else(|| rusqlite::Error::InvalidQuery)?;
-                let recorded_time = chrono::DateTime::<chrono::Utc>::from_timestamp(recorded_ts, 0)
-                    .ok_or_else(|| rusqlite::Error::InvalidQuery)?;
+                let valid_time = chrono::DateTime::<chrono::Utc>::from_timestamp(
+                    valid_ts.div_euclid(1_000_000_000),
+                    valid_ts.rem_euclid(1_000_000_000) as u32,
+                )
+                .ok_or_else(|| rusqlite::Error::InvalidQuery)?;
+                let recorded_time = chrono::DateTime::<chrono::Utc>::from_timestamp(
+                    recorded_ts.div_euclid(1_000_000_000),
+                    recorded_ts.rem_euclid(1_000_000_000) as u32,
+                )
+                .ok_or_else(|| rusqlite::Error::InvalidQuery)?;
                 Ok(crate::BitemporalRecord {
                     id,
                     valid_time,

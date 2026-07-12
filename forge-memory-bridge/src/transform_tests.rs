@@ -88,6 +88,18 @@ fn transform_claim_envelope() {
 }
 
 #[test]
+fn explicit_stamp_makes_transform_byte_identical() {
+    let env = make_claim_envelope();
+    let a = transform_envelope_at(&env, "2026-07-12T00:00:00Z").unwrap();
+    let b = transform_envelope_at(&env, "2026-07-12T00:00:00Z").unwrap();
+    assert_eq!(
+        serde_json::to_vec(&a).unwrap(),
+        serde_json::to_vec(&b).unwrap()
+    );
+    assert_eq!(a.transformed_at, "2026-07-12T00:00:00Z");
+}
+
+#[test]
 fn transform_preserves_trace_ctx() {
     let env = make_claim_envelope();
     let batch = transform_envelope(&env).unwrap();

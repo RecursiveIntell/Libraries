@@ -8,8 +8,9 @@
 //! - Object keys sorted lexicographically by JSON string codepoints
 
 use crate::error::JcsError;
+use serde::de::{Deserialize, Deserializer, MapAccess, SeqAccess, Visitor};
 use serde_json::{Map, Number, Value};
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, fmt};
 
 /// JCS canonicalizer that produces deterministic JSON bytes.
 #[derive(Debug, Clone, Default)]
@@ -47,7 +48,7 @@ impl Canonicalizer {
                 out.push_str(if *b { "true" } else { "false" });
             }
             Value::Number(n) => {
-                self.write_number(out, n);
+                self.write_number(out, n)?;
             }
             Value::String(s) => {
                 self.write_string(out, s);
@@ -58,10 +59,12 @@ impl Canonicalizer {
         Ok(())
     }
 
-    fn write_number(&self, out: &mut String, n: &Number) {
-        // RFC 8785 §2.3: Numbers are serialized without whitespace,
-        // using the shortest representation that preserves values.
-        out.push_str(&n.to_string());
+    fn write_number(&self, out: &mut String, n: &Number) -> Result<(), JcsError> {
+        let value = n.as_f64().ok_or_else(|| JcsError::InvalidJson {
+            reason: "number is outside the IEEE-754 binary64 JCS domain".into(),
+        })?;
+        out.push_str(ryu_js::Buffer::new().format_finite(value));
+        Ok(())
     }
 
     fn write_string(&self, out: &mut String, s: &str) {
@@ -110,7 +113,9 @@ impl Canonicalizer {
         let mut seen_keys = BTreeSet::new();
         let mut first = true;
 
-        for (key, value) in obj.iter() {
+        let mut entries: Vec<_> = obj.iter().collect();
+        entries.sort_by(|(a, _), (b, _)| a.encode_utf16().cmp(b.encode_utf16()));
+        for (key, value) in entries {
             if !seen_keys.insert(key.clone()) {
                 return Err(JcsError::DuplicateKey { key: key.clone() });
             }
@@ -138,97 +143,81 @@ impl Canonicalizer {
 /// NOTE: serde_json::from_str in non-strict mode silently accepts duplicates
 /// (keeps last value), so we MUST pre-validate the raw string before parsing.
 pub fn parse_with_dup_check(s: &str) -> Result<Value, JcsError> {
-    // Pre-check: scan raw string for duplicate keys at same nesting depth
-    // before letting serde_json silently pick one value
-    if let Some(dup) = find_duplicate_key(s) {
-        return Err(JcsError::DuplicateKey { key: dup });
-    }
-    let value: Value = serde_json::from_str(s).map_err(|e| JcsError::InvalidJson {
-        reason: e.to_string(),
+    let value: StrictValue = serde_json::from_str(s).map_err(|e| {
+        let reason = e.to_string();
+        if reason.contains("duplicate object key") {
+            JcsError::DuplicateKey { key: reason }
+        } else {
+            JcsError::InvalidJson { reason }
+        }
     })?;
-    Ok(value)
+    Ok(value.0)
 }
 
-/// Scans a raw JSON string for duplicate keys at the same nesting depth.
-///
-/// Returns the first duplicate key found, or None if the input is clean.
-/// Uses a (key_name, depth) HashMap so nested objects can reuse key names
-/// (e.g. `{"a": {"a": 1}}` is NOT a duplicate — different depths).
-///
-/// Required because `serde_json::from_str` silently accepts duplicates
-/// in non-strict mode (keeps last value).
-fn find_duplicate_key(s: &str) -> Option<String> {
-    let bytes = s.as_bytes();
-    let n = bytes.len();
-    let mut i = 0;
-    let mut depth: usize = 0;
-    // Track (key_name, depth) → depth_of_first_occurrence
-    let mut seen: std::collections::HashMap<(String, usize), usize, _> =
-        std::collections::HashMap::new();
+struct StrictValue(Value);
 
-    while i < n {
-        match bytes[i] {
-            b'"' => {
-                // Beginning or end of a string at current position
-                let key_start = i + 1;
-                let key_end = skip_string(bytes, key_start, n);
-                let key = String::from_utf8_lossy(&bytes[key_start..key_end]).to_string();
+impl<'de> Deserialize<'de> for StrictValue {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_any(StrictVisitor)
+    }
+}
 
-                // Advance cursor past the closing quote
-                i = key_end;
-
-                // Only treat this string as a key if followed by ':' at same depth
-                if is_key_at_depth(bytes, key_end, n) {
-                    let key_depth = depth;
-                    if let Some(&first_depth) = seen.get(&(key.clone(), key_depth)) {
-                        if first_depth == key_depth {
-                            return Some(key);
-                        }
-                    }
-                    seen.insert((key, key_depth), key_depth);
-                }
-            }
-            b'{' | b'[' => {
-                depth += 1;
-                i += 1;
-            }
-            b'}' | b']' => {
-                // depth can only go to 0 at most, never below
-                depth = depth.saturating_sub(1);
-                i += 1;
-            }
-            _ => {
-                i += 1;
-            }
+struct StrictVisitor;
+impl<'de> Visitor<'de> for StrictVisitor {
+    type Value = StrictValue;
+    fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("a JSON value")
+    }
+    fn visit_unit<E>(self) -> Result<Self::Value, E> {
+        Ok(StrictValue(Value::Null))
+    }
+    fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E> {
+        Ok(StrictValue(Value::Bool(v)))
+    }
+    fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E> {
+        Ok(StrictValue(Value::Number(v.into())))
+    }
+    fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E> {
+        Ok(StrictValue(Value::Number(v.into())))
+    }
+    fn visit_f64<E: serde::de::Error>(self, v: f64) -> Result<Self::Value, E> {
+        Number::from_f64(v)
+            .map(|n| StrictValue(Value::Number(n)))
+            .ok_or_else(|| E::custom("non-finite number"))
+    }
+    fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<Self::Value, E> {
+        self.visit_string(v.into())
+    }
+    fn visit_string<E>(self, v: String) -> Result<Self::Value, E> {
+        Ok(StrictValue(Value::String(v)))
+    }
+    fn visit_none<E>(self) -> Result<Self::Value, E> {
+        Ok(StrictValue(Value::Null))
+    }
+    fn visit_some<D: Deserializer<'de>>(self, d: D) -> Result<Self::Value, D::Error> {
+        StrictValue::deserialize(d)
+    }
+    fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
+        let mut values = Vec::new();
+        while let Some(value) = seq.next_element::<StrictValue>()? {
+            values.push(value.0);
         }
+        Ok(StrictValue(Value::Array(values)))
     }
-    None
-}
-
-/// Advance past a JSON string starting immediately after the opening '"'.
-/// Returns the index of the character AFTER the closing '"'.
-fn skip_string(bytes: &[u8], mut i: usize, n: usize) -> usize {
-    while i < n {
-        match bytes[i] {
-            b'"' => return i + 1, // position after closing quote
-            b'\\' => i += 2,      // skip escaped char
-            _ => i += 1,
+    fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+        let mut values = Map::new();
+        while let Some(key) = map.next_key::<String>()? {
+            if values.contains_key(&key) {
+                return Err(serde::de::Error::custom(format!(
+                    "duplicate object key: {key:?}"
+                )));
+            }
+            values.insert(key, map.next_value::<StrictValue>()?.0);
         }
+        Ok(StrictValue(Value::Object(values)))
     }
-    n // unclosed string — fall off end
 }
 
-/// Returns true if the string starting at `pos` is followed by ':' at `depth`,
-/// with optional whitespace in between.
-fn is_key_at_depth(bytes: &[u8], pos: usize, n: usize) -> bool {
-    let mut j = pos;
-    // skip whitespace
-    while j < n && (bytes[j] == b' ' || bytes[j] == b'\t' || bytes[j] == b'\n' || bytes[j] == b'\r')
-    {
-        j += 1;
-    }
-    j < n && bytes[j] == b':'
-}
 fn detect_duplicates(value: &Value) -> Result<(), JcsError> {
     match value {
         Value::Object(map) => {
@@ -257,9 +246,7 @@ fn detect_duplicates(value: &Value) -> Result<(), JcsError> {
 /// This is used for canonicalization inputs: the input need not be ordered,
 /// but duplicates MUST be rejected before canonicalization.
 pub fn parse_and_validate(input: &str) -> Result<Value, JcsError> {
-    let value = serde_json::from_str(input).map_err(JcsError::ParseError)?;
-    detect_duplicates(&value)?;
-    Ok(value)
+    parse_with_dup_check(input)
 }
 
 /// Canonicalize with automatic duplicate detection first.

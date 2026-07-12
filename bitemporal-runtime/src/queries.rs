@@ -1,6 +1,7 @@
 //! Bitemporal query operations.
 
 use chrono::{DateTime, Utc};
+use serde::Serialize;
 
 use crate::error::BitemporalError;
 use crate::types::{BitemporalRecord, SupersessionReceipt};
@@ -26,7 +27,7 @@ pub fn append_supersede<T>(
     new_record: BitemporalRecord<T>,
 ) -> Result<Vec<SupersessionReceipt>, BitemporalError>
 where
-    T: Clone,
+    T: Clone + Serialize,
 {
     // Collect prior versions of this record ID
     let prior_versions: Vec<_> = records
@@ -39,22 +40,7 @@ where
 
     // Create supersession receipts for each prior version
     for prior in prior_versions {
-        // We need concrete types for the receipt; use type erasure via BitemporalRecord<()>
-        // but we need the actual record IDs and times, so we use the concrete prior/new
-        let receipt = SupersessionReceipt::new(
-            BitemporalRecord {
-                id: prior.id.clone(),
-                valid_time: prior.valid_time,
-                recorded_time: prior.recorded_time,
-                value: (),
-            },
-            BitemporalRecord {
-                id: new_record.id.clone(),
-                valid_time: new_record.valid_time,
-                recorded_time: new_record.recorded_time,
-                value: (),
-            },
-        );
+        let receipt = SupersessionReceipt::try_new(prior, new_record.clone())?;
         receipts.push(receipt);
     }
 
@@ -86,17 +72,17 @@ pub fn as_of_query<T>(
     recorded_time: DateTime<Utc>,
 ) -> Vec<BitemporalRecord<T>>
 where
-    T: Clone,
+    T: Clone + Serialize,
 {
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
-    let mut latest_by_id: HashMap<String, BitemporalRecord<T>> = HashMap::new();
+    let mut latest_by_id: BTreeMap<String, BitemporalRecord<T>> = BTreeMap::new();
 
     for record in records {
         if record.recorded_time <= recorded_time && record.valid_time <= valid_time {
             let existing = latest_by_id.get(&record.id);
             if existing
-                .map(|e| record.recorded_time > e.recorded_time)
+                .map(|e| record_order_key(record) > record_order_key(e))
                 .unwrap_or(true)
             {
                 latest_by_id.insert(record.id.clone(), record.clone());
@@ -105,6 +91,23 @@ where
     }
 
     latest_by_id.into_values().collect()
+}
+
+fn record_order_key<T: Serialize>(
+    record: &BitemporalRecord<T>,
+) -> (DateTime<Utc>, DateTime<Utc>, Vec<u8>) {
+    (
+        record.recorded_time,
+        record.valid_time,
+        serde_json::to_value(&record.value)
+            .ok()
+            .and_then(|value| {
+                boundary_compiler::Canonicalizer::new()
+                    .canonicalize_bytes(&value)
+                    .ok()
+            })
+            .unwrap_or_default(),
+    )
 }
 
 /// Return full state as of a specific `recorded_time`.
@@ -116,7 +119,7 @@ pub fn temporal_snapshot<T>(
     as_of_time: DateTime<Utc>,
 ) -> Vec<BitemporalRecord<T>>
 where
-    T: Clone,
+    T: Clone + Serialize,
 {
     as_of_query(records, as_of_time, as_of_time)
 }
