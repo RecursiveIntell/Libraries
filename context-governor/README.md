@@ -163,6 +163,8 @@ See:
 - `docs/integrations/host-adapters.md`
 - `docs/eval-harness.md`
 - `docs/roi-audit-2026-06-27.md`
+- `docs/plans/2026-07-11-state-of-the-art-context-compaction-survey.md`
+- `docs/plans/2026-07-11-context-compactor-beyond-expectations-roadmap.md`
 
 ## Performance
 
