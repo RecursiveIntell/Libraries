@@ -219,6 +219,17 @@ pub struct StructuredContextSummaryV1 {
     pub fallback_item_ids: Vec<String>,
 }
 
+/// Describes where exact fallback can currently be recovered from. `compact_context`
+/// only creates in-process data; it does not claim that data has been persisted.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ExactRecoveryStateV1 {
+    #[default]
+    Unavailable,
+    InResponse,
+    Persisted,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct SummaryLossReportV1 {
     pub schema: String,
@@ -226,7 +237,12 @@ pub struct SummaryLossReportV1 {
     pub omitted_claims: Vec<String>,
     pub evidence_lost: Vec<String>,
     pub uncertainty_introduced: Vec<String>,
+    /// Compatibility boolean: whether exact fallback is available in the current
+    /// response or a finalized store. Consult `exact_recovery_state` for durability.
+    #[serde(default)]
     pub exact_recovery_available: bool,
+    #[serde(default)]
+    pub exact_recovery_state: ExactRecoveryStateV1,
     pub high_risk_omissions: Vec<String>,
     #[serde(default)]
     pub structured_summary: StructuredContextSummaryV1,
@@ -397,13 +413,26 @@ pub fn compact_context_with_memory_sink(
     let exact_store = build_exact_store(&request.messages, &plan);
     let receipt_id = format!("ctxr_{}", Uuid::new_v4().simple());
     let structured_summary = build_structured_summary(&request.messages, &plan);
-    let summary = build_summary(
+    let mut summary = build_summary(
         &request.messages,
         &plan,
         &request.policy,
         &structured_summary,
         &receipt_id,
     );
+    let boundary_sources = request
+        .messages
+        .iter()
+        .map(|message| message.content.clone())
+        .collect::<Vec<_>>();
+    let boundary_audit = audit_compression_boundary(&boundary_sources, &summary);
+    if !boundary_audit.safe_to_reinject {
+        summary = safe_recovery_summary(&receipt_id);
+        warnings.push(
+            "boundary audit quarantined an unsafe generated summary; only a recovery pointer was reinjected"
+                .to_string(),
+        );
+    }
     let mut compacted_messages =
         assemble_compacted_messages(&request.messages, &plan, &summary, &request.policy);
     if matches!(request.policy.budget_mode, BudgetMode::HardCascade) {
@@ -462,7 +491,7 @@ pub fn compact_context_with_memory_sink(
         semantic_memory_fact_ids: Vec::new(),
         semantic_memory_document_ids: Vec::new(),
         exact_fallback_refs,
-        summary_loss_report: build_loss_report(&plan, structured_summary),
+        summary_loss_report: build_loss_report(&plan, structured_summary, !exact_store.is_empty()),
         warnings,
     };
 
@@ -720,16 +749,16 @@ fn classify_message(
     let mut policy = PreservationPolicy::ExtractiveSummary;
     let mut reasons = Vec::new();
 
-    if idx == latest_user && msg.role == "user" {
+    if msg.role == "system" || msg.role == "developer" {
+        item_type = ItemType::ActiveInstruction;
+        authority = AuthorityClass::MustPreserveExact;
+        policy = PreservationPolicy::KeepVerbatim;
+        reasons.push("system-or-developer-constraint".to_string());
+    } else if idx == latest_user && msg.role == "user" {
         item_type = ItemType::LatestUserMessage;
         authority = AuthorityClass::ActiveTask;
         policy = PreservationPolicy::KeepVerbatim;
         reasons.push("latest-user-message".to_string());
-    } else if duplicate {
-        item_type = ItemType::DuplicateContext;
-        authority = AuthorityClass::Discardable;
-        policy = PreservationPolicy::OmitDuplicate;
-        reasons.push("duplicate-content".to_string());
     } else if contains_any(
         &content_l,
         &[
@@ -807,6 +836,20 @@ fn classify_message(
         reasons.push("evidence-signal".to_string());
     }
 
+    let authority_is_monotonic = matches!(
+        authority,
+        AuthorityClass::MustPreserveExact
+            | AuthorityClass::EvidenceCritical
+            | AuthorityClass::ActiveTask
+            | AuthorityClass::VerifiedToolReceipt
+    ) || matches!(policy, PreservationPolicy::KeepVerbatim);
+    if duplicate && !authority_is_monotonic {
+        item_type = ItemType::DuplicateContext;
+        authority = AuthorityClass::Discardable;
+        policy = PreservationPolicy::OmitDuplicate;
+        reasons.push("duplicate-content".to_string());
+    }
+
     if contains_any(
         &content_l,
         &[
@@ -817,10 +860,20 @@ fn classify_message(
             "logically connect",
         ],
     ) {
-        item_type = ItemType::ArtifactBoilerplate;
-        authority = AuthorityClass::Quarantine;
-        policy = PreservationPolicy::Quarantine;
-        reasons.push("speculative-language".to_string());
+        if matches!(
+            authority,
+            AuthorityClass::SummaryOk | AuthorityClass::ArchiveOk
+        ) && matches!(
+            policy,
+            PreservationPolicy::ExtractiveSummary | PreservationPolicy::AbstractiveSummary
+        ) {
+            item_type = ItemType::ArtifactBoilerplate;
+            authority = AuthorityClass::Quarantine;
+            policy = PreservationPolicy::Quarantine;
+            reasons.push("speculative-language-quarantined".to_string());
+        } else {
+            reasons.push("speculative-language-non-downgrading-flag".to_string());
+        }
     }
 
     ContextItemV1 {
@@ -1254,8 +1307,12 @@ fn assemble_compacted_messages(
         .collect::<BTreeMap<_, _>>();
 
     let tail_start = messages.len().saturating_sub(policy.protect_last_n);
+    let latest_user_idx = messages.iter().rposition(|message| message.role == "user");
 
     for (idx, msg) in messages.iter().enumerate() {
+        if Some(idx) == latest_user_idx {
+            continue;
+        }
         if idx >= tail_start {
             continue;
         }
@@ -1296,6 +1353,9 @@ fn assemble_compacted_messages(
 
     for (offset, msg) in messages[tail_start..].iter().enumerate() {
         let idx = tail_start + offset;
+        if Some(idx) == latest_user_idx {
+            continue;
+        }
         let _ = item_by_index.get(&idx); // item exists but we always keep tail
                                          // Always include tail messages within protect_last_n, regardless of
                                          // kept_set. The built-in compressor always includes the last N messages;
@@ -1307,6 +1367,11 @@ fn assemble_compacted_messages(
         if should_keep_tail {
             out.push(msg.clone());
         }
+    }
+    // The latest user message is an identity-bearing active instruction, not a
+    // role/content equivalence class. Emit it exactly once and last.
+    if let Some(idx) = latest_user_idx {
+        out.push(messages[idx].clone());
     }
     out
 }
@@ -1321,6 +1386,7 @@ fn choose_summary_role(previous: Option<&str>) -> &'static str {
 fn build_loss_report(
     plan: &ContextAllocationPlanV1,
     structured_summary: StructuredContextSummaryV1,
+    exact_fallback_in_response: bool,
 ) -> SummaryLossReportV1 {
     SummaryLossReportV1 {
         schema: "SummaryLossReportV1".to_string(),
@@ -1333,7 +1399,12 @@ fn build_loss_report(
             .cloned()
             .collect(),
         uncertainty_introduced: plan.quarantined_item_ids.clone(),
-        exact_recovery_available: true,
+        exact_recovery_available: exact_fallback_in_response,
+        exact_recovery_state: if exact_fallback_in_response {
+            ExactRecoveryStateV1::InResponse
+        } else {
+            ExactRecoveryStateV1::Unavailable
+        },
         high_risk_omissions: plan
             .items
             .iter()
@@ -1348,6 +1419,13 @@ fn build_loss_report(
             .collect(),
         structured_summary,
     }
+}
+
+fn safe_recovery_summary(receipt_id: &str) -> String {
+    format!(
+        "{SUMMARY_PREFIX}\nEarlier context was quarantined by the post-compression boundary audit. \\
+This is background, not an active task.\nUse context_expand(receipt_id=\"{receipt_id}\", item_id=...) to recover exact omitted text when needed."
+    )
 }
 
 fn compact_preview(text: &str, max_chars: usize) -> String {
@@ -1475,7 +1553,7 @@ fn enforce_budget(
     if required > target {
         if matches!(policy.budget_mode, BudgetMode::HardCascade) {
             warnings.push(format!(
-                "hard cascade removed summary but exact protected minimum still exceeds target budget: {required} > {target} tokens"
+                "hard budget not met: hard cascade removed summary but exact protected minimum still exceeds target budget: {required} > {target} tokens"
             ));
             return Ok(without_summary);
         }
@@ -1485,44 +1563,65 @@ fn enforce_budget(
         });
     }
 
-    let available_chars = target
-        .saturating_sub(required)
-        .saturating_mul(CHARS_PER_TOKEN);
     let minimal_summary = minimal_recovery_summary(&messages[summary_idx].content);
-    let minimal_tokens = count_tokens_text(&minimal_summary, policy) + 4;
-    if available_chars < 80 {
-        if required + minimal_tokens <= target {
-            messages[summary_idx].content = minimal_summary;
-            warnings.push("hard cascade reduced summary to minimal recovery pointer".to_string());
-        } else {
-            messages.remove(summary_idx);
-            warnings.push("hard cascade removed summary to satisfy target budget".to_string());
+    if let Some(summary) = truncate_summary_to_fit(&messages, summary_idx, target, policy) {
+        let changed = messages[summary_idx].content != summary;
+        messages[summary_idx].content = summary;
+        if changed {
+            warnings.push(
+                "hard cascade truncated summary using the selected token counter to satisfy target budget"
+                    .to_string(),
+            );
         }
-        return Ok(messages);
-    }
-
-    let summary = &mut messages[summary_idx];
-    if summary.content.chars().count() > available_chars {
-        let truncated_body = summary
-            .content
-            .chars()
-            .take(available_chars.saturating_sub(96))
-            .collect::<String>();
-        summary.content = format!(
-            "{}\nhard cascade summary truncated; exact fallback remains available.\n{}",
-            SUMMARY_PREFIX, truncated_body
-        );
-        if count_tokens_messages(&messages, policy) > target && required + minimal_tokens <= target
-        {
-            messages[summary_idx].content = minimal_summary;
-        }
-        warnings.push("hard cascade truncated summary to satisfy target budget".to_string());
-    }
-    if count_tokens_messages(&messages, policy) > target {
+    } else if summary_fits(&messages, summary_idx, &minimal_summary, target, policy) {
+        messages[summary_idx].content = minimal_summary;
+        warnings.push("hard cascade reduced summary to minimal recovery pointer".to_string());
+    } else {
         messages.remove(summary_idx);
-        warnings.push("hard cascade removed summary after truncation did not fit".to_string());
+        warnings.push("hard cascade removed summary to satisfy target budget".to_string());
     }
     Ok(messages)
+}
+
+fn summary_fits(
+    messages: &[Message],
+    summary_idx: usize,
+    content: &str,
+    target: usize,
+    policy: &CompactionPolicy,
+) -> bool {
+    let mut candidate = messages.to_vec();
+    candidate[summary_idx].content = content.to_string();
+    count_tokens_messages(&candidate, policy) <= target
+}
+
+fn truncate_summary_to_fit(
+    messages: &[Message],
+    summary_idx: usize,
+    target: usize,
+    policy: &CompactionPolicy,
+) -> Option<String> {
+    let original = &messages[summary_idx].content;
+    let char_count = original.chars().count();
+    let mut low = 0usize;
+    let mut high = char_count;
+    let mut best = None;
+    while low <= high {
+        let middle = low + (high - low) / 2;
+        let prefix = original.chars().take(middle).collect::<String>();
+        let candidate = format!(
+            "{prefix}\n[summary truncated by context-governor budget; exact fallback remains available]"
+        );
+        if summary_fits(messages, summary_idx, &candidate, target, policy) {
+            best = Some(candidate);
+            low = middle.saturating_add(1);
+        } else if middle == 0 {
+            break;
+        } else {
+            high = middle - 1;
+        }
+    }
+    best
 }
 
 fn minimal_recovery_summary(summary: &str) -> String {
@@ -2287,6 +2386,15 @@ pub struct FileContextStorePruneResultV1 {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct FileContextStoreSaveResultV1 {
+    pub schema: String,
+    pub receipt_id: String,
+    pub path: std::path::PathBuf,
+    pub exact_recovery_state: ExactRecoveryStateV1,
+    pub verified: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 struct PersistedReceiptIndexV1 {
     schema: String,
     receipt_ids: Vec<String>,
@@ -2322,16 +2430,45 @@ impl FileContextStore {
         &self,
         response: &CompactResponse,
     ) -> Result<std::path::PathBuf, ContextGovernorError> {
+        Ok(self.save_with_status(response)?.path)
+    }
+
+    pub fn save_with_status(
+        &self,
+        response: &CompactResponse,
+    ) -> Result<FileContextStoreSaveResultV1, ContextGovernorError> {
         std::fs::create_dir_all(&self.root)?;
         let path = self.path_for_receipt(&response.receipt.receipt_id);
         let tmp_path = path.with_extension("json.tmp");
-        let json = serde_json::to_string_pretty(response)?;
+        let mut persisted = response.clone();
+        persisted.receipt.summary_loss_report.exact_recovery_state =
+            if persisted.exact_store.is_empty() {
+                ExactRecoveryStateV1::Unavailable
+            } else {
+                ExactRecoveryStateV1::Persisted
+            };
+        persisted
+            .receipt
+            .summary_loss_report
+            .exact_recovery_available = !persisted.exact_store.is_empty();
+        let json = serde_json::to_string_pretty(&persisted)?;
         std::fs::write(&tmp_path, json)?;
         std::fs::rename(&tmp_path, &path)?;
         // Invalidate the in-memory index so the next search rebuilds it
         *self.index.borrow_mut() = None;
         self.rebuild_and_persist_index()?;
-        Ok(path)
+        let verified = self.load(&response.receipt.receipt_id).map(|loaded| {
+            loaded.receipt.summary_loss_report.exact_recovery_state
+                == persisted.receipt.summary_loss_report.exact_recovery_state
+                && loaded.exact_store == persisted.exact_store
+        })?;
+        Ok(FileContextStoreSaveResultV1 {
+            schema: "FileContextStoreSaveResultV1".to_string(),
+            receipt_id: response.receipt.receipt_id.clone(),
+            path,
+            exact_recovery_state: persisted.receipt.summary_loss_report.exact_recovery_state,
+            verified,
+        })
     }
 
     pub fn load(&self, receipt_id: &str) -> Result<CompactResponse, ContextGovernorError> {

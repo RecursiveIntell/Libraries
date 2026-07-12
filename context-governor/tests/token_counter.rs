@@ -1,5 +1,5 @@
 use context_governor::{
-    compact_context, CompactRequest, CompactionPolicy, Message, TokenCounterKind,
+    compact_context, BudgetMode, CompactRequest, CompactionPolicy, Message, TokenCounterKind,
 };
 
 fn msg(role: &str, content: &str) -> Message {
@@ -94,4 +94,33 @@ fn tiktoken_counter_surface_falls_back_loudly_without_native_feature() {
         .warnings
         .iter()
         .any(|warning| warning.contains("tiktoken_cl100k requested")));
+}
+
+#[test]
+fn hard_cascade_summary_truncation_uses_the_selected_counter_not_chars() {
+    let result = compact_context(CompactRequest {
+        session_id: "word-counter-summary".into(),
+        messages: vec![
+            msg("tool", &format!("{} WORD_COUNTER_NEEDLE", "a ".repeat(900))),
+            msg("user", "latest"),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: 100,
+            protect_first_n: 0,
+            protect_last_n: 1,
+            budget_mode: BudgetMode::HardCascade,
+            token_counter: TokenCounterKind::ApproxWords,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+
+    let summary = result
+        .compacted_messages
+        .iter()
+        .find(|message| message.content.contains("CONTEXT COMPACTION"))
+        .expect("summary remains within the word-count budget");
+    assert!(summary.content.chars().count() > 400);
+    assert!(result.receipt.compacted_approx_tokens <= 100);
 }

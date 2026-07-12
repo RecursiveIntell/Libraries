@@ -50,6 +50,7 @@ Receipts and records:
 - `ContextAllocationPlanV1`
 - `ContextItemV1`
 - `SummaryLossReportV1`
+- `ExactRecoveryStateV1` — `unavailable`, `in_response`, or verified `persisted`
 - `StructuredContextSummaryV1`
 - `ExactStoredItemV1`
 - `MemoryArchiveRecordV1`
@@ -57,7 +58,7 @@ Receipts and records:
 Policy controls:
 
 - `BudgetMode::SoftWarn` — current safety-first behavior, warn if budget is exceeded
-- `BudgetMode::HardCascade` — shrink/remove summary to fit when exact-preserve content allows it
+- `BudgetMode::HardCascade` — shrink/remove summary to fit when exact-preserve content allows it; emits `hard budget not met` when protected content itself overflows
 - `BudgetMode::FailClosed` — refuse when required exact content cannot fit
 - `TokenCounterKind::ApproxChars` — explicit char/4 estimator recorded in receipts
 - `TokenCounterKind::ProviderChatApprox` — provider-style chat overhead heuristic, still recorded as approximate
@@ -155,6 +156,10 @@ Adapters for Hermes, OpenCode, Codex wrappers, Claude Code wrappers, or custom a
 5. Expose `search`, `expand`, and `diff` to the agent.
 6. Treat summaries as background only; the latest user message remains active.
 7. If archival is needed, implement `MemorySink` in the adapter and write real external IDs back in the host layer.
+
+`compact_context` reports exact fallback as `in_response`, never as durable. Use
+`FileContextStore::save_with_status` when the host must verify that fallback was
+written, indexed, reloaded, and can truthfully be reported as `persisted`.
 
 See:
 

@@ -78,7 +78,10 @@ fn cli_compact_diff_store_search_and_expand_round_trip() {
         &["store", "--dir", dir.path().to_str().unwrap()],
         &response_json,
     );
-    assert!(store_json.contains(&receipt_id));
+    let stored: serde_json::Value = serde_json::from_str(&store_json).unwrap();
+    assert_eq!(stored["receipt_id"], receipt_id);
+    assert_eq!(stored["exact_recovery_state"], "persisted");
+    assert_eq!(stored["verified"], true);
 
     let status_json = run_cli(&["status", "--dir", dir.path().to_str().unwrap()], "");
     assert!(status_json.contains("\"receipt_count\": 1"));

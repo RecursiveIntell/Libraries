@@ -28,11 +28,7 @@ fn run() -> Result<(), ContextGovernorError> {
             let dir = arg_value(&args, "--dir").unwrap_or_else(|| ".context-governor".to_string());
             let response: CompactResponse = read_json_stdin("CompactResponse")?;
             let store = FileContextStore::new(dir);
-            let path = store.save(&response)?;
-            print_json(&serde_json::json!({
-                "receipt_id": response.receipt.receipt_id,
-                "path": path,
-            }))
+            print_json(&store.save_with_status(&response)?)
         }
         "expand" => {
             let dir = required_arg(&args, "--dir")?;

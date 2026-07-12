@@ -1,5 +1,6 @@
 use context_governor::{
-    compact_context, context_expand, CompactRequest, CompactionPolicy, FileContextStore, Message,
+    compact_context, context_expand, CompactRequest, CompactionPolicy, ExactRecoveryStateV1,
+    FileContextStore, Message,
 };
 
 fn msg(role: &str, content: &str) -> Message {
@@ -182,4 +183,37 @@ fn file_context_store_persists_search_index_across_instances_and_prunes() {
         .unwrap();
     assert_eq!(second_hits.len(), 1);
     assert_eq!(second_hits[0].receipt_id, receipt_ids[1]);
+}
+
+#[test]
+fn save_with_status_finalizes_exact_recovery_and_pruning_removes_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let response = compact_context(CompactRequest {
+        session_id: "save-status".into(),
+        messages: vec![
+            msg("tool", &"PERSISTENCE_NEEDLE ".repeat(500)),
+            msg("user", "latest"),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: 100,
+            protect_first_n: 0,
+            protect_last_n: 1,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+    let store = FileContextStore::new(dir.path());
+    let saved = store.save_with_status(&response).unwrap();
+    assert_eq!(saved.exact_recovery_state, ExactRecoveryStateV1::Persisted);
+    assert!(saved.verified);
+
+    let loaded = store.load(&response.receipt.receipt_id).unwrap();
+    assert_eq!(
+        loaded.receipt.summary_loss_report.exact_recovery_state,
+        ExactRecoveryStateV1::Persisted
+    );
+
+    store.prune_receipts_keep_last(0).unwrap();
+    assert!(store.load(&response.receipt.receipt_id).is_err());
 }
