@@ -40,6 +40,7 @@ pub mod digest;
 pub mod directions;
 pub mod error;
 pub mod eval;
+pub mod ffi;
 #[cfg(feature = "kv")]
 pub mod kv;
 pub mod lattice;
@@ -55,6 +56,11 @@ pub mod scoring;
 pub mod sidecar;
 pub mod spherical_beta;
 pub mod wire;
+
+// Archived Rust implementations of hot paths replaced by C kernels.
+// Not compiled — kept for historical reference.
+#[allow(unused)]
+mod archive;
 
 pub use batch_ingest::{BatchIngestPipeline, IngestReceipt};
 pub use codebook::{build_initial_codebook, FibCodebookV1};

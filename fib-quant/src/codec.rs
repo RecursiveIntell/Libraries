@@ -420,7 +420,6 @@ impl FibQuantizer {
     /// Encode a vector into a fixed-rate artifact.
     pub fn encode(&self, x: &[f32]) -> Result<FibCodeV1> {
         let d = self.profile.ambient_dim as usize;
-        let k = self.profile.block_dim as usize;
         if x.len() != d {
             return Err(FibQuantError::CorruptPayload(format!(
                 "input dimension {}, expected {d}",
@@ -437,12 +436,16 @@ impl FibQuantizer {
         let normalized: Vec<f64> = x.iter().map(|value| f64::from(*value) / norm).collect();
         let rotated_f64 = self.rotation.apply(&normalized)?;
         let rotated_f32: Vec<f32> = rotated_f64.iter().map(|&v| v as f32).collect();
-        let block_count = self.profile.block_count() as usize;
-        let mut indices = Vec::with_capacity(block_count);
-        for block in rotated_f32.chunks_exact(k) {
-            indices
-                .push(gpu_backend::nearest_codeword_f32(block, &self.codebook.codewords, k) as u32);
-        }
+        let _block_count = self.profile.block_count() as usize;
+        let n = self.profile.codebook_size as usize;
+        let k = self.profile.block_dim as usize;
+        let c_indices = crate::ffi::c_encode_vector_block(
+            &rotated_f32,
+            &self.codebook.codewords,
+            n,
+            k,
+        );
+        let indices: Vec<u32> = c_indices.iter().map(|&i| i as u32).collect();
         Ok(FibCodeV1 {
             schema_version: CODE_SCHEMA.into(),
             profile_digest: self.profile.digest()?,
@@ -469,8 +472,7 @@ impl FibQuantizer {
         let expected_len = block_count.checked_mul(k).ok_or_else(|| {
             FibQuantError::ResourceLimitExceeded("decoded rotated vector length overflow".into())
         })?;
-        // Gather codewords directly in f32 — no f64 intermediate.
-        let mut rotated_f32: Vec<f32> = Vec::with_capacity(expected_len);
+        // Validate indices before passing to C kernel.
         for &index in &unpacked {
             let idx = index as usize;
             if idx >= codebook_size {
@@ -479,9 +481,15 @@ impl FibQuantizer {
                     codebook_size: codebook_size as u32,
                 });
             }
-            let base = idx * k;
-            rotated_f32.extend_from_slice(&codewords[base..base + k]);
         }
+        // Gather codewords via C kernel — no f64 intermediate.
+        let u16_indices: Vec<u16> = unpacked.iter().map(|&i| i as u16).collect();
+        let rotated_f32 = crate::ffi::c_decode_vector_block(
+            &u16_indices,
+            codewords,
+            codebook_size,
+            k,
+        );
         if rotated_f32.len() != expected_len {
             return Err(FibQuantError::CorruptPayload(
                 "decoded rotated vector length mismatch".into(),
@@ -661,10 +669,13 @@ impl FibQuantizer {
         let per_vec = |vec_idx: usize| -> Result<FibCodeV1> {
             let start = vec_idx * d;
             let chunk = &rotated[start..start + d];
-            let mut indices = Vec::with_capacity(profile.block_count() as usize);
-            for block in chunk.chunks_exact(k) {
-                indices.push(gpu_backend::nearest_codeword_f32(block, codewords_f32, k) as u32);
-            }
+            let c_indices = crate::ffi::c_encode_vector_block(
+                chunk,
+                codewords_f32,
+                self.profile.codebook_size as usize,
+                k,
+            );
+            let indices: Vec<u32> = c_indices.iter().map(|&i| i as u32).collect();
             Ok(FibCodeV1 {
                 schema_version: CODE_SCHEMA.into(),
                 profile_digest: profile_digest.clone(),

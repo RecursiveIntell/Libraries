@@ -219,7 +219,12 @@ impl FibScorer {
                 });
             }
             let query_block = &rotated_query_f32[block_idx * k..(block_idx + 1) * k];
-            let query_idx = gpu_backend::nearest_codeword_f32(query_block, codewords, k) as usize;
+            let query_idx = crate::ffi::c_encode_vector_block(
+                query_block,
+                codewords,
+                n,
+                k,
+            )[0] as usize;
             // Gram table lookup: <cw_query, cw_stored>
             total += self.gram.get(query_idx, stored_idx);
         }
@@ -309,14 +314,16 @@ impl FibScorer {
         let rotated_query_f32: Vec<f32> = rotated_query.iter().map(|&v| v as f32).collect();
 
         // Precompute nearest codeword index per block
-        let block_count = self.quantizer.profile().block_count() as usize;
+        let _block_count = self.quantizer.profile().block_count() as usize;
         let codewords = &self.quantizer.codebook().codewords;
-        let mut query_indices = Vec::with_capacity(block_count);
-        for block_idx in 0..block_count {
-            let block = &rotated_query_f32[block_idx * k..(block_idx + 1) * k];
-            let idx = gpu_backend::nearest_codeword_f32(block, codewords, k) as u32;
-            query_indices.push(idx);
-        }
+        let n = self.quantizer.profile().codebook_size as usize;
+        let c_indices = crate::ffi::c_encode_vector_block(
+            &rotated_query_f32,
+            codewords,
+            n,
+            k,
+        );
+        let query_indices: Vec<u32> = c_indices.iter().map(|&i| i as u32).collect();
 
         Ok(FibPreparedQuery {
             rotated_query: rotated_query_f32,

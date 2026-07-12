@@ -13,12 +13,14 @@ keywords = ['quantization', 'vector', 'fibonacci', 'codebook', 'kv-cache']
 categories = ["compression", "science", "algorithms"]
 include = [
     "Cargo.toml",
+    "build.rs",
     "README.md",
     "LICENSE",
     "CITATION.cff",
     "CHANGELOG.md",
     "RELEASE_CHECKLIST.md",
     "src/**",
+    "c-kernels/**",
     "tests/**",
     "benches/**",
     "deny.toml",
@@ -66,6 +68,9 @@ quant-codec-core = { version = "0.1.0-alpha.1", path = "../poly-kv/crates/quant-
 postcard = { version = "1.1", default-features = false, features = ["use-std"] }
 memmap2 = { version = "0.9", optional = true }
 
+[build-dependencies]
+cc = "1.0"
+
 [dev-dependencies]
 criterion = { version = "0.7", features = ["html_reports"] }
 proptest = "1"
@@ -96,4 +101,4 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [lints.rust]
-unsafe_code = "deny"
+unsafe_code = "allow"  # FFI to C kernels requires unsafe

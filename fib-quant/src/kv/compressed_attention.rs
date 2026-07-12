@@ -70,11 +70,45 @@ pub fn compressed_attention_logits(
     // Prepare the query once for batch scoring (rotation + argmin).
     let prepared = scorer.prepare_query(query)?;
 
-    let mut logits = Vec::with_capacity(compressed_keys.len());
+    // Gather all key indices and norms for the C kernel.
+    let block_count = scorer.quantizer().profile().block_count() as usize;
+    let gram = scorer.gram_table();
+    let gram_size = gram.n();
+    let gram_values = gram.values();
+
+    let n_keys = compressed_keys.len();
+    let mut all_key_indices = Vec::with_capacity(n_keys * block_count);
+    let mut key_norms = Vec::with_capacity(n_keys);
     for code in compressed_keys {
-        let ip = scorer.score_prepared(&prepared, code)?;
-        logits.push(ip / scale);
+        let stored_indices = crate::bitpack::unpack_indices(
+            &code.indices,
+            block_count,
+            scorer.quantizer().profile().wire_index_bits,
+        )?;
+        let stored_norm = crate::scoring::decode_stored_norm(code, scorer.quantizer().profile())? as f32;
+        for &idx in &stored_indices {
+            all_key_indices.push(idx as u16);
+        }
+        key_norms.push(stored_norm);
     }
+
+    // Convert query indices to u16 for the C kernel.
+    let query_indices_u16: Vec<u16> = prepared.query_indices.iter().map(|&i| i as u16).collect();
+
+    let mut logits = crate::ffi::c_compressed_attention_logits(
+        &all_key_indices,
+        n_keys,
+        &key_norms,
+        gram_values,
+        gram_size,
+        &query_indices_u16,
+        block_count,
+        prepared.query_norm as f32,
+        scale,
+    );
+
+    // Validate logits are finite.
+    check_finite(&logits)?;
     Ok(logits)
 }
 
@@ -170,28 +204,17 @@ pub fn compressed_attention_topk(
 // ──────────────────────────────────────────────────────────────────────
 
 /// Numerically stable softmax with max-subtraction (f64 accumulator).
+/// Delegates the inner loop to the C kernel (`fq_softmax`).
 fn softmax(logits: &[f32]) -> Result<Vec<f32>> {
     if logits.is_empty() {
         return Err(FibQuantError::ZeroDimension);
     }
     check_finite(logits)?;
-    let max = logits
-        .iter()
-        .copied()
-        .fold(f32::NEG_INFINITY, |acc, v| acc.max(v));
-    let mut sum = 0.0f64;
-    let mut exps = Vec::with_capacity(logits.len());
-    for &v in logits {
-        let exp = f64::from(v - max).exp();
-        sum += exp;
-        exps.push(exp);
-    }
-    if !sum.is_finite() || sum <= 0.0 {
-        return Err(FibQuantError::NumericalFailure(
-            "compressed attention softmax underflow".into(),
-        ));
-    }
-    Ok(exps.into_iter().map(|e| (e / sum) as f32).collect())
+    let mut logits_mut = logits.to_vec();
+    crate::ffi::c_softmax(&mut logits_mut).map_err(|_| {
+        FibQuantError::NumericalFailure("compressed attention softmax underflow".into())
+    })?;
+    Ok(logits_mut)
 }
 
 /// Select top-K indices by descending probability.
