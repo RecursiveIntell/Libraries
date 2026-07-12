@@ -16,6 +16,9 @@ use uuid::Uuid;
 pub mod high_roi;
 pub use high_roi::*;
 
+pub mod reducers;
+pub use reducers::*;
+
 const CHARS_PER_TOKEN: usize = 4;
 const SUMMARY_PREFIX: &str = "[CONTEXT COMPACTION — RECEIPT-BACKED REFERENCE ONLY]";
 
