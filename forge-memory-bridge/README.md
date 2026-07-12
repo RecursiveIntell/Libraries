@@ -114,6 +114,11 @@ Authority split:
 
 ## Canonical pipeline
 
+The cross-crate authority and data-flow diagram is maintained in
+[`docs/semantic-memory-ecosystem.md`](../docs/semantic-memory-ecosystem.md).
+This bridge owns transformation only; the diagram makes the source-truth,
+transformation, storage, retrieval, and claim-ledger boundaries explicit.
+
 ```text
 ExportEnvelopeV3
   -> transform_envelope_v3()

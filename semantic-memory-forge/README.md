@@ -256,6 +256,10 @@ surfaces.
 
 ## Integration path
 
+The cross-crate authority and data-flow diagram is maintained in
+[`docs/semantic-memory-ecosystem.md`](../docs/semantic-memory-ecosystem.md).
+This crate owns the leftmost Forge export boundary in that diagram.
+
 The normal pipeline is:
 
 ```text

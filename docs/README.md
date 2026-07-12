@@ -4,6 +4,7 @@ This directory contains closeout documentation, decision tables, and module budg
 
 ## Contents
 
+- [`semantic-memory-ecosystem.md`](semantic-memory-ecosystem.md) — active semantic-memory crate boundaries, durable-state rules, retrieval/trust flow, and agent integration map
 - `closeout_v21_v24/` — V21-V24 closeout documentation and governance surface decision table
 - `module_budget_exceptions.md` — Documented exceptions to module size budgets
 
