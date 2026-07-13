@@ -61,3 +61,8 @@ path = "examples/payload_chain.rs"
 [[example]]
 name = "mock_example"
 path = "examples/mock_example.rs"
+
+[[example]]
+name = "provider_routing"
+path = "examples/provider_routing.rs"
+required-features = ["openai"]
