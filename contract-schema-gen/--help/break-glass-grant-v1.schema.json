@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "approved_by": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "authority_lease_id": {
+      "type": "string"
+    },
+    "break_glass_grant_id": {
+      "type": "string"
+    },
+    "emergency_reason": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "post_hoc_review_required": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approved_by",
+    "authority_lease_id",
+    "break_glass_grant_id",
+    "emergency_reason",
+    "expires_at",
+    "post_hoc_review_required",
+    "schema_version"
+  ],
+  "title": "BreakGlassGrantV1",
+  "type": "object"
+}

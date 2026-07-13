@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "canonical_targets": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "lossy_fields": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_caveats": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_shapes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "vendor_certification_adapter_id": {
+      "type": "string"
+    },
+    "vendor_evidence_translation_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "vendor_certification_adapter_id",
+    "vendor_evidence_translation_id"
+  ],
+  "title": "VendorEvidenceTranslationV1",
+  "type": "object"
+}

@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CampaignDecision": {
+      "enum": [
+        "launch",
+        "defer",
+        "pause_budget_exhausted"
+      ],
+      "type": "string"
+    },
+    "CampaignDecisionLineV1": {
+      "properties": {
+        "budget_pressure": {
+          "format": "double",
+          "type": "number"
+        },
+        "campaign_id": {
+          "type": "string"
+        },
+        "decision": {
+          "$ref": "#/definitions/CampaignDecision"
+        },
+        "estimated_review_cost": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "expected_information_gain": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "hypothesis_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "budget_pressure",
+        "campaign_id",
+        "decision",
+        "estimated_review_cost",
+        "expected_information_gain",
+        "rationale"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "campaign_decision_trace_id": {
+      "type": "string"
+    },
+    "decisions": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/CampaignDecisionLineV1"
+      },
+      "type": "array"
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "discovery_program_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "portfolio_plan_id": {
+      "type": "string"
+    },
+    "remaining_review_slots": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "verification_load_budget_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "campaign_decision_trace_id",
+    "degraded",
+    "discovery_program_id",
+    "generated_at",
+    "portfolio_plan_id",
+    "remaining_review_slots",
+    "schema_version",
+    "verification_load_budget_id"
+  ],
+  "title": "CampaignDecisionTraceV1",
+  "type": "object"
+}

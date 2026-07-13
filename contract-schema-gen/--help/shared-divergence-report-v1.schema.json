@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "blocking_runtime_names": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "divergence_summary": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "recommends_suspension": {
+      "type": "boolean"
+    },
+    "requires_local_dissent_preservation": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "settlement_case_id": {
+      "type": "string"
+    },
+    "shared_divergence_report_id": {
+      "type": "string"
+    },
+    "shared_replay_slice_id": {
+      "type": "string"
+    },
+    "treaty_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "applicability_context_id",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "divergence_summary",
+    "effective_constitution_id",
+    "profile_set_id",
+    "recommends_suspension",
+    "requires_local_dissent_preservation",
+    "schema_version",
+    "settlement_case_id",
+    "shared_divergence_report_id",
+    "shared_replay_slice_id",
+    "treaty_bundle_id"
+  ],
+  "title": "SharedDivergenceReportV1",
+  "type": "object"
+}

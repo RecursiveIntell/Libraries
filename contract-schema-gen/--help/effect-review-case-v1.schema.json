@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ConstitutionalContextStatus": {
+      "description": "Completeness status of the constitutional context payload on a review artifact.",
+      "enum": [
+        "missing",
+        "partial",
+        "complete"
+      ],
+      "type": "string"
+    },
+    "EffectReviewFinalStateV1": {
+      "description": "Terminal state of an effect review case.",
+      "enum": [
+        "approved",
+        "authorized",
+        "advisory_only",
+        "denied",
+        "blocked"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "A review case for an effect-system action (intent, preflight, commit decision).\n\nGates side-effecting actions through constitutional citation and obligation checks.",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blocking_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "citation_status": {
+      "$ref": "#/definitions/ConstitutionalContextStatus"
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "decision_basis": {
+      "type": "string"
+    },
+    "effect_commit_decision_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effect_intent_id": {
+      "type": "string"
+    },
+    "effect_preflight_report_id": {
+      "type": "string"
+    },
+    "effect_review_case_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "final_state": {
+      "$ref": "#/definitions/EffectReviewFinalStateV1"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "monitoring_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "obligation_refs_status": {
+      "$ref": "#/definitions/ConstitutionalContextStatus"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "required_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_policy_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "citation_status",
+    "decision_basis",
+    "effect_intent_id",
+    "effect_preflight_report_id",
+    "effect_review_case_id",
+    "final_state",
+    "generated_at",
+    "obligation_refs_status",
+    "schema_version"
+  ],
+  "title": "EffectReviewCaseV1",
+  "type": "object"
+}

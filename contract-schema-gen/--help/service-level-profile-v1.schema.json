@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "availability_target": {
+      "type": "string"
+    },
+    "error_budget_ledger_id": {
+      "type": "string"
+    },
+    "latency_target": {
+      "type": "string"
+    },
+    "owner_ref": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "service_level_profile_id": {
+      "type": "string"
+    },
+    "service_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "availability_target",
+    "error_budget_ledger_id",
+    "latency_target",
+    "owner_ref",
+    "schema_version",
+    "service_level_profile_id",
+    "service_name"
+  ],
+  "title": "ServiceLevelProfileV1",
+  "type": "object"
+}

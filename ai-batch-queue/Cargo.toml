@@ -35,3 +35,7 @@ path = "examples/model_optimization.rs"
 [[example]]
 name = "eta_tracking"
 path = "examples/eta_tracking.rs"
+
+[[example]]
+name = "demo"
+path = "examples/demo.rs"

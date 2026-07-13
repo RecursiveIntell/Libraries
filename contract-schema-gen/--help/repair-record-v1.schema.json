@@ -1,0 +1,242 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "DispatchOutcomeV1": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "degraded",
+        "cancelled",
+        "exhausted"
+      ],
+      "type": "string"
+    },
+    "ExecutionContextV1": {
+      "properties": {
+        "attempt_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancellation_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost_budget_units": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "degradation_markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dispatch_outcome": {
+          "$ref": "#/definitions/DispatchOutcomeV1"
+        },
+        "environment_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_call_ref": {
+          "description": "Backpointer to the provider call that fulfilled this execution.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_route": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "queue_hops": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "replay_link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "replay_parent_ref": {
+          "description": "Backpointer to the replay parent execution context, if this is a retry.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "tool_receipt_ref": {
+          "description": "Backpointer to the tool receipt that produced this execution context.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_ctx": {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        "trial_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workload_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "dispatch_outcome",
+        "schema_version",
+        "trace_ctx"
+      ],
+      "type": "object"
+    },
+    "RepairClassV1": {
+      "description": "Classification of a repair action taken during or after a loop iteration.",
+      "enum": [
+        "identity_repair",
+        "temporal_repair",
+        "supersession_repair",
+        "rollback_repair",
+        "bundle_import_repair",
+        "scope_widening_repair",
+        "verification_state_repair"
+      ],
+      "type": "string"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Structured record of a repair action applied to verification state.\n\nIncludes blast radius, reversibility, and a link back to the execution context that triggered the repair.",
+  "properties": {
+    "action": {
+      "type": "string"
+    },
+    "affected_identities": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "blast_radius": {
+      "type": "string"
+    },
+    "execution_context": {
+      "$ref": "#/definitions/ExecutionContextV1"
+    },
+    "opened_at": {
+      "type": "string"
+    },
+    "repair_class": {
+      "$ref": "#/definitions/RepairClassV1"
+    },
+    "repair_record_id": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reversibility": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "trigger_artifacts": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "unchanged_statement": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action",
+    "blast_radius",
+    "execution_context",
+    "opened_at",
+    "repair_class",
+    "repair_record_id",
+    "reversibility",
+    "schema_version",
+    "unchanged_statement"
+  ],
+  "title": "RepairRecordV1",
+  "type": "object"
+}

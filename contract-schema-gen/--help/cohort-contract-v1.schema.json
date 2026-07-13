@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "cohort_contract_id": {
+      "type": "string"
+    },
+    "environment_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "exclusion_logic": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "inclusion_logic": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_linkage": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope_namespace": {
+      "type": "string"
+    },
+    "unit_definition": {
+      "type": "string"
+    },
+    "workload_class": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cohort_contract_id",
+    "replay_linkage",
+    "schema_version",
+    "scope_namespace",
+    "unit_definition",
+    "workload_class"
+  ],
+  "title": "CohortContractV1",
+  "type": "object"
+}

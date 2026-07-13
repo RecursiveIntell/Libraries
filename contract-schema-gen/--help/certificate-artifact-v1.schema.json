@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CertificateKindV1": {
+      "enum": [
+        "execution",
+        "replay",
+        "consistency",
+        "exactness_bound"
+      ],
+      "type": "string"
+    },
+    "DegradationKindV1": {
+      "enum": [
+        "thin_export",
+        "missing_proof",
+        "missing_replay",
+        "scope_withheld",
+        "evidence_unavailable",
+        "oracle_unavailable",
+        "budget_exceeded",
+        "exactness_downgraded",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "certificate_id": {
+      "type": "string"
+    },
+    "certificate_kind": {
+      "$ref": "#/definitions/CertificateKindV1"
+    },
+    "certified_statement": {
+      "type": "string"
+    },
+    "claim_id": {
+      "type": "string"
+    },
+    "degradation": {
+      "items": {
+        "$ref": "#/definitions/DegradationKindV1"
+      },
+      "type": "array"
+    },
+    "exactness": {
+      "$ref": "#/definitions/ExactnessLevelV1"
+    },
+    "oracle_slice_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "proof_obligations_remaining": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "supporting_witness_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "certificate_id",
+    "certificate_kind",
+    "certified_statement",
+    "claim_id",
+    "exactness",
+    "schema_version",
+    "semantics_profile_id",
+    "supporting_witness_ids"
+  ],
+  "title": "CertificateArtifactV1",
+  "type": "object"
+}

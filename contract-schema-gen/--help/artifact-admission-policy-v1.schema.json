@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "PolicyDowngradeBehaviorV1": {
+      "enum": [
+        "advisory_only_if_replay_missing",
+        "advisory_only_if_exact_material_cannot_be_shared"
+      ],
+      "type": "string"
+    },
+    "PolicyReplayabilityClassV1": {
+      "enum": [
+        "replayable_with_ticket"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "allowed_artifact_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "artifact_admission_policy_id": {
+      "type": "string"
+    },
+    "disclosure_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "disqualifying_failures": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "downgrade_behavior": {
+      "$ref": "#/definitions/PolicyDowngradeBehaviorV1"
+    },
+    "required_replayability_class": {
+      "$ref": "#/definitions/PolicyReplayabilityClassV1"
+    },
+    "required_transparency_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_trust_root_sets": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_admission_policy_id",
+    "downgrade_behavior",
+    "required_replayability_class",
+    "schema_version"
+  ],
+  "title": "ArtifactAdmissionPolicyV1",
+  "type": "object"
+}

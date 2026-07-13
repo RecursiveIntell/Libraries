@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SurfaceStatus": {
+      "description": "Shared publication-status primitive for thin governance/profile surfaces.\n\nDomain crates may only use the variants they need, but they should not redefine the status family locally because that creates schema drift bait.",
+      "enum": [
+        "advisory_only",
+        "non_admitted",
+        "degraded",
+        "horizon_only"
+      ],
+      "type": "string"
+    },
+    "TreatyPartyV1": {
+      "properties": {
+        "admission_lane": {
+          "type": "string"
+        },
+        "local_authority": {
+          "type": "string"
+        },
+        "runtime_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "admission_lane",
+        "local_authority",
+        "runtime_name"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "canonical_owner": {
+      "type": "string"
+    },
+    "non_authoritative": {
+      "type": "boolean"
+    },
+    "parties": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/TreatyPartyV1"
+      },
+      "type": "array"
+    },
+    "publication_status": {
+      "$ref": "#/definitions/SurfaceStatus"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "treaty_bundle_id": {
+      "type": "string"
+    },
+    "treaty_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "canonical_owner",
+    "non_authoritative",
+    "publication_status",
+    "schema_version",
+    "treaty_bundle_id",
+    "treaty_name"
+  ],
+  "title": "TreatyBundleV1",
+  "type": "object"
+}

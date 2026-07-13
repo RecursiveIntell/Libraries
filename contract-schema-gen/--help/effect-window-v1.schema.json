@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CloseMidflightBehaviorV1": {
+      "description": "Behavior to apply when an effect window closes while execution is still in flight.",
+      "enum": [
+        "abort_and_emit_receipt",
+        "fail_closed",
+        "continue_observation",
+        "best_effort_compensation"
+      ],
+      "type": "string"
+    },
+    "CommitAtomicityV1": {
+      "description": "Atomicity guarantee level for an effect commit operation.",
+      "enum": [
+        "bounded_multi_step",
+        "exactly_once",
+        "at_least_once",
+        "best_effort"
+      ],
+      "type": "string"
+    },
+    "RetryOwnerV1": {
+      "description": "Entity responsible for retrying a failed or timed-out effect.",
+      "enum": [
+        "effect_runtime",
+        "forge_orchestration",
+        "verification",
+        "provider",
+        "operator"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Temporal execution window that bounds when an effect may start, timeout, and how mid-flight closures are handled.",
+  "properties": {
+    "close_midflight_behavior": {
+      "$ref": "#/definitions/CloseMidflightBehaviorV1"
+    },
+    "commit_atomicity": {
+      "$ref": "#/definitions/CommitAtomicityV1"
+    },
+    "earliest_start": {
+      "type": "string"
+    },
+    "effect_window_id": {
+      "type": "string"
+    },
+    "latest_admissible_start": {
+      "type": "string"
+    },
+    "retry_owner": {
+      "$ref": "#/definitions/RetryOwnerV1"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "timeout_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "close_midflight_behavior",
+    "commit_atomicity",
+    "earliest_start",
+    "effect_window_id",
+    "latest_admissible_start",
+    "retry_owner",
+    "schema_version",
+    "timeout_at"
+  ],
+  "title": "EffectWindowV1",
+  "type": "object"
+}

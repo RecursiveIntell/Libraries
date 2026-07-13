@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AttestationReplayabilityClassV1": {
+      "enum": [
+        "replayable",
+        "replayable_with_ticket"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifact_admission_policy_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "artifact_family": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "attestation_envelope_id": {
+      "type": "string"
+    },
+    "content_digest": {
+      "type": "string"
+    },
+    "disclosure_policy_id": {
+      "type": "string"
+    },
+    "provenance_summary": {
+      "type": "string"
+    },
+    "replayability_class": {
+      "$ref": "#/definitions/AttestationReplayabilityClassV1"
+    },
+    "revocation_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_identity": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "signer_identity": {
+      "type": "string"
+    },
+    "signing_time": {
+      "type": "string"
+    },
+    "supersession_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trust_root_set_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_family",
+    "artifact_version",
+    "attestation_envelope_id",
+    "content_digest",
+    "disclosure_policy_id",
+    "provenance_summary",
+    "replayability_class",
+    "schema_identity",
+    "schema_version",
+    "signer_identity",
+    "signing_time",
+    "trust_root_set_id"
+  ],
+  "title": "AttestationEnvelopeV1",
+  "type": "object"
+}

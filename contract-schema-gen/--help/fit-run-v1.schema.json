@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "FitDisposition": {
+      "enum": [
+        "advisory_fit_only",
+        "promotion_blocked_missing_refuter",
+        "promotion_blocked_failing_refuter",
+        "promotion_blocked_stability_risk",
+        "eligible_for_local_review"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "disposition": {
+      "$ref": "#/definitions/FitDisposition"
+    },
+    "fit_run_id": {
+      "type": "string"
+    },
+    "fit_score": {
+      "format": "double",
+      "type": "number"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "mechanism_bundle_id": {
+      "type": "string"
+    },
+    "notes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "refuter_ready": {
+      "type": "boolean"
+    },
+    "rollout_stability_report_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "simulation_contract_id": {
+      "type": "string"
+    },
+    "stability_clear": {
+      "type": "boolean"
+    },
+    "theory_refuter_suite_id": {
+      "type": "string"
+    },
+    "theory_version_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "degraded",
+    "disposition",
+    "fit_run_id",
+    "fit_score",
+    "generated_at",
+    "mechanism_bundle_id",
+    "refuter_ready",
+    "rollout_stability_report_id",
+    "schema_version",
+    "simulation_contract_id",
+    "stability_clear",
+    "theory_refuter_suite_id",
+    "theory_version_id"
+  ],
+  "title": "FitRunV1",
+  "type": "object"
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ExactnessSpendV1": {
+      "description": "Budget tier of exactness spend for a decision trace.",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "type": "string"
+    },
+    "SelectedDecisionV1": {
+      "description": "Decision selected by the decision trace for an experiment outcome.",
+      "enum": [
+        "canary_only",
+        "retry_exact",
+        "human_review",
+        "rollback"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Trace record capturing the full decision path from triggering artifacts through refuter outcomes to the selected promotion or rollback decision.",
+  "properties": {
+    "cheap_next_checks": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "counterfactual_slice_id": {
+      "type": "string"
+    },
+    "decision_trace_id": {
+      "type": "string"
+    },
+    "exactness_spend": {
+      "$ref": "#/definitions/ExactnessSpendV1"
+    },
+    "intervention_id": {
+      "type": "string"
+    },
+    "policy_basis": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "refuters_failed": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "refuters_satisfied": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "refuters_skipped": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "rollback_prerequisites": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "selected_decision": {
+      "$ref": "#/definitions/SelectedDecisionV1"
+    },
+    "triggering_artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "counterfactual_slice_id",
+    "decision_trace_id",
+    "exactness_spend",
+    "intervention_id",
+    "schema_version",
+    "selected_decision"
+  ],
+  "title": "DecisionTraceV1",
+  "type": "object"
+}

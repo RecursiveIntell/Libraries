@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "archive_manifest_id": {
+      "type": "string"
+    },
+    "compaction_receipt_id": {
+      "type": "string"
+    },
+    "dropped_detail_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "queryable_degradation_note": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "archive_manifest_id",
+    "compaction_receipt_id",
+    "queryable_degradation_note",
+    "schema_version"
+  ],
+  "title": "CompactionReceiptV1",
+  "type": "object"
+}

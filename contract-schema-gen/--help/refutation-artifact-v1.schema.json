@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DegradationKindV1": {
+      "enum": [
+        "thin_export",
+        "missing_proof",
+        "missing_replay",
+        "scope_withheld",
+        "evidence_unavailable",
+        "oracle_unavailable",
+        "budget_exceeded",
+        "exactness_downgraded",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "RefutationOutcomeV1": {
+      "enum": [
+        "sustained",
+        "refuted",
+        "inconclusive",
+        "not_applicable"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "claim_id": {
+      "type": "string"
+    },
+    "degradation": {
+      "items": {
+        "$ref": "#/definitions/DegradationKindV1"
+      },
+      "type": "array"
+    },
+    "exactness": {
+      "$ref": "#/definitions/ExactnessLevelV1"
+    },
+    "outcome": {
+      "$ref": "#/definitions/RefutationOutcomeV1"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "refutation_result_id": {
+      "type": "string"
+    },
+    "refuter": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "searched_budget_units": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "target_artifact_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "witness_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "claim_id",
+    "exactness",
+    "outcome",
+    "reason",
+    "refutation_result_id",
+    "refuter",
+    "schema_version",
+    "semantics_profile_id"
+  ],
+  "title": "RefutationArtifactV1",
+  "type": "object"
+}

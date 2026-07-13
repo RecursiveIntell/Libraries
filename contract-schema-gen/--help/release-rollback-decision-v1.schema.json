@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
+  "properties": {
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "policy_decision_id": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "release_readiness_decision_id": {
+      "type": "string"
+    },
+    "release_rollback_decision_id": {
+      "type": "string"
+    },
+    "rollback_required": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "generated_at",
+    "incident_case_id",
+    "policy_decision_id",
+    "release_readiness_decision_id",
+    "release_rollback_decision_id",
+    "rollback_required",
+    "schema_version"
+  ],
+  "title": "ReleaseRollbackDecisionV1",
+  "type": "object"
+}

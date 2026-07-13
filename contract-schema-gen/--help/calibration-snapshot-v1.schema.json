@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "abstention_threshold_micros": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "case_id": {
+      "type": "string"
+    },
+    "comparability_available": {
+      "type": "boolean"
+    },
+    "drift_markers": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "forces_advisory_only": {
+      "type": "boolean"
+    },
+    "observed_risk_micros": {
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "oracle_calibrated": {
+      "type": "boolean"
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "snapshot_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "abstention_threshold_micros",
+    "case_id",
+    "comparability_available",
+    "forces_advisory_only",
+    "observed_risk_micros",
+    "oracle_calibrated",
+    "recorded_at",
+    "schema_version",
+    "snapshot_id"
+  ],
+  "title": "CalibrationSnapshot",
+  "type": "object"
+}

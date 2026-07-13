@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "allowed_scope": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ScopeKey"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "approval_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "baseline_treatment": {
+      "type": "string"
+    },
+    "episode_id": {
+      "type": "string"
+    },
+    "intervention_id": {
+      "type": "string"
+    },
+    "policy_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "related_claim_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "start_condition": {
+      "type": "string"
+    },
+    "stop_condition": {
+      "type": "string"
+    },
+    "treatment_definition": {
+      "type": "string"
+    },
+    "unit_of_analysis": {
+      "type": "string"
+    },
+    "valid_from": {
+      "type": "string"
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "baseline_treatment",
+    "episode_id",
+    "intervention_id",
+    "recorded_at",
+    "schema_version",
+    "start_condition",
+    "stop_condition",
+    "treatment_definition",
+    "unit_of_analysis",
+    "valid_from"
+  ],
+  "title": "InterventionBundleV1",
+  "type": "object"
+}
