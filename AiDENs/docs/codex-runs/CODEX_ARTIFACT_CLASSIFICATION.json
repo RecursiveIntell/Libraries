@@ -4163,6 +4163,216 @@
       "classification": "run-evidence",
       "path": "06_CLAUDE_AUDIT_INTEGRATION.md",
       "run": "P29"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/git_status_before_gate.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_no_crate_split.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_docs_source_basis_current.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_no_canonical_type_duplicates.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_no_local_canonical_digest_law.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_schema_generation_scope.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_tool_runtime_delegation.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_wrapper_backpointers.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_no_compatibility_ledgers.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/assert_no_local_substitute_dependencies.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/git_status_after_gate.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/git_diff_stat.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/manual/git_diff.patch",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/git_status_before_gate.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_no_crate_split.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_docs_source_basis_current.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_no_canonical_type_duplicates.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_no_local_canonical_digest_law.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_schema_generation_scope.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_tool_runtime_delegation.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_wrapper_backpointers.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_no_compatibility_ledgers.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/assert_no_local_substitute_dependencies.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/git_status_after_gate.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/git_diff_stat.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/final/git_diff.patch",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/contract_ownership/hostile-audit/git_status_before_gate.txt",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": "scripts/tests/test_assert_codex_artifact_classification.py",
+      "classification": "archived",
+      "run": "P32",
+      "archive_location": ".codex_evidence/",
+      "archived_by": "P32-hostile-audit"
+    },
+    {
+      "path": ".codex_evidence/live-provider/ollama-live-2026-07-13.json",
+      "classification": "current",
+      "run": "P32",
+      "archive_location": ".codex_evidence/live-provider/",
+      "archived_by": "P32-completion-live-provider-certification"
+    },
+    {
+      "path": ".codex_evidence/live-provider/openai-compatible-live-2026-07-13.json",
+      "classification": "current",
+      "run": "P32",
+      "archive_location": ".codex_evidence/live-provider/",
+      "archived_by": "P32-completion-live-provider-certification"
     }
   ],
   "generated_at": "2026-05-29T02:00:00Z",

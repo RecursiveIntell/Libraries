@@ -5,9 +5,14 @@ FAIL=0
 # Check compatibility ledgers for non-header rows.
 for f in COMPATIBILITY_LEDGER.md docs/contract-ownership/COMPATIBILITY_LEDGER.md; do
   [[ -f "$f" ]] || continue
-  # Count table-ish rows excluding separator/header and blank lines.
-  rows=$(grep -E '^\|' "$f" | grep -vE '^\|[-: ]+\|' | wc -l | tr -d ' ')
-  if [[ "$rows" -gt 1 ]]; then
+  # Markdown header and separator are not entries. Count only rows after the
+  # first separator row, so an empty ledger is accepted but any data row fails.
+  rows=$(awk '
+    /^\|[-: ]+\|/ { separator_seen = 1; next }
+    separator_seen && /^\|/ { count++ }
+    END { print count + 0 }
+  ' "$f")
+  if [[ "$rows" -gt 0 ]]; then
     echo "FAIL: compatibility ledger $f has entries. Compatibility shims are forbidden in this run."
     FAIL=1
   fi

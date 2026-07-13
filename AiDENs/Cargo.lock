@@ -184,6 +184,7 @@ dependencies = [
  "federated-settlement",
  "kernel-execution",
  "kernel-oracles",
+ "knowledge-runtime",
  "llm-tool-runtime",
  "mechanism-runtime",
  "recursive-kernel-core",

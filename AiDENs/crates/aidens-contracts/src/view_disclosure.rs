@@ -83,56 +83,11 @@ impl ViewDisclosureV1 {
     }
 }
 
-/// Runtime query provenance — tracks how a query was answered.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RuntimeQueryProvenanceV1 {
-    /// The original query.
-    pub query: String,
-    /// Which view was used.
-    pub view_used: ViewType,
-    /// Which retrieval stages fired.
-    pub stages_fired: Vec<String>,
-    /// Number of results returned.
-    pub result_count: usize,
-    /// View disclosure details.
-    pub disclosure: ViewDisclosureV1,
-    /// Timestamp (RFC3339).
-    pub timestamp: String,
-}
-
-impl RuntimeQueryProvenanceV1 {
-    /// Create provenance for a clean query.
-    pub fn new(query: &str, view_type: ViewType, stages: Vec<String>, result_count: usize) -> Self {
-        let disclosure = ViewDisclosureV1::clean(view_type, vec![]);
-        Self {
-            query: query.to_string(),
-            view_used: view_type,
-            stages_fired: stages,
-            result_count,
-            disclosure,
-            timestamp: chrono::Utc::now().to_rfc3339(),
-        }
-    }
-
-    /// Create provenance for a widened query.
-    pub fn widened(
-        query: &str,
-        view_type: ViewType,
-        stages: Vec<String>,
-        result_count: usize,
-        reason: &str,
-    ) -> Self {
-        let disclosure = ViewDisclosureV1::widened(view_type, reason, vec![]);
-        Self {
-            query: query.to_string(),
-            view_used: view_type,
-            stages_fired: stages,
-            result_count,
-            disclosure,
-            timestamp: chrono::Utc::now().to_rfc3339(),
-        }
-    }
-}
+/// Canonical runtime query provenance is owned by `knowledge-runtime`.
+///
+/// AiDENs may display this canonical artifact but must not define an alternate
+/// wire contract or provenance law locally.
+pub use knowledge_runtime::RuntimeQueryProvenanceV1;
 
 #[cfg(test)]
 mod tests {
@@ -158,51 +113,5 @@ mod tests {
         let d = ViewDisclosureV1::degraded(ViewType::Causal, "missing causal chain");
         assert!(d.widening_occurred);
         assert_eq!(d.verification_status, ViewVerificationStatus::Degraded);
-    }
-
-    #[test]
-    fn provenance_records_stages() {
-        let p = RuntimeQueryProvenanceV1::new(
-            "turbo-quant",
-            ViewType::Semantic,
-            vec!["bm25".into(), "vector".into()],
-            5,
-        );
-        assert_eq!(p.stages_fired.len(), 2);
-        assert!(!p.disclosure.widening_occurred);
-    }
-
-    #[test]
-    fn provenance_widened_marks_disclosure() {
-        let p = RuntimeQueryProvenanceV1::widened(
-            "what did I know in January",
-            ViewType::Temporal,
-            vec!["bm25".into()],
-            3,
-            "temporal index incomplete, fell back to timeless",
-        );
-        assert!(p.disclosure.widening_occurred);
-        assert_eq!(
-            p.disclosure.verification_status,
-            ViewVerificationStatus::Advisory
-        );
-    }
-
-    #[test]
-    fn time_scoped_query_cannot_silently_fall_back() {
-        // A time-scoped query that widens to timeless MUST disclose it
-        let p = RuntimeQueryProvenanceV1::widened(
-            "facts from June 2026",
-            ViewType::Temporal,
-            vec!["bm25".into()],
-            10,
-            "no temporal index, fell back to timeless search",
-        );
-        assert!(p.disclosure.widening_occurred);
-        assert!(p.disclosure.widening_reason.is_some());
-        assert_ne!(
-            p.disclosure.verification_status,
-            ViewVerificationStatus::Verified
-        );
     }
 }

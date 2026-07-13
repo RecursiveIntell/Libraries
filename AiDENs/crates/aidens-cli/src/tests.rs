@@ -44,6 +44,94 @@ fn doctor_without_config_reports_disabled_provider() {
 }
 
 #[test]
+fn doctor_corrupt_configured_receipt_log_is_not_healthy() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("canonical-receipts.ndjson"), "{not-json}\n").unwrap();
+    let config = root.join("aidens.toml");
+    std::fs::write(
+        &config,
+        format!(
+            r#"
+app_id = "corrupt-receipt-log-agent"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "mock"
+
+[receipts]
+store_root = "{}"
+"#,
+            root.display()
+        ),
+    )
+    .unwrap();
+
+    let report: AiDENsDoctorReportV1 =
+        serde_json::from_str(&doctor(Some(config.display().to_string())).unwrap()).unwrap();
+    let receipts = &report.sections["receipts"][0];
+
+    assert!(receipts.states.contains(&CapabilityStateV1::Configured));
+    assert!(!receipts.states.contains(&CapabilityStateV1::Healthy));
+    assert!(receipts.states.iter().any(|state| {
+        matches!(
+            state,
+            CapabilityStateV1::Degraded
+                | CapabilityStateV1::Unavailable
+                | CapabilityStateV1::BlockedByPolicy
+        )
+    }));
+    assert!(receipts
+        .reason
+        .as_deref()
+        .unwrap()
+        .contains("canonical-receipt-log"));
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn doctor_verified_configured_receipt_log_is_healthy() {
+    let root = temp_root();
+    CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root)).unwrap();
+    let config = root.join("aidens.toml");
+    std::fs::write(
+        &config,
+        format!(
+            r#"
+app_id = "verified-receipt-log-agent"
+memory_mode = "disabled"
+receipt_level = "standard"
+
+[provider]
+kind = "mock"
+
+[receipts]
+store_root = "{}"
+"#,
+            root.display()
+        ),
+    )
+    .unwrap();
+
+    let report: AiDENsDoctorReportV1 =
+        serde_json::from_str(&doctor(Some(config.display().to_string())).unwrap()).unwrap();
+    let receipts = &report.sections["receipts"][0];
+
+    assert!(receipts.states.contains(&CapabilityStateV1::Configured));
+    assert!(receipts.states.contains(&CapabilityStateV1::Available));
+    assert!(receipts.states.contains(&CapabilityStateV1::Healthy));
+    assert!(receipts
+        .reason
+        .as_deref()
+        .unwrap()
+        .contains("canonical-receipt-log: verified"));
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn doctor_reports_scaffold_crates_as_deferred_not_healthy() {
     let report = doctor(Some("definitely-missing-aidens.toml".into())).unwrap();
     let report: AiDENsDoctorReportV1 = serde_json::from_str(&report).unwrap();
@@ -253,8 +341,15 @@ fn doctor_reports_provider_capability_matrix_without_cloud_or_native_overclaims(
     assert!(!openai_compatible
         .states
         .contains(&CapabilityStateV1::Healthy));
+    assert!(openai_compatible
+        .states
+        .contains(&CapabilityStateV1::ExecutableThisTurn));
+    assert!(openai_compatible
+        .states
+        .contains(&CapabilityStateV1::Available));
     let reason = openai_compatible.reason.as_deref().unwrap();
-    assert!(reason.contains("chat_completion_executable=false"));
+    assert!(reason.contains("support_label=executable-test-backed"));
+    assert!(reason.contains("chat_completion_executable=true"));
     assert!(reason.contains("native_tool_loop_executable=false"));
 }
 
@@ -296,7 +391,7 @@ model = "gpt-test"
 
 #[test]
 fn provider_check_reports_configured_cloud_providers_as_unavailable() {
-    for provider in ["openai", "openrouter", "anthropic", "openai-compatible"] {
+    for provider in ["openai", "openrouter", "anthropic"] {
         let root = temp_root();
         std::fs::create_dir_all(&root).unwrap();
         let path = root.join("aidens.toml");
@@ -329,24 +424,9 @@ api_key = "configured"
         assert_eq!(report["native_tool_loop"], false, "{provider}");
         assert_eq!(report["structured_output"], false, "{provider}");
         assert_eq!(report["streaming"], false, "{provider}");
-        let expected_backend_status = if provider == "openai-compatible" {
-            "executable"
-        } else {
-            "boundary-unavailable"
-        };
-        let expected_support_label = if provider == "openai-compatible" {
-            "executable-test-backed"
-        } else {
-            "deferred/unavailable"
-        };
-        let expected_support_tier = if provider == "openai-compatible" {
-            "partial"
-        } else {
-            "deferred"
-        };
-        assert_eq!(report["backend_status"], expected_backend_status);
-        assert_eq!(report["support_label"], expected_support_label);
-        assert_eq!(report["support_tier"], expected_support_tier);
+        assert_eq!(report["backend_status"], "boundary-unavailable");
+        assert_eq!(report["support_label"], "deferred/unavailable");
+        assert_eq!(report["support_tier"], "deferred");
         assert!(report["reason_codes"]
             .as_array()
             .unwrap()
@@ -750,6 +830,76 @@ fn permit_commands_emit_typed_approval_and_permit_artifacts() {
     assert!(revocation
         .reason_codes
         .contains(&"permit-revoked:expired".into()));
+}
+
+#[test]
+fn permit_approval_rejects_request_id_bound_to_different_context() {
+    configure_test_permit_authority();
+    let request = permit_command(PermitCommand::Request {
+        tool_id: "aidens:file-write:1".into(),
+        risk: "file-write".into(),
+        sandbox_root: "/repo".into(),
+        run_id: "run:request-context".into(),
+        attempt_id: "attempt:request-context".into(),
+    })
+    .unwrap();
+    let request: ApprovalRequestV1 = serde_json::from_str(&request).unwrap();
+
+    let mismatched_contexts = [
+        (
+            "aidens:shell:1",
+            "file-write",
+            "/repo",
+            "run:request-context",
+            "attempt:request-context",
+        ),
+        (
+            "aidens:file-write:1",
+            "network",
+            "/repo",
+            "run:request-context",
+            "attempt:request-context",
+        ),
+        (
+            "aidens:file-write:1",
+            "file-write",
+            "/other-repo",
+            "run:request-context",
+            "attempt:request-context",
+        ),
+        (
+            "aidens:file-write:1",
+            "file-write",
+            "/repo",
+            "run:other-context",
+            "attempt:request-context",
+        ),
+        (
+            "aidens:file-write:1",
+            "file-write",
+            "/repo",
+            "run:request-context",
+            "attempt:other-context",
+        ),
+    ];
+
+    for (tool_id, risk, sandbox_root, run_id, attempt_id) in mismatched_contexts {
+        let error = permit_command(PermitCommand::Approve {
+            request_id: request.request_id.0.clone(),
+            tool_id: tool_id.into(),
+            risk: risk.into(),
+            sandbox_root: sandbox_root.into(),
+            decided_by: "operator".into(),
+            run_id: run_id.into(),
+            attempt_id: attempt_id.into(),
+            expires_in_seconds: 900,
+        })
+        .expect_err("approval request identity must remain bound to its exact context");
+
+        assert!(error
+            .to_string()
+            .contains("approval request context mismatch"));
+    }
 }
 
 #[test]

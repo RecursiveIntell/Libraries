@@ -757,8 +757,28 @@ impl TurnExecutionPlanV1 {
         max_turn_millis: u64,
         reason_codes: Vec<String>,
     ) -> Self {
+        let created_at = Utc::now();
+        let created_at_material = created_at.to_rfc3339_opts(SecondsFormat::Nanos, true);
+        let mode_material = format!("{mode:?}");
+        let max_tool_calls_material = max_tool_calls.to_string();
+        let max_retries_material = max_retries.to_string();
+        let max_turn_millis_material = max_turn_millis.to_string();
+        let plan_id = generated_artifact_id_from_framed_fields(
+            "turn-plan",
+            "turn-execution-plan-v1",
+            &[
+                ("run-id", ""),
+                ("attempt-id", ""),
+                ("mode", mode_material.as_str()),
+                ("tool-exposure-id", tool_exposure.exposure_id.as_ref()),
+                ("max-tool-calls", max_tool_calls_material.as_str()),
+                ("max-retries", max_retries_material.as_str()),
+                ("max-turn-millis", max_turn_millis_material.as_str()),
+                ("created-at", created_at_material.as_str()),
+            ],
+        );
         Self {
-            plan_id: display_only_unstable_id("turn-plan"),
+            plan_id,
             mode,
             provider_route,
             tool_exposure_id: tool_exposure.exposure_id.clone(),
@@ -767,8 +787,31 @@ impl TurnExecutionPlanV1 {
             max_retries,
             max_turn_millis,
             reason_codes,
-            created_at: Utc::now(),
+            created_at,
         }
+    }
+
+    pub fn with_execution_context(mut self, context: &AidensRunContextV1) -> Self {
+        let created_at_material = self.created_at.to_rfc3339_opts(SecondsFormat::Nanos, true);
+        let mode_material = format!("{:?}", self.mode);
+        let max_tool_calls_material = self.max_tool_calls.to_string();
+        let max_retries_material = self.max_retries.to_string();
+        let max_turn_millis_material = self.max_turn_millis.to_string();
+        self.plan_id = generated_artifact_id_from_framed_fields(
+            "turn-plan",
+            "turn-execution-plan-v1",
+            &[
+                ("run-id", context.run_id.as_ref()),
+                ("attempt-id", context.attempt_id.as_ref()),
+                ("mode", mode_material.as_str()),
+                ("tool-exposure-id", self.tool_exposure_id.as_ref()),
+                ("max-tool-calls", max_tool_calls_material.as_str()),
+                ("max-retries", max_retries_material.as_str()),
+                ("max-turn-millis", max_turn_millis_material.as_str()),
+                ("created-at", created_at_material.as_str()),
+            ],
+        );
+        self
     }
 }
 
@@ -811,8 +854,19 @@ pub struct TurnReportV1 {
 
 impl TurnReportV1 {
     pub fn started(context: &AidensRunContextV1, plan: &TurnExecutionPlanV1) -> Self {
+        let started_at = Utc::now();
+        let started_at_material = started_at.to_rfc3339_opts(SecondsFormat::Nanos, true);
         Self {
-            receipt_id: display_only_unstable_id("turn"),
+            receipt_id: generated_artifact_id_from_framed_fields(
+                "turn",
+                "turn-report-v1",
+                &[
+                    ("run-id", context.run_id.as_ref()),
+                    ("attempt-id", context.attempt_id.as_ref()),
+                    ("plan-id", plan.plan_id.as_ref()),
+                    ("started-at", started_at_material.as_str()),
+                ],
+            ),
             kind: ArtifactKindV1::Turn,
             run_id: context.run_id.clone(),
             attempt_id: context.attempt_id.clone(),
@@ -826,7 +880,7 @@ impl TurnReportV1 {
             stop_rule_receipt_ids: Vec::new(),
             budget_exhaustion_receipt_id: None,
             reason_codes: plan.reason_codes.clone(),
-            started_at: Utc::now(),
+            started_at,
             completed_at: None,
         }
     }
@@ -895,15 +949,27 @@ impl StopRuleReportV1 {
         rule: StopRuleV1,
         reason_codes: Vec<String>,
     ) -> Self {
+        let checked_at = Utc::now();
+        let checked_at_material = checked_at.to_rfc3339_opts(SecondsFormat::Nanos, true);
+        let rule_material = format!("{rule:?}");
         Self {
-            receipt_id: display_only_unstable_id("stop-rule"),
+            receipt_id: generated_artifact_id_from_framed_fields(
+                "stop-rule",
+                "stop-rule-report-v1",
+                &[
+                    ("run-id", context.run_id.as_ref()),
+                    ("attempt-id", context.attempt_id.as_ref()),
+                    ("rule", rule_material.as_str()),
+                    ("checked-at", checked_at_material.as_str()),
+                ],
+            ),
             kind: ArtifactKindV1::StopRule,
             run_id: context.run_id.clone(),
             attempt_id: context.attempt_id.clone(),
             rule,
             triggered: true,
             reason_codes,
-            checked_at: Utc::now(),
+            checked_at,
         }
     }
 }
@@ -1140,8 +1206,25 @@ pub struct RunReportV1 {
 
 impl RunReportV1 {
     pub fn started(context: AidensRunContextV1) -> Self {
+        let receipt_id = generated_artifact_id_from_framed_fields(
+            "receipt",
+            "run-report-v1",
+            &[
+                ("run-id", context.run_id.as_ref()),
+                ("trace-id", context.trace_id.as_ref()),
+                ("attempt-family-id", context.attempt_family_id.as_ref()),
+                ("attempt-id", context.attempt_id.as_ref()),
+                (
+                    "started-at",
+                    context
+                        .started_at
+                        .to_rfc3339_opts(SecondsFormat::Nanos, true)
+                        .as_str(),
+                ),
+            ],
+        );
         Self {
-            receipt_id: display_only_unstable_id("receipt"),
+            receipt_id,
             kind: ArtifactKindV1::Run,
             context,
             provider_route: None,

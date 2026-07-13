@@ -6,7 +6,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
 
-use crate::app::App;
+use crate::{app::App, ui::truncate_for_panel};
 
 /// Render the loop state panel.
 pub fn render(frame: &mut Frame, area: Rect, app: &App) {
@@ -97,11 +97,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     // Last error.
     match &state.last_error {
         Some(err) => {
-            let err_display: String = if err.len() > 40 {
-                format!("{}…", &err[..40])
-            } else {
-                err.clone()
-            };
+            let err_display = truncate_for_panel(err, 40);
             lines.push(Line::from(vec![
                 Span::raw("  Last Error:  "),
                 Span::styled(err_display, red),

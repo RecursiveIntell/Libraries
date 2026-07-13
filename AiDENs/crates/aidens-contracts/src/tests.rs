@@ -48,6 +48,56 @@ fn p30_legacy_process_local_generated_artifact_id_api_is_absent() {
 }
 
 #[test]
+fn p30_material_framing_is_unambiguous() {
+    let first = generated_artifact_id_from_framed_fields(
+        "receipt",
+        "framing-test-v1",
+        &[("left", "ab"), ("right", "c")],
+    );
+    let replay = generated_artifact_id_from_framed_fields(
+        "receipt",
+        "framing-test-v1",
+        &[("left", "ab"), ("right", "c")],
+    );
+    let differently_partitioned = generated_artifact_id_from_framed_fields(
+        "receipt",
+        "framing-test-v1",
+        &[("left", "a"), ("right", "bc")],
+    );
+
+    assert_eq!(first, replay);
+    assert_ne!(first, differently_partitioned);
+}
+
+#[test]
+fn p30_run_identity_is_deterministic_from_explicit_execution_material() {
+    let started_at = DateTime::parse_from_rfc3339("2026-07-13T20:00:00.123456789Z")
+        .unwrap()
+        .with_timezone(&Utc);
+    let first =
+        AidensRunContextV1::for_execution_at("material-id-agent", "same prompt", started_at);
+    let replay =
+        AidensRunContextV1::for_execution_at("material-id-agent", "same prompt", started_at);
+    let different_input =
+        AidensRunContextV1::for_execution_at("material-id-agent", "different prompt", started_at);
+
+    assert_eq!(first, replay);
+    assert_ne!(first.run_id, different_input.run_id);
+    assert_eq!(
+        RunReportV1::started(first.clone()).receipt_id,
+        RunReportV1::started(replay).receipt_id
+    );
+    for id in [
+        &first.run_id,
+        &first.trace_id,
+        &first.attempt_family_id,
+        &first.attempt_id,
+    ] {
+        assert!(!id.as_ref().contains("local-process-seq"));
+    }
+}
+
+#[test]
 fn execution_context_exposes_stack_trace_and_attempt() {
     let context = AidensRunContextV1::new("stack-contracts-smoke");
     assert_eq!(context.stack_trace_ctx().trace_id, context.trace_id.0);

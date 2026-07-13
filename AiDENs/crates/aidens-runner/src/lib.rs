@@ -7,11 +7,12 @@ use aidens_agency_kit::{
 use aidens_boundary_kit::{parse_json_boundary, BoundaryRepairPolicyV1};
 use aidens_budget_kit::BudgetV1;
 use aidens_contracts::{
-    display_only_unstable_id, AgentMemoryModeV1, AgentProviderModeV1, AgentSpecSupportLabelV1,
-    AgentSpecV1, AgentVerificationCheckV1, AiDENsRunBudgetDeadlineV1, AiDENsRunBundleV3,
-    AiDENsRunEventLogDigestV1, AiDENsRunFailureTaxonomyV1, AiDENsRunReplayNormalizationV1,
-    AiDENsRunSupportTierEvidenceV1, AidensRunContextV1, ArtifactId, BoundaryRepairReportV1,
-    BudgetExhaustionReportDraftV1, BudgetExhaustionReportV1, DegradationEventV1, DisplayDigestV1,
+    display_only_unstable_id, generated_artifact_id_from_material, AgentMemoryModeV1,
+    AgentProviderModeV1, AgentSpecSupportLabelV1, AgentSpecV1, AgentVerificationCheckV1,
+    AiDENsRunBudgetDeadlineV1, AiDENsRunBundleV3, AiDENsRunEventLogDigestV1,
+    AiDENsRunFailureTaxonomyV1, AiDENsRunReplayNormalizationV1, AiDENsRunSupportTierEvidenceV1,
+    AidensRunContextV1, ArtifactId, BoundaryRepairReportV1, BudgetExhaustionReportDraftV1,
+    BudgetExhaustionReportV1, DegradationEventV1, DisplayDigestV1,
     JsonBoundaryRepairDisplayReportV1, ProjectionDigestV1, ProviderRouteKindV1,
     ProviderRouteReportV1, QueryWideningReportV1, ReportLevelV1, RunReportV1, RuntimeViewRequestV1,
     StackAttemptId, StackTrialId, StopRuleReportV1, StopRuleV1, ToolCallRequestV1,
@@ -38,6 +39,8 @@ use aidens_tool_kit::{
 };
 use anyhow::anyhow;
 use std::collections::BTreeSet;
+#[cfg(test)]
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Instant;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -807,6 +810,8 @@ pub struct AiDENsRunner {
     run_reports: RunReportLedger,
     receipt_level: ReportLevelV1,
     canonical_receipts: Option<CanonicalEventLog>,
+    #[cfg(test)]
+    fail_next_completed_persistence: Arc<AtomicBool>,
     agency_policy: AgencyPolicyEngineV1,
     agency_nudges: Arc<Mutex<NudgeLedgerV1>>,
     governance: Option<GovernanceContext>,
@@ -861,6 +866,8 @@ impl AiDENsRunner {
             run_reports: self.run_reports.clone(),
             receipt_level: self.receipt_level.clone(),
             canonical_receipts: self.canonical_receipts.clone(),
+            #[cfg(test)]
+            fail_next_completed_persistence: self.fail_next_completed_persistence.clone(),
             agency_policy: self.agency_policy.clone(),
             agency_nudges: self.agency_nudges.clone(),
             governance: self.governance.clone(),
@@ -872,6 +879,12 @@ impl AiDENsRunner {
 
     pub fn run_reports(&self) -> RunReportLedger {
         self.run_reports.clone()
+    }
+
+    #[cfg(test)]
+    fn fail_next_completed_persistence(&self) {
+        self.fail_next_completed_persistence
+            .store(true, Ordering::Release);
     }
 
     pub fn receipt_level(&self) -> &ReportLevelV1 {
@@ -919,6 +932,8 @@ pub struct TurnExecutorV1 {
     run_reports: RunReportLedger,
     receipt_level: ReportLevelV1,
     canonical_receipts: Option<CanonicalEventLog>,
+    #[cfg(test)]
+    fail_next_completed_persistence: Arc<AtomicBool>,
     agency_policy: AgencyPolicyEngineV1,
     agency_nudges: Arc<Mutex<NudgeLedgerV1>>,
     governance: Option<GovernanceContext>,
@@ -935,6 +950,8 @@ pub struct TurnExecutorConfigV1 {
     pub run_reports: RunReportLedger,
     pub receipt_level: ReportLevelV1,
     pub canonical_receipts: Option<CanonicalEventLog>,
+    #[cfg(test)]
+    pub fail_next_completed_persistence: Arc<AtomicBool>,
     pub agency_policy: AgencyPolicyEngineV1,
     pub agency_nudges: Arc<Mutex<NudgeLedgerV1>>,
     pub governance: Option<GovernanceContext>,
@@ -968,6 +985,8 @@ impl TurnExecutorV1 {
             run_reports: config.run_reports,
             receipt_level: config.receipt_level,
             canonical_receipts: config.canonical_receipts,
+            #[cfg(test)]
+            fail_next_completed_persistence: config.fail_next_completed_persistence,
             agency_policy: config.agency_policy,
             agency_nudges: config.agency_nudges,
             governance: config.governance,
@@ -985,7 +1004,7 @@ impl TurnExecutorV1 {
         input: AiDENsRunInput,
         mut tool_policy: ToolExposurePolicyV1,
     ) -> anyhow::Result<AiDENsRunOutput> {
-        let ctx = AidensRunContextV1::new(&self.app_id);
+        let ctx = AidensRunContextV1::for_execution(&self.app_id, &input.prompt);
         let provider_route = route_receipt(
             self.provider.provider_kind(),
             self.provider.model().map(str::to_string),
@@ -1004,7 +1023,8 @@ impl TurnExecutorV1 {
             self.budget.max_retries,
             self.budget.max_turn_millis,
             turn_plan_reasons(mode),
-        );
+        )
+        .with_execution_context(&ctx);
 
         let mut run_receipt = RunReportV1::started(ctx.clone());
         run_receipt.provider_route = Some(provider_route.clone());
@@ -1292,7 +1312,8 @@ impl TurnExecutorV1 {
                         true,
                         governance_stack::VerificationAttemptState::Blocked,
                     )?;
-                    control_records.extend(self.agency_policy_records(&agency_policy_reports)?);
+                    control_records
+                        .extend(self.agency_policy_records(&ctx, &agency_policy_reports)?);
                     let (completed, durable_receipt_records) = self
                         .persist_completed_with_records(
                             completed,
@@ -1337,7 +1358,7 @@ impl TurnExecutorV1 {
                     completed_turn.degraded,
                     governance_stack::VerificationAttemptState::AdvisoryOnly,
                 )?;
-                control_records.extend(self.agency_policy_records(&agency_policy_reports)?);
+                control_records.extend(self.agency_policy_records(&ctx, &agency_policy_reports)?);
                 let (completed, durable_receipt_records) = self.persist_completed_with_records(
                     completed,
                     &tool_exposure,
@@ -1539,16 +1560,12 @@ impl TurnExecutorV1 {
                     }
                 };
                 let result = ToolCallResultV1::from_invocation(&tool_call, &invocation);
-                if let Some((case, plan)) = &governance_case_plan {
-                    let state = if invocation.succeeded {
-                        governance_stack::VerificationAttemptState::Succeeded
-                    } else {
-                        governance_stack::VerificationAttemptState::Failed
-                    };
+                if let Some((case, _permit_plan)) = &governance_case_plan {
+                    let observation_plan = self.governance_tool_observation_plan(case, &tool_call);
                     let control_records = self.governance_tool_control_records(
                         case,
-                        plan,
-                        state,
+                        &observation_plan,
+                        governance_stack::VerificationAttemptState::AdvisoryOnly,
                         if invocation.succeeded {
                             "tool-dispatch-completed"
                         } else {
@@ -1624,7 +1641,7 @@ impl TurnExecutorV1 {
                                 }),
                             )?;
                             control_records
-                                .extend(self.agency_policy_records(&agency_policy_reports)?);
+                                .extend(self.agency_policy_records(&ctx, &agency_policy_reports)?);
                             let (completed, durable_receipt_records) = self
                                 .persist_completed_with_records(
                                     completed,
@@ -1725,6 +1742,29 @@ impl TurnExecutorV1 {
         Ok(Some((case, plan)))
     }
 
+    fn governance_tool_observation_plan(
+        &self,
+        case: &governance_stack::VerificationCase,
+        tool_call: &ToolCallRequestV1,
+    ) -> governance_stack::CheckPlan {
+        CanonicalGovernanceAdapter.check_plan(
+            case,
+            governance_stack::CheckMethod::AdvisoryOnly,
+            vec!["tool-dispatch-observation".into()],
+            governance_stack::PromotionClass::P3,
+            governance_stack::ReversibilityClass::ReversibleLocal,
+            false,
+            true,
+            false,
+            "runner post-dispatch execution observation; no causal verification performed",
+            serde_json::json!({
+                "control_surface": "runner-tool-dispatch",
+                "tool_id": &tool_call.tool_id,
+                "input_digest": &tool_call.input_digest,
+            }),
+        )
+    }
+
     fn governance_tool_control_records(
         &self,
         case: &governance_stack::VerificationCase,
@@ -1744,8 +1784,17 @@ impl TurnExecutorV1 {
             recorded_at.clone(),
             Some(outcome_signature.to_string()),
         );
-        let receipt =
-            adapter.control_receipt_for_attempt(case, plan, &attempt, promotable, details);
+        let receipt = adapter.control_receipt_for_attempt(
+            case,
+            plan,
+            &attempt,
+            promotable,
+            serde_json::json!({
+                "check_method": &plan.method,
+                "verification_attempt_state": state,
+                "execution_observation": details,
+            }),
+        );
         if let Some(store) = &self.canonical_receipts {
             return Ok(vec![store.append_control_receipt(&receipt)?]);
         }
@@ -1777,6 +1826,7 @@ impl TurnExecutorV1 {
 
     fn agency_policy_records(
         &self,
+        context: &AidensRunContextV1,
         reports: &[AgencyPolicyReportV1],
     ) -> anyhow::Result<Vec<CanonicalEventLogEntry>> {
         let Some(store) = &self.canonical_receipts else {
@@ -1784,12 +1834,21 @@ impl TurnExecutorV1 {
         };
         let mut records = Vec::new();
         for report in reports {
-            records.push(store.append_json(
-                "aidens-agency-kit",
-                "agency-policy-report-v1",
-                report.report_id.clone(),
-                serde_json::to_value(report)?,
-            )?);
+            let event_id_material = serde_json::to_string(&(
+                "aidens.runner.agency-policy-event.v1",
+                context.run_id.as_ref(),
+                context.attempt_id.as_ref(),
+                report.report_id.as_str(),
+            ))?;
+            records.push(
+                store.append_json(
+                    "aidens-agency-kit",
+                    "agency-policy-report-v1",
+                    generated_artifact_id_from_material("agency-policy-event", &event_id_material)
+                        .to_string(),
+                    serde_json::to_value(report)?,
+                )?,
+            );
         }
         Ok(records)
     }
@@ -1800,13 +1859,26 @@ impl TurnExecutorV1 {
         tool_exposure: &ToolExposureSetV1,
         mut durable_receipt_records: Vec<CanonicalEventLogEntry>,
     ) -> anyhow::Result<(RunReportV1, Vec<CanonicalEventLogEntry>)> {
-        self.run_reports.append(completed.clone());
         if let Some(store) = &self.canonical_receipts {
-            let tool_exposure_record_id =
-                format!("{}:{}", tool_exposure.exposure_id, completed.receipt_id);
+            #[cfg(test)]
+            if self
+                .fail_next_completed_persistence
+                .swap(false, Ordering::AcqRel)
+            {
+                return Err(anyhow!("injected canonical receipt persistence failure"));
+            }
+            let tool_exposure_event_material = serde_json::to_string(&(
+                "aidens.runner.tool-exposure-event.v1",
+                tool_exposure.exposure_id.as_ref(),
+                completed.receipt_id.as_ref(),
+            ))?;
+            let tool_exposure_record_id = generated_artifact_id_from_material(
+                "tool-exposure-event",
+                &tool_exposure_event_material,
+            );
             durable_receipt_records.push(store.append_orchestration_report(
                 "tool-exposure-plan-v1",
-                tool_exposure_record_id,
+                tool_exposure_record_id.to_string(),
                 serde_json::to_value(tool_exposure)?,
             )?);
             durable_receipt_records.push(store.append_orchestration_report(
@@ -1815,6 +1887,7 @@ impl TurnExecutorV1 {
                 serde_json::to_value(&completed)?,
             )?);
         }
+        self.run_reports.append(completed.clone());
         Ok((completed, durable_receipt_records))
     }
 
@@ -2247,6 +2320,8 @@ impl AiDENsRunnerBuilder {
             run_reports: self.run_reports,
             receipt_level: self.receipt_level,
             canonical_receipts,
+            #[cfg(test)]
+            fail_next_completed_persistence: Arc::new(AtomicBool::new(false)),
             agency_policy: self.agency_policy,
             agency_nudges: self.agency_nudges,
             governance: self.governance,

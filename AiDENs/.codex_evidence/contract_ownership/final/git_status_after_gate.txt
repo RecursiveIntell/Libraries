@@ -1,0 +1,85 @@
+ M Cargo.lock
+ M README.md
+ M SOURCE_BASIS.md
+ M STATUS.md
+ M crates/aidens-autonomous/src/gap_detector.rs
+ M crates/aidens-autonomous/src/lib.rs
+ M crates/aidens-autonomous/src/loop_driver.rs
+ M crates/aidens-autonomous/src/missions.rs
+ M crates/aidens-autonomous/src/receipt.rs
+ M crates/aidens-cli/src/doctor.rs
+ M crates/aidens-cli/src/lib.rs
+ M crates/aidens-cli/src/tests.rs
+ M crates/aidens-contracts/Cargo.toml
+ M crates/aidens-contracts/src/capability_turn.rs
+ M crates/aidens-contracts/src/lib.rs
+ M crates/aidens-contracts/src/tests.rs
+ M crates/aidens-contracts/src/view_disclosure.rs
+ M crates/aidens-integration-tests/tests/e2e_unified_agent.rs
+ M crates/aidens-integration-tests/tests/phase_08_kernel_oracle_integration.rs
+ M crates/aidens-permit-kit/src/lib.rs
+ M crates/aidens-provider-kit/src/lib.rs
+ M crates/aidens-receipts/src/lib.rs
+ M crates/aidens-runner/src/lib.rs
+ M crates/aidens-runner/src/tests.rs
+ M crates/aidens-testkit/src/lib.rs
+ M crates/aidens-tool-kit/src/executors.rs
+ M crates/aidens-tool-kit/src/registry.rs
+ M crates/aidens-tool-kit/src/tests.rs
+ M crates/aidens-tool-kit/tests/p30_tool_hardening.rs
+ M crates/aidens-tui/src/ui/loop_panel.rs
+ M crates/aidens-tui/src/ui/mod.rs
+ M crates/aidens-tui/src/ui/queue_panel.rs
+ M crates/aidens/examples/the_auditor.rs
+ M docs/CURRENT_AIDENS_AUDIT.md
+ M docs/codex-runs/CODEX_ARTIFACT_CLASSIFICATION.json
+ M docs/codex-runs/CURRENT_RUN.json
+ M docs/codex-runs/CURRENT_RUN.md
+ M docs/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv
+ M docs/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv
+ M docs/contract-ownership/CANONICAL_TYPE_INVENTORY.csv
+ M docs/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv
+ M docs/contract-ownership/OWNERSHIP_SCAN_STATUS.json
+ M docs/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv
+ M fixtures/provider_capability_expected_v0_1.json
+ M scripts/assert_no_compatibility_ledgers.sh
+ M scripts/assert_no_shadow_truth.sh
+ M scripts/assert_tool_runtime_delegation.sh
+ M scripts/make_type_ownership_inventory.py
+ M scripts/p30_guard.py
+ M ../agent-graph/examples/demo.rs
+ M ../ai-batch-queue/examples/demo.rs
+ M ../llm-pipeline/examples/provider_routing.rs
+ M ../poly-kv/examples/demo.rs
+ M ../quant-eval/examples/semantic_memory_live_bench.rs
+ M ../semantic-memory-mcp/README.md
+ M ../semantic-memory-mcp/docs/architecture.svg
+ M ../semantic-memory-mcp/docs/search-pipeline.svg
+ M ../semantic-memory-mcp/integrations/README.md
+ M ../semantic-memory-mcp/integrations/claude-plugin/README.md
+ M ../semantic-memory-mcp/integrations/codex/README.md
+ M ../semantic-memory-mcp/integrations/hermes/README.md
+ M ../semantic-memory-mcp/src/http_server.rs
+ M ../semantic-memory-mcp/src/profile.rs
+ M ../semantic-memory-mcp/src/server.rs
+ M ../semantic-memory-mcp/src/server_stable.rs
+ M ../semantic-memory-mcp/tests/integration.rs
+ M ../semantic-memory/README.md
+ M ../semantic-memory/docs/evaluation/scifact/README.md
+ M ../semantic-memory/src/knowledge.rs
+ M ../semantic-memory/src/lib.rs
+ M ../semantic-memory/src/search.rs
+ M ../semantic-memory/tests/brute_force_parity.rs
+ M ../semantic-memory/tests/compaction.rs
+ M ../semantic-memory/tests/hnsw_integration.rs
+ M ../semantic-memory/tests/hnsw_persistence.rs
+ M ../semantic-memory/tests/knowledge_tests.rs
+ M ../semantic-memory/tests/search_tests.rs
+?? .codex_evidence/
+?? SUPPORT_PROFILE.md
+?? crates/aidens-cli/tests/repeated_process_receipts.rs
+?? docs/HOSTILE_AUDIT_2026-07-13.md
+?? docs/plans/2026-07-13-completion-hardening-plan.md
+?? docs/plans/2026-07-13-hostile-audit-remediation.md
+?? scripts/tests/
+?? ../semantic-memory/docs/assets/

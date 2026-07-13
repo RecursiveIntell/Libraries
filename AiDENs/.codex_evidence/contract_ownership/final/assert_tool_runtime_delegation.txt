@@ -1,0 +1,57 @@
+COMMAND: bash scripts/assert_tool_runtime_delegation.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-07-13T16:02:21-05:00
+crates/aidens-contracts/src/reserved_v11.rs:1661:pub struct ToolDescriptorV1 {
+crates/aidens-cli/src/agent.rs:60:            "tool_receipt_owner": "llm-tool-runtime",
+crates/aidens-cli/src/agent.rs:723:            "tool_receipt_owner": "llm-tool-runtime through aidens-tool-kit",
+crates/aidens-cli/src/test_agent.rs:412:        "llm-tool-runtime",
+crates/aidens-cli/src/lib.rs:2037:                "llm-tool-runtime",
+crates/aidens-cli/src/scaffold.rs:290:            "tool_runtime": "llm-tool-runtime through aidens-tool-kit",
+crates/aidens-contracts/src/reserved_v11.rs:1653:            "llm-tool-runtime",
+crates/aidens-contracts/src/reserved_v11.rs:1681:            "llm-tool-runtime",
+crates/aidens-contracts/src/reserved_v11.rs:1713:            "llm-tool-runtime",
+crates/aidens-contracts/src/semantic.rs:213:                "llm-tool-runtime",
+crates/aidens-contracts/src/tests.rs:318:            "llm-tool-runtime",
+crates/aidens-contracts/src/agent_bundle.rs:378:                    "llm-tool-runtime",
+crates/aidens-contracts/src/agent_bundle.rs:509:                    "llm-tool-runtime",
+crates/aidens-contracts/src/lib.rs:62:    pub use llm_tool_runtime::ToolSideEffectClass as CanonicalToolSideEffectClass;
+crates/aidens-contracts/src/capability_turn.rs:674:                "llm-tool-runtime",
+crates/aidens-contracts/src/capability_turn.rs:716:                "llm-tool-runtime",
+crates/aidens-contracts/src/capability_turn.rs:1085:                "llm-tool-runtime",
+crates/aidens-contracts/src/capability_turn.rs:1131:                "llm-tool-runtime",
+crates/aidens-contracts/Cargo.toml:17:llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
+crates/aidens-integration-tests/tests/phase_00_source_truth.rs:54:        "llm-tool-runtime",
+crates/aidens-integration-tests/tests/phase_02_adapter_delegation.rs:34:        TypeId::of::<llm_tool_runtime::ToolReceipt>()
+crates/aidens-integration-tests/tests/phase_02_adapter_delegation.rs:66:        TypeId::of::<llm_tool_runtime::ToolRuntime>()
+crates/aidens-integration-tests/tests/phase_02_adapter_delegation.rs:70:        TypeId::of::<llm_tool_runtime::ToolRegistry>()
+crates/aidens-integration-tests/tests/phase_03_golden_vertical_slice.rs:8:use llm_tool_runtime::{
+crates/aidens-integration-tests/tests/phase_03_golden_vertical_slice.rs:56:    assert_eq!(runtime_record.owner_crate, "llm-tool-runtime");
+crates/aidens-integration-tests/tests/phase_04_failure_honesty.rs:7:use llm_tool_runtime::{
+crates/aidens-integration-tests/tests/phase_04_failure_honesty.rs:112:        llm_tool_runtime::ToolApprovalState::Denied
+crates/aidens-integration-tests/tests/phase_04_failure_honesty.rs:120:    assert_eq!(runtime_entry.owner_crate, "llm-tool-runtime");
+crates/aidens-integration-tests/tests/phase_04_failure_honesty.rs:255:        retry_owner: Some(llm_tool_runtime::ToolRetryOwner::ForgeOrchestration),
+crates/aidens-integration-tests/tests/phase_09_release_audit.rs:95:        r#"llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }"#,
+crates/aidens-integration-tests/tests/stack_import_smoke.rs:5:    let tool_result = llm_tool_runtime::ToolResult::text("ok");
+crates/aidens-integration-tests/Cargo.toml:38:llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
+crates/aidens-provider-kit/src/lib.rs:20:    pub use llm_tool_runtime::{
+crates/aidens-provider-kit/Cargo.toml:14:llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
+crates/aidens-receipts/src/lib.rs:10:pub use llm_tool_runtime::{
+crates/aidens-receipts/src/lib.rs:479:            "llm-tool-runtime",
+crates/aidens-receipts/Cargo.toml:13:llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
+crates/aidens-security-kit/src/lib.rs:3:use llm_tool_runtime::ToolSideEffectClass;
+crates/aidens-security-kit/src/lib.rs:18:pub fn evaluate_mcp_tool_safety(descriptor: &llm_tool_runtime::ToolDescriptor) -> McpTrustReportV1 {
+crates/aidens-security-kit/src/lib.rs:48:    receipt: &llm_tool_runtime::ToolReceipt,
+crates/aidens-security-kit/src/lib.rs:221:    use llm_tool_runtime::{
+crates/aidens-security-kit/src/lib.rs:226:    fn mcp_descriptor(side_effect_class: ToolSideEffectClass) -> llm_tool_runtime::ToolDescriptor {
+crates/aidens-security-kit/src/lib.rs:227:        llm_tool_runtime::ToolDescriptor {
+crates/aidens-security-kit/Cargo.toml:11:llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
+crates/aidens-tool-kit/src/canonical_stack.rs:1:pub use llm_tool_runtime::{
+crates/aidens-tool-kit/src/registry.rs:130:            "canonical_owner": "llm-tool-runtime",
+crates/aidens-tool-kit/src/registry.rs:383:                "llm-tool-runtime",
+crates/aidens-tool-kit/Cargo.toml:17:llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
+Cargo.toml:76:llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
+crates/aidens-contracts/src/capability_turn.rs:640:pub struct ToolCallRequestV1 {
+crates/aidens-contracts/src/capability_turn.rs:684:pub struct ToolCallResultV1 {
+PASS: tool runtime delegation gate did not find blocking local-only tool truth.
+EXIT_STATUS: 0
+END_TIME: 2026-07-13T16:02:21-05:00

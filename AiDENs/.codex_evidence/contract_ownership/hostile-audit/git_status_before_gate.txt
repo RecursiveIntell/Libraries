@@ -1,0 +1,35 @@
+ M Cargo.lock
+ M README.md
+ M SOURCE_BASIS.md
+ M STATUS.md
+ M crates/aidens-contracts/Cargo.toml
+ M crates/aidens-contracts/src/view_disclosure.rs
+ M crates/aidens-integration-tests/tests/e2e_unified_agent.rs
+ M crates/aidens-integration-tests/tests/phase_08_kernel_oracle_integration.rs
+ M docs/CURRENT_AIDENS_AUDIT.md
+ M docs/codex-runs/CURRENT_RUN.json
+ M docs/codex-runs/CURRENT_RUN.md
+ M docs/contract-ownership/AIDENS_CONTRACTS_TYPE_INVENTORY.csv
+ M docs/contract-ownership/CANONICAL_DUPLICATE_FINDINGS.csv
+ M docs/contract-ownership/CANONICAL_TYPE_INVENTORY.csv
+ M docs/contract-ownership/FINAL_TYPE_OWNERSHIP_INVENTORY.csv
+ M docs/contract-ownership/OWNERSHIP_SCAN_STATUS.json
+ M docs/contract-ownership/TYPE_OWNERSHIP_INVENTORY.csv
+ M scripts/assert_no_compatibility_ledgers.sh
+ M scripts/assert_tool_runtime_delegation.sh
+ M scripts/make_type_ownership_inventory.py
+ M ../agent-graph-mcp/src/main.rs
+ m ../cea-bridge
+ M ../context-governor/src/llm_summary.rs
+ M ../knowledge-router/src/main.rs
+ M ../scr-runtime-compression/src/codec_dispatch.rs
+ M ../scr-runtime-compression/src/exact_fallback_adapter.rs
+ M ../scr-runtime-compression/src/lib.rs
+ M ../turbo-quant/src/lib.rs
+ M ../turbo-quant/src/wire.rs
+?? ../.hermes/plans/2026-07-13_032446-capability-stack-audit-remediation.md
+?? .codex_evidence/
+?? SUPPORT_PROFILE.md
+?? docs/HOSTILE_AUDIT_2026-07-13.md
+?? docs/plans/2026-07-13-hostile-audit-remediation.md
+?? scripts/tests/

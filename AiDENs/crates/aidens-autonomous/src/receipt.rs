@@ -38,7 +38,7 @@ impl std::fmt::Display for LoopMode {
 }
 
 /// A typed receipt for one cycle of the autonomous loop.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CycleReceiptV1 {
     /// Cycle number (matches LoopState::iteration).
     pub iteration: usize,
@@ -78,7 +78,7 @@ pub struct CycleReceiptV1 {
 }
 
 /// Snapshot of viscosity signal for receipt purposes.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ViscositySignalSnapshot {
     pub failure_rate: f64,
     pub drift_rate: f64,
@@ -87,9 +87,100 @@ pub struct ViscositySignalSnapshot {
     pub effective_viscosity: f64,
 }
 
+impl CycleReceiptV1 {
+    /// Recompute this receipt's SHA-256 hash from every field except
+    /// [`Self::receipt_hash`]. This does not depend on emitter state.
+    pub fn compute_hash(&self) -> String {
+        let mut material = b"aidens.autonomous.cycle-receipt.v1\0".to_vec();
+
+        append_u64(&mut material, self.iteration as u64);
+        append_string(&mut material, &self.timestamp);
+        append_u64(&mut material, self.gaps_detected as u64);
+        append_u64(&mut material, self.tasks_executed as u64);
+        append_u64(&mut material, self.facts_captured as u64);
+        append_u64(&mut material, self.facts_rejected as u64);
+        append_u64(&mut material, self.facts_quarantined as u64);
+        append_viscosity_signal(&mut material, self.viscosity_signal.as_ref());
+        append_string(&mut material, &self.strictness);
+        append_u64(&mut material, self.proof_debt_outstanding as u64);
+        append_u64(&mut material, self.proof_debt_total_incurred as u64);
+        material.push(match self.mode {
+            LoopMode::Additive => 0,
+            LoopMode::Subtractive => 1,
+        });
+        append_strings(&mut material, &self.domains_explored);
+        append_strings(&mut material, &self.saturated_domains);
+        append_strings(&mut material, &self.errors);
+        append_string(&mut material, &self.previous_hash);
+
+        format!("{:x}", Sha256::digest(material))
+    }
+
+    /// Return whether `receipt_hash` matches the deterministic receipt content.
+    pub fn verify_hash(&self) -> bool {
+        self.receipt_hash == self.compute_hash()
+    }
+}
+
+fn append_u64(material: &mut Vec<u8>, value: u64) {
+    material.extend_from_slice(&value.to_be_bytes());
+}
+
+fn append_f64(material: &mut Vec<u8>, value: f64) {
+    material.extend_from_slice(&value.to_bits().to_be_bytes());
+}
+
+fn append_string(material: &mut Vec<u8>, value: &str) {
+    append_u64(material, value.len() as u64);
+    material.extend_from_slice(value.as_bytes());
+}
+
+fn append_strings(material: &mut Vec<u8>, values: &[String]) {
+    append_u64(material, values.len() as u64);
+    for value in values {
+        append_string(material, value);
+    }
+}
+
+fn append_viscosity_signal(
+    material: &mut Vec<u8>,
+    viscosity_signal: Option<&ViscositySignalSnapshot>,
+) {
+    match viscosity_signal {
+        None => material.push(0),
+        Some(signal) => {
+            material.push(1);
+            append_f64(material, signal.failure_rate);
+            append_f64(material, signal.drift_rate);
+            append_f64(material, signal.ambiguity_score);
+            append_f64(material, signal.contradiction_density);
+            append_f64(material, signal.effective_viscosity);
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Receipt emitter
 // ---------------------------------------------------------------------------
+
+/// Complete material input for one autonomous-loop cycle receipt.
+#[derive(Debug, Clone)]
+pub struct CycleReceiptInputV1 {
+    pub iteration: usize,
+    pub gaps_detected: usize,
+    pub tasks_executed: usize,
+    pub facts_captured: usize,
+    pub facts_rejected: usize,
+    pub facts_quarantined: usize,
+    pub viscosity_signal: Option<ViscositySignalSnapshot>,
+    pub strictness: String,
+    pub proof_debt_outstanding: usize,
+    pub proof_debt_total_incurred: usize,
+    pub mode: LoopMode,
+    pub domains_explored: Vec<String>,
+    pub saturated_domains: Vec<String>,
+    pub errors: Vec<String>,
+}
 
 /// Emits typed cycle receipts and maintains the hash chain.
 #[derive(Debug, Clone)]
@@ -106,59 +197,36 @@ impl ReceiptEmitter {
         }
     }
 
-    /// Emit a cycle receipt.
-    pub fn emit(
-        &mut self,
-        iteration: usize,
-        gaps_detected: usize,
-        tasks_executed: usize,
-        facts_captured: usize,
-        facts_rejected: usize,
-        facts_quarantined: usize,
-        viscosity_signal: Option<ViscositySignalSnapshot>,
-        strictness: &str,
-        proof_debt_outstanding: usize,
-        proof_debt_total_incurred: usize,
-        mode: LoopMode,
-        domains_explored: Vec<String>,
-        saturated_domains: Vec<String>,
-        errors: Vec<String>,
-    ) -> CycleReceiptV1 {
+    /// Emit a cycle receipt from complete typed input.
+    pub fn emit(&mut self, input: CycleReceiptInputV1) -> CycleReceiptV1 {
         let timestamp = Utc::now().to_rfc3339();
         let previous_hash = self.previous_hash.clone();
 
-        // Compute receipt hash over all fields except receipt_hash itself.
-        let hash_input = format!(
-            "{iteration}|{timestamp}|{gaps_detected}|{tasks_executed}|\
-             {facts_captured}|{facts_rejected}|{facts_quarantined}|\
-             {strictness}|{proof_debt_outstanding}|{proof_debt_total_incurred}|\
-             {mode}|{domains_explored:?}|{saturated_domains:?}|{errors:?}|\
-             {previous_hash}"
-        );
-        let receipt_hash = format!("{:x}", Sha256::digest(hash_input.as_bytes()));
-
-        // Update the chain.
-        self.previous_hash = receipt_hash.clone();
-
-        CycleReceiptV1 {
-            iteration,
+        let mut receipt = CycleReceiptV1 {
+            iteration: input.iteration,
             timestamp,
-            gaps_detected,
-            tasks_executed,
-            facts_captured,
-            facts_rejected,
-            facts_quarantined,
-            viscosity_signal,
-            strictness: strictness.to_string(),
-            proof_debt_outstanding,
-            proof_debt_total_incurred,
-            mode,
-            domains_explored,
-            saturated_domains,
-            errors,
+            gaps_detected: input.gaps_detected,
+            tasks_executed: input.tasks_executed,
+            facts_captured: input.facts_captured,
+            facts_rejected: input.facts_rejected,
+            facts_quarantined: input.facts_quarantined,
+            viscosity_signal: input.viscosity_signal,
+            strictness: input.strictness,
+            proof_debt_outstanding: input.proof_debt_outstanding,
+            proof_debt_total_incurred: input.proof_debt_total_incurred,
+            mode: input.mode,
+            domains_explored: input.domains_explored,
+            saturated_domains: input.saturated_domains,
+            errors: input.errors,
             previous_hash,
-            receipt_hash,
-        }
+            receipt_hash: String::new(),
+        };
+        receipt.receipt_hash = receipt.compute_hash();
+
+        // Update the chain only after the complete receipt hash is computed.
+        self.previous_hash = receipt.receipt_hash.clone();
+
+        receipt
     }
 
     /// Get the last receipt hash (for verification).
@@ -173,6 +241,36 @@ impl Default for ReceiptEmitter {
     }
 }
 
+/// Explicit process-owned, non-durable ledger for emitted cycle receipts.
+///
+/// This ledger provides inspectable runtime history without claiming to be a
+/// canonical durable truth store. Callers that require durable retention must
+/// copy inspected receipts into a canonical sink outside this crate.
+#[derive(Debug, Clone, Default)]
+pub struct ReceiptLedger {
+    emitter: ReceiptEmitter,
+    history: Vec<CycleReceiptV1>,
+}
+
+impl ReceiptLedger {
+    /// Create an enabled in-memory receipt ledger with empty history.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Emit, chain, and retain one receipt in process-owned memory.
+    pub fn emit(&mut self, input: CycleReceiptInputV1) -> CycleReceiptV1 {
+        let receipt = self.emitter.emit(input);
+        self.history.push(receipt.clone());
+        receipt
+    }
+
+    /// Inspect retained receipts without permitting mutation.
+    pub fn history(&self) -> &[CycleReceiptV1] {
+        &self.history
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -184,38 +282,38 @@ mod tests {
     #[test]
     fn test_receipt_chaining() {
         let mut emitter = ReceiptEmitter::new();
-        let r1 = emitter.emit(
-            1,
-            5,
-            3,
-            2,
-            1,
-            0,
-            None,
-            "normal",
-            2,
-            4,
-            LoopMode::Additive,
-            vec!["projects".into()],
-            vec![],
-            vec![],
-        );
-        let r2 = emitter.emit(
-            2,
-            3,
-            2,
-            1,
-            0,
-            0,
-            None,
-            "normal",
-            3,
-            6,
-            LoopMode::Additive,
-            vec!["research".into()],
-            vec![],
-            vec![],
-        );
+        let r1 = emitter.emit(CycleReceiptInputV1 {
+            iteration: 1,
+            gaps_detected: 5,
+            tasks_executed: 3,
+            facts_captured: 2,
+            facts_rejected: 1,
+            facts_quarantined: 0,
+            viscosity_signal: None,
+            strictness: "normal".into(),
+            proof_debt_outstanding: 2,
+            proof_debt_total_incurred: 4,
+            mode: LoopMode::Additive,
+            domains_explored: vec!["projects".into()],
+            saturated_domains: vec![],
+            errors: vec![],
+        });
+        let r2 = emitter.emit(CycleReceiptInputV1 {
+            iteration: 2,
+            gaps_detected: 3,
+            tasks_executed: 2,
+            facts_captured: 1,
+            facts_rejected: 0,
+            facts_quarantined: 0,
+            viscosity_signal: None,
+            strictness: "normal".into(),
+            proof_debt_outstanding: 3,
+            proof_debt_total_incurred: 6,
+            mode: LoopMode::Additive,
+            domains_explored: vec!["research".into()],
+            saturated_domains: vec![],
+            errors: vec![],
+        });
         // First receipt has empty previous_hash.
         assert_eq!(r1.previous_hash, "");
         // Second receipt chains to the first.
@@ -228,38 +326,38 @@ mod tests {
     fn test_receipt_determinism() {
         let mut e1 = ReceiptEmitter::new();
         let mut e2 = ReceiptEmitter::new();
-        let r1 = e1.emit(
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            None,
-            "fast",
-            0,
-            0,
-            LoopMode::Additive,
-            vec![],
-            vec![],
-            vec![],
-        );
-        let r2 = e2.emit(
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            None,
-            "fast",
-            0,
-            0,
-            LoopMode::Additive,
-            vec![],
-            vec![],
-            vec![],
-        );
+        let r1 = e1.emit(CycleReceiptInputV1 {
+            iteration: 1,
+            gaps_detected: 0,
+            tasks_executed: 0,
+            facts_captured: 0,
+            facts_rejected: 0,
+            facts_quarantined: 0,
+            viscosity_signal: None,
+            strictness: "fast".into(),
+            proof_debt_outstanding: 0,
+            proof_debt_total_incurred: 0,
+            mode: LoopMode::Additive,
+            domains_explored: vec![],
+            saturated_domains: vec![],
+            errors: vec![],
+        });
+        let r2 = e2.emit(CycleReceiptInputV1 {
+            iteration: 1,
+            gaps_detected: 0,
+            tasks_executed: 0,
+            facts_captured: 0,
+            facts_rejected: 0,
+            facts_quarantined: 0,
+            viscosity_signal: None,
+            strictness: "fast".into(),
+            proof_debt_outstanding: 0,
+            proof_debt_total_incurred: 0,
+            mode: LoopMode::Additive,
+            domains_explored: vec![],
+            saturated_domains: vec![],
+            errors: vec![],
+        });
         // Same inputs → same hash (timestamp differs, so hash differs,
         // but structure is identical).
         assert_eq!(r1.iteration, r2.iteration);
@@ -274,5 +372,128 @@ mod tests {
         let subtractive = LoopMode::Subtractive;
         let json = serde_json::to_string(&subtractive).unwrap();
         assert_eq!(json, "\"subtractive\"");
+    }
+
+    fn receipt_with_viscosity() -> CycleReceiptV1 {
+        let mut emitter = ReceiptEmitter::new();
+        emitter.emit(CycleReceiptInputV1 {
+            iteration: 7,
+            gaps_detected: 1,
+            tasks_executed: 2,
+            facts_captured: 3,
+            facts_rejected: 4,
+            facts_quarantined: 5,
+            viscosity_signal: Some(ViscositySignalSnapshot {
+                failure_rate: 0.1,
+                drift_rate: 0.2,
+                ambiguity_score: 0.3,
+                contradiction_density: 0.4,
+                effective_viscosity: 0.5,
+            }),
+            strictness: "strict|日本語".into(),
+            proof_debt_outstanding: 6,
+            proof_debt_total_incurred: 7,
+            mode: LoopMode::Subtractive,
+            domains_explored: vec!["naïve|東京".into(), "a".into(), "b|c".into()],
+            saturated_domains: vec!["saturated|Δ".into()],
+            errors: vec!["error|🚫".into()],
+        })
+    }
+
+    #[test]
+    fn receipt_hash_rejects_every_viscosity_scalar_change() {
+        let receipt = receipt_with_viscosity();
+        assert!(receipt.verify_hash());
+
+        let mut changed = receipt.clone();
+        changed.viscosity_signal.as_mut().unwrap().failure_rate = 0.11;
+        assert_ne!(changed.compute_hash(), receipt.receipt_hash);
+        assert!(!changed.verify_hash());
+
+        let mut changed = receipt.clone();
+        changed.viscosity_signal.as_mut().unwrap().drift_rate = 0.21;
+        assert_ne!(changed.compute_hash(), receipt.receipt_hash);
+        assert!(!changed.verify_hash());
+
+        let mut changed = receipt.clone();
+        changed.viscosity_signal.as_mut().unwrap().ambiguity_score = 0.31;
+        assert_ne!(changed.compute_hash(), receipt.receipt_hash);
+        assert!(!changed.verify_hash());
+
+        let mut changed = receipt.clone();
+        changed
+            .viscosity_signal
+            .as_mut()
+            .unwrap()
+            .contradiction_density = 0.41;
+        assert_ne!(changed.compute_hash(), receipt.receipt_hash);
+        assert!(!changed.verify_hash());
+
+        let mut changed = receipt.clone();
+        changed
+            .viscosity_signal
+            .as_mut()
+            .unwrap()
+            .effective_viscosity = 0.51;
+        assert_ne!(changed.compute_hash(), receipt.receipt_hash);
+        assert!(!changed.verify_hash());
+    }
+
+    #[test]
+    fn receipt_hash_is_deterministic_for_unicode_and_unambiguous_vectors() {
+        let receipt = receipt_with_viscosity();
+        assert_eq!(receipt.compute_hash(), receipt.compute_hash());
+        assert!(receipt.verify_hash());
+
+        let mut different_vector_boundaries = receipt.clone();
+        different_vector_boundaries.domains_explored =
+            vec!["naïve|東京".into(), "a|b".into(), "c".into()];
+        assert_ne!(
+            different_vector_boundaries.compute_hash(),
+            receipt.compute_hash(),
+            "vector element boundaries must be represented in hash material"
+        );
+        assert!(!different_vector_boundaries.verify_hash());
+    }
+
+    #[test]
+    fn receipt_ledger_retains_emitted_history_for_read_only_inspection() {
+        let mut ledger = ReceiptLedger::new();
+
+        let first = ledger.emit(CycleReceiptInputV1 {
+            iteration: 1,
+            gaps_detected: 2,
+            tasks_executed: 0,
+            facts_captured: 0,
+            facts_rejected: 0,
+            facts_quarantined: 0,
+            viscosity_signal: None,
+            strictness: "normal".into(),
+            proof_debt_outstanding: 0,
+            proof_debt_total_incurred: 0,
+            mode: LoopMode::Additive,
+            domains_explored: vec!["project-a".into()],
+            saturated_domains: vec![],
+            errors: vec![],
+        });
+        let second = ledger.emit(CycleReceiptInputV1 {
+            iteration: 2,
+            gaps_detected: 0,
+            tasks_executed: 0,
+            facts_captured: 0,
+            facts_rejected: 0,
+            facts_quarantined: 0,
+            viscosity_signal: None,
+            strictness: "normal".into(),
+            proof_debt_outstanding: 0,
+            proof_debt_total_incurred: 0,
+            mode: LoopMode::Subtractive,
+            domains_explored: vec![],
+            saturated_domains: vec![],
+            errors: vec!["subtractive cycle failed: unavailable".into()],
+        });
+
+        assert_eq!(ledger.history(), &[first.clone(), second.clone()]);
+        assert_eq!(second.previous_hash, first.receipt_hash);
     }
 }

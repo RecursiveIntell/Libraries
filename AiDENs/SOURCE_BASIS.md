@@ -1,57 +1,31 @@
-# Source Basis — P32 Schema Compatibility
+# AiDENs Source Basis
 
-Record date: `2026-05-29`
+**Current-run source of truth:** `docs/codex-runs/CURRENT_RUN.json`
+**Active run:** P32
+**Last certified run:** P30
+**Certification:** blocked
+**Support label:** supported-local-build-verified
 
-This file records the active P32 source basis.
+**Source of truth:** `docs/codex-runs/CURRENT_RUN.json`
+**Active run:** P32
+**Parent run:** P31B
+**Last certified run:** P30
+**Certification:** blocked
+**Support label:** p32-schema-compat-candidate
 
-## Current Run
+## Canonical source boundary
 
-| Field | Value |
-|---|---|
-| Current run | P32 Schema Compatibility |
-| Prior run | P31B (candidate) |
-| Last certified run | P30 (P31B candidate) |
-| Certification status | candidate |
-| Support label | p32-schema-compat-candidate |
-| Workspace root | `AiDENs/` |
-| Expected parent workspace | `/home/sikmindz/Coding/Libraries` |
-| Rust edition | 2021 |
-| Minimum Rust version | 1.76 |
-| Final strict gate | passed — P32 all 17 verify_current gates PASS |
+The canonical AiDENs workspace is this repository. It consumes sibling crates from `/home/sikmindz/Coding/Libraries` through declared path dependencies. A missing sibling workspace is an environment blocker, never clean replay proof.
 
-## Inputs
+## Current basis
 
-- P32 finish pack: `aidens_p31b_hermes_finish_pack.zip`
-- P31B sidecars: `AiDENs-aidens-codex-context-20260529T065449Z.*`
-- P31B hostile audit finish pack: `aidens_hostile_audit_finish_pack.zip`
-- P31B status/evidence/package sidecars, treated as false-certification evidence.
-- Active status/support docs: `STATUS.md`, `SUPPORT_PROFILE.md`, `SOURCE_BASIS.md`, `README.md`, `AGENTS.md`.
+The fresh hostile audit and repair scope are recorded in:
 
-## Canonical Sibling Ownership
+- `docs/HOSTILE_AUDIT_2026-07-13.md`
+- `docs/plans/2026-07-13-hostile-audit-remediation.md`
 
-AiDENs depends on sibling crates through path dependencies under the parent Libraries workspace. If those siblings are absent, cargo/package replay must classify the result as environment-blocked, not clean.
+Historical package and gate artifacts are retained only as evidence. They do not override the blocked current ledger or the required fresh command bar.
 
-Key sibling dependencies: `kernel-conformance`, `aidens-contracts`, `aidens-tool-kit`, `aidens-cli`, `aidens-boundary-kit`.
+## Ownership boundary
 
-## Replay Modes
-
-| Mode | Classification | Meaning |
-|---|---|---|
-| Local parent workspace present | `sibling_workspace_present` | Cargo checks may run against sibling path dependencies. |
-| Local parent workspace absent or incomplete | `sibling_workspace_missing` | Cargo/package replay is environment-blocked and must not be called clean. |
-| Strict P31B final verifier | `exact_check` | Only available after the final P31B command bar passes. |
-| Skipped cargo or degraded replay | `degraded_exact_check` | Static/package checks may run, but cargo-backed replay proof is absent. |
-
-## Active Truth Docs
-
-- `AGENTS.md`
-- `README.md`
-- `STATUS.md`
-- `SUPPORT_PROFILE.md`
-- `SOURCE_BASIS.md`
-- `docs/codex-runs/CURRENT_RUN.json`
-- `docs/codex-runs/CODEX_ARTIFACT_CLASSIFICATION.json`
-
-## Source Basis Declarations
-
-The source bundle is a minimal executable seed only. All reserved/quarantined artifacts are classified in the artifact classification ledger. final package sidecars and extracted-package self-replay are documented in CURRENT_RUN.json; the self-replay gate has an environmental blocker.
+AiDENs coordinates stack-owned behavior. Stable IDs/digests, semantic-memory truth, tool runtime, verification policy, kernel-conformance, and kernel semantics remain owned by their canonical sibling crates. AiDENs must not introduce substitute identity, schema, compatibility, or domain-truth law.

@@ -1015,6 +1015,22 @@ pub fn tools_command(command: ToolsCommand) -> Result<String> {
     }
 }
 
+fn approval_request_id_for_context(context: &PermitCheckContextV1) -> Result<ArtifactId> {
+    let material = serde_json::to_string(&(
+        "aidens.approval-request-context.v1",
+        context.tool_id.as_str(),
+        &context.risk_class,
+        context.sandbox_root.as_str(),
+        context.run_id.as_ref(),
+        context.attempt_id.as_ref(),
+    ))
+    .context("serialize canonical approval request context")?;
+    Ok(generated_artifact_id_from_material(
+        "approval-request",
+        &material,
+    ))
+}
+
 pub fn permit_command(command: PermitCommand) -> Result<String> {
     match command {
         PermitCommand::Inspect => Ok(serde_json::to_string_pretty(&serde_json::json!({
@@ -1032,9 +1048,10 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
             let context =
                 PermitCheckContextV1::new(tool_id, parse_risk_class(&risk)?, sandbox_root)
                     .with_run_attempt(Some(ArtifactId(run_id)), Some(ArtifactId(attempt_id)));
-            let request = PermitPolicyV1::default()
+            let mut request = PermitPolicyV1::default()
                 .approval_request_for_context(&context)
                 .context("side-effect request unexpectedly required no approval")?;
+            request.request_id = approval_request_id_for_context(&context)?;
             Ok(serde_json::to_string_pretty(&request)?)
         }
         PermitCommand::Approve {
@@ -1050,6 +1067,11 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
             let risk = parse_risk_class(&risk)?;
             let context = PermitCheckContextV1::new(tool_id, risk, sandbox_root)
                 .with_run_attempt(Some(ArtifactId(run_id)), Some(ArtifactId(attempt_id)));
+            let request_id = ArtifactId(request_id);
+            let expected_request_id = approval_request_id_for_context(&context)?;
+            if request_id != expected_request_id {
+                bail!("approval request context mismatch");
+            }
             let authority =
                 HostPermitAuthorityV1::load().context("load host permit authority for approval")?;
             let grant = authority
@@ -1059,7 +1081,7 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
                     chrono::Duration::seconds(expires_in_seconds),
                 )
                 .context("issue expiring host-trusted permit")?;
-            let decision = ApprovalDecisionV1::approved(ArtifactId(request_id), grant, decided_by);
+            let decision = ApprovalDecisionV1::approved(expected_request_id, grant, decided_by);
             Ok(serde_json::to_string_pretty(&decision)?)
         }
         PermitCommand::Deny {

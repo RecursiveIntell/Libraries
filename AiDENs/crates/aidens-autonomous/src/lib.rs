@@ -46,6 +46,9 @@ pub use missions::{Mission, MissionImpl, MissionQuery, MissionScheduler, Schedul
 pub use proof_debt::{
     classify_risk, PaymentMethod, ProofDebtBudget, ProofDebtEntry, ProofDebtReceipt, RiskClass,
 };
-pub use receipt::{CycleReceiptV1, LoopMode, ReceiptEmitter, ViscositySignalSnapshot};
+pub use receipt::{
+    CycleReceiptInputV1, CycleReceiptV1, LoopMode, ReceiptEmitter, ReceiptLedger,
+    ViscositySignalSnapshot,
+};
 pub use task_generator::TaskGenerator;
 pub use viscosity::{StrictnessLevel, ViscosityConfig, ViscosityController, ViscositySignal};

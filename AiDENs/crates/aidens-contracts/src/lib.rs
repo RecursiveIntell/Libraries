@@ -222,6 +222,30 @@ fn local_artifact_id_from_stack_digest(prefix: &str, material: &str) -> Artifact
     ArtifactId::new(format!("{prefix}:{}", digest.hex()))
 }
 
+fn generated_artifact_id_from_framed_fields(
+    prefix: &str,
+    domain: &str,
+    fields: &[(&str, &str)],
+) -> ArtifactId {
+    let mut material = String::new();
+    append_material_frame(&mut material, "domain", domain);
+    for (label, value) in fields {
+        append_material_frame(&mut material, label, value);
+    }
+    generated_artifact_id_from_material(prefix, &material)
+}
+
+fn append_material_frame(material: &mut String, label: &str, value: &str) {
+    material.push_str(&label.len().to_string());
+    material.push(':');
+    material.push_str(label);
+    material.push('=');
+    material.push_str(&value.len().to_string());
+    material.push(':');
+    material.push_str(value);
+    material.push(';');
+}
+
 // Display formatting only. Stack-owned digest computation must go through
 // `stack_ids::ContentDigest` and this string must not be used as identity.
 fn display_json_string(value: &serde_json::Value) -> String {
@@ -247,13 +271,48 @@ pub struct AidensRunContextV1 {
 
 impl AidensRunContextV1 {
     pub fn new(app_id: impl Into<String>) -> Self {
+        Self::for_execution(app_id, "unspecified-execution-input")
+    }
+
+    pub fn for_execution(app_id: impl Into<String>, execution_input: impl AsRef<str>) -> Self {
+        Self::for_execution_at(app_id, execution_input, Utc::now())
+    }
+
+    pub fn for_execution_at(
+        app_id: impl Into<String>,
+        execution_input: impl AsRef<str>,
+        started_at: DateTime<Utc>,
+    ) -> Self {
+        let app_id = app_id.into();
+        let started_at_material = started_at.to_rfc3339_opts(SecondsFormat::Nanos, true);
+        let fields = [
+            ("app-id", app_id.as_str()),
+            ("execution-input", execution_input.as_ref()),
+            ("started-at", started_at_material.as_str()),
+        ];
         Self {
-            run_id: display_only_unstable_id("run"),
-            trace_id: display_only_unstable_id("trace"),
-            attempt_family_id: display_only_unstable_id("attempt-family"),
-            attempt_id: display_only_unstable_id("attempt"),
-            started_at: Utc::now(),
-            app_id: app_id.into(),
+            run_id: generated_artifact_id_from_framed_fields(
+                "run",
+                "aidens-run-context-v1",
+                &fields,
+            ),
+            trace_id: generated_artifact_id_from_framed_fields(
+                "trace",
+                "aidens-run-context-v1",
+                &fields,
+            ),
+            attempt_family_id: generated_artifact_id_from_framed_fields(
+                "attempt-family",
+                "aidens-run-context-v1",
+                &fields,
+            ),
+            attempt_id: generated_artifact_id_from_framed_fields(
+                "attempt",
+                "aidens-run-context-v1",
+                &fields,
+            ),
+            started_at,
+            app_id,
             config_generation: None,
         }
     }

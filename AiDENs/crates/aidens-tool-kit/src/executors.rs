@@ -11,8 +11,9 @@ use aidens_contracts::{
 use anyhow::{anyhow, bail, Context};
 use serde_json::Value;
 use std::collections::BTreeMap;
+use std::fmt;
 use std::fs::{File, OpenOptions};
-use std::io::Write;
+use std::io::{self, Write};
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
@@ -213,7 +214,7 @@ pub(crate) fn patch_apply(
             "invalid-patch",
             permit_grant_id.clone(),
             permit_use_receipt_id.clone(),
-            Vec::new(),
+            PatchFailureState::pre_write(Vec::new()),
         )
     })?;
     let mut before_digests = BTreeMap::new();
@@ -223,11 +224,13 @@ pub(crate) fn patch_apply(
 
     for replacement in replacements {
         let path = resolve_target_sandboxed_path(sandbox_root, &replacement.path)?;
-        // For new-file patches (no removed lines), the file may not exist yet.
-        // Read the before-content as empty string if the file doesn't exist.
         let before = match std::fs::read_to_string(&path) {
-            Ok(content) => content,
-            Err(_) if replacement.removed.is_empty() => String::new(),
+            Ok(content) => OriginalFileState::Existing(content),
+            Err(error)
+                if error.kind() == io::ErrorKind::NotFound && replacement.removed.is_empty() =>
+            {
+                OriginalFileState::Absent
+            }
             Err(error) => {
                 return Err(patch_apply_failure(
                     sandbox_root,
@@ -239,12 +242,12 @@ pub(crate) fn patch_apply(
                     "read-patch",
                     permit_grant_id.clone(),
                     permit_use_receipt_id.clone(),
-                    vec![replacement.path.clone()],
+                    PatchFailureState::pre_write(vec![replacement.path.clone()]),
                 )
                 .into());
             }
         };
-        let after = apply_single_replacement(&before, &replacement).map_err(|error| {
+        let after = apply_single_replacement(before.content(), &replacement).map_err(|error| {
             let failure_kind = if error.to_string().to_ascii_lowercase().contains("ambiguous") {
                 "ambiguous-patch"
             } else {
@@ -257,11 +260,14 @@ pub(crate) fn patch_apply(
                 failure_kind,
                 permit_grant_id.clone(),
                 permit_use_receipt_id.clone(),
-                vec![replacement.path.clone()],
+                PatchFailureState::pre_write(vec![replacement.path.clone()]),
             )
         })?;
         let display_path = display_sandbox_path(sandbox_root, &path);
-        before_digests.insert(display_path.clone(), DisplayDigestV1::for_text(&before));
+        before_digests.insert(
+            display_path.clone(),
+            DisplayDigestV1::for_text(before.content()),
+        );
         after_digests.insert(display_path.clone(), DisplayDigestV1::for_text(&after));
         touched_paths.push(display_path.clone());
         prepared.push((path, before, after, display_path));
@@ -287,59 +293,97 @@ pub(crate) fn patch_apply(
         }));
     }
 
+    let mut attempted_paths = Vec::new();
     let mut written = Vec::new();
     for (path, before, after, display_path) in &prepared {
+        attempted_paths.push(display_path.clone());
         if let Err(error) = write_file_atomically(path, after) {
-            let rollback_error = rollback_written_files(&written).err();
+            if error.target_may_have_changed() {
+                written.push((path.clone(), before.clone(), display_path.clone()));
+            }
+            let rollback = rollback_written_files(&written);
+            let failure_kind = if rollback.residual_or_unknown_paths.is_empty() {
+                "write-patch"
+            } else {
+                "rollback-failed"
+            };
             return Err(patch_apply_failure(
                 sandbox_root,
                 input,
                 format_rollback_failure(
                     format!("failed to write patched file {display_path}: {error}"),
-                    rollback_error,
+                    rollback.error,
                 ),
-                "rollback-failed",
+                failure_kind,
                 permit_grant_id.clone(),
                 permit_use_receipt_id.clone(),
-                touched_paths.clone(),
+                PatchFailureState::after_write(
+                    touched_paths.clone(),
+                    attempted_paths,
+                    rollback.restored_existing_paths,
+                    rollback.removed_new_paths,
+                    rollback.residual_or_unknown_paths,
+                ),
             )
             .into());
         }
-        written.push((path.clone(), before.clone()));
+        written.push((path.clone(), before.clone(), display_path.clone()));
     }
 
     for (path, _before, after, display_path) in &prepared {
         match std::fs::read_to_string(path) {
             Ok(actual) if actual == *after => {}
             Ok(_) => {
-                let rollback_error = rollback_written_files(&written).err();
+                let rollback = rollback_written_files(&written);
+                let failure_kind = if rollback.residual_or_unknown_paths.is_empty() {
+                    "rollback-patch"
+                } else {
+                    "rollback-failed"
+                };
                 return Err(patch_apply_failure(
                     sandbox_root,
                     input,
                     format_rollback_failure(
                         format!("post-write verification failed for {display_path}"),
-                        rollback_error,
+                        rollback.error,
                     ),
-                    "rollback-failed",
+                    failure_kind,
                     permit_grant_id.clone(),
                     permit_use_receipt_id.clone(),
-                    touched_paths.clone(),
+                    PatchFailureState::after_write(
+                        touched_paths.clone(),
+                        attempted_paths,
+                        rollback.restored_existing_paths,
+                        rollback.removed_new_paths,
+                        rollback.residual_or_unknown_paths,
+                    ),
                 )
                 .into());
             }
             Err(error) => {
-                let rollback_error = rollback_written_files(&written).err();
+                let rollback = rollback_written_files(&written);
+                let failure_kind = if rollback.residual_or_unknown_paths.is_empty() {
+                    "rollback-patch"
+                } else {
+                    "rollback-failed"
+                };
                 return Err(patch_apply_failure(
                     sandbox_root,
                     input,
                     format_rollback_failure(
                         format!("post-write verification could not read {display_path}: {error}"),
-                        rollback_error,
+                        rollback.error,
                     ),
-                    "rollback-failed",
+                    failure_kind,
                     permit_grant_id.clone(),
                     permit_use_receipt_id.clone(),
-                    touched_paths.clone(),
+                    PatchFailureState::after_write(
+                        touched_paths.clone(),
+                        attempted_paths,
+                        rollback.restored_existing_paths,
+                        rollback.removed_new_paths,
+                        rollback.residual_or_unknown_paths,
+                    ),
                 )
                 .into());
             }
@@ -373,13 +417,15 @@ pub(crate) fn patch_apply_failure(
     failure_kind: &str,
     permit_grant_id: Option<ArtifactId>,
     permit_use_receipt_id: Option<ArtifactId>,
-    touched_paths: Vec<String>,
+    file_state: PatchFailureState,
 ) -> ReceiptBearingToolFailure {
+    let touched_paths = file_state.touched_paths.clone();
     let reason_code = match failure_kind {
         "ambiguous-patch" => "patch-ambiguous-failed-closed",
         "read-patch" => "patch-target-read-failed-closed",
+        "write-patch" => "patch-write-failed-restored",
         "rollback-failed" => "patch-rollback-failed-quarantined",
-        "rollback-patch" => "patch-rollback-quarantined",
+        "rollback-patch" => "patch-post-write-verification-failed-restored",
         _ => "patch-invalid-failed-closed",
     };
     let receipt = PatchApplyReportV1::denied_with_details(
@@ -391,6 +437,8 @@ pub(crate) fn patch_apply_failure(
         permit_grant_id,
         permit_use_receipt_id,
     );
+    let restoration_status = file_state.restoration_status();
+    let rollback_advice = file_state.rollback_advice();
     ReceiptBearingToolFailure {
         message,
         reason_code: reason_code.into(),
@@ -399,18 +447,153 @@ pub(crate) fn patch_apply_failure(
             "applied": false,
             "dry_run_checked": true,
             "changed_files": touched_paths,
-            "semantic_status": "failed_exact_check",
+            "semantic_status": if restoration_status == "degraded_quarantined" {
+                "degraded_quarantined"
+            } else {
+                "failed_exact_check"
+            },
             "failure_kind": failure_kind,
-            "rollback_advice": [
-                "No files were written by this failed-closed patch attempt.",
-                "Regenerate a single-file unified diff with unique removal context before retrying."
-            ],
+            "attempted_paths": file_state.attempted_paths,
+            "restored_paths": file_state.restored_existing_paths,
+            "restored_existing_paths": file_state.restored_existing_paths,
+            "removed_new_paths": file_state.removed_new_paths,
+            "residual_or_unknown_paths": file_state.residual_or_unknown_paths,
+            "restoration_status": restoration_status,
+            "rollback_advice": rollback_advice,
             "receipt": receipt,
         }),
     }
 }
 
-pub(crate) fn write_file_atomically(path: &Path, body: &str) -> std::io::Result<()> {
+#[derive(Debug, Default)]
+pub(crate) struct PatchFailureState {
+    touched_paths: Vec<String>,
+    attempted_paths: Vec<String>,
+    restored_existing_paths: Vec<String>,
+    removed_new_paths: Vec<String>,
+    residual_or_unknown_paths: Vec<String>,
+}
+
+impl PatchFailureState {
+    pub(crate) fn pre_write(touched_paths: Vec<String>) -> Self {
+        Self {
+            touched_paths,
+            ..Self::default()
+        }
+    }
+
+    pub(crate) fn after_write(
+        touched_paths: Vec<String>,
+        attempted_paths: Vec<String>,
+        restored_existing_paths: Vec<String>,
+        removed_new_paths: Vec<String>,
+        residual_or_unknown_paths: Vec<String>,
+    ) -> Self {
+        Self {
+            touched_paths,
+            attempted_paths,
+            restored_existing_paths,
+            removed_new_paths,
+            residual_or_unknown_paths,
+        }
+    }
+
+    fn restoration_status(&self) -> &'static str {
+        if !self.residual_or_unknown_paths.is_empty() {
+            "degraded_quarantined"
+        } else if !self.restored_existing_paths.is_empty() && !self.removed_new_paths.is_empty() {
+            "restored_existing_and_removed_new"
+        } else if !self.restored_existing_paths.is_empty() {
+            "restored_existing"
+        } else if !self.removed_new_paths.is_empty() {
+            "removed_new"
+        } else {
+            "not_required"
+        }
+    }
+
+    fn rollback_advice(&self) -> Vec<&'static str> {
+        if !self.residual_or_unknown_paths.is_empty() {
+            vec![
+                "One or more attempted paths may remain modified; quarantine and inspect them before retrying.",
+                "Do not treat rollback as successful until residual or unknown paths are verified and restored.",
+            ]
+        } else if !self.restored_existing_paths.is_empty() && !self.removed_new_paths.is_empty() {
+            vec![
+                "Existing files were restored to captured pre-patch contents and newly created files were removed.",
+                "Inspect the primary failure before retrying the patch.",
+            ]
+        } else if !self.restored_existing_paths.is_empty() {
+            vec![
+                "Existing files were restored to their captured pre-patch contents.",
+                "Inspect the primary failure before retrying the patch.",
+            ]
+        } else if !self.removed_new_paths.is_empty() {
+            vec![
+                "Newly created files were removed to restore their captured pre-patch absence.",
+                "Inspect the primary failure before retrying the patch.",
+            ]
+        } else {
+            vec![
+                "No files were written by this failed-closed patch attempt.",
+                "Regenerate a unified diff with unique removal context before retrying.",
+            ]
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct AtomicWriteError {
+    source: io::Error,
+    target_may_have_changed: bool,
+}
+
+impl AtomicWriteError {
+    fn before_rename(source: io::Error) -> Self {
+        Self {
+            source,
+            target_may_have_changed: false,
+        }
+    }
+
+    fn after_rename(source: io::Error) -> Self {
+        Self {
+            source,
+            target_may_have_changed: true,
+        }
+    }
+
+    pub(crate) fn target_may_have_changed(&self) -> bool {
+        self.target_may_have_changed
+    }
+}
+
+impl fmt::Display for AtomicWriteError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.source.fmt(formatter)
+    }
+}
+
+impl std::error::Error for AtomicWriteError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.source)
+    }
+}
+
+pub(crate) fn write_file_atomically(path: &Path, body: &str) -> Result<(), AtomicWriteError> {
+    write_file_atomically_with_parent_sync(path, body, |parent| {
+        File::open(parent).and_then(|dir| dir.sync_all())
+    })
+}
+
+pub(crate) fn write_file_atomically_with_parent_sync<F>(
+    path: &Path,
+    body: &str,
+    sync_parent: F,
+) -> Result<(), AtomicWriteError>
+where
+    F: FnOnce(&Path) -> io::Result<()>,
+{
     let parent = path.parent().unwrap_or_else(|| Path::new("."));
     let suffix = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -427,27 +610,116 @@ pub(crate) fn write_file_atomically(path: &Path, body: &str) -> std::io::Result<
         let mut file = OpenOptions::new()
             .create_new(true)
             .write(true)
-            .open(&tmp_path)?;
-        file.write_all(body.as_bytes())?;
-        file.flush()?;
-        file.sync_all()?;
+            .open(&tmp_path)
+            .map_err(AtomicWriteError::before_rename)?;
+        if let Err(error) = file
+            .write_all(body.as_bytes())
+            .and_then(|_| file.flush())
+            .and_then(|_| file.sync_all())
+        {
+            return Err(cleanup_temporary_file(&tmp_path, error));
+        }
     }
-    std::fs::rename(&tmp_path, path)?;
-    let _ = File::open(parent).and_then(|dir| dir.sync_all());
+    if let Err(error) = std::fs::rename(&tmp_path, path) {
+        return Err(cleanup_temporary_file(&tmp_path, error));
+    }
+    sync_parent(parent).map_err(AtomicWriteError::after_rename)?;
     Ok(())
 }
 
-pub(crate) fn rollback_written_files(written: &[(PathBuf, String)]) -> Result<(), String> {
-    let mut failures = Vec::new();
-    for (path, before) in written.iter().rev() {
-        if let Err(error) = write_file_atomically(path, before) {
-            failures.push(format!("{}: {error}", path.display()));
+fn cleanup_temporary_file(tmp_path: &Path, primary: io::Error) -> AtomicWriteError {
+    match std::fs::remove_file(tmp_path) {
+        Ok(()) => AtomicWriteError::before_rename(primary),
+        Err(cleanup) if cleanup.kind() == io::ErrorKind::NotFound => {
+            AtomicWriteError::before_rename(primary)
+        }
+        Err(cleanup) => AtomicWriteError::before_rename(io::Error::new(
+            primary.kind(),
+            format!(
+                "{primary}; failed to remove temporary file {}: {cleanup}",
+                tmp_path.display()
+            ),
+        )),
+    }
+}
+
+#[derive(Debug, Default)]
+pub(crate) struct RollbackOutcome {
+    pub(crate) restored_existing_paths: Vec<String>,
+    pub(crate) removed_new_paths: Vec<String>,
+    pub(crate) residual_or_unknown_paths: Vec<String>,
+    pub(crate) error: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) enum OriginalFileState {
+    Existing(String),
+    Absent,
+}
+
+impl OriginalFileState {
+    fn content(&self) -> &str {
+        match self {
+            Self::Existing(content) => content,
+            Self::Absent => "",
         }
     }
-    if failures.is_empty() {
-        Ok(())
-    } else {
-        Err(failures.join("; "))
+}
+
+pub(crate) fn rollback_written_files(
+    written: &[(PathBuf, OriginalFileState, String)],
+) -> RollbackOutcome {
+    rollback_written_files_with(written, write_file_atomically, remove_new_file)
+}
+
+fn remove_new_file(path: &Path) -> io::Result<()> {
+    match std::fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(error),
+    }
+}
+
+pub(crate) fn rollback_written_files_with<W, R, WE, RE>(
+    written: &[(PathBuf, OriginalFileState, String)],
+    mut restore_existing: W,
+    mut remove_new: R,
+) -> RollbackOutcome
+where
+    W: FnMut(&Path, &str) -> Result<(), WE>,
+    R: FnMut(&Path) -> Result<(), RE>,
+    WE: fmt::Display,
+    RE: fmt::Display,
+{
+    let mut restored_existing_paths = Vec::new();
+    let mut removed_new_paths = Vec::new();
+    let mut residual_or_unknown_paths = Vec::new();
+    let mut failures = Vec::new();
+    for (path, before, display_path) in written.iter().rev() {
+        let rollback_result = match before {
+            OriginalFileState::Existing(content) => restore_existing(path, content)
+                .map(|()| &mut restored_existing_paths)
+                .map_err(|error| error.to_string()),
+            OriginalFileState::Absent => remove_new(path)
+                .map(|()| &mut removed_new_paths)
+                .map_err(|error| error.to_string()),
+        };
+        match rollback_result {
+            Ok(restored_paths) => restored_paths.push(display_path.clone()),
+            Err(error) => {
+                residual_or_unknown_paths.push(display_path.clone());
+                failures.push(format!("{}: {error}", path.display()));
+            }
+        }
+    }
+    restored_existing_paths.sort();
+    removed_new_paths.sort();
+    residual_or_unknown_paths.sort();
+    RollbackOutcome {
+        restored_existing_paths,
+        removed_new_paths,
+        residual_or_unknown_paths,
+        error: (!failures.is_empty()).then(|| failures.join("; ")),
     }
 }
 

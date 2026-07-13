@@ -7,18 +7,46 @@ pub(crate) fn receipt_store_truth_for_config(cfg: &AiDENsConfigV1) -> RuntimeCap
         .clone()
         .or_else(|| default_receipt_store_root(&cfg.app_id, &cfg.receipt_level))
     {
-        return truth(
-            "receipts:canonical-log",
-            vec![
-                CapabilityStateV1::Configured,
-                CapabilityStateV1::Available,
-                CapabilityStateV1::Healthy,
-            ],
-            Some(format!(
-                "append-only canonical receipt/report log; root={root}; receipt_level={}",
-                cfg.receipt_level
-            )),
-        );
+        let health = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root))
+            .and_then(|log| log.verify_chain());
+        return match health {
+            Ok(true) => truth(
+                "receipts:canonical-log",
+                vec![
+                    CapabilityStateV1::Configured,
+                    CapabilityStateV1::Available,
+                    CapabilityStateV1::Healthy,
+                ],
+                Some(format!(
+                    "canonical-receipt-log: verified; root={root}; receipt_level={}",
+                    cfg.receipt_level
+                )),
+            ),
+            Ok(false) => truth(
+                "receipts:canonical-log",
+                vec![
+                    CapabilityStateV1::Configured,
+                    CapabilityStateV1::Unavailable,
+                    CapabilityStateV1::Degraded,
+                ],
+                Some(format!(
+                    "canonical-receipt-log: chain-verification-failed; root={root}; receipt_level={}",
+                    cfg.receipt_level
+                )),
+            ),
+            Err(error) => truth(
+                "receipts:canonical-log",
+                vec![
+                    CapabilityStateV1::Configured,
+                    CapabilityStateV1::Unavailable,
+                    CapabilityStateV1::Degraded,
+                ],
+                Some(format!(
+                    "canonical-receipt-log: health-probe-failed: {error}; root={root}; receipt_level={}",
+                    cfg.receipt_level
+                )),
+            ),
+        };
     }
     truth(
         "receipts:minimal-no-durable-store",

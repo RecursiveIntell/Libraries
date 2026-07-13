@@ -26,8 +26,8 @@
     "cloud_support": false
   },
   "openai-compatible": {
-    "status": "unavailable_unless_implemented_and_tested",
-    "chat_completion": false,
+    "status": "bounded-http-chat-requires-explicit-endpoint-model-and-env-key",
+    "chat_completion": true,
     "native_tool_calling": false,
     "cloud_support": false
   },

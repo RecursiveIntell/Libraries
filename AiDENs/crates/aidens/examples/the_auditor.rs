@@ -80,7 +80,7 @@ async fn main() -> anyhow::Result<()> {
     std::fs::create_dir_all(&tmp)?;
 
     let memory = CanonicalMemoryAdapter::open_with_mock_embedder(
-        memory_config_for_root(&tmp.join("memory")),
+        memory_config_for_root(tmp.join("memory")),
         runtime_config_for_namespace("audit"),
     )?;
     info("Memory", "semantic-memory (mock embedder, 768-dim)");
@@ -91,7 +91,7 @@ async fn main() -> anyhow::Result<()> {
     ));
     info("Governance", "permit enforcement (permissive policy)");
 
-    let kernel = CanonicalKernelAdapter::default();
+    let kernel = CanonicalKernelAdapter;
     info("Kernel", "constraint compiler + message passing");
 
     let tools = safe_coding_registry_for_current_dir();
@@ -298,9 +298,9 @@ async fn main() -> anyhow::Result<()> {
         let digest_str = record
             .record_digest
             .as_ref()
-            .map(|d| d.to_string())
+            .map(|digest| format!("{digest}"))
             .unwrap_or_default();
-        let short = &digest_str[..16.min(digest_str.len())];
+        let short: String = digest_str.chars().take(16).collect();
         eprintln!(
             "  {DIM}#{:02}{RESET} {CYAN}{:<30}{RESET} {DIM}digest:{}… seq:{}{RESET}",
             i + 1,
@@ -369,10 +369,7 @@ async fn main() -> anyhow::Result<()> {
     };
     eprintln!("  {DIM}{}{RESET}", preview);
     eprintln!();
-    ok(
-        "Canonical digest",
-        &format!("sha256:{}", digest.to_string()),
-    );
+    ok("Canonical digest", &format!("sha256:{digest}"));
 
     // ── Summary ──────────────────────────────────────────────────────
     divider();

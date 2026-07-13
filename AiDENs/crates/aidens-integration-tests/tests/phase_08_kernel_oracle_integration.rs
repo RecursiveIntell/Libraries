@@ -8,7 +8,9 @@ use semantic_memory_forge::{
     ExportRecord, ExportRecordSemanticsV3, ExportRecordV3, ForgeExportMeta,
     ProjectionVisibilityClass, EXPORT_ENVELOPE_V3_SCHEMA,
 };
-use stack_ids::{AssertionGroupId, ClaimFamilyId, ClaimVersionId, EntityId, EnvelopeId, ScopeKey};
+use stack_ids::{
+    AssertionGroupId, ClaimFamilyId, ClaimId, ClaimVersionId, EntityId, EnvelopeId, ScopeKey,
+};
 use std::any::TypeId;
 
 fn rich_kernel_batch(namespace: &str, claim_suffixes: &[&str]) -> ProjectionImportBatchV3 {
@@ -18,7 +20,9 @@ fn rich_kernel_batch(namespace: &str, claim_suffixes: &[&str]) -> ProjectionImpo
         .enumerate()
         .map(|(index, suffix)| ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                // The canonical bridge admits claims only with a canonical ID.
+                // Keep fixture identity deterministic and distinct from its version ID.
+                claim_id: Some(ClaimId::new(format!("claim-{namespace}-{suffix}"))),
                 claim_version_id: Some(ClaimVersionId::new(format!("claim-version-{suffix}"))),
                 subject_entity_id: EntityId::new(format!("entity-{index}")),
                 predicate: "supports".into(),

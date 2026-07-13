@@ -1,73 +1,28 @@
-# AiDENs — Complete Completion Status
+# AiDENs Current Status
 
-**Status**: P00-P19 all passes implemented. 502 tests, 0 failures. 18 verification gates pass.
+**Source of truth:** `docs/codex-runs/CURRENT_RUN.json`
+**Active run:** P32
+**Last certified run:** P30
+**Certification:** blocked
+**Support label:** supported-local-build-verified
+**Disclosure:** supported-local-candidate, not production-cloud-ready
 
-## Pass completion summary
+## Current state
 
-| Pass | Title | Status |
-|---|---|---|
-| P00 | Source lock, fake-ready freeze | DONE |
-| P01 | API honesty | DONE |
-| P02 | Provider runtime truth | DONE |
-| P03 | Turn executor | DONE |
-| P04 | Capability gate, permits | DONE |
-| P05 | Durable receipts | DONE |
-| P06 | Boundary compiler | DONE |
-| P07 | Schema registry | DONE |
-| P08 | Reference interpreters | DONE |
-| P09 | Episode memory | DONE (semantic-memory wired) |
-| P10 | Coding tools | DONE |
-| P11 | Queue, schedule, daemon | DONE |
-| P12 | Verification/repair/governance | DONE (VerificationPlanV1, ClaimEvidenceBundleV1, GovernanceDecisionV1) |
-| P13 | Multi-view runtime | DONE (ViewDisclosureV1, RuntimeQueryProvenanceV1) |
-| P14 | Product surface | DONE (CLI commands) |
-| P15 | Regional decoder | DONE (RegionContractV1, ResidualEnvelopeV1, SyndromeEnvelopeV1, RegionConvergenceReportV1) |
-| P16 | Lawful subtraction | DONE (SubtractionPlanV1, SupportCoreV1, RemovalFrontierV1, InvariantBudgetV1, CompactionReceiptV1) |
-| P17 | Attested federation | DONE (AdmissionDecisionV1, FederationAdapter) |
-| P18 | Mechanism/theory | DONE (MechanismBundleV1, RefuterSuiteV1, MechanismAdapter) |
-| P19 | Final release audit | DONE (all gates pass) |
+The P32 supported local lane has fresh workspace build, lint, test, ownership, truth, and P30 guard evidence. The current hostile audit records the repaired receipt, permit, provider, runner, rollback, autonomous-cycle, UI, and documentation defects.
 
-## Crate Inventory
+A bounded local Ollama receipt exists for `llama3.2:3b`: discovery, chat completion, and a native tool-call response. It proves only that configured loopback path at the observed time.
 
-| Crate | Status |
-|---|---|
-| `aidens` | implemented |
-| `aidens-agency-kit` | implemented |
-| `aidens-app-kit` | implemented |
-| `aidens-arbiter-kit` | implemented |
-| `aidens-boundary-kit` | implemented |
-| `aidens-budget-kit` | implemented |
-| `aidens-capability-kit` | implemented |
-| `aidens-cli` | implemented |
-| `aidens-config` | implemented |
-| `aidens-contracts` | implemented |
-| `aidens-daemon-kit` | implemented |
-| `aidens-delegation-kit` | implemented (federation wired) |
-| `aidens-governance-kit` | implemented (verification wired) |
-| `aidens-integration-tests` | implemented |
-| `aidens-kernel-kit` | implemented (regional decoder + lawful subtraction + mechanism) |
-| `aidens-memory-kit` | implemented (semantic-memory adapter wired) |
-| `aidens-permit-kit` | implemented |
-| `aidens-plan-kit` | implemented |
-| `aidens-profile-coding` | implemented |
-| `aidens-profile-daemon` | scaffold-only (honest) |
-| `aidens-profile-desktop` | scaffold-only (honest) |
-| `aidens-profile-memory` | scaffold-only (honest) |
-| `aidens-profile-research` | scaffold-only (honest) |
-| `aidens-provider-kit` | implemented |
-| `aidens-queue-kit` | implemented |
-| `aidens-receipts` | implemented |
-| `aidens-repair-kit` | implemented |
-| `aidens-runner` | implemented |
-| `aidens-schedule-kit` | implemented |
-| `aidens-security-kit` | implemented |
-| `aidens-testkit` | implemented |
-| `aidens-tool-kit` | implemented |
-| `aidens-wake-kit` | implemented |
-| `boundary-compiler-core` | implemented |
+## Remaining certification blockers
 
-## Key integrations
+- Package and extracted-replay certification are historical P31B evidence, not P32 evidence.
+- Autonomous cycle receipts are inspectable in-process history, not durable restart-safe receipts.
+- No authenticated OpenAI-compatible HTTP endpoint/key was present for a live provider run.
 
-- semantic-memory: wired via SemanticMemoryAdapter (verify_integrity, replay_search_receipt, graph_traversal, compressed_search)
-- claim-ledger: types available via aidens-contracts
-- TurboQuant: compressed search via semantic-memory-integration feature
+## Deliberate limits
+
+- `aidens-delegation-kit` is disabled/quarantined; it is not an operational delegation surface.
+- Daemon, desktop, memory, and research profile crates remain scaffold-only where indicated by the capability surfaces.
+- Federation, remote oracle, attestation, settlement, cloud execution, and production fault behavior are not certified.
+
+Historical pass catalogs are retained as evidence only. They do not override the current ledger.

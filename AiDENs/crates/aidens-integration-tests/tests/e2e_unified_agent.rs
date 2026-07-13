@@ -1,7 +1,6 @@
 //! E2E vertical slice: unified agent with memory, governance, and receipts.
 
 use aidens_app_kit::{AiDENsApp, AiDENsProfile};
-use aidens_contracts::AiDENsAppPlanV1;
 
 #[tokio::test]
 async fn e2e_unified_agent_produces_receipt_chain() {
@@ -58,7 +57,7 @@ async fn e2e_runner_with_kernel_reasoning() {
 
     let runner = AiDENsRunner::builder()
         .mock_provider("Reasoned response")
-        .kernel(Some(CanonicalKernelAdapter::default()))
+        .kernel(Some(CanonicalKernelAdapter))
         .build()
         .expect("build runner");
 
@@ -85,7 +84,7 @@ async fn e2e_runner_with_all_capabilities() {
     let runner = AiDENsRunner::builder()
         .mock_provider("Full capability response")
         .governance(Some(GovernanceContext::new(policy)))
-        .kernel(Some(CanonicalKernelAdapter::default()))
+        .kernel(Some(CanonicalKernelAdapter))
         .build()
         .expect("build runner");
 

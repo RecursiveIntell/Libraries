@@ -1,0 +1,30 @@
+{
+  "base_url": "http://127.0.0.1:11434",
+  "observed_at": "2026-07-13T19:44:11.862336+00:00",
+  "probes": [
+    {
+      "contains_llama3_2_3b": true,
+      "kind": "discovery",
+      "model_count": 35,
+      "status": 200
+    },
+    {
+      "contains_expected_marker": true,
+      "kind": "chat",
+      "model": "llama3.2:3b",
+      "response_chars": 21,
+      "status": 200
+    },
+    {
+      "capability": "observed",
+      "kind": "native_tool_call",
+      "model": "llama3.2:3b",
+      "returned_tool_calls": 1,
+      "status": 200,
+      "tool_names": [
+        "aidens_probe"
+      ]
+    }
+  ],
+  "provider": "ollama"
+}

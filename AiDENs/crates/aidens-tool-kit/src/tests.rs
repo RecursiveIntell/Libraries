@@ -1,13 +1,18 @@
 use super::*;
-use crate::executors::{capped_utf8_lossy, run_command_with_timeout, MAX_COMMAND_OUTPUT_BYTES};
+use crate::executors::{
+    capped_utf8_lossy, patch_apply_failure, rollback_written_files, rollback_written_files_with,
+    run_command_with_timeout, write_file_atomically_with_parent_sync, OriginalFileState,
+    PatchFailureState, MAX_COMMAND_OUTPUT_BYTES,
+};
 use crate::registry::canonical_descriptor_from_aidens;
 use aidens_contracts::{
-    CanonicalToolSideEffectClass, CapabilityGateOutcomeV1, ToolDescriptorV1, ToolExposureSetV1,
-    ToolLifecycleStateV1, ToolSchemaV1,
+    ArtifactId, CanonicalToolSideEffectClass, CapabilityGateOutcomeV1, ToolDescriptorV1,
+    ToolExposureSetV1, ToolLifecycleStateV1, ToolSchemaV1,
 };
-use aidens_permit_kit::PermitPolicyV1;
+use aidens_permit_kit::{HostPermitAuthorityV1, PermitCheckContextV1, PermitPolicyV1};
 use std::collections::BTreeSet;
 use std::path::Path;
+use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 fn read_tool() -> ToolDescriptorV1 {
@@ -58,6 +63,41 @@ fn normalized_exposure_json(exposure: &ToolExposureSetV1) -> serde_json::Value {
 fn sorted(mut values: Vec<String>) -> Vec<String> {
     values.sort();
     values
+}
+
+const TEST_RUN_ID: &str = "run:aidens-tool-kit-unit-test";
+const TEST_ATTEMPT_ID: &str = "attempt:aidens-tool-kit-unit-test";
+static HOST_PERMIT_AUTHORITY_SETUP: OnceLock<Mutex<()>> = OnceLock::new();
+
+/// Host-load a test-only authority, then issue a signed grant bound to this invocation context.
+fn trusted_policy_for(
+    risk: CanonicalToolSideEffectClass,
+    tool_id: &str,
+    sandbox_root: String,
+) -> (PermitPolicyV1, ArtifactId, ArtifactId) {
+    let _setup = HOST_PERMIT_AUTHORITY_SETUP
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap();
+    let root =
+        std::env::temp_dir().join(format!("aidens-tool-kit-test-host-{}", std::process::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("permit-authority-v1.key"), [31_u8; 32]).unwrap();
+    std::env::set_var("AIDENS_HOST_STATE_DIR", root);
+    std::env::set_var("AIDENS_HOST_PERMIT_ISSUER", "aidens-tool-kit-test-host");
+
+    let run_id = ArtifactId(TEST_RUN_ID.into());
+    let attempt_id = ArtifactId(TEST_ATTEMPT_ID.into());
+    let authority = HostPermitAuthorityV1::load().unwrap();
+    let context = PermitCheckContextV1::new(tool_id, risk, sandbox_root)
+        .with_run_attempt(Some(run_id.clone()), Some(attempt_id.clone()));
+    (
+        authority
+            .policy()
+            .with_grant(authority.issue_for_context(&context, "test")),
+        run_id,
+        attempt_id,
+    )
 }
 
 #[test]
@@ -214,6 +254,65 @@ fn side_effect_tool_requires_permit() {
     assert_eq!(decision.outcome, CapabilityGateOutcomeV1::Blocked);
     assert!(decision.lifecycle.contains(&ToolLifecycleStateV1::Blocked));
     assert!(decision.approval_request.is_some());
+}
+
+#[test]
+fn pre_run_exposure_does_not_treat_exact_context_permit_as_authorized() {
+    let dir = std::env::temp_dir().join(format!(
+        "aidens-pre-run-exposure-permit-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
+    let sandbox_root = dir.canonicalize().unwrap().display().to_string();
+    let (permit_policy, _, _) = trusted_policy_for(
+        CanonicalToolSideEffectClass::Write,
+        "aidens:patch-apply:1",
+        sandbox_root.clone(),
+    );
+
+    let exposure = registry.plan_exposure(
+        &ToolExposurePolicyV1::coding_agent_default()
+            .with_sandbox_root(sandbox_root)
+            .with_permit_policy(permit_policy),
+    );
+
+    assert!(exposure
+        .executable_tool_ids
+        .contains(&"aidens:patch-apply:1".into()));
+    assert!(exposure
+        .blocked_tool_ids
+        .contains(&"aidens:patch-apply:1".into()));
+    assert!(!exposure
+        .exposed_tool_ids
+        .contains(&"aidens:patch-apply:1".into()));
+    assert!(exposure
+        .reason_codes
+        .contains(&"permit-context-missing-run-attempt".into()));
+    assert!(exposure.permit_use_receipts.is_empty());
+    assert!(exposure
+        .provider_tool_schemas
+        .iter()
+        .all(|schema| schema.tool_id != "aidens:patch-apply:1"));
+
+    let decision = exposure
+        .decisions
+        .iter()
+        .find(|decision| decision.capability_id == "aidens:patch-apply:1")
+        .expect("patch-apply exposure decision");
+    assert!(decision.executable_this_turn);
+    assert_eq!(decision.outcome, CapabilityGateOutcomeV1::Blocked);
+    assert!(decision.permit_grant_id.is_none());
+    assert!(decision.permit_use_receipt_id.is_none());
+    let approval = decision
+        .approval_request
+        .as_ref()
+        .expect("pre-run side effect remains approval-gated");
+    assert!(approval.run_id.is_none());
+    assert!(approval.attempt_id.is_none());
+
+    let _ = std::fs::remove_dir_all(&dir);
 }
 
 #[test]
@@ -601,16 +700,19 @@ async fn p10_patch_apply_requires_permit_and_then_writes_receipt() {
     assert!(denied.approval_request().is_some());
     assert!(denied.receipt().approval_request_id.is_some());
 
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let (policy, run_id, attempt_id) = trusted_policy_for(
         CanonicalToolSideEffectClass::Write,
         "aidens:patch-apply:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let permitted = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let permitted = ToolDispatcher::new(registry).with_permit_policy(policy);
     let applied = permitted
-        .invoke("aidens:patch-apply:1", serde_json::json!({"diff": diff}))
+        .invoke_with_context(
+            "aidens:patch-apply:1",
+            serde_json::json!({"diff": diff}),
+            Some(run_id),
+            Some(attempt_id),
+        )
         .await
         .unwrap();
 
@@ -635,20 +737,20 @@ async fn p10_patch_apply_check_only_validates_without_mutation() {
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("README.md"), "hello p10\n").unwrap();
     let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let (policy, run_id, attempt_id) = trusted_policy_for(
         CanonicalToolSideEffectClass::Write,
         "aidens:patch-apply:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let dispatcher = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let dispatcher = ToolDispatcher::new(registry).with_permit_policy(policy);
     let diff = "--- a/README.md\n+++ b/README.md\n@@\n-hello p10\n+hello p10 checked\n";
 
     let checked = dispatcher
-        .invoke(
+        .invoke_with_context(
             "aidens:patch-apply:1",
             serde_json::json!({"diff": diff, "check_only": true}),
+            Some(run_id),
+            Some(attempt_id),
         )
         .await
         .unwrap();
@@ -674,18 +776,21 @@ async fn phase04_patch_apply_multifile_records_before_after_digests() {
     std::fs::write(dir.join("a.txt"), "alpha\n").unwrap();
     std::fs::write(dir.join("b.txt"), "beta\n").unwrap();
     let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let (policy, run_id, attempt_id) = trusted_policy_for(
         CanonicalToolSideEffectClass::Write,
         "aidens:patch-apply:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let dispatcher = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let dispatcher = ToolDispatcher::new(registry).with_permit_policy(policy);
     let diff = "--- a/a.txt\n+++ b/a.txt\n@@\n-alpha\n+alpha patched\n--- a/b.txt\n+++ b/b.txt\n@@\n-beta\n+beta patched\n";
 
     let applied = dispatcher
-        .invoke("aidens:patch-apply:1", serde_json::json!({"diff": diff}))
+        .invoke_with_context(
+            "aidens:patch-apply:1",
+            serde_json::json!({"diff": diff}),
+            Some(run_id),
+            Some(attempt_id),
+        )
         .await
         .unwrap();
 
@@ -711,18 +816,21 @@ async fn p10_patch_apply_ambiguous_diff_fails_closed_with_receipt() {
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("README.md"), "repeat\nrepeat\n").unwrap();
     let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let (policy, run_id, attempt_id) = trusted_policy_for(
         CanonicalToolSideEffectClass::Write,
         "aidens:patch-apply:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let dispatcher = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let dispatcher = ToolDispatcher::new(registry).with_permit_policy(policy);
     let diff = "--- a/README.md\n+++ b/README.md\n@@\n-repeat\n+patched\n";
 
     let denied = dispatcher
-        .invoke("aidens:patch-apply:1", serde_json::json!({"diff": diff}))
+        .invoke_with_context(
+            "aidens:patch-apply:1",
+            serde_json::json!({"diff": diff}),
+            Some(run_id),
+            Some(attempt_id),
+        )
         .await
         .expect_err("ambiguous diff must fail closed");
     let denied = denied
@@ -747,6 +855,184 @@ async fn p10_patch_apply_ambiguous_diff_fails_closed_with_receipt() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+#[test]
+fn patch_apply_failure_after_write_discloses_uncertain_restoration() {
+    let failure = patch_apply_failure(
+        Path::new("/sandbox"),
+        &serde_json::json!({"diff": "test"}),
+        "write failed; rollback failed".into(),
+        "rollback-failed",
+        None,
+        None,
+        PatchFailureState::after_write(
+            vec!["a.txt".into()],
+            vec!["a.txt".into()],
+            Vec::new(),
+            Vec::new(),
+            vec!["a.txt".into()],
+        ),
+    );
+
+    assert_eq!(
+        failure.output["attempted_paths"],
+        serde_json::json!(["a.txt"])
+    );
+    assert_eq!(failure.output["restored_paths"], serde_json::json!([]));
+    assert_eq!(
+        failure.output["residual_or_unknown_paths"],
+        serde_json::json!(["a.txt"])
+    );
+    assert_eq!(failure.output["restoration_status"], "degraded_quarantined");
+    assert!(failure.output["rollback_advice"]
+        .as_array()
+        .expect("rollback advice array")
+        .iter()
+        .all(|advice| advice.as_str()
+            != Some("No files were written by this failed-closed patch attempt.")));
+}
+
+#[test]
+fn atomic_write_propagates_parent_sync_failure_after_rename() {
+    let dir = std::env::temp_dir().join(format!(
+        "aidens-patch-parent-sync-failure-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("target.txt");
+    std::fs::write(&path, "before\n").unwrap();
+
+    let error = write_file_atomically_with_parent_sync(&path, "after\n", |_| {
+        Err(std::io::Error::other("injected parent sync failure"))
+    })
+    .expect_err("parent directory sync failure must propagate");
+
+    assert!(error.target_may_have_changed());
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), "after\n");
+    assert!(std::fs::read_dir(&dir).unwrap().all(|entry| {
+        !entry
+            .unwrap()
+            .file_name()
+            .to_string_lossy()
+            .contains("patch-tmp")
+    }));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn rollback_failure_receipt_distinguishes_restored_and_unknown_paths() {
+    let written = vec![
+        (
+            Path::new("a.txt").to_path_buf(),
+            OriginalFileState::Existing("before a".into()),
+            "a.txt".into(),
+        ),
+        (
+            Path::new("b.txt").to_path_buf(),
+            OriginalFileState::Existing("before b".into()),
+            "b.txt".into(),
+        ),
+    ];
+    let rollback = rollback_written_files_with(
+        &written,
+        |path, _before| {
+            if path == Path::new("b.txt") {
+                Err(std::io::Error::other("injected rollback failure"))
+            } else {
+                Ok(())
+            }
+        },
+        |_path| Ok::<(), std::io::Error>(()),
+    );
+    let failure = patch_apply_failure(
+        Path::new("/sandbox"),
+        &serde_json::json!({"diff": "test"}),
+        "verification failed; rollback failed".into(),
+        "rollback-failed",
+        None,
+        None,
+        PatchFailureState::after_write(
+            vec!["a.txt".into(), "b.txt".into()],
+            vec!["a.txt".into(), "b.txt".into()],
+            rollback.restored_existing_paths,
+            rollback.removed_new_paths,
+            rollback.residual_or_unknown_paths,
+        ),
+    );
+
+    assert_eq!(
+        failure.output["restored_paths"],
+        serde_json::json!(["a.txt"])
+    );
+    assert_eq!(
+        failure.output["restored_existing_paths"],
+        serde_json::json!(["a.txt"])
+    );
+    assert_eq!(failure.output["removed_new_paths"], serde_json::json!([]));
+    assert_eq!(
+        failure.output["residual_or_unknown_paths"],
+        serde_json::json!(["b.txt"])
+    );
+    assert_eq!(failure.output["semantic_status"], "degraded_quarantined");
+    assert_eq!(failure.reason_code, "patch-rollback-failed-quarantined");
+}
+
+#[test]
+fn rollback_of_newly_created_file_removes_target() {
+    let dir = std::env::temp_dir().join(format!(
+        "aidens-p30-new-file-rollback-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("created.txt");
+    std::fs::write(&path, "created by failed patch\n").unwrap();
+    let written = vec![(
+        path.clone(),
+        OriginalFileState::Absent,
+        "created.txt".into(),
+    )];
+
+    let rollback = rollback_written_files(&written);
+
+    assert!(rollback.residual_or_unknown_paths.is_empty());
+    assert!(rollback.restored_existing_paths.is_empty());
+    assert_eq!(rollback.removed_new_paths, vec!["created.txt"]);
+    assert!(
+        !path.exists(),
+        "rollback must remove a target that did not exist before the patch"
+    );
+    let failure = patch_apply_failure(
+        &dir,
+        &serde_json::json!({"diff": "test"}),
+        "post-write verification failed".into(),
+        "rollback-patch",
+        None,
+        None,
+        PatchFailureState::after_write(
+            vec!["created.txt".into()],
+            vec!["created.txt".into()],
+            rollback.restored_existing_paths,
+            rollback.removed_new_paths,
+            rollback.residual_or_unknown_paths,
+        ),
+    );
+    assert_eq!(
+        failure.output["restored_existing_paths"],
+        serde_json::json!([])
+    );
+    assert_eq!(
+        failure.output["removed_new_paths"],
+        serde_json::json!(["created.txt"])
+    );
+    assert_eq!(
+        failure.output["residual_or_unknown_paths"],
+        serde_json::json!([])
+    );
+    assert_eq!(failure.output["restoration_status"], "removed_new");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[tokio::test]
 async fn p28_patch_apply_missing_parent_leaves_no_dirty_directory() {
     let dir =
@@ -754,18 +1040,21 @@ async fn p28_patch_apply_missing_parent_leaves_no_dirty_directory() {
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let (policy, run_id, attempt_id) = trusted_policy_for(
         CanonicalToolSideEffectClass::Write,
         "aidens:patch-apply:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let dispatcher = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let dispatcher = ToolDispatcher::new(registry).with_permit_policy(policy);
     let diff = "--- a/missing/child.txt\n+++ b/missing/child.txt\n@@\n-old\n+new\n";
 
     let error = dispatcher
-        .invoke("aidens:patch-apply:1", serde_json::json!({"diff": diff}))
+        .invoke_with_context(
+            "aidens:patch-apply:1",
+            serde_json::json!({"diff": diff}),
+            Some(run_id),
+            Some(attempt_id),
+        )
         .await
         .expect_err("missing parent must fail before filesystem mutation");
 
@@ -786,18 +1075,21 @@ async fn p28_patch_apply_rejects_symlink_write_targets() {
     std::fs::write(&outside, "secret\n").unwrap();
     std::os::unix::fs::symlink(&outside, dir.join("link.txt")).unwrap();
     let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let (policy, run_id, attempt_id) = trusted_policy_for(
         CanonicalToolSideEffectClass::Write,
         "aidens:patch-apply:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let dispatcher = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let dispatcher = ToolDispatcher::new(registry).with_permit_policy(policy);
     let diff = "--- a/link.txt\n+++ b/link.txt\n@@\n-secret\n+patched\n";
 
     let error = dispatcher
-        .invoke("aidens:patch-apply:1", serde_json::json!({"diff": diff}))
+        .invoke_with_context(
+            "aidens:patch-apply:1",
+            serde_json::json!({"diff": diff}),
+            Some(run_id),
+            Some(attempt_id),
+        )
         .await
         .expect_err("symlink write target must be rejected");
 
@@ -990,18 +1282,18 @@ async fn p10_run_checks_requires_shell_permit_and_blocks_unallowed_commands() {
         .expect("typed denial");
     assert!(denied.approval_request().is_some());
 
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let (policy, run_id, attempt_id) = trusted_policy_for(
         CanonicalToolSideEffectClass::Admin,
         "aidens:run-checks:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let permitted = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let permitted = ToolDispatcher::new(registry).with_permit_policy(policy);
     let blocked = permitted
-        .invoke(
+        .invoke_with_context(
             "aidens:run-checks:1",
             serde_json::json!({"command":["rm","-rf","."]}),
+            Some(run_id),
+            Some(attempt_id),
         )
         .await
         .unwrap();

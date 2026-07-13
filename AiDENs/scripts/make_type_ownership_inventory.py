@@ -105,21 +105,21 @@ if AIDENS_CONTRACTS_SRC.exists():
         aidens_rows.extend(scan_types(f, ROOT, "aidens-contracts"))
 
 with (OUT_DIR / "CANONICAL_TYPE_INVENTORY.csv").open("w", newline="") as fh:
-    w = csv.DictWriter(fh, fieldnames=["type_name","kind","owner","file","line","definition_kind","pub_use"])
+    w = csv.DictWriter(fh, fieldnames=["type_name","kind","owner","file","line","definition_kind","pub_use"], lineterminator="\n")
     w.writeheader()
     for r in canonical_rows:
         r.setdefault("pub_use", "")
         w.writerow(r)
 
 with (OUT_DIR / "AIDENS_CONTRACTS_TYPE_INVENTORY.csv").open("w", newline="") as fh:
-    w = csv.DictWriter(fh, fieldnames=["type_name","kind","owner","file","line","definition_kind","pub_use"])
+    w = csv.DictWriter(fh, fieldnames=["type_name","kind","owner","file","line","definition_kind","pub_use"], lineterminator="\n")
     w.writeheader()
     for r in aidens_rows:
         r.setdefault("pub_use", "")
         w.writerow(r)
 
 with (OUT_DIR / "TYPE_OWNERSHIP_INVENTORY.csv").open("w", newline="") as fh:
-    w = csv.DictWriter(fh, fieldnames=["type_name","kind","owner","file","line","definition_kind","pub_use"])
+    w = csv.DictWriter(fh, fieldnames=["type_name","kind","owner","file","line","definition_kind","pub_use"], lineterminator="\n")
     w.writeheader()
     for r in canonical_rows + aidens_rows:
         r.setdefault("pub_use", "")
@@ -153,7 +153,7 @@ for r in aidens_rows:
         })
 
 with (OUT_DIR / "CANONICAL_DUPLICATE_FINDINGS.csv").open("w", newline="") as fh:
-    w = csv.DictWriter(fh, fieldnames=["type_name","aidens_file","aidens_line","canonical_owner","canonical_file","canonical_line","severity"])
+    w = csv.DictWriter(fh, fieldnames=["type_name","aidens_file","aidens_line","canonical_owner","canonical_file","canonical_line","severity"], lineterminator="\n")
     w.writeheader()
     for r in findings:
         w.writerow(r)

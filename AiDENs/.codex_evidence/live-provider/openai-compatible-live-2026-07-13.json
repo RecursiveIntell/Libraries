@@ -1,0 +1,53 @@
+{
+  "schema_version": "aidens.live-provider-evidence.v1",
+  "provider": "openai-compatible",
+  "endpoint": "https://opencode.ai/zen/go/v1",
+  "observed_at": "2026-07-13T15:30:29-05:00",
+  "credential": {
+    "source": "AIDENS_OPENAI_API_KEY",
+    "configured": true,
+    "value_recorded": false
+  },
+  "configuration_probe": {
+    "configured": true,
+    "executable_boundary": true,
+    "native_tool_loop": false,
+    "support_tier": "partial",
+    "artifact_sha256": "257564e933f66db881edc6e41b82b7fac3a9e3ebfb9acfba18a85b8d9ed47868"
+  },
+  "attempts": [
+    {
+      "kind": "external-response-probe",
+      "status": 403,
+      "reason": "Forbidden",
+      "succeeded": false,
+      "receipt_backed": false
+    },
+    {
+      "kind": "aidens-cli-chat",
+      "model": "deepseek-v4-flash",
+      "status": 429,
+      "reason": "Too Many Requests",
+      "succeeded": false,
+      "output_chars": 0,
+      "receipt_backed": true,
+      "canonical_receipt_log_sha256": "efa79d14cb12bc3e0d587f3900dbdf57173acec1d829db4c3caf2bc11a97a7a4"
+    },
+    {
+      "kind": "aidens-cli-chat",
+      "model": "deepseek-v4-pro",
+      "status": 429,
+      "reason": "Too Many Requests",
+      "succeeded": false,
+      "output_chars": 0,
+      "receipt_backed": true,
+      "canonical_receipt_log_sha256": "fb91e64600d853c109a0668c3d6f7c417bf6df465c7e35ac592f95d08fa57b4e"
+    }
+  ],
+  "certification": {
+    "configuration_and_failure_receipts_observed": true,
+    "successful_chat_certified": false,
+    "native_tool_calling_certified": false,
+    "reason": "The authenticated boundary was configured, but bounded live attempts returned external HTTP 403/429 responses. These failures are evidence, not successful provider certification."
+  }
+}

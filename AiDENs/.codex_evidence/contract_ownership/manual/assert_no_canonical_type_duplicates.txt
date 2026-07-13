@@ -1,0 +1,13 @@
+COMMAND: python3 scripts/assert_no_canonical_type_duplicates.py
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-07-13T03:24:04-05:00
+canonical_types=956
+aidens_contracts_types=258
+duplicate_findings=1
+canonical_inventory_unavailable=false
+P1_REVIEW: RuntimeQueryProvenanceV1 local crates/aidens-contracts/src/view_disclosure.rs:88 canonical knowledge-runtime knowledge-runtime/src/obs/trace.rs:292
+FAIL: local aidens-contracts public definitions duplicate canonical public type names.
+P1_REVIEW: RuntimeQueryProvenanceV1 local crates/aidens-contracts/src/view_disclosure.rs:88 duplicates knowledge-runtime knowledge-runtime/src/obs/trace.rs:292
+Fix by deleting the local definition or converting it to an explicit canonical pub use. Do not add compatibility shims.
+EXIT_STATUS: 1
+END_TIME: 2026-07-13T03:24:04-05:00

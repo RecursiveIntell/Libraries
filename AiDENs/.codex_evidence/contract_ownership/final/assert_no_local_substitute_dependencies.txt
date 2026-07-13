@@ -1,0 +1,6 @@
+COMMAND: bash scripts/assert_no_local_substitute_dependencies.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-07-13T16:02:21-05:00
+PASS: no local substitute dependency red flags detected.
+EXIT_STATUS: 0
+END_TIME: 2026-07-13T16:02:22-05:00

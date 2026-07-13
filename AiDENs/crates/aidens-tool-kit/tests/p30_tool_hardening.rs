@@ -2,9 +2,16 @@ use aidens_contracts::{ArtifactId, CanonicalToolSideEffectClass};
 use aidens_permit_kit::{HostPermitAuthorityV1, PermitCheckContextV1, PermitPolicyV1};
 use aidens_tool_kit::{ToolDispatcher, ToolExposurePolicyV1, ToolInvocationError, ToolRegistryV1};
 use std::collections::BTreeSet;
+use std::sync::OnceLock;
+use tokio::sync::{Mutex, MutexGuard};
 
 const TEST_RUN_ID: &str = "run:p30-tool-test";
 const TEST_ATTEMPT_ID: &str = "attempt:p30-tool-test";
+
+async fn host_env_lock() -> MutexGuard<'static, ()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(())).lock().await
+}
 
 fn trusted_policy_for(
     risk: CanonicalToolSideEffectClass,
@@ -77,6 +84,7 @@ fn p30_tool_exposure_id_is_content_derived() {
 
 #[tokio::test]
 async fn p30_patch_apply_missing_file_fails_closed_instead_of_empty_input() {
+    let _host_env = host_env_lock().await;
     let dir = std::env::temp_dir().join(format!(
         "aidens-p30-missing-file-integration-{}",
         std::process::id()
@@ -118,6 +126,7 @@ async fn p30_patch_apply_missing_file_fails_closed_instead_of_empty_input() {
 
 #[tokio::test]
 async fn p30_run_checks_uses_fixed_executable_paths_without_ambient_path() {
+    let _host_env = host_env_lock().await;
     let dir = std::env::temp_dir().join(format!(
         "aidens-p30-fixed-command-integration-{}",
         std::process::id()

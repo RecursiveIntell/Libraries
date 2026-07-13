@@ -99,6 +99,60 @@ async fn run_always_appends_completed_receipt_on_success() {
 }
 
 #[tokio::test]
+async fn completed_report_is_not_published_when_canonical_persistence_fails() {
+    let ledger = RunReportLedger::default();
+    let runner = AiDENsRunner::builder()
+        .app_id("canonical-persistence-failure")
+        .mock_provider("ok")
+        .run_reports(ledger.clone())
+        .build()
+        .unwrap();
+
+    runner.fail_next_completed_persistence();
+    let error = runner.run(AiDENsRunInput::new("hello")).await.unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("injected canonical receipt persistence failure"));
+    assert!(ledger.is_empty());
+}
+
+#[tokio::test]
+async fn turn_executor_without_canonical_store_publishes_completed_report_once() {
+    let ledger = RunReportLedger::default();
+    let runner = AiDENsRunner::builder()
+        .app_id("no-canonical-store")
+        .mock_provider("ok")
+        .run_reports(ledger.clone())
+        .build()
+        .unwrap();
+    let executor = TurnExecutorV1::new(TurnExecutorConfigV1 {
+        app_id: runner.app_id.clone(),
+        provider: runner.provider.clone(),
+        tools: runner.tools.clone(),
+        permit_policy: runner.permit_policy.clone(),
+        budget: runner.budget.clone(),
+        run_reports: runner.run_reports.clone(),
+        receipt_level: runner.receipt_level.clone(),
+        canonical_receipts: None,
+        fail_next_completed_persistence: runner.fail_next_completed_persistence.clone(),
+        agency_policy: runner.agency_policy.clone(),
+        agency_nudges: runner.agency_nudges.clone(),
+        governance: runner.governance.clone(),
+        kernel: runner.kernel,
+    });
+
+    let output = executor
+        .execute(AiDENsRunInput::new("hello"))
+        .await
+        .unwrap();
+
+    assert!(output.durable_receipt_records.is_empty());
+    assert_eq!(ledger.len(), 1);
+    assert_eq!(ledger.list()[0].receipt_id, output.receipt.receipt_id);
+}
+
+#[tokio::test]
 async fn disabled_provider_records_receipt_and_fails() {
     let ledger = RunReportLedger::default();
     let runner = AiDENsRunner::builder()
@@ -485,6 +539,70 @@ final answer saw: {{last_tool_content}}"#;
     assert_eq!(output.receipt.tool_call_requests.len(), 1);
     assert_eq!(output.receipt.tool_call_results.len(), 1);
     assert!(output.turn_receipt.degraded);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[tokio::test]
+async fn successful_tool_dispatch_is_observed_without_claiming_causal_verification() {
+    let dir = std::env::temp_dir().join(format!(
+        "aidens-p30-advisory-tool-observation-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("README.md"), "advisory observation fixture").unwrap();
+    let tools = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
+    let policy = governance_stack::PolicySnapshot::permissive(
+        "p30-advisory-tool-observation-policy",
+        "2026-07-13T00:00:00Z",
+    );
+    let mock_script = r#"{"tool_call":{"tool_id":"aidens:repo-read:1","input":{"path":"README.md"}}}
+---aidens-next-response---
+final: {{last_tool_content}}"#;
+    let runner = AiDENsRunner::builder()
+        .app_id("p30-advisory-tool-observation")
+        .mock_provider(mock_script)
+        .tools(tools)
+        .governance(Some(GovernanceContext::new(policy)))
+        .canonical_receipt_log_config(CanonicalEventLogConfig::for_root(dir.join("receipts")))
+        .build()
+        .unwrap();
+
+    let output = runner
+        .run(AiDENsRunInput::new("read README"))
+        .await
+        .unwrap();
+
+    assert!(
+        output.receipt.tool_invocation_receipts[0].succeeded,
+        "{:?}",
+        output.receipt.tool_invocation_receipts[0]
+    );
+    let control_receipt_id = output
+        .receipt
+        .warnings
+        .iter()
+        .find_map(|warning| warning.strip_prefix("governance-control:"))
+        .expect("tool governance control receipt id");
+    let control_record = runner
+        .canonical_receipts
+        .as_ref()
+        .expect("canonical receipt store")
+        .inspect(control_receipt_id)
+        .unwrap();
+    assert_eq!(control_record.body["advisory_only"], true);
+    assert_eq!(
+        control_record.body["details"]["check_method"],
+        serde_json::json!("advisory_only")
+    );
+    assert_eq!(
+        control_record.body["details"]["verification_attempt_state"],
+        serde_json::json!("advisory_only")
+    );
+    assert_eq!(
+        control_record.body["details"]["execution_observation"]["tool_invocation"]["succeeded"],
+        true
+    );
     let _ = std::fs::remove_dir_all(&dir);
 }
 

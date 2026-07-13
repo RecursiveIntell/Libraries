@@ -13,6 +13,7 @@ chrono = { version = "0.4", features = ["serde"] }
 federated-settlement = { version = "0.1.0", path = "../../../federated-settlement" }
 kernel-execution = { version = "0.1.0", path = "../../../kernel-execution" }
 kernel-oracles = { version = "0.1.0", path = "../../../kernel-oracles" }
+knowledge-runtime = { version = "0.1.0", path = "../../../knowledge-runtime" }
 llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
 mechanism-runtime = { version = "0.1.0", path = "../../../mechanism-runtime" }
 recursive-kernel-core = { version = "0.1.0", path = "../../../recursive-kernel-core" }

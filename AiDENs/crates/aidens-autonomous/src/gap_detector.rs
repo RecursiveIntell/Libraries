@@ -1280,7 +1280,7 @@ mod tests {
     /// Verify that gaps sort by priority descending.
     #[test]
     fn gaps_sort_by_priority_desc() {
-        let mut gaps = vec![
+        let mut gaps = [
             DetectedGap {
                 gap_type: GapType::MissingLink,
                 fact_id: "a".to_string(),

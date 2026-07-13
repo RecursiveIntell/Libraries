@@ -7,7 +7,7 @@ use aidens_contracts::{
     PermitUseReportV1, SchemaValidationReportV1, ToolDescriptorV1, ToolExposureSetV1,
     ToolLifecycleStateV1, ToolProviderSchemaV1,
 };
-use aidens_permit_kit::{requires_permit, PermitCheckContextV1, PermitDecisionV1};
+use aidens_permit_kit::requires_permit;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -49,19 +49,6 @@ impl GateDescriptorOutcome {
             approval_request: None,
             permit_grant_id: None,
             permit_use_receipt: None,
-        }
-    }
-
-    fn exposed_with_permit(
-        permit_use_receipt: PermitUseReportV1,
-        permit_grant_id: ArtifactId,
-    ) -> Self {
-        Self {
-            outcome: CapabilityGateOutcomeV1::Exposed,
-            reason_codes: vec!["permit-scope-matched".into()],
-            approval_request: None,
-            permit_grant_id: Some(permit_grant_id),
-            permit_use_receipt: Some(permit_use_receipt),
         }
     }
 
@@ -451,8 +438,6 @@ impl ToolRegistryV1 {
                 descriptor.risk_class
             )]);
         }
-        let mut permit_grant_id = None;
-        let mut permit_use_receipt = None;
         if requires_permit(&descriptor.risk_class) {
             let Some(permit_scope) = sandbox_root else {
                 return GateDescriptorOutcome::blocked(vec![
@@ -460,42 +445,19 @@ impl ToolRegistryV1 {
                     format!("permit-required:{}", descriptor.risk_class),
                 ]);
             };
-            let context = PermitCheckContextV1::new(
+            let approval_request = ApprovalRequestV1::scoped(
                 tool_id.clone(),
                 descriptor.risk_class.clone(),
                 permit_scope,
+                "pre-run exposure cannot authorize a side-effect tool without exact run and attempt identifiers",
             );
-            match policy.permit_policy.decision_for_context(&context) {
-                PermitDecisionV1::Allow => {
-                    if let Some(receipt) = policy
-                        .permit_policy
-                        .permit_use_receipt_for_context(&context)
-                    {
-                        permit_grant_id = Some(receipt.permit_id.clone());
-                        permit_use_receipt = Some(receipt);
-                    }
-                }
-                PermitDecisionV1::RequiresApproval => {
-                    let approval_request = policy
-                        .permit_policy
-                        .approval_request_for_context(&context)
-                        .unwrap_or_else(|| {
-                            ApprovalRequestV1::scoped(
-                                tool_id.clone(),
-                                descriptor.risk_class.clone(),
-                                permit_scope,
-                                "side-effect tool requires explicit scoped permit",
-                            )
-                        });
-                    return GateDescriptorOutcome::blocked_with_approval(
-                        vec![format!("permit-required:{}", descriptor.risk_class)],
-                        approval_request,
-                    );
-                }
-                PermitDecisionV1::Deny(reason) => {
-                    return GateDescriptorOutcome::blocked(vec![format!("permit-denied:{reason}")]);
-                }
-            }
+            return GateDescriptorOutcome::blocked_with_approval(
+                vec![
+                    "permit-context-missing-run-attempt".into(),
+                    format!("permit-required:{}", descriptor.risk_class),
+                ],
+                approval_request,
+            );
         }
         if descriptor.requires_native_tool_loop && !policy.native_tool_loop_available {
             return GateDescriptorOutcome::blocked(vec![format!(
@@ -508,12 +470,7 @@ impl ToolRegistryV1 {
         if policy.max_tools.is_some_and(|max| exposed_count >= max) {
             return GateDescriptorOutcome::hidden(vec!["max-tools-reached".into()]);
         }
-        match (permit_use_receipt, permit_grant_id) {
-            (Some(receipt), Some(grant_id)) => {
-                GateDescriptorOutcome::exposed_with_permit(receipt, grant_id)
-            }
-            _ => GateDescriptorOutcome::exposed(),
-        }
+        GateDescriptorOutcome::exposed()
     }
 
     pub fn safe_coding_with_dispatchers(sandbox_root: impl AsRef<Path>) -> anyhow::Result<Self> {

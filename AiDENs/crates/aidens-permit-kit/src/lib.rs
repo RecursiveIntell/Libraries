@@ -6,9 +6,16 @@ use aidens_contracts::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
+use std::fs::{File, OpenOptions};
+use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Duration;
 
 const UNKNOWN_PERMIT_SCOPE_TOKEN: &str = "unknown";
+const REVOCATION_LOCK_RETRY_LIMIT: u32 = 10_000;
+const REVOCATION_LOCK_RETRY_DELAY: Duration = Duration::from_millis(1);
+static REVOCATION_TEMPORARY_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PermitDecisionV1 {
@@ -149,6 +156,27 @@ pub struct PermitRevocationStoreV1 {
     path: PathBuf,
 }
 
+struct PermitRevocationLockV1 {
+    path: PathBuf,
+    file: Option<File>,
+}
+
+impl Drop for PermitRevocationLockV1 {
+    fn drop(&mut self) {
+        drop(self.file.take());
+        if let Err(error) = std::fs::remove_file(&self.path) {
+            if error.kind() != std::io::ErrorKind::NotFound {
+                // Drop cannot report an error. The lockfile is deliberately retained rather
+                // than silently allowing a concurrent writer after a failed unlock.
+                eprintln!(
+                    "failed to release revocation lock {}: {error}",
+                    self.path.display()
+                );
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 struct PermitRevocationLedgerV1 {
     #[serde(default)]
@@ -177,6 +205,7 @@ impl PermitRevocationStoreV1 {
         revoked_by: impl Into<String>,
         reason: impl Into<String>,
     ) -> Result<(), std::io::Error> {
+        let _lock = self.acquire_exclusive_lock()?;
         let mut ledger = self.load()?;
         let recorded_at_unix_nanos = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -192,10 +221,7 @@ impl PermitRevocationStoreV1 {
                 reason: reason.into(),
                 recorded_at_unix_nanos,
             });
-        let bytes = serde_json::to_vec_pretty(&ledger).map_err(std::io::Error::other)?;
-        let temporary = self.path.with_extension("json.tmp");
-        std::fs::write(&temporary, bytes)?;
-        std::fs::rename(temporary, &self.path)
+        self.persist(&ledger)
     }
 
     fn is_revoked(&self, permit_id: &ArtifactId) -> Result<bool, std::io::Error> {
@@ -210,6 +236,106 @@ impl PermitRevocationStoreV1 {
             }
             Err(error) => Err(error),
         }
+    }
+
+    fn acquire_exclusive_lock(&self) -> Result<PermitRevocationLockV1, std::io::Error> {
+        let lock_path = self.path.with_extension("json.lock");
+        for _ in 0..REVOCATION_LOCK_RETRY_LIMIT {
+            match OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&lock_path)
+            {
+                Ok(file) => {
+                    return Ok(PermitRevocationLockV1 {
+                        path: lock_path,
+                        file: Some(file),
+                    })
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                    std::thread::sleep(REVOCATION_LOCK_RETRY_DELAY);
+                }
+                Err(error) => return Err(error),
+            }
+        }
+        Err(std::io::Error::new(
+            std::io::ErrorKind::TimedOut,
+            format!(
+                "timed out acquiring exclusive revocation lock for {}",
+                self.path.display()
+            ),
+        ))
+    }
+
+    fn persist(&self, ledger: &PermitRevocationLedgerV1) -> Result<(), std::io::Error> {
+        let bytes = serde_json::to_vec_pretty(ledger).map_err(std::io::Error::other)?;
+        let (temporary, mut file) = self.create_unique_temporary_file()?;
+        let temporary_for_persist = temporary.clone();
+        let result = (move || {
+            file.write_all(&bytes)?;
+            file.sync_all()?;
+            drop(file);
+            std::fs::rename(&temporary_for_persist, &self.path)?;
+            File::open(self.parent_dir()?)?.sync_all()
+        })();
+
+        match result {
+            Ok(()) => Ok(()),
+            Err(error) => match std::fs::remove_file(&temporary) {
+                Ok(()) => Err(error),
+                Err(cleanup_error) if cleanup_error.kind() == std::io::ErrorKind::NotFound => {
+                    Err(error)
+                }
+                Err(cleanup_error) => Err(std::io::Error::new(
+                    error.kind(),
+                    format!(
+                        "{error}; additionally failed to remove temporary revocation ledger {}: {cleanup_error}",
+                        temporary.display()
+                    ),
+                )),
+            },
+        }
+    }
+
+    fn create_unique_temporary_file(&self) -> Result<(PathBuf, File), std::io::Error> {
+        let file_name = self
+            .path
+            .file_name()
+            .ok_or_else(|| std::io::Error::other("revocation ledger path has no file name"))?
+            .to_string_lossy();
+        let parent = self.parent_dir()?;
+        for _ in 0..16 {
+            let sequence = REVOCATION_TEMPORARY_COUNTER.fetch_add(1, Ordering::Relaxed);
+            let nanos = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_err(std::io::Error::other)?
+                .as_nanos();
+            let temporary = parent.join(format!(
+                ".{file_name}.{}.{}.{}.tmp",
+                std::process::id(),
+                nanos,
+                sequence,
+            ));
+            match OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&temporary)
+            {
+                Ok(file) => return Ok((temporary, file)),
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(error) => return Err(error),
+            }
+        }
+        Err(std::io::Error::new(
+            std::io::ErrorKind::AlreadyExists,
+            "could not allocate a unique temporary revocation ledger path",
+        ))
+    }
+
+    fn parent_dir(&self) -> Result<&Path, std::io::Error> {
+        self.path
+            .parent()
+            .ok_or_else(|| std::io::Error::other("revocation ledger path has no parent directory"))
     }
 }
 
@@ -451,6 +577,7 @@ pub fn requires_permit(risk: &CanonicalToolSideEffectClass) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Arc, Barrier};
 
     const TEST_KEY: [u8; 32] = [7; 32];
 
@@ -627,6 +754,66 @@ mod tests {
             policy.decision_for_context(&context),
             PermitDecisionV1::RequiresApproval
         );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn concurrent_durable_revocations_preserve_every_permit() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-permit-revocation-concurrent-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos(),
+        ));
+        let _ = std::fs::remove_dir_all(&root);
+        let store = PermitRevocationStoreV1::open(&root).unwrap();
+
+        // A substantial existing ledger makes both concurrent calls spend enough time in
+        // deserialize/serialize to expose a read-modify-write lost update in an unlocked store.
+        let mut ledger = PermitRevocationLedgerV1::default();
+        for index in 0..4_096 {
+            let permit_id = format!("existing:{index}");
+            ledger.revocations.insert(
+                permit_id.clone(),
+                PermitRevocationRecordV1 {
+                    permit_id,
+                    revoked_by: "seed".into(),
+                    reason: "test setup".into(),
+                    recorded_at_unix_nanos: "0".into(),
+                },
+            );
+        }
+        std::fs::write(
+            root.join("permit-revocations-v1.json"),
+            serde_json::to_vec(&ledger).unwrap(),
+        )
+        .unwrap();
+
+        let barrier = Arc::new(Barrier::new(2));
+        let left_store = store.clone();
+        let left_barrier = barrier.clone();
+        let left = std::thread::spawn(move || {
+            left_barrier.wait();
+            left_store.revoke(&ArtifactId("permit:left".into()), "operator", "left")
+        });
+        let right_store = store.clone();
+        let right = std::thread::spawn(move || {
+            barrier.wait();
+            right_store.revoke(&ArtifactId("permit:right".into()), "operator", "right")
+        });
+
+        left.join().unwrap().unwrap();
+        right.join().unwrap().unwrap();
+
+        let reopened = PermitRevocationStoreV1::open(&root).unwrap();
+        assert!(reopened
+            .is_revoked(&ArtifactId("permit:left".into()))
+            .unwrap());
+        assert!(reopened
+            .is_revoked(&ArtifactId("permit:right".into()))
+            .unwrap());
         let _ = std::fs::remove_dir_all(&root);
     }
 

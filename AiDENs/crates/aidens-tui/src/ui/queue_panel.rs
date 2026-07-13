@@ -7,7 +7,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
 
-use crate::app::App;
+use crate::{app::App, ui::truncate_for_panel};
 
 /// Render the queue panel.
 pub fn render(frame: &mut Frame, area: Rect, app: &App) {
@@ -71,11 +71,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
                         JobStateV1::Running | JobStateV1::Leased => yellow,
                         _ => gray,
                     };
-                    let job_display: String = if job.idempotency_key.len() > 20 {
-                        format!("{}…", &job.idempotency_key[..20])
-                    } else {
-                        job.idempotency_key.clone()
-                    };
+                    let job_display = truncate_for_panel(&job.idempotency_key, 20);
                     lines.push(Line::from(vec![
                         Span::raw("  "),
                         Span::styled(format!("{:?}", job.state), state_color),

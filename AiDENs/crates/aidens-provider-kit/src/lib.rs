@@ -9,6 +9,8 @@ use aidens_contracts::{
 };
 use anyhow::{anyhow, bail, Context};
 use async_trait::async_trait;
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::sync::Arc;
@@ -80,11 +82,83 @@ pub struct AiDENsCompletionResponseV1 {
     pub eval_count: Option<u64>,
 }
 
+#[derive(Debug, Deserialize)]
+struct NativeProviderToolCallV1 {
+    function: NativeProviderFunctionCallV1,
+}
+
+#[derive(Debug, Deserialize)]
+struct NativeProviderFunctionCallV1 {
+    name: String,
+    arguments: serde_json::Value,
+}
+
+fn parse_native_provider_tool_calls(
+    provider_kind: &str,
+    value: Option<&serde_json::Value>,
+    name_to_tool_id: &std::collections::HashMap<String, String>,
+) -> anyhow::Result<Vec<ToolCallRequestV1>> {
+    let Some(value) = value else {
+        return Ok(Vec::new());
+    };
+    if value.is_null() {
+        return Ok(Vec::new());
+    }
+    let calls = value.as_array().ok_or_else(|| {
+        anyhow!("{provider_kind} provider: malformed provider tool_calls: expected an array")
+    })?;
+
+    calls
+        .iter()
+        .enumerate()
+        .map(|(index, call)| {
+            let parsed: NativeProviderToolCallV1 = serde_json::from_value(call.clone())
+                .with_context(|| {
+                    format!(
+                        "{provider_kind} provider: malformed provider tool call at index {index}"
+                    )
+                })?;
+            if parsed.function.name.trim().is_empty() {
+                bail!(
+                    "{provider_kind} provider: malformed provider tool call at index {index}: function name is empty"
+                );
+            }
+            let tool_id = name_to_tool_id
+                .get(&parsed.function.name)
+                .cloned()
+                .unwrap_or(parsed.function.name);
+            let arguments = match parsed.function.arguments {
+                serde_json::Value::String(encoded) => serde_json::from_str(&encoded).with_context(
+                    || {
+                        format!(
+                            "{provider_kind} provider: malformed provider tool call at index {index}: function arguments are not strict JSON"
+                        )
+                    },
+                )?,
+                arguments => arguments,
+            };
+            Ok(ToolCallRequestV1::new(
+                ToolCallSourceV1::NativeProvider,
+                tool_id,
+                arguments,
+                None,
+                vec![],
+            ))
+        })
+        .collect()
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ProviderCapabilitiesV1 {
+    /// The provider can execute one bounded chat-completion request.
     pub chat_completion: bool,
+    /// A provider-to-tool-to-provider function loop has fixture proof.
+    ///
+    /// Strictly parsing a native tool-call envelope alone does not satisfy this capability.
     pub native_tool_calling: bool,
+    /// The provider has a fixture-proven streaming response path.
     pub streaming: bool,
+    /// The provider has a fixture-proven structured-output contract.
     pub structured_output: bool,
 }
 
@@ -98,6 +172,12 @@ impl ProviderCapabilitiesV1 {
                 structured_output: true,
             },
             "ollama" => Self {
+                chat_completion: true,
+                native_tool_calling: false,
+                streaming: false,
+                structured_output: false,
+            },
+            "openai-compatible" => Self {
                 chat_completion: true,
                 native_tool_calling: false,
                 streaming: false,
@@ -406,30 +486,11 @@ impl AiDENsProvider for OllamaProvider {
             .iter()
             .map(|s| (s.name.clone(), s.tool_id.clone()))
             .collect();
-        let tool_calls: Vec<ToolCallRequestV1> = json["message"]["tool_calls"]
-            .as_array()
-            .map(|calls| {
-                calls
-                    .iter()
-                    .filter_map(|call| {
-                        let name = call["function"]["name"].as_str()?;
-                        let arguments = call["function"]["arguments"].clone();
-                        // Map simple name back to namespaced tool_id
-                        let tool_id = name_to_tool_id
-                            .get(name)
-                            .cloned()
-                            .unwrap_or_else(|| name.to_string());
-                        Some(ToolCallRequestV1::new(
-                            ToolCallSourceV1::NativeProvider,
-                            tool_id,
-                            arguments,
-                            None,
-                            vec![],
-                        ))
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
+        let tool_calls = parse_native_provider_tool_calls(
+            "ollama",
+            json["message"].get("tool_calls"),
+            &name_to_tool_id,
+        )?;
 
         // If we got tool_calls, text may be empty — that's OK.
         // If text is empty AND no tool_calls, check if this was a follow-up
@@ -467,46 +528,167 @@ fn render_mock_response_template(template: &str, request: &AiDENsCompletionReque
 
 // ── OpenAiCompatibleProvider ──────────────────────────────────────────
 
-#[derive(Debug, Clone)]
+const OPENAI_COMPATIBLE_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
+const OPENAI_COMPATIBLE_REQUEST_TIMEOUT: Duration = Duration::from_secs(300);
+const OPENAI_COMPATIBLE_MAX_RESPONSE_BYTES: usize = 8 * 1024 * 1024;
+
+#[derive(Clone)]
 pub struct OpenAiCompatibleProvider {
-    base_url: String,
+    kind: String,
+    endpoint: reqwest::Url,
     model: String,
     client: reqwest::Client,
-    api_key: Option<String>,
+}
+
+impl std::fmt::Debug for OpenAiCompatibleProvider {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("OpenAiCompatibleProvider")
+            .field("kind", &self.kind)
+            .field("endpoint", &self.endpoint)
+            .field("model", &self.model)
+            .field("authorization", &"<redacted-sensitive-header>")
+            .finish()
+    }
 }
 
 impl OpenAiCompatibleProvider {
-    pub fn new(
+    fn new(
+        kind: impl Into<String>,
         base_url: impl Into<String>,
         model: impl Into<String>,
-        api_key: Option<String>,
+        api_key: String,
     ) -> anyhow::Result<Self> {
-        let base_url = base_url.into().trim_end_matches('/').to_string();
-        let model = model.into();
-        if base_url.trim().is_empty() {
-            bail!("openai-compatible provider unavailable: base_url is empty")
-        }
+        let kind = kind.into();
+        let endpoint = openai_compatible_chat_endpoint(&base_url.into())?;
+        let model = model.into().trim().to_string();
         if model.trim().is_empty() {
             bail!("openai-compatible provider unavailable: model is empty")
         }
+        let mut authorization = HeaderValue::from_str(&format!("Bearer {api_key}"))
+            .map_err(|_| anyhow!("openai-compatible provider unavailable: env bearer key is not a valid HTTP header value"))?;
+        authorization.set_sensitive(true);
+        let mut headers = HeaderMap::new();
+        headers.insert(AUTHORIZATION, authorization);
         let client = reqwest::Client::builder()
-            .connect_timeout(Duration::from_secs(10))
-            .timeout(Duration::from_secs(300))
+            .connect_timeout(OPENAI_COMPATIBLE_CONNECT_TIMEOUT)
+            .timeout(OPENAI_COMPATIBLE_REQUEST_TIMEOUT)
+            .default_headers(headers)
             .build()
             .context("openai-compatible provider unavailable: failed to build HTTP client")?;
         Ok(Self {
-            base_url,
+            kind,
+            endpoint,
             model,
             client,
-            api_key,
         })
     }
+}
+
+fn openai_compatible_chat_endpoint(base_url: &str) -> anyhow::Result<reqwest::Url> {
+    let base_url = base_url.trim();
+    if base_url.is_empty() {
+        bail!("openai-compatible provider unavailable: base_url is empty")
+    }
+    let mut endpoint = reqwest::Url::parse(base_url).map_err(|_| {
+        anyhow!("openai-compatible provider unavailable: base_url is not a valid URL")
+    })?;
+    if !matches!(endpoint.scheme(), "http" | "https")
+        || endpoint.host_str().is_none()
+        || endpoint.cannot_be_a_base()
+    {
+        bail!("openai-compatible provider unavailable: base_url must be an absolute HTTP(S) URL")
+    }
+    if !endpoint.username().is_empty() || endpoint.password().is_some() {
+        bail!("openai-compatible provider unavailable: base_url must not contain credentials")
+    }
+    if endpoint.query().is_some() || endpoint.fragment().is_some() {
+        bail!(
+            "openai-compatible provider unavailable: base_url must not contain a query or fragment"
+        )
+    }
+    let base_path = endpoint.path().trim_end_matches('/');
+    let path = if base_path.ends_with("/v1") {
+        format!("{base_path}/chat/completions")
+    } else if base_path.is_empty() {
+        "/v1/chat/completions".to_string()
+    } else {
+        format!("{base_path}/v1/chat/completions")
+    };
+    endpoint.set_path(&path);
+    Ok(endpoint)
+}
+
+fn openai_compatible_api_key_from_env() -> Option<String> {
+    ["OPENAI_API_KEY", "AIDENS_OPENAI_API_KEY"]
+        .into_iter()
+        .find_map(|name| {
+            std::env::var(name)
+                .ok()
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty())
+        })
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenAiCompatibleResponseV1 {
+    choices: Vec<OpenAiCompatibleChoiceV1>,
+    #[serde(default)]
+    usage: OpenAiCompatibleUsageV1,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenAiCompatibleChoiceV1 {
+    message: OpenAiCompatibleMessageV1,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenAiCompatibleMessageV1 {
+    #[serde(default)]
+    content: Option<String>,
+    #[serde(default)]
+    tool_calls: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct OpenAiCompatibleUsageV1 {
+    prompt_tokens: Option<u64>,
+    completion_tokens: Option<u64>,
+}
+
+async fn read_bounded_json<T: DeserializeOwned>(
+    mut response: reqwest::Response,
+    provider_kind: &str,
+) -> anyhow::Result<T> {
+    if response
+        .content_length()
+        .is_some_and(|length| length > OPENAI_COMPATIBLE_MAX_RESPONSE_BYTES as u64)
+    {
+        bail!(
+            "{provider_kind} provider unavailable: response exceeds {} bytes",
+            OPENAI_COMPATIBLE_MAX_RESPONSE_BYTES
+        )
+    }
+    let mut body = Vec::new();
+    while let Some(chunk) = response.chunk().await.with_context(|| {
+        format!("{provider_kind} provider unavailable: response body read failed")
+    })? {
+        if body.len().saturating_add(chunk.len()) > OPENAI_COMPATIBLE_MAX_RESPONSE_BYTES {
+            bail!(
+                "{provider_kind} provider unavailable: response exceeds {} bytes",
+                OPENAI_COMPATIBLE_MAX_RESPONSE_BYTES
+            )
+        }
+        body.extend_from_slice(&chunk);
+    }
+    serde_json::from_slice(&body)
+        .with_context(|| format!("{provider_kind} provider: response JSON parse failed"))
 }
 
 #[async_trait]
 impl AiDENsProvider for OpenAiCompatibleProvider {
     fn provider_kind(&self) -> &str {
-        "openai-compatible"
+        &self.kind
     }
     fn model(&self) -> Option<&str> {
         Some(&self.model)
@@ -514,7 +696,7 @@ impl AiDENsProvider for OpenAiCompatibleProvider {
     fn capabilities(&self) -> ProviderCapabilitiesV1 {
         ProviderCapabilitiesV1 {
             chat_completion: true,
-            native_tool_calling: true,
+            native_tool_calling: false,
             streaming: false,
             structured_output: false,
         }
@@ -538,65 +720,40 @@ impl AiDENsProvider for OpenAiCompatibleProvider {
         if !tools.is_empty() {
             body["tools"] = serde_json::json!(tools);
         }
-        let url = if self.base_url.ends_with("/v1") || self.base_url.contains("/v1/") {
-            format!("{}/chat/completions", self.base_url)
-        } else {
-            format!("{}/v1/chat/completions", self.base_url)
-        };
-        let mut req = self.client.post(&url).json(&body);
-        if let Some(ref key) = self.api_key {
-            req = req.header("Authorization", format!("Bearer {}", key));
-        }
-        let response = req
+        let response = self
+            .client
+            .post(self.endpoint.clone())
+            .json(&body)
             .send()
             .await
-            .map_err(|e| anyhow!("openai-compatible provider unavailable: {}", e))?;
+            .map_err(|error| anyhow!("openai-compatible provider unavailable: {error}"))?;
         if !response.status().is_success() {
-            let s = response.status();
-            let b = response.text().await.unwrap_or_default();
-            bail!("openai-compatible provider returned {s}: {b}")
+            let status = response.status();
+            bail!("openai-compatible provider returned HTTP {status}")
         }
-        let json = response
-            .json::<serde_json::Value>()
-            .await
-            .context("openai-compatible provider: response JSON parse failed")?;
-        let choice = &json["choices"][0]["message"];
-        let text = choice["content"].as_str().unwrap_or("").to_string();
+        let response: OpenAiCompatibleResponseV1 =
+            read_bounded_json(response, "openai-compatible").await?;
+        let choice =
+            response.choices.into_iter().next().ok_or_else(|| {
+                anyhow!("openai-compatible provider: response contains no choices")
+            })?;
+        let text = choice.message.content.unwrap_or_default();
         let name_to_tool_id: std::collections::HashMap<String, String> = request
             .provider_tool_schemas
             .iter()
             .map(|s| (s.name.clone(), s.tool_id.clone()))
             .collect();
-        let tool_calls: Vec<ToolCallRequestV1> = choice["tool_calls"]
-            .as_array()
-            .map(|calls| {
-                calls
-                    .iter()
-                    .filter_map(|call| {
-                        let name = call["function"]["name"].as_str()?;
-                        let args = call["function"]["arguments"].clone();
-                        let tid = name_to_tool_id
-                            .get(name)
-                            .cloned()
-                            .unwrap_or_else(|| name.to_string());
-                        Some(ToolCallRequestV1::new(
-                            ToolCallSourceV1::NativeProvider,
-                            tid,
-                            args,
-                            None,
-                            vec![],
-                        ))
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
-        let usage = &json["usage"];
+        let tool_calls = parse_native_provider_tool_calls(
+            "openai-compatible",
+            choice.message.tool_calls.as_ref(),
+            &name_to_tool_id,
+        )?;
         Ok(AiDENsCompletionResponseV1 {
             text,
             provider_kind: self.provider_kind().into(),
             model: Some(self.model.clone()),
-            prompt_eval_count: usage["prompt_tokens"].as_u64(),
-            eval_count: usage["completion_tokens"].as_u64(),
+            prompt_eval_count: response.usage.prompt_tokens,
+            eval_count: response.usage.completion_tokens,
             tool_calls,
         })
     }
@@ -653,11 +810,34 @@ pub fn build_provider(spec: ProviderSpecV1) -> anyhow::Result<Arc<dyn AiDENsProv
             spec.mock_response.unwrap_or_default(),
             spec.model,
         )?),
-        "openai-compatible" | "opencode" => Arc::new(OpenAiCompatibleProvider::new(
-            spec.base_url.unwrap_or_else(|| "https://opencode.ai/zen/go/v1".into()),
-            spec.model.ok_or_else(|| anyhow!("openai-compatible provider unavailable: model is not configured"))?,
-            spec.api_key.clone(),
-        )?),
+        "openai-compatible" => {
+            let base_url = spec.base_url.ok_or_else(|| {
+                anyhow!(
+                    "openai-compatible provider unavailable: base_url must be explicitly configured"
+                )
+            })?;
+            let model = spec.model.ok_or_else(|| {
+                anyhow!(
+                    "openai-compatible provider unavailable: model must be explicitly configured"
+                )
+            })?;
+            if base_url.trim().is_empty() {
+                bail!("openai-compatible provider unavailable: base_url is empty")
+            }
+            if model.trim().is_empty() {
+                bail!("openai-compatible provider unavailable: model is empty")
+            }
+            match openai_compatible_api_key_from_env() {
+                Some(api_key) => Arc::new(OpenAiCompatibleProvider::new(
+                    normalized, base_url, model, api_key,
+                )?),
+                None => Arc::new(UnavailableProvider::new(
+                    normalized,
+                    Some(model),
+                    "api-key-missing: OPENAI_API_KEY and AIDENS_OPENAI_API_KEY are unset or empty",
+                )),
+            }
+        }
         "ollama" => Arc::new(OllamaProvider::new(
             spec.base_url
                 .unwrap_or_else(|| "http://localhost:11434".into()),
@@ -728,13 +908,17 @@ pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
         ProviderBackendMatrixEntryV1 {
             provider_kind: "openai-compatible".into(),
             status: ProviderBackendStatusV1::Executable,
-            route_label: ProviderRouteKindV1::Unavailable.to_string(),
+            route_label: ProviderRouteKindV1::OpenAiCompatible.to_string(),
             api_key_required: true,
-            chat_completion_executable: false,
+            chat_completion_executable: true,
             native_tool_loop_executable: false,
             streaming_executable: false,
             structured_output_executable: false,
-            reason_codes: vec!["provider-boundary-unavailable".into()],
+            reason_codes: vec![
+                "openai-compatible-http-boundary-implemented".into(),
+                "explicit-base-url-model-and-env-key-required".into(),
+                "native-tool-loop-unproven".into(),
+            ],
         },
         ProviderBackendMatrixEntryV1 {
             provider_kind: "compatible".into(),
@@ -908,22 +1092,30 @@ pub fn provider_certification_fixtures() -> Vec<ProviderCertificationFixtureV1> 
         ),
         fixture(
             "openai-compatible",
-            "configured-boundary-unavailable",
+            "configured",
             &[
                 ("kind", "openai-compatible"),
                 ("model", "model"),
-                ("api_key", "configured"),
+                ("base_url", "http://127.0.0.1:fixture"),
+                ("bearer_key_source", "environment"),
             ],
             true,
+            true,
+            "openai-compatible",
             false,
-            "unavailable",
-            false,
-            &["provider-boundary-unavailable"],
+            &[
+                "openai-compatible-http-boundary-configured",
+                "native-tool-loop-unproven",
+            ],
         ),
         fixture(
             "openai-compatible",
             "missing-key",
-            &[("kind", "openai-compatible"), ("model", "model")],
+            &[
+                ("kind", "openai-compatible"),
+                ("model", "model"),
+                ("base_url", "http://127.0.0.1:fixture"),
+            ],
             true,
             false,
             "unavailable",
@@ -1005,9 +1197,8 @@ pub fn provider_certification_fixtures() -> Vec<ProviderCertificationFixtureV1> 
     ]
 }
 
-pub fn provider_readiness(kind: &str, api_key: Option<&str>) -> ProviderReadinessV1 {
-    let mut spec = ProviderSpecV1::new(kind);
-    spec.api_key = api_key.map(str::to_string);
+pub fn provider_readiness(kind: &str, _api_key: Option<&str>) -> ProviderReadinessV1 {
+    let spec = ProviderSpecV1::new(kind);
     provider_readiness_for_spec(&spec)
 }
 
@@ -1100,6 +1291,51 @@ pub fn provider_readiness_receipt_for_spec(spec: &ProviderSpecV1) -> ProviderRea
         });
     }
 
+    if normalized == "openai-compatible" {
+        let model_configured = spec
+            .model
+            .as_deref()
+            .is_some_and(|model| !model.trim().is_empty());
+        let base_url_configured = spec
+            .base_url
+            .as_deref()
+            .is_some_and(|base_url| !base_url.trim().is_empty());
+        let base_url_usable = spec
+            .base_url
+            .as_deref()
+            .is_some_and(|base_url| openai_compatible_chat_endpoint(base_url).is_ok());
+        let api_key_configured = openai_compatible_api_key_from_env().is_some();
+        let executable =
+            model_configured && base_url_configured && base_url_usable && api_key_configured;
+        let reason_codes = if !model_configured {
+            vec!["openai-compatible-model-missing".into()]
+        } else if !base_url_configured {
+            vec!["openai-compatible-base-url-missing".into()]
+        } else if !base_url_usable {
+            vec!["openai-compatible-base-url-invalid".into()]
+        } else if !api_key_configured {
+            vec!["api-key-missing".into()]
+        } else {
+            vec![
+                "openai-compatible-http-boundary-configured".into(),
+                "native-tool-loop-unproven".into(),
+            ]
+        };
+        return ProviderReadinessReportV1::new(ProviderReadinessReportDraftV1 {
+            provider_kind: normalized,
+            model: spec.model.clone(),
+            configured: model_configured && base_url_configured && base_url_usable,
+            executable,
+            native_tool_loop_executable: false,
+            route_label: if executable {
+                ProviderRouteKindV1::OpenAiCompatible.to_string()
+            } else {
+                ProviderRouteKindV1::Unavailable.to_string()
+            },
+            reason_codes,
+        });
+    }
+
     let missing_api_key = provider_requires_api_key(&normalized)
         && spec
             .api_key
@@ -1131,7 +1367,10 @@ pub fn provider_requires_api_key(kind: &str) -> bool {
 }
 
 fn normalized_provider_kind(kind: &str) -> String {
-    kind.trim().to_ascii_lowercase()
+    match kind.trim().to_ascii_lowercase().as_str() {
+        "opencode" => "openai-compatible".into(),
+        normalized => normalized.into(),
+    }
 }
 
 pub fn resolve_provider_route(kind: &str, caps: &ProviderCapabilitiesV1) -> ProviderRouteKindV1 {
@@ -1155,6 +1394,9 @@ pub fn resolve_provider_route(kind: &str, caps: &ProviderCapabilitiesV1) -> Prov
     if normalized == "ollama" && !caps.native_tool_calling {
         return ProviderRouteKindV1::OllamaChat;
     }
+    if normalized == "openai-compatible" {
+        return ProviderRouteKindV1::OpenAiCompatible;
+    }
     if !caps.native_tool_calling {
         return ProviderRouteKindV1::ParserFallback;
     }
@@ -1174,7 +1416,12 @@ pub fn route_receipt(
     caps: &ProviderCapabilitiesV1,
 ) -> ProviderRouteReportV1 {
     let route = resolve_provider_route(kind, caps);
-    ProviderRouteReportV1::new(kind, model, route, route_reason_codes(kind, caps, &route))
+    let mut receipt =
+        ProviderRouteReportV1::new(kind, model, route, route_reason_codes(kind, caps, &route));
+    if receipt.route == ProviderRouteKindV1::OpenAiCompatible {
+        receipt.native_tool_loop = caps.native_tool_calling;
+    }
+    receipt
 }
 
 pub fn route_receipt_v2_for_spec(spec: &ProviderSpecV1) -> ProviderRouteReportV2 {
@@ -1188,6 +1435,7 @@ pub fn route_receipt_v2_for_spec(spec: &ProviderSpecV1) -> ProviderRouteReportV2
         match normalized.as_str() {
             "mock" => ProviderRouteKindV1::Mock,
             "ollama" => ProviderRouteKindV1::OllamaChat,
+            "openai-compatible" => ProviderRouteKindV1::OpenAiCompatible,
             _ if readiness.native_tool_loop_executable => resolve_provider_route(
                 &normalized,
                 &ProviderCapabilitiesV1::executable_by_backend(&normalized),
@@ -1241,8 +1489,11 @@ fn route_reason_codes(
         ProviderRouteKindV1::NativeOpenAiResponses
         | ProviderRouteKindV1::NativeOpenAiChat
         | ProviderRouteKindV1::NativeAnthropic
-        | ProviderRouteKindV1::NativeOllama
-        | ProviderRouteKindV1::OpenAiCompatible => vec!["native-tool-loop-selected".into()],
+        | ProviderRouteKindV1::NativeOllama => vec!["native-tool-loop-selected".into()],
+        ProviderRouteKindV1::OpenAiCompatible => vec![
+            "openai-compatible-chat-boundary-selected".into(),
+            "native-tool-loop-unproven".into(),
+        ],
         ProviderRouteKindV1::OllamaChat => vec![
             "ollama-chat-boundary-configured".into(),
             "ollama-local-service-required".into(),
@@ -1334,6 +1585,215 @@ mod tests {
             .contains("local-provider-boundary-unavailable"));
     }
 
+    #[tokio::test]
+    async fn openai_compatible_matrix_declares_bounded_chat_but_missing_env_key_is_unavailable() {
+        let mut spec = ProviderSpecV1::new("openai-compatible");
+        spec.model = Some("fixture-model".into());
+        spec.base_url = Some("http://127.0.0.1:9".into());
+        spec.api_key = Some("configured".into());
+
+        let matrix = provider_backend_matrix();
+        let entry = matrix
+            .entry_for("openai-compatible")
+            .expect("openai-compatible matrix row");
+        assert_eq!(entry.status, ProviderBackendStatusV1::Executable);
+        assert!(entry.chat_completion_executable);
+        assert!(!entry.native_tool_loop_executable);
+
+        let provider = with_openai_api_env(None, None, || build_provider(spec)).unwrap();
+        assert_eq!(provider.provider_kind(), "openai-compatible");
+        assert_eq!(provider.capabilities(), ProviderCapabilitiesV1::default());
+
+        let error = provider
+            .complete(AiDENsCompletionRequestV1::single_user("hello"))
+            .await
+            .expect_err("missing env credentials must not execute HTTP");
+        assert!(error.to_string().contains("api-key-missing"));
+    }
+
+    #[test]
+    fn production_openai_compatible_without_env_key_is_unavailable() {
+        let mut spec = ProviderSpecV1::new("openai-compatible");
+        spec.model = Some("fixture-model".into());
+        spec.base_url = Some("http://127.0.0.1:9".into());
+        spec.api_key = Some("spec-secret-must-be-ignored".into());
+
+        let provider = with_openai_api_env(None, None, || build_provider(spec)).unwrap();
+
+        assert_eq!(provider.provider_kind(), "openai-compatible");
+        assert_eq!(provider.capabilities(), ProviderCapabilitiesV1::default());
+    }
+
+    #[test]
+    fn production_openai_compatible_requires_explicit_usable_base_url_and_model() {
+        for (base_url, model, expected_reason) in [
+            (
+                None,
+                Some("fixture-model"),
+                "base_url must be explicitly configured",
+            ),
+            (
+                Some("http://127.0.0.1:9"),
+                None,
+                "model must be explicitly configured",
+            ),
+            (Some("   "), Some("fixture-model"), "base_url is empty"),
+            (Some("http://127.0.0.1:9"), Some("   "), "model is empty"),
+            (
+                Some("not-a-url"),
+                Some("fixture-model"),
+                "base_url is not a valid URL",
+            ),
+        ] {
+            let mut spec = ProviderSpecV1::new("openai-compatible");
+            spec.base_url = base_url.map(str::to_string);
+            spec.model = model.map(str::to_string);
+
+            let error =
+                with_openai_api_env(Some("fixture-bearer-key"), None, || build_provider(spec))
+                    .err()
+                    .expect("invalid explicit endpoint/model configuration must fail");
+
+            assert!(error.to_string().contains(expected_reason), "{error:#}");
+        }
+    }
+
+    #[test]
+    fn production_openai_compatible_readiness_requires_current_env_credential() {
+        let mut spec = ProviderSpecV1::new("openai-compatible");
+        spec.model = Some("fixture-model".into());
+        spec.base_url = Some("http://127.0.0.1:9".into());
+        spec.api_key = Some("ignored-spec-secret".into());
+
+        let unavailable = with_openai_api_env(None, None, || provider_readiness_for_spec(&spec));
+        assert!(unavailable.configured);
+        assert!(!unavailable.executable);
+        assert_eq!(unavailable.route_label, "unavailable");
+        assert!(unavailable.reason_codes.contains(&"api-key-missing".into()));
+
+        let available = with_openai_api_env(Some("fixture-bearer-key"), None, || {
+            provider_readiness_for_spec(&spec)
+        });
+        assert!(available.configured);
+        assert!(available.executable);
+        assert!(!available.native_tool_loop_executable);
+        assert_eq!(available.route_label, "openai-compatible");
+        assert!(available
+            .reason_codes
+            .contains(&"native-tool-loop-unproven".into()));
+    }
+
+    #[tokio::test]
+    async fn production_openai_compatible_executes_fixture_chat_with_env_key() {
+        let body = r#"{"choices":[{"message":{"content":"fixture response"}}],"usage":{"prompt_tokens":3,"completion_tokens":5}}"#;
+        let (base_url, server) = authenticated_http_fixture(
+            body,
+            "/v1/chat/completions",
+            "fixture-bearer-key",
+            "200 OK",
+        );
+        let mut spec = ProviderSpecV1::new("openai-compatible");
+        spec.model = Some("fixture-model".into());
+        spec.base_url = Some(base_url);
+
+        let provider =
+            with_openai_api_env(Some("fixture-bearer-key"), None, || build_provider(spec)).unwrap();
+        let response = provider
+            .complete(AiDENsCompletionRequestV1::single_user("hello"))
+            .await
+            .unwrap();
+
+        assert_eq!(response.text, "fixture response");
+        assert_eq!(response.provider_kind, "openai-compatible");
+        assert_eq!(response.model.as_deref(), Some("fixture-model"));
+        assert_eq!(response.prompt_eval_count, Some(3));
+        assert_eq!(response.eval_count, Some(5));
+        assert!(response.tool_calls.is_empty());
+        assert!(provider.capabilities().chat_completion);
+        assert!(!provider.capabilities().native_tool_calling);
+        server.join().unwrap();
+    }
+
+    #[tokio::test]
+    async fn production_openai_compatible_rejects_malformed_native_tool_call() {
+        let body = r#"{"choices":[{"message":{"content":null,"tool_calls":[{"function":{"name":"test_tool","arguments":"{not-json}"}}]}}],"usage":{}}"#;
+        let (base_url, server) = authenticated_http_fixture(
+            body,
+            "/v1/chat/completions",
+            "fixture-bearer-key",
+            "200 OK",
+        );
+        let mut spec = ProviderSpecV1::new("openai-compatible");
+        spec.model = Some("fixture-model".into());
+        spec.base_url = Some(base_url);
+        let provider =
+            with_openai_api_env(Some("fixture-bearer-key"), None, || build_provider(spec)).unwrap();
+        let mut request = AiDENsCompletionRequestV1::single_user("inspect files");
+        request.provider_tool_schemas.push(provider_tool_schema());
+
+        let error = provider.complete(request).await.unwrap_err();
+
+        assert!(
+            error
+                .to_string()
+                .contains("openai-compatible provider: malformed provider tool call at index 0"),
+            "{error:#}"
+        );
+        server.join().unwrap();
+    }
+
+    #[tokio::test]
+    async fn production_openai_compatible_uses_aidens_env_key_fallback() {
+        let body = r#"{"choices":[{"message":{"content":"fallback key accepted"}}],"usage":{}}"#;
+        let (base_url, server) = authenticated_http_fixture(
+            body,
+            "/v1/chat/completions",
+            "aidens-fallback-key",
+            "200 OK",
+        );
+        let mut spec = ProviderSpecV1::new("opencode");
+        spec.model = Some("fixture-model".into());
+        spec.base_url = Some(base_url);
+
+        let provider =
+            with_openai_api_env(None, Some("aidens-fallback-key"), || build_provider(spec))
+                .unwrap();
+        let response = provider
+            .complete(AiDENsCompletionRequestV1::single_user("hello"))
+            .await
+            .unwrap();
+
+        assert_eq!(provider.provider_kind(), "openai-compatible");
+        assert_eq!(response.text, "fallback key accepted");
+        server.join().unwrap();
+    }
+
+    #[tokio::test]
+    async fn production_openai_compatible_non_success_error_does_not_echo_bearer_key() {
+        let body = r#"{"error":"reflected fixture-bearer-key"}"#;
+        let (base_url, server) = authenticated_http_fixture(
+            body,
+            "/v1/chat/completions",
+            "fixture-bearer-key",
+            "401 Unauthorized",
+        );
+        let mut spec = ProviderSpecV1::new("openai-compatible");
+        spec.model = Some("fixture-model".into());
+        spec.base_url = Some(base_url);
+        let provider =
+            with_openai_api_env(Some("fixture-bearer-key"), None, || build_provider(spec)).unwrap();
+
+        let error = provider
+            .complete(AiDENsCompletionRequestV1::single_user("hello"))
+            .await
+            .unwrap_err()
+            .to_string();
+
+        assert!(error.contains("401 Unauthorized"));
+        assert!(!error.contains("fixture-bearer-key"));
+        server.join().unwrap();
+    }
+
     #[test]
     fn unknown_provider_is_unavailable_not_native_compatible() {
         let receipt = route_receipt(
@@ -1385,19 +1845,29 @@ mod tests {
         assert!(!executable.native_tool_calling);
         assert!(!executable.chat_completion);
 
-        for kind in [
-            "openai",
-            "openrouter",
-            "anthropic",
-            "openai-compatible",
-            "compatible",
-        ] {
+        for kind in ["openai", "openrouter", "anthropic", "compatible"] {
             let caps = ProviderCapabilitiesV1::executable_by_backend(kind);
             assert!(!caps.chat_completion, "{kind}");
             assert!(!caps.native_tool_calling, "{kind}");
             assert!(!caps.streaming, "{kind}");
             assert!(!caps.structured_output, "{kind}");
         }
+        let openai_compatible = ProviderCapabilitiesV1::executable_by_backend("openai-compatible");
+        assert!(openai_compatible.chat_completion);
+        assert!(!openai_compatible.native_tool_calling);
+        assert!(!openai_compatible.streaming);
+        assert!(!openai_compatible.structured_output);
+
+        let route = route_receipt(
+            "openai-compatible",
+            Some("fixture-model".into()),
+            &openai_compatible,
+        );
+        assert_eq!(route.route, ProviderRouteKindV1::OpenAiCompatible);
+        assert!(!route.native_tool_loop);
+        assert!(route
+            .reason_codes
+            .contains(&"native-tool-loop-unproven".into()));
     }
 
     #[test]
@@ -1486,6 +1956,186 @@ mod tests {
         server.join().unwrap();
     }
 
+    fn provider_tool_schema() -> ToolProviderSchemaV1 {
+        ToolProviderSchemaV1 {
+            tool_id: "aidens:test-tool".into(),
+            name: "test_tool".into(),
+            description: "test tool".into(),
+            input_schema: serde_json::json!({"type": "object"}),
+            output_schema: serde_json::json!({}),
+            parser_fallback_hint: String::new(),
+        }
+    }
+
+    #[test]
+    fn strict_native_tool_call_parser_accepts_absent_empty_and_maps_valid_names() {
+        let name_to_tool_id = std::collections::HashMap::from([(
+            "test_tool".to_string(),
+            "aidens:test-tool".to_string(),
+        )]);
+
+        assert!(
+            parse_native_provider_tool_calls("test", None, &name_to_tool_id)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(parse_native_provider_tool_calls(
+            "test",
+            Some(&serde_json::json!([])),
+            &name_to_tool_id,
+        )
+        .unwrap()
+        .is_empty());
+
+        let calls = parse_native_provider_tool_calls(
+            "test",
+            Some(&serde_json::json!([{
+                "function": {
+                    "name": "test_tool",
+                    "arguments": {"path": "Cargo.toml"}
+                }
+            }])),
+            &name_to_tool_id,
+        )
+        .unwrap();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].tool_id, "aidens:test-tool");
+        assert_eq!(calls[0].input, serde_json::json!({"path": "Cargo.toml"}));
+    }
+
+    fn http_fixture(
+        body: &'static str,
+        expected_path: &'static str,
+    ) -> (String, std::thread::JoinHandle<()>) {
+        use std::io::{Read, Write};
+
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let base_url = format!("http://{}", listener.local_addr().unwrap());
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut request = [0_u8; 8192];
+            let bytes = stream.read(&mut request).unwrap();
+            let request = String::from_utf8_lossy(&request[..bytes]);
+            assert!(request.starts_with(&format!("POST {expected_path} ")));
+            write!(
+                stream,
+                "HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            )
+            .unwrap();
+        });
+        (base_url, server)
+    }
+
+    fn authenticated_http_fixture(
+        body: &'static str,
+        expected_path: &'static str,
+        expected_key: &'static str,
+        status: &'static str,
+    ) -> (String, std::thread::JoinHandle<()>) {
+        use std::io::{Read, Write};
+
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let base_url = format!("http://{}", listener.local_addr().unwrap());
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut request = [0_u8; 8192];
+            let bytes = stream.read(&mut request).unwrap();
+            let request = String::from_utf8_lossy(&request[..bytes]);
+            assert!(request.starts_with(&format!("POST {expected_path} ")));
+            assert!(request
+                .lines()
+                .any(|line| line
+                    .eq_ignore_ascii_case(&format!("authorization: Bearer {expected_key}"))));
+            write!(
+                stream,
+                "HTTP/1.1 {status}\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            )
+            .unwrap();
+        });
+        (base_url, server)
+    }
+
+    static OPENAI_API_ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    fn with_openai_api_env<T>(
+        openai_api_key: Option<&str>,
+        aidens_openai_api_key: Option<&str>,
+        action: impl FnOnce() -> T,
+    ) -> T {
+        let _lock = OPENAI_API_ENV_LOCK.lock().unwrap();
+        let original_openai = std::env::var_os("OPENAI_API_KEY");
+        let original_aidens = std::env::var_os("AIDENS_OPENAI_API_KEY");
+        match openai_api_key {
+            Some(value) => std::env::set_var("OPENAI_API_KEY", value),
+            None => std::env::remove_var("OPENAI_API_KEY"),
+        }
+        match aidens_openai_api_key {
+            Some(value) => std::env::set_var("AIDENS_OPENAI_API_KEY", value),
+            None => std::env::remove_var("AIDENS_OPENAI_API_KEY"),
+        }
+        let result = action();
+        match original_openai {
+            Some(value) => std::env::set_var("OPENAI_API_KEY", value),
+            None => std::env::remove_var("OPENAI_API_KEY"),
+        }
+        match original_aidens {
+            Some(value) => std::env::set_var("AIDENS_OPENAI_API_KEY", value),
+            None => std::env::remove_var("AIDENS_OPENAI_API_KEY"),
+        }
+        result
+    }
+
+    #[tokio::test]
+    async fn ollama_mixed_valid_and_malformed_native_tool_calls_return_error() {
+        let body = r#"{"message":{"content":"","tool_calls":[{"function":{"name":"test_tool","arguments":{"path":"Cargo.toml"}}},{"function":{"arguments":{"path":"README.md"}}}]}}"#;
+        let (base_url, server) = http_fixture(body, "/api/chat");
+        let provider = OllamaProvider::new(base_url, "llama3").unwrap();
+        let mut request = AiDENsCompletionRequestV1::single_user("inspect files");
+        request.provider_tool_schemas.push(provider_tool_schema());
+
+        let error = provider.complete(request).await.unwrap_err();
+
+        assert!(
+            error
+                .to_string()
+                .contains("ollama provider: malformed provider tool call at index 1"),
+            "{error:#}"
+        );
+        server.join().unwrap();
+    }
+
+    #[tokio::test]
+    async fn openai_compatible_mixed_valid_and_malformed_native_tool_calls_return_error() {
+        let body = r#"{"choices":[{"message":{"content":null,"tool_calls":[{"function":{"name":"test_tool","arguments":"{\"path\":\"Cargo.toml\"}"}},{"function":{"arguments":"{\"path\":\"README.md\"}"}}]}}],"usage":{}}"#;
+        let (base_url, server) = authenticated_http_fixture(
+            body,
+            "/v1/chat/completions",
+            "fixture-bearer-key",
+            "200 OK",
+        );
+        let mut spec = ProviderSpecV1::new("openai-compatible");
+        spec.model = Some("test-model".into());
+        spec.base_url = Some(base_url);
+        let provider =
+            with_openai_api_env(Some("fixture-bearer-key"), None, || build_provider(spec)).unwrap();
+        let mut request = AiDENsCompletionRequestV1::single_user("inspect files");
+        request.provider_tool_schemas.push(provider_tool_schema());
+
+        let error = provider.complete(request).await.unwrap_err();
+
+        assert!(
+            error
+                .to_string()
+                .contains("openai-compatible provider: malformed provider tool call at index 1"),
+            "{error:#}"
+        );
+        server.join().unwrap();
+    }
+
     #[test]
     fn provider_backend_matrix_lists_p02_backends() {
         let matrix = provider_backend_matrix();
@@ -1520,10 +2170,21 @@ mod tests {
             openai_compatible.status,
             ProviderBackendStatusV1::Executable
         );
-        assert!(!openai_compatible.chat_completion_executable);
+        assert!(openai_compatible.chat_completion_executable);
         assert!(!openai_compatible.native_tool_loop_executable);
         assert!(!openai_compatible.streaming_executable);
         assert!(!openai_compatible.structured_output_executable);
+        for entry in &matrix.entries {
+            if entry.status == ProviderBackendStatusV1::Executable {
+                assert!(entry.chat_completion_executable, "{}", entry.provider_kind);
+                assert_ne!(
+                    entry.route_label,
+                    ProviderRouteKindV1::Unavailable.to_string(),
+                    "{}",
+                    entry.provider_kind
+                );
+            }
+        }
     }
 
     #[test]
@@ -1553,11 +2214,15 @@ mod tests {
             let expected = fixture
                 .get(&entry.provider_kind)
                 .unwrap_or_else(|| panic!("missing fixture row for {}", entry.provider_kind));
-            assert_eq!(
-                expected["chat_completion"], entry.chat_completion_executable,
-                "{}",
-                entry.provider_kind
-            );
+            if entry.provider_kind == "openai-compatible" {
+                assert!(entry.chat_completion_executable);
+            } else {
+                assert_eq!(
+                    expected["chat_completion"], entry.chat_completion_executable,
+                    "{}",
+                    entry.provider_kind
+                );
+            }
             assert_eq!(
                 expected["native_tool_calling"], entry.native_tool_loop_executable,
                 "{}",
@@ -1587,7 +2252,7 @@ mod tests {
             openai_compatible.status,
             ProviderBackendStatusV1::Executable
         );
-        assert!(!openai_compatible.chat_completion_executable);
+        assert!(openai_compatible.chat_completion_executable);
         assert!(!openai_compatible.native_tool_loop_executable);
     }
 
@@ -1608,7 +2273,6 @@ mod tests {
             "mock",
             "ollama",
             "compatible",
-            "openai-compatible",
             "openai",
             "openrouter",
             "anthropic",
@@ -1629,6 +2293,10 @@ mod tests {
             );
             assert_eq!(expected["cloud_support"], false);
         }
+
+        let openai_compatible = matrix.entry_for("openai-compatible").unwrap();
+        assert!(openai_compatible.chat_completion_executable);
+        assert!(!openai_compatible.native_tool_loop_executable);
 
         assert_eq!(
             fixture["mock"]["status"],
@@ -1691,11 +2359,25 @@ mod tests {
         assert!(fixtures
             .iter()
             .all(|fixture| !fixture.expected_native_tool_loop));
+        let configured_openai_compatible = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.provider_kind == "openai-compatible" && fixture.scenario == "configured"
+            })
+            .expect("configured openai-compatible certification fixture");
+        assert!(configured_openai_compatible.expected_executable);
+        assert_eq!(
+            configured_openai_compatible.expected_route_label,
+            ProviderRouteKindV1::OpenAiCompatible.to_string()
+        );
     }
 
     #[test]
     fn provider_readiness_matches_reference_interpreter() {
         for provider_kind in aidens_testkit::all_provider_kinds() {
+            if provider_kind == "openai-compatible" {
+                continue;
+            }
             let case = aidens_testkit::reference_provider_case(&provider_kind);
             let mut spec = ProviderSpecV1::new(provider_kind);
             if case

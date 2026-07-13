@@ -733,7 +733,7 @@ impl MissionImpl for VerifyPublishedCratesMission {
     ) -> Result<Vec<DetectedGap>> {
         let mut all_results = Vec::new();
         for q in self.search_queries() {
-            let results = http_search(http_base_url, &q).await.unwrap_or_default();
+            let results = http_search(http_base_url, &q).await?;
             all_results.extend(results);
         }
 
@@ -821,7 +821,7 @@ impl MissionImpl for VerifyFileReferencesMission {
     ) -> Result<Vec<DetectedGap>> {
         let mut all_results = Vec::new();
         for q in self.search_queries() {
-            let results = http_search(http_base_url, &q).await.unwrap_or_default();
+            let results = http_search(http_base_url, &q).await?;
             all_results.extend(results);
         }
 
@@ -924,7 +924,7 @@ impl MissionImpl for DetectContradictionsMission {
     ) -> Result<Vec<DetectedGap>> {
         let mut all_results = Vec::new();
         for q in self.search_queries() {
-            let results = http_search(http_base_url, &q).await.unwrap_or_default();
+            let results = http_search(http_base_url, &q).await?;
             all_results.extend(results);
         }
 
@@ -1044,7 +1044,7 @@ impl MissionImpl for AuditNamespaceCompletenessMission {
     ) -> Result<Vec<DetectedGap>> {
         let mut all_results = Vec::new();
         for q in self.search_queries() {
-            let results = http_search(http_base_url, &q).await.unwrap_or_default();
+            let results = http_search(http_base_url, &q).await?;
             all_results.extend(results);
         }
 
@@ -1169,7 +1169,7 @@ impl MissionImpl for TraceProvenanceChainsMission {
     ) -> Result<Vec<DetectedGap>> {
         let mut all_results = Vec::new();
         for q in self.search_queries() {
-            let results = http_search(http_base_url, &q).await.unwrap_or_default();
+            let results = http_search(http_base_url, &q).await?;
             all_results.extend(results);
         }
 
@@ -1264,7 +1264,7 @@ impl MissionImpl for FindDuplicatesMission {
     ) -> Result<Vec<DetectedGap>> {
         let mut all_results = Vec::new();
         for q in self.search_queries() {
-            let results = http_search(http_base_url, &q).await.unwrap_or_default();
+            let results = http_search(http_base_url, &q).await?;
             all_results.extend(results);
         }
 
@@ -1361,7 +1361,7 @@ impl MissionImpl for VerifyCodebaseSyncMission {
     ) -> Result<Vec<DetectedGap>> {
         let mut all_results = Vec::new();
         for q in self.search_queries() {
-            let results = http_search(http_base_url, &q).await.unwrap_or_default();
+            let results = http_search(http_base_url, &q).await?;
             all_results.extend(results);
         }
 
@@ -1464,7 +1464,7 @@ impl MissionImpl for StaleDateDetectionMission {
     ) -> Result<Vec<DetectedGap>> {
         let mut all_results = Vec::new();
         for q in self.search_queries() {
-            let results = http_search(http_base_url, &q).await.unwrap_or_default();
+            let results = http_search(http_base_url, &q).await?;
             all_results.extend(results);
         }
 
@@ -1548,6 +1548,19 @@ impl MissionImpl for StaleDateDetectionMission {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn mission_detect_issues_propagates_http_search_failure() {
+        let attempted = HashSet::new();
+        let result = Mission::VerifyPublishedCrates
+            .detect_issues("http://127.0.0.1:9", &attempted)
+            .await;
+
+        assert!(
+            result.is_err(),
+            "HTTP search failure must not become Ok([])"
+        );
+    }
 
     // --- Mission enum tests ---
 

@@ -14,9 +14,10 @@ use crate::gap_detector::GapDetector;
 use crate::hostile_audit::HostileAuditGate;
 use crate::missions::{Mission, MissionScheduler};
 use crate::proof_debt::{PaymentMethod, ProofDebtBudget, RiskClass};
-use crate::receipt::{LoopMode, ReceiptEmitter};
+use crate::receipt::{CycleReceiptInputV1, CycleReceiptV1, LoopMode, ReceiptLedger};
 use crate::task_generator::TaskGenerator;
 use crate::viscosity::ViscosityController;
+use aidens_contracts::{ArtifactId, QueueLeaseV1};
 use aidens_daemon_kit::DaemonControllerV1;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -146,10 +147,24 @@ pub struct AutonomousLoop {
     pub entropy_search: Arc<Mutex<EntropyGradientSearcher>>,
     /// Hostile audit gate (None if auditor_url is empty).
     pub hostile_audit: Option<HostileAuditGate>,
-    /// Receipt emitter for cycle receipts.
-    pub receipts: Arc<Mutex<ReceiptEmitter>>,
+    /// Explicit process-owned in-memory ledger for cycle receipts.
+    pub receipts: Arc<Mutex<ReceiptLedger>>,
     /// Mission scheduler for structured high-ROI objectives.
     pub mission_scheduler: Arc<Mutex<MissionScheduler>>,
+}
+
+/// Material metrics for a single autonomous-loop cycle receipt.
+#[derive(Debug, Default)]
+struct CycleMetrics {
+    iteration: usize,
+    gaps: usize,
+    tasks: usize,
+    captured: usize,
+    rejected: usize,
+    quarantined: usize,
+    domains: Vec<String>,
+    errors: Vec<String>,
+    mode: LoopMode,
 }
 
 impl std::fmt::Debug for AutonomousLoop {
@@ -210,7 +225,7 @@ impl AutonomousLoop {
         } else {
             None
         };
-        let receipts = ReceiptEmitter::new();
+        let receipts = ReceiptLedger::new();
         let mission_scheduler = MissionScheduler::new();
 
         Ok(Self {
@@ -266,7 +281,7 @@ impl AutonomousLoop {
                 "http://127.0.0.1:1738",
             ))),
             hostile_audit,
-            receipts: Arc::new(Mutex::new(ReceiptEmitter::new())),
+            receipts: Arc::new(Mutex::new(ReceiptLedger::new())),
             mission_scheduler: Arc::new(Mutex::new(MissionScheduler::new())),
         }
     }
@@ -274,6 +289,14 @@ impl AutonomousLoop {
     /// Get a snapshot of the current loop state.
     pub fn state_snapshot(&self) -> LoopState {
         self.state.lock().map(|s| s.clone()).unwrap_or_default()
+    }
+
+    /// Return a read-only snapshot of the process-owned receipt history.
+    pub fn receipt_history(&self) -> Result<Vec<CycleReceiptV1>> {
+        self.receipts
+            .lock()
+            .map(|ledger| ledger.history().to_vec())
+            .map_err(|e| anyhow::anyhow!("receipt ledger lock: {e}"))
     }
 
     /// Run the autonomous loop.
@@ -322,12 +345,15 @@ impl AutonomousLoop {
             };
 
             if in_subtractive || self.proof_debt_should_shift() {
+                let mut errors = Vec::new();
                 self.update_state(|s| {
                     s.mode = LoopMode::Subtractive;
                 });
                 if let Err(e) = self.run_subtractive_cycle().await {
+                    let error = format!("subtractive cycle failed: {e}");
+                    errors.push(error.clone());
                     self.update_state(|s| {
-                        s.last_error = Some(format!("subtractive cycle failed: {e}"));
+                        s.last_error = Some(error);
                     });
                 }
                 // Check if we can return to additive mode.
@@ -337,11 +363,19 @@ impl AutonomousLoop {
                     });
                 }
                 // Emit receipt for subtractive cycle.
-                self.emit_cycle_receipt(iteration, 0, 0, 0, 0, 0, &[], &[]);
+                self.emit_cycle_receipt(CycleMetrics {
+                    iteration,
+                    errors,
+                    mode: LoopMode::Subtractive,
+                    ..CycleMetrics::default()
+                })?;
                 self.sleep_iteration().await;
                 self.check_max_iterations(iteration)?;
                 continue;
             }
+
+            let mut cycle_gaps = 0usize;
+            let mut cycle_errors = Vec::new();
 
             // 3. Gap detection (only if viscosity allows task generation).
             let queue_has_pending = self.queue_has_pending_jobs();
@@ -356,20 +390,30 @@ impl AutonomousLoop {
                 };
 
                 if let Some(mission) = mission_due {
-                    if let Err(e) = self.run_mission_detection(&mission, iteration).await {
-                        self.update_state(|s| {
-                            s.last_error = Some(format!("mission detection failed: {e}"));
-                        });
+                    match self.run_mission_detection(&mission, iteration).await {
+                        Ok(gaps) => cycle_gaps += gaps,
+                        Err(e) => {
+                            let error = format!("mission detection failed: {e}");
+                            cycle_errors.push(error.clone());
+                            self.update_state(|s| {
+                                s.last_error = Some(error);
+                            });
+                        }
                     }
                 } else {
                     // Fall back to entropy-guided gap detection.
                     let should_detect = self.config.gap_detection_interval > 0
                         && (iteration - 1) % self.config.gap_detection_interval == 0;
                     if should_detect {
-                        if let Err(e) = self.run_gap_detection().await {
-                            self.update_state(|s| {
-                                s.last_error = Some(format!("gap detection failed: {e}"));
-                            });
+                        match self.run_gap_detection().await {
+                            Ok(gaps) => cycle_gaps += gaps,
+                            Err(e) => {
+                                let error = format!("gap detection failed: {e}");
+                                cycle_errors.push(error.clone());
+                                self.update_state(|s| {
+                                    s.last_error = Some(error);
+                                });
+                            }
                         }
                     }
                 }
@@ -380,20 +424,33 @@ impl AutonomousLoop {
                 Ok(Some(outcome)) => outcome,
                 Ok(None) => {
                     // No job available — emit idle receipt and sleep.
-                    self.emit_cycle_receipt(iteration, 0, 0, 0, 0, 0, &[], &[]);
+                    self.emit_cycle_receipt(CycleMetrics {
+                        iteration,
+                        gaps: cycle_gaps,
+                        errors: cycle_errors,
+                        mode: LoopMode::Additive,
+                        ..CycleMetrics::default()
+                    })?;
                     self.sleep_iteration().await;
                     self.check_max_iterations(iteration)?;
                     continue;
                 }
                 Err(e) => {
                     let error_msg = e.to_string();
+                    cycle_errors.push(error_msg.clone());
                     self.viscosity_record(false, false, FactDisposition::Reject, 0, 0);
                     self.update_state(|s| {
                         s.last_error = Some(format!("acquire_next failed: {error_msg}"));
                         s.consecutive_failures += 1;
                     });
                     self.check_safe_mode();
-                    self.emit_cycle_receipt(iteration, 0, 0, 0, 0, 0, &[], &[error_msg]);
+                    self.emit_cycle_receipt(CycleMetrics {
+                        iteration,
+                        gaps: cycle_gaps,
+                        errors: cycle_errors,
+                        mode: LoopMode::Additive,
+                        ..CycleMetrics::default()
+                    })?;
                     self.sleep_iteration().await;
                     self.check_max_iterations(iteration)?;
                     continue;
@@ -418,6 +475,7 @@ impl AutonomousLoop {
                 Ok(result) => result,
                 Err(e) => {
                     let error_msg = e.to_string();
+                    cycle_errors.push(error_msg.clone());
                     self.viscosity_record(false, false, FactDisposition::Reject, 0, 0);
                     self.update_state(|s| {
                         s.tasks_failed += 1;
@@ -446,7 +504,14 @@ impl AutonomousLoop {
                             .map(|mut g| g.insert(err_gap_key));
                     }
                     self.check_safe_mode();
-                    self.emit_cycle_receipt(iteration, 0, 1, 0, 0, 0, &[], &[error_msg]);
+                    self.emit_cycle_receipt(CycleMetrics {
+                        iteration,
+                        gaps: cycle_gaps,
+                        tasks: 1,
+                        errors: cycle_errors,
+                        mode: LoopMode::Additive,
+                        ..CycleMetrics::default()
+                    })?;
                     self.sleep_iteration().await;
                     self.check_max_iterations(iteration)?;
                     continue;
@@ -457,8 +522,10 @@ impl AutonomousLoop {
             let capture_outcome: CaptureOutcome = match self.capture.capture(&exec_result).await {
                 Ok(outcome) => outcome,
                 Err(e) => {
+                    let error = format!("capture failed: {e}");
+                    cycle_errors.push(error.clone());
                     self.update_state(|s| {
-                        s.last_error = Some(format!("capture failed: {e}"));
+                        s.last_error = Some(error);
                     });
                     CaptureOutcome {
                         facts_added: 0,
@@ -563,13 +630,7 @@ impl AutonomousLoop {
             );
 
             if exec_result.success {
-                self.update_state(|s| {
-                    s.tasks_completed += 1;
-                    s.consecutive_failures = 0;
-                    s.current_job = None;
-                    s.last_error = None;
-                });
-                let _ = self.queue.complete(&job_id, &lease);
+                self.complete_successful_job(&job_id, &lease)?;
             } else {
                 self.update_state(|s| {
                     s.tasks_failed += 1;
@@ -620,24 +681,25 @@ impl AutonomousLoop {
                 .lock()
                 .map(|s| s.domains_explored.clone())
                 .unwrap_or_default();
-            let errors: Vec<String> = if exec_result.success {
-                Vec::new()
-            } else {
-                vec![exec_result
-                    .error
-                    .clone()
-                    .unwrap_or_else(|| "unknown error".to_string())]
-            };
-            self.emit_cycle_receipt(
+            if !exec_result.success {
+                cycle_errors.push(
+                    exec_result
+                        .error
+                        .clone()
+                        .unwrap_or_else(|| "unknown error".to_string()),
+                );
+            }
+            self.emit_cycle_receipt(CycleMetrics {
                 iteration,
-                0, // gaps_detected this cycle (tracked in run_gap_detection)
-                1, // one task executed
-                facts_promoted + facts_quarantined,
-                facts_rejected_this,
-                facts_quarantined,
-                &domains,
-                &errors,
-            );
+                gaps: cycle_gaps,
+                tasks: 1,
+                captured: facts_promoted + facts_quarantined,
+                rejected: facts_rejected_this,
+                quarantined: facts_quarantined,
+                domains,
+                errors: cycle_errors,
+                mode: LoopMode::Additive,
+            })?;
 
             // 14. Check consecutive failures → safe mode.
             self.check_safe_mode();
@@ -651,17 +713,7 @@ impl AutonomousLoop {
     }
 
     /// Emit a cycle receipt and update the receipt chain.
-    fn emit_cycle_receipt(
-        &self,
-        iteration: usize,
-        gaps: usize,
-        tasks: usize,
-        captured: usize,
-        rejected: usize,
-        quarantined: usize,
-        domains: &[String],
-        errors: &[String],
-    ) {
+    fn emit_cycle_receipt(&self, metrics: CycleMetrics) -> Result<CycleReceiptV1> {
         let strictness = self.viscosity_strictness_name();
         let debt_outstanding = self
             .proof_debt
@@ -673,27 +725,52 @@ impl AutonomousLoop {
             .lock()
             .map(|d| d.debt_receipt().total_incurred)
             .unwrap_or(0);
-        let mode = self.state.lock().map(|s| s.mode).unwrap_or_default();
         let saturated = self.entropy_saturated_domains();
 
-        if let Ok(mut emitter) = self.receipts.lock() {
-            emitter.emit(
-                iteration,
-                gaps,
-                tasks,
-                captured,
-                rejected,
-                quarantined,
-                None, // viscosity signal snapshot — TODO: wire full signal
-                &strictness,
-                debt_outstanding,
-                total_incurred,
-                mode,
-                domains.to_vec(),
-                saturated,
-                errors.to_vec(),
-            );
+        let mut ledger = self
+            .receipts
+            .lock()
+            .map_err(|e| anyhow::anyhow!("receipt ledger lock: {e}"))?;
+        Ok(ledger.emit(CycleReceiptInputV1 {
+            iteration: metrics.iteration,
+            gaps_detected: metrics.gaps,
+            tasks_executed: metrics.tasks,
+            facts_captured: metrics.captured,
+            facts_rejected: metrics.rejected,
+            facts_quarantined: metrics.quarantined,
+            viscosity_signal: None, // TODO: wire full signal snapshot.
+            strictness,
+            proof_debt_outstanding: debt_outstanding,
+            proof_debt_total_incurred: total_incurred,
+            mode: metrics.mode,
+            domains_explored: metrics.domains,
+            saturated_domains: saturated,
+            errors: metrics.errors,
+        }))
+    }
+
+    /// Complete the durable queue transition before exposing completion in memory.
+    fn complete_successful_job(&self, job_id: &ArtifactId, lease: &QueueLeaseV1) -> Result<()> {
+        if let Err(error) = self.queue.complete(job_id, lease) {
+            let error = format!("durable queue completion failed: {error}");
+            let mut state = self
+                .state
+                .lock()
+                .map_err(|e| anyhow::anyhow!("state lock after completion failure: {e}"))?;
+            state.consecutive_failures += 1;
+            state.last_error = Some(error.clone());
+            return Err(anyhow::anyhow!(error));
         }
+
+        let mut state = self
+            .state
+            .lock()
+            .map_err(|e| anyhow::anyhow!("state lock after durable completion: {e}"))?;
+        state.tasks_completed += 1;
+        state.consecutive_failures = 0;
+        state.current_job = None;
+        state.last_error = None;
+        Ok(())
     }
 
     /// Run mission-based gap detection for a specific mission.
@@ -701,7 +778,7 @@ impl AutonomousLoop {
     /// This calls the mission's `detect_issues` method, generates tasks from
     /// the detected gaps, and records the result in the scheduler for
     /// adaptive priority adjustment.
-    async fn run_mission_detection(&self, mission: &Mission, iteration: usize) -> Result<()> {
+    async fn run_mission_detection(&self, mission: &Mission, iteration: usize) -> Result<usize> {
         let attempted = self.attempted_gaps.lock().unwrap().clone();
         let gaps = mission
             .detect_issues(&self.config.http_base_url, &attempted)
@@ -724,7 +801,7 @@ impl AutonomousLoop {
             scheduler.record_result(mission.as_kebab(), issue_count, iteration);
         }
 
-        Ok(())
+        Ok(issue_count)
     }
 
     /// Run gap detection using entropy-gradient-guided domain selection.
@@ -732,7 +809,7 @@ impl AutonomousLoop {
     /// Instead of scanning all priority namespaces randomly, this queries
     /// the entropy-gradient searcher for the top domains to explore, then
     /// runs namespace-targeted gap detection on each.
-    async fn run_gap_detection(&self) -> Result<()> {
+    async fn run_gap_detection(&self) -> Result<usize> {
         let attempted = self.attempted_gaps.lock().unwrap().clone();
 
         // Get top domains to explore from entropy-gradient searcher.
@@ -755,8 +832,9 @@ impl AutonomousLoop {
             // Fall back to the original broad detection if entropy search
             // fails (e.g., SM server not running or no stats available).
             let gaps = self.detector.detect_gaps(30, &attempted).await?;
+            let gap_count = gaps.len();
             self.update_state(|s| {
-                s.gaps_detected += gaps.len();
+                s.gaps_detected += gap_count;
             });
             if !gaps.is_empty() {
                 let job_ids = self.generator.generate_tasks(&gaps).await?;
@@ -764,7 +842,7 @@ impl AutonomousLoop {
                     s.tasks_generated += job_ids.len();
                 });
             }
-            return Ok(());
+            return Ok(gap_count);
         }
 
         // Run gap detection in each target domain.
@@ -793,14 +871,15 @@ impl AutonomousLoop {
             }
         }
 
+        let gap_count = all_gaps.len();
         self.update_state(|s| {
-            s.gaps_detected += all_gaps.len();
+            s.gaps_detected += gap_count;
             s.domains_explored = domains_explored;
             s.saturated_domains = self.entropy_saturated_domains();
         });
 
         if all_gaps.is_empty() {
-            return Ok(());
+            return Ok(0);
         }
 
         let job_ids = self.generator.generate_tasks(&all_gaps).await?;
@@ -808,7 +887,7 @@ impl AutonomousLoop {
             s.tasks_generated += job_ids.len();
         });
 
-        Ok(())
+        Ok(gap_count)
     }
 
     /// Run a subtractive cycle: verify existing claims, pay proof-debt,
@@ -834,10 +913,7 @@ impl AutonomousLoop {
 
         // For each medium-risk entry, check if the claim has contradictions.
         for (entry_id, claim_id) in &medium_entries {
-            let has_contradiction = self
-                .check_claim_contradictions(claim_id)
-                .await
-                .unwrap_or(false);
+            let has_contradiction = self.check_claim_contradictions(claim_id).await?;
             if let Ok(mut debt) = self.proof_debt.lock() {
                 if has_contradiction {
                     // Quarantine the claim — pay debt via quarantine.
@@ -885,25 +961,35 @@ impl AutonomousLoop {
             .map_err(|e| anyhow::anyhow!("HTTP client: {e}"))?;
         let body = serde_json::json!({"direct_result_ids": [claim_id]});
         let url = format!("{}/discord", self.config.http_base_url);
-        let resp = client.post(&url).json(&body).send().await;
-        match resp {
-            Ok(r) if r.status().is_success() => {
-                let data: serde_json::Value = r.json().await.unwrap_or_default();
-                // Check if any related items are contradictions.
-                if let Some(related) = data.get("related").and_then(|v| v.as_array()) {
-                    // If there are related items with contradiction edges,
-                    // the claim has contradictions.
-                    Ok(related.iter().any(|r| {
-                        r.get("edge_type")
-                            .and_then(|v| v.as_str())
-                            .map(|s| s.contains("contradict"))
-                            .unwrap_or(false)
-                    }))
-                } else {
-                    Ok(false)
-                }
-            }
-            _ => Ok(false), // Fail open if server unavailable.
+        let response = client
+            .post(&url)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| anyhow::anyhow!("discord request for claim {claim_id}: {e}"))?;
+        if !response.status().is_success() {
+            return Err(anyhow::anyhow!(
+                "discord request for claim {claim_id} returned {}",
+                response.status()
+            ));
+        }
+
+        let data: serde_json::Value = response
+            .json()
+            .await
+            .map_err(|e| anyhow::anyhow!("discord response for claim {claim_id}: {e}"))?;
+        // Check if any related items are contradictions.
+        if let Some(related) = data.get("related").and_then(|v| v.as_array()) {
+            // If there are related items with contradiction edges,
+            // the claim has contradictions.
+            Ok(related.iter().any(|r| {
+                r.get("edge_type")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.contains("contradict"))
+                    .unwrap_or(false)
+            }))
+        } else {
+            Ok(false)
         }
     }
 
@@ -1055,6 +1141,7 @@ impl AutonomousLoop {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use aidens_contracts::{CanonicalToolSideEffectClass, JobStateV1, JobV1};
 
     fn temp_dir(name: &str) -> std::path::PathBuf {
         use std::sync::atomic::{AtomicU64, Ordering};
@@ -1263,5 +1350,107 @@ mod tests {
         // State should reflect the iterations.
         let state = autonomous_loop.state_snapshot();
         assert_eq!(state.iteration, 2);
+    }
+
+    #[test]
+    fn durable_completion_failure_does_not_advance_in_memory_completion() {
+        let memory_dir = temp_dir("completion-failure-memory");
+        let queue_dir = temp_dir("completion-failure-queue");
+        let config = LoopConfig {
+            memory_dir,
+            queue_dir,
+            ..Default::default()
+        };
+        let autonomous_loop = AutonomousLoop::from_config(config).unwrap();
+        let job = JobV1::new(
+            autonomous_loop.queue.namespace_id(),
+            "completion-failure-job",
+            "test",
+            serde_json::json!({"prompt": "test"}),
+            CanonicalToolSideEffectClass::ReadOnly,
+            None,
+            None,
+        );
+        let job_id = job.job_id.clone();
+        let job_id_string = job_id.to_string();
+        autonomous_loop.queue.enqueue_job(job).unwrap();
+        let acquired = autonomous_loop
+            .queue
+            .acquire_next("autonomous-loop", 300)
+            .unwrap()
+            .unwrap();
+        let mut invalid_lease = acquired.lease;
+        invalid_lease.lease_id = aidens_contracts::ArtifactId::new("lease:wrong");
+        autonomous_loop.update_state(|state| {
+            state.current_job = Some(job_id.to_string());
+        });
+
+        let result = autonomous_loop.complete_successful_job(&job_id, &invalid_lease);
+
+        assert!(result.is_err());
+        let state = autonomous_loop.state_snapshot();
+        assert_eq!(state.tasks_completed, 0);
+        assert_eq!(state.current_job.as_deref(), Some(job_id_string.as_str()));
+        let queue_snapshot = autonomous_loop.queue.snapshot().unwrap();
+        assert_eq!(queue_snapshot.jobs[0].state, JobStateV1::Leased);
+    }
+
+    #[tokio::test]
+    async fn cycle_receipt_uses_immutable_subtractive_error_snapshot() {
+        let memory_dir = temp_dir("subtractive-receipt-memory");
+        let queue_dir = temp_dir("subtractive-receipt-queue");
+        let autonomous_loop = AutonomousLoop::from_config(LoopConfig {
+            max_iterations: 1,
+            sleep_between_iterations_ms: 0,
+            memory_dir,
+            queue_dir,
+            http_base_url: "http://127.0.0.1:9".into(),
+            ..Default::default()
+        })
+        .unwrap();
+        {
+            let mut debt = autonomous_loop.proof_debt.lock().unwrap();
+            for index in 0..4 {
+                debt.incur(&format!("claim-low-{index}"), "autonomous", RiskClass::Low);
+            }
+            debt.pay_all_low_risk(PaymentMethod::NoContradictions);
+            debt.incur("claim-medium", "autonomous", RiskClass::Medium);
+        }
+        autonomous_loop.update_state(|state| state.mode = LoopMode::Subtractive);
+
+        let result = autonomous_loop.run().await;
+
+        assert!(result.is_err());
+        assert_eq!(autonomous_loop.state_snapshot().mode, LoopMode::Additive);
+        let history = autonomous_loop.receipt_history().unwrap();
+        let receipt = history.last().unwrap();
+        assert_eq!(receipt.mode, LoopMode::Subtractive);
+        assert_eq!(receipt.errors.len(), 1);
+        assert!(receipt.errors[0].contains("subtractive cycle failed: discord request"));
+    }
+
+    #[test]
+    fn cycle_receipt_records_nonzero_per_cycle_gap_count() {
+        let memory_dir = temp_dir("gap-receipt-memory");
+        let queue_dir = temp_dir("gap-receipt-queue");
+        let autonomous_loop = AutonomousLoop::from_config(LoopConfig {
+            memory_dir,
+            queue_dir,
+            ..Default::default()
+        })
+        .unwrap();
+        autonomous_loop.update_state(|state| state.gaps_detected = 41);
+
+        autonomous_loop
+            .emit_cycle_receipt(CycleMetrics {
+                iteration: 3,
+                gaps: 4,
+                mode: LoopMode::Additive,
+                ..CycleMetrics::default()
+            })
+            .unwrap();
+
+        let history = autonomous_loop.receipt_history().unwrap();
+        assert_eq!(history.last().unwrap().gaps_detected, 4);
     }
 }

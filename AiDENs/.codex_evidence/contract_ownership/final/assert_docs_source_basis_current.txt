@@ -1,0 +1,6 @@
+COMMAND: bash scripts/assert_docs_source_basis_current.sh
+WORKING_DIRECTORY: /home/sikmindz/Coding/Libraries/AiDENs
+START_TIME: 2026-07-13T16:02:17-05:00
+PASS: no blocking stale source-basis docs detected.
+EXIT_STATUS: 0
+END_TIME: 2026-07-13T16:02:17-05:00

@@ -427,6 +427,16 @@ pub enum CanonicalEventLogError {
         #[source]
         source: serde_json::Error,
     },
+    #[error(
+        "canonical receipt log corruption at {path} line {line_number}: {source}; quarantine error: {quarantine_error:?}"
+    )]
+    CorruptRecord {
+        path: PathBuf,
+        line_number: usize,
+        quarantine_error: Option<String>,
+        #[source]
+        source: serde_json::Error,
+    },
     #[error("canonical receipt digest error: {source}")]
     Digest {
         #[source]
@@ -536,6 +546,7 @@ impl CanonicalEventLog {
             }
         })?;
         let records = read_records(&self.config.records_path)?;
+        validate_record_chain(&records)?;
         if records.iter().any(|record| record.receipt_id == receipt_id) {
             return Err(CanonicalEventLogError::DuplicateReceiptId(receipt_id));
         }
@@ -569,6 +580,7 @@ impl CanonicalEventLog {
             }
         })?;
         let records = read_records(&self.config.records_path)?;
+        validate_record_chain(&records)?;
         if records
             .iter()
             .any(|existing| existing.receipt_id == record.receipt_id)
@@ -895,16 +907,36 @@ fn read_records(path: &Path) -> Result<Vec<CanonicalEventLogEntry>, CanonicalEve
         match serde_json::from_str(&line) {
             Ok(record) => records.push(record),
             Err(source) => {
-                quarantine_corrupt_line(path, index + 1, &line, &source).map_err(|source| {
-                    CanonicalEventLogError::Io {
-                        path: quarantine_path_for(path),
-                        source,
-                    }
-                })?;
+                let quarantine_error = quarantine_corrupt_line(path, index + 1, &line, &source)
+                    .err()
+                    .map(|error| error.to_string());
+                return Err(CanonicalEventLogError::CorruptRecord {
+                    path: path.to_path_buf(),
+                    line_number: index + 1,
+                    quarantine_error,
+                    source,
+                });
             }
         }
     }
     Ok(records)
+}
+
+fn validate_record_chain(records: &[CanonicalEventLogEntry]) -> Result<(), CanonicalEventLogError> {
+    let mut previous_digest: Option<ContentDigest> = None;
+    for (index, record) in records.iter().enumerate() {
+        if record.sequence_number != index as u64
+            || record.previous_record_digest != previous_digest
+            || !record.verify_digest()
+            || !record.verify_record_digest()
+        {
+            return Err(CanonicalEventLogError::ChainVerificationFailed(
+                record.sequence_number,
+            ));
+        }
+        previous_digest = record.record_digest.clone();
+    }
+    Ok(())
 }
 
 fn receipt_store_segment(value: &str) -> String {
@@ -996,6 +1028,42 @@ mod tests {
     }
 
     #[test]
+    fn append_rejects_tampered_existing_chain_without_writing_a_record() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-canonical-receipts-append-tampered-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root)).unwrap();
+        log.append_orchestration_report(
+            "operator-status-report",
+            "report:before-tampering",
+            serde_json::json!({"status": "valid"}),
+        )
+        .unwrap();
+
+        let path = log.config().records_path.clone();
+        let original = std::fs::read_to_string(&path).unwrap();
+        let original_line_count = original.lines().count();
+        let mut tampered: serde_json::Value = serde_json::from_str(original.trim()).unwrap();
+        tampered["body"]["status"] = serde_json::json!("tampered");
+        std::fs::write(&path, serde_json::to_string(&tampered).unwrap() + "\n").unwrap();
+
+        let append_result = log.append_orchestration_report(
+            "operator-status-report",
+            "report:must-not-append",
+            serde_json::json!({"status": "rejected"}),
+        );
+        let records_after_append = std::fs::read_to_string(&path).unwrap();
+
+        assert!(matches!(
+            append_result,
+            Err(CanonicalEventLogError::ChainVerificationFailed(0))
+        ));
+        assert_eq!(records_after_append.lines().count(), original_line_count);
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn phase01_concurrent_canonical_appends_keep_single_digest_chain() {
         let root = std::env::temp_dir().join(format!(
             "aidens-canonical-receipts-concurrent-{}",
@@ -1031,7 +1099,7 @@ mod tests {
     }
 
     #[test]
-    fn phase01_corrupt_trailing_record_is_quarantined_not_history_poisoning() {
+    fn malformed_final_record_is_quarantined_and_fails_closed() {
         let root = std::env::temp_dir().join(format!(
             "aidens-canonical-receipts-corrupt-{}",
             uuid::Uuid::new_v4()
@@ -1053,22 +1121,74 @@ mod tests {
         }
 
         let reopened = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root)).unwrap();
-        let records = reopened.list_records().unwrap();
-        assert_eq!(records.len(), 1);
-        assert!(reopened.verify_chain().unwrap());
+        assert!(matches!(
+            reopened.list_records(),
+            Err(CanonicalEventLogError::CorruptRecord { line_number: 2, .. })
+        ));
+        assert!(matches!(
+            reopened.verify_chain(),
+            Err(CanonicalEventLogError::CorruptRecord { line_number: 2, .. })
+        ));
         let quarantine = quarantine_path_for(&reopened.config().records_path);
         let quarantine_text = std::fs::read_to_string(quarantine).unwrap();
         assert!(quarantine_text.contains("aidens_local_corrupt_receipt_log_line_quarantine"));
         assert!(quarantine_text.contains("not-json"));
-        let appended = reopened
-            .append_orchestration_report(
+        assert!(matches!(
+            reopened.append_orchestration_report(
                 "operator-status-report",
                 "report:after-corruption",
                 serde_json::json!({"status": "continued"}),
-            )
-            .unwrap();
-        assert_eq!(appended.sequence_number, 1);
-        assert!(reopened.verify_chain().unwrap());
+            ),
+            Err(CanonicalEventLogError::CorruptRecord { line_number: 2, .. })
+        ));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn malformed_middle_record_blocks_list_verify_and_append() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-canonical-receipts-corrupt-middle-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(&root)).unwrap();
+        log.append_orchestration_report(
+            "operator-status-report",
+            "report:before-corruption",
+            serde_json::json!({"status": "before"}),
+        )
+        .unwrap();
+        log.append_orchestration_report(
+            "operator-status-report",
+            "report:after-corruption",
+            serde_json::json!({"status": "after"}),
+        )
+        .unwrap();
+
+        let path = log.config().records_path.clone();
+        let records = std::fs::read_to_string(&path).unwrap();
+        let (first, second) = records.split_once('\n').unwrap();
+        std::fs::write(&path, format!("{first}\n{{not-json}}\n{second}")).unwrap();
+
+        let list_result = log.list_records();
+        let verify_result = log.verify_chain();
+        let append_result = log.append_orchestration_report(
+            "operator-status-report",
+            "report:must-not-append",
+            serde_json::json!({"status": "rejected"}),
+        );
+
+        assert!(matches!(
+            list_result,
+            Err(CanonicalEventLogError::CorruptRecord { line_number: 2, .. })
+        ));
+        assert!(matches!(
+            verify_result,
+            Err(CanonicalEventLogError::CorruptRecord { line_number: 2, .. })
+        ));
+        assert!(matches!(
+            append_result,
+            Err(CanonicalEventLogError::CorruptRecord { line_number: 2, .. })
+        ));
         let _ = std::fs::remove_dir_all(root);
     }
 

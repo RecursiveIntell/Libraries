@@ -646,7 +646,18 @@ fn reference_provider_route_value(case: &ReferenceCaseV1) -> Result<Value, Refer
                 (false, false, "unavailable", vec!["ollama-model-missing"])
             }
         }
-        "openai" | "openrouter" | "anthropic" | "openai-compatible" | "compatible" => {
+        "openai-compatible" => {
+            // The bounded HTTP implementation requires an explicit base URL in
+            // addition to a model and environment-only bearer credential.
+            // This reference case intentionally supplies no base URL.
+            (
+                false,
+                false,
+                "unavailable",
+                vec!["openai-compatible-base-url-missing"],
+            )
+        }
+        "openai" | "openrouter" | "anthropic" | "compatible" => {
             if api_key_configured {
                 (
                     true,

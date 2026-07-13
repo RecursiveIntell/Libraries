@@ -46,7 +46,7 @@ patterns=(
   'pub struct MemoryStore'
   'pub struct AppendOnlyMemoryStore'
 )
-allow='(^|/)(target|AIDENS_CODEX_REWRITE_PACK_20260428|docs|handoffs|passes|prompts|schemas)/|semantic-memory-forge/|semantic-memory/|stack-ids/|verification-control/|verification-policy/|verification-adjudication/|recursive-kernel-core/|kernel-execution/|kernel-oracles/|constraint-compiler/|llm-tool-runtime/'
+allow='(^|/)(target|AIDENS_CODEX_REWRITE_PACK_20260428|docs|handoffs|passes|prompts|schemas)/|semantic-memory-forge/|semantic-memory/|stack-ids/|verification-control/|verification-policy/|verification-adjudication/|recursive-kernel-core/|kernel-execution/|kernel-oracles/|constraint-compiler/|llm-tool-runtime/|aidens-governance-kit/'
 found=0
 for pat in "${patterns[@]}"; do
   while IFS= read -r line; do
