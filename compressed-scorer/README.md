@@ -81,8 +81,9 @@ This is the ESP32-S3-facing API: small trait surface, no database types, no sema
 
 | Feature | Default | Meaning |
 |---|---:|---|
-| `fib` | yes | Enables `FibScorerAdapter` over `fib-quant` Gram-table scoring. |
+| `fib` | no | Enables `FibScorerAdapter` over `fib-quant` Gram-table scoring. |
 | `turbo` | yes | Enables `TurboScorerAdapter` over `turbo-quant` prepared-query scoring. |
+| `c-kernels` | yes | Uses the measured native C PerDim scoring kernel; disable for the pure-Rust fallback and toolchain-free cross builds. |
 | `no_std` | no | Builds the trait, candidate list, and `AttentionCache` with `alloc` only. |
 
 For embedded/no_std builds, disable codec features unless the codec dependency itself supports the target:
@@ -94,8 +95,8 @@ cargo +esp check -p compressed-scorer --no-default-features --features no_std --
 
 ## Verification receipts from this integration pass
 
-- `cargo test -p compressed-scorer` -> 21 passed.
-- `cargo test -p compressed-scorer --no-default-features --features no_std` -> 17 passed; 1 ignored.
+- `cargo test -p compressed-scorer --all-features` -> 24 passed; 1 doc-test ignored.
+- `cargo test -p compressed-scorer --no-default-features --features no_std` -> 19 passed; 1 doc-test ignored.
 - `cargo check -p compressed-scorer --no-default-features --features no_std --target riscv32imc-unknown-none-elf` -> passed.
 - `cargo +esp check -p compressed-scorer --no-default-features --features no_std --target xtensa-esp32s3-none-elf -Z build-std=core,alloc` -> passed.
 

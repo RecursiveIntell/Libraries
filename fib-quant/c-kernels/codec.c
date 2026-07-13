@@ -58,6 +58,7 @@ void fq_decode_vector_block(const uint16_t *indices, size_t block_count,
                             const float *codebook, size_t codebook_size,
                             size_t block_dim,
                             float *out_vec) {
+    (void)codebook_size; /* Validated by caller; not needed in gather loop. */
     for (size_t b = 0; b < block_count; b++) {
         size_t idx = (size_t)indices[b];
         /* Caller is responsible for bounds-checking idx < codebook_size

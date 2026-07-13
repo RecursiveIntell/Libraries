@@ -1110,8 +1110,7 @@ impl SharedKVPool {
         }
 
         // Allocate per-head budgets from fragility data.
-        let head_budgets =
-            compressed_scorer::allocate_head_budgets(fragility, budget_config);
+        let head_budgets = compressed_scorer::allocate_head_budgets(fragility, budget_config);
 
         // Compute per-head k (excluding recent_guard — that's a layer-level
         // concept; here we use the raw candidate budget clamped to num_tokens).

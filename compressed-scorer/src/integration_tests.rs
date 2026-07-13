@@ -1,5 +1,8 @@
 //! Integration tests with real fib-quant and turbo-quant codecs
 
+#[cfg(all(feature = "no_std", any(feature = "fib", feature = "turbo")))]
+use alloc::{vec, vec::Vec};
+
 #[cfg(any(feature = "fib", feature = "turbo"))]
 use crate::candidate::search_topk;
 #[cfg(any(feature = "fib", feature = "turbo"))]
@@ -13,10 +16,7 @@ fn test_fib_quant_end_to_end() {
     // Create a scorer — ambient_dim is determined by block_dim in paper_default
     let scorer = match FibScorerAdapter::from_params(4, 4, 32, 7, 42) {
         Ok(s) => s,
-        Err(e) => {
-            eprintln!("Skipping fib-quant test: {e}");
-            return;
-        }
+        Err(_) => return,
     };
 
     let dim = scorer.dim();

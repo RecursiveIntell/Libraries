@@ -1037,6 +1037,7 @@ dependencies = [
 name = "compressed-scorer"
 version = "0.1.0"
 dependencies = [
+ "cc",
  "fib-quant",
  "heapless",
  "libm",
@@ -2054,9 +2055,10 @@ dependencies = [
 
 [[package]]
 name = "fib-quant"
-version = "0.1.0-beta.3"
+version = "0.1.0-beta.4"
 dependencies = [
  "blake3",
+ "cc",
  "criterion 0.7.0",
  "gpu-backend",
  "half",
@@ -6025,7 +6027,7 @@ dependencies = [
 
 [[package]]
 name = "semantic-memory"
-version = "0.5.8"
+version = "0.5.10"
 dependencies = [
  "bitemporal-runtime",
  "blake3",
@@ -6034,6 +6036,7 @@ dependencies = [
  "candle-core",
  "candle-nn",
  "candle-transformers",
+ "cc",
  "chrono",
  "cxx",
  "cxx-build",
@@ -7632,8 +7635,9 @@ dependencies = [
 
 [[package]]
 name = "turbo-quant"
-version = "0.2.1"
+version = "0.2.3"
 dependencies = [
+ "cc",
  "criterion 0.5.1",
  "nalgebra 0.33.3",
  "rand 0.8.6",

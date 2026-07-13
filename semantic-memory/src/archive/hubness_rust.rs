@@ -4,7 +4,8 @@
 //! by the C SIMD kernel in `c-kernels/similarity.c` (via FFI in `hubness.rs`).
 //!
 //! Archived on: 2026-07-12
-//! Reason: Performance — C kernel with GCC auto-vectorization (-O3 -mavx2 -mfma)
+//! Reason: Performance — C kernel with compiler auto-vectorization; AVX2/FMA
+//!         is enabled only for targets that advertise those features.
 //!         replaces the pure-Rust dot product / norm computation.
 //!
 //! The `cosine_similarity` function below is the original pure-Rust version.

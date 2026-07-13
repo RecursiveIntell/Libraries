@@ -35,8 +35,8 @@ extern "C" {
 /// or either is empty.
 ///
 /// The actual computation is delegated to a C SIMD kernel
-/// (`c-kernels/similarity.c`) compiled with `-O3 -mavx2 -mfma` for
-/// auto-vectorized dot product and norm computation.
+/// (`c-kernels/similarity.c`) compiled with optimization enabled. AVX2/FMA
+/// flags are used only when Cargo reports those target features.
 pub fn cosine_similarity(a: &[f32], b: &[f32]) -> Option<f32> {
     if a.len() != b.len() || a.is_empty() {
         return None;
@@ -173,6 +173,17 @@ mod tests {
         let v = [1.0_f32, 2.0, 3.0];
         let s = cosine_similarity(&v, &v).unwrap();
         assert!((s - 1.0).abs() < 1e-6, "expected 1.0, got {s}");
+    }
+
+    #[test]
+    fn cosine_matches_archived_rust_reference() {
+        for dim in [1, 2, 3, 16, 128, 768] {
+            let a: Vec<f32> = (0..dim).map(|i| ((i as f32 + 1.0) * 0.017).sin()).collect();
+            let b: Vec<f32> = (0..dim).map(|i| ((i as f32 + 3.0) * 0.023).cos()).collect();
+            let c = cosine_similarity(&a, &b).unwrap();
+            let rust = crate::archive::hubness_rust::cosine_similarity(&a, &b).unwrap();
+            assert!((c - rust).abs() <= 2.0e-5, "dim={dim}: C={c}, Rust={rust}");
+        }
     }
 
     #[test]

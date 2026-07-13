@@ -4,8 +4,11 @@
 //! the mock embedder (no model download, no Ollama, no network).
 //! Each test gets a fresh temp directory so there is no cross-test state.
 
-use semantic_memory::{AuthorityPermit, GraphEdgeType};
+#[cfg(feature = "full")]
+use semantic_memory::AuthorityPermit;
+use semantic_memory::GraphEdgeType;
 use semantic_memory_mcp::bridge::{BridgeConfig, EmbedderBackend, MemoryBridge};
+#[cfg(feature = "full")]
 use semantic_memory_mcp::server::SemanticMemoryServer;
 
 /// Open a MemoryBridge with the mock embedder in a temp directory.
@@ -23,46 +26,64 @@ fn open_bridge(dir: &std::path::Path) -> MemoryBridge {
     MemoryBridge::open(config).expect("bridge should open")
 }
 
+#[cfg(feature = "full")]
 #[test]
 fn autonomous_profiles_expose_witnessed_search_and_stored_replay() {
-    for profile in ["lean", "standard"] {
-        let dir = tempfile::tempdir().unwrap();
-        let server = SemanticMemoryServer::new(open_bridge(dir.path()), profile);
-        assert!(server.exposes_tool("sm_search_witnessed"));
-        assert!(server.exposes_tool("sm_replay_search"));
-        assert!(server.exposes_tool("sm_decide_assertion_authority"));
-        assert!(server.exposes_tool("sm_decide_action_authority"));
-        assert!(!server.exposes_tool("sm_search"));
-        assert_eq!(
-            server.exposed_tool_names(),
-            vec![
-                "sm_decide_action_authority",
-                "sm_decide_assertion_authority",
-                "sm_replay_search",
-                "sm_search_witnessed",
-            ]
-        );
-        for name in [
-            "sm_decide_assertion_authority",
+    // Lean is the autonomous read-only profile: 4 governed tools only.
+    let dir = tempfile::tempdir().unwrap();
+    let server = SemanticMemoryServer::new(open_bridge(dir.path()), "lean");
+    assert!(server.exposes_tool("sm_search_witnessed"));
+    assert!(server.exposes_tool("sm_replay_search"));
+    assert!(server.exposes_tool("sm_decide_assertion_authority"));
+    assert!(server.exposes_tool("sm_decide_action_authority"));
+    assert!(!server.exposes_tool("sm_search"));
+    assert_eq!(
+        server.exposed_tool_names(),
+        vec![
             "sm_decide_action_authority",
-        ] {
-            let annotations = server.tool_annotations(name).expect("decision metadata");
-            assert_eq!(annotations.read_only_hint, Some(true));
-            assert_ne!(annotations.destructive_hint, Some(true));
-        }
-        for forbidden in [
-            "sm_add_fact",
-            "sm_delete_fact",
-            "sm_delete_namespace",
-            "sm_update_fact",
-            "sm_set_provenance",
-            "sm_record_outcome",
-        ] {
-            assert!(
-                !server.exposes_tool(forbidden),
-                "{profile} exposed {forbidden}"
-            );
-        }
+            "sm_decide_assertion_authority",
+            "sm_replay_search",
+            "sm_search_witnessed",
+        ]
+    );
+    for name in [
+        "sm_decide_assertion_authority",
+        "sm_decide_action_authority",
+    ] {
+        let annotations = server.tool_annotations(name).expect("decision metadata");
+        assert_eq!(annotations.read_only_hint, Some(true));
+        assert_ne!(annotations.destructive_hint, Some(true));
+    }
+    for forbidden in [
+        "sm_add_fact",
+        "sm_delete_fact",
+        "sm_delete_namespace",
+        "sm_update_fact",
+        "sm_set_provenance",
+        "sm_record_outcome",
+    ] {
+        assert!(!server.exposes_tool(forbidden), "lean exposed {forbidden}");
+    }
+
+    // Standard is an exact compatibility alias for lean.
+    let dir2 = tempfile::tempdir().unwrap();
+    let server2 = SemanticMemoryServer::new(open_bridge(dir2.path()), "standard");
+    assert!(server2.exposes_tool("sm_search_witnessed"));
+    assert!(server2.exposes_tool("sm_replay_search"));
+    assert!(server2.exposes_tool("sm_decide_assertion_authority"));
+    assert!(server2.exposes_tool("sm_decide_action_authority"));
+    assert_eq!(server2.exposed_tool_names(), server.exposed_tool_names());
+    for forbidden in [
+        "sm_search",
+        "sm_add_fact",
+        "sm_delete_fact",
+        "sm_delete_namespace",
+        "sm_record_outcome",
+    ] {
+        assert!(
+            !server2.exposes_tool(forbidden),
+            "standard exposed {forbidden}"
+        );
     }
 
     let dir = tempfile::tempdir().unwrap();
@@ -105,6 +126,7 @@ fn autonomous_profiles_expose_witnessed_search_and_stored_replay() {
     assert!(full.exposes_tool("sm_search"));
 }
 
+#[cfg(feature = "full")]
 #[test]
 fn agent_profile_exposes_bounded_daily_memory_surface() {
     let dir = tempfile::tempdir().unwrap();
@@ -145,6 +167,7 @@ fn agent_profile_exposes_bounded_daily_memory_surface() {
     }
 }
 
+#[cfg(feature = "full")]
 #[test]
 fn routing_feedback_is_declared_mutating() {
     let dir = tempfile::tempdir().unwrap();
@@ -301,6 +324,7 @@ mod lifecycle_tests {
         // but the edge should exist
     }
 
+    #[cfg(feature = "full")]
     #[test]
     fn delete_fact_removes_it() {
         let dir = tempfile::tempdir().unwrap();
@@ -387,6 +411,7 @@ mod lifecycle_tests {
     }
 }
 
+#[cfg(feature = "full")]
 mod http_server_tests {
     use super::*;
     use std::io::{Read, Write};
@@ -409,7 +434,14 @@ mod http_server_tests {
         let _enter = rt.enter();
         std::thread::spawn(move || {
             let _guard = handle.enter();
-            semantic_memory_mcp::http_server::start_http_server(port, bridge, handle);
+            semantic_memory_mcp::http_server::start_http_server(
+                port,
+                "test-token",
+                bridge,
+                handle,
+                semantic_memory_mcp::profile::ToolProfile::Full,
+            )
+            .expect("bind HTTP test server");
         });
 
         // Give the server a moment to bind
@@ -420,7 +452,7 @@ mod http_server_tests {
     fn http_get(port: u16, path: &str) -> (String, String) {
         let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
         let request = format!(
-            "GET {} HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n",
+            "GET {} HTTP/1.1\r\nHost: 127.0.0.1\r\nAuthorization: Bearer test-token\r\nConnection: close\r\n\r\n",
             path
         );
         stream.write_all(request.as_bytes()).unwrap();
@@ -436,7 +468,7 @@ mod http_server_tests {
     fn http_post(port: u16, path: &str, body: &str) -> (String, String) {
         let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
         let request = format!(
-            "POST {} HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            "POST {} HTTP/1.1\r\nHost: 127.0.0.1\r\nAuthorization: Bearer test-token\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
             path,
             body.len(),
             body
@@ -485,56 +517,26 @@ mod http_server_tests {
     }
 
     #[test]
-    fn add_and_search_via_http() {
+    fn http_add_fails_closed_without_trusted_authority_issuer() {
         let dir = tempfile::tempdir().unwrap();
         let bridge = open_bridge(dir.path());
         let (port, _rt) = start_http(bridge);
 
-        // Add a fact
-        let (_, add_body) = http_post(
+        let (add_response, add_body) = http_post(
             port,
             "/add",
             r#"{"content": "Hermes Agent is a CLI AI agent by Nous Research.", "namespace": "test"}"#,
         );
         let add_json: serde_json::Value = serde_json::from_str(&add_body).expect("valid JSON");
         assert!(
-            add_json["ok"] == serde_json::Value::Bool(true),
-            "add should return ok=true, got: {}",
-            add_body
+            add_response.contains("503 Service Unavailable"),
+            "got: {add_response}"
         );
-        assert!(
-            add_json["fact_id"].is_string(),
-            "fact_id should be a string"
-        );
-        assert!(
-            add_json["authority_receipt"].is_object(),
-            "HTTP writes must return a durable authority receipt: {add_body}"
-        );
-        assert_eq!(
-            add_json["authority_receipt"]["affected_ids"][0], add_json["fact_id"],
-            "authority receipt must witness the returned fact"
-        );
-
-        // Search for it
-        let (_, search_body) = http_post(
-            port,
-            "/search",
-            r#"{"query": "Hermes Agent CLI", "top_k": 5}"#,
-        );
-        let search_json: serde_json::Value =
-            serde_json::from_str(&search_body).expect("valid JSON");
-        assert_eq!(search_json["ok"], serde_json::Value::Bool(true));
-        let results = search_json["results"]
-            .as_array()
-            .expect("results should be array");
-        assert!(!results.is_empty(), "search should return results");
-        let found = results.iter().any(|r| {
-            r["content"]
-                .as_str()
-                .map(|c| c.contains("Hermes"))
-                .unwrap_or(false)
-        });
-        assert!(found, "should find the Hermes fact in search results");
+        assert_eq!(add_json["ok"], false);
+        assert!(add_json["error"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("trusted authenticated authority issuer"));
     }
 
     #[test]
@@ -581,18 +583,8 @@ mod http_server_tests {
     fn stats_endpoint_returns_counts() {
         let dir = tempfile::tempdir().unwrap();
         let bridge = open_bridge(dir.path());
+        add_fact(&bridge, "Test fact for stats.", "stats");
         let (port, _rt) = start_http(bridge);
-
-        let (add_response, add_body) = http_post(
-            port,
-            "/add",
-            r#"{"content": "Test fact for stats.", "namespace": "stats"}"#,
-        );
-        assert!(
-            add_response.contains("200 OK"),
-            "add should succeed: {}",
-            add_body
-        );
 
         let (_, body) = http_post(port, "/stats", "{}");
         let json: serde_json::Value = serde_json::from_str(&body).expect("valid JSON");
@@ -632,5 +624,81 @@ mod http_server_tests {
         );
         let json: serde_json::Value = serde_json::from_str(&body).expect("valid JSON");
         assert_eq!(json["ok"], serde_json::Value::Bool(false));
+    }
+
+    #[test]
+    fn http_rejects_request_without_authorization() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let (port, _rt) = start_http(bridge);
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let request = "GET /health HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n";
+        stream.write_all(request.as_bytes()).unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        assert!(
+            response.contains("401 Unauthorized"),
+            "expected 401, got: {response}"
+        );
+    }
+
+    #[test]
+    fn http_rejects_request_with_wrong_token() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let (port, _rt) = start_http(bridge);
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let request = "GET /health HTTP/1.1\r\nHost: 127.0.0.1\r\nAuthorization: Bearer wrong\r\nConnection: close\r\n\r\n";
+        stream.write_all(request.as_bytes()).unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        assert!(
+            response.contains("401 Unauthorized"),
+            "expected 401, got: {response}"
+        );
+    }
+
+    #[test]
+    fn http_rejects_lookalike_host() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let (port, _rt) = start_http(bridge);
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let request = "GET /health HTTP/1.1\r\nHost: localhost.evil\r\nAuthorization: Bearer test-token\r\nConnection: close\r\n\r\n";
+        stream.write_all(request.as_bytes()).unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        assert!(response.contains("403 Forbidden"), "got: {response}");
+    }
+
+    #[test]
+    fn occupied_http_port_fails_synchronously() {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let result = semantic_memory_mcp::http_server::start_http_server(
+            port,
+            "test-token",
+            bridge,
+            rt.handle().clone(),
+            semantic_memory_mcp::profile::ToolProfile::Lean,
+        );
+        assert!(result.is_err());
+    }
+}
+
+#[cfg(feature = "full")]
+mod profile_tests {
+    use super::*;
+
+    #[test]
+    fn standard_is_exactly_the_lean_alias() {
+        let dir = tempfile::tempdir().unwrap();
+        let lean = SemanticMemoryServer::new(open_bridge(dir.path()), "lean");
+        let dir2 = tempfile::tempdir().unwrap();
+        let standard = SemanticMemoryServer::new(open_bridge(dir2.path()), "standard");
+        assert_eq!(lean.visible_tool_names(), standard.visible_tool_names());
     }
 }

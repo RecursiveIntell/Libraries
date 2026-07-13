@@ -154,7 +154,8 @@ To reproduce: `cd turbo-quant && cargo run --release --example bench_embeddings`
 ## C Kernels
 
 Starting in v0.2.3, the hot paths in `turbo-quant` are backed by C kernels
-compiled with `-O3 -mavx2 -mfma` via the `cc` crate. The original Rust
+compiled with optimization via the `cc` crate. AVX2/FMA is enabled only when
+the target advertises those features. The original Rust
 implementations are preserved in `src/archive/` with headers documenting the
 replacement.
 
@@ -227,7 +228,7 @@ The full release-claim law is at
 
 Rust 1.75 (2021 edition). Stable features only.
 
-A C compiler (GCC or Clang with AVX2/FMA support) is required for the
+A C compiler (GCC or Clang; AVX2/FMA is optional) is required for the
 C kernel build step via the `cc` crate.
 
 ## Dependencies
@@ -238,7 +239,7 @@ C kernel build step via the `cc` crate.
 - Workspace `Cargo.toml` pin.
 
 C kernels (FWHT, polar, QJL) are compiled at build time via `build.rs`
-with `-O3 -mavx2 -mfma`. The `unsafe` keyword is used in the FFI
+with optimization and target-appropriate SIMD flags. The `unsafe` keyword is used in the FFI
 boundary (`extern "C"` calls); the `unsafe_code` lint is allowed at
 the crate level for these specific modules.
 

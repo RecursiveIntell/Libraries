@@ -18,6 +18,7 @@ use std::vec::Vec;
 use crate::error::{ScorerError, ScorerResult};
 use crate::trait_def::{CompressedScorer, PreparedQuery};
 
+#[cfg(feature = "c-kernels")]
 extern "C" {
     fn cs_per_dim_score(codes: *const u8, dim: usize, lut: *const f32, levels: usize) -> f32;
 }
@@ -224,6 +225,7 @@ impl CompressedScorer for PerDimScorer {
                 "per-dim prepared query lookup table has invalid length".into(),
             ));
         }
+        #[cfg(feature = "c-kernels")]
         let score = unsafe {
             cs_per_dim_score(
                 compressed.codes.as_ptr(),
@@ -232,6 +234,15 @@ impl CompressedScorer for PerDimScorer {
                 prepared.levels,
             )
         };
+        #[cfg(not(feature = "c-kernels"))]
+        let score = compressed
+            .codes
+            .iter()
+            .enumerate()
+            .map(|(i, &code)| {
+                f64::from(prepared.contribution_lut[i * prepared.levels + usize::from(code)])
+            })
+            .sum::<f64>() as f32;
         Ok(score)
     }
 

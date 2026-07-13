@@ -249,8 +249,9 @@ Currently supports `batch = 1, layers = 1, kv_heads = 1` shapes
 ## C Kernels
 
 Starting in v0.1.0-beta.4, the encode/decode and compressed-attention
-hot paths in `fib-quant` are backed by C kernels compiled with
-`-O3 -mavx2 -mfma` via the `cc` crate. The original Rust implementations
+hot paths in `fib-quant` are backed by C kernels compiled with optimization
+via the `cc` crate. AVX2/FMA is enabled only when the target advertises those
+features. The original Rust implementations
 are preserved in `src/archive/` with headers documenting the replacement.
 
 | Kernel | C file | Purpose |
@@ -364,7 +365,7 @@ Rust 1.75 (2021 edition). `#![forbid(unsafe_code)]` at the
 crate level, except the FFI module (`src/ffi.rs`) which uses
 `unsafe` for `extern "C"` calls to the C kernels.
 
-A C compiler (GCC or Clang with AVX2/FMA support) is required for
+A C compiler (GCC or Clang; AVX2/FMA is optional) is required for
 the C kernel build step via the `cc` crate.
 
 ## Dependencies

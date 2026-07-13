@@ -6,6 +6,9 @@
 use crate::error::{ScorerError, ScorerResult};
 use crate::trait_def::{CompressedScorer, PreparedQuery};
 
+#[cfg(feature = "no_std")]
+use alloc::{format, vec::Vec};
+
 use fib_quant::{FibCodeV1, FibPreparedQuery, FibQuantizer, FibScorer};
 
 /// Adapter wrapping fib-quant's FibScorer.

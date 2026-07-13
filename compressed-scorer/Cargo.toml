@@ -23,7 +23,10 @@ fib-quant = { version = "0.1.0-alpha.2", path = "../fib-quant", optional = true,
 turbo-quant = { version = "0.2.1", path = "../turbo-quant", optional = true, default-features = false }
 
 [features]
-default = ["turbo"]
+default = ["turbo", "c-kernels"]
+# Native C hot path. Disable for pure-Rust and cross/no_std builds that do not
+# have a target C compiler; the archived Rust algorithm remains the fallback.
+c-kernels = []
 # Enable fib-quant Gram-table compressed scoring
 # NOTE: Requires fib-quant from source (crates.io version doesn't export FibScorer yet)
 fib = ["dep:fib-quant"]
