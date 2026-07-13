@@ -60,31 +60,77 @@ pub enum CodecDispatch<'a> {
 #[allow(unused_variables)]
 /// Type alias for the fallback decoder closure to avoid clippy::type_complexity.
 type FallbackDecoder<T> = Box<dyn Fn(CodecId, &[u8]) -> Result<T, DecompressError> + Send + Sync>;
+
+#[cfg(not(all(feature = "turbo", feature = "fib", feature = "polar", feature = "qjl")))]
+fn codec_disabled(codec_id: CodecId) -> DecompressError {
+    DecompressError::DecodeFailed(format!("codec {codec_id} is not enabled"))
+}
+
 pub fn build_adapter<T>(_dispatch: CodecDispatch) -> ExactFallbackAdapter<T>
 where
     T: From<Vec<u8>> + Send + Sync + 'static,
 {
-    let fallback_decoder: FallbackDecoder<T> = Box::new(move |codec_id, data| {
-        match codec_id {
-            CodecId::Uncompressed => Ok(T::from(data.to_vec())),
+    let fallback_decoder: FallbackDecoder<T> = Box::new(move |codec_id, data| match codec_id {
+        CodecId::Uncompressed => Ok(T::from(data.to_vec())),
+        CodecId::Q8 => {
             #[cfg(feature = "turbo")]
-            CodecId::TurboQuant => turbo_quant_decode(data).map(T::from),
+            {
+                scalar_quant_decode(data, turbo_quant::ScalarQuantMode::Q8).map(T::from)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::Q4 => {
+            #[cfg(feature = "turbo")]
+            {
+                scalar_quant_decode(data, turbo_quant::ScalarQuantMode::Q4).map(T::from)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::TurboQuant => {
+            #[cfg(feature = "turbo")]
+            {
+                turbo_quant_decode(data).map(T::from)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::FibQuant => {
             #[cfg(feature = "fib")]
-            CodecId::FibQuant => fib_quant_decode(data).map(T::from),
-            // Asymmetric codecs: pass-through (no full reconstruction).
+            {
+                fib_quant_decode(data).map(T::from)
+            }
+            #[cfg(not(feature = "fib"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::Polar => {
             #[cfg(feature = "polar")]
-            CodecId::Polar => Ok(T::from(data.to_vec())),
+            {
+                Ok(T::from(data.to_vec()))
+            }
+            #[cfg(not(feature = "polar"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::Qjl => {
             #[cfg(feature = "qjl")]
-            CodecId::Qjl => Ok(T::from(data.to_vec())),
-            #[cfg(not(any(
-                feature = "turbo",
-                feature = "fib",
-                feature = "polar",
-                feature = "qjl"
-            )))]
-            _ => Err(DecompressError::DecodeFailed(
-                "No codec features enabled".to_string(),
-            )),
+            {
+                Ok(T::from(data.to_vec()))
+            }
+            #[cfg(not(feature = "qjl"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
         }
     });
 
@@ -99,15 +145,19 @@ pub fn select_codec(
     request: GovernanceRequest,
 ) -> Result<CodecId, quant_governor::error::GovernorError> {
     let decision = evaluate(request, policy)?;
-    Ok(match decision.codec {
+    Ok(codec_id_for_profile(decision.codec))
+}
+
+fn codec_id_for_profile(profile: quant_governor::CodecProfile) -> CodecId {
+    match profile {
         quant_governor::CodecProfile::Raw => CodecId::Uncompressed,
-        quant_governor::CodecProfile::Q8 => CodecId::Uncompressed, // Q8 not yet implemented
-        quant_governor::CodecProfile::Q4 => CodecId::Uncompressed, // Q4 not yet implemented
+        quant_governor::CodecProfile::Q8 => CodecId::Q8,
+        quant_governor::CodecProfile::Q4 => CodecId::Q4,
         quant_governor::CodecProfile::Turbo => CodecId::TurboQuant,
         quant_governor::CodecProfile::Fib => CodecId::FibQuant,
         quant_governor::CodecProfile::Polar => CodecId::Polar,
         quant_governor::CodecProfile::Qjl => CodecId::Qjl,
-    })
+    }
 }
 
 // ── Profile construction ──
@@ -159,18 +209,80 @@ pub fn turbo_quant_quantizer(
 pub fn encode(codec_id: CodecId, vector: &[f32], seed: u64) -> Result<Vec<u8>, CompressionError> {
     match codec_id {
         CodecId::Uncompressed => Ok(bytemuck::cast_slice::<f32, u8>(vector).to_vec()),
-        #[cfg(feature = "fib")]
-        CodecId::FibQuant => fib_quant_encode(vector, seed),
-        #[cfg(feature = "turbo")]
-        CodecId::TurboQuant => turbo_quant_encode(vector, seed),
-        #[cfg(feature = "polar")]
-        CodecId::Polar => polar_quant_encode(vector, seed),
-        #[cfg(feature = "qjl")]
-        CodecId::Qjl => qjl_sketch_encode(vector, seed),
-        #[cfg(not(any(feature = "turbo", feature = "fib", feature = "polar", feature = "qjl")))]
-        _ => Err(CompressionError::EncodeFailed(
-            "no codec features enabled".to_string(),
-        )),
+        CodecId::Q8 => {
+            #[cfg(feature = "turbo")]
+            {
+                scalar_quant_encode(vector, turbo_quant::ScalarQuantMode::Q8)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                let _ = (vector, seed);
+                Err(CompressionError::EncodeFailed(format!(
+                    "codec {codec_id} is not enabled"
+                )))
+            }
+        }
+        CodecId::Q4 => {
+            #[cfg(feature = "turbo")]
+            {
+                scalar_quant_encode(vector, turbo_quant::ScalarQuantMode::Q4)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                let _ = (vector, seed);
+                Err(CompressionError::EncodeFailed(format!(
+                    "codec {codec_id} is not enabled"
+                )))
+            }
+        }
+        CodecId::FibQuant => {
+            #[cfg(feature = "fib")]
+            {
+                fib_quant_encode(vector, seed)
+            }
+            #[cfg(not(feature = "fib"))]
+            {
+                Err(CompressionError::EncodeFailed(format!(
+                    "codec {codec_id} is not enabled"
+                )))
+            }
+        }
+        CodecId::TurboQuant => {
+            #[cfg(feature = "turbo")]
+            {
+                turbo_quant_encode(vector, seed)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                Err(CompressionError::EncodeFailed(format!(
+                    "codec {codec_id} is not enabled"
+                )))
+            }
+        }
+        CodecId::Polar => {
+            #[cfg(feature = "polar")]
+            {
+                polar_quant_encode(vector, seed)
+            }
+            #[cfg(not(feature = "polar"))]
+            {
+                Err(CompressionError::EncodeFailed(format!(
+                    "codec {codec_id} is not enabled"
+                )))
+            }
+        }
+        CodecId::Qjl => {
+            #[cfg(feature = "qjl")]
+            {
+                qjl_sketch_encode(vector, seed)
+            }
+            #[cfg(not(feature = "qjl"))]
+            {
+                Err(CompressionError::EncodeFailed(format!(
+                    "codec {codec_id} is not enabled"
+                )))
+            }
+        }
     }
 }
 
@@ -191,19 +303,86 @@ pub fn encode(codec_id: CodecId, vector: &[f32], seed: u64) -> Result<Vec<u8>, C
 pub fn decode(codec_id: CodecId, compressed: &[u8]) -> Result<Vec<u8>, DecompressError> {
     match codec_id {
         CodecId::Uncompressed => Ok(compressed.to_vec()),
-        #[cfg(feature = "fib")]
-        CodecId::FibQuant => fib_quant_decode(compressed),
-        #[cfg(feature = "turbo")]
-        CodecId::TurboQuant => turbo_quant_decode(compressed),
-        #[cfg(feature = "polar")]
-        CodecId::Polar => Ok(compressed.to_vec()),
-        #[cfg(feature = "qjl")]
-        CodecId::Qjl => Ok(compressed.to_vec()),
-        #[cfg(not(any(feature = "turbo", feature = "fib", feature = "polar", feature = "qjl")))]
-        _ => Err(DecompressError::DecodeFailed(
-            "no codec features enabled".to_string(),
-        )),
+        CodecId::Q8 => {
+            #[cfg(feature = "turbo")]
+            {
+                scalar_quant_decode(compressed, turbo_quant::ScalarQuantMode::Q8)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::Q4 => {
+            #[cfg(feature = "turbo")]
+            {
+                scalar_quant_decode(compressed, turbo_quant::ScalarQuantMode::Q4)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::FibQuant => {
+            #[cfg(feature = "fib")]
+            {
+                fib_quant_decode(compressed)
+            }
+            #[cfg(not(feature = "fib"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::TurboQuant => {
+            #[cfg(feature = "turbo")]
+            {
+                turbo_quant_decode(compressed)
+            }
+            #[cfg(not(feature = "turbo"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::Polar => {
+            #[cfg(feature = "polar")]
+            {
+                Ok(compressed.to_vec())
+            }
+            #[cfg(not(feature = "polar"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
+        CodecId::Qjl => {
+            #[cfg(feature = "qjl")]
+            {
+                Ok(compressed.to_vec())
+            }
+            #[cfg(not(feature = "qjl"))]
+            {
+                Err(codec_disabled(codec_id))
+            }
+        }
     }
+}
+
+#[cfg(feature = "turbo")]
+fn scalar_quant_encode(
+    vector: &[f32],
+    mode: turbo_quant::ScalarQuantMode,
+) -> Result<Vec<u8>, CompressionError> {
+    turbo_quant::ScalarQuantWireV1::encode(vector, mode)
+        .map_err(|error| CompressionError::EncodeFailed(format!("scalar quant encode: {error}")))
+}
+
+#[cfg(feature = "turbo")]
+fn scalar_quant_decode(
+    compressed: &[u8],
+    mode: turbo_quant::ScalarQuantMode,
+) -> Result<Vec<u8>, DecompressError> {
+    let decoded = turbo_quant::ScalarQuantWireV1::decode(compressed, mode)
+        .map_err(|error| DecompressError::DecodeFailed(format!("scalar quant decode: {error}")))?;
+    Ok(bytemuck::cast_slice::<f32, u8>(&decoded).to_vec())
 }
 
 // ── fib-quant encode/decode ──
@@ -258,7 +437,7 @@ fn turbo_quant_encode(vector: &[f32], seed: u64) -> Result<Vec<u8>, CompressionE
 /// Decode a previously encoded TurboQuant vector.
 ///
 /// Round-trip is now real: the wire format carries the quantizer profile
-/// (dim, bits, projections, seed, mode) in its 44-byte header, so we can
+/// (dim, bits, projections, seed, mode) in its 46-byte header, so we can
 /// rebuild a `TurboQuantizer` from the wire bytes alone and call
 /// `decode_approximate` to reconstruct the original vector.
 #[cfg(feature = "turbo")]
@@ -376,6 +555,52 @@ mod tests {
         let decoded_bytes = decode(CodecId::Uncompressed, &encoded).unwrap();
         let decoded: &[f32] = bytemuck::cast_slice(&decoded_bytes);
         assert_eq!(v, decoded);
+    }
+
+    #[test]
+    fn every_governor_profile_maps_to_the_same_runtime_codec_identity() {
+        use quant_governor::CodecProfile;
+
+        let cases = [
+            (CodecProfile::Raw, CodecId::Uncompressed),
+            (CodecProfile::Q8, CodecId::Q8),
+            (CodecProfile::Q4, CodecId::Q4),
+            (CodecProfile::Turbo, CodecId::TurboQuant),
+            (CodecProfile::Fib, CodecId::FibQuant),
+            (CodecProfile::Polar, CodecId::Polar),
+            (CodecProfile::Qjl, CodecId::Qjl),
+        ];
+        for (profile, expected) in cases {
+            assert_eq!(codec_id_for_profile(profile), expected);
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "turbo")]
+    fn q8_and_q4_dispatch_apply_selected_symmetric_codec() {
+        let vector = make_vector(128, 91);
+        let raw_len = vector.len() * std::mem::size_of::<f32>();
+
+        for codec in [CodecId::Q8, CodecId::Q4] {
+            let encoded_a = encode(codec, &vector, 1).expect("scalar encode");
+            let encoded_b = encode(codec, &vector, 999).expect("scalar encode");
+            assert_eq!(
+                encoded_a, encoded_b,
+                "scalar encoding ignores dispatch seed"
+            );
+            assert!(encoded_a.len() < raw_len);
+
+            let decoded = decode(codec, &encoded_a).expect("scalar decode");
+            let reconstructed: &[f32] = bytemuck::cast_slice(&decoded);
+            assert_eq!(reconstructed.len(), vector.len());
+            assert!(reconstructed.iter().all(|value| value.is_finite()));
+
+            let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(codec));
+            let adapter_decoded = adapter
+                .decode_exact(codec, &encoded_a)
+                .expect("adapter scalar decode");
+            assert_eq!(adapter_decoded, decoded);
+        }
     }
 
     #[test]

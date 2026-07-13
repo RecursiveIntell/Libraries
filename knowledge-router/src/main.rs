@@ -1,4 +1,4 @@
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 
 use knowledge_runtime::query::classify::classify;
 use knowledge_runtime::query::route::plan;
@@ -36,21 +36,25 @@ fn main() {
     }
 }
 
-fn read_stdin_json() -> serde_json::Value {
+fn read_stdin_json() -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     let mut input = String::new();
-    io::stdin()
-        .read_to_string(&mut input)
-        .expect("failed to read stdin");
+    io::stdin().read_to_string(&mut input)?;
+    parse_json_input(&input).map_err(Into::into)
+}
+
+fn parse_json_input(input: &str) -> serde_json::Result<serde_json::Value> {
     if input.trim().is_empty() {
-        serde_json::Value::Null
+        Ok(serde_json::Value::Null)
     } else {
-        serde_json::from_str(&input).expect("invalid JSON input")
+        serde_json::from_str(input)
     }
 }
 
-fn write_stdout_json(value: &serde_json::Value) {
-    let output = serde_json::to_string_pretty(value).expect("failed to serialize");
-    println!("{output}");
+fn write_stdout_json(value: &serde_json::Value) -> Result<(), Box<dyn std::error::Error>> {
+    let mut stdout = io::stdout();
+    serde_json::to_writer_pretty(&mut stdout, value)?;
+    stdout.write_all(b"\n")?;
+    Ok(())
 }
 
 // ── classify ─────────────────────────────────────────────────────────
@@ -61,10 +65,9 @@ struct ClassifyRequest {
 }
 
 fn cmd_classify() -> Result<(), Box<dyn std::error::Error>> {
-    let req: ClassifyRequest = serde_json::from_value(read_stdin_json())?;
+    let req: ClassifyRequest = serde_json::from_value(read_stdin_json()?)?;
     let result: ClassifyResult = classify(&req.query);
-    write_stdout_json(&serde_json::to_value(&result)?);
-    Ok(())
+    write_stdout_json(&serde_json::to_value(&result)?)
 }
 
 // ── route ────────────────────────────────────────────────────────────
@@ -93,7 +96,7 @@ fn default_limit() -> usize {
 }
 
 fn cmd_route() -> Result<(), Box<dyn std::error::Error>> {
-    let req: RouteRequest = serde_json::from_value(read_stdin_json())?;
+    let req: RouteRequest = serde_json::from_value(read_stdin_json()?)?;
 
     // Build scope from request fields.
     let mut scope = Scope::new(&req.namespace);
@@ -123,8 +126,7 @@ fn cmd_route() -> Result<(), Box<dyn std::error::Error>> {
         route: route_plan,
     };
 
-    write_stdout_json(&serde_json::to_value(&response)?);
-    Ok(())
+    write_stdout_json(&serde_json::to_value(&response)?)
 }
 
 #[cfg(test)]
@@ -136,6 +138,16 @@ mod tests {
         let json = serde_json::json!({"query": "what did I do last week"});
         let req: ClassifyRequest = serde_json::from_value(json).unwrap();
         assert_eq!(req.query, "what did I do last week");
+    }
+
+    #[test]
+    fn parser_rejects_malformed_json_without_panicking() {
+        assert!(parse_json_input("{not json").is_err());
+    }
+
+    #[test]
+    fn parser_accepts_empty_input_as_null() {
+        assert_eq!(parse_json_input("  \n").unwrap(), serde_json::Value::Null);
     }
 
     #[test]
@@ -195,12 +207,7 @@ mod tests {
     fn route_plan_for_temporal() {
         let scope = Scope::new("test");
         let classify_result = classify("what changed last week");
-        let plan = plan(
-            "what changed last week",
-            &classify_result.mode,
-            &scope,
-            10,
-        );
+        let plan = plan("what changed last week", &classify_result.mode, &scope, 10);
         assert_eq!(plan.legs.len(), 1);
         assert_eq!(plan.legs[0].strategy.kind(), "temporal");
     }

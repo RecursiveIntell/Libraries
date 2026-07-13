@@ -177,7 +177,7 @@ mod tests {
     fn test_adapter() -> ExactFallbackAdapter<Vec<u8>> {
         ExactFallbackAdapter::new(Box::new(|codec_id, data| {
             match codec_id {
-                CodecId::Uncompressed => Ok(data.to_vec()),
+                CodecId::Q8 | CodecId::Q4 | CodecId::Uncompressed => Ok(data.to_vec()),
                 CodecId::TurboQuant => {
                     // Simulate turbo-quant decode by reversing the data (fake codec for tests)
                     Ok(data.iter().rev().cloned().collect())

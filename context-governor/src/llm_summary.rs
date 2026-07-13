@@ -472,11 +472,11 @@ fn format_new_messages(messages: &[Message]) -> String {
 }
 
 fn truncate_content(content: &str, max_chars: usize) -> String {
-    if content.len() <= max_chars {
-        content.to_string()
+    let mut chars = content.chars();
+    let truncated: String = chars.by_ref().take(max_chars).collect();
+    if chars.next().is_some() {
+        format!("{truncated}...[truncated]")
     } else {
-        let mut truncated = content[..max_chars].to_string();
-        truncated.push_str("...[truncated]");
         truncated
     }
 }
@@ -822,6 +822,18 @@ The user asked to fix a login bug. The assistant identified the issue in token v
         let result = truncate_content(&long, 500);
         assert!(result.ends_with("...[truncated]"));
         assert!(result.len() < 600);
+    }
+
+    #[test]
+    fn truncate_content_counts_unicode_scalar_characters() {
+        let content = "A😀中B";
+        assert_eq!(truncate_content(content, 3), "A😀中...[truncated]");
+    }
+
+    #[test]
+    fn truncate_content_keeps_exact_unicode_boundary_without_marker() {
+        let content = "😀中";
+        assert_eq!(truncate_content(content, 2), content);
     }
 
     #[test]

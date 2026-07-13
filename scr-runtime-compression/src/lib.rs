@@ -29,6 +29,10 @@ pub use exact_fallback_adapter::ExactFallbackAdapter;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CodecId {
+    /// Per-vector affine signed eight-bit scalar quantization.
+    Q8,
+    /// Per-vector affine signed four-bit scalar quantization, packed two values per byte.
+    Q4,
     /// TurboQuant polar-code + residual-sketch codec.
     TurboQuant,
     /// FibQuant radial-angular codec.
@@ -51,11 +55,34 @@ impl CodecId {
 impl std::fmt::Display for CodecId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Q8 => write!(f, "q8"),
+            Self::Q4 => write!(f, "q4"),
             Self::TurboQuant => write!(f, "turbo_quant"),
             Self::FibQuant => write!(f, "fib_quant"),
             Self::Polar => write!(f, "polar"),
             Self::Qjl => write!(f, "qjl"),
             Self::Uncompressed => write!(f, "uncompressed"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::CodecId;
+
+    #[test]
+    fn scalar_codec_ids_have_stable_wire_and_display_names() {
+        for (codec, name) in [(CodecId::Q8, "q8"), (CodecId::Q4, "q4")] {
+            assert_eq!(codec.to_string(), name);
+            assert_eq!(
+                serde_json::to_string(&codec).unwrap(),
+                format!("\"{name}\"")
+            );
+            assert_eq!(
+                serde_json::from_str::<CodecId>(&format!("\"{name}\"")).unwrap(),
+                codec
+            );
+            assert!(!codec.requires_exact_fallback());
         }
     }
 }
