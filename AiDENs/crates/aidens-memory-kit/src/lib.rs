@@ -444,15 +444,36 @@ impl CanonicalMemoryAdapter {
         &self,
         params: canonical_stack::AddGraphEdgeParams,
     ) -> Result<canonical_stack::StoredGraphEdge, canonical_stack::CanonicalMemoryError> {
-        self.store
-            .add_graph_edge(
-                &params.source,
-                &params.target,
-                params.edge_type,
-                params.weight,
-                params.metadata,
-            )
-            .await
+        match (&params.valid_time, &params.recorded_time) {
+            (Some(valid_time), None) => {
+                let recorded_time = chrono::Utc::now().to_rfc3339();
+                self.store
+                    .add_graph_edge_at(
+                        &params.source,
+                        &params.target,
+                        params.edge_type,
+                        params.weight,
+                        params.metadata,
+                        valid_time,
+                        &recorded_time,
+                    )
+                    .await
+            }
+            (None, None) => {
+                self.store
+                    .add_graph_edge(
+                        &params.source,
+                        &params.target,
+                        params.edge_type,
+                        params.weight,
+                        params.metadata,
+                    )
+                    .await
+            }
+            _ => Err(canonical_stack::CanonicalMemoryError::Other(
+                "recorded_time is store-owned and must not be caller supplied".into(),
+            )),
+        }
     }
 
     pub async fn list_graph_edges(
@@ -676,6 +697,8 @@ mod tests {
             metadata: Some(serde_json::json!({
                 "source": "aidens-memory-kit-test"
             })),
+            valid_time: Some("2025-01-01T00:00:00Z".into()),
+            recorded_time: None,
         };
 
         let edge = match adapter.add_graph_edge(params).await {
@@ -687,6 +710,14 @@ mod tests {
             }
         };
         assert!(!edge.id.is_empty());
+        assert_eq!(
+            edge.valid_time.as_deref(),
+            Some("2025-01-01 00:00:00.000000")
+        );
+        assert!(edge
+            .recorded_time
+            .as_deref()
+            .is_some_and(|time| !time.is_empty()));
 
         let by_node = adapter
             .list_graph_edges("namespace:graph-test-a")

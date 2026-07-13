@@ -4,7 +4,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 
 use crate::error::BitemporalError;
-use crate::types::{BitemporalRecord, SupersessionReceipt};
+use crate::types::{canonical_record_order_key, BitemporalRecord, SupersessionReceipt};
 
 /// Append a new record and mark prior versions as superseded.
 ///
@@ -66,11 +66,11 @@ where
 /// # Returns
 ///
 /// Records valid at `valid_time` as of `recorded_time`.
-pub fn as_of_query<T>(
+pub fn try_as_of_query<T>(
     records: &[BitemporalRecord<T>],
     valid_time: DateTime<Utc>,
     recorded_time: DateTime<Utc>,
-) -> Vec<BitemporalRecord<T>>
+) -> Result<Vec<BitemporalRecord<T>>, BitemporalError>
 where
     T: Clone + Serialize,
 {
@@ -80,9 +80,11 @@ where
 
     for record in records {
         if record.recorded_time <= recorded_time && record.valid_time <= valid_time {
+            let candidate_key = canonical_record_order_key(record)?;
             let existing = latest_by_id.get(&record.id);
             if existing
-                .map(|e| record_order_key(record) > record_order_key(e))
+                .map(|e| Ok(candidate_key > canonical_record_order_key(e)?))
+                .transpose()?
                 .unwrap_or(true)
             {
                 latest_by_id.insert(record.id.clone(), record.clone());
@@ -90,30 +92,38 @@ where
         }
     }
 
-    latest_by_id.into_values().collect()
+    Ok(latest_by_id.into_values().collect())
 }
 
-fn record_order_key<T: Serialize>(
-    record: &BitemporalRecord<T>,
-) -> (DateTime<Utc>, DateTime<Utc>, Vec<u8>) {
-    (
-        record.recorded_time,
-        record.valid_time,
-        serde_json::to_value(&record.value)
-            .ok()
-            .and_then(|value| {
-                boundary_compiler::Canonicalizer::new()
-                    .canonicalize_bytes(&value)
-                    .ok()
-            })
-            .unwrap_or_default(),
-    )
+/// Compatibility query API. Use [`try_as_of_query`] when values may have a
+/// failing serializer so tie-key failures are returned rather than collapsed.
+pub fn as_of_query<T>(
+    records: &[BitemporalRecord<T>],
+    valid_time: DateTime<Utc>,
+    recorded_time: DateTime<Utc>,
+) -> Vec<BitemporalRecord<T>>
+where
+    T: Clone + Serialize,
+{
+    try_as_of_query(records, valid_time, recorded_time).unwrap_or_default()
 }
 
 /// Return full state as of a specific `recorded_time`.
 ///
 /// Returns all records that were current at the given recorded_time,
 /// one record per unique ID (the latest version as of that time).
+pub fn try_temporal_snapshot<T>(
+    records: &[BitemporalRecord<T>],
+    as_of_time: DateTime<Utc>,
+) -> Result<Vec<BitemporalRecord<T>>, BitemporalError>
+where
+    T: Clone + Serialize,
+{
+    try_as_of_query(records, as_of_time, as_of_time)
+}
+
+/// Compatibility snapshot API. Returns an empty snapshot if canonical
+/// identity serialization fails; use [`try_temporal_snapshot`] to observe the error.
 pub fn temporal_snapshot<T>(
     records: &[BitemporalRecord<T>],
     as_of_time: DateTime<Utc>,
@@ -121,7 +131,7 @@ pub fn temporal_snapshot<T>(
 where
     T: Clone + Serialize,
 {
-    as_of_query(records, as_of_time, as_of_time)
+    try_temporal_snapshot(records, as_of_time).unwrap_or_default()
 }
 
 #[cfg(test)]

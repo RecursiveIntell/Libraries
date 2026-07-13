@@ -3,8 +3,8 @@ use crate::executors::{
 };
 use crate::registry::{validate_tool_input_with_canonical_runtime, ToolExecutorV1, ToolRegistryV1};
 use aidens_contracts::{
-    ApprovalRequestV1, CanonicalToolSideEffectClass, PermitUseReportV1, SchemaValidationReportV1,
-    ToolDescriptorV1, ToolInvocationReportV1,
+    ApprovalRequestV1, ArtifactId, CanonicalToolSideEffectClass, PermitUseReportV1,
+    SchemaValidationReportV1, ToolDescriptorV1, ToolInvocationReportV1,
 };
 use aidens_permit_kit::{requires_permit, PermitCheckContextV1, PermitDecisionV1, PermitPolicyV1};
 use serde_json::Value;
@@ -33,6 +33,17 @@ impl ToolDispatcher {
         &self,
         tool_id: &str,
         input: Value,
+    ) -> anyhow::Result<ToolInvocationOutcome> {
+        self.invoke_with_context(tool_id, input, None, None).await
+    }
+
+    /// Invoke after verifying any authority-bearing grant against this exact run attempt.
+    pub async fn invoke_with_context(
+        &self,
+        tool_id: &str,
+        input: Value,
+        run_id: Option<ArtifactId>,
+        attempt_id: Option<ArtifactId>,
     ) -> anyhow::Result<ToolInvocationOutcome> {
         let Some(descriptor) = self.registry.descriptor(tool_id) else {
             let receipt = ToolInvocationReportV1::started(tool_id, input)
@@ -63,7 +74,8 @@ impl ToolDispatcher {
             tool_id.to_string(),
             descriptor.risk_class.clone(),
             sandbox_scope.clone(),
-        );
+        )
+        .with_run_attempt(run_id.clone(), attempt_id.clone());
         let mut permit_use_receipt = None;
         if let Some(grant) = self.permit_policy.grant_for_context(&permit_context) {
             receipt = receipt.with_permit_grant(grant.permit_id.clone());
@@ -71,8 +83,8 @@ impl ToolDispatcher {
                 grant,
                 tool_id.to_string(),
                 sandbox_scope.clone(),
-                None,
-                None,
+                run_id,
+                attempt_id,
             );
             receipt = receipt.with_permit_use(use_receipt.receipt_id.clone());
             permit_use_receipt = Some(use_receipt);

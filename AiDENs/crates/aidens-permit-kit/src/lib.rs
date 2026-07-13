@@ -2,9 +2,11 @@
 
 use aidens_contracts::{
     ApprovalDecisionV1, ApprovalRequestV1, ArtifactId, CanonicalToolSideEffectClass, PermitGrantV1,
-    PermitUseReportV1,
+    PermitUseReportV1, StackContentDigest,
 };
-use std::collections::BTreeSet;
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet};
+use std::path::{Path, PathBuf};
 
 const UNKNOWN_PERMIT_SCOPE_TOKEN: &str = "unknown";
 
@@ -16,6 +18,95 @@ pub enum PermitDecisionV1 {
 }
 
 pub type PermitV1 = PermitGrantV1;
+
+/// Host-loaded permit authority. The authentication key is never serialized or exposed.
+#[derive(Clone)]
+pub struct HostPermitAuthorityV1 {
+    issuer_id: String,
+    key: [u8; 32],
+    revocations: PermitRevocationStoreV1,
+}
+
+impl HostPermitAuthorityV1 {
+    /// Load the process host's authority. Callers cannot supply or register a trust root.
+    pub fn load() -> Result<Self, std::io::Error> {
+        let root = std::env::var_os("AIDENS_HOST_STATE_DIR")
+            .map(PathBuf::from)
+            .ok_or_else(|| std::io::Error::other("AIDENS_HOST_STATE_DIR is not configured"))?;
+        let issuer_id = std::env::var("AIDENS_HOST_PERMIT_ISSUER")
+            .map_err(|_| std::io::Error::other("AIDENS_HOST_PERMIT_ISSUER is not configured"))?;
+        let key_path = root.join("permit-authority-v1.key");
+        let key_bytes = std::fs::read(&key_path)?;
+        let key: [u8; 32] = key_bytes.try_into().map_err(|_| {
+            std::io::Error::other(format!(
+                "{} must contain exactly 32 bytes",
+                key_path.display()
+            ))
+        })?;
+        Ok(Self {
+            issuer_id,
+            key,
+            revocations: PermitRevocationStoreV1::open(root)?,
+        })
+    }
+
+    pub fn issue_for_context(
+        &self,
+        context: &PermitCheckContextV1,
+        granted_by: impl Into<String>,
+    ) -> PermitGrantV1 {
+        let mut grant = PermitGrantV1::scoped(
+            context.risk_class.clone(),
+            context.tool_id.clone(),
+            context.sandbox_root.clone(),
+            granted_by,
+        );
+        grant.run_id = context.run_id.clone();
+        grant.attempt_id = context.attempt_id.clone();
+        grant.scope = format!(
+            "tool={};sandbox={};run={};attempt={}",
+            context.tool_id,
+            context.sandbox_root,
+            context.run_id.as_ref().map_or("", |id| id.0.as_str()),
+            context.attempt_id.as_ref().map_or("", |id| id.0.as_str()),
+        );
+        grant.issuer_id.clone_from(&self.issuer_id);
+        grant.refresh_authority_id();
+        grant.integrity_tag = authentication_tag(&self.key, &grant.authority_material());
+        grant
+    }
+
+    pub fn issue_expiring_for_context(
+        &self,
+        context: &PermitCheckContextV1,
+        granted_by: impl Into<String>,
+        lifetime: chrono::Duration,
+    ) -> Result<PermitGrantV1, std::io::Error> {
+        if lifetime <= chrono::Duration::zero() {
+            return Err(std::io::Error::other("permit lifetime must be positive"));
+        }
+        let mut grant = self.issue_for_context(context, granted_by);
+        grant.expires_at = Some(grant.granted_at + lifetime);
+        grant.refresh_authority_id();
+        grant.integrity_tag = authentication_tag(&self.key, &grant.authority_material());
+        Ok(grant)
+    }
+
+    pub fn policy(&self) -> PermitPolicyV1 {
+        PermitPolicyV1::default()
+            .with_host_trusted_issuer(self.issuer_id.clone(), self.key)
+            .with_revocation_store(self.revocations.clone())
+    }
+
+    pub fn revoke(
+        &self,
+        permit_id: &ArtifactId,
+        revoked_by: impl Into<String>,
+        reason: impl Into<String>,
+    ) -> Result<(), std::io::Error> {
+        self.revocations.revoke(permit_id, revoked_by, reason)
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PermitCheckContextV1 {
@@ -52,13 +143,146 @@ impl PermitCheckContextV1 {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+/// Durable, append-preserving permit revocation registry.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PermitRevocationStoreV1 {
+    path: PathBuf,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+struct PermitRevocationLedgerV1 {
+    #[serde(default)]
+    revocations: BTreeMap<String, PermitRevocationRecordV1>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct PermitRevocationRecordV1 {
+    permit_id: String,
+    revoked_by: String,
+    reason: String,
+    recorded_at_unix_nanos: String,
+}
+
+impl PermitRevocationStoreV1 {
+    pub fn open(root: impl AsRef<Path>) -> Result<Self, std::io::Error> {
+        std::fs::create_dir_all(root.as_ref())?;
+        Ok(Self {
+            path: root.as_ref().join("permit-revocations-v1.json"),
+        })
+    }
+
+    pub fn revoke(
+        &self,
+        permit_id: &ArtifactId,
+        revoked_by: impl Into<String>,
+        reason: impl Into<String>,
+    ) -> Result<(), std::io::Error> {
+        let mut ledger = self.load()?;
+        let recorded_at_unix_nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_err(std::io::Error::other)?
+            .as_nanos()
+            .to_string();
+        ledger
+            .revocations
+            .entry(permit_id.0.clone())
+            .or_insert_with(|| PermitRevocationRecordV1 {
+                permit_id: permit_id.0.clone(),
+                revoked_by: revoked_by.into(),
+                reason: reason.into(),
+                recorded_at_unix_nanos,
+            });
+        let bytes = serde_json::to_vec_pretty(&ledger).map_err(std::io::Error::other)?;
+        let temporary = self.path.with_extension("json.tmp");
+        std::fs::write(&temporary, bytes)?;
+        std::fs::rename(temporary, &self.path)
+    }
+
+    fn is_revoked(&self, permit_id: &ArtifactId) -> Result<bool, std::io::Error> {
+        Ok(self.load()?.revocations.contains_key(&permit_id.0))
+    }
+
+    fn load(&self) -> Result<PermitRevocationLedgerV1, std::io::Error> {
+        match std::fs::read(&self.path) {
+            Ok(bytes) => serde_json::from_slice(&bytes).map_err(std::io::Error::other),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                Ok(PermitRevocationLedgerV1::default())
+            }
+            Err(error) => Err(error),
+        }
+    }
+}
+
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct PermitPolicyV1 {
     granted_risks: BTreeSet<CanonicalToolSideEffectClass>,
     grants: Vec<PermitGrantV1>,
+    trusted_issuers: BTreeMap<String, [u8; 32]>,
+    revoked_permits: BTreeSet<ArtifactId>,
+    revocation_store: Option<PermitRevocationStoreV1>,
+}
+
+impl std::fmt::Debug for PermitPolicyV1 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PermitPolicyV1")
+            .field("granted_risks", &self.granted_risks)
+            .field("grants", &self.grants)
+            .field(
+                "trusted_issuer_ids",
+                &self.trusted_issuers.keys().collect::<Vec<_>>(),
+            )
+            .field("revoked_permits", &self.revoked_permits)
+            .field(
+                "durable_revocation_store",
+                &self
+                    .revocation_store
+                    .as_ref()
+                    .map(|store| store.path.display().to_string()),
+            )
+            .finish()
+    }
 }
 
 impl PermitPolicyV1 {
+    fn with_host_trusted_issuer(mut self, issuer_id: impl Into<String>, key: [u8; 32]) -> Self {
+        self.trusted_issuers.insert(issuer_id.into(), key);
+        self
+    }
+
+    fn with_revocation_store(mut self, store: PermitRevocationStoreV1) -> Self {
+        self.revocation_store = Some(store);
+        self
+    }
+
+    pub fn revoke(mut self, permit_id: &ArtifactId) -> Self {
+        self.revoked_permits.insert(permit_id.clone());
+        self
+    }
+
+    pub fn verify_grant(&self, grant: &PermitGrantV1) -> bool {
+        let has_exact_context = grant.run_id.as_ref().is_some_and(|id| !id.0.is_empty())
+            && grant.attempt_id.as_ref().is_some_and(|id| !id.0.is_empty());
+        let durably_revoked_or_unreadable = self
+            .revocation_store
+            .as_ref()
+            .is_some_and(|store| store.is_revoked(&grant.permit_id).unwrap_or(true));
+        if !has_exact_context
+            || self.revoked_permits.contains(&grant.permit_id)
+            || durably_revoked_or_unreadable
+            || grant.integrity_tag.is_empty()
+        {
+            return false;
+        }
+        let Some(key) = self.trusted_issuers.get(&grant.issuer_id) else {
+            return false;
+        };
+        let mut expected_id = grant.clone();
+        expected_id.refresh_authority_id();
+        if expected_id.permit_id != grant.permit_id {
+            return false;
+        }
+        authentication_tag(key, &grant.authority_material()) == grant.integrity_tag
+    }
     pub fn with_permit(mut self, permit: &PermitV1) -> Self {
         self.granted_risks.insert(permit.risk_class.clone());
         self.grants.push(permit.clone());
@@ -73,7 +297,10 @@ impl PermitPolicyV1 {
 
     pub fn decision_for_risk(&self, risk: &CanonicalToolSideEffectClass) -> PermitDecisionV1 {
         if matches!(risk, CanonicalToolSideEffectClass::ReadOnly)
-            || self.granted_risks.contains(risk)
+            || self
+                .grants
+                .iter()
+                .any(|grant| &grant.risk_class == risk && self.verify_grant(grant))
         {
             PermitDecisionV1::Allow
         } else {
@@ -93,18 +320,31 @@ impl PermitPolicyV1 {
     }
 
     pub fn grant_for_risk(&self, risk: &CanonicalToolSideEffectClass) -> Option<&PermitGrantV1> {
-        self.grants.iter().find(|grant| &grant.risk_class == risk)
+        self.grants
+            .iter()
+            .find(|grant| &grant.risk_class == risk && self.verify_grant(grant))
     }
 
     pub fn grant_for_context(&self, context: &PermitCheckContextV1) -> Option<&PermitGrantV1> {
         self.grants.iter().find(|grant| {
-            grant.matches_scope(
-                &context.risk_class,
-                &context.tool_id,
-                &context.sandbox_root,
-                context.run_id.as_ref(),
-                context.attempt_id.as_ref(),
-            )
+            self.verify_grant(grant)
+                && grant.matches_scope(
+                    &context.risk_class,
+                    &context.tool_id,
+                    &context.sandbox_root,
+                    context.run_id.as_ref(),
+                    context.attempt_id.as_ref(),
+                )
+        })
+    }
+
+    pub fn bound_context_for_tool(&self, tool_id: &str) -> Option<(ArtifactId, ArtifactId)> {
+        self.grants.iter().find_map(|grant| {
+            if grant.tool_id == tool_id && self.verify_grant(grant) {
+                Some((grant.run_id.clone()?, grant.attempt_id.clone()?))
+            } else {
+                None
+            }
         })
     }
 
@@ -186,6 +426,17 @@ impl PermitPolicyV1 {
     }
 }
 
+fn authentication_tag(key: &[u8; 32], material: &str) -> String {
+    let mut authenticated = Vec::with_capacity(32 + material.len() + 32);
+    authenticated.extend_from_slice(b"aidens.permit-auth.v1\0");
+    authenticated.extend_from_slice(key);
+    authenticated.extend_from_slice(&(material.len() as u64).to_be_bytes());
+    authenticated.extend_from_slice(material.as_bytes());
+    StackContentDigest::compute(&authenticated)
+        .hex()
+        .to_string()
+}
+
 pub fn default_decision(risk: &CanonicalToolSideEffectClass) -> PermitDecisionV1 {
     match risk {
         CanonicalToolSideEffectClass::ReadOnly => PermitDecisionV1::Allow,
@@ -201,6 +452,284 @@ pub fn requires_permit(risk: &CanonicalToolSideEffectClass) -> bool {
 mod tests {
     use super::*;
 
+    const TEST_KEY: [u8; 32] = [7; 32];
+
+    fn trusted_issuer() -> HostPermitAuthorityV1 {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-permit-authority-test-{}",
+            std::process::id()
+        ));
+        HostPermitAuthorityV1 {
+            issuer_id: "test-issuer".into(),
+            key: TEST_KEY,
+            revocations: PermitRevocationStoreV1::open(root).unwrap(),
+        }
+    }
+
+    fn host_policy_for_test(grant: PermitGrantV1) -> PermitPolicyV1 {
+        PermitPolicyV1::default()
+            .with_host_trusted_issuer("test-issuer", TEST_KEY)
+            .with_grant(grant)
+    }
+
+    fn host_policy_with_revocation_store_for_test(
+        grant: PermitGrantV1,
+        root: &Path,
+    ) -> PermitPolicyV1 {
+        host_policy_for_test(grant)
+            .with_revocation_store(PermitRevocationStoreV1::open(root).unwrap())
+    }
+
+    #[test]
+    fn caller_constructed_grant_is_not_authority() {
+        let grant = PermitGrantV1::scoped(
+            CanonicalToolSideEffectClass::Write,
+            "aidens:patch-apply:1",
+            "/repo",
+            "caller",
+        );
+        let context = PermitCheckContextV1::new(
+            "aidens:patch-apply:1",
+            CanonicalToolSideEffectClass::Write,
+            "/repo",
+        );
+
+        assert_eq!(
+            PermitPolicyV1::default()
+                .with_host_trusted_issuer("test-issuer", TEST_KEY)
+                .with_grant(grant)
+                .decision_for_context(&context),
+            PermitDecisionV1::RequiresApproval
+        );
+    }
+
+    #[test]
+    fn caller_cannot_self_register_an_issuer_as_host_authority() {
+        let context = PermitCheckContextV1::new(
+            "aidens:patch-apply:1",
+            CanonicalToolSideEffectClass::Write,
+            "/repo",
+        )
+        .with_run_attempt(
+            Some(ArtifactId("run:one".into())),
+            Some(ArtifactId("attempt:one".into())),
+        );
+        let caller_key = [99; 32];
+        let mut grant = PermitGrantV1::scoped(
+            context.risk_class.clone(),
+            context.tool_id.clone(),
+            context.sandbox_root.clone(),
+            "caller",
+        );
+        grant.run_id = context.run_id.clone();
+        grant.attempt_id = context.attempt_id.clone();
+        grant.issuer_id = "caller".into();
+        grant.refresh_authority_id();
+        grant.integrity_tag = authentication_tag(&caller_key, &grant.authority_material());
+
+        assert_eq!(
+            PermitPolicyV1::default()
+                .with_grant(grant)
+                .decision_for_context(&context),
+            PermitDecisionV1::RequiresApproval
+        );
+    }
+
+    #[test]
+    fn signed_grant_requires_exact_nonempty_run_and_attempt_ids() {
+        let issuer = trusted_issuer();
+        for context in [
+            PermitCheckContextV1::new(
+                "aidens:patch-apply:1",
+                CanonicalToolSideEffectClass::Write,
+                "/repo",
+            ),
+            PermitCheckContextV1::new(
+                "aidens:patch-apply:1",
+                CanonicalToolSideEffectClass::Write,
+                "/repo",
+            )
+            .with_run_attempt(
+                Some(ArtifactId(String::new())),
+                Some(ArtifactId("attempt:one".into())),
+            ),
+            PermitCheckContextV1::new(
+                "aidens:patch-apply:1",
+                CanonicalToolSideEffectClass::Write,
+                "/repo",
+            )
+            .with_run_attempt(Some(ArtifactId("run:one".into())), None),
+        ] {
+            let grant = issuer.issue_for_context(&context, "operator");
+            let policy = host_policy_for_test(grant);
+            assert_eq!(
+                policy.decision_for_context(&context),
+                PermitDecisionV1::RequiresApproval
+            );
+        }
+    }
+
+    #[test]
+    fn signature_authenticates_every_mutable_grant_field() {
+        let context = PermitCheckContextV1::new(
+            "aidens:patch-apply:1",
+            CanonicalToolSideEffectClass::Write,
+            "/repo",
+        )
+        .with_run_attempt(
+            Some(ArtifactId("run:one".into())),
+            Some(ArtifactId("attempt:one".into())),
+        );
+        let grant = trusted_issuer().issue_for_context(&context, "operator");
+
+        let mut mutations = Vec::new();
+        let mut granted_at = grant.clone();
+        granted_at.granted_at += std::time::Duration::from_secs(1);
+        mutations.push(granted_at);
+        let mut reasons = grant.clone();
+        reasons.reason_codes.push("caller-added".into());
+        mutations.push(reasons);
+        let mut expiry = grant.clone();
+        expiry.expires_at = Some(grant.granted_at + std::time::Duration::from_secs(3600));
+        mutations.push(expiry);
+
+        for mutated in mutations {
+            assert!(!host_policy_for_test(mutated.clone()).verify_grant(&mutated));
+        }
+    }
+
+    #[test]
+    fn durable_revocation_is_reloaded_before_each_authorization() {
+        let root =
+            std::env::temp_dir().join(format!("aidens-permit-revocation-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let context = PermitCheckContextV1::new(
+            "aidens:patch-apply:1",
+            CanonicalToolSideEffectClass::Write,
+            "/repo",
+        )
+        .with_run_attempt(
+            Some(ArtifactId("run:one".into())),
+            Some(ArtifactId("attempt:one".into())),
+        );
+        let grant = trusted_issuer().issue_for_context(&context, "operator");
+        let policy = host_policy_with_revocation_store_for_test(grant.clone(), &root);
+        assert_eq!(
+            policy.decision_for_context(&context),
+            PermitDecisionV1::Allow
+        );
+
+        PermitRevocationStoreV1::open(&root)
+            .unwrap()
+            .revoke(&grant.permit_id, "operator", "compromised")
+            .unwrap();
+        assert_eq!(
+            policy.decision_for_context(&context),
+            PermitDecisionV1::RequiresApproval
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn trusted_grant_detects_tampering_and_revocation() {
+        let issuer = trusted_issuer();
+        let context = PermitCheckContextV1::new(
+            "aidens:patch-apply:1",
+            CanonicalToolSideEffectClass::Write,
+            "/repo",
+        )
+        .with_run_attempt(
+            Some(ArtifactId("run:one".into())),
+            Some(ArtifactId("attempt:one".into())),
+        );
+        let grant = issuer.issue_for_context(&context, "operator");
+        let policy = PermitPolicyV1::default()
+            .with_host_trusted_issuer("test-issuer", TEST_KEY)
+            .with_grant(grant.clone());
+        assert_eq!(
+            policy.decision_for_context(&context),
+            PermitDecisionV1::Allow
+        );
+
+        let mut tampered = grant.clone();
+        tampered.sandbox_root = "/other".into();
+        let tampered_policy = PermitPolicyV1::default()
+            .with_host_trusted_issuer("test-issuer", TEST_KEY)
+            .with_grant(tampered);
+        assert_eq!(
+            tampered_policy.decision_for_context(&context),
+            PermitDecisionV1::RequiresApproval
+        );
+
+        assert_eq!(
+            policy
+                .revoke(&grant.permit_id)
+                .decision_for_context(&context),
+            PermitDecisionV1::RequiresApproval
+        );
+    }
+
+    #[test]
+    fn permit_and_use_ids_are_replay_stable_and_context_bound() {
+        let issuer = trusted_issuer();
+        let context = PermitCheckContextV1::new(
+            "aidens:patch-apply:1",
+            CanonicalToolSideEffectClass::Write,
+            "/repo",
+        )
+        .with_run_attempt(
+            Some(ArtifactId("run:one".into())),
+            Some(ArtifactId("attempt:one".into())),
+        );
+        let left = issuer.issue_for_context(&context, "operator");
+        let right = left.clone();
+
+        let left_use = PermitUseReportV1::allowed(
+            &left,
+            context.tool_id.clone(),
+            context.sandbox_root.clone(),
+            context.run_id.clone(),
+            context.attempt_id.clone(),
+        );
+        let right_use = PermitUseReportV1::allowed(
+            &right,
+            context.tool_id.clone(),
+            context.sandbox_root.clone(),
+            context.run_id.clone(),
+            context.attempt_id.clone(),
+        );
+        assert_ne!(left_use.receipt_id, right_use.receipt_id);
+
+        let denied_left = PermitUseReportV1::denied(
+            left.permit_id.clone(),
+            context.tool_id.clone(),
+            context.risk_class.clone(),
+            context.sandbox_root.clone(),
+            "expired",
+        );
+        let denied_right = PermitUseReportV1::denied(
+            left.permit_id.clone(),
+            context.tool_id.clone(),
+            context.risk_class.clone(),
+            context.sandbox_root.clone(),
+            "revoked",
+        );
+        assert_ne!(denied_left.receipt_id, denied_right.receipt_id);
+
+        let other_attempt =
+            PermitCheckContextV1::new(context.tool_id, context.risk_class, context.sandbox_root)
+                .with_run_attempt(
+                    Some(ArtifactId("run:one".into())),
+                    Some(ArtifactId("attempt:two".into())),
+                );
+        assert_ne!(
+            left.permit_id,
+            issuer
+                .issue_for_context(&other_attempt, "operator")
+                .permit_id
+        );
+    }
+
     #[test]
     fn write_requires_approval_by_default() {
         assert_eq!(
@@ -211,8 +740,20 @@ mod tests {
 
     #[test]
     fn explicit_permit_allows_matching_risk() {
-        let permit = PermitV1::new(CanonicalToolSideEffectClass::Admin, "repo", "test");
-        let policy = PermitPolicyV1::default().with_permit(&permit);
+        let issuer = trusted_issuer();
+        let context = PermitCheckContextV1::new(
+            "aidens:admin:1",
+            CanonicalToolSideEffectClass::Admin,
+            "repo",
+        )
+        .with_run_attempt(
+            Some(ArtifactId("run:admin".into())),
+            Some(ArtifactId("attempt:admin".into())),
+        );
+        let permit = issuer.issue_for_context(&context, "test");
+        let policy = PermitPolicyV1::default()
+            .with_host_trusted_issuer("test-issuer", TEST_KEY)
+            .with_permit(&permit);
 
         assert_eq!(
             policy.decision_for_risk(&CanonicalToolSideEffectClass::Admin),
@@ -232,28 +773,32 @@ mod tests {
 
     #[test]
     fn scoped_permit_requires_matching_tool_and_sandbox() {
-        let permit = PermitV1::scoped(
-            CanonicalToolSideEffectClass::Write,
-            "aidens:file-write:1",
-            "/repo",
-            "test",
-        );
-        let policy = PermitPolicyV1::default().with_permit(&permit);
+        let issuer = trusted_issuer();
         let matching = PermitCheckContextV1::new(
             "aidens:file-write:1",
             CanonicalToolSideEffectClass::Write,
             "/repo",
+        )
+        .with_run_attempt(
+            Some(ArtifactId("run:write".into())),
+            Some(ArtifactId("attempt:write".into())),
         );
+        let permit = issuer.issue_for_context(&matching, "test");
+        let policy = PermitPolicyV1::default()
+            .with_host_trusted_issuer("test-issuer", TEST_KEY)
+            .with_permit(&permit);
         let wrong_tool = PermitCheckContextV1::new(
             "aidens:shell:1",
             CanonicalToolSideEffectClass::Write,
             "/repo",
-        );
+        )
+        .with_run_attempt(matching.run_id.clone(), matching.attempt_id.clone());
         let wrong_root = PermitCheckContextV1::new(
             "aidens:file-write:1",
             CanonicalToolSideEffectClass::Write,
             "/other",
-        );
+        )
+        .with_run_attempt(matching.run_id.clone(), matching.attempt_id.clone());
 
         assert_eq!(
             policy.decision_for_context(&matching),

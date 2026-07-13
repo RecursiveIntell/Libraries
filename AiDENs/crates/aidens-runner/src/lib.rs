@@ -1502,13 +1502,16 @@ impl TurnExecutorV1 {
                 }
 
                 let invocation = match dispatcher
-                    .invoke(&tool_call.tool_id, tool_call.input.clone())
+                    .invoke_with_context(
+                        &tool_call.tool_id,
+                        tool_call.input.clone(),
+                        Some(ctx.run_id.clone()),
+                        Some(ctx.attempt_id.clone()),
+                    )
                     .await
                 {
                     Ok(outcome) => {
-                        if let Some(mut permit_use_receipt) = outcome.permit_use_receipt {
-                            permit_use_receipt.run_id = Some(ctx.run_id.clone());
-                            permit_use_receipt.attempt_id = Some(ctx.attempt_id.clone());
+                        if let Some(permit_use_receipt) = outcome.permit_use_receipt {
                             run_receipt.permit_use_receipts.push(permit_use_receipt);
                         }
                         outcome.receipt.with_execution_context(&ctx)

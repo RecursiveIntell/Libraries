@@ -13,7 +13,7 @@ doctest = false
 aidens-tool-kit = { version = "0.1.0", path = "../aidens-tool-kit" }
 aidens-contracts = { version = "0.1.0", path = "../aidens-contracts" }
 aidens-memory-kit = { version = "0.1.0", path = "../aidens-memory-kit" }
-semantic-memory = { version = "0.5.8", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
+semantic-memory = { version = "0.5.10", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
 knowledge-runtime = { version = "0.1.0", path = "../../../knowledge-runtime" }
 claim-ledger = { version = "0.2.0", path = "../../../claim-ledger" }
 stack-ids = { version = "0.1.1", path = "../../../stack-ids" }

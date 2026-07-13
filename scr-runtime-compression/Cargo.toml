@@ -22,8 +22,8 @@ chrono = { version = "0.4", features = ["serde"] }
 quant-governor = { version = "0.1.0", path = "../quant-governor" }
 
 # Optional codec dependencies — brought in by feature flags
-turbo-quant = { version = "0.2.1", path = "../turbo-quant", optional = true }
-fib-quant = { version = "0.1.0-alpha.2", path = "../fib-quant", optional = true }
+turbo-quant = { version = "0.2.3", path = "../turbo-quant", optional = true }
+fib-quant = { version = "0.1.0-beta.4", path = "../fib-quant", optional = true }
 
 [features]
 default = ["turbo", "fib", "polar", "qjl"]

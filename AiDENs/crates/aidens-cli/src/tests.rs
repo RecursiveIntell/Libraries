@@ -1,6 +1,6 @@
 use super::*;
 use crate::package::P24_REQUIRED_GATE_COMMANDS;
-use aidens_contracts::{MemoryModeV1, ReportLevelV1};
+use aidens_contracts::{ApprovalRequestV1, MemoryModeV1, ReportLevelV1};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -21,6 +21,18 @@ fn workspace_root() -> PathBuf {
         .nth(2)
         .unwrap()
         .to_path_buf()
+}
+
+fn configure_test_permit_authority() {
+    static ROOT: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+    let root = ROOT.get_or_init(|| {
+        let root = temp_root();
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::write(root.join("permit-authority-v1.key"), [23_u8; 32]).unwrap();
+        root
+    });
+    std::env::set_var("AIDENS_HOST_STATE_DIR", root);
+    std::env::set_var("AIDENS_HOST_PERMIT_ISSUER", "aidens-cli-test-host");
 }
 
 #[test]
@@ -681,10 +693,13 @@ fn inspect_tools_reports_registered_vs_executable() {
 
 #[test]
 fn permit_commands_emit_typed_approval_and_permit_artifacts() {
+    configure_test_permit_authority();
     let request = permit_command(PermitCommand::Request {
         tool_id: "aidens:file-write:1".into(),
         risk: "file-write".into(),
         sandbox_root: "/repo".into(),
+        run_id: "run:cli-test".into(),
+        attempt_id: "attempt:cli-test".into(),
     })
     .unwrap();
     let request: ApprovalRequestV1 = serde_json::from_str(&request).unwrap();
@@ -697,6 +712,9 @@ fn permit_commands_emit_typed_approval_and_permit_artifacts() {
         risk: "file-write".into(),
         sandbox_root: "/repo".into(),
         decided_by: "operator".into(),
+        run_id: "run:cli-test".into(),
+        attempt_id: "attempt:cli-test".into(),
+        expires_in_seconds: 900,
     })
     .unwrap();
     let approval: ApprovalDecisionV1 = serde_json::from_str(&approval).unwrap();
@@ -724,6 +742,7 @@ fn permit_commands_emit_typed_approval_and_permit_artifacts() {
         risk: "file-write".into(),
         sandbox_root: "/repo".into(),
         reason: "expired".into(),
+        revoked_by: "operator".into(),
     })
     .unwrap();
     let revocation: PermitUseReportV1 = serde_json::from_str(&revocation).unwrap();
@@ -735,6 +754,7 @@ fn permit_commands_emit_typed_approval_and_permit_artifacts() {
 
 #[test]
 fn p10_coding_commands_read_propose_apply_and_packetize() {
+    configure_test_permit_authority();
     let root = temp_root();
     std::fs::create_dir_all(&root).unwrap();
     std::fs::write(root.join("README.md"), "hello p10\n").unwrap();
@@ -763,6 +783,8 @@ fn p10_coding_commands_read_propose_apply_and_packetize() {
         tool_id: "aidens:patch-apply:1".into(),
         risk: "file-write".into(),
         sandbox_root: root.canonicalize().unwrap().display().to_string(),
+        run_id: "run:p10-cli".into(),
+        attempt_id: "attempt:p10-cli".into(),
     })
     .unwrap();
     let request: ApprovalRequestV1 = serde_json::from_str(&request).unwrap();
@@ -772,6 +794,9 @@ fn p10_coding_commands_read_propose_apply_and_packetize() {
         risk: "file-write".into(),
         sandbox_root: root.canonicalize().unwrap().display().to_string(),
         decided_by: "operator".into(),
+        run_id: "run:p10-cli".into(),
+        attempt_id: "attempt:p10-cli".into(),
+        expires_in_seconds: 900,
     })
     .unwrap();
 
@@ -1386,7 +1411,7 @@ sandbox_root = "{}"
 }
 
 #[test]
-fn run_coding_agent_records_failed_checks_with_admin_permit() {
+fn run_coding_agent_rejects_untrusted_admin_permit() {
     let root = temp_root();
     let repo = root.join("repo");
     let out = root.join("out");
@@ -1416,24 +1441,24 @@ fn run_coding_agent_records_failed_checks_with_admin_permit() {
         &std::fs::read_to_string(out.join("coding-agent-report.json")).unwrap(),
     )
     .unwrap();
-    assert_eq!(report["semantic_status"], "degraded_exact_check");
+    assert_eq!(report["semantic_status"], "exact_check");
     assert!(report["steps"].as_array().unwrap().iter().any(|step| {
-        step["label"] == "run_checks_permit_gate" && step["status"] == "check_failed"
+        step["label"] == "run_checks_permit_gate" && step["status"] == "blocked_or_failed"
     }));
-    assert_eq!(
-        report["loop_summary"]["failed_checks"][0],
-        "run_checks_permit_gate"
-    );
+    assert!(report["loop_summary"]["failed_checks"]
+        .as_array()
+        .unwrap()
+        .is_empty());
     let bundle: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(out.join("run-bundle.json")).unwrap())
             .unwrap();
-    assert_eq!(bundle["failure"]["class"], "tool-failed");
-    assert_eq!(bundle["failure"]["degraded"], true);
+    assert_eq!(bundle["failure"]["class"], "none");
+    assert_eq!(bundle["failure"]["degraded"], false);
     let _ = std::fs::remove_dir_all(&root);
 }
 
 #[test]
-fn run_coding_agent_applies_patch_and_runs_successful_check_with_scoped_permits() {
+fn run_coding_agent_rejects_untrusted_write_and_admin_permits() {
     let root = temp_root();
     let repo = root.join("repo");
     let out = root.join("out");
@@ -1472,18 +1497,19 @@ fn run_coding_agent_applies_patch_and_runs_successful_check_with_scoped_permits(
     .unwrap();
 
     let readme = std::fs::read_to_string(repo.join("README.md")).unwrap();
-    assert!(readme.contains("[P24 local coding-agent proposed change]"));
+    assert!(!readme.contains("[P24 local coding-agent proposed change]"));
     let report: serde_json::Value = serde_json::from_str(
         &std::fs::read_to_string(out.join("coding-agent-report.json")).unwrap(),
     )
     .unwrap();
     assert_eq!(report["semantic_status"], "exact_check");
-    assert_eq!(report["loop_summary"]["applied_patch"], true);
-    assert_eq!(report["loop_summary"]["changed_files"][0], "README.md");
+    assert_eq!(report["loop_summary"]["applied_patch"], false);
+    assert!(report["loop_summary"]["changed_files"]
+        .as_array()
+        .unwrap()
+        .is_empty());
     assert!(report["steps"].as_array().unwrap().iter().any(|step| {
-        step["label"] == "run_checks_permit_gate"
-            && step["status"] == "success"
-            && step["output"]["succeeded"] == true
+        step["label"] == "run_checks_permit_gate" && step["status"] == "blocked_or_failed"
     }));
     let bundle: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(out.join("run-bundle.json")).unwrap())
@@ -1491,9 +1517,12 @@ fn run_coding_agent_applies_patch_and_runs_successful_check_with_scoped_permits(
     assert_eq!(bundle["failure"]["class"], "none");
     assert_eq!(
         bundle["failure"]["reason_codes"][0],
-        "patch-and-check-loop-succeeded"
+        "side-effect-tools-require-permit-blocked-as-expected"
     );
-    assert!(bundle["permit_receipts"].as_array().unwrap().len() >= 2);
+    assert!(bundle["permit_receipts"]
+        .as_array()
+        .map(Vec::is_empty)
+        .unwrap_or(true));
     let _ = std::fs::remove_dir_all(&root);
 }
 

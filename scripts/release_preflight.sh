@@ -6,6 +6,11 @@ commit=${2:-HEAD}
 root=$(git rev-parse --show-toplevel)
 cd "$root"
 
+# A package assembled from local path dependencies is not reproducible if the
+# declared requirement does not match the package at that path. Run this before
+# checking tree cleanliness so release preflight always reports contract drift.
+python3 scripts/check_path_dependency_versions.py "$root"
+
 git rev-parse --verify "${commit}^{commit}" >/dev/null
 for mode in unstaged staged; do
   if [[ $mode == unstaged ]]; then

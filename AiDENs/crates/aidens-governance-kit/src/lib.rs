@@ -365,10 +365,22 @@ pub struct GovernanceContext {
     policy_snapshot: canonical_stack::PolicySnapshot,
 }
 
+pub struct GovernanceAdjudicationInput<'a> {
+    pub case: &'a canonical_stack::VerificationCase,
+    pub plan: &'a canonical_stack::CheckPlan,
+    pub attempt: &'a canonical_stack::VerificationAttempt,
+    pub control_receipt: &'a canonical_stack::ControlReceipt,
+    pub policy_decision: &'a canonical_stack::PolicyDecision,
+    pub calibration: &'a canonical_stack::CalibrationSnapshot,
+    pub refuted: bool,
+    pub budget_exhausted: bool,
+    pub currently_promoted: bool,
+}
+
 impl GovernanceContext {
     pub fn new(policy: canonical_stack::PolicySnapshot) -> Self {
         Self {
-            adapter: CanonicalGovernanceAdapter::default(),
+            adapter: CanonicalGovernanceAdapter,
             policy_snapshot: policy,
         }
     }
@@ -406,26 +418,18 @@ impl GovernanceContext {
 
     pub fn adjudicate(
         &self,
-        case: &canonical_stack::VerificationCase,
-        plan: &canonical_stack::CheckPlan,
-        attempt: &canonical_stack::VerificationAttempt,
-        control_receipt: &canonical_stack::ControlReceipt,
-        policy_decision: &canonical_stack::PolicyDecision,
-        calibration: &canonical_stack::CalibrationSnapshot,
-        refuted: bool,
-        budget_exhausted: bool,
-        currently_promoted: bool,
+        input: GovernanceAdjudicationInput<'_>,
     ) -> canonical_stack::AdjudicationResult {
         self.adapter.adjudicate_case(
-            case,
-            plan,
-            attempt,
-            control_receipt,
-            policy_decision,
-            calibration,
-            refuted,
-            budget_exhausted,
-            currently_promoted,
+            input.case,
+            input.plan,
+            input.attempt,
+            input.control_receipt,
+            input.policy_decision,
+            input.calibration,
+            input.refuted,
+            input.budget_exhausted,
+            input.currently_promoted,
         )
     }
 }

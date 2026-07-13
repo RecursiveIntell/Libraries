@@ -32,6 +32,16 @@ pub enum ForgeError {
     #[error("command failed (exit {exit_code}): {command}")]
     CommandFailed { command: String, exit_code: i32 },
 
+    #[error("failed to terminate process group {pgid}: {source}")]
+    KillProcessGroup {
+        pgid: i32,
+        #[source]
+        source: std::io::Error,
+    },
+
+    #[error("container cleanup failed for {container}: {reason}")]
+    ContainerCleanup { container: String, reason: String },
+
     #[error("sealed mode unsupported for runtime: {runtime}")]
     SealedModeUnsupported { runtime: String },
 
@@ -100,6 +110,8 @@ impl ForgeError {
             Self::PatchApply(_) => "patch_apply",
             Self::CommandTimeout { .. } => "command_timeout",
             Self::CommandFailed { .. } => "command_failed",
+            Self::KillProcessGroup { .. } => "kill_process_group",
+            Self::ContainerCleanup { .. } => "container_cleanup",
             Self::SealedModeUnsupported { .. } => "sealed_mode_unsupported",
             Self::RemoteModelForbiddenInSealedMode => "remote_model_forbidden",
             Self::NoContainerRuntime => "no_container_runtime",
@@ -175,6 +187,12 @@ impl From<check_runner::RunnerError> for ForgeError {
             },
             check_runner::RunnerError::CommandFailed { command, exit_code } => {
                 Self::CommandFailed { command, exit_code }
+            }
+            check_runner::RunnerError::KillProcessGroup { pgid, source } => {
+                Self::KillProcessGroup { pgid, source }
+            }
+            check_runner::RunnerError::ContainerCleanup { container, reason } => {
+                Self::ContainerCleanup { container, reason }
             }
             check_runner::RunnerError::SealedModeUnsupported { runtime } => {
                 Self::SealedModeUnsupported { runtime }

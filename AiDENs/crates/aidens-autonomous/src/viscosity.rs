@@ -85,23 +85,18 @@ impl Default for ViscositySignal {
 }
 
 /// The computed strictness level for this cycle.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum StrictnessLevel {
     /// I(t) < 0.2 — fast execution, minimal gates, high throughput.
     Fast,
     /// 0.2 ≤ I(t) < 0.5 — normal execution, standard gates.
+    #[default]
     Normal,
     /// 0.5 ≤ I(t) < 0.8 — slow, thorough verification, hostile audit.
     Strict,
     /// I(t) ≥ 0.8 — pause task generation, shift to subtractive mode.
     Frozen,
-}
-
-impl Default for StrictnessLevel {
-    fn default() -> Self {
-        Self::Normal
-    }
 }
 
 impl std::fmt::Display for StrictnessLevel {

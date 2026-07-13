@@ -27,7 +27,7 @@ aidens-boundary-kit = { version = "0.1.0", path = "../aidens-boundary-kit" }
 aidens-receipts = { version = "0.1.0", path = "../aidens-receipts" }
 anyhow = "1"
 serde_json = "1"
-semantic-memory = { version = "0.5.8", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
+semantic-memory = { version = "0.5.10", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 verification-policy = { version = "0.1.0", path = "../../../verification-policy" }
 

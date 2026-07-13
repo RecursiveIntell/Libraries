@@ -363,7 +363,7 @@ fn completion_request_serializes_tool_results_without_empty_substitution() {
         "continue".into(),
         &empty_tool_exposure(),
         &[result],
-        &[request_call.clone()],
+        std::slice::from_ref(&request_call),
     )
     .unwrap();
 
@@ -581,7 +581,7 @@ async fn unexposed_tool_call_is_blocked_before_dispatch() {
 }
 
 #[tokio::test]
-async fn p10_runner_can_apply_patch_with_scoped_permit() {
+async fn p10_runner_rejects_untrusted_scoped_permit() {
     let dir = std::env::temp_dir().join(format!("aidens-p10-runner-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
@@ -613,13 +613,13 @@ async fn p10_runner_can_apply_patch_with_scoped_permit() {
 
     assert_eq!(
         std::fs::read_to_string(dir.join("README.md")).unwrap(),
-        "hello p10 runner\n"
+        "hello p10\n"
     );
-    assert!(output.text.contains("patched:"));
+    assert!(output.text.contains("not exposed") || output.text.contains("blocked"));
     let invocation = &output.receipt.tool_invocation_receipts[0];
     assert_eq!(invocation.tool_id, "aidens:patch-apply:1");
-    assert!(invocation.succeeded);
-    assert!(invocation.permit_use_receipt_id.is_some());
+    assert!(!invocation.succeeded);
+    assert!(invocation.permit_use_receipt_id.is_none());
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -1184,18 +1184,18 @@ async fn p26_plan_act_verify_loop_coding_toolchain_inspect_alias_maps_to_checks_
     let output = loopv.execute("inspect checks").await.unwrap();
     let run_output = output.run_output.as_ref().unwrap();
 
-    assert!(matches!(output.outcome, PlanActVerifyOutcomeV1::Success));
+    assert!(matches!(output.outcome, PlanActVerifyOutcomeV1::Abstained));
     assert_eq!(
         run_output.turn_receipt.final_state,
-        TurnFinalStateV1::FinalOutput
+        TurnFinalStateV1::ToolBlocked
     );
     assert!(run_output
         .receipt
         .tool_invocation_receipts
         .iter()
-        .any(|receipt| receipt.tool_id == "aidens:run-checks:1" && receipt.succeeded));
-    assert_eq!(run_output.receipt.approval_requests.len(), 0);
-    assert!(!run_output.receipt.permit_use_receipts.is_empty());
+        .any(|receipt| receipt.tool_id == "aidens:run-checks:1" && !receipt.succeeded));
+    assert_eq!(run_output.receipt.approval_requests.len(), 1);
+    assert!(run_output.receipt.permit_use_receipts.is_empty());
 }
 
 #[tokio::test]
@@ -1267,7 +1267,7 @@ async fn p26_plan_act_verify_loop_coding_toolchain_rejects_invalid_patch_without
     let output = loopv.execute("apply invalid patch").await.unwrap();
     let turn = output.run_output.as_ref().expect("expected run output");
 
-    assert_eq!(turn.turn_receipt.final_state, TurnFinalStateV1::ToolFailed);
+    assert_eq!(turn.turn_receipt.final_state, TurnFinalStateV1::ToolBlocked);
     assert!(output.repair_plan.is_some());
     assert_eq!(output.outcome, PlanActVerifyOutcomeV1::Abstained);
     assert_eq!(
@@ -1309,16 +1309,12 @@ async fn p26_plan_act_verify_loop_coding_toolchain_applies_with_scoped_permit() 
 
     let output = loopv.execute("apply").await.unwrap();
 
-    assert!(matches!(output.outcome, PlanActVerifyOutcomeV1::Success));
+    assert!(matches!(output.outcome, PlanActVerifyOutcomeV1::Abstained));
     assert!(output.run_output.is_some());
-    assert!(output
-        .verification_receipts
-        .iter()
-        .all(|receipt| receipt.passed));
     let patched_file = dir.join("notes.txt");
     assert!(patched_file.exists());
     let patched_contents = std::fs::read_to_string(&patched_file).unwrap();
-    assert!(patched_contents.contains("permit-gated patch accepted"));
+    assert!(patched_contents.contains("permit-gated patch draft"));
     assert_eq!(
         output
             .run_output
@@ -1327,6 +1323,6 @@ async fn p26_plan_act_verify_loop_coding_toolchain_applies_with_scoped_permit() 
             .receipt
             .approval_requests
             .len(),
-        0
+        1
     );
 }

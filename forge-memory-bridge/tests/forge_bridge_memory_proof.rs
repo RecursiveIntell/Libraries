@@ -201,10 +201,16 @@ fn build_full_envelope_v2() -> ExportEnvelopeV2 {
 
 fn build_full_envelope_v3() -> ExportEnvelopeV3 {
     let envelope_v2 = build_full_envelope_v2();
-    let records = envelope_v2
-        .records
-        .iter()
-        .cloned()
+    let mut source_records = envelope_v2.records.clone();
+    if let ExportRecord::Claim(claim) = &mut source_records[0] {
+        claim.claim_id = Some(ClaimId::new("claim-new"));
+        claim.claim_version_id = Some(ClaimVersionId::new("claim-new-v1"));
+    }
+    if let ExportRecord::Relation(relation) = &mut source_records[1] {
+        relation.relation_version_id = Some(RelationVersionId::new("relation-new-v1"));
+    }
+    let records = source_records
+        .into_iter()
         .enumerate()
         .map(|(idx, record)| ExportRecordV3 {
             record,
@@ -414,6 +420,129 @@ fn build_full_envelope_v3() -> ExportEnvelopeV3 {
     }
 }
 
+fn recompute_v3_digest(envelope: &mut ExportEnvelopeV3) {
+    let digest = ExportEnvelopeV3::compute_digest(
+        &envelope.source_authority,
+        &envelope.scope_key,
+        &envelope.records,
+        envelope.export_meta.as_ref(),
+        envelope.evidence_bundle.as_ref(),
+    )
+    .expect("fixture digest must compute");
+    let digest = ExportEnvelopeV3::compute_digest_with_v13(
+        digest,
+        &envelope.support_sets,
+        &envelope.contradiction_witnesses,
+        &envelope.retraction_records,
+        &envelope.claim_states_v13,
+    )
+    .expect("fixture v13 digest must compute");
+    envelope.content_digest = ExportEnvelopeV3::compute_digest_with_endgame(
+        digest,
+        &envelope.intervention_bundles_v14,
+        &envelope.outcome_schemas_v14,
+        &envelope.cohort_contracts_v14,
+        &envelope.counterfactual_slices_v14,
+        &envelope.experiment_cases_v14,
+        &envelope.comparability_matrices_v14,
+        &envelope.decision_traces_v14,
+        &envelope.refuter_suites_v14,
+        &envelope.refuter_results_v14,
+        &envelope.experiment_budgets_v14,
+        &envelope.rollout_decisions_v14,
+        &envelope.rollback_decisions_v14,
+        &envelope.attestation_envelopes_v15,
+        &envelope.trust_root_sets_v15,
+        &envelope.artifact_admission_policies_v15,
+        &envelope.transparency_receipts_v15,
+        &envelope.attestation_revocations_v15,
+        &envelope.attestation_supersessions_v15,
+        &envelope.remote_oracle_leases_v15,
+        &envelope.remote_slice_requests_v15,
+        &envelope.remote_slice_results_v15,
+        &envelope.cross_runtime_replay_tickets_v15,
+        &envelope.dispute_bundles_v15,
+        &envelope.disclosure_policies_v15,
+        &envelope.disclosure_budgets_v15,
+    )
+    .expect("fixture endgame digest must compute");
+}
+
+#[test]
+fn canonical_v3_rejects_missing_claim_id_with_typed_error() {
+    let mut envelope = build_full_envelope_v3();
+    let ExportRecord::Claim(claim) = &mut envelope.records[0].record else {
+        panic!("fixture must begin with a claim");
+    };
+    claim.claim_id = None;
+    recompute_v3_digest(&mut envelope);
+    let error =
+        transform_envelope_v3(&envelope).expect_err("canonical V3 must reject missing claim ID");
+    assert_eq!(error.kind(), "missing_canonical_claim_id");
+}
+
+#[test]
+fn canonical_v3_rejects_missing_claim_version_id_with_typed_error() {
+    let mut envelope = build_full_envelope_v3();
+    let ExportRecord::Claim(claim) = &mut envelope.records[0].record else {
+        panic!("fixture must begin with a claim");
+    };
+    claim.claim_version_id = None;
+    recompute_v3_digest(&mut envelope);
+    let error = transform_envelope_v3(&envelope)
+        .expect_err("canonical V3 must reject missing claim-version ID");
+    assert_eq!(error.kind(), "missing_canonical_claim_version_id");
+}
+
+#[test]
+fn canonical_v3_rejects_missing_relation_version_id_with_typed_error() {
+    let mut envelope = build_full_envelope_v3();
+    let ExportRecord::Relation(relation) = &mut envelope.records[1].record else {
+        panic!("fixture second record must be a relation");
+    };
+    relation.relation_version_id = None;
+    recompute_v3_digest(&mut envelope);
+    let error = transform_envelope_v3(&envelope)
+        .expect_err("canonical V3 must reject missing relation-version ID");
+    assert_eq!(error.kind(), "missing_canonical_relation_version_id");
+}
+
+#[test]
+fn canonical_v3_rejects_blank_claim_and_version_ids() {
+    let mut envelope = build_full_envelope_v3();
+    let ExportRecord::Claim(claim) = &mut envelope.records[0].record else {
+        panic!("fixture must begin with a claim");
+    };
+    claim.claim_id = Some(ClaimId::new("   "));
+    claim.claim_version_id = Some(ClaimVersionId::new("\t"));
+    recompute_v3_digest(&mut envelope);
+    let error = transform_envelope_v3(&envelope)
+        .expect_err("canonical V3 must reject blank stable identity");
+    assert_eq!(error.kind(), "missing_canonical_claim_id");
+
+    let ExportRecord::Claim(claim) = &mut envelope.records[0].record else {
+        unreachable!();
+    };
+    claim.claim_id = Some(ClaimId::new("claim-nonblank"));
+    recompute_v3_digest(&mut envelope);
+    let error = transform_envelope_v3(&envelope)
+        .expect_err("canonical V3 must reject blank version identity");
+    assert_eq!(error.kind(), "missing_canonical_claim_version_id");
+}
+
+#[test]
+fn canonical_v3_rejects_blank_relation_version_id() {
+    let mut envelope = build_full_envelope_v3();
+    let ExportRecord::Relation(relation) = &mut envelope.records[1].record else {
+        panic!("fixture second record must be a relation");
+    };
+    relation.relation_version_id = Some(RelationVersionId::new(" \n "));
+    recompute_v3_digest(&mut envelope);
+    let error = transform_envelope_v3(&envelope)
+        .expect_err("canonical V3 must reject blank relation version identity");
+    assert_eq!(error.kind(), "missing_canonical_relation_version_id");
+}
+
 #[test]
 fn compat_v2_transform_preserves_records_and_v2_provenance() {
     let envelope = build_full_envelope_v2();
@@ -598,6 +727,20 @@ fn canonical_v3_transform_rejects_missing_episode_id_for_bundle_lane() {
 }
 
 #[test]
+fn canonical_v3_rejects_blank_episode_id() {
+    let mut envelope = build_full_envelope_v3();
+    for record in &mut envelope.records {
+        if let ExportRecord::Episode(episode) = &mut record.record {
+            episode.episode_id = Some(EpisodeId::new(" \t "));
+        }
+    }
+    recompute_v3_digest(&mut envelope);
+    let error = transform_envelope_v3(&envelope)
+        .expect_err("canonical V3 must reject a blank episode identity");
+    assert_eq!(error.kind(), "missing_episode_identity");
+}
+
+#[test]
 fn brg001_v2_transform_is_compatibility_only_shape() {
     let envelope = build_full_envelope_v2();
     let batch = transform_envelope_v2(&envelope).expect("v2 transform must succeed");
@@ -613,8 +756,7 @@ fn brg001_v2_transform_is_compatibility_only_shape() {
 fn brg001_canonical_v3_path_is_normal_default_and_legacy_paths_are_explicit() {
     let envelope_v1 = build_full_envelope();
     let envelope_v2: ExportEnvelopeV2 = envelope_v1.clone().into();
-    let envelope_v3 = ExportEnvelopeV3::try_from(envelope_v2.clone())
-        .expect("compatibility upgrade to V3 should remain supported");
+    let envelope_v3 = build_full_envelope_v3();
 
     let canonical_batch = transform_envelope_v3(&envelope_v3).unwrap();
     let legacy_batch_v1 = transform_envelope(&envelope_v1).unwrap();

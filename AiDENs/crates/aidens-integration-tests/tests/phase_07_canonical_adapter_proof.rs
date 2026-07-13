@@ -336,7 +336,7 @@ fn rich_kernel_batch(namespace: &str, claim_suffixes: &[&str]) -> ProjectionImpo
         .enumerate()
         .map(|(index, suffix)| ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                claim_id: Some(ClaimId::new(format!("claim-phase07-{suffix}"))),
                 claim_version_id: Some(ClaimVersionId::new(format!(
                     "claim-version-phase07-{suffix}"
                 ))),

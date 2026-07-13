@@ -50,30 +50,37 @@ pub struct DbIdentitySpec<'a> {
     pub expected_schema_hash: &'a str,
 }
 
-const ALLOWED_ENV_PREFIXES: &[&str] = &[
+const ALLOWED_ENV_NAMES: &[&str] = &[
     "PATH",
     "HOME",
     "USER",
     "LOGNAME",
     "LANG",
-    "LC_",
     "LANGUAGE",
     "TERM",
     "COLORTERM",
     "SHELL",
-    "CARGO",
-    "RUSTUP",
-    "RUST",
-    "XDG_",
+    "CARGO_HOME",
+    "CARGO_INCREMENTAL",
+    "CARGO_TARGET_DIR",
+    "CARGO_TERM_COLOR",
+    "RUSTUP_HOME",
+    "RUSTUP_TOOLCHAIN",
+    "RUSTC",
+    "RUSTDOC",
+    "RUSTFLAGS",
+    "RUST_BACKTRACE",
     "TMPDIR",
     "TMP",
     "TEMP",
     "CC",
     "CXX",
-    "LD_",
-    "PKG_CONFIG",
-    "SCCACHE",
-    "CCACHE",
+    "LD_LIBRARY_PATH",
+    "PKG_CONFIG_PATH",
+    "PKG_CONFIG_LIBDIR",
+    "SCCACHE_DIR",
+    "RUSTC_WRAPPER",
+    "CCACHE_DIR",
 ];
 
 pub fn verify_sqlite_db_identity(
@@ -324,9 +331,28 @@ pub fn validate_patch_caps(
 }
 
 pub fn is_env_allowed(key: &str) -> bool {
-    ALLOWED_ENV_PREFIXES
-        .iter()
-        .any(|prefix| key.starts_with(prefix))
+    let upper = key.to_ascii_uppercase();
+    if [
+        "SECRET",
+        "TOKEN",
+        "CREDENTIAL",
+        "PASSWORD",
+        "PASSWD",
+        "API_KEY",
+        "ACCESS_KEY",
+        "PRIVATE_KEY",
+        "AUTH",
+        "BEARER",
+        "COOKIE",
+        "SESSION",
+        "_PAT",
+    ]
+    .iter()
+    .any(|marker| upper.contains(marker))
+    {
+        return false;
+    }
+    ALLOWED_ENV_NAMES.contains(&key) || key.starts_with("LC_") || key.starts_with("XDG_")
 }
 
 fn glob_matches(pattern: &str, path: &str) -> bool {
@@ -393,10 +419,25 @@ mod tests {
     }
 
     #[test]
-    fn env_allowlist_matches_expected_prefixes() {
+    fn env_allowlist_accepts_exact_names_and_locale_desktop_prefixes() {
         assert!(is_env_allowed("CARGO_HOME"));
         assert!(is_env_allowed("PATH"));
+        assert!(is_env_allowed("LC_ALL"));
+        assert!(is_env_allowed("XDG_CACHE_HOME"));
+        assert!(!is_env_allowed("PATHETIC"));
+        assert!(!is_env_allowed("CARGO_TOKEN"));
+        assert!(!is_env_allowed("RUST_BACKTRACE_EXTRA"));
         assert!(!is_env_allowed("AWS_SECRET_ACCESS_KEY"));
+    }
+
+    #[test]
+    fn env_allowlist_rejects_secret_names_even_under_allowed_prefixes() {
+        assert!(!is_env_allowed("LC_API_TOKEN"));
+        assert!(!is_env_allowed("XDG_CLIENT_SECRET"));
+        assert!(!is_env_allowed("XDG_DB_CREDENTIAL"));
+        assert!(!is_env_allowed("XDG_AUTHORIZATION"));
+        assert!(!is_env_allowed("XDG_GITHUB_PAT"));
+        assert!(!is_env_allowed("LC_SESSION_COOKIE"));
     }
 
     proptest! {

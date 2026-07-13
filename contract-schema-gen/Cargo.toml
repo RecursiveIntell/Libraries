@@ -21,7 +21,7 @@ semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
 forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
 knowledge-runtime = { version = "0.1.0", path = "../knowledge-runtime" }
 mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime" }
-semantic-memory = { version = "0.5.8", path = "../semantic-memory" }
+semantic-memory = { version = "0.5.10", path = "../semantic-memory" }
 constraint-compiler = { version = "0.1.0", path = "../constraint-compiler" }
 kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
 kernel-oracles = { version = "0.1.0", path = "../kernel-oracles" }

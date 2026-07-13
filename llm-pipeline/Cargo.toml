@@ -17,9 +17,9 @@ yaml = ["llm-output-parser/yaml"]
 openai = []
 
 [dependencies]
-llm-output-parser = { path = "../llm-output-parser" }
-llm-tool-runtime = { path = "../llm-tool-runtime" }
-stack-ids = { path = "../stack-ids" }
+llm-output-parser = { version = "0.2.0", path = "../llm-output-parser" }
+llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12", features = ["json", "stream"] }
 serde = { version = "1", features = ["derive"] }
@@ -36,7 +36,7 @@ tracing = "0.1"
 [dev-dependencies]
 tokio-test = "0.4"
 tempfile = "3"
-forge-engine = { path = "../living-memory/living-memory" }
+forge-engine = { version = "0.2.0", path = "../living-memory/living-memory" }
 
 [[example]]
 name = "basic_pipeline"

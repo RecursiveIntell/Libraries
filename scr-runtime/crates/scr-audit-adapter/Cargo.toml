@@ -7,7 +7,7 @@ license = "MIT"
 
 [dependencies]
 schemars = { workspace = true }
-scr-kernel = { path = "../scr-kernel" }
+scr-kernel = { version = "0.1.0", path = "../scr-kernel" }
 serde = { workspace = true }
 
 [lints]

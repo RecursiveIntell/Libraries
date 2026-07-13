@@ -128,14 +128,12 @@ fn autonomous_profiles_expose_witnessed_search_and_stored_replay() {
 
 #[cfg(feature = "full")]
 #[test]
-fn agent_profile_exposes_bounded_daily_memory_surface() {
+fn agent_profile_is_bounded_read_only_until_trusted_issuer_is_injected() {
     let dir = tempfile::tempdir().unwrap();
     let server = SemanticMemoryServer::new(open_bridge(dir.path()), "agent");
     assert_eq!(
         server.exposed_tool_names(),
         vec![
-            "sm_add_fact",
-            "sm_add_graph_edge",
             "sm_decide_action_authority",
             "sm_decide_assertion_authority",
             "sm_get_fact",
@@ -146,13 +144,15 @@ fn agent_profile_exposes_bounded_daily_memory_surface() {
             "sm_replay_search",
             "sm_search_conversations",
             "sm_search_witnessed",
-            "sm_set_provenance",
             "sm_stats",
-            "sm_supersede_fact",
-            "sm_update_fact",
         ]
     );
     for forbidden in [
+        "sm_add_fact",
+        "sm_add_graph_edge",
+        "sm_set_provenance",
+        "sm_supersede_fact",
+        "sm_update_fact",
         "sm_delete_fact",
         "sm_delete_namespace",
         "sm_import_envelope",

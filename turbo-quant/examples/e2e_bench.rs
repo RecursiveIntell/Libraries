@@ -17,7 +17,7 @@ fn main() {
             seed: 42,
             keep_exact_shadow: true,
         };
-        let cache = KvCacheCompressor::new_runtime(config).unwrap();
+        let mut cache = KvCacheCompressor::new_runtime(config).unwrap();
 
         // Generate 64 tokens worth of K/V
         let tokens = 64;
@@ -35,6 +35,18 @@ fn main() {
                     .collect()
             })
             .collect();
+
+        // Populate the cache whose shadow-attention path is measured below.
+        // The encode benchmark intentionally creates independent caches, but
+        // those temporary values are not the attention workload.
+        for (key, value) in keys.iter().zip(values.iter()) {
+            cache.compress_token(key, value).unwrap();
+        }
+        assert_eq!(
+            cache.len(),
+            tokens,
+            "shadow-attention workload must contain every token"
+        );
 
         // Warmup
         for _ in 0..5 {
@@ -72,11 +84,11 @@ fn main() {
         // Measure shadow attention
         let query: Vec<f32> = (0..dim).map(|i| (i as f32 * 0.023).sin()).collect();
         for _ in 0..5 {
-            let _ = cache.shadow_attention_scores(&query).unwrap();
+            black_box(cache.shadow_attention_scores(&query).unwrap());
         }
         let start = Instant::now();
         for _ in 0..iters {
-            let _ = cache.shadow_attention_scores(black_box(&query)).unwrap();
+            black_box(cache.shadow_attention_scores(black_box(&query)).unwrap());
         }
         let shadow_ns = start.elapsed().as_nanos() as f64 / iters as f64;
 
@@ -91,23 +103,23 @@ fn main() {
 
         // Warmup
         for _ in 0..10 {
-            let _ = q.encode(black_box(&vector)).unwrap();
+            black_box(q.encode(black_box(&vector)).unwrap());
         }
 
         let iters = 1000;
         let start = Instant::now();
         for _ in 0..iters {
-            let _ = q.encode(black_box(&vector)).unwrap();
+            black_box(q.encode(black_box(&vector)).unwrap());
         }
         let encode_ns = start.elapsed().as_nanos() as f64 / iters as f64;
 
         let code = q.encode(&vector).unwrap();
         for _ in 0..10 {
-            let _ = q.decode_approximate(black_box(&code)).unwrap();
+            black_box(q.decode_approximate(black_box(&code)).unwrap());
         }
         let start = Instant::now();
         for _ in 0..iters {
-            let _ = q.decode_approximate(black_box(&code)).unwrap();
+            black_box(q.decode_approximate(black_box(&code)).unwrap());
         }
         let decode_ns = start.elapsed().as_nanos() as f64 / iters as f64;
 
@@ -115,15 +127,17 @@ fn main() {
         let query: Vec<f32> = (0..dim).map(|i| i as f32 / dim as f32 - 0.3_f32).collect();
         let prepared = q.prepare_query(&query).unwrap();
         for _ in 0..10 {
-            let _ = q
-                .inner_product_estimate_prepared(black_box(&code), black_box(&prepared))
-                .unwrap();
+            black_box(
+                q.inner_product_estimate_prepared(black_box(&code), black_box(&prepared))
+                    .unwrap(),
+            );
         }
         let start = Instant::now();
         for _ in 0..iters {
-            let _ = q
-                .inner_product_estimate_prepared(black_box(&code), black_box(&prepared))
-                .unwrap();
+            black_box(
+                q.inner_product_estimate_prepared(black_box(&code), black_box(&prepared))
+                    .unwrap(),
+            );
         }
         let ip_ns = start.elapsed().as_nanos() as f64 / iters as f64;
 

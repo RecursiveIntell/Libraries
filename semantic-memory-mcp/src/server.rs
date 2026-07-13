@@ -3872,72 +3872,19 @@ impl SemanticMemoryServer {
     }
 
     #[tool(
-        description = "Forget a single fact by id through the governed dependency-closure path. Scrubs canonical content and derived FTS/vector/graph/cache/export/replay surfaces while retaining a content-free tombstone receipt. Prefer sm_supersede_fact for corrections.",
+        description = "Forget a single fact by id through the governed dependency-closure path. This build fails closed because no trusted authenticated authority issuer is injected into the MCP composition root.",
         annotations(destructive_hint = true)
     )]
     fn sm_delete_fact(
         &self,
         Parameters(DeleteFactParams { fact_id }): Parameters<DeleteFactParams>,
     ) -> Result<Json<StructuredOutput>, ErrorData> {
-        let bare = fact_id
-            .strip_prefix("fact:")
-            .unwrap_or(&fact_id)
-            .to_string();
-        let store = &self.bridge.store;
-        let fact = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.get_fact_raw_compat(&bare))
-        })
-        .map_err(|e| ErrorData::internal_error(format!("delete_fact lookup error: {e}"), None))?
-        .ok_or_else(|| ErrorData::invalid_params(format!("fact not found: fact:{bare}"), None))?;
-        let origin_record = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.authority().get_origin_authority(&bare))
-        })
-        .map_err(|e| {
-            ErrorData::internal_error(format!("delete_fact origin lookup error: {e}"), None)
-        })?
-        .ok_or_else(|| {
-            ErrorData::invalid_params(
-                format!("fact has no governed origin authority: fact:{bare}"),
-                None,
-            )
-        })?;
-        let resource_principal = origin_record.label.origin_principal;
-        let permit = semantic_memory::AuthorityPermit::operator_system(
-            resource_principal.clone(),
-            "caller:sm_delete_fact",
-            semantic_memory::AuthorityPermit::FORGET_CAPABILITY,
-        )
-        .with_origin(semantic_memory::OriginAuthorityLabelV1::operator_system(
-            &resource_principal,
-            "caller:sm_delete_fact",
-        ));
-        let request = semantic_memory::ForgettingClosureRequestV1::new(
-            vec![bare.clone()],
-            fact.namespace,
-            "explicit MCP fact-forgetting request",
-            4096,
-        );
-        let result = tokio::task::block_in_place(|| {
-            Handle::current().block_on(store.authority().forget(
-                permit,
-                format!("mcp-sm-delete-fact:{}", uuid::Uuid::new_v4()),
-                request,
-            ))
-        });
-        match result {
-            Ok(receipt) => json_to_output(&serde_json::json!({
-                "ok": true,
-                "deleted": false,
-                "forgotten": true,
-                "fact_id": format!("fact:{bare}"),
-                "forgetting_receipt": receipt,
-                "message": "Fact forgotten through governed dependency closure",
-            })),
-            Err(e) => Err(ErrorData::internal_error(
-                format!("delete_fact forgetting error: {e}"),
-                None,
-            )),
-        }
+        let _ = fact_id;
+        Err(ErrorData::invalid_params(
+            "Forgetting gate BLOCKED: no trusted authenticated authority issuer is available to this MCP handler"
+                .to_string(),
+            None,
+        ))
     }
 
     #[tool(
@@ -5866,7 +5813,44 @@ mod correctness_contract_tests {
     }
 
     #[test]
-    fn sm_delete_fact_uses_governed_forgetting_closure() {
+    fn sm_delete_fact_fails_closed_without_trusted_authority_issuer() {
+        let dir = tempfile::tempdir().unwrap();
+        let server = SemanticMemoryServer::new(
+            MemoryBridge::open(BridgeConfig {
+                memory_dir: dir.path().to_path_buf(),
+                embedder_backend: EmbedderBackend::Mock,
+                embedding_url: String::new(),
+                embedding_model: "mock".into(),
+                embedding_dims: 768,
+                turbo_quant_enabled: false,
+                turbo_quant_bits: None,
+                turbo_quant_projections: None,
+            })
+            .unwrap(),
+            "full",
+        );
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let result = runtime.block_on(async {
+            tokio::task::block_in_place(|| {
+                server.sm_delete_fact(Parameters(DeleteFactParams {
+                    fact_id: "fact:untrusted-delete".into(),
+                }))
+            })
+        });
+        let error = match result {
+            Ok(_) => panic!("delete must fail without injected trusted authority"),
+            Err(error) => error,
+        };
+        assert!(error
+            .message
+            .contains("trusted authenticated authority issuer"));
+    }
+
+    // Archived pre-hardening expectation: deletion used to mint operator authority
+    // inside the handler. Keep the fixture source excluded until a trusted composition
+    // root injects an opaque authority capability.
+    #[cfg(any())]
+    fn archived_sm_delete_fact_uses_governed_forgetting_closure() {
         let dir = tempfile::tempdir().unwrap();
         let server = SemanticMemoryServer::new(
             MemoryBridge::open(BridgeConfig {

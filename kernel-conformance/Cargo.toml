@@ -18,7 +18,7 @@ kernel-execution = { version = "0.1.0", path = "../kernel-execution" }
 kernel-oracles = { version = "0.1.0", path = "../kernel-oracles" }
 mechanism-runtime = { version = "0.1.0", path = "../mechanism-runtime" }
 recursive-kernel-core = { version = "0.1.0", path = "../recursive-kernel-core" }
-semantic-memory = { version = "0.5.8", path = "../semantic-memory" }
+semantic-memory = { version = "0.5.10", path = "../semantic-memory" }
 semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
 spec-execution = { version = "0.1.0", path = "../spec-execution" }
 verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }

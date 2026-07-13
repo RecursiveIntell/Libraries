@@ -37,7 +37,7 @@ kernel-oracles = { version = "0.1.0", path = "../../../kernel-oracles" }
 knowledge-runtime = { version = "0.1.0", path = "../../../knowledge-runtime" }
 llm-tool-runtime = { version = "0.1.0", path = "../../../llm-tool-runtime" }
 recursive-kernel-core = { version = "0.1.0", path = "../../../recursive-kernel-core" }
-semantic-memory = { version = "0.5.8", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
+semantic-memory = { version = "0.5.10", path = "../../../semantic-memory", default-features = false, features = ["brute-force"] }
 semantic-memory-forge = { version = "0.1.1", path = "../../../semantic-memory-forge" }
 serde_json = "1"
 stack-ids = { version = "0.1.1", path = "../../../stack-ids" }

@@ -34,7 +34,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 tracing = "0.1"
 
 # Shared identity/trace primitives
-stack-ids = { path = "../stack-ids" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
 
 [dev-dependencies]
 tokio-test = "0.4"

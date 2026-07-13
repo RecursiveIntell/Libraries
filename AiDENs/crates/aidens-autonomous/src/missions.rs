@@ -602,8 +602,8 @@ fn extract_versions(s: &str) -> Vec<String> {
 fn extract_file_paths(s: &str) -> Vec<String> {
     let mut paths = Vec::new();
     // Match paths like /a/b/c.rs or src/lib.rs or crates/foo/Cargo.toml
-    let mut chars = s.char_indices().peekable();
-    while let Some((idx, c)) = chars.next() {
+    let chars = s.char_indices().peekable();
+    for (idx, c) in chars {
         if c == '/'
             || (c.is_ascii_alphabetic() && idx + 3 < s.len() && s[idx..].starts_with("src/")
                 || s[idx..].starts_with("crates/")
@@ -628,15 +628,15 @@ fn extract_file_paths(s: &str) -> Vec<String> {
                 }
             }
             let candidate = &s[idx..end];
-            if candidate.ends_with(".rs")
+            if (candidate.ends_with(".rs")
                 || candidate.ends_with(".toml")
                 || candidate.ends_with(".py")
                 || candidate.ends_with(".md")
-                || candidate.ends_with(".json")
+                || candidate.ends_with(".json"))
+                && candidate.len() > 4
+                && !paths.contains(&candidate.to_string())
             {
-                if candidate.len() > 4 && !paths.contains(&candidate.to_string()) {
-                    paths.push(candidate.to_string());
-                }
+                paths.push(candidate.to_string());
             }
         }
     }
@@ -650,9 +650,7 @@ fn is_stale_date(date_str: &str) -> bool {
 
     // Try full date parse (20XX-MM-DD or 20XX-MM).
     if date_str.len() >= 7 {
-        let parts: Vec<&str> = date_str
-            .split(|c: char| c == '-' || c == '.' || c == '/')
-            .collect();
+        let parts: Vec<&str> = date_str.split(['-', '.', '/']).collect();
         if parts.len() >= 2 {
             if let (Ok(year), Ok(month)) = (parts[0].parse::<i32>(), parts[1].parse::<u32>()) {
                 let day = parts
@@ -681,7 +679,7 @@ fn is_stale_date(date_str: &str) -> bool {
 
 /// Check if a namespace should be skipped (social media / ingestion artifact).
 fn is_skip_namespace(ns: &str) -> bool {
-    SKIP_NAMESPACES.iter().any(|s| *s == ns)
+    SKIP_NAMESPACES.contains(&ns)
 }
 
 /// Count facts per namespace from search results.
@@ -1671,7 +1669,7 @@ mod tests {
     #[test]
     fn find_duplicates_has_broad_queries() {
         let queries = FindDuplicatesMission.search_queries();
-        assert!(queries.len() >= 1);
+        assert!(!queries.is_empty());
         assert!(queries.iter().all(|q| q.top_k >= 20));
     }
 

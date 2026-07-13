@@ -28,21 +28,16 @@ mod sqlite;
 mod types;
 
 pub use error::BitemporalError;
-pub use queries::{append_supersede, as_of_query, temporal_snapshot};
+#[allow(deprecated)]
+pub use queries::{
+    append_supersede, as_of_query, temporal_snapshot, try_as_of_query, try_temporal_snapshot,
+};
 #[cfg(feature = "sqlite")]
-pub use sqlite::SqliteDb;
-pub use types::{BitemporalRecord, RecordId, SupersessionReceipt, SupersessionTarget};
+pub use sqlite::{MigrationReceipt, SqliteDb};
+pub use types::{BitemporalRecord, EventId, RecordId, SupersessionReceipt, SupersessionTarget};
 
 use chrono::{DateTime, Utc};
 use std::collections::BTreeMap;
-
-fn record_order_key(record: &types::BitemporalRecord) -> (DateTime<Utc>, DateTime<Utc>, Vec<u8>) {
-    (
-        record.recorded_time,
-        record.valid_time,
-        serde_json::to_vec(&record.value).unwrap_or_default(),
-    )
-}
 
 /// In-memory bitemporal store for testing and development.
 #[derive(Debug, Clone)]
@@ -71,50 +66,73 @@ impl InMemoryDb {
     }
 
     /// Get all records as a snapshot at a specific recorded_time.
-    pub fn snapshot_at(&self, recorded_time: DateTime<Utc>) -> Vec<types::BitemporalRecord> {
+    pub fn try_snapshot_at(
+        &self,
+        recorded_time: DateTime<Utc>,
+    ) -> Result<Vec<types::BitemporalRecord>, BitemporalError> {
         let mut result = Vec::new();
         for versions in self.records.values() {
             let mut best: Option<&types::BitemporalRecord> = None;
             for v in versions {
-                if v.recorded_time <= recorded_time
-                    && best
-                        .map(|b| record_order_key(v) > record_order_key(b))
+                if v.recorded_time <= recorded_time {
+                    let candidate_key = types::canonical_record_order_key(v)?;
+                    if best
+                        .map(|b| Ok(candidate_key > types::canonical_record_order_key(b)?))
+                        .transpose()?
                         .unwrap_or(true)
-                {
-                    best = Some(v);
+                    {
+                        best = Some(v);
+                    }
                 }
             }
             if let Some(r) = best {
                 result.push(r.clone());
             }
         }
-        result
+        Ok(result)
+    }
+
+    /// Compatibility snapshot API for values whose serializer is infallible.
+    pub fn snapshot_at(&self, recorded_time: DateTime<Utc>) -> Vec<types::BitemporalRecord> {
+        self.try_snapshot_at(recorded_time).unwrap_or_default()
     }
 
     /// Get all records valid at a specific valid_time as of a specific recorded_time.
+    pub fn try_as_of(
+        &self,
+        valid_time: DateTime<Utc>,
+        recorded_time: DateTime<Utc>,
+    ) -> Result<Vec<types::BitemporalRecord>, BitemporalError> {
+        let mut result = Vec::new();
+        for versions in self.records.values() {
+            let mut best: Option<&types::BitemporalRecord> = None;
+            for v in versions {
+                if v.recorded_time <= recorded_time && v.valid_time <= valid_time {
+                    let candidate_key = types::canonical_record_order_key(v)?;
+                    if best
+                        .map(|b| Ok(candidate_key > types::canonical_record_order_key(b)?))
+                        .transpose()?
+                        .unwrap_or(true)
+                    {
+                        best = Some(v);
+                    }
+                }
+            }
+            if let Some(r) = best {
+                result.push(r.clone());
+            }
+        }
+        Ok(result)
+    }
+
+    /// Compatibility as-of API for values whose serializer is infallible.
     pub fn as_of(
         &self,
         valid_time: DateTime<Utc>,
         recorded_time: DateTime<Utc>,
     ) -> Vec<types::BitemporalRecord> {
-        let mut result = Vec::new();
-        for versions in self.records.values() {
-            let mut best: Option<&types::BitemporalRecord> = None;
-            for v in versions {
-                if v.recorded_time <= recorded_time
-                    && v.valid_time <= valid_time
-                    && best
-                        .map(|b| record_order_key(v) > record_order_key(b))
-                        .unwrap_or(true)
-                {
-                    best = Some(v);
-                }
-            }
-            if let Some(r) = best {
-                result.push(r.clone());
-            }
-        }
-        result
+        self.try_as_of(valid_time, recorded_time)
+            .unwrap_or_default()
     }
 
     /// Returns the count of unique record IDs in this store.

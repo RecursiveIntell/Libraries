@@ -57,6 +57,9 @@ pub struct ExecutionResult {
     pub gap_type: String,
     /// The source fact ID that the gap was detected on.
     pub source_fact_id: String,
+    /// Domain-valid time supplied by the source event, kept distinct from storage time.
+    #[serde(default)]
+    pub source_valid_time: String,
 }
 
 /// Executes queued gap-remediation jobs through the plan-act-verify loop.
@@ -134,8 +137,13 @@ impl LoopExecutor {
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .to_string();
+        let source_valid_time = payload
+            .get("valid_time")
+            .and_then(|v| v.as_str())
+            .context("job payload missing source 'valid_time' field")?
+            .to_string();
 
-        self.execute_with_fields(job_id, &prompt, &gap_type, &fact_id)
+        self.execute_with_fields(job_id, &prompt, &gap_type, &fact_id, &source_valid_time)
             .await
     }
 
@@ -146,6 +154,7 @@ impl LoopExecutor {
         prompt: &str,
         gap_type: &str,
         source_fact_id: &str,
+        source_valid_time: &str,
     ) -> Result<ExecutionResult> {
         // Build the plan-act-verify loop.
         let spec = autonomous_agent_spec(&self.chosen_model);
@@ -211,6 +220,7 @@ impl LoopExecutor {
             error,
             gap_type: gap_type.to_string(),
             source_fact_id: source_fact_id.to_string(),
+            source_valid_time: source_valid_time.to_string(),
         })
     }
 }
@@ -415,6 +425,7 @@ mod tests {
             error: None,
             gap_type: "missing-context".to_string(),
             source_fact_id: "fact:abc".to_string(),
+            source_valid_time: "2025-01-01T00:00:00Z".to_string(),
         };
         let json = serde_json::to_string(&result).unwrap();
         let back: ExecutionResult = serde_json::from_str(&json).unwrap();
@@ -506,6 +517,7 @@ mod tests {
             "prompt": "test prompt about gaps",
             "gap_type": "missing-context",
             "fact_id": "fact:test-123",
+            "valid_time": "2025-01-01T00:00:00Z",
         });
 
         // Verify payload parsing works.
@@ -561,6 +573,7 @@ mod debug_tests {
             "prompt": "What is 2+2? Answer in one sentence.",
             "gap_type": "missing-context",
             "fact_id": "test-fact"
+            ,"valid_time": "2025-01-01T00:00:00Z"
         });
 
         let result = executor

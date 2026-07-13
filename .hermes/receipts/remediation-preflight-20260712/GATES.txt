@@ -1,0 +1,159 @@
+captured_at=2026-07-12T19:24:34.190533-05:00
+
+$ (cd /home/sikmindz/Coding/Libraries && tail -80 /tmp/remediation-root-deny.log 2>/dev/null || true)
+exit=0
+├── tauri-macros v2.6.2 (*)
+              ├── tauri-runtime v2.11.2
+              │   ├── tauri v2.11.2 (*)
+              │   └── tauri-runtime-wry v2.11.2
+              │       └── tauri v2.11.2 (*)
+              └── tauri-runtime-wry v2.11.2 (*)
+
+error[vulnerability]: Unbounded namespace-declaration allocation in `NsReader` enables memory-exhaustion denial of service
+    ┌─ /home/sikmindz/Coding/Libraries/Cargo.lock:350:1
+    │
+350 │ quick-xml 0.39.4 registry+https://github.com/rust-lang/crates.io-index
+    │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ security vulnerability detected
+    │
+    ├ ID: RUSTSEC-2026-0195
+    ├ Advisory: https://rustsec.org/advisories/RUSTSEC-2026-0195
+    ├ `NsReader` resolves namespaces by calling `NamespaceResolver::push` for every
+      `Start`/`Empty` event *before* the event is returned to the caller. `push`
+      iterated all `xmlns` / `xmlns:*` attributes on the start tag and, for each one,
+      appended the prefix bytes to an internal buffer and pushed a `NamespaceBinding`
+      (32 bytes on 64-bit) to an internal `Vec`, with no upper bound on the number of
+      declarations.
+      
+      ## Impact
+      
+      A start tag with `N` namespace declarations drove roughly `3×` the tag's byte
+      size in `NamespaceResolver` heap, allocated *inside* `quick-xml` before the
+      `NsReader` consumer ever received the event and could inspect or reject it. A
+      consumer that bounds its *input* size therefore still cannot bound this
+      allocation: an `M`-byte start tag yields on the order of `3 × M` bytes of
+      resolver heap the caller never sees.
+      
+      On untrusted XML this lets a remote, unauthenticated attacker force large heap
+      allocations with a single start tag. With several `NsReader`s running
+      concurrently on independent inputs (a common server pattern), the allocations
+      stack and can exhaust process memory, causing the operating system to kill the
+      process (OOM). This was confirmed against a real-world RPKI relying party (NLnet
+      Labs Routinator), where concurrent RRDP validation workers parsing a crafted
+      `snapshot.xml` exceeded the memory limit and the process was OOM-killed.
+      
+      ## Affected code paths
+      
+      Consumers using `NsReader` (which always calls `NamespaceResolver::push` before
+      yielding `Start`/`Empty`), or calling `NamespaceResolver::push` directly. A plain
+      `Reader` that does not perform namespace resolution is not affected.
+      
+      ## Remediation
+      
+      Upgrade to `quick-xml >= 0.41.0`. `NamespaceResolver::push` now rejects a start
+      tag that declares more than `DEFAULT_MAX_DECLARATIONS_PER_ELEMENT` (256)
+      namespace bindings, returning the new `NamespaceError::TooManyDeclarations`
+      instead of allocating without limit. The limit is configurable via
+      `NamespaceResolver::set_max_declarations_per_element` (use `usize::MAX` to
+      restore the previous unbounded behavior), and `NsReader::resolver_mut()` is
+      provided to reach it.
+      
+      There is no clean workaround for `NsReader` consumers before 0.41.0, as the
+      allocation happens inside the reader with no configuration knob to cap it.
+    ├ Announcement: https://github.com/tafia/quick-xml/issues/970
+    ├ Solution: Upgrade to >=0.41.0 (try `cargo update -p quick-xml`)
+    ├ quick-xml v0.39.4
+      └── plist v1.9.0
+          ├── tauri v2.11.2
+          │   ├── ai-batch-queue v0.2.0
+          │   └── tauri-queue v0.3.0
+          ├── tauri-codegen v2.6.2
+          │   └── tauri-macros v2.6.2
+          │       └── tauri v2.11.2 (*)
+          └── tauri-utils v2.9.2
+              ├── tauri v2.11.2 (*)
+              ├── tauri-build v2.6.2
+              │   └── (build) tauri v2.11.2 (*)
+              ├── tauri-codegen v2.6.2 (*)
+              ├── tauri-macros v2.6.2 (*)
+              ├── tauri-runtime v2.11.2
+              │   ├── tauri v2.11.2 (*)
+              │   └── tauri-runtime-wry v2.11.2
+              │       └── tauri v2.11.2 (*)
+              └── tauri-runtime-wry v2.11.2 (*)
+
+advisories FAILED, bans ok, licenses ok, sources ok
+
+$ (cd /home/sikmindz/Coding/Libraries && tail -80 /tmp/remediation-aidens-test.log 2>/dev/null || true)
+exit=0
+Compiling semantic-memory v0.5.10 (/home/sikmindz/Coding/Libraries/semantic-memory)
+   Compiling aidens-tool-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit)
+   Compiling aidens-delegation-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit)
+   Compiling aidens-provider-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit)
+   Compiling aidens-config v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config)
+   Compiling aidens-testkit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-testkit)
+   Compiling aidens-permit-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit)
+   Compiling aidens-receipts v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-receipts)
+   Compiling aidens-boundary-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit)
+   Compiling aidens-plan-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-plan-kit)
+   Compiling knowledge-runtime v0.1.0 (/home/sikmindz/Coding/Libraries/knowledge-runtime)
+   Compiling forge-engine v0.2.0 (/home/sikmindz/Coding/Libraries/living-memory/living-memory)
+   Compiling kernel-conformance v0.1.0 (/home/sikmindz/Coding/Libraries/kernel-conformance)
+   Compiling aidens-memory-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-memory-kit)
+   Compiling aidens-kernel-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-kernel-kit)
+   Compiling aidens-runner v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner)
+   Compiling aidens-profile-memory v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-memory)
+   Compiling aidens-memory-tools v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-memory-tools)
+   Compiling forge-pilot v0.1.0 (/home/sikmindz/Coding/Libraries/forge-pilot)
+   Compiling aidens-app-kit v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit)
+   Compiling aidens-autonomous v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-autonomous)
+error[E0063]: missing fields `recorded_time` and `valid_time` in initializer of `AddGraphEdgeParams`
+   --> crates/aidens-memory-kit/src/lib.rs:669:22
+    |
+669 |         let params = canonical_stack::AddGraphEdgeParams {
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `recorded_time` and `valid_time`
+
+   Compiling aidens v0.1.0 (/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens)
+For more information about this error, try `rustc --explain E0063`.
+error: could not compile `aidens-memory-kit` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error[E0063]: missing fields `recorded_time` and `valid_time` in initializer of `AddGraphEdgeParams`
+   --> crates/aidens-autonomous/src/capture.rs:145:35
+    |
+145 |                 let edge_params = AddGraphEdgeParams {
+    |                                   ^^^^^^^^^^^^^^^^^^ missing `recorded_time` and `valid_time`
+
+error: could not compile `aidens-autonomous` (lib) due to 1 previous error
+error: could not compile `aidens-autonomous` (lib test) due to 1 previous error
+
+$ (cd /home/sikmindz/Coding/Libraries && for d in /home/sikmindz/.hermes/context-governor /home/sikmindz/.hermes/context-governor-store /home/sikmindz/.local/share/context-governor/receipts; do /home/sikmindz/.cargo/bin/context-governor status --dir "$d"; done)
+exit=0
+{
+  "schema": "FileContextStoreStatusV1",
+  "root": "/home/sikmindz/.hermes/context-governor",
+  "receipt_count": 60,
+  "total_bytes": 13475264,
+  "stale_tmp_files_removed": 0,
+  "index_built": true,
+  "searchable": true,
+  "last_receipt": "ctxr_ec12c5e44216441b95cd386d88eb832f"
+}
+{
+  "schema": "FileContextStoreStatusV1",
+  "root": "/home/sikmindz/.hermes/context-governor-store",
+  "receipt_count": 4,
+  "total_bytes": 10427505,
+  "stale_tmp_files_removed": 0,
+  "index_built": true,
+  "searchable": true,
+  "last_receipt": "ctxr_a152faa2cae2491b99bf4eb4d683b00e"
+}
+{
+  "schema": "FileContextStoreStatusV1",
+  "root": "/home/sikmindz/.local/share/context-governor/receipts",
+  "receipt_count": 126,
+  "total_bytes": 773236,
+  "stale_tmp_files_removed": 0,
+  "index_built": true,
+  "searchable": true,
+  "last_receipt": "ctxr_0edf18502eb24e7b9c954d3c9d1c8c26"
+}

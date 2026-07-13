@@ -492,7 +492,7 @@ impl AutonomousLoop {
                 let final_disposition =
                     if should_audit && effective_disposition == FactDisposition::Promote {
                         if let Some(audit_gate) = &self.hostile_audit {
-                            match audit_gate.audit(&exec_result.output, &fact_id).await {
+                            match audit_gate.audit(&exec_result.output, fact_id).await {
                                 Ok(audit_result) if !audit_result.survived => {
                                     FactDisposition::Quarantine
                                 }
@@ -737,19 +737,18 @@ impl AutonomousLoop {
 
         // Get top domains to explore from entropy-gradient searcher.
         // Must not hold std::sync::MutexGuard across .await (not Send).
-        let targets = {
-            let searcher = self.entropy_search.lock();
-            match searcher {
-                Ok(s) => {
-                    // Clone the http_base_url so we can make a new searcher
-                    // outside the guard to avoid holding it across .await.
-                    let url = s.http_base_url.clone();
-                    drop(s);
-                    let temp_searcher = EntropyGradientSearcher::new(&url);
-                    temp_searcher.next_targets(5).await.unwrap_or_default()
-                }
-                Err(_) => Vec::new(),
-            }
+        let search_url = self
+            .entropy_search
+            .lock()
+            .ok()
+            .map(|searcher| searcher.http_base_url.clone());
+        let targets = if let Some(url) = search_url {
+            EntropyGradientSearcher::new(&url)
+                .next_targets(5)
+                .await
+                .unwrap_or_default()
+        } else {
+            Vec::new()
         };
 
         if targets.is_empty() {
@@ -1119,17 +1118,16 @@ mod tests {
 
     #[test]
     fn loop_state_tracks_progress() {
-        let mut state = LoopState::default();
-
-        // Simulate some progress.
-        state.iteration = 5;
-        state.gaps_detected = 3;
-        state.tasks_generated = 3;
-        state.tasks_completed = 2;
-        state.tasks_failed = 1;
-        state.facts_captured = 2;
-        state.consecutive_failures = 0;
-        state.current_job = Some("job:123".to_string());
+        let state = LoopState {
+            iteration: 5,
+            gaps_detected: 3,
+            tasks_generated: 3,
+            tasks_completed: 2,
+            tasks_failed: 1,
+            facts_captured: 2,
+            current_job: Some("job:123".to_string()),
+            ..Default::default()
+        };
 
         assert_eq!(state.iteration, 5);
         assert_eq!(state.gaps_detected, 3);
@@ -1140,10 +1138,12 @@ mod tests {
 
     #[test]
     fn loop_state_enters_safe_mode() {
-        let mut state = LoopState::default();
-        state.consecutive_failures = 5;
-        state.safe_mode = true;
-        state.last_error = Some("safe mode activated".to_string());
+        let state = LoopState {
+            consecutive_failures: 5,
+            safe_mode: true,
+            last_error: Some("safe mode activated".to_string()),
+            ..Default::default()
+        };
 
         assert!(state.safe_mode);
         assert_eq!(state.consecutive_failures, 5);
@@ -1245,8 +1245,8 @@ mod tests {
             model_url: "http://localhost:11434".to_string(),
             chosen_model: "test".to_string(),
             api_key: None,
-            memory_dir: memory_dir,
-            queue_dir: queue_dir,
+            memory_dir,
+            queue_dir,
             http_base_url: "http://localhost:1738".to_string(),
             ..Default::default()
         };

@@ -8,7 +8,10 @@
 #![allow(clippy::expect_used)]
 #![allow(clippy::unwrap_used)]
 
-use bitemporal_runtime::{append_supersede, as_of_query, temporal_snapshot, BitemporalRecord};
+use bitemporal_runtime::{
+    append_supersede, as_of_query, temporal_snapshot, try_as_of_query, try_temporal_snapshot,
+    BitemporalRecord,
+};
 use serde::Serialize;
 
 #[test]
@@ -80,6 +83,90 @@ fn failed_receipt_serialization_does_not_append() {
     )
     .is_err());
     assert_eq!(records.len(), 1);
+}
+
+#[test]
+fn supersession_names_exact_old_and_new_event_ids() {
+    let t = chrono::Utc.timestamp_opt(1000, 0).unwrap();
+    let old = BitemporalRecord {
+        id: "logical-record".into(),
+        valid_time: t,
+        recorded_time: t,
+        value: "old",
+    };
+    let new = BitemporalRecord {
+        id: "logical-record".into(),
+        valid_time: t,
+        recorded_time: t + chrono::Duration::seconds(1),
+        value: "new",
+    };
+    let old_event_id = old.try_event_id().unwrap();
+    let new_event_id = new.try_event_id().unwrap();
+    let mut records = vec![old];
+    let receipt = append_supersede(&mut records, new).unwrap().remove(0);
+    assert_eq!(
+        receipt.superseded.superseded_event_id.as_deref(),
+        Some(old_event_id.as_str())
+    );
+    assert_eq!(
+        receipt.superseding_event_id.as_deref(),
+        Some(new_event_id.as_str())
+    );
+    assert_ne!(
+        receipt.superseded.superseded_event_id,
+        receipt.superseding_event_id
+    );
+}
+
+#[test]
+fn query_tie_serialization_failure_is_returned() {
+    let t = chrono::Utc.timestamp_opt(1000, 0).unwrap();
+    let records = vec![
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: t,
+            recorded_time: t,
+            value: NeverSerializes,
+        },
+        BitemporalRecord {
+            id: "x".into(),
+            valid_time: t,
+            recorded_time: t,
+            value: NeverSerializes,
+        },
+    ];
+    assert!(try_as_of_query(&records, t, t).is_err());
+}
+
+#[test]
+fn snapshot_serialization_failure_is_fallible_and_compatibility_api_does_not_panic() {
+    let t = chrono::Utc.timestamp_opt(1000, 0).unwrap();
+    let records = vec![BitemporalRecord {
+        id: "x".into(),
+        valid_time: t,
+        recorded_time: t,
+        value: NeverSerializes,
+    }];
+
+    assert!(try_temporal_snapshot(&records, t).is_err());
+    let compatibility = std::panic::catch_unwind(|| temporal_snapshot(&records, t));
+    assert!(compatibility.is_ok(), "compatibility API must never panic");
+    assert!(compatibility.unwrap().is_empty());
+}
+
+#[test]
+fn compatibility_as_of_query_does_not_panic_on_tie_key_failure() {
+    let t = chrono::Utc.timestamp_opt(1000, 0).unwrap();
+    let records = vec![BitemporalRecord {
+        id: "x".into(),
+        valid_time: t,
+        recorded_time: t,
+        value: NeverSerializes,
+    }];
+
+    let compatibility = std::panic::catch_unwind(|| as_of_query(&records, t, t));
+    assert!(compatibility.is_ok(), "compatibility API must never panic");
+    assert!(compatibility.unwrap().is_empty());
 }
 
 #[test]

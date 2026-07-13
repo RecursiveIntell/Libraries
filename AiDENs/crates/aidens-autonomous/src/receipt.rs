@@ -17,20 +17,15 @@ use sha2::{Digest, Sha256};
 // ---------------------------------------------------------------------------
 
 /// The loop's operating mode.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LoopMode {
     /// Adding new knowledge: exploring, generating, executing, capturing.
+    #[default]
     Additive,
     /// Reducing/verifying: checking contradictions, paying proof-debt,
     /// compacting, retiring stale items.
     Subtractive,
-}
-
-impl Default for LoopMode {
-    fn default() -> Self {
-        Self::Additive
-    }
 }
 
 impl std::fmt::Display for LoopMode {

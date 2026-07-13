@@ -11,16 +11,16 @@ pub(crate) use aidens_contracts::{
     AiDENsCompiledPlanV1, AiDENsDoctorReportV1, AiDENsRunBudgetDeadlineV1, AiDENsRunBundleV2,
     AiDENsRunBundleV3, AiDENsRunEventLogDigestV1, AiDENsRunFailureClassV1,
     AiDENsRunFailureTaxonomyV1, AiDENsRunReplayNormalizationV1, AiDENsRunSupportTierEvidenceV1,
-    ApprovalDecisionV1, ApprovalRequestV1, ArtifactId, BoundaryCompileRequestV1,
-    CanonicalBackpointerV1, CanonicalToolSideEffectClass, CapabilityStateV1, CodexPacketInputV1,
-    CodexPacketV1, CommandRunReportV1, CompletionAuditReportV1, ConfigApplyReportDraftV1,
-    ConfigApplyReportV1, CrossPassTraceabilityMatrixV1, CrossPassTraceabilityRowV1,
-    DisplayDigestV1, ExampleAppEntryV1, ExampleAppManifestV1, GateCommandResultV1,
-    InstallSmokeReportV1, InstallSmokeStepV1, KnownLimitationV1, KnownLimitationsRegisterV1,
-    MemoryModeV1, OperatorStatusReportV1, PassCompletionStateV1, PermitGrantV1, PermitUseReportV1,
-    PlanRuntimeParityCheckKindV1, PlanRuntimeParityCheckV1, PlanRuntimeParityReportV1,
-    ProviderBackendStatusV1, ProviderRouteKindV1, ProviderRouteReportV1, PublicDocFindingV1,
-    RegressionDebtItemV1, RegressionDebtLedgerV1, ReleaseArtifactEntryV1, ReleaseArtifactKindV1,
+    ApprovalDecisionV1, ArtifactId, BoundaryCompileRequestV1, CanonicalBackpointerV1,
+    CanonicalToolSideEffectClass, CapabilityStateV1, CodexPacketInputV1, CodexPacketV1,
+    CommandRunReportV1, CompletionAuditReportV1, ConfigApplyReportDraftV1, ConfigApplyReportV1,
+    CrossPassTraceabilityMatrixV1, CrossPassTraceabilityRowV1, DisplayDigestV1, ExampleAppEntryV1,
+    ExampleAppManifestV1, GateCommandResultV1, InstallSmokeReportV1, InstallSmokeStepV1,
+    KnownLimitationV1, KnownLimitationsRegisterV1, MemoryModeV1, OperatorStatusReportV1,
+    PassCompletionStateV1, PermitGrantV1, PermitUseReportV1, PlanRuntimeParityCheckKindV1,
+    PlanRuntimeParityCheckV1, PlanRuntimeParityReportV1, ProviderBackendStatusV1,
+    ProviderRouteKindV1, ProviderRouteReportV1, PublicDocFindingV1, RegressionDebtItemV1,
+    RegressionDebtLedgerV1, ReleaseArtifactEntryV1, ReleaseArtifactKindV1,
     ReleaseArtifactManifestV1, ReleaseReadinessReportV1, ReleaseSurfaceStateV1, ReleaseSurfaceV1,
     ReportLevelV1, RuntimeCapabilityTruthV1, SandboxCapabilityTruthV1, SchemaCompatibilityCheckV1,
     SchemaCompatibilityModeV1, SchemaCompatibilityReportV1, SchemaPathCollisionFindingV1,
@@ -30,7 +30,7 @@ pub(crate) use aidens_daemon_kit::DaemonControllerV1;
 pub(crate) use aidens_memory_kit::{
     memory_config_for_root, runtime_config_for_namespace, CanonicalMemoryAdapter,
 };
-pub(crate) use aidens_permit_kit::PermitPolicyV1;
+pub(crate) use aidens_permit_kit::{HostPermitAuthorityV1, PermitCheckContextV1, PermitPolicyV1};
 pub(crate) use aidens_plan_kit::{assemble_execution_plan, ExecutionPlanAssemblyInputV1};
 pub(crate) use aidens_provider_kit::{
     provider_backend_matrix, provider_readiness_for_spec, route_receipt_for_spec, ProviderSpecV1,
@@ -286,6 +286,10 @@ pub enum PermitCommand {
         risk: String,
         #[arg(long, default_value = ".")]
         sandbox_root: String,
+        #[arg(long)]
+        run_id: String,
+        #[arg(long)]
+        attempt_id: String,
     },
     Approve {
         #[arg(long)]
@@ -298,6 +302,12 @@ pub enum PermitCommand {
         sandbox_root: String,
         #[arg(long, default_value = "operator")]
         decided_by: String,
+        #[arg(long)]
+        run_id: String,
+        #[arg(long)]
+        attempt_id: String,
+        #[arg(long, default_value_t = 900)]
+        expires_in_seconds: i64,
     },
     Deny {
         #[arg(long)]
@@ -318,6 +328,8 @@ pub enum PermitCommand {
         sandbox_root: String,
         #[arg(long, default_value = "operator-revoked")]
         reason: String,
+        #[arg(long, default_value = "operator")]
+        revoked_by: String,
     },
 }
 
@@ -1014,13 +1026,15 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
             tool_id,
             risk,
             sandbox_root,
+            run_id,
+            attempt_id,
         } => {
-            let request = ApprovalRequestV1::scoped(
-                tool_id,
-                parse_risk_class(&risk)?,
-                sandbox_root,
-                "side-effect tool requires explicit scoped permit",
-            );
+            let context =
+                PermitCheckContextV1::new(tool_id, parse_risk_class(&risk)?, sandbox_root)
+                    .with_run_attempt(Some(ArtifactId(run_id)), Some(ArtifactId(attempt_id)));
+            let request = PermitPolicyV1::default()
+                .approval_request_for_context(&context)
+                .context("side-effect request unexpectedly required no approval")?;
             Ok(serde_json::to_string_pretty(&request)?)
         }
         PermitCommand::Approve {
@@ -1029,9 +1043,22 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
             risk,
             sandbox_root,
             decided_by,
+            run_id,
+            attempt_id,
+            expires_in_seconds,
         } => {
             let risk = parse_risk_class(&risk)?;
-            let grant = PermitGrantV1::scoped(risk, tool_id, sandbox_root, decided_by.clone());
+            let context = PermitCheckContextV1::new(tool_id, risk, sandbox_root)
+                .with_run_attempt(Some(ArtifactId(run_id)), Some(ArtifactId(attempt_id)));
+            let authority =
+                HostPermitAuthorityV1::load().context("load host permit authority for approval")?;
+            let grant = authority
+                .issue_expiring_for_context(
+                    &context,
+                    decided_by.clone(),
+                    chrono::Duration::seconds(expires_in_seconds),
+                )
+                .context("issue expiring host-trusted permit")?;
             let decision = ApprovalDecisionV1::approved(ArtifactId(request_id), grant, decided_by);
             Ok(serde_json::to_string_pretty(&decision)?)
         }
@@ -1049,7 +1076,13 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
             risk,
             sandbox_root,
             reason,
+            revoked_by,
         } => {
+            let authority = HostPermitAuthorityV1::load()
+                .context("load host permit authority for revocation")?;
+            authority
+                .revoke(&ArtifactId(permit_id.clone()), revoked_by, reason.clone())
+                .context("persist permit revocation")?;
             let receipt = PermitUseReportV1::denied(
                 ArtifactId(permit_id),
                 tool_id,
@@ -1601,9 +1634,17 @@ fn invoke_coding_tool(
     input: serde_json::Value,
 ) -> Result<String> {
     let registry = ToolRegistryV1::safe_coding_with_dispatchers(sandbox_root)?;
+    let authority_context = permit_policy.bound_context_for_tool(tool_id);
     let dispatcher = ToolDispatcher::new(registry).with_permit_policy(permit_policy);
     let runtime = tokio::runtime::Runtime::new()?;
-    let output = runtime.block_on(async { dispatcher.invoke(tool_id, input).await })?;
+    let output = runtime.block_on(async {
+        let (run_id, attempt_id) = authority_context
+            .map(|(run_id, attempt_id)| (Some(run_id), Some(attempt_id)))
+            .unwrap_or((None, None));
+        dispatcher
+            .invoke_with_context(tool_id, input, run_id, attempt_id)
+            .await
+    })?;
     Ok(serde_json::to_string_pretty(&serde_json::json!({
         "output": output.output,
         "tool_invocation_receipt": output.receipt,
@@ -1614,7 +1655,9 @@ fn invoke_coding_tool(
 fn permit_policy_from_json(input: &str) -> Result<PermitPolicyV1> {
     let value = parse_strict_json(input).context("failed strict-parse permit JSON")?;
     if let Ok(values) = serde_json::from_value::<Vec<serde_json::Value>>(value.clone()) {
-        let mut policy = PermitPolicyV1::default();
+        let mut policy = HostPermitAuthorityV1::load()
+            .context("load host permit authority for permit verification")?
+            .policy();
         for value in values {
             if let Ok(grant) = serde_json::from_value::<PermitGrantV1>(value.clone()) {
                 policy = policy.with_grant(grant);
@@ -1631,11 +1674,17 @@ fn permit_policy_from_json(input: &str) -> Result<PermitPolicyV1> {
         return Ok(policy);
     }
     if let Ok(grant) = serde_json::from_value::<PermitGrantV1>(value.clone()) {
-        return Ok(PermitPolicyV1::default().with_grant(grant));
+        return Ok(HostPermitAuthorityV1::load()
+            .context("load host permit authority for permit verification")?
+            .policy()
+            .with_grant(grant));
     }
     if let Ok(decision) = serde_json::from_value::<ApprovalDecisionV1>(value) {
         if let Some(grant) = decision.permit_grant {
-            return Ok(PermitPolicyV1::default().with_grant(grant));
+            return Ok(HostPermitAuthorityV1::load()
+                .context("load host permit authority for permit verification")?
+                .policy()
+                .with_grant(grant));
         }
         bail!("approval decision does not contain an approved permit grant");
     }

@@ -29,13 +29,12 @@
 //! Output: a `BenchmarkReceipt` JSON file with all measured numbers, the
 //! git commit hash at build time, and the machine fingerprint.
 
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use rand::{Rng, SeedableRng};
+use rand::SeedableRng;
 use rand_distr::{Distribution, Normal};
 use receipt_bench::{BenchmarkReceipt, BenchmarkResult, BenchmarkSuite, MachineFingerprint};
-use semantic_memory::vector_backend::{VectorBackend, VectorIndex, VectorIndexConfig};
+use semantic_memory::vector_backend::{VectorIndex, VectorIndexConfig};
 use serde::Serialize;
 use tempfile::TempDir;
 
@@ -62,7 +61,7 @@ const TOP_K: usize = 10;
 const INSERT_BATCH: usize = 1_000;
 
 /// Random seed for reproducibility. Same seed → same vectors.
-const SEED: u64 = 0xC0FFEE_2026_0602;
+const SEED: u64 = 0x00C0_FFEE_2026_0602;
 
 // HNSW construction parameters (matched across backends for fair compare).
 const M: usize = 16;
@@ -98,8 +97,8 @@ impl Row {
         BenchmarkResult {
             name: format!("{}-D{}", self.backend, self.dimensions),
             iterations: 1,
-            elapsed_ns: ((self.insert_total_ms * 1_000_000) as u64),
-            ns_per_iter: (self.insert_total_ms * 1_000_000) as u64,
+            elapsed_ns: self.insert_total_ms * 1_000_000,
+            ns_per_iter: self.insert_total_ms * 1_000_000,
             throughput: Some(self.insert_vec_per_sec),
             error: Some(format!("payload={payload}")),
         }
@@ -151,16 +150,6 @@ fn make_index(backend: BackendKind, dim: usize) -> VectorIndex {
     VectorIndex::new(config).expect("VectorIndex::new")
 }
 
-fn backend_name(idx: &VectorIndex) -> &'static str {
-    if idx.backend_name().contains("hnsw_rs") {
-        "hnsw_rs"
-    } else if idx.backend_name().contains("usearch") {
-        "usearch"
-    } else {
-        "unknown"
-    }
-}
-
 // =====================================================================
 // RSS memory (Linux)
 // =====================================================================
@@ -177,18 +166,6 @@ fn rss_mb() -> f64 {
         }
     }
     0.0
-}
-
-// =====================================================================
-// Insert timing
-// =====================================================================
-
-fn timed_insert(idx: &VectorIndex, corpus: &[Vec<f32>]) -> Duration {
-    let t = Instant::now();
-    for (i, v) in corpus.iter().enumerate() {
-        idx.insert(key_for(i), v).expect("insert");
-    }
-    t.elapsed()
 }
 
 // =====================================================================
@@ -263,9 +240,9 @@ fn timed_save_load(
     let save_ms = t_save.elapsed();
 
     // Measure file sizes for the sidecar.
-    let data_path = dir.join(format!("bench.hnsw.data"));
-    let keys_path = dir.join(format!("bench.hnsw.keys"));
-    let manifest_path = dir.join(format!("bench.hnsw.manifest.json"));
+    let data_path = dir.join("bench.hnsw.data");
+    let keys_path = dir.join("bench.hnsw.keys");
+    let manifest_path = dir.join("bench.hnsw.manifest.json");
     let mut total: u64 = 0;
     for p in [data_path, keys_path, manifest_path] {
         if let Ok(m) = std::fs::metadata(&p) {

@@ -46,7 +46,7 @@ fn rich_batch() -> ProjectionImportBatchV3 {
     let records = vec![
         ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                claim_id: Some(ClaimId::new("claim-1")),
                 claim_version_id: Some("claim-version-1".into()),
                 subject_entity_id: EntityId::new("entity-1"),
                 predicate: "supports".into(),
@@ -64,7 +64,7 @@ fn rich_batch() -> ProjectionImportBatchV3 {
         },
         ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                claim_id: Some(ClaimId::new("claim-2")),
                 claim_version_id: Some("claim-version-2".into()),
                 subject_entity_id: EntityId::new("entity-2"),
                 predicate: "supports".into(),

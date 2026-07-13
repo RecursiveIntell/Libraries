@@ -39,6 +39,7 @@ impl TaskGenerator {
                 "gap_type": gap.gap_type.to_string(),
                 "fact_id": gap.fact_id,
                 "description": gap.description,
+                "valid_time": chrono::Utc::now().to_rfc3339(),
             });
 
             let namespace_id = self.queue.namespace_id();

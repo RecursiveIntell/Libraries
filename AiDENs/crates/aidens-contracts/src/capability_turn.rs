@@ -197,6 +197,10 @@ pub struct PermitGrantV1 {
     pub sandbox_root: String,
     pub scope: String,
     pub granted_by: String,
+    #[serde(default)]
+    pub issuer_id: String,
+    #[serde(default)]
+    pub integrity_tag: String,
     pub granted_at: DateTime<Utc>,
     pub expires_at: Option<DateTime<Utc>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -221,6 +225,8 @@ impl PermitGrantV1 {
             sandbox_root: scope.clone(),
             scope,
             granted_by: granted_by.into(),
+            issuer_id: String::new(),
+            integrity_tag: String::new(),
             granted_at: Utc::now(),
             expires_at: None,
             run_id: None,
@@ -244,6 +250,8 @@ impl PermitGrantV1 {
             sandbox_root: sandbox_root.clone(),
             scope: format!("tool={tool_id};sandbox={sandbox_root}"),
             granted_by: granted_by.into(),
+            issuer_id: String::new(),
+            integrity_tag: String::new(),
             granted_at: Utc::now(),
             expires_at: None,
             run_id: None,
@@ -262,6 +270,57 @@ impl PermitGrantV1 {
         self
     }
 
+    /// Canonical, domain-separated material authenticated by a trusted issuer.
+    pub fn authority_material(&self) -> String {
+        fn field(out: &mut String, name: &str, value: &str) {
+            out.push_str(name);
+            out.push('=');
+            out.push_str(&value.len().to_string());
+            out.push(':');
+            out.push_str(value);
+            out.push(';');
+        }
+        let mut material = String::from("aidens.permit-grant.v1;");
+        field(&mut material, "issuer", &self.issuer_id);
+        field(&mut material, "scope", &self.scope);
+        field(&mut material, "risk", &self.risk_class.to_string());
+        field(&mut material, "tool", &self.tool_id);
+        field(&mut material, "sandbox", &self.sandbox_root);
+        field(&mut material, "granted_by", &self.granted_by);
+        field(
+            &mut material,
+            "granted_at",
+            &self
+                .granted_at
+                .to_rfc3339_opts(chrono::SecondsFormat::Nanos, true),
+        );
+        for reason in &self.reason_codes {
+            field(&mut material, "reason_code", reason);
+        }
+        field(
+            &mut material,
+            "run",
+            self.run_id.as_ref().map_or("", |id| id.0.as_str()),
+        );
+        field(
+            &mut material,
+            "attempt",
+            self.attempt_id.as_ref().map_or("", |id| id.0.as_str()),
+        );
+        field(
+            &mut material,
+            "expires",
+            &self
+                .expires_at
+                .map_or_else(String::new, |time| time.to_rfc3339()),
+        );
+        material
+    }
+
+    pub fn refresh_authority_id(&mut self) {
+        self.permit_id = generated_artifact_id_from_material("permit", &self.authority_material());
+    }
+
     pub fn matches_scope(
         &self,
         risk_class: &CanonicalToolSideEffectClass,
@@ -270,6 +329,23 @@ impl PermitGrantV1 {
         run_id: Option<&ArtifactId>,
         attempt_id: Option<&ArtifactId>,
     ) -> bool {
+        let (Some(grant_run_id), Some(grant_attempt_id), Some(run_id), Some(attempt_id)) = (
+            self.run_id.as_ref(),
+            self.attempt_id.as_ref(),
+            run_id,
+            attempt_id,
+        ) else {
+            return false;
+        };
+        if grant_run_id.0.is_empty()
+            || grant_attempt_id.0.is_empty()
+            || run_id.0.is_empty()
+            || attempt_id.0.is_empty()
+            || grant_run_id != run_id
+            || grant_attempt_id != attempt_id
+        {
+            return false;
+        }
         if &self.risk_class != risk_class {
             return false;
         }
@@ -277,20 +353,6 @@ impl PermitGrantV1 {
             return false;
         }
         if self.sandbox_root != sandbox_root {
-            return false;
-        }
-        if self
-            .run_id
-            .as_ref()
-            .is_some_and(|grant_run_id| Some(grant_run_id) != run_id)
-        {
-            return false;
-        }
-        if self
-            .attempt_id
-            .as_ref()
-            .is_some_and(|grant_attempt_id| Some(grant_attempt_id) != attempt_id)
-        {
             return false;
         }
         self.expires_at
@@ -443,18 +505,34 @@ impl PermitUseReportV1 {
         run_id: Option<ArtifactId>,
         attempt_id: Option<ArtifactId>,
     ) -> Self {
+        let tool_id = tool_id.into();
+        let sandbox_root = sandbox_root.into();
+        let used_at = Utc::now();
+        let material = permit_use_material(PermitUseMaterial {
+            permit_id: &grant.permit_id,
+            issuer_id: &grant.issuer_id,
+            scope: &grant.scope,
+            risk: &grant.risk_class,
+            tool_id: &tool_id,
+            sandbox_root: &sandbox_root,
+            run_id: run_id.as_ref(),
+            attempt_id: attempt_id.as_ref(),
+            allowed: true,
+            event_time: &used_at,
+            denial_reason: "",
+        });
         Self {
-            receipt_id: display_only_unstable_id("permit-use"),
+            receipt_id: generated_artifact_id_from_material("permit-use", &material),
             kind: ArtifactKindV1::PermitUse,
             permit_id: grant.permit_id.clone(),
-            tool_id: tool_id.into(),
+            tool_id,
             risk_class: grant.risk_class.clone(),
-            sandbox_root: sandbox_root.into(),
+            sandbox_root,
             run_id,
             attempt_id,
             allowed: true,
             reason_codes: vec!["permit-scope-matched".into()],
-            used_at: Utc::now(),
+            used_at,
         }
     }
 
@@ -465,20 +543,68 @@ impl PermitUseReportV1 {
         sandbox_root: impl Into<String>,
         reason: impl Into<String>,
     ) -> Self {
-        Self {
-            receipt_id: display_only_unstable_id("permit-use"),
-            kind: ArtifactKindV1::PermitUse,
-            permit_id,
-            tool_id: tool_id.into(),
-            risk_class,
-            sandbox_root: sandbox_root.into(),
+        let tool_id = tool_id.into();
+        let sandbox_root = sandbox_root.into();
+        let reason = reason.into();
+        let used_at = Utc::now();
+        let material = permit_use_material(PermitUseMaterial {
+            permit_id: &permit_id,
+            issuer_id: "",
+            scope: "",
+            risk: &risk_class,
+            tool_id: &tool_id,
+            sandbox_root: &sandbox_root,
             run_id: None,
             attempt_id: None,
             allowed: false,
-            reason_codes: vec![reason.into()],
-            used_at: Utc::now(),
+            event_time: &used_at,
+            denial_reason: &reason,
+        });
+        Self {
+            receipt_id: generated_artifact_id_from_material("permit-use", &material),
+            kind: ArtifactKindV1::PermitUse,
+            permit_id,
+            tool_id,
+            risk_class,
+            sandbox_root,
+            run_id: None,
+            attempt_id: None,
+            allowed: false,
+            reason_codes: vec![reason],
+            used_at,
         }
     }
+}
+
+struct PermitUseMaterial<'a> {
+    permit_id: &'a ArtifactId,
+    issuer_id: &'a str,
+    scope: &'a str,
+    risk: &'a CanonicalToolSideEffectClass,
+    tool_id: &'a str,
+    sandbox_root: &'a str,
+    run_id: Option<&'a ArtifactId>,
+    attempt_id: Option<&'a ArtifactId>,
+    allowed: bool,
+    event_time: &'a DateTime<Utc>,
+    denial_reason: &'a str,
+}
+
+fn permit_use_material(input: PermitUseMaterial<'_>) -> String {
+    format!(
+        "aidens.permit-use.v1;permit={};issuer={};scope={};risk={};tool={};sandbox={};run={};attempt={};allowed={};event_time={};denial_reason={}",
+        input.permit_id.0,
+        input.issuer_id,
+        input.scope,
+        input.risk,
+        input.tool_id,
+        input.sandbox_root,
+        input.run_id.map_or("", |id| id.0.as_str()),
+        input.attempt_id.map_or("", |id| id.0.as_str()),
+        input.allowed,
+        input.event_time.to_rfc3339_opts(chrono::SecondsFormat::Nanos, true),
+        input.denial_reason,
+    )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

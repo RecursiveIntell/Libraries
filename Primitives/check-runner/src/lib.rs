@@ -7,6 +7,8 @@
 //! attribution. It is execution infrastructure, not a policy owner.
 
 use std::path::Path;
+#[cfg(feature = "container")]
+use std::process::Stdio;
 use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
@@ -31,11 +33,21 @@ pub enum RunnerError {
     #[error("command failed (exit {exit_code}): {command}")]
     CommandFailed { command: String, exit_code: i32 },
 
+    #[error("failed to terminate process group {pgid}: {source}")]
+    KillProcessGroup {
+        pgid: i32,
+        #[source]
+        source: std::io::Error,
+    },
+
     #[error("sealed mode unsupported for runtime: {runtime}")]
     SealedModeUnsupported { runtime: String },
 
     #[error("no container runtime found")]
     NoContainerRuntime,
+
+    #[error("container cleanup failed for {container}: {reason}")]
+    ContainerCleanup { container: String, reason: String },
 
     #[error("{0}")]
     Other(String),
@@ -205,6 +217,11 @@ impl ExecutionBackend for HostBackend {
         command.env("CARGO_TERM_COLOR", "never");
         command.env("RUST_BACKTRACE", "0");
         for (key, value) in env {
+            if !is_env_allowed(key) {
+                return Err(RunnerError::Other(format!(
+                    "caller environment key is not allowed: {key}"
+                )));
+            }
             command.env(key, value);
         }
 
@@ -246,9 +263,21 @@ impl ExecutionBackend for HostBackend {
                 // - Precondition: child_pid is a process group leader spawned in this session
                 // - Postcondition: entire process group receives SIGKILL, all processes terminated
                 #[allow(clippy::arc_with_non_send_sync)]
-                check_runner_sys::kill_process_group(
-                    child_pid.expect("child PID must be Some immediately after spawn"),
-                );
+                let pgid = child_pid.expect("child PID must be Some immediately after spawn");
+                let kill_result = check_runner_sys::kill_process_group(pgid);
+                tokio::time::timeout(Duration::from_secs(5), &mut wait)
+                    .await
+                    .map_err(|_| {
+                        RunnerError::Other(format!(
+                            "timed out reaping process group leader {pgid} after SIGKILL"
+                        ))
+                    })?
+                    .map_err(|error| {
+                        RunnerError::Other(format!(
+                            "failed to reap process group leader {pgid}: {error}"
+                        ))
+                    })?;
+                kill_result.map_err(|source| RunnerError::KillProcessGroup { pgid, source })?;
 
                 Err(RunnerError::CommandTimeout {
                     command: format!("{program} {}", args.join(" ")),
@@ -338,9 +367,16 @@ impl ContainerBackend {
     fn build_run_args(
         &self,
         workspace: &Path,
-        command: &str,
+        program: &str,
+        command_args: &[&str],
         env: &[(&str, &str)],
     ) -> Result<Vec<String>, RunnerError> {
+        if !is_valid_image_reference(&self.rust_image) {
+            return Err(RunnerError::Other(format!(
+                "container image is invalid or resembles an option: {}",
+                self.rust_image
+            )));
+        }
         let canonical = workspace.canonicalize().map_err(|error| {
             RunnerError::Other(format!("cannot canonicalize workspace: {error}"))
         })?;
@@ -351,24 +387,57 @@ impl ContainerBackend {
             ));
         }
 
+        let output = canonical.join("output");
+        if self.sealed {
+            std::fs::create_dir_all(&output)?;
+        }
+        let unique = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        );
+        let name = format!("check-runner-{unique}");
+        let cidfile = std::env::temp_dir().join(format!("{name}.cid"));
         let mut args = vec!["run".to_string(), "--rm".to_string()];
+        args.push("--pull=never".to_string());
+        args.push("--name".to_string());
+        args.push(name);
+        args.push("--cidfile".to_string());
+        args.push(cidfile.display().to_string());
         args.push("-v".to_string());
-        args.push(format!("{}:/workspace:rw", canonical.display()));
+        args.push(format!(
+            "{}:/workspace:{}",
+            canonical.display(),
+            if self.sealed { "ro" } else { "rw" }
+        ));
+        if self.sealed {
+            args.push("-v".to_string());
+            args.push(format!("{}:/workspace/output:rw", output.display()));
+        }
         args.push("-w".to_string());
         args.push("/workspace".to_string());
         args.push(format!("--memory={}", self.memory_limit));
         args.push(format!("--cpus={}", self.cpu_limit));
         if self.sealed {
             args.push(self.runtime.network_flag().to_string());
+            args.push("-e".to_string());
+            args.push("CARGO_TARGET_DIR=/workspace/output/target".to_string());
         }
         for (key, value) in env {
+            if !is_env_allowed(key) {
+                return Err(RunnerError::Other(format!(
+                    "caller environment key is not allowed: {key}"
+                )));
+            }
             args.push("-e".to_string());
             args.push(format!("{key}={value}"));
         }
         args.push(self.rust_image.clone());
-        args.push("sh".to_string());
-        args.push("-c".to_string());
-        args.push(command.to_string());
+        args.push(program.to_string());
+        args.extend(command_args.iter().map(|arg| (*arg).to_string()));
         Ok(args)
     }
 }
@@ -403,7 +472,17 @@ impl ExecutionBackend for ContainerBackend {
         } else {
             format!("{} {}", program, args.join(" "))
         };
-        let run_args = self.build_run_args(workspace, &full_command, env)?;
+        let run_args = self.build_run_args(workspace, program, args, env)?;
+        let container_name = run_args
+            .windows(2)
+            .find(|pair| pair[0] == "--name")
+            .map(|pair| pair[1].clone())
+            .expect("build_run_args always assigns a container name");
+        let cidfile = run_args
+            .windows(2)
+            .find(|pair| pair[0] == "--cidfile")
+            .map(|pair| pair[1].clone())
+            .expect("build_run_args always assigns a cidfile");
 
         let start = Instant::now();
         let child = tokio::process::Command::new(self.runtime.command())
@@ -422,6 +501,9 @@ impl ExecutionBackend for ContainerBackend {
         let output =
             tokio::time::timeout(Duration::from_secs(timeout), child.wait_with_output()).await;
         let duration_ms = start.elapsed().as_millis() as u64;
+        if output.is_ok() {
+            let _ = std::fs::remove_file(&cidfile);
+        }
 
         match output {
             Ok(Ok(output)) => Ok(CommandOutput {
@@ -433,10 +515,20 @@ impl ExecutionBackend for ContainerBackend {
             Ok(Err(error)) => Err(RunnerError::Other(format!(
                 "container command failed: {error}"
             ))),
-            Err(_) => Err(RunnerError::CommandTimeout {
-                command: full_command,
-                timeout_secs: timeout,
-            }),
+            Err(_) => {
+                let cleanup = cleanup_container(self.runtime, &container_name).await;
+                let _ = std::fs::remove_file(cidfile);
+                match cleanup {
+                    Ok(()) => Err(RunnerError::CommandTimeout {
+                        command: full_command,
+                        timeout_secs: timeout,
+                    }),
+                    Err(reason) => Err(RunnerError::ContainerCleanup {
+                        container: container_name,
+                        reason,
+                    }),
+                }
+            }
         }
     }
 
@@ -455,12 +547,63 @@ impl ExecutionBackend for ContainerBackend {
 }
 
 #[cfg(feature = "container")]
+fn is_valid_image_reference(image: &str) -> bool {
+    !image.is_empty()
+        && !image.starts_with('-')
+        && image.bytes().all(|byte| {
+            byte.is_ascii_alphanumeric()
+                || matches!(byte, b'.' | b'_' | b'-' | b'/' | b':' | b'@' | b'+')
+        })
+}
+
+#[cfg(feature = "container")]
+async fn runtime_output(
+    runtime: ContainerRuntime,
+    args: &[&str],
+) -> std::io::Result<std::process::Output> {
+    let mut command = tokio::process::Command::new(runtime.command());
+    command
+        .args(args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true);
+    command.output().await
+}
+
+#[cfg(feature = "container")]
+async fn cleanup_container(runtime: ContainerRuntime, name: &str) -> Result<(), String> {
+    const CLEANUP_BOUND: Duration = Duration::from_secs(10);
+    tokio::time::timeout(CLEANUP_BOUND, async {
+        // `podman rm -f` may honor its default stop grace period. An explicit
+        // kill is immediate and is supported by both Docker and Podman.
+        let _ = runtime_output(runtime, &["kill", name]).await;
+        let remove = runtime_output(runtime, &["rm", "-f", name])
+            .await
+            .map_err(|error| format!("could not start force-remove: {error}"))?;
+
+        let inspect = runtime_output(runtime, &["inspect", name])
+            .await
+            .map_err(|error| format!("could not confirm removal: {error}"))?;
+        if inspect.status.success() {
+            return Err("force-remove returned but the container still exists".to_string());
+        }
+
+        // A failed remove is acceptable only when inspect independently confirms absence.
+        let _ = remove;
+        Ok(())
+    })
+    .await
+    .map_err(|_| format!("cleanup and removal confirmation exceeded {CLEANUP_BOUND:?}"))?
+}
+
+#[cfg(feature = "container")]
 pub fn detect_runtime(preference: &str) -> Result<ContainerRuntime, RunnerError> {
     match preference {
         "docker" => probe_runtime("docker").ok_or(RunnerError::NoContainerRuntime),
         "podman" => probe_runtime("podman").ok_or(RunnerError::NoContainerRuntime),
         "nerdctl" => probe_runtime("nerdctl").ok_or(RunnerError::NoContainerRuntime),
-        _ => {
+        "auto" | "" => {
             if let Some(runtime) = probe_runtime("docker") {
                 return Ok(runtime);
             }
@@ -472,26 +615,46 @@ pub fn detect_runtime(preference: &str) -> Result<ContainerRuntime, RunnerError>
             }
             Err(RunnerError::NoContainerRuntime)
         }
+        _ => Err(RunnerError::Other(format!(
+            "invalid container runtime preference: {preference}"
+        ))),
     }
 }
 
 #[cfg(feature = "container")]
 fn probe_runtime(name: &str) -> Option<ContainerRuntime> {
-    let result = std::process::Command::new(name)
-        .arg("version")
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status();
+    let runtime = match name {
+        "docker" => ContainerRuntime::Docker,
+        "podman" => ContainerRuntime::Podman,
+        "nerdctl" => ContainerRuntime::Nerdctl,
+        _ => return None,
+    };
+    let mut child = std::process::Command::new(name)
+        .arg("info")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .ok()?;
+    let deadline = Instant::now() + Duration::from_secs(3);
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(status)) => break status,
+            Ok(None) if Instant::now() < deadline => std::thread::sleep(Duration::from_millis(10)),
+            Ok(None) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return None;
+            }
+            Err(_) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return None;
+            }
+        }
+    };
 
-    match result {
-        Ok(status) if status.success() => match name {
-            "docker" => Some(ContainerRuntime::Docker),
-            "podman" => Some(ContainerRuntime::Podman),
-            "nerdctl" => Some(ContainerRuntime::Nerdctl),
-            _ => None,
-        },
-        _ => None,
-    }
+    status.success().then_some(runtime)
 }
 
 pub fn select_backend(config: &BackendConfig) -> Result<Box<dyn ExecutionBackend>, RunnerError> {
@@ -624,7 +787,6 @@ mod wave1_tests {
     }
 
     #[test]
-    #[ignore = "environment-dependent: fails when docker/podman is available because auto→container succeeds before host fallback"]
     fn select_backend_falls_back_to_host_when_allowed() {
         let mut cfg = config();
         cfg.mode = "sealed_local".into();
@@ -839,7 +1001,7 @@ mod tests {
         let backend = HostBackend::new(&config);
         let workspace = tempfile::tempdir().unwrap();
 
-        check_runner_sys::set_env("AWS_SECRET_ACCESS_KEY", "forbidden");
+        check_runner_sys::set_env("AWS_SECRET_ACCESS_KEY", "forbidden").unwrap();
         let output = runtime
             .block_on(backend.run_command(
                 workspace.path(),
@@ -849,8 +1011,176 @@ mod tests {
                 5,
             ))
             .unwrap();
-        check_runner_sys::remove_env("AWS_SECRET_ACCESS_KEY");
+        check_runner_sys::remove_env("AWS_SECRET_ACCESS_KEY").unwrap();
 
         assert_eq!(output.stdout, "missing");
+    }
+}
+
+#[cfg(all(test, feature = "container"))]
+mod container_hardening_tests {
+    use super::*;
+
+    fn backend(sealed: bool) -> ContainerBackend {
+        ContainerBackend {
+            runtime: ContainerRuntime::Docker,
+            rust_image: "rust:test".into(),
+            timeout_secs: 1,
+            sealed,
+            memory_limit: "1g".into(),
+            cpu_limit: "1".into(),
+        }
+    }
+
+    #[test]
+    fn structured_argv_is_not_interpreted_by_a_shell() {
+        let dir = tempfile::tempdir().unwrap();
+        let args = backend(false)
+            .build_run_args(dir.path(), "printf", &["%s", "$(touch pwned)", "a b"], &[])
+            .unwrap();
+        assert!(!args.windows(2).any(|pair| pair == ["sh", "-c"]));
+        assert_eq!(
+            &args[args.len() - 4..],
+            ["printf", "%s", "$(touch pwned)", "a b"]
+        );
+    }
+
+    #[test]
+    fn caller_environment_must_pass_allowlist() {
+        let dir = tempfile::tempdir().unwrap();
+        let error = backend(false)
+            .build_run_args(
+                dir.path(),
+                "true",
+                &[],
+                &[("AWS_SECRET_ACCESS_KEY", "secret")],
+            )
+            .unwrap_err();
+        assert!(
+            matches!(error, RunnerError::Other(message) if message.contains("environment key"))
+        );
+    }
+
+    #[test]
+    fn runtime_preference_rejects_option_injection() {
+        let error = detect_runtime("--help").unwrap_err();
+        assert!(
+            matches!(error, RunnerError::Other(message) if message.contains("runtime preference"))
+        );
+    }
+
+    #[test]
+    fn image_rejects_option_injection() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut injected = backend(false);
+        injected.rust_image = "--privileged".into();
+        let error = injected
+            .build_run_args(dir.path(), "true", &[], &[])
+            .unwrap_err();
+        assert!(matches!(error, RunnerError::Other(message) if message.contains("image")));
+    }
+
+    #[test]
+    fn image_rejects_whitespace_and_control_characters() {
+        let dir = tempfile::tempdir().unwrap();
+        for image in ["alpine --privileged", "alpine\n--privileged", ""] {
+            let mut injected = backend(false);
+            injected.rust_image = image.into();
+            assert!(injected
+                .build_run_args(dir.path(), "true", &[], &[])
+                .is_err());
+        }
+    }
+
+    #[test]
+    fn sealed_mount_has_read_only_source_and_writable_output() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir(dir.path().join("output")).unwrap();
+        let args = backend(true)
+            .build_run_args(dir.path(), "true", &[], &[])
+            .unwrap();
+        let joined = args.join("\n");
+        assert!(joined.contains(":/workspace:ro"));
+        assert!(joined.contains(":/workspace/output:rw"));
+        assert!(joined.contains("CARGO_TARGET_DIR=/workspace/output/target"));
+    }
+
+    #[test]
+    fn run_args_track_name_and_cidfile_for_timeout_cleanup() {
+        let dir = tempfile::tempdir().unwrap();
+        let args = backend(false)
+            .build_run_args(dir.path(), "true", &[], &[])
+            .unwrap();
+        assert!(args.iter().any(|arg| arg == "--name"));
+        assert!(args.iter().any(|arg| arg == "--cidfile"));
+    }
+
+    fn live_backend(sealed: bool) -> Option<ContainerBackend> {
+        let runtime = match detect_runtime("auto") {
+            Ok(runtime) => runtime,
+            Err(RunnerError::NoContainerRuntime) => {
+                eprintln!("skipping: no Docker/Podman/nerdctl runtime available");
+                return None;
+            }
+            Err(error) => panic!("runtime detection failed: {error}"),
+        };
+        Some(ContainerBackend {
+            runtime,
+            rust_image: std::env::var("CHECK_RUNNER_TEST_IMAGE")
+                .unwrap_or_else(|_| "alpine:3.20".into()),
+            timeout_secs: 30,
+            sealed,
+            memory_limit: "1g".into(),
+            cpu_limit: "1".into(),
+        })
+    }
+
+    #[test]
+    fn live_runtime_enforces_timeout_and_cleans_up() {
+        let Some(backend) = live_backend(false) else {
+            return;
+        };
+        let dir = tempfile::tempdir().unwrap();
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_io()
+            .enable_time()
+            .build()
+            .unwrap();
+        let error = runtime
+            .block_on(backend.run_command(dir.path(), "sh", &["-c", "sleep 30"], &[], 1))
+            .unwrap_err();
+        assert!(
+            matches!(error, RunnerError::CommandTimeout { .. }),
+            "unexpected timeout lifecycle error: {error:?}"
+        );
+    }
+
+    #[test]
+    fn live_runtime_mounts_sealed_workspace_with_writable_target() {
+        let Some(backend) = live_backend(true) else {
+            return;
+        };
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("input.txt"), "mounted").unwrap();
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_io()
+            .enable_time()
+            .build()
+            .unwrap();
+        let result = runtime
+            .block_on(backend.run_command(
+                dir.path(),
+                "sh",
+                &[
+                    "-c",
+                    "test \"$(cat input.txt)\" = mounted && test \"$CARGO_TARGET_DIR\" = /workspace/output/target && mkdir -p \"$CARGO_TARGET_DIR\" && touch \"$CARGO_TARGET_DIR/smoke\" && ! touch forbidden",
+                ],
+                &[],
+                30,
+            ))
+            .unwrap();
+        assert_eq!(result.exit_code, 0, "stderr: {}", result.stderr);
+        assert!(dir.path().join("output/target/smoke").is_file());
+        assert!(!dir.path().join("forbidden").exists());
     }
 }

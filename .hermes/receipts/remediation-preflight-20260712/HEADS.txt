@@ -1,0 +1,22 @@
+captured_at=2026-07-12T19:24:33.996718-05:00
+
+$ (cd /home/sikmindz/Coding/Libraries && git log -5 --format="%H %cI %s")
+exit=0
+0f75a56595ce7b52b81e6b4cb48f42886bc236bf 2026-07-12T19:18:20-05:00 fix: close memory audit and default verified C kernels
+badd3ad9251a416664145891f0049815b89ad6c1 2026-07-12T18:57:34-05:00 fix: harden canonicalization temporal receipts and release preflight
+6c1d4537772c6d064a069c7c604185cde2d259df 2026-07-12T15:55:48-05:00 docs: proveKV highest-ROI improvements plan
+9a79a2d67319acb07a9ae0cb7e084e34c760b7c3 2026-07-12T15:55:43-05:00 feat: adaptive per-head budget allocation in poly-kv
+132156aaa5d6b934b97cf735e4788a49be54b7b2 2026-07-12T15:37:37-05:00 release: turbo-quant v0.2.3 + fib-quant v0.1.0-beta.4 with C kernels
+
+$ (cd /home/sikmindz/.hermes/hermes-agent && git log -5 --format="%H %cI %s")
+exit=0
+9b134cd2ea6a810b1bae80b534e4b8791f5fef77 2026-07-12T17:39:55-05:00 fix: invoke Hermes auxiliary router for LLM compaction
+f28bc0d19dbc783be21080ada7a5da0ce67dff0c 2026-07-12T17:32:27-05:00 fix: route context governor through specialized summary prompt
+24e37c7d91b7b29852df823904e0667141ed9b0c 2026-07-12T16:04:10-05:00 fix: restore context governor integration hardening
+a0f4aeba9f8c9af42b31dba9ed07ca7ea6b1ca8c 2026-07-11T23:47:27-05:00 feat: context_governor context engine plugin
+69916d53d4c85d22a33bb8c9cbb071866f672acc 2026-07-11T23:37:08-05:00 feat: integrate anti-degradation rules into context compressor
+
+$ (cd /home/sikmindz/Coding/Libraries && sha256sum /home/sikmindz/.cargo/bin/semantic-memory-mcp /home/sikmindz/.cargo/bin/context-governor 2>/dev/null || true)
+exit=0
+6a11d19eb3ea5a906a731eec5a5136c4f7902014e08cdd01260b58d7dd583c23  /home/sikmindz/.cargo/bin/semantic-memory-mcp
+d9b80ae7366220930bacf540415a32da4ace90bd347394a9383b53048103587c  /home/sikmindz/.cargo/bin/context-governor

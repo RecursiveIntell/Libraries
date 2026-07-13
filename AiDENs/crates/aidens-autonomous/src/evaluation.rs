@@ -215,7 +215,7 @@ fn is_coherent(s: &str) -> bool {
     // Check for reasonable average word length (not garbled).
     let total_chars: usize = words.iter().map(|w| w.len()).sum();
     let avg_word_len = total_chars as f64 / words.len() as f64;
-    if avg_word_len < 2.0 || avg_word_len > 20.0 {
+    if !(2.0..=20.0).contains(&avg_word_len) {
         return false;
     }
 

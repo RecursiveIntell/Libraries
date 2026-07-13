@@ -150,6 +150,7 @@ pub fn transform_envelope_v3_at(
     transformed_at: &str,
 ) -> Result<ProjectionImportBatchV3, BridgeError> {
     envelope.validate()?;
+    validate_canonical_v3_identities(envelope)?;
 
     let records = envelope
         .records
@@ -207,13 +208,52 @@ pub fn transform_envelope_v3_at(
     })
 }
 
+fn validate_canonical_v3_identities(envelope: &ExportEnvelopeV3) -> Result<(), BridgeError> {
+    for (record_index, record) in envelope.records.iter().enumerate() {
+        match &record.record {
+            ExportRecord::Claim(claim) => {
+                if claim
+                    .claim_id
+                    .as_ref()
+                    .map_or(true, |id| id.as_str().trim().is_empty())
+                {
+                    return Err(BridgeError::MissingCanonicalClaimId { record_index });
+                }
+                if claim
+                    .claim_version_id
+                    .as_ref()
+                    .map_or(true, |id| id.as_str().trim().is_empty())
+                {
+                    return Err(BridgeError::MissingCanonicalClaimVersionId { record_index });
+                }
+            }
+            ExportRecord::Relation(relation)
+                if relation
+                    .relation_version_id
+                    .as_ref()
+                    .map_or(true, |id| id.as_str().trim().is_empty()) =>
+            {
+                return Err(BridgeError::MissingCanonicalRelationVersionId { record_index });
+            }
+            ExportRecord::Episode(episode)
+                if episode
+                    .episode_id
+                    .as_ref()
+                    .map_or(true, |id| id.as_str().trim().is_empty()) =>
+            {
+                return Err(BridgeError::MissingEpisodeIdentity {
+                    record_context: format!("canonical V3 record {record_index}"),
+                });
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
 fn derive_execution_context_v2(envelope: &ExportEnvelopeV2) -> ExecutionContextV1 {
     let mut ctx = ExecutionContextV1::new(envelope.trace_ctx.clone().unwrap_or_else(|| {
-        TraceCtx::from_trace_id(derived_id(
-            "trace",
-            &envelope.envelope_id,
-            envelope.envelope_id.as_str(),
-        ))
+        TraceCtx::from_trace_id(derived_trace_id(envelope.envelope_id.as_str()))
     }));
     ctx.replay_link = envelope
         .evidence_bundle
@@ -451,16 +491,20 @@ fn transform_record(
 ) -> Result<ImportProjectionRecord, BridgeError> {
     match record {
         ExportRecord::Claim(claim) => {
-            let claim_id = claim.claim_id.clone().unwrap_or_else(|| {
-                ClaimId::new(derived_id("claim", record, envelope.envelope_id.as_str()))
-            });
-            let claim_version_id = claim.claim_version_id.clone().unwrap_or_else(|| {
-                ClaimVersionId::new(derived_id(
+            let synthesized_claim_id = claim.claim_id.is_none();
+            let synthesized_claim_version_id = claim.claim_version_id.is_none();
+            let claim_id = match claim.claim_id.clone() {
+                Some(id) => id,
+                None => ClaimId::new(derived_id("claim", record, envelope.envelope_id.as_str())?),
+            };
+            let claim_version_id = match claim.claim_version_id.clone() {
+                Some(id) => id,
+                None => ClaimVersionId::new(derived_id(
                     "claim-version",
                     record,
                     envelope.envelope_id.as_str(),
-                ))
-            });
+                )?),
+            };
             let (claim_state, freshness, contradiction_status) =
                 claim_projection_state(claim.metadata.as_ref());
 
@@ -484,18 +528,25 @@ fn transform_record(
                 supersedes_claim_version_id: claim.supersedes_claim_version_id.clone(),
                 content: claim.content.clone(),
                 confidence: claim.confidence,
-                metadata: claim.metadata.clone(),
+                metadata: migration_metadata(
+                    claim.metadata.clone(),
+                    synthesized_claim_id,
+                    synthesized_claim_version_id,
+                    false,
+                ),
             }))
         }
 
         ExportRecord::Relation(rel) => {
-            let relation_version_id = rel.relation_version_id.clone().unwrap_or_else(|| {
-                RelationVersionId::new(derived_id(
+            let synthesized = rel.relation_version_id.is_none();
+            let relation_version_id = match rel.relation_version_id.clone() {
+                Some(id) => id,
+                None => RelationVersionId::new(derived_id(
                     "relation-version",
                     record,
                     envelope.envelope_id.as_str(),
-                ))
-            });
+                )?),
+            };
 
             Ok(ImportProjectionRecord::RelationVersion(
                 ImportRelationVersion {
@@ -517,7 +568,7 @@ fn transform_record(
                     source_authority: envelope.source_authority.clone(),
                     trace_ctx: envelope.trace_ctx.clone(),
                     freshness: ProjectionFreshness::Current,
-                    metadata: rel.metadata.clone(),
+                    metadata: migration_metadata(rel.metadata.clone(), false, false, synthesized),
                 },
             ))
         }
@@ -614,16 +665,20 @@ fn transform_record_v2(
 ) -> Result<ImportProjectionRecord, BridgeError> {
     match record {
         ExportRecord::Claim(claim) => {
-            let claim_id = claim.claim_id.clone().unwrap_or_else(|| {
-                ClaimId::new(derived_id("claim", record, envelope.envelope_id.as_str()))
-            });
-            let claim_version_id = claim.claim_version_id.clone().unwrap_or_else(|| {
-                ClaimVersionId::new(derived_id(
+            let synthesized_claim_id = claim.claim_id.is_none();
+            let synthesized_claim_version_id = claim.claim_version_id.is_none();
+            let claim_id = match claim.claim_id.clone() {
+                Some(id) => id,
+                None => ClaimId::new(derived_id("claim", record, envelope.envelope_id.as_str())?),
+            };
+            let claim_version_id = match claim.claim_version_id.clone() {
+                Some(id) => id,
+                None => ClaimVersionId::new(derived_id(
                     "claim-version",
                     record,
                     envelope.envelope_id.as_str(),
-                ))
-            });
+                )?),
+            };
             let (claim_state, freshness, contradiction_status) =
                 claim_projection_state(claim.metadata.as_ref());
 
@@ -647,17 +702,24 @@ fn transform_record_v2(
                 supersedes_claim_version_id: claim.supersedes_claim_version_id.clone(),
                 content: claim.content.clone(),
                 confidence: claim.confidence,
-                metadata: claim.metadata.clone(),
+                metadata: migration_metadata(
+                    claim.metadata.clone(),
+                    synthesized_claim_id,
+                    synthesized_claim_version_id,
+                    false,
+                ),
             }))
         }
         ExportRecord::Relation(rel) => {
-            let relation_version_id = rel.relation_version_id.clone().unwrap_or_else(|| {
-                RelationVersionId::new(derived_id(
+            let synthesized = rel.relation_version_id.is_none();
+            let relation_version_id = match rel.relation_version_id.clone() {
+                Some(id) => id,
+                None => RelationVersionId::new(derived_id(
                     "relation-version",
                     record,
                     envelope.envelope_id.as_str(),
-                ))
-            });
+                )?),
+            };
 
             Ok(ImportProjectionRecord::RelationVersion(
                 ImportRelationVersion {
@@ -679,7 +741,7 @@ fn transform_record_v2(
                     source_authority: envelope.source_authority.clone(),
                     trace_ctx: envelope.trace_ctx.clone(),
                     freshness: ProjectionFreshness::Current,
-                    metadata: rel.metadata.clone(),
+                    metadata: migration_metadata(rel.metadata.clone(), false, false, synthesized),
                 },
             ))
         }
@@ -749,9 +811,15 @@ pub fn is_compatible_version(schema_version: &str) -> bool {
     )
 }
 
-fn derived_id<T: serde::Serialize>(domain: &str, value: &T, envelope_id: &str) -> String {
+fn derived_id<T: serde::Serialize>(
+    domain: &str,
+    value: &T,
+    envelope_id: &str,
+) -> Result<String, BridgeError> {
     use sha2::{Digest, Sha256};
-    let bytes = serde_json::to_vec(value).unwrap_or_default();
+    let bytes = serde_json::to_vec(value).map_err(|error| BridgeError::TransformFailed {
+        reason: format!("legacy identity material serialization failed: {error}"),
+    })?;
     let mut digest = Sha256::new();
     digest.update(b"forge-memory-bridge:derived-id:v1\0");
     digest.update(domain.as_bytes());
@@ -759,7 +827,41 @@ fn derived_id<T: serde::Serialize>(domain: &str, value: &T, envelope_id: &str) -
     digest.update(envelope_id.as_bytes());
     digest.update([0]);
     digest.update(bytes);
-    format!("{domain}-{:x}", digest.finalize())
+    Ok(format!("{domain}-{:x}", digest.finalize()))
+}
+
+fn derived_trace_id(envelope_id: &str) -> String {
+    use sha2::{Digest, Sha256};
+    let mut digest = Sha256::new();
+    digest.update(b"forge-memory-bridge:derived-trace-id:v1\0");
+    digest.update(envelope_id.as_bytes());
+    format!("trace-{:x}", digest.finalize())
+}
+
+fn migration_metadata(
+    metadata: Option<serde_json::Value>,
+    claim_id: bool,
+    claim_version_id: bool,
+    relation_version_id: bool,
+) -> Option<serde_json::Value> {
+    if !(claim_id || claim_version_id || relation_version_id) {
+        return metadata;
+    }
+    let mut object = match metadata {
+        Some(serde_json::Value::Object(object)) => object,
+        Some(value) => serde_json::Map::from_iter([("legacy_metadata".into(), value)]),
+        None => serde_json::Map::new(),
+    };
+    object.insert("_migration_api".into(), serde_json::json!("legacy_v1_v2"));
+    object.insert(
+        "_migration_synthesized_identity".into(),
+        serde_json::json!({
+            "claim_id": claim_id,
+            "claim_version_id": claim_version_id,
+            "relation_version_id": relation_version_id,
+        }),
+    );
+    Some(serde_json::Value::Object(object))
 }
 
 /// Create a trace context for the bridge transformation, chaining from

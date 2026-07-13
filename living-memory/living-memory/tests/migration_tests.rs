@@ -457,6 +457,20 @@ fn failure_class_from_error() {
         FailureClass::BaselineTimeout
     );
 
+    let cleanup = ForgeError::from(check_runner::RunnerError::KillProcessGroup {
+        pgid: 42,
+        source: std::io::Error::other("permission denied"),
+    });
+    assert_eq!(cleanup.kind(), "kill_process_group");
+    assert_eq!(FailureClass::from_error(&cleanup), FailureClass::Other);
+
+    let cleanup = ForgeError::from(check_runner::RunnerError::ContainerCleanup {
+        container: "check-runner-test".into(),
+        reason: "removal could not be confirmed".into(),
+    });
+    assert_eq!(cleanup.kind(), "container_cleanup");
+    assert_eq!(FailureClass::from_error(&cleanup), FailureClass::Other);
+
     let other = ForgeError::Other("something".into());
     assert_eq!(FailureClass::from_error(&other), FailureClass::Other);
 }

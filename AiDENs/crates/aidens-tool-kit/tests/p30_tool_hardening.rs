@@ -1,7 +1,58 @@
 use aidens_contracts::{ArtifactId, CanonicalToolSideEffectClass};
-use aidens_permit_kit::PermitPolicyV1;
+use aidens_permit_kit::{HostPermitAuthorityV1, PermitCheckContextV1, PermitPolicyV1};
 use aidens_tool_kit::{ToolDispatcher, ToolExposurePolicyV1, ToolInvocationError, ToolRegistryV1};
 use std::collections::BTreeSet;
+
+const TEST_RUN_ID: &str = "run:p30-tool-test";
+const TEST_ATTEMPT_ID: &str = "attempt:p30-tool-test";
+
+fn trusted_policy_for(
+    risk: CanonicalToolSideEffectClass,
+    tool_id: &str,
+    sandbox_root: String,
+) -> PermitPolicyV1 {
+    let root = std::env::temp_dir().join(format!("aidens-p30-host-{}", std::process::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("permit-authority-v1.key"), [31_u8; 32]).unwrap();
+    std::env::set_var("AIDENS_HOST_STATE_DIR", root);
+    std::env::set_var("AIDENS_HOST_PERMIT_ISSUER", "p30-test-host");
+    let authority = HostPermitAuthorityV1::load().unwrap();
+    let context = PermitCheckContextV1::new(tool_id, risk, sandbox_root).with_run_attempt(
+        Some(ArtifactId(TEST_RUN_ID.into())),
+        Some(ArtifactId(TEST_ATTEMPT_ID.into())),
+    );
+    authority
+        .policy()
+        .with_grant(authority.issue_for_context(&context, "test"))
+}
+
+#[tokio::test]
+async fn p30_dispatch_rejects_caller_minted_grant() {
+    let dir = std::env::temp_dir().join(format!(
+        "aidens-p30-untrusted-permit-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
+    let grant = aidens_contracts::PermitGrantV1::scoped(
+        CanonicalToolSideEffectClass::Write,
+        "aidens:patch-apply:1",
+        dir.canonicalize().unwrap().display().to_string(),
+        "caller",
+    );
+    let error = ToolDispatcher::new(registry)
+        .with_permit_policy(PermitPolicyV1::default().with_grant(grant))
+        .invoke(
+            "aidens:patch-apply:1",
+            serde_json::json!({"diff":"--- a/x\n+++ b/x\n"}),
+        )
+        .await
+        .expect_err("untrusted caller grant must be blocked at dispatch");
+    let error = error.downcast_ref::<ToolInvocationError>().unwrap();
+    assert!(error.approval_request().is_some());
+    let _ = std::fs::remove_dir_all(&dir);
+}
 
 #[test]
 fn p30_tool_exposure_id_is_content_derived() {
@@ -33,18 +84,21 @@ async fn p30_patch_apply_missing_file_fails_closed_instead_of_empty_input() {
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let policy = trusted_policy_for(
         CanonicalToolSideEffectClass::Write,
         "aidens:patch-apply:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let dispatcher = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let dispatcher = ToolDispatcher::new(registry).with_permit_policy(policy);
     let diff = "--- a/missing.txt\n+++ b/missing.txt\n@@\n-old\n+new\n";
 
     let error = dispatcher
-        .invoke("aidens:patch-apply:1", serde_json::json!({"diff": diff}))
+        .invoke_with_context(
+            "aidens:patch-apply:1",
+            serde_json::json!({"diff": diff}),
+            Some(ArtifactId(TEST_RUN_ID.into())),
+            Some(ArtifactId(TEST_ATTEMPT_ID.into())),
+        )
         .await
         .expect_err("missing file must not be treated as empty input");
     let error = error
@@ -72,20 +126,20 @@ async fn p30_run_checks_uses_fixed_executable_paths_without_ambient_path() {
     std::fs::create_dir_all(dir.join("scripts")).unwrap();
     std::fs::write(dir.join("scripts").join("verify.sh"), "printf fixed-path\n").unwrap();
     let registry = ToolRegistryV1::safe_coding_with_dispatchers(&dir).unwrap();
-    let grant = aidens_contracts::PermitGrantV1::scoped(
+    let policy = trusted_policy_for(
         CanonicalToolSideEffectClass::Admin,
         "aidens:run-checks:1",
         dir.canonicalize().unwrap().display().to_string(),
-        "test",
     );
-    let dispatcher = ToolDispatcher::new(registry)
-        .with_permit_policy(PermitPolicyV1::default().with_grant(grant));
+    let dispatcher = ToolDispatcher::new(registry).with_permit_policy(policy);
     let old_path = std::env::var_os("PATH");
     std::env::set_var("PATH", "/tmp/aidens-p30-poisoned-path");
     let result = dispatcher
-        .invoke(
+        .invoke_with_context(
             "aidens:run-checks:1",
             serde_json::json!({"command":["bash","scripts/verify.sh"]}),
+            Some(ArtifactId(TEST_RUN_ID.into())),
+            Some(ArtifactId(TEST_ATTEMPT_ID.into())),
         )
         .await;
     if let Some(old_path) = old_path {

@@ -28,8 +28,8 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
 chrono = { workspace = true, features = ["serde"] }
-stack-ids = { path = "../stack-ids" }
-forge-memory-bridge = { path = "../forge-memory-bridge" }
+stack-ids = { version = "0.1.1", path = "../stack-ids" }
+forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
 schemars = { workspace = true }
 
 # HNSW approximate nearest neighbor search (optional)
@@ -38,7 +38,7 @@ hnsw_rs = { version = "0.3", optional = true }
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 tempfile = { workspace = true }
-semantic-memory-forge = { path = "../semantic-memory-forge" }
+semantic-memory-forge = { version = "0.1.1", path = "../semantic-memory-forge" }
 
 # LIB-005: inherit workspace lint policy
 [lints]

@@ -883,7 +883,7 @@ struct SearchFact {
 
 /// Check if a namespace should be skipped (social media / ingestion artifact).
 fn is_skip_namespace(ns: &str) -> bool {
-    SKIP_NAMESPACES.iter().any(|s| *s == ns)
+    SKIP_NAMESPACES.contains(&ns)
 }
 
 /// Truncate a string to `max` chars, appending "…" if truncated.

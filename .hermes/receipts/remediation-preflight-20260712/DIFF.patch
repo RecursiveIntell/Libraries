@@ -1,0 +1,9 @@
+captured_at=2026-07-12T19:24:33.862101-05:00
+
+$ (cd /home/sikmindz/Coding/Libraries && git diff -- . ":(exclude).hermes")
+exit=0
+
+
+$ (cd /home/sikmindz/.hermes/hermes-agent && git diff)
+exit=0
+

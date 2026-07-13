@@ -142,18 +142,13 @@ impl ResultCapture {
                     format!("fact:{}", result.source_fact_id)
                 };
 
-                let edge_params = AddGraphEdgeParams {
-                    source: source_node,
-                    target: new_fact_node,
-                    edge_type: GraphEdgeType::Entity {
-                        relation: "fills_gap".to_string(),
-                    },
-                    weight: 1.0,
-                    metadata: Some(serde_json::json!({
-                        "job_id": result.job_id,
-                        "gap_type": result.gap_type,
-                    })),
-                };
+                let edge_params = capture_edge_params(
+                    source_node,
+                    new_fact_node,
+                    &result.job_id,
+                    &result.gap_type,
+                    &result.source_valid_time,
+                );
 
                 // Best-effort: don't fail capture if edge creation fails.
                 let _ = self.memory.add_graph_edge(edge_params).await;
@@ -168,6 +163,26 @@ impl ResultCapture {
             facts_skipped_duplicates,
             fact_ids,
         })
+    }
+}
+
+fn capture_edge_params(
+    source: String,
+    target: String,
+    job_id: &str,
+    gap_type: &str,
+    valid_time: &str,
+) -> AddGraphEdgeParams {
+    AddGraphEdgeParams {
+        source,
+        target,
+        edge_type: GraphEdgeType::Entity {
+            relation: "fills_gap".to_string(),
+        },
+        weight: 1.0,
+        metadata: Some(serde_json::json!({ "job_id": job_id, "gap_type": gap_type })),
+        valid_time: Some(valid_time.to_string()),
+        recorded_time: None,
     }
 }
 
@@ -294,6 +309,7 @@ mod tests {
             },
             gap_type: "missing-context".to_string(),
             source_fact_id: fact_id.to_string(),
+            source_valid_time: "2025-01-01T00:00:00Z".to_string(),
         }
     }
 
@@ -349,6 +365,19 @@ mod tests {
         assert!(!has_specific_facts(
             "this is a vague statement about things"
         ));
+    }
+
+    #[test]
+    fn capture_edge_times_have_explicit_distinct_semantics() {
+        let params = capture_edge_params(
+            "fact:source".into(),
+            "fact:new".into(),
+            "job:test",
+            "missing-context",
+            "2025-01-01T00:00:00Z",
+        );
+        assert_eq!(params.valid_time.as_deref(), Some("2025-01-01T00:00:00Z"));
+        assert_eq!(params.recorded_time, None);
     }
 
     #[tokio::test]
