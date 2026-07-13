@@ -25,6 +25,7 @@ compressed-scorer = { version = "0.1.0", path = "../compressed-scorer", default-
 
 [dev-dependencies]
 tempfile = "3.27.0"
+rusqlite = { version = "0.32", features = ["bundled"] }
 
 [[test]]
 name = "integration"
