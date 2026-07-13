@@ -1,0 +1,19 @@
+[package]
+name = "agent-graph-mcp"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+description = "MCP server exposing agent-graph + llm-pipeline for graph-orchestrated LLM workflows"
+
+[workspace]
+
+[dependencies]
+agent-graph = { version = "0.2.0", path = "../agent-graph" }
+llm-pipeline = { version = "0.2.0", path = "../llm-pipeline", features = ["openai"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "io-std", "io-util", "sync"] }
+
+[dev-dependencies]
+tempfile = "3"
