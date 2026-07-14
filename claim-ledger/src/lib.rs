@@ -26,6 +26,7 @@
 
 pub mod budget;
 pub mod candidate;
+pub mod envelope;
 pub mod error;
 pub mod ids;
 pub mod ledger;
@@ -45,6 +46,10 @@ pub use budget::{
 pub use candidate::{
     ProofPacketCandidateProvenanceV1, SimilarClaimCandidateV1,
     PROOF_PACKET_CANDIDATE_PROVENANCE_V1_SCHEMA, SIMILAR_CLAIM_CANDIDATE_V1_SCHEMA,
+};
+pub use envelope::{
+    ArtifactEnvelopeV1, EnvelopeError, EnvelopeVerificationContext, EnvelopeVerificationReport,
+    EnvelopeVerificationStatus, PolicyAdmission,
 };
 pub use error::ClaimLedgerError;
 pub use ids::{normalize_text, sha256_bytes, sha256_text, stable_id, ulid};

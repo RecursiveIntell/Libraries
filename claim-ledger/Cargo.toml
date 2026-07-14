@@ -20,6 +20,7 @@ chrono = { version = "0.4", features = ["serde"] }
 sha2 = "0.10"
 ulid = "1.1"
 hex = "0.4"
+ring = "0.17"
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }
