@@ -51,7 +51,10 @@ def collect_spdx_packages(packages: list[dict], package_index: dict[str, dict]) 
     for package in packages:
         package_id = package["id"]
         package_name = package.get("name", package_id)
-        package_ref = f"SPDXRef-Package-{package_name.replace('-', '_')}-{package_id.replace(\":\", \"_\")}"
+        package_ref = (
+            f"SPDXRef-Package-{package_name.replace('-', '_')}-"
+            f"{package_id.replace(':', '_')}"
+        )
         package_map[package_id] = package_ref
 
     spdx_packages = []

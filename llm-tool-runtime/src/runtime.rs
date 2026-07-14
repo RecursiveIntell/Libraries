@@ -921,7 +921,7 @@ mod tests {
     use semantic_memory_forge::FORGE_TOOL_RECEIPT_V2_SCHEMA;
     use serde_json::json;
     use stack_ids::{AttemptId, TraceCtx, TrialId};
-    use std::sync::atomic::{AtomicBool, AtomicUsize};
+    use std::sync::atomic::AtomicBool;
 
     #[derive(Clone)]
     struct EchoTool {
