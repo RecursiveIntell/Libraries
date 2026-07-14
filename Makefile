@@ -5,6 +5,12 @@ SUPPORTED_LANE_FLAGS := $(shell python3 scripts/print_supported_lane.py --cargo-
 
 gate:
 	python3 scripts/run_release_gates.py
+# TRUTH-002 fix: after gate regenerates proof artifacts, verify the
+# committed artifacts match the regenerated ones. If they differ, CI
+# was green on a different state than the committed repository shows.
+gate-verify: gate
+	git diff --exit-code -- STATUS_EVIDENCE_MANIFEST.json release/closeout_receipt_v1.json \
+		|| (echo "ERROR: gate regenerated artifacts differ from committed versions; commit the updated artifacts or fix the drift" && exit 1)
 
 workspace-check:
 	cargo check --workspace

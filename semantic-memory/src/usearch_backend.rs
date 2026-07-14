@@ -412,7 +412,9 @@ impl VectorBackend for UsearchBackend {
             let mut id_to_key = self.id_to_key.write().unwrap_or_else(|e| e.into_inner());
             id_to_key.insert(id, key);
         }
-        let index = self.index.read().unwrap_or_else(|e| e.into_inner());
+        // MEM-006 fix: usearch index is not internally synchronized;
+        // mutations must hold a write lock, not a read lock.
+        let index = self.index.write().unwrap_or_else(|e| e.into_inner());
         index
             .add(id, vector)
             .map_err(|e| MemoryError::HnswError(format!("usearch::Index::add failed: {e:?}")))?;
@@ -431,7 +433,9 @@ impl VectorBackend for UsearchBackend {
             let mut id_to_key = self.id_to_key.write().unwrap_or_else(|e| e.into_inner());
             id_to_key.remove(&id);
         }
-        let index = self.index.read().unwrap_or_else(|e| e.into_inner());
+        // MEM-006 fix: usearch index is not internally synchronized;
+        // mutations must hold a write lock, not a read lock.
+        let index = self.index.write().unwrap_or_else(|e| e.into_inner());
         // usearch's remove returns the number of vectors removed; ignore.
         let _ = index
             .remove(id)
