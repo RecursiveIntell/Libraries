@@ -61,9 +61,11 @@ pub mod stream;
 pub mod checkpoint;
 
 pub use error::{AgentGraphError, Result};
-pub use graph::{AgentGraph, END, START};
+pub use graph::{AgentGraph, CheckpointPolicy, GraphSpecV1, END, START};
 pub use memory::{GraphMemoryRetrievalV1, GraphMemoryRetriever};
 pub use receipt::{
-    ExecutionOutcome, GraphExecutionReceiptV1, GraphMemoryGenerationRefV1, StepExecutionReceiptV1,
+    ExecutionOutcome, GraphExecutionReceiptV1, GraphMemoryGenerationRefV1, MemoryReadEnvelopeV1,
+    ReplayError, ReplayVerification, RunBundleV1, StepExecutionReceiptV1, StepStateDeltaV1,
+    ToolCallEnvelopeV1,
 };
 pub use state::AgentState;

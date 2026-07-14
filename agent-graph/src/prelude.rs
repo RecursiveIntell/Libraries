@@ -4,7 +4,8 @@
 pub use crate::config::GraphConfig;
 pub use crate::edge::EdgeType;
 pub use crate::error::{AgentGraphError, Result};
-pub use crate::graph::{AgentGraph, AgentGraphBuilder, END, START};
+pub use crate::graph::{AgentGraph, AgentGraphBuilder, CheckpointPolicy, GraphSpecV1, END, START};
+pub use crate::receipt::{ExecutionOutcome, ReplayError, ReplayVerification, RunBundleV1};
 pub use crate::state::{AgentState, StateLimits, StateSnapshot, StateTransaction};
 
 // Node types

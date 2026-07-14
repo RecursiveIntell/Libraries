@@ -17,6 +17,14 @@ pub trait Node: Send + Sync {
     fn name(&self) -> Option<&str> {
         None
     }
+
+    /// Canonical schema for the payload accepted and produced by this node.
+    ///
+    /// Implementations that have a typed payload should override this method.
+    /// The default is a stable opaque schema for backward compatibility.
+    fn payload_schema(&self) -> serde_json::Value {
+        serde_json::json!({"type": "opaque"})
+    }
 }
 
 /// Helper to create a node from an async function

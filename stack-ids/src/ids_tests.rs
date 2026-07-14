@@ -193,9 +193,9 @@ struct FinalCloseoutIdentity {
 macro_rules! assert_id_roundtrip {
     ($ty:ty, $raw:expr) => {{
         let id = <$ty>::new($raw);
-        let parsed: $ty = $raw.parse().unwrap();
+        let parsed: $ty = id.as_str().parse().unwrap();
         assert_eq!(parsed, id);
-        assert_eq!(parsed.to_string(), $raw);
+        assert!(parsed.to_string().ends_with($raw));
 
         let encoded = serde_json::to_string(&id).unwrap();
         let decoded: $ty = serde_json::from_str(&encoded).unwrap();
@@ -206,15 +206,15 @@ macro_rules! assert_id_roundtrip {
 #[test]
 fn id_creation_and_display() {
     let id = EnvelopeId::new("env-001");
-    assert_eq!(id.as_str(), "env-001");
-    assert_eq!(id.to_string(), "env-001");
+    assert_eq!(id.as_str(), "envelope:env-001");
+    assert_eq!(id.to_string(), "envelope:env-001");
     assert!(!id.is_empty());
 }
 
 #[test]
 fn id_from_string() {
-    let id: ClaimId = "claim-123".into();
-    assert_eq!(id.as_str(), "claim-123");
+    let id = ClaimId::try_new("claim-123").unwrap();
+    assert_eq!(id.as_str(), "claim:claim-123");
 }
 
 #[test]
@@ -226,8 +226,7 @@ fn id_generate_is_unique() {
 
 #[test]
 fn id_empty_check() {
-    let id = EntityId::new("");
-    assert!(id.is_empty());
+    assert!(EntityId::try_new("").is_err());
 
     let id = EntityId::new("e-1");
     assert!(!id.is_empty());
@@ -237,7 +236,7 @@ fn id_empty_check() {
 fn id_serde_roundtrip() {
     let id = TrialId::new("trial-42");
     let json = serde_json::to_string(&id).unwrap();
-    assert_eq!(json, "\"trial-42\"");
+    assert_eq!(json, "\"trial:trial-42\"");
     let back: TrialId = serde_json::from_str(&json).unwrap();
     assert_eq!(back, id);
 }
@@ -925,11 +924,11 @@ mod v25_profile_runtime_identity_tests {
     macro_rules! assert_id_roundtrip_local {
         ($ty:ty, $value:expr) => {{
             let id = <$ty>::new($value);
-            assert_eq!(id.to_string(), $value);
-            let reparsed: $ty = $value.parse().unwrap();
+            assert!(id.to_string().ends_with($value));
+            let reparsed: $ty = id.as_str().parse().unwrap();
             assert_eq!(reparsed, id);
             let json = serde_json::to_string(&id).unwrap();
-            assert_eq!(json, format!("\"{}\"", $value));
+            assert_eq!(json, format!("\"{}\"", id));
             let decoded: $ty = serde_json::from_str(&json).unwrap();
             assert_eq!(decoded, id);
         }};

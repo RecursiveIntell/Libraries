@@ -5,18 +5,19 @@
 # This config is intentionally permissive on its first commit. It will:
 #   - FAIL on known security advisories (CVEs / RUSTSEC)  ← non-negotiable
 #   - FAIL on yanked crate versions
+#   - DENY unknown registries, unknown git sources, and wildcard dependencies
 #   - WARN on unmaintained crates, multiple versions, copyleft licenses, etc.
 #
-# Tighten incrementally as cleanup happens. Do NOT remove the [advisories] or
-# [yanked] sections — those are the only hard gates.
+# Do NOT soften the advisory, source, or wildcard gates without a dated,
+# owner-approved entry in the exception ledger below.
 
 [graph]
-all-features = false
+all-features = true
 
 [advisories]
 db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
-yanked = "warn"
+yanked = "deny"
 # Ignored advisories (with rationale):
 #
 # --- Unmaintained transitive crates (HARDENING, not exploitable) ---
@@ -40,23 +41,31 @@ yanked = "warn"
 # silenced here. The only direct dep (cea-core) migrated to postcard
 # 1.1 in this session's commit, and the hnsw_rs transitive was
 # eliminated in 121d940 (the semantic-memory default switch).
-# As of this commit, `cargo tree --workspace -i bincode` is empty
-# and the advisory no longer triggers — the ignore entry is
-# removed entirely (cargo-deny will warn if it's in the list but
-# unused).
+# The default workspace graph remains free of bincode, but the all-features
+# release graph can still reach it through semantic-memory's optional hnsw
+# feature. The advisory is intentionally not ignored, so that release graph
+# remains blocked until the optional transitive path is removed.
+# Exception ledger. Every ignored advisory has an owner and a mandatory expiry.
+# Renewal requires re-verifying the transitive path and the absence of an
+# upstream-safe upgrade. Owner for all entries: Workspace Security.
 ignore = [
-    # gtk3-rs GTK3 binding family (transitive via Tauri → webkit2gtk)
-    "RUSTSEC-2024-0411", "RUSTSEC-2024-0412", "RUSTSEC-2024-0413",
-    "RUSTSEC-2024-0414", "RUSTSEC-2024-0415", "RUSTSEC-2024-0416",
-    "RUSTSEC-2024-0417", "RUSTSEC-2024-0418", "RUSTSEC-2024-0419",
-    "RUSTSEC-2024-0420",
-    # proc-macro-error (transitive via glib-macros → gtk → Tauri 2.x)
-    "RUSTSEC-2024-0370",
-    # paste (transitive via Tauri bundler image pipeline)
-    "RUSTSEC-2024-0436",
-    # unic-* family (transitive via tauri-utils urlpattern)
-    "RUSTSEC-2025-0075", "RUSTSEC-2025-0080", "RUSTSEC-2025-0081",
-    "RUSTSEC-2025-0098", "RUSTSEC-2025-0100",
+    "RUSTSEC-2024-0411", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0412", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0413", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0414", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0415", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0416", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0417", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0418", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0419", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0420", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0370", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2024-0436", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2025-0075", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2025-0080", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2025-0081", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2025-0098", # owner: Workspace Security; expires: 2026-12-31
+    "RUSTSEC-2025-0100", # owner: Workspace Security; expires: 2026-12-31
 ]
 # Vulnerability-grade advisories (soundness issues, RCE, etc.) are NOT ignored
 # under any circumstance. As of this config's authoring, RUSTSEC-2026-0097
@@ -90,7 +99,7 @@ confidence-threshold = 0.8
 
 [bans]
 multiple-versions = "warn"
-wildcards = "allow"
+wildcards = "deny"
 highlight = "all"
 workspace-default-features = "allow"
 external-default-features = "allow"
@@ -99,7 +108,9 @@ skip = []
 skip-tree = []
 
 [sources]
-unknown-registry = "warn"
-unknown-git = "warn"
+# cargo-deny's effective unknown-source policy is the combination of these two
+# source-kind settings; cargo-deny has no singular `unknown-source` key.
+unknown-registry = "deny"
+unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 allow-git = []

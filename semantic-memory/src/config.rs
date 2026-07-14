@@ -5,6 +5,39 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
+/// One deterministic correction applied while normalizing numeric configuration.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ConfigCorrection {
+    /// Fully-qualified configuration field name.
+    pub field: String,
+    /// Why the supplied value was invalid.
+    pub reason: String,
+    /// Human-readable description of the replacement or clamp.
+    pub action: String,
+}
+
+/// Structured record of all corrections applied during normalization.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ConfigCorrectionReport {
+    /// Corrections in deterministic field order.
+    pub corrections: Vec<ConfigCorrection>,
+}
+
+impl ConfigCorrectionReport {
+    /// True when no caller-supplied field required correction.
+    pub fn is_empty(&self) -> bool {
+        self.corrections.is_empty()
+    }
+
+    fn corrected(&mut self, field: &str, reason: &str, action: String) {
+        self.corrections.push(ConfigCorrection {
+            field: field.to_string(),
+            reason: reason.to_string(),
+            action,
+        });
+    }
+}
+
 /// Configuration for the memory system.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MemoryConfig {
@@ -392,6 +425,12 @@ impl SearchConfig {
     }
 
     fn normalize_and_validate(&mut self, embedding_dimensions: usize) -> Result<(), MemoryError> {
+        const MAX_WEIGHT: f64 = 1_000_000.0;
+        const MAX_CANDIDATE_POOL: usize = 1_000_000;
+        const MAX_TOP_K: usize = 10_000;
+        const MAX_SPARSE_DIMENSIONS: usize = 1_000_000;
+        const MAX_RRF_K: f64 = 1_000_000.0;
+        const MAX_RECENCY_DAYS: f64 = 365_000.0;
         #[cfg(not(feature = "turbo-quant-codec"))]
         let _ = embedding_dimensions;
         if self.candidate_pool_size == 0 {
@@ -407,46 +446,114 @@ impl SearchConfig {
         if self.sparse_derive_top_k == 0 {
             self.sparse_derive_top_k = 1;
         }
+        if self.candidate_pool_size > MAX_CANDIDATE_POOL {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.candidate_pool_size",
+                reason: format!("candidate_pool_size must be <= {MAX_CANDIDATE_POOL}"),
+            });
+        }
+        if self.default_top_k > MAX_TOP_K {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.default_top_k",
+                reason: format!("default_top_k must be <= {MAX_TOP_K}"),
+            });
+        }
+        if self.sparse_top_k > MAX_CANDIDATE_POOL {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.sparse_top_k",
+                reason: format!("sparse_top_k must be <= {MAX_CANDIDATE_POOL}"),
+            });
+        }
+        if self.sparse_derive_top_k > MAX_SPARSE_DIMENSIONS {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.sparse_derive_top_k",
+                reason: format!("sparse_derive_top_k must be <= {MAX_SPARSE_DIMENSIONS}"),
+            });
+        }
         if !self.rrf_k.is_finite() || self.rrf_k <= 0.0 {
             return Err(MemoryError::InvalidConfig {
                 field: "search.rrf_k",
                 reason: "rrf_k must be finite and > 0".to_string(),
             });
         }
-        if !self.bm25_weight.is_finite() || self.bm25_weight < 0.0 {
+        if self.rrf_k > MAX_RRF_K {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.rrf_k",
+                reason: format!("rrf_k must be <= {MAX_RRF_K}"),
+            });
+        }
+        if !self.bm25_weight.is_finite() || !(0.0..=MAX_WEIGHT).contains(&self.bm25_weight) {
             return Err(MemoryError::InvalidConfig {
                 field: "search.bm25_weight",
-                reason: "bm25_weight must be finite and >= 0".to_string(),
+                reason: format!("bm25_weight must be finite and within [0, {MAX_WEIGHT}]"),
             });
         }
-        if !self.vector_weight.is_finite() || self.vector_weight < 0.0 {
+        if !self.vector_weight.is_finite() || !(0.0..=MAX_WEIGHT).contains(&self.vector_weight) {
             return Err(MemoryError::InvalidConfig {
                 field: "search.vector_weight",
-                reason: "vector_weight must be finite and >= 0".to_string(),
+                reason: format!("vector_weight must be finite and within [0, {MAX_WEIGHT}]"),
             });
         }
-        if !self.sparse_weight.is_finite() || self.sparse_weight < 0.0 {
+        if !self.sparse_weight.is_finite() || !(0.0..=MAX_WEIGHT).contains(&self.sparse_weight) {
             return Err(MemoryError::InvalidConfig {
                 field: "search.sparse_weight",
-                reason: "sparse_weight must be finite and >= 0".to_string(),
+                reason: format!("sparse_weight must be finite and within [0, {MAX_WEIGHT}]"),
             });
         }
-        if !self.sparse_min_score.is_finite() {
+        if !self.sparse_min_score.is_finite() || self.sparse_min_score.abs() > MAX_WEIGHT {
             return Err(MemoryError::InvalidConfig {
                 field: "search.sparse_min_score",
-                reason: "sparse_min_score must be finite".to_string(),
+                reason: format!("sparse_min_score must be finite and within ±{MAX_WEIGHT}"),
             });
         }
-        if !self.sparse_derive_min_weight.is_finite() || self.sparse_derive_min_weight < 0.0 {
+        if !self.sparse_derive_min_weight.is_finite()
+            || !(0.0..=MAX_WEIGHT as f32).contains(&self.sparse_derive_min_weight)
+        {
             return Err(MemoryError::InvalidConfig {
                 field: "search.sparse_derive_min_weight",
-                reason: "sparse_derive_min_weight must be finite and >= 0".to_string(),
+                reason: format!(
+                    "sparse_derive_min_weight must be finite and within [0, {MAX_WEIGHT}]"
+                ),
             });
         }
-        if !self.recency_weight.is_finite() || self.recency_weight < 0.0 {
+        if !self.late_interaction_weight.is_finite()
+            || !(0.0..=MAX_WEIGHT).contains(&self.late_interaction_weight)
+        {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.late_interaction_weight",
+                reason: format!(
+                    "late_interaction_weight must be finite and within [0, {MAX_WEIGHT}]"
+                ),
+            });
+        }
+        if !self.bm25_k1.is_finite() || !(0.0..=100.0).contains(&self.bm25_k1) {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.bm25_k1",
+                reason: "bm25_k1 must be finite and within [0, 100]".to_string(),
+            });
+        }
+        if !self.bm25_b.is_finite() || !(0.0..=1.0).contains(&self.bm25_b) {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.bm25_b",
+                reason: "bm25_b must be finite and within [0, 1]".to_string(),
+            });
+        }
+        if let Some((_, weight)) = self
+            .namespace_weights
+            .iter()
+            .find(|(_, weight)| !weight.is_finite() || !(0.0..=MAX_WEIGHT).contains(weight))
+        {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.namespace_weights",
+                reason: format!(
+                    "namespace weights must be finite and within [0, {MAX_WEIGHT}]; found {weight}"
+                ),
+            });
+        }
+        if !self.recency_weight.is_finite() || !(0.0..=MAX_WEIGHT).contains(&self.recency_weight) {
             return Err(MemoryError::InvalidConfig {
                 field: "search.recency_weight",
-                reason: "recency_weight must be finite and >= 0".to_string(),
+                reason: format!("recency_weight must be finite and within [0, {MAX_WEIGHT}]"),
             });
         }
         if !self.min_similarity.is_finite() || !(-1.0..=1.0).contains(&self.min_similarity) {
@@ -465,6 +572,34 @@ impl SearchConfig {
             return Err(MemoryError::InvalidConfig {
                 field: "search.recency_half_life_days",
                 reason: "recency_half_life_days must be > 0 when enabled".to_string(),
+            });
+        }
+        if matches!(self.recency_half_life_days, Some(v) if v > MAX_RECENCY_DAYS) {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.recency_half_life_days",
+                reason: format!("recency_half_life_days must be <= {MAX_RECENCY_DAYS}"),
+            });
+        }
+        if !(2..=16).contains(&self.turbo_quant_bits) {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.turbo_quant_bits",
+                reason: "TurboQuant bits must be within 2..=16".to_string(),
+            });
+        }
+        if self.turbo_quant_projections == 0 || self.turbo_quant_projections > MAX_CANDIDATE_POOL {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.turbo_quant_projections",
+                reason: format!("TurboQuant projections must be within 1..={MAX_CANDIDATE_POOL}"),
+            });
+        }
+        if matches!(self.candidate_dims, Some(0))
+            || matches!(self.candidate_dims, Some(dim) if dim > embedding_dimensions)
+        {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.candidate_dims",
+                reason: format!(
+                    "candidate_dims must be within 1..={embedding_dimensions} when enabled"
+                ),
             });
         }
         if self.uses_turbo_quant_backend() {
@@ -697,37 +832,97 @@ impl Default for MemoryLimits {
 }
 
 impl MemoryLimits {
-    /// Normalize and validate limits to hard caps.
-    pub fn normalize_and_validate(mut self) -> Result<Self, MemoryError> {
+    /// Normalize every resource field independently and return a correction report.
+    /// Valid fields are never replaced because an unrelated field is invalid.
+    pub fn normalize_with_report(mut self) -> (Self, ConfigCorrectionReport) {
+        const MAX_FACTS_PER_NAMESPACE: usize = 10_000_000;
+        const MAX_CHUNKS_PER_DOCUMENT: usize = 1_000_000;
+        const MAX_CONTENT_BYTES: usize = 64 * 1024 * 1024;
+        const MAX_EMBEDDING_TIMEOUT_SECS: u64 = 300;
+
+        let defaults = Self::default();
+        let mut report = ConfigCorrectionReport::default();
         if self.max_facts_per_namespace == 0 {
-            return Err(MemoryError::InvalidConfig {
-                field: "limits.max_facts_per_namespace",
-                reason: "must be at least 1".to_string(),
-            });
+            self.max_facts_per_namespace = defaults.max_facts_per_namespace;
+            report.corrected(
+                "limits.max_facts_per_namespace",
+                "must be at least 1",
+                format!("replaced with default {}", self.max_facts_per_namespace),
+            );
+        } else if self.max_facts_per_namespace > MAX_FACTS_PER_NAMESPACE {
+            self.max_facts_per_namespace = MAX_FACTS_PER_NAMESPACE;
+            report.corrected(
+                "limits.max_facts_per_namespace",
+                "exceeds hard upper bound",
+                format!("clamped to {MAX_FACTS_PER_NAMESPACE}"),
+            );
         }
         if self.max_chunks_per_document == 0 {
-            return Err(MemoryError::InvalidConfig {
-                field: "limits.max_chunks_per_document",
-                reason: "must be at least 1".to_string(),
-            });
+            self.max_chunks_per_document = defaults.max_chunks_per_document;
+            report.corrected(
+                "limits.max_chunks_per_document",
+                "must be at least 1",
+                format!("replaced with default {}", self.max_chunks_per_document),
+            );
+        } else if self.max_chunks_per_document > MAX_CHUNKS_PER_DOCUMENT {
+            self.max_chunks_per_document = MAX_CHUNKS_PER_DOCUMENT;
+            report.corrected(
+                "limits.max_chunks_per_document",
+                "exceeds hard upper bound",
+                format!("clamped to {MAX_CHUNKS_PER_DOCUMENT}"),
+            );
         }
         if self.max_content_bytes == 0 {
-            return Err(MemoryError::InvalidConfig {
-                field: "limits.max_content_bytes",
-                reason: "must be at least 1".to_string(),
-            });
-        }
-        // Hard cap: concurrency at 32
-        if self.max_embedding_concurrency > 32 {
-            self.max_embedding_concurrency = 32;
+            self.max_content_bytes = defaults.max_content_bytes;
+            report.corrected(
+                "limits.max_content_bytes",
+                "must be at least 1",
+                format!("replaced with default {}", self.max_content_bytes),
+            );
+        } else if self.max_content_bytes > MAX_CONTENT_BYTES {
+            self.max_content_bytes = MAX_CONTENT_BYTES;
+            report.corrected(
+                "limits.max_content_bytes",
+                "exceeds hard upper bound",
+                format!("clamped to {MAX_CONTENT_BYTES}"),
+            );
         }
         if self.max_embedding_concurrency == 0 {
             self.max_embedding_concurrency = 1;
+            report.corrected(
+                "limits.max_embedding_concurrency",
+                "must be at least 1",
+                "clamped to 1".to_string(),
+            );
+        } else if self.max_embedding_concurrency > 32 {
+            self.max_embedding_concurrency = 32;
+            report.corrected(
+                "limits.max_embedding_concurrency",
+                "exceeds hard upper bound",
+                "clamped to 32".to_string(),
+            );
         }
         if self.embedding_timeout.is_zero() {
             self.embedding_timeout = Duration::from_secs(1);
+            report.corrected(
+                "limits.embedding_timeout",
+                "must be at least one second",
+                "clamped to 1 second".to_string(),
+            );
+        } else if self.embedding_timeout.as_secs() > MAX_EMBEDDING_TIMEOUT_SECS {
+            self.embedding_timeout = Duration::from_secs(MAX_EMBEDDING_TIMEOUT_SECS);
+            report.corrected(
+                "limits.embedding_timeout",
+                "exceeds hard upper bound",
+                format!("clamped to {MAX_EMBEDDING_TIMEOUT_SECS} seconds"),
+            );
         }
-        Ok(self)
+        (self, report)
+    }
+
+    /// Normalize and validate limits to hard caps.
+    pub fn normalize_and_validate(self) -> Result<Self, MemoryError> {
+        Ok(self.normalize_with_report().0)
     }
 
     /// Backward-compatible alias for callers that only need clamped limits.
@@ -735,26 +930,16 @@ impl MemoryLimits {
     /// Falls back to defaults if the caller-provided limits are invalid.
     /// Default limits are infallible so the fallback path cannot fail.
     pub fn validated(self) -> Self {
-        self.normalize_and_validate().unwrap_or_else(|err| {
+        let (limits, report) = self.normalize_with_report();
+        for correction in report.corrections {
             tracing::warn!(
-                error = %err,
-                "invalid MemoryLimits supplied to validated(); using defaults"
+                field = %correction.field,
+                reason = %correction.reason,
+                action = %correction.action,
+                "corrected invalid memory limit"
             );
-            // Default limits are always valid — this path is infallible.
-            let defaults = Self::default();
-            Self {
-                max_facts_per_namespace: defaults.max_facts_per_namespace,
-                max_chunks_per_document: defaults.max_chunks_per_document,
-                max_content_bytes: defaults.max_content_bytes,
-                max_embedding_concurrency: defaults.max_embedding_concurrency.clamp(1, 32),
-                max_db_size_bytes: defaults.max_db_size_bytes,
-                embedding_timeout: if defaults.embedding_timeout.is_zero() {
-                    std::time::Duration::from_secs(1)
-                } else {
-                    defaults.embedding_timeout
-                },
-            }
-        })
+        }
+        limits
     }
 }
 
@@ -769,5 +954,102 @@ mod duration_secs {
     pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Duration, D::Error> {
         let secs = u64::deserialize(d)?;
         Ok(Duration::from_secs(secs))
+    }
+}
+
+#[cfg(test)]
+mod hardening_tests {
+    use super::*;
+    use proptest::prelude::*;
+
+    #[test]
+    fn one_invalid_limit_preserves_every_other_valid_limit() {
+        let original = MemoryLimits {
+            max_facts_per_namespace: 0,
+            max_chunks_per_document: 321,
+            max_content_bytes: 654_321,
+            max_embedding_concurrency: 7,
+            max_db_size_bytes: 987_654_321,
+            embedding_timeout: Duration::from_secs(19),
+        };
+
+        let corrected = original.validated();
+        assert_eq!(
+            corrected.max_facts_per_namespace,
+            MemoryLimits::default().max_facts_per_namespace
+        );
+        assert_eq!(corrected.max_chunks_per_document, 321);
+        assert_eq!(corrected.max_content_bytes, 654_321);
+        assert_eq!(corrected.max_embedding_concurrency, 7);
+        assert_eq!(corrected.max_db_size_bytes, 987_654_321);
+        assert_eq!(corrected.embedding_timeout, Duration::from_secs(19));
+    }
+
+    proptest! {
+        #[test]
+        fn arbitrary_single_bad_limit_preserves_other_valid_fields(
+            chunks in 1usize..10_000,
+            content in 1usize..10_000_000,
+            concurrency in 1usize..=32,
+            db_size in any::<u64>(),
+            timeout in 1u64..=300,
+        ) {
+            let original = MemoryLimits {
+                max_facts_per_namespace: 0,
+                max_chunks_per_document: chunks,
+                max_content_bytes: content,
+                max_embedding_concurrency: concurrency,
+                max_db_size_bytes: db_size,
+                embedding_timeout: Duration::from_secs(timeout),
+            };
+            let (corrected, report) = original.normalize_with_report();
+            prop_assert_eq!(corrected.max_chunks_per_document, chunks);
+            prop_assert_eq!(corrected.max_content_bytes, content);
+            prop_assert_eq!(corrected.max_embedding_concurrency, concurrency);
+            prop_assert_eq!(corrected.max_db_size_bytes, db_size);
+            prop_assert_eq!(corrected.embedding_timeout, Duration::from_secs(timeout));
+            prop_assert_eq!(report.corrections.len(), 1);
+            prop_assert_eq!(report.corrections[0].field.as_str(), "limits.max_facts_per_namespace");
+        }
+    }
+
+    #[test]
+    fn search_rejects_every_unbounded_or_non_finite_numeric_family() {
+        let mut cases = Vec::new();
+
+        let mut config = SearchConfig::default();
+        config.late_interaction_weight = f64::NAN;
+        cases.push(config);
+
+        let mut config = SearchConfig::default();
+        config.bm25_k1 = f64::INFINITY;
+        cases.push(config);
+
+        let mut config = SearchConfig::default();
+        config.bm25_b = 1.1;
+        cases.push(config);
+
+        let mut config = SearchConfig::default();
+        config.namespace_weights.insert("bad".into(), f64::INFINITY);
+        cases.push(config);
+
+        let mut config = SearchConfig::default();
+        config.candidate_pool_size = usize::MAX;
+        cases.push(config);
+
+        let mut config = SearchConfig::default();
+        config.sparse_top_k = usize::MAX;
+        cases.push(config);
+
+        let mut config = SearchConfig::default();
+        config.default_top_k = usize::MAX;
+        cases.push(config);
+
+        for mut config in cases {
+            assert!(
+                config.normalize_and_validate(768).is_err(),
+                "invalid numeric config was accepted: {config:?}"
+            );
+        }
     }
 }

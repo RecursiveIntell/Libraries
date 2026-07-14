@@ -6,7 +6,7 @@ use crate::edge::EdgeType;
 use crate::error::{AgentGraphError, Result};
 use crate::event_sink::EventSink;
 use crate::executor::Executor;
-use crate::graph::AgentGraph;
+use crate::graph::{AgentGraph, CheckpointPolicy};
 use crate::graph::{END, START};
 use crate::interrupt::InterruptConfig;
 use crate::node::Node;
@@ -26,6 +26,7 @@ pub struct AgentGraphBuilder {
     pub(crate) interrupt_config: Option<InterruptConfig>,
     pub(crate) checkpointer: Option<Arc<dyn CheckpointSaver>>,
     pub(crate) checkpoint_store: Option<Arc<dyn CheckpointStore>>,
+    pub(crate) checkpoint_policy: CheckpointPolicy,
     pub(crate) reducers: Vec<(String, Arc<dyn Reducer>)>,
     pub(crate) graph_name: Option<String>,
     pub(crate) event_sink: Option<Arc<dyn EventSink>>,
@@ -43,6 +44,7 @@ impl AgentGraphBuilder {
             interrupt_config: None,
             checkpointer: None,
             checkpoint_store: None,
+            checkpoint_policy: CheckpointPolicy::default(),
             reducers: Vec::new(),
             graph_name: None,
             event_sink: None,
@@ -165,6 +167,12 @@ impl AgentGraphBuilder {
         self
     }
 
+    /// Set checkpoint failure behavior for both checkpoint backends.
+    pub fn with_checkpoint_policy(mut self, policy: CheckpointPolicy) -> Self {
+        self.checkpoint_policy = policy;
+        self
+    }
+
     /// Set a custom event sink for structured event handling.
     pub fn with_event_sink(mut self, sink: Arc<dyn EventSink>) -> Self {
         self.event_sink = Some(sink);
@@ -201,6 +209,7 @@ impl AgentGraphBuilder {
             interrupt_config: self.interrupt_config,
             checkpointer: self.checkpointer,
             checkpoint_store: self.checkpoint_store,
+            checkpoint_policy: self.checkpoint_policy,
             reducers: self.reducers,
             graph_name: self.graph_name,
             event_sink: self.event_sink,

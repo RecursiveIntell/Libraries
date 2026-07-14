@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::{fs, process::Command};
 
 #[derive(Clone)]
 struct FailingSaver;
@@ -30,26 +31,34 @@ impl CheckpointSaver for FailingSaver {
 }
 
 fn checkpoint_graph(policy: CheckpointPolicy, calls: Arc<AtomicUsize>) -> AgentGraph {
-    let first_calls = calls.clone();
-    let second_calls = calls;
+    struct CountingNode {
+        calls: Arc<AtomicUsize>,
+        key: &'static str,
+    }
+    #[async_trait]
+    impl Node for CountingNode {
+        async fn execute(&self, state: &AgentState, _config: &GraphConfig) -> Result<NodeOutput> {
+            self.calls.fetch_add(1, Ordering::SeqCst);
+            state.set(self.key, true).await?;
+            Ok(NodeOutput::Done)
+        }
+    }
     AgentGraph::builder()
         .with_name("checkpoint-policy-test")
         .with_checkpoint_policy(policy)
         .with_checkpointer(FailingSaver)
         .add_node(
             "first",
-            node!(|state| async move {
-                first_calls.fetch_add(1, Ordering::SeqCst);
-                state.set("first", true).await?;
-                Ok(())
+            Box::new(CountingNode {
+                calls: calls.clone(),
+                key: "first",
             }),
         )
         .add_node(
             "second",
-            node!(|state| async move {
-                second_calls.fetch_add(1, Ordering::SeqCst);
-                state.set("second", true).await?;
-                Ok(())
+            Box::new(CountingNode {
+                calls,
+                key: "second",
             }),
         )
         .add_edge("first", "second")
@@ -75,6 +84,13 @@ async fn required_checkpoint_failure_stops_before_next_node_with_partial_receipt
         ExecutionOutcome::Partial { failed_step: 0 }
     ));
     assert_eq!(receipt.steps.len(), 1);
+    assert_eq!(
+        receipt
+            .recovery_state
+            .as_ref()
+            .and_then(|state| state.get("first")),
+        Some(&json!(true))
+    );
     assert!(receipt.steps[0]
         .error
         .as_deref()
@@ -177,8 +193,40 @@ fn graph_digest_matches_cross_process_golden() {
         semantic_graph("a-schema", "x > 0", 2, CheckpointPolicy::BestEffort).compute_graph_hash();
     assert_eq!(
         digest,
-        "blake3:8b38d7d6fa043f277d284be52d6afcc135371bd3e9dfe4f82924a6aafd24dbb9"
+        "blake3:557c316b18a26f05316895f953f94c10ff9ddadb868b386f334b80b633b20311"
     );
+}
+
+#[test]
+fn graph_hash_child_process_probe() {
+    let Ok(path) = std::env::var("AGENT_GRAPH_HASH_PROBE") else {
+        return;
+    };
+    let digest =
+        semantic_graph("a-schema", "x > 0", 2, CheckpointPolicy::BestEffort).compute_graph_hash();
+    fs::write(path, digest).unwrap();
+}
+
+#[test]
+fn same_graph_in_two_processes_has_same_digest() {
+    let exe = std::env::current_exe().unwrap();
+    let mut digests = Vec::new();
+    for suffix in ["one", "two"] {
+        let path = std::env::temp_dir().join(format!(
+            "agent-graph-hash-{}-{suffix}",
+            uuid::Uuid::new_v4()
+        ));
+        let status = Command::new(&exe)
+            .arg("--exact")
+            .arg("graph_hash_child_process_probe")
+            .env("AGENT_GRAPH_HASH_PROBE", &path)
+            .status()
+            .unwrap();
+        assert!(status.success());
+        digests.push(fs::read_to_string(&path).unwrap());
+        fs::remove_file(path).unwrap();
+    }
+    assert_eq!(digests[0], digests[1]);
 }
 
 #[tokio::test]

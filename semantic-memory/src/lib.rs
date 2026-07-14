@@ -86,6 +86,9 @@ compile_error!(
     "At least one search backend feature must be enabled: 'hnsw', 'usearch-backend', or 'brute-force'"
 );
 
+#[cfg(all(feature = "hnsw", feature = "usearch-backend"))]
+compile_error!("Cannot enable both 'hnsw' and 'usearch-backend' features simultaneously");
+
 mod authority;
 pub mod authority_contracts;
 pub mod chunker;
@@ -495,12 +498,12 @@ fn compress_content(content: &str) -> String {
         })
         .unwrap_or(content);
 
-    if first_sentence.len() <= MAX_CHARS {
+    if first_sentence.chars().count() <= MAX_CHARS {
         return first_sentence.trim().to_string();
     }
 
     // Truncate to MAX_CHARS at a word boundary.
-    let truncated = &first_sentence[..MAX_CHARS];
+    let truncated: String = first_sentence.chars().take(MAX_CHARS).collect();
     if let Some(last_space) = truncated.rfind(' ') {
         let at_word_boundary = &truncated[..last_space];
         format!("{}…", at_word_boundary.trim())
@@ -707,6 +710,60 @@ pub enum EmbeddingPurpose {
 
 const EMBEDDING_PROFILE_VERSION: &str = "asymmetric-purpose-v2";
 const EMBEDDING_NORMALIZATION_PROFILE: &str = "provider-output-v1";
+
+fn active_vector_backend() -> &'static str {
+    #[cfg(feature = "hnsw")]
+    {
+        return "hnsw";
+    }
+    #[cfg(all(not(feature = "hnsw"), feature = "usearch-backend"))]
+    {
+        return "usearch";
+    }
+    #[cfg(all(
+        not(feature = "hnsw"),
+        not(feature = "usearch-backend"),
+        feature = "brute-force"
+    ))]
+    {
+        return "brute_force";
+    }
+    #[allow(unreachable_code)]
+    "unknown"
+}
+
+fn active_vector_backend_generation() -> &'static str {
+    #[cfg(feature = "hnsw")]
+    {
+        return "hnsw:hnsw_rs-0.3";
+    }
+    #[cfg(all(not(feature = "hnsw"), feature = "usearch-backend"))]
+    {
+        return "usearch:2.25.3";
+    }
+    #[cfg(all(
+        not(feature = "hnsw"),
+        not(feature = "usearch-backend"),
+        feature = "brute-force"
+    ))]
+    {
+        return "brute_force:f32-v1";
+    }
+    #[allow(unreachable_code)]
+    "unknown:0"
+}
+
+fn search_cache_key(
+    query: &str,
+    top_k: usize,
+    backend_generation: &str,
+    corpus_epoch: RetrievalEpoch,
+) -> String {
+    format!(
+        "{backend_generation}:epoch={}:{query}:{top_k}",
+        corpus_epoch.0
+    )
+}
 
 #[derive(Clone)]
 struct CachedSearchResult {
@@ -1392,6 +1449,11 @@ impl MemoryStore {
                     returned: embeddings.len(),
                 });
             }
+            // Validate the complete response before mutating the shared cache. A
+            // partially valid provider response is one failed transaction.
+            for embedding in &embeddings {
+                db::validate_embedding(embedding, self.inner.config.embedding.dimensions)?;
+            }
             // Cache the new embeddings (keyed by original text, not prefixed)
             match self.inner.embedding_cache.lock() {
                 Ok(mut cache) => {
@@ -2008,7 +2070,7 @@ impl MemoryStore {
         // its receipt and execution semantics cannot be inherited from another
         // request. Recency-enabled searches also retain their evaluation-time
         // semantics by bypassing this cache.
-        let cache_key = if matches!(view, StateView::Current)
+        let cache_eligible = matches!(view, StateView::Current)
             && namespaces.is_none()
             && source_types.is_none()
             && context.receipt_mode == ReceiptMode::Disabled
@@ -2025,17 +2087,14 @@ impl MemoryStore {
             && context.filter_digest.is_none()
             && context.redaction_state.is_none()
             && context.budget_id.is_none()
-            && context.deadline_at.is_none()
-        {
-            Some(format!("{query}:{k}"))
-        } else {
-            None
-        };
-        let cache_epoch = if cache_key.is_some() {
+            && context.deadline_at.is_none();
+        let cache_epoch = if cache_eligible {
             Some(self.authority().current_retrieval_epoch().await?)
         } else {
             None
         };
+        let cache_key = cache_epoch
+            .map(|epoch| search_cache_key(query, k, active_vector_backend_generation(), epoch));
         if let Some(ref key) = cache_key {
             match self.inner.search_cache.lock() {
                 Ok(mut cache) => {
@@ -2966,6 +3025,8 @@ impl MemoryStore {
                 database_size_bytes: db_size,
                 embedding_model: model,
                 embedding_dimensions: dims,
+                vector_backend: active_vector_backend().to_string(),
+                vector_backend_generation: active_vector_backend_generation().to_string(),
             })
         })
         .await
@@ -3752,7 +3813,38 @@ impl MemoryStore {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::embedder::{EmbedBatchFuture, EmbedFuture};
     use crate::types::{SearchResult, SearchSource};
+
+    struct PartiallyInvalidBatchEmbedder {
+        dimensions: usize,
+    }
+
+    impl Embedder for PartiallyInvalidBatchEmbedder {
+        fn embed<'a>(&'a self, _text: &'a str) -> EmbedFuture<'a> {
+            let embedding = vec![1.0; self.dimensions];
+            Box::pin(async move { Ok(embedding) })
+        }
+
+        fn embed_batch<'a>(&'a self, texts: Vec<String>) -> EmbedBatchFuture<'a> {
+            let dimensions = self.dimensions;
+            Box::pin(async move {
+                let mut embeddings = vec![vec![1.0; dimensions]; texts.len()];
+                if let Some(value) = embeddings.get_mut(1).and_then(|row| row.first_mut()) {
+                    *value = f32::NAN;
+                }
+                Ok(embeddings)
+            })
+        }
+
+        fn model_name(&self) -> &str {
+            "partially-invalid-batch"
+        }
+
+        fn dimensions(&self) -> usize {
+            self.dimensions
+        }
+    }
 
     fn make_result(content: &str) -> SearchResult {
         SearchResult {
@@ -3805,5 +3897,79 @@ mod tests {
         let results = vec![make_result("")];
         let compressed = compress_search_results(results);
         assert_eq!(compressed[0].content, "");
+    }
+
+    #[test]
+    fn compress_search_results_is_utf8_safe_at_character_limit() {
+        let content = format!("{}。 trailing sentence", "記憶🧠e\u{301}".repeat(80));
+        let compressed = compress_search_results(vec![make_result(&content)]);
+        assert!(compressed[0].content.chars().count() <= 151);
+        assert!(compressed[0].content.ends_with('…'));
+    }
+
+    #[tokio::test]
+    async fn invalid_batch_leaves_embedding_cache_unchanged() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = MemoryConfig {
+            base_dir: dir.path().to_path_buf(),
+            ..MemoryConfig::default()
+        };
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(PartiallyInvalidBatchEmbedder { dimensions: 768 }),
+        )
+        .unwrap();
+        store.embed_document("already cached").await.unwrap();
+        let before: Vec<_> = store
+            .inner
+            .embedding_cache
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .collect();
+
+        let error = store
+            .embed_documents_batch(&["new valid", "new invalid"])
+            .await
+            .unwrap_err();
+        assert_eq!(error.kind(), "non_finite_embedding_value");
+
+        let after: Vec<_> = store
+            .inner
+            .embedding_cache
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .collect();
+        assert_eq!(after, before, "failed batches must not mutate cache state");
+    }
+
+    #[tokio::test]
+    async fn stats_reports_selected_vector_backend() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = MemoryConfig {
+            base_dir: dir.path().to_path_buf(),
+            ..MemoryConfig::default()
+        };
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(PartiallyInvalidBatchEmbedder { dimensions: 768 }),
+        )
+        .unwrap();
+        let stats = store.stats().await.unwrap();
+        assert_eq!(stats.vector_backend, "usearch");
+        assert!(stats.vector_backend_generation.starts_with("usearch:"));
+    }
+
+    #[test]
+    fn search_cache_identity_changes_with_corpus_epoch() {
+        let before = search_cache_key("same query", 5, "usearch:g1", RetrievalEpoch(7));
+        let after_write = search_cache_key("same query", 5, "usearch:g1", RetrievalEpoch(8));
+        let after_backend_rebuild =
+            search_cache_key("same query", 5, "usearch:g2", RetrievalEpoch(8));
+        assert_ne!(before, after_write);
+        assert_ne!(after_write, after_backend_rebuild);
     }
 }

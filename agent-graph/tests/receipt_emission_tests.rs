@@ -70,6 +70,7 @@ async fn graph_execution_receipts_roundtrip_json() {
         finished_at: chrono::Utc::now(),
         steps: vec![],
         memory_generations: vec![],
+        recovery_state: None,
         outcome: ExecutionOutcome::Completed,
     };
 

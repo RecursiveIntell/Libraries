@@ -7,6 +7,10 @@ import json
 
 
 RELEASE_GATE_COMMANDS = [
+    "python3 scripts/check_action_pinning.py",
+    "python3 scripts/check_supply_chain_policy.py",
+    "cargo metadata --no-deps --format-version 1 | python3 scripts/check_workspace_hygiene.py",
+    "python3 scripts/run_release_gates.py --check-drift",
     "cargo check --workspace",
     "bash scripts/check_pack_truth.sh",
     "bash scripts/check_repo_surface.sh",

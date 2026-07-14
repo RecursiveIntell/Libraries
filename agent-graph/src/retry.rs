@@ -1,4 +1,5 @@
 use crate::error::AgentGraphError;
+use serde_json::Value;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -20,6 +21,8 @@ pub struct RetryPolicy {
     pub jitter: bool,
     /// Optional predicate to determine if an error is retryable
     pub retry_on: Option<RetryPredicate>,
+    /// Stable semantic description of the retry predicate.
+    pub retry_on_spec: Option<Value>,
 }
 
 impl Default for RetryPolicy {
@@ -31,6 +34,7 @@ impl Default for RetryPolicy {
             max_interval: Duration::from_secs(60),
             jitter: true,
             retry_on: None,
+            retry_on_spec: None,
         }
     }
 }
@@ -70,6 +74,13 @@ impl RetryPolicy {
         predicate: impl Fn(&AgentGraphError) -> bool + Send + Sync + 'static,
     ) -> Self {
         self.retry_on = Some(Arc::new(predicate));
+        self.retry_on_spec = Some(serde_json::json!({"type": "custom"}));
+        self
+    }
+
+    /// Attach a canonical description to the custom retry predicate.
+    pub fn with_retry_on_spec(mut self, spec: Value) -> Self {
+        self.retry_on_spec = Some(spec);
         self
     }
 

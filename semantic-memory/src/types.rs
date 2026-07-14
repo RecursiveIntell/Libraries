@@ -1469,6 +1469,10 @@ pub struct MemoryStats {
     pub embedding_model: Option<String>,
     /// Currently configured embedding dimensions.
     pub embedding_dimensions: Option<usize>,
+    /// Compile-time selected vector candidate backend.
+    pub vector_backend: String,
+    /// Backend implementation generation bound into search cache identity.
+    pub vector_backend_generation: String,
 }
 
 /// Per-surface deletion counts for namespace removal.

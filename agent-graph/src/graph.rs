@@ -15,8 +15,9 @@ use crate::reducer::Reducer;
 use crate::retry::RetryPolicy;
 use crate::state::AgentState;
 use crate::stream::StreamEvent;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
@@ -27,6 +28,78 @@ pub use crate::builder::AgentGraphBuilder;
 pub const START: &str = "__start__";
 /// Virtual end node name.
 pub const END: &str = "__end__";
+
+/// Persistence behavior for execution checkpoints.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CheckpointPolicy {
+    /// A failed checkpoint aborts execution before the next node.
+    Required,
+    /// A failed checkpoint is logged and execution continues.
+    #[default]
+    BestEffort,
+    /// No checkpoints are written.
+    Disabled,
+}
+
+/// Canonical, serializable graph identity document.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GraphSpecV1 {
+    pub version: u8,
+    pub name: Option<String>,
+    pub nodes: Vec<NodeSpecV1>,
+    pub edges: Vec<EdgeSpecV1>,
+    pub retry_policies: BTreeMap<String, RetryPolicySpecV1>,
+    pub checkpoint_policy: CheckpointPolicy,
+}
+
+impl GraphSpecV1 {
+    /// Stable digest of the recursively key-sorted JSON representation.
+    pub fn canonical_digest(&self) -> String {
+        fn sort_json(value: &Value) -> Value {
+            match value {
+                Value::Object(map) => {
+                    let mut keys: Vec<_> = map.keys().collect();
+                    keys.sort();
+                    let mut sorted = serde_json::Map::new();
+                    for key in keys {
+                        sorted.insert(key.clone(), sort_json(&map[key]));
+                    }
+                    Value::Object(sorted)
+                }
+                Value::Array(values) => Value::Array(values.iter().map(sort_json).collect()),
+                other => other.clone(),
+            }
+        }
+
+        let value = serde_json::to_value(self).expect("GraphSpecV1 serializes");
+        let bytes = serde_json::to_vec(&sort_json(&value)).expect("JSON values serialize");
+        format!("blake3:{}", blake3::hash(&bytes).to_hex())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct NodeSpecV1 {
+    pub name: String,
+    pub payload_schema: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum EdgeSpecV1 {
+    Normal { from: String, to: String },
+    Conditional { from: String, condition: Value },
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RetryPolicySpecV1 {
+    pub max_attempts: usize,
+    pub initial_interval_nanos: u128,
+    pub backoff_factor: f64,
+    pub max_interval_nanos: u128,
+    pub jitter: bool,
+    pub retry_on: Option<Value>,
+}
 
 /// The agent graph — an orchestrator that owns control-flow and delegates
 /// node work to the Payload layer.
@@ -41,6 +114,7 @@ pub struct AgentGraph {
     pub(crate) checkpointer: Option<Arc<dyn CheckpointSaver>>,
     // New granular checkpoint store (per-attempt)
     pub(crate) checkpoint_store: Option<Arc<dyn CheckpointStore>>,
+    pub(crate) checkpoint_policy: CheckpointPolicy,
     pub(crate) reducers: Vec<(String, Arc<dyn Reducer>)>,
     pub(crate) graph_name: Option<String>,
     // New abstractions
@@ -218,42 +292,73 @@ impl AgentGraph {
         &self.edges
     }
 
-    /// Compute a stable hash of the graph's topology (node names + edges).
+    /// Return the canonical semantic graph specification.
+    pub fn graph_spec_v1(&self) -> GraphSpecV1 {
+        let mut nodes: Vec<_> = self
+            .nodes
+            .iter()
+            .map(|(name, node)| NodeSpecV1 {
+                name: name.clone(),
+                payload_schema: node.payload_schema(),
+            })
+            .collect();
+        nodes.sort_by(|a, b| a.name.cmp(&b.name));
+
+        let mut edges = Vec::new();
+        let mut sources: Vec<_> = self.edges.keys().collect();
+        sources.sort();
+        for from in sources {
+            if let Some(items) = self.edges.get(from) {
+                for edge in items {
+                    edges.push(match edge {
+                        EdgeType::Normal(to) => EdgeSpecV1::Normal {
+                            from: from.clone(),
+                            to: to.clone(),
+                        },
+                        EdgeType::Conditional(router) => EdgeSpecV1::Conditional {
+                            from: from.clone(),
+                            condition: router.condition_spec(),
+                        },
+                    });
+                }
+            }
+        }
+        edges.sort_by_key(|edge| serde_json::to_string(edge).unwrap_or_default());
+
+        let retry_policies = self
+            .retry_policies
+            .iter()
+            .map(|(name, policy)| {
+                (
+                    name.clone(),
+                    RetryPolicySpecV1 {
+                        max_attempts: policy.max_attempts,
+                        initial_interval_nanos: policy.initial_interval.as_nanos(),
+                        backoff_factor: policy.backoff_factor,
+                        max_interval_nanos: policy.max_interval.as_nanos(),
+                        jitter: policy.jitter,
+                        retry_on: policy.retry_on_spec.clone(),
+                    },
+                )
+            })
+            .collect();
+
+        GraphSpecV1 {
+            version: 1,
+            name: self.graph_name.clone(),
+            nodes,
+            edges,
+            retry_policies,
+            checkpoint_policy: self.checkpoint_policy,
+        }
+    }
+
+    /// Compute a stable BLAKE3 digest of [`GraphSpecV1`].
     ///
     /// Used to detect graph-definition drift when resuming from a checkpoint.
     /// Two graphs with the same nodes and edges produce the same hash.
     pub fn compute_graph_hash(&self) -> String {
-        use std::collections::BTreeMap;
-        use std::hash::{Hash, Hasher};
-
-        let mut hasher = std::hash::DefaultHasher::new();
-
-        // Sort node names for determinism
-        let mut sorted_nodes: Vec<&String> = self.nodes.keys().collect();
-        sorted_nodes.sort();
-        for name in &sorted_nodes {
-            name.hash(&mut hasher);
-        }
-
-        // Sort edges by source node for determinism
-        let sorted_edges: BTreeMap<&String, &Vec<EdgeType>> = self.edges.iter().collect();
-        for (from, edges) in &sorted_edges {
-            from.hash(&mut hasher);
-            for edge in *edges {
-                match edge {
-                    EdgeType::Normal(to) => {
-                        "normal".hash(&mut hasher);
-                        to.hash(&mut hasher);
-                    }
-                    EdgeType::Conditional(_) => {
-                        "conditional".hash(&mut hasher);
-                        from.hash(&mut hasher);
-                    }
-                }
-            }
-        }
-
-        format!("{:016x}", hasher.finish())
+        self.graph_spec_v1().canonical_digest()
     }
 }
 

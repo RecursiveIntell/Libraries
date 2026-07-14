@@ -38,6 +38,11 @@ pub trait RoutingFunction: Send + Sync {
     /// Returns routing decision.
     /// Return `RouterOutput::Next(None)` to end execution.
     async fn route(&self, state: &AgentState, config: &GraphConfig) -> Result<RouterOutput>;
+
+    /// Canonical semantic description of this routing condition.
+    fn condition_spec(&self) -> serde_json::Value {
+        serde_json::json!({"type": "opaque"})
+    }
 }
 
 /// Helper to create a router from an async function

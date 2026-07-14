@@ -69,8 +69,6 @@ members = [
 exclude = [
     # TypeScript package — not a Rust crate
     "tauri-react-hooks",
-    # Demo subcrate that does not exist on disk
-    "demo-tauri-libraries/src-tauri",
     # Root poly-kv has its own [workspace] and [package] with the same name
     # as poly-kv/crates/poly-kv; excluding prevents the name collision while
     # still allowing poly-kv/crates/* as workspace members.
@@ -104,7 +102,6 @@ default-members = [
     "knowledge-runtime",
     "living-memory/living-memory",
     "llm-output-parser",
-    "claim-ledger",
     "llm-pipeline",
     "llm-tool-runtime",
     "mechanism-runtime",
@@ -138,6 +135,54 @@ default-members = [
     "verification-control",
     "verification-policy",
 ]
+
+# Machine-readable expectations checked against live Cargo metadata, Git refs,
+# the workflow release branch, support documents, and the closeout receipt by
+# `python3 scripts/run_release_gates.py --check-drift`.
+[workspace.metadata.release-truth]
+workspace-package-count = 64
+default-member-count = 59
+release-branch = "main"
+feature-graph-sha256 = "d2b73a92c0b232baecf8bb862d980b0159b327ed45cdd288e66fed5483e5b18d"
+supported-closeout-members = [
+    "contract-schema-gen",
+    "forge-memory-bridge",
+    "forge-pilot",
+    "kernel-conformance",
+    "kernel-execution",
+    "kernel-oracles",
+    "knowledge-runtime",
+    "living-memory/living-memory",
+    "llm-tool-runtime",
+    "recursive-kernel-core",
+    "semantic-memory",
+    "semantic-memory-forge",
+    "stack-ids",
+    "verification-adjudication",
+    "verification-calibration",
+    "verification-control",
+    "verification-policy",
+]
+adjacent-members = [
+    "assurance-runtime",
+    "attestation-exchange",
+    "authority-delegation",
+    "constitutional-memory",
+    "continuity-runtime",
+    "discovery-portfolio",
+    "effect-runtime",
+    "federated-settlement",
+    "mechanism-runtime",
+    "profile-runtime",
+    "remote-oracle-admission",
+    "spec-execution",
+]
+
+[[workspace.metadata.release-truth.known-limitations]]
+id = "attestation-exchange-governance-observation"
+package = "attestation-exchange"
+status = "not-observed"
+source = "SCOPE_NOTES.md"
 
 # LIB-005: Workspace-level lint enforcement — compile-time law, not just scripts.
 [workspace.lints.rust]

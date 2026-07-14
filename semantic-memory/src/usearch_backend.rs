@@ -243,6 +243,49 @@ impl UsearchBackend {
         hasher.finish()
     }
 
+    fn insert_with_id(&self, key: String, vector: &[f32], id: u64) -> Result<(), MemoryError> {
+        validate_dimensions_vs_config(vector.len(), self.config.dimensions)?;
+
+        let mut key_to_id = self.key_to_id.write().unwrap_or_else(|e| e.into_inner());
+        let mut id_to_key = self.id_to_key.write().unwrap_or_else(|e| e.into_inner());
+        if let Some(existing_id) = key_to_id.get(&key) {
+            if *existing_id != id {
+                return Err(MemoryError::HnswError(format!(
+                    "usearch key collision: '{key}' maps to both {existing_id} and {id}"
+                )));
+            }
+        }
+        if let Some(existing_key) = id_to_key.get(&id) {
+            if existing_key != &key {
+                return Err(MemoryError::HnswError(format!(
+                    "usearch key collision: '{key}' and '{existing_key}' both hash to {id}"
+                )));
+            }
+        }
+
+        // Do not publish either mapping until usearch accepts the vector. This keeps
+        // both directions unchanged on collision or backend insertion failure.
+        let index = self.index.write().unwrap_or_else(|e| e.into_inner());
+        index
+            .add(id, vector)
+            .map_err(|e| MemoryError::HnswError(format!("usearch::Index::add failed: {e:?}")))?;
+        drop(index);
+        key_to_id.insert(key.clone(), id);
+        id_to_key.insert(id, key);
+        self.dirty.store(true, std::sync::atomic::Ordering::SeqCst);
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn insert_with_id_for_test(
+        &self,
+        key: String,
+        vector: &[f32],
+        id: u64,
+    ) -> Result<(), MemoryError> {
+        self.insert_with_id(key, vector, id)
+    }
+
     /// Save the in-memory state to the sidecar format. Atomic replace.
     pub fn save_to_disk(&self, dir: &Path, basename: &str) -> Result<(), MemoryError> {
         fs::create_dir_all(dir).map_err(|e| {
@@ -392,35 +435,8 @@ impl std::fmt::Debug for UsearchBackend {
 
 impl VectorBackend for UsearchBackend {
     fn insert(&self, key: String, vector: &[f32]) -> Result<(), MemoryError> {
-        validate_dimensions_vs_config(vector.len(), self.config.dimensions)?;
-
         let id = self.hash_key(&key);
-        {
-            let mut key_to_id = self.key_to_id.write().unwrap_or_else(|e| e.into_inner());
-            // Collision detection: same u64 hash but different String key.
-            if let Some(existing) = key_to_id.get(&key) {
-                if *existing != id {
-                    return Err(MemoryError::HnswError(format!(
-                        "usearch key collision: '{key}' hashes to {id} but map has {}",
-                        existing
-                    )));
-                }
-            }
-            key_to_id.insert(key.clone(), id);
-        }
-        {
-            let mut id_to_key = self.id_to_key.write().unwrap_or_else(|e| e.into_inner());
-            id_to_key.insert(id, key);
-        }
-        // MEM-006 fix: usearch index is not internally synchronized;
-        // mutations must hold a write lock, not a read lock.
-        let index = self.index.write().unwrap_or_else(|e| e.into_inner());
-        index
-            .add(id, vector)
-            .map_err(|e| MemoryError::HnswError(format!("usearch::Index::add failed: {e:?}")))?;
-        drop(index);
-        self.dirty.store(true, std::sync::atomic::Ordering::SeqCst);
-        Ok(())
+        self.insert_with_id(key, vector, id)
     }
 
     fn delete(&self, key: &str) -> Result<(), MemoryError> {
@@ -704,5 +720,28 @@ mod tests {
     fn backend_name_includes_usearch() {
         let b = UsearchBackend::new(test_config()).unwrap();
         assert!(b.backend_name().contains("usearch"));
+    }
+
+    #[test]
+    fn forced_hash_collision_is_rejected_without_data_loss() {
+        let b = UsearchBackend::new(test_config()).unwrap();
+        let forced_id = 42;
+        b.insert_with_id_for_test("fact:first".to_string(), &[1.0, 0.0, 0.0, 0.0], forced_id)
+            .unwrap();
+
+        let error = b
+            .insert_with_id_for_test("fact:second".to_string(), &[0.0, 1.0, 0.0, 0.0], forced_id)
+            .unwrap_err();
+        assert!(error.to_string().contains("collision"));
+        assert_eq!(b.len(), 1);
+        assert_eq!(
+            b.id_to_key
+                .read()
+                .unwrap()
+                .get(&forced_id)
+                .map(String::as_str),
+            Some("fact:first")
+        );
+        assert!(!b.key_to_id.read().unwrap().contains_key("fact:second"));
     }
 }

@@ -37,6 +37,7 @@ fn test_descriptor(name: &str, backend: ToolBackendKind) -> ToolDescriptor {
         mcp_surface_kind: McpSurfaceKind::Tool,
         exposure_policy: ToolExposurePolicy::default(),
         receipt_persistence: ToolReceiptPersistence::Ephemeral,
+        effect_target: Default::default(),
         output_size_limit_bytes: None,
         provider_payload: None,
     }
@@ -396,6 +397,6 @@ async fn receipt_sink_collects_receipts() {
     let call = ToolCall::new("sink_tool", "1.0.0", json!({}), ToolOriginKind::Test);
     let _ = runtime.execute(&ctx, &call, None, None).await;
     let receipts = sink.receipts();
-    assert_eq!(receipts.len(), 1);
+    assert_eq!(receipts.len(), 2);
     assert_eq!(receipts[0].tool_name, "sink_tool");
 }

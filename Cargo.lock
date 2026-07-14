@@ -6048,6 +6048,7 @@ dependencies = [
  "hnsw_rs",
  "lru",
  "poly-kv",
+ "proptest",
  "quant-governor",
  "reqwest 0.12.28",
  "rusqlite",

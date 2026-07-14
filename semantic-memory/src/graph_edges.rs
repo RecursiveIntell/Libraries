@@ -599,7 +599,7 @@ fn compute_edge_digest(
     if let Some(recorded_time) = explicit_recorded_time {
         builder.update(recorded_time.as_bytes());
     }
-    builder.finalize().0
+    builder.finalize().hex().to_string()
 }
 
 #[cfg(test)]

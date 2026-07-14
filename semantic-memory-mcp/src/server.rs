@@ -744,6 +744,8 @@ pub struct StatsOutput {
     pub db_size_mb: Option<f64>,
     pub embedding_model: Option<String>,
     pub embedding_dimensions: Option<usize>,
+    pub vector_backend: Option<String>,
+    pub vector_backend_generation: Option<String>,
 }
 
 pub struct SemanticMemoryServer {
@@ -2063,6 +2065,10 @@ impl SemanticMemoryServer {
                 .map(|s| (s.database_size_bytes as f64 / 1_048_576.0 * 100.0).round() / 100.0),
             embedding_model: core_value.as_ref().and_then(|s| s.embedding_model.clone()),
             embedding_dimensions: core_value.as_ref().and_then(|s| s.embedding_dimensions),
+            vector_backend: core_value.as_ref().map(|s| s.vector_backend.clone()),
+            vector_backend_generation: core_value
+                .as_ref()
+                .map(|s| s.vector_backend_generation.clone()),
         }))
     }
 

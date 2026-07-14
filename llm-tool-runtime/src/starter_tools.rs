@@ -130,6 +130,7 @@ impl<P> SearchMemoryTool<P> {
                 mcp_surface_kind: crate::McpSurfaceKind::Tool,
                 exposure_policy: ToolExposurePolicy::default(),
                 receipt_persistence: ToolReceiptPersistence::Ephemeral,
+                effect_target: crate::EffectTargetSpec::default(),
                 output_size_limit_bytes: Some(128 * 1024),
                 provider_payload: None,
             },
@@ -197,6 +198,7 @@ impl<P> ReadArtifactTool<P> {
                 mcp_surface_kind: crate::McpSurfaceKind::Resource,
                 exposure_policy: ToolExposurePolicy::default(),
                 receipt_persistence: ToolReceiptPersistence::Ephemeral,
+                effect_target: crate::EffectTargetSpec::default(),
                 output_size_limit_bytes: Some(256 * 1024),
                 provider_payload: None,
             },
@@ -262,6 +264,10 @@ impl<P> RunVerificationTool<P> {
                 mcp_surface_kind: crate::McpSurfaceKind::Tool,
                 exposure_policy: ToolExposurePolicy::default(),
                 receipt_persistence: ToolReceiptPersistence::ForgeRaw,
+                effect_target: crate::EffectTargetSpec {
+                    aliases: vec!["candidate_id".into()],
+                    compound: Vec::new(),
+                },
                 output_size_limit_bytes: Some(8 * 1024),
                 provider_payload: None,
             },
@@ -332,6 +338,10 @@ impl<P> ApplyPatchPreviewTool<P> {
                 mcp_surface_kind: crate::McpSurfaceKind::Tool,
                 exposure_policy: ToolExposurePolicy::default(),
                 receipt_persistence: ToolReceiptPersistence::ForgeRaw,
+                effect_target: crate::EffectTargetSpec {
+                    aliases: vec!["target".into()],
+                    compound: Vec::new(),
+                },
                 output_size_limit_bytes: Some(64 * 1024),
                 provider_payload: None,
             },
@@ -404,6 +414,10 @@ impl<P> SubmitPatchTool<P> {
                     ..Default::default()
                 },
                 receipt_persistence: ToolReceiptPersistence::ForgeRaw,
+                effect_target: crate::EffectTargetSpec {
+                    aliases: vec!["target".into()],
+                    compound: Vec::new(),
+                },
                 output_size_limit_bytes: Some(64 * 1024),
                 provider_payload: None,
             },
@@ -563,6 +577,10 @@ mod tests {
             None,
             "starter-tools-test",
             target_key,
+            stack_ids::ContentDigest::compute(b"test-method"),
+            stack_ids::ContentDigest::compute(b"test-effect"),
+            Some(chrono::Utc::now() + chrono::Duration::minutes(5)),
+            uuid::Uuid::new_v4().to_string(),
         )
     }
 
@@ -604,7 +622,7 @@ mod tests {
                     ),
                 },
             )),
-            execution_permit: Some(execution_permit_for("src/lib.rs")),
+            execution_permit: Some(execution_permit_for("src/lib.rs").into()),
             idempotency_key: None,
             caller: "starter-tools-test".into(),
             planner_stage: crate::ToolPlannerStage::Execution,
@@ -659,7 +677,7 @@ mod tests {
 
         let verification_tool = RunVerificationTool::new(Arc::new(TestVerificationPort));
         let mut verification_ctx = tool_ctx();
-        verification_ctx.execution_permit = Some(execution_permit_for("cand-1"));
+        verification_ctx.execution_permit = Some(execution_permit_for("cand-1").into());
         let verification_result = verification_tool
             .invoke(
                 &verification_ctx,

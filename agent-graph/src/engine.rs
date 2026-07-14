@@ -7,9 +7,12 @@ use crate::config::GraphConfig;
 use crate::edge::EdgeType;
 use crate::error::{AgentGraphError, Result};
 use crate::event_sink::{EventSink, GraphEvent, NodeOutcomeKind};
-use crate::graph::{AgentGraph, END, START};
+use crate::graph::{AgentGraph, CheckpointPolicy, END, START};
 use crate::interrupt::{ExecutionResult, InterruptCheckpoint};
-use crate::receipt::{ExecutionOutcome, GraphExecutionReceiptV1, StepExecutionReceiptV1};
+use crate::receipt::{
+    digest_state, digest_value, ExecutionOutcome, GraphExecutionReceiptV1, ReplayError,
+    ReplayVerification, RunBundleV1, StepExecutionReceiptV1, StepStateDeltaV1,
+};
 use crate::retry::RetryPolicy;
 use crate::router::RouterOutput;
 use crate::state::AgentState;
@@ -19,7 +22,7 @@ use std::collections::{HashMap, HashSet};
 use std::future::Future;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, Mutex};
 
 /// Execution-related methods on AgentGraph.
 impl AgentGraph {
@@ -55,6 +58,7 @@ impl AgentGraph {
             total_attempts: 0,
             failed_attempts: 0,
             executed_nodes: HashSet::new(),
+            recording: None,
         };
 
         executor.execute(start_node).await
@@ -91,16 +95,20 @@ impl AgentGraph {
 
         // GRAPH-001 fix: snapshot input state before it's consumed by execution
         let input_snapshot = state.export().await;
+        let recovery_state = state.clone();
         let input_bytes = serde_json::to_vec(&input_snapshot).unwrap_or_default();
         let input_digest = format!("blake3:{}", blake3::hash(&input_bytes).to_hex());
 
         let (result, summary) = self.execute_with_summary(start_node, state, config).await;
         let finished_at = summary.finished_at.unwrap_or_else(chrono::Utc::now);
 
-        let outcome = match summary.status {
-            crate::checkpoint_store::RunStatus::Completed => ExecutionOutcome::Completed,
-            crate::checkpoint_store::RunStatus::Cancelled => ExecutionOutcome::Cancelled,
-            crate::checkpoint_store::RunStatus::Interrupted => {
+        let outcome = match (&result, &summary.status) {
+            (Err(AgentGraphError::CheckpointError(_)), _) => ExecutionOutcome::Partial {
+                failed_step: summary.total_nodes_executed.saturating_sub(1),
+            },
+            (_, crate::checkpoint_store::RunStatus::Completed) => ExecutionOutcome::Completed,
+            (_, crate::checkpoint_store::RunStatus::Cancelled) => ExecutionOutcome::Cancelled,
+            (_, crate::checkpoint_store::RunStatus::Interrupted) => {
                 // Interruptions produce a Partial outcome; the failed step
                 // index is the count of nodes executed so far (best
                 // available signal without per-step receipts).
@@ -108,7 +116,7 @@ impl AgentGraph {
                     failed_step: summary.total_nodes_executed,
                 }
             }
-            crate::checkpoint_store::RunStatus::Failed => ExecutionOutcome::InternalError {
+            (_, crate::checkpoint_store::RunStatus::Failed) => ExecutionOutcome::InternalError {
                 message: format!(
                     "graph execution failed (run_id={}, attempts={}, failed_attempts={})",
                     summary.run_id, summary.total_attempts, summary.failed_attempts
@@ -117,7 +125,7 @@ impl AgentGraph {
             // Any other status (Pending, Running, etc.) is treated as
             // an internal error since execute_with_summary only returns
             // terminal summaries.
-            other => ExecutionOutcome::InternalError {
+            (_, other) => ExecutionOutcome::InternalError {
                 message: format!("unexpected non-terminal run status: {other:?}"),
             },
         };
@@ -142,19 +150,25 @@ impl AgentGraph {
             input_digest,
             output_digest,
             tool_calls: vec![],
-            error: match &outcome {
-                ExecutionOutcome::InternalError { message } => Some(message.clone()),
+            error: match (&result, &outcome) {
+                (Err(error), ExecutionOutcome::Partial { .. }) => Some(error.to_string()),
+                (_, ExecutionOutcome::InternalError { message }) => Some(message.clone()),
                 _ => None,
             },
         };
 
         let receipt = GraphExecutionReceiptV1 {
-            graph_id: summary.graph_name.clone(),
+            graph_id: self.compute_graph_hash(),
             execution_id: summary.run_id.clone(),
             started_at,
             finished_at,
             steps: vec![step],
             memory_generations: Vec::new(),
+            recovery_state: if matches!(&result, Err(AgentGraphError::CheckpointError(_))) {
+                Some(recovery_state.export().await)
+            } else {
+                None
+            },
             outcome,
         };
 
@@ -188,6 +202,7 @@ impl AgentGraph {
             total_attempts: 0,
             failed_attempts: 0,
             executed_nodes: HashSet::new(),
+            recording: None,
         };
 
         let (result, _summary) = executor.execute(start_node).await;
@@ -246,6 +261,7 @@ impl AgentGraph {
                 total_attempts: 0,
                 failed_attempts: 0,
                 executed_nodes: HashSet::new(),
+                recording: None,
             };
 
             let (result, _summary) = executor.execute(&start).await;
@@ -290,6 +306,7 @@ impl AgentGraph {
                 total_attempts: 0,
                 failed_attempts: 0,
                 executed_nodes: HashSet::new(),
+                recording: None,
             };
 
             let (result, _summary) = executor.execute(&start).await;
@@ -297,6 +314,169 @@ impl AgentGraph {
         });
 
         (handle, rx)
+    }
+
+    /// Execute once while recording a complete offline replay bundle.
+    pub async fn record_run_bundle(
+        &self,
+        start_node: &str,
+        state: AgentState,
+        config: GraphConfig,
+    ) -> Result<RunBundleV1> {
+        self.register_reducers_on_state(&state).await;
+        let input_state = state.export().await;
+        let recording = Arc::new(Mutex::new(Vec::new()));
+        let event_sink = self.resolve_event_sink(None);
+        let run_id = self.create_run_id(&event_sink).await;
+        let trace_ctx = config.resolve_trace_ctx();
+        let started_at = chrono::Utc::now();
+        let executor = GraphExecutor {
+            graph: self,
+            state,
+            config,
+            iteration: 0,
+            event_sink,
+            run_id,
+            trace_ctx,
+            cancel_flag: Arc::new(AtomicBool::new(false)),
+            started_at,
+            total_attempts: 0,
+            failed_attempts: 0,
+            executed_nodes: HashSet::new(),
+            recording: Some(recording.clone()),
+        };
+        let (result, summary) = executor.execute(start_node).await;
+        let deltas = recording.lock().await.clone();
+        let finished_at = summary.finished_at.unwrap_or_else(chrono::Utc::now);
+        let steps = deltas
+            .iter()
+            .map(|delta| StepExecutionReceiptV1 {
+                step_index: delta.step_index,
+                agent_id: delta.node_name.clone(),
+                started_at,
+                finished_at,
+                input_digest: delta.input_digest.clone(),
+                output_digest: delta.output_digest.clone(),
+                tool_calls: Vec::new(),
+                error: None,
+            })
+            .collect();
+        let outcome = match &result {
+            Ok(_) => ExecutionOutcome::Completed,
+            Err(AgentGraphError::CheckpointError(_)) => ExecutionOutcome::Partial {
+                failed_step: deltas.len().saturating_sub(1),
+            },
+            Err(error) => ExecutionOutcome::InternalError {
+                message: error.to_string(),
+            },
+        };
+        let terminal_receipt = GraphExecutionReceiptV1 {
+            graph_id: self.compute_graph_hash(),
+            execution_id: summary.run_id,
+            started_at,
+            finished_at,
+            steps,
+            memory_generations: Vec::new(),
+            recovery_state: None,
+            outcome,
+        };
+        result?;
+        Ok(RunBundleV1 {
+            graph_spec: self.graph_spec_v1(),
+            input_state,
+            step_state_deltas: deltas,
+            tool_call_envelopes: Vec::new(),
+            memory_read_envelopes: Vec::new(),
+            terminal_receipt,
+        })
+    }
+
+    /// Verify a recorded run without invoking nodes, tools, memory, or network.
+    pub fn verify_replay(
+        &self,
+        bundle: &RunBundleV1,
+    ) -> std::result::Result<ReplayVerification, ReplayError> {
+        let expected = self.compute_graph_hash();
+        let actual = bundle.graph_spec.canonical_digest();
+        if expected != actual {
+            return Err(ReplayError::GraphMismatch { expected, actual });
+        }
+
+        let mut state = bundle.input_state.clone();
+        for (position, delta) in bundle.step_state_deltas.iter().enumerate() {
+            if delta.step_index != position || delta.state_before != state {
+                return Err(ReplayError::StepDivergence {
+                    step_index: position,
+                    node_name: delta.node_name.clone(),
+                    reason: "input state does not match the preceding step".into(),
+                });
+            }
+            if digest_state(&delta.state_before) != delta.input_digest {
+                return Err(ReplayError::StepDivergence {
+                    step_index: position,
+                    node_name: delta.node_name.clone(),
+                    reason: "input digest mismatch".into(),
+                });
+            }
+            if digest_state(&delta.state_after) != delta.output_digest {
+                return Err(ReplayError::StepDivergence {
+                    step_index: position,
+                    node_name: delta.node_name.clone(),
+                    reason: "output digest mismatch".into(),
+                });
+            }
+            let receipt_step = bundle.terminal_receipt.steps.get(position).ok_or_else(|| {
+                ReplayError::TerminalDivergence {
+                    reason: format!("missing receipt step {position}"),
+                }
+            })?;
+            if receipt_step.input_digest != delta.input_digest
+                || receipt_step.output_digest != delta.output_digest
+            {
+                return Err(ReplayError::StepDivergence {
+                    step_index: position,
+                    node_name: delta.node_name.clone(),
+                    reason: "terminal receipt digest mismatch".into(),
+                });
+            }
+            state = delta.state_after.clone();
+        }
+
+        for envelope in &bundle.tool_call_envelopes {
+            if envelope.step_index >= bundle.step_state_deltas.len()
+                || digest_value(&envelope.request) != envelope.request_digest
+                || digest_value(&envelope.response) != envelope.response_digest
+            {
+                return Err(ReplayError::EnvelopeDivergence {
+                    step_index: envelope.step_index,
+                    reason: format!("tool envelope '{}' digest mismatch", envelope.tool_name),
+                });
+            }
+        }
+        for envelope in &bundle.memory_read_envelopes {
+            if envelope.step_index >= bundle.step_state_deltas.len()
+                || digest_value(&envelope.query) != envelope.query_digest
+                || digest_value(&envelope.result) != envelope.result_digest
+            {
+                return Err(ReplayError::EnvelopeDivergence {
+                    step_index: envelope.step_index,
+                    reason: format!("memory envelope '{}' digest mismatch", envelope.backend),
+                });
+            }
+        }
+        if bundle.terminal_receipt.graph_id != self.compute_graph_hash()
+            || bundle.terminal_receipt.steps.len() != bundle.step_state_deltas.len()
+            || !matches!(bundle.terminal_receipt.outcome, ExecutionOutcome::Completed)
+        {
+            return Err(ReplayError::TerminalDivergence {
+                reason: "terminal graph, step count, or outcome mismatch".into(),
+            });
+        }
+
+        Ok(ReplayVerification {
+            steps_verified: bundle.step_state_deltas.len(),
+            final_state_digest: digest_state(&state),
+        })
     }
 }
 
@@ -317,12 +497,33 @@ struct GraphExecutor<'a> {
     total_attempts: usize,
     failed_attempts: usize,
     executed_nodes: HashSet<String>,
+    recording: Option<Arc<Mutex<Vec<StepStateDeltaV1>>>>,
 }
 
 impl<'a> GraphExecutor<'a> {
     /// Derive the legacy trace_id string from the canonical TraceCtx.
     fn legacy_trace_id(&self) -> String {
         self.trace_ctx.to_legacy_trace_id().to_string()
+    }
+
+    async fn persist<T, E: std::fmt::Display>(
+        &self,
+        context: &str,
+        result: std::result::Result<T, E>,
+    ) -> Result<Option<T>> {
+        match result {
+            Ok(value) => Ok(Some(value)),
+            Err(error) => match self.graph.checkpoint_policy {
+                CheckpointPolicy::Required => Err(AgentGraphError::CheckpointError(format!(
+                    "{context}: {error}"
+                ))),
+                CheckpointPolicy::BestEffort => {
+                    tracing::warn!(checkpoint_context = context, error = %error, "checkpoint persistence failed");
+                    Ok(None)
+                }
+                CheckpointPolicy::Disabled => Ok(None),
+            },
+        }
     }
 
     async fn execute(mut self, start_node: &str) -> (Result<AgentState>, RunSummary) {
@@ -337,32 +538,43 @@ impl<'a> GraphExecutor<'a> {
             graph_name: self.graph.graph_name.clone(),
         });
 
-        let result = self.execute_inner(start_node).await;
+        let mut result = self.execute_inner(start_node).await;
+
+        // Record final status in checkpoint store
+        if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
+            if let Some(ref store) = self.graph.checkpoint_store {
+                let persistence = match &result {
+                    Ok(_) => {
+                        self.persist("complete run", store.complete_run(&self.run_id).await)
+                            .await
+                    }
+                    Err(AgentGraphError::Cancelled) => {
+                        self.persist(
+                            "cancel run",
+                            store.fail_run(&self.run_id, "cancelled").await,
+                        )
+                        .await
+                    }
+                    Err(error) => {
+                        self.persist(
+                            "fail run",
+                            store.fail_run(&self.run_id, &error.to_string()).await,
+                        )
+                        .await
+                    }
+                };
+                if let Err(error) = persistence {
+                    result = Err(error);
+                }
+            }
+        }
+
         let status = match &result {
             Ok(_) => RunStatus::Completed,
             Err(AgentGraphError::Cancelled) => RunStatus::Cancelled,
             Err(AgentGraphError::InterruptError { .. }) => RunStatus::Interrupted,
             Err(_) => RunStatus::Failed,
         };
-
-        // Record final status in checkpoint store
-        match &result {
-            Ok(_) => {
-                if let Some(ref store) = self.graph.checkpoint_store {
-                    let _ = store.complete_run(&self.run_id).await;
-                }
-            }
-            Err(AgentGraphError::Cancelled) => {
-                if let Some(ref store) = self.graph.checkpoint_store {
-                    let _ = store.fail_run(&self.run_id, "cancelled").await;
-                }
-            }
-            Err(e) => {
-                if let Some(ref store) = self.graph.checkpoint_store {
-                    let _ = store.fail_run(&self.run_id, &e.to_string()).await;
-                }
-            }
-        }
 
         let summary = self.build_run_summary(status, run_legacy_tid.clone());
 
@@ -439,25 +651,37 @@ impl<'a> GraphExecutor<'a> {
                         });
 
                         // Save legacy checkpoint
-                        if let Some(ref checkpointer) = self.graph.checkpointer {
-                            if let Some(ref thread_id) = self.config.thread_id {
-                                let cp = Checkpoint {
-                                    execution_id: thread_id.clone(),
-                                    timestamp: chrono::Utc::now(),
-                                    current_node: node_name.clone(),
-                                    iteration: self.iteration,
-                                    state: self.state.snapshot().await,
-                                    step_number,
-                                    active_nodes: current_superstep.clone(),
-                                };
-                                let _ = checkpointer.save(&cp).await;
+                        if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
+                            if let Some(ref checkpointer) = self.graph.checkpointer {
+                                if let Some(ref thread_id) = self.config.thread_id {
+                                    let cp = Checkpoint {
+                                        execution_id: thread_id.clone(),
+                                        timestamp: chrono::Utc::now(),
+                                        current_node: node_name.clone(),
+                                        iteration: self.iteration,
+                                        state: self.state.snapshot().await,
+                                        step_number,
+                                        active_nodes: current_superstep.clone(),
+                                    };
+                                    self.persist(
+                                        "interrupt-before checkpoint",
+                                        checkpointer.save(&cp).await,
+                                    )
+                                    .await?;
+                                }
                             }
                         }
 
                         // Save state to checkpoint store
-                        if let Some(ref store) = self.graph.checkpoint_store {
-                            let state_data = self.state.export().await;
-                            let _ = store.save_state_snapshot(&self.run_id, &state_data).await;
+                        if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
+                            if let Some(ref store) = self.graph.checkpoint_store {
+                                let state_data = self.state.export().await;
+                                self.persist(
+                                    "interrupt-before state snapshot",
+                                    store.save_state_snapshot(&self.run_id, &state_data).await,
+                                )
+                                .await?;
+                            }
                         }
 
                         return Err(AgentGraphError::InterruptError {
@@ -523,6 +747,35 @@ impl<'a> GraphExecutor<'a> {
                 self.merge_parallel_states(&snapshot_data, &branch_results)
                     .await?;
 
+                if let Some(recording) = &self.recording {
+                    let final_merged_state = self.state.export().await;
+                    let mut replay_state = snapshot_data.clone();
+                    let branch_count = branch_results.len();
+                    let mut recording = recording.lock().await;
+                    for (branch_index, (name, branch_state, _)) in branch_results.iter().enumerate()
+                    {
+                        let before = replay_state.clone();
+                        let branch_data = branch_state.export().await;
+                        for (key, value) in branch_data {
+                            if snapshot_data.get(&key) != Some(&value) {
+                                replay_state.insert(key, value);
+                            }
+                        }
+                        if branch_index + 1 == branch_count {
+                            replay_state = final_merged_state.clone();
+                        }
+                        let step_index = recording.len();
+                        recording.push(StepStateDeltaV1 {
+                            step_index,
+                            node_name: name.clone(),
+                            input_digest: digest_state(&before),
+                            output_digest: digest_state(&replay_state),
+                            state_before: before,
+                            state_after: replay_state.clone(),
+                        });
+                    }
+                }
+
                 for (name, _, output) in branch_results {
                     let targets = self.resolve_output(&name, output).await?;
                     next_nodes.extend(targets);
@@ -533,24 +786,36 @@ impl<'a> GraphExecutor<'a> {
             if let Some(ref interrupt_cfg) = self.graph.interrupt_config {
                 for node_name in &current_superstep {
                     if interrupt_cfg.should_interrupt_after(node_name) {
-                        if let Some(ref checkpointer) = self.graph.checkpointer {
-                            if let Some(ref thread_id) = self.config.thread_id {
-                                let cp = Checkpoint {
-                                    execution_id: thread_id.clone(),
-                                    timestamp: chrono::Utc::now(),
-                                    current_node: node_name.clone(),
-                                    iteration: self.iteration,
-                                    state: self.state.snapshot().await,
-                                    step_number,
-                                    active_nodes: next_nodes.clone(),
-                                };
-                                let _ = checkpointer.save(&cp).await;
+                        if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
+                            if let Some(ref checkpointer) = self.graph.checkpointer {
+                                if let Some(ref thread_id) = self.config.thread_id {
+                                    let cp = Checkpoint {
+                                        execution_id: thread_id.clone(),
+                                        timestamp: chrono::Utc::now(),
+                                        current_node: node_name.clone(),
+                                        iteration: self.iteration,
+                                        state: self.state.snapshot().await,
+                                        step_number,
+                                        active_nodes: next_nodes.clone(),
+                                    };
+                                    self.persist(
+                                        "interrupt-after checkpoint",
+                                        checkpointer.save(&cp).await,
+                                    )
+                                    .await?;
+                                }
                             }
                         }
 
-                        if let Some(ref store) = self.graph.checkpoint_store {
-                            let state_data = self.state.export().await;
-                            let _ = store.save_state_snapshot(&self.run_id, &state_data).await;
+                        if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
+                            if let Some(ref store) = self.graph.checkpoint_store {
+                                let state_data = self.state.export().await;
+                                self.persist(
+                                    "interrupt-after state snapshot",
+                                    store.save_state_snapshot(&self.run_id, &state_data).await,
+                                )
+                                .await?;
+                            }
                         }
 
                         return Err(AgentGraphError::InterruptError {
@@ -562,26 +827,35 @@ impl<'a> GraphExecutor<'a> {
             }
 
             // Save checkpoint after superstep
-            if let Some(ref checkpointer) = self.graph.checkpointer {
-                if let Some(ref thread_id) = self.config.thread_id {
-                    let current = current_superstep.first().cloned().unwrap_or_default();
-                    let cp = Checkpoint {
-                        execution_id: thread_id.clone(),
-                        timestamp: chrono::Utc::now(),
-                        current_node: current,
-                        iteration: self.iteration,
-                        state: self.state.snapshot().await,
-                        step_number,
-                        active_nodes: next_nodes.clone(),
-                    };
-                    let _ = checkpointer.save(&cp).await;
+            if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
+                if let Some(ref checkpointer) = self.graph.checkpointer {
+                    if let Some(ref thread_id) = self.config.thread_id {
+                        let current = current_superstep.first().cloned().unwrap_or_default();
+                        let cp = Checkpoint {
+                            execution_id: thread_id.clone(),
+                            timestamp: chrono::Utc::now(),
+                            current_node: current,
+                            iteration: self.iteration,
+                            state: self.state.snapshot().await,
+                            step_number,
+                            active_nodes: next_nodes.clone(),
+                        };
+                        self.persist("superstep checkpoint", checkpointer.save(&cp).await)
+                            .await?;
+                    }
                 }
             }
 
             // Save state snapshot to new checkpoint store
-            if let Some(ref store) = self.graph.checkpoint_store {
-                let state_data = self.state.export().await;
-                let _ = store.save_state_snapshot(&self.run_id, &state_data).await;
+            if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
+                if let Some(ref store) = self.graph.checkpoint_store {
+                    let state_data = self.state.export().await;
+                    self.persist(
+                        "superstep state snapshot",
+                        store.save_state_snapshot(&self.run_id, &state_data).await,
+                    )
+                    .await?;
+                }
             }
 
             // Emit superstep end
@@ -643,6 +917,7 @@ impl<'a> GraphExecutor<'a> {
                 self.state.clone(),
                 self.event_sink.clone(),
                 self.graph.checkpoint_store.clone(),
+                self.graph.checkpoint_policy,
                 self.run_id.clone(),
                 node_name.clone(),
                 legacy_tid.clone(),
@@ -665,6 +940,7 @@ impl<'a> GraphExecutor<'a> {
                 self.state.clone(),
                 self.event_sink.clone(),
                 self.graph.checkpoint_store.clone(),
+                self.graph.checkpoint_policy,
                 self.run_id.clone(),
                 node_name.clone(),
                 legacy_tid.clone(),
@@ -679,6 +955,18 @@ impl<'a> GraphExecutor<'a> {
             Ok(outcome) => {
                 // Track state updates for events
                 let after = self.state.export().await;
+                if let Some(recording) = &self.recording {
+                    let mut recording = recording.lock().await;
+                    let step_index = recording.len();
+                    recording.push(StepStateDeltaV1 {
+                        step_index,
+                        node_name: name.to_string(),
+                        input_digest: digest_state(&before),
+                        output_digest: digest_state(&after),
+                        state_before: before.clone(),
+                        state_after: after.clone(),
+                    });
+                }
                 let mut updates = HashMap::new();
                 for (key, val) in &after {
                     match before.get(key) {
@@ -821,6 +1109,7 @@ impl<'a> GraphExecutor<'a> {
         let trace_id = self.legacy_trace_id();
         let trace_ctx = Some(self.trace_ctx.clone());
         let checkpoint_store = self.graph.checkpoint_store.clone();
+        let checkpoint_policy = self.graph.checkpoint_policy;
         let node_attempt_count = self.total_attempts as u32;
 
         if let Some(ref executor) = self.graph.executor {
@@ -843,6 +1132,7 @@ impl<'a> GraphExecutor<'a> {
                     forked_state.clone(),
                     event_sink.clone(),
                     checkpoint_store.clone(),
+                    checkpoint_policy,
                     run_id.clone(),
                     name.clone(),
                     trace_id.clone(),
@@ -921,6 +1211,7 @@ impl<'a> GraphExecutor<'a> {
                     forked_state.clone(),
                     event_sink.clone(),
                     checkpoint_store.clone(),
+                    checkpoint_policy,
                     run_id.clone(),
                     name.clone(),
                     trace_id.clone(),
@@ -1028,6 +1319,7 @@ async fn execute_node_attempt_family<ExecOnce, ExecFut>(
     state: AgentState,
     event_sink: Arc<dyn EventSink>,
     checkpoint_store: Option<Arc<dyn CheckpointStore>>,
+    checkpoint_policy: CheckpointPolicy,
     run_id: String,
     node_id: String,
     legacy_trace_id: String,
@@ -1055,12 +1347,29 @@ where
             trial_id: Some(trial_id.clone()),
         });
 
-        let checkpoint_attempt_id = if let Some(ref store) = checkpoint_store {
+        let checkpoint_attempt_id = if checkpoint_policy == CheckpointPolicy::Disabled {
+            None
+        } else if let Some(ref store) = checkpoint_store {
             let state_val = serde_json::to_value(&state.export().await).unwrap_or(Value::Null);
-            store
+            match store
                 .record_attempt(&run_id, &node_id, attempt_index as u32, &state_val)
                 .await
-                .ok()
+            {
+                Ok(id) => Some(id),
+                Err(error) if checkpoint_policy == CheckpointPolicy::Required => {
+                    return Err(AttemptFamilyFailure {
+                        error: AgentGraphError::CheckpointError(format!(
+                            "record node attempt: {error}"
+                        )),
+                        outcome: NodeOutcomeKind::Failed,
+                        trial_id,
+                    });
+                }
+                Err(error) => {
+                    tracing::warn!(error = %error, node_id, "checkpoint attempt recording failed");
+                    None
+                }
+            }
         } else {
             None
         };
@@ -1073,9 +1382,18 @@ where
                             if let Err(error) = state.set(key, value.clone()).await {
                                 if let Some(ref store) = checkpoint_store {
                                     if let Some(ref attempt_id) = checkpoint_attempt_id {
-                                        let _ = store
-                                            .fail_attempt(attempt_id, &error.to_string())
-                                            .await;
+                                        if let Err(checkpoint_error) =
+                                            store.fail_attempt(attempt_id, &error.to_string()).await
+                                        {
+                                            if checkpoint_policy == CheckpointPolicy::Required {
+                                                return Err(AttemptFamilyFailure {
+                                                    error: AgentGraphError::CheckpointError(format!("record failed node attempt: {checkpoint_error}")),
+                                                    outcome: NodeOutcomeKind::Failed,
+                                                    trial_id: trial_id.clone(),
+                                                });
+                                            }
+                                            tracing::warn!(error = %checkpoint_error, node_id, "checkpoint failure recording failed");
+                                        }
                                     }
                                 }
                                 return Err(AttemptFamilyFailure {
@@ -1097,7 +1415,20 @@ where
                         );
                         let state_val =
                             serde_json::to_value(&state.export().await).unwrap_or(Value::Null);
-                        let _ = store.complete_attempt(attempt_id, &state_val, &meta).await;
+                        if let Err(error) =
+                            store.complete_attempt(attempt_id, &state_val, &meta).await
+                        {
+                            if checkpoint_policy == CheckpointPolicy::Required {
+                                return Err(AttemptFamilyFailure {
+                                    error: AgentGraphError::CheckpointError(format!(
+                                        "complete node attempt: {error}"
+                                    )),
+                                    outcome: NodeOutcomeKind::Failed,
+                                    trial_id,
+                                });
+                            }
+                            tracing::warn!(error = %error, node_id, "checkpoint attempt completion failed");
+                        }
                     }
                 }
 
@@ -1106,7 +1437,20 @@ where
             Err(error) => {
                 if let Some(ref store) = checkpoint_store {
                     if let Some(ref attempt_id) = checkpoint_attempt_id {
-                        let _ = store.fail_attempt(attempt_id, &error.to_string()).await;
+                        if let Err(checkpoint_error) =
+                            store.fail_attempt(attempt_id, &error.to_string()).await
+                        {
+                            if checkpoint_policy == CheckpointPolicy::Required {
+                                return Err(AttemptFamilyFailure {
+                                    error: AgentGraphError::CheckpointError(format!(
+                                        "record failed node attempt: {checkpoint_error}"
+                                    )),
+                                    outcome: NodeOutcomeKind::Failed,
+                                    trial_id,
+                                });
+                            }
+                            tracing::warn!(error = %checkpoint_error, node_id, "checkpoint failure recording failed");
+                        }
                     }
                 }
 
