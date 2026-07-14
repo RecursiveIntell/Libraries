@@ -690,6 +690,14 @@ impl ToolReceiptSink for CanonicalEventLog {
                 )
             })
     }
+
+    async fn health_check(&self) -> Result<(), ToolError> {
+        Ok(())
+    }
+
+    async fn mark_unresolved(&self, _preflight_receipt_id: &str) -> Result<(), ToolError> {
+        Ok(())
+    }
 }
 
 fn ensure_file(path: &Path) -> Result<(), CanonicalEventLogError> {

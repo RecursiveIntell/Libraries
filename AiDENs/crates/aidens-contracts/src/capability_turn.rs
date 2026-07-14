@@ -769,12 +769,12 @@ impl TurnExecutionPlanV1 {
             &[
                 ("run-id", ""),
                 ("attempt-id", ""),
-                ("mode", mode_material.as_str()),
+                ("mode", &mode_material),
                 ("tool-exposure-id", tool_exposure.exposure_id.as_ref()),
-                ("max-tool-calls", max_tool_calls_material.as_str()),
-                ("max-retries", max_retries_material.as_str()),
-                ("max-turn-millis", max_turn_millis_material.as_str()),
-                ("created-at", created_at_material.as_str()),
+                ("max-tool-calls", &max_tool_calls_material),
+                ("max-retries", &max_retries_material),
+                ("max-turn-millis", &max_turn_millis_material),
+                ("created-at", &created_at_material),
             ],
         );
         Self {
@@ -803,12 +803,12 @@ impl TurnExecutionPlanV1 {
             &[
                 ("run-id", context.run_id.as_ref()),
                 ("attempt-id", context.attempt_id.as_ref()),
-                ("mode", mode_material.as_str()),
+                ("mode", &mode_material),
                 ("tool-exposure-id", self.tool_exposure_id.as_ref()),
-                ("max-tool-calls", max_tool_calls_material.as_str()),
-                ("max-retries", max_retries_material.as_str()),
-                ("max-turn-millis", max_turn_millis_material.as_str()),
-                ("created-at", created_at_material.as_str()),
+                ("max-tool-calls", &max_tool_calls_material),
+                ("max-retries", &max_retries_material),
+                ("max-turn-millis", &max_turn_millis_material),
+                ("created-at", &created_at_material),
             ],
         );
         self
@@ -864,7 +864,7 @@ impl TurnReportV1 {
                     ("run-id", context.run_id.as_ref()),
                     ("attempt-id", context.attempt_id.as_ref()),
                     ("plan-id", plan.plan_id.as_ref()),
-                    ("started-at", started_at_material.as_str()),
+                    ("started-at", &started_at_material),
                 ],
             ),
             kind: ArtifactKindV1::Turn,
@@ -959,8 +959,8 @@ impl StopRuleReportV1 {
                 &[
                     ("run-id", context.run_id.as_ref()),
                     ("attempt-id", context.attempt_id.as_ref()),
-                    ("rule", rule_material.as_str()),
-                    ("checked-at", checked_at_material.as_str()),
+                    ("rule", &rule_material),
+                    ("checked-at", &checked_at_material),
                 ],
             ),
             kind: ArtifactKindV1::StopRule,

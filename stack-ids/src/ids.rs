@@ -68,7 +68,7 @@ macro_rules! define_id {
         $(#[$meta])*
         #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
         #[serde(transparent)]
-        pub struct $name(pub(crate) String);
+        pub struct $name(pub String);
 
         impl $name {
             /// Creates an ID from a canonical family-qualified string or a

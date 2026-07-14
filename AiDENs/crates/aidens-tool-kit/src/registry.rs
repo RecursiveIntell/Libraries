@@ -124,6 +124,8 @@ pub(crate) fn canonical_descriptor_from_aidens(
             canonical_stack::ToolReceiptPersistence::Ephemeral
         },
         output_size_limit_bytes: None,
+        effect_target: Default::default(),
+        rollback_contract: None,
         provider_payload: Some(serde_json::json!({
             "aidens_namespace": descriptor.namespace,
             "aidens_name": descriptor.name,
