@@ -10,7 +10,7 @@
 use crate::error::JcsError;
 use serde::de::{Deserialize, Deserializer, MapAccess, SeqAccess, Visitor};
 use serde_json::{Map, Number, Value};
-use std::{collections::BTreeSet, fmt};
+use std::fmt;
 
 /// JCS canonicalizer that produces deterministic JSON bytes.
 #[derive(Debug, Clone, Default)]
@@ -109,17 +109,11 @@ impl Canonicalizer {
         // We use a custom parser to detect duplicate keys (serde_json allows them).
         out.push('{');
 
-        // Track seen keys to detect duplicates (RFC 8785 §2.7)
-        let mut seen_keys = BTreeSet::new();
         let mut first = true;
 
         let mut entries: Vec<_> = obj.iter().collect();
         entries.sort_by(|(a, _), (b, _)| a.encode_utf16().cmp(b.encode_utf16()));
         for (key, value) in entries {
-            if !seen_keys.insert(key.clone()) {
-                return Err(JcsError::DuplicateKey { key: key.clone() });
-            }
-
             if !first {
                 out.push(',');
             }
@@ -145,8 +139,13 @@ impl Canonicalizer {
 pub fn parse_with_dup_check(s: &str) -> Result<Value, JcsError> {
     let value: StrictValue = serde_json::from_str(s).map_err(|e| {
         let reason = e.to_string();
-        if reason.contains("duplicate object key") {
-            JcsError::DuplicateKey { key: reason }
+        if let Some(encoded_key) = reason
+            .strip_prefix("duplicate object key: ")
+            .and_then(|rest| rest.split(" at line ").next())
+        {
+            let key = serde_json::from_str(encoded_key)
+                .unwrap_or_else(|_| encoded_key.trim_matches('"').to_owned());
+            JcsError::DuplicateKey { key }
         } else {
             JcsError::InvalidJson { reason }
         }
@@ -218,29 +217,6 @@ impl<'de> Visitor<'de> for StrictVisitor {
     }
 }
 
-fn detect_duplicates(value: &Value) -> Result<(), JcsError> {
-    match value {
-        Value::Object(map) => {
-            let mut keys = BTreeSet::new();
-            for key in map.keys() {
-                if !keys.insert(key.clone()) {
-                    return Err(JcsError::DuplicateKey { key: key.clone() });
-                }
-            }
-            for v in map.values() {
-                detect_duplicates(v)?;
-            }
-        }
-        Value::Array(arr) => {
-            for v in arr {
-                detect_duplicates(v)?;
-            }
-        }
-        _ => {}
-    }
-    Ok(())
-}
-
 /// Validates that a JSON string parses to JSON, resolving duplicates first.
 ///
 /// This is used for canonicalization inputs: the input need not be ordered,
@@ -254,7 +230,6 @@ pub fn parse_and_validate(input: &str) -> Result<Value, JcsError> {
 /// This canonicalizes any JSON (possibly with duplicate keys in the source),
 /// returning an error if duplicates are found.
 pub fn canonicalize_flexible(value: &Value) -> Result<String, JcsError> {
-    detect_duplicates(value)?;
     Canonicalizer::new().canonicalize(value)
 }
 

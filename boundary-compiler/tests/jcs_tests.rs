@@ -10,6 +10,15 @@ fn decoded_duplicate_keys_are_object_scoped() {
 }
 
 #[test]
+fn duplicate_error_reports_the_decoded_property_name() {
+    let error = parse_with_dup_check(r#"{"na\u006de":1,"name":2}"#).unwrap_err();
+    assert!(matches!(
+        error,
+        boundary_compiler::JcsError::DuplicateKey { ref key } if key == "name"
+    ));
+}
+
+#[test]
 fn jcs_utf16_and_ecmascript_number_vectors() {
     let value = parse_with_dup_check(r#"{"\uE000":1,"\uD800\uDC00":2}"#).unwrap();
     assert_eq!(
