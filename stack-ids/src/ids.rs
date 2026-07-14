@@ -23,6 +23,18 @@ impl std::fmt::Display for IdParseError {
 
 impl std::error::Error for IdParseError {}
 
+impl IdParseError {
+    /// Canonical ID family that rejected the input.
+    pub fn family(&self) -> &str {
+        &self.family
+    }
+
+    /// Stable validation failure reason.
+    pub fn reason(&self) -> &'static str {
+        self.reason
+    }
+}
+
 fn family_name(type_name: &str) -> String {
     let stem = type_name.strip_suffix("Id").unwrap_or(type_name);
     let mut family = String::new();

@@ -23,6 +23,7 @@ boundary-compiler = { version = "0.1.0", path = "../boundary-compiler" }
 
 [dev-dependencies]
 serde_json = "1.0.149"
+proptest = { workspace = true }
 
 # LIB-005: inherit workspace lint policy
 [lints]
