@@ -2,10 +2,10 @@
 //!
 //! This module provides strict JCS canonicalization with duplicate-key rejection.
 //! It implements the transformation rules from RFC 8785 §2.1–§2.7:
-//! - Control characters escaped as `\uXXXX`
+//! - U+0000 through U+001F escaped per ECMAScript `JSON.stringify`
 //! - String escapes in deterministic order
 //! - Numbers with specific formatting rules
-//! - Object keys sorted lexicographically by JSON string codepoints
+//! - Object keys sorted lexicographically by UTF-16 code units
 
 use crate::error::JcsError;
 use serde::de::{Deserialize, Deserializer, MapAccess, SeqAccess, Visitor};
@@ -78,8 +78,8 @@ impl Canonicalizer {
                 '\n' => out.push_str("\\n"),
                 '\r' => out.push_str("\\r"),
                 '\t' => out.push_str("\\t"),
-                c if c.is_control() => {
-                    // RFC 8785 §2.2: Control characters → \uXXXX
+                c if c <= '\u{1f}' => {
+                    // RFC 8785 §3.2.2.2: ASCII controls use lowercase Unicode escapes.
                     out.push_str(&format!("\\u{:04x}", c as u32));
                 }
                 c => out.push(c),
@@ -103,10 +103,9 @@ impl Canonicalizer {
     }
 
     fn write_object(&self, out: &mut String, obj: &Map<String, Value>) -> Result<(), JcsError> {
-        // RFC 8785 §2.7: Object names (keys) MUST be sorted lexicographically by
-        // JSON string codepoints (UCS-2). BTreeMap gives us this ordering.
-        //
-        // We use a custom parser to detect duplicate keys (serde_json allows them).
+        // RFC 8785 §3.2.3: compare decoded property names as unsigned UTF-16
+        // code-unit sequences. Rust's native `str` order is UTF-8 and differs
+        // for supplementary-plane characters.
         out.push('{');
 
         let mut first = true;

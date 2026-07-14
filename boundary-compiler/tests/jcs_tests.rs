@@ -40,6 +40,70 @@ fn jcs_utf16_and_ecmascript_number_vectors() {
 }
 
 #[test]
+fn rfc8785_preserves_non_ascii_control_code_points() {
+    let value = serde_json::Value::String("\u{0085}".to_owned());
+    assert_eq!(
+        Canonicalizer::new().canonicalize(&value).unwrap(),
+        "\"\u{0085}\""
+    );
+}
+
+#[test]
+fn rfc8785_appendix_b_number_vectors() {
+    // RFC 8785 Appendix B, excluding the non-finite values forbidden by JSON.
+    let cases = [
+        (0x0000_0000_0000_0000, "0"),
+        (0x8000_0000_0000_0000, "0"),
+        (0x0000_0000_0000_0001, "5e-324"),
+        (0x8000_0000_0000_0001, "-5e-324"),
+        (0x7fef_ffff_ffff_ffff, "1.7976931348623157e+308"),
+        (0xffef_ffff_ffff_ffff, "-1.7976931348623157e+308"),
+        (0x4340_0000_0000_0000, "9007199254740992"),
+        (0xc340_0000_0000_0000, "-9007199254740992"),
+        (0x4430_0000_0000_0000, "295147905179352830000"),
+        (0x44b5_2d02_c7e1_4af5, "9.999999999999997e+22"),
+        (0x44b5_2d02_c7e1_4af6, "1e+23"),
+        (0x44b5_2d02_c7e1_4af7, "1.0000000000000001e+23"),
+        (0x444b_1ae4_d6e2_ef4e, "999999999999999700000"),
+        (0x444b_1ae4_d6e2_ef4f, "999999999999999900000"),
+        (0x444b_1ae4_d6e2_ef50, "1e+21"),
+        (0x3eb0_c6f7_a0b5_ed8c, "9.999999999999997e-7"),
+        (0x3eb0_c6f7_a0b5_ed8d, "0.000001"),
+        (0x41b3_de43_5555_5553, "333333333.3333332"),
+        (0x41b3_de43_5555_5554, "333333333.33333325"),
+        (0x41b3_de43_5555_5555, "333333333.3333333"),
+        (0x41b3_de43_5555_5556, "333333333.3333334"),
+        (0x41b3_de43_5555_5557, "333333333.33333343"),
+        (0xbecb_f647_612f_3696, "-0.0000033333333333333333"),
+        (0x4314_3ff3_c1cb_0959, "1424953923781206.2"),
+    ];
+
+    let canonicalizer = Canonicalizer::new();
+    for (bits, expected) in cases {
+        let number = serde_json::Number::from_f64(f64::from_bits(bits)).unwrap();
+        assert_eq!(
+            canonicalizer
+                .canonicalize(&serde_json::Value::Number(number))
+                .unwrap(),
+            expected,
+            "IEEE-754 bits {bits:016x}"
+        );
+    }
+}
+
+#[test]
+fn rfc8785_property_order_vector() {
+    let value = parse_with_dup_check(
+        r#"{"\u20ac":"Euro Sign","\r":"Carriage Return","\ufb33":"Hebrew Letter Dalet With Dagesh","1":"One","\ud83d\ude00":"Emoji: Grinning Face","\u0080":"Control","\u00f6":"Latin Small Letter O With Diaeresis"}"#,
+    )
+    .unwrap();
+    assert_eq!(
+        Canonicalizer::new().canonicalize(&value).unwrap(),
+        "{\"\\r\":\"Carriage Return\",\"1\":\"One\",\"\u{0080}\":\"Control\",\"ö\":\"Latin Small Letter O With Diaeresis\",\"€\":\"Euro Sign\",\"😀\":\"Emoji: Grinning Face\",\"דּ\":\"Hebrew Letter Dalet With Dagesh\"}"
+    );
+}
+
+#[test]
 fn schema_validator_fails_closed_without_schema() {
     assert!(boundary_compiler::SchemaValidator::new()
         .validate(&json!({}))
