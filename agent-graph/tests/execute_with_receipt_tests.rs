@@ -101,3 +101,95 @@ async fn execute_with_receipt_uses_distinct_execution_ids_per_run() {
     assert_ne!(r1.execution_id, r2.execution_id);
     assert_eq!(r1.graph_id, r2.graph_id);
 }
+
+/// GRAPH-001 fix: receipts must contain real digests, not placeholders.
+#[tokio::test]
+async fn execute_with_receipt_contains_real_input_digest_not_placeholder() {
+    let graph = build_counting_graph();
+    let (result, receipt) = graph
+        .execute_with_receipt("step1", AgentState::new(), GraphConfig::default())
+        .await;
+    result.expect("clean run");
+
+    let step = &receipt.steps[0];
+    // GRAPH-001: input_digest must NOT be the literal "graph-root" placeholder
+    assert_ne!(
+        step.input_digest, "graph-root",
+        "input_digest must be a real digest, not the 'graph-root' placeholder"
+    );
+    // output_digest must NOT be a node-count string
+    assert!(
+        !step.output_digest.starts_with("nodes_executed="),
+        "output_digest must be a real digest, not a node-count string: {}",
+        step.output_digest
+    );
+    // Input and output digests should be different (different state)
+    assert_ne!(
+        step.input_digest, step.output_digest,
+        "input and output digests should differ (state changed)"
+    );
+}
+
+/// GRAPH-001 fix: mutating input state changes the input digest.
+#[tokio::test]
+async fn execute_with_receipt_input_digest_changes_with_different_state() {
+    let graph = build_counting_graph();
+
+    let state1 = {
+        let s = AgentState::new();
+        // set requires &self, not &mut self, so no mut needed
+        s
+    };
+    let _ = state1.set("seed", 1).await;
+
+    let state2 = AgentState::new();
+    let _ = state2.set("seed", 2).await;
+
+    let (_, r1) = graph
+        .execute_with_receipt("step1", state1, GraphConfig::default())
+        .await;
+    let (_, r2) = graph
+        .execute_with_receipt("step1", state2, GraphConfig::default())
+        .await;
+
+    // Different input state must produce different input digests
+    assert_ne!(
+        r1.steps[0].input_digest, r2.steps[0].input_digest,
+        "different input states must produce different input digests"
+    );
+}
+
+/// GRAPH-002 fix: non-interrupt errors must not be reported as Complete.
+#[tokio::test]
+async fn execute_with_interrupt_reports_failure_not_complete() {
+    let graph = AgentGraph::builder()
+        .add_node(
+            "fail_node",
+            node!(|_state| async move {
+                Err::<(), _>(AgentGraphError::ExecutionError("deliberate test failure".to_string()))
+            }),
+        )
+        .build()
+        .expect("graph must build");
+
+    let result = graph
+        .execute_with_interrupt("fail_node", AgentState::new(), GraphConfig::default())
+        .await;
+
+    // GRAPH-002: a failed execution must NOT be Complete
+    assert!(
+        !matches!(result, ExecutionResult::Complete(_)),
+        "non-interrupt errors must not be reported as Complete"
+    );
+    // It should be Failed with the error message
+    match &result {
+        ExecutionResult::Failed { error, .. } => {
+            assert!(
+                error.contains("deliberate test failure"),
+                "error message should contain the original error: {}",
+                error
+            );
+        }
+        other => panic!("expected Failed, got {:?}", other),
+    }
+}

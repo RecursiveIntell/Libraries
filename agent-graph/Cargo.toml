@@ -36,6 +36,9 @@ tracing = "0.1"
 # Shared identity/trace primitives
 stack-ids = { version = "0.1.1", path = "../stack-ids" }
 
+# Cryptographic hashing for execution receipts (GRAPH-001 fix)
+blake3 = { workspace = true }
+
 [dev-dependencies]
 tokio-test = "0.4"
 criterion = "0.5"

@@ -99,6 +99,10 @@ async fn main() -> Result<()> {
             println!("ERROR: Expected an interrupt but the graph completed.");
             return Ok(());
         }
+        ExecutionResult::Failed { error, .. } => {
+            println!("ERROR: Graph execution failed: {error}");
+            return Ok(());
+        }
     };
 
     // ---------------------------------------------------------------

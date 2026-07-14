@@ -88,6 +88,12 @@ impl AgentGraph {
         config: GraphConfig,
     ) -> (Result<AgentState>, GraphExecutionReceiptV1) {
         let started_at = chrono::Utc::now();
+
+        // GRAPH-001 fix: snapshot input state before it's consumed by execution
+        let input_snapshot = state.export().await;
+        let input_bytes = serde_json::to_vec(&input_snapshot).unwrap_or_default();
+        let input_digest = format!("blake3:{}", blake3::hash(&input_bytes).to_hex());
+
         let (result, summary) = self.execute_with_summary(start_node, state, config).await;
         let finished_at = summary.finished_at.unwrap_or_else(chrono::Utc::now);
 
@@ -116,16 +122,25 @@ impl AgentGraph {
             },
         };
 
-        // The summary itself is a partial step receipt: one entry that
-        // records the run-level metadata. This is a deliberate
-        // placeholder until per-step instrumentation lands.
+        // GRAPH-001 fix: compute canonical digests of actual input/output state
+        // instead of placeholder "graph-root" and node-count string.
+        // Input digest was computed from the state snapshot before execution.
+        let output_digest = match &result {
+            Ok(final_state) => {
+                let output_snapshot = final_state.export().await;
+                let output_bytes = serde_json::to_vec(&output_snapshot).unwrap_or_default();
+                format!("blake3:{}", blake3::hash(&output_bytes).to_hex())
+            }
+            Err(e) => format!("error:{}", blake3::hash(e.to_string().as_bytes()).to_hex()),
+        };
+
         let step = StepExecutionReceiptV1 {
             step_index: 0,
             agent_id: summary.graph_name.clone(),
             started_at,
             finished_at,
-            input_digest: "graph-root".to_string(),
-            output_digest: format!("nodes_executed={}", summary.total_nodes_executed),
+            input_digest,
+            output_digest,
             tool_calls: vec![],
             error: match &outcome {
                 ExecutionOutcome::InternalError { message } => Some(message.clone()),
@@ -193,7 +208,10 @@ impl AgentGraph {
                     graph_hash: Some(self.compute_graph_hash()),
                 }),
             },
-            Err(_) => ExecutionResult::Complete(state_clone),
+            Err(ref e) => ExecutionResult::Failed {
+                state: state_clone,
+                error: e.to_string(),
+            },
         }
     }
 

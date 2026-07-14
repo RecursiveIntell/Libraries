@@ -55,6 +55,14 @@ pub enum ExecutionResult {
         /// Data needed to resume execution
         checkpoint_data: Option<InterruptCheckpoint>,
     },
+    /// Execution failed with an error (GRAPH-002 fix: non-interrupt errors
+    /// must not be reported as Complete)
+    Failed {
+        /// State at failure point
+        state: AgentState,
+        /// Error message
+        error: String,
+    },
 }
 
 /// Data needed to resume from an interrupt.

@@ -1,7 +1,14 @@
 //! AgentGuard - Linux control plane for AI agent security.
 //!
-//! This crate provides security mechanisms for AI agents running on Linux.
-//! It supports BPF LSM, cgroup v2, Landlock, seccomp, and eBPF.
+//! # Scaffold notice
+//!
+//! This crate is a **scaffold**: it defines the security trait surface and
+//! receipt types, but does not implement any OS-level enforcement (BPF LSM,
+//! cgroup v2, Landlock, seccomp, or eBPF). The `initialize()` method only
+//! sets an internal boolean. No actual sandboxing is applied.
+//!
+//! Do not rely on this crate for production agent containment. Until real
+//! enforcement is implemented, treat all security decisions as advisory.
 //!
 //! # Linux Only
 //!
@@ -46,6 +53,13 @@ pub struct AgentGuard {
 
 impl AgentGuard {
     /// Create a new AgentGuard instance.
+    ///
+    /// # Deprecation notice
+    ///
+    /// agent-guard is a scaffold — no OS enforcement is implemented.
+    /// This constructor is deprecated to prevent false confidence in
+    /// security guarantees. See the crate-level scaffold notice.
+    #[deprecated(note = "agent-guard is a scaffold — no OS enforcement is implemented")]
     #[cfg(target_os = "linux")]
     pub fn new() -> Self {
         Self {
@@ -54,6 +68,7 @@ impl AgentGuard {
     }
 
     /// Create a new AgentGuard instance (non-Linux stub).
+    #[deprecated(note = "agent-guard is a scaffold — no OS enforcement is implemented")]
     #[cfg(not(target_os = "linux"))]
     pub fn new() -> Self {
         Self {
@@ -63,8 +78,15 @@ impl AgentGuard {
 
     /// Initialize the security control plane.
     ///
+    /// # Deprecation notice
+    ///
+    /// This method is a no-op scaffold: it only sets an internal boolean.
+    /// No OS-level enforcement (BPF LSM, cgroup, Landlock, seccomp, eBPF)
+    /// is applied. Deprecated to prevent false security confidence.
+    ///
     /// On Linux, this sets up the security mechanisms.
     /// On other platforms, this returns an error.
+    #[deprecated(note = "agent-guard is a scaffold — no OS enforcement is implemented")]
     pub fn initialize(&mut self) -> Result<()> {
         #[cfg(target_os = "linux")]
         {
@@ -114,12 +136,14 @@ mod tests {
     use super::*;
 
     #[test]
+    #[allow(deprecated)]
     fn test_agent_guard_new() {
         let guard = AgentGuard::new();
         assert!(!guard.is_initialized());
     }
 
     #[test]
+    #[allow(deprecated)]
     #[cfg(target_os = "linux")]
     fn test_agent_guard_initialize() {
         let mut guard = AgentGuard::new();
@@ -128,6 +152,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_make_decision() {
         let guard = AgentGuard::new();
         let subject = Subject {
@@ -146,6 +171,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     #[cfg(not(target_os = "linux"))]
     fn test_agent_guard_not_available() {
         let mut guard = AgentGuard::new();
