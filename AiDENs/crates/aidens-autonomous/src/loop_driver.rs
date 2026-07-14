@@ -23,7 +23,10 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc, Mutex,
+};
 use tokio::time::Duration;
 
 // ---------------------------------------------------------------------------
@@ -112,6 +115,18 @@ pub struct LoopState {
     pub domains_explored: Vec<String>,
     /// Saturated domains.
     pub saturated_domains: Vec<String>,
+}
+
+/// Terminal outcome of a loop run initiated with an explicit stop signal.
+///
+/// A stop request is observed only at a cycle boundary, after the loop has
+/// emitted its receipt and completed or cancelled any leased job transition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LoopTermination {
+    /// The configured finite iteration limit was reached.
+    IterationLimitReached,
+    /// The caller requested a stop at a safe cycle boundary.
+    StopRequested,
 }
 
 // ---------------------------------------------------------------------------
@@ -318,8 +333,33 @@ impl AutonomousLoop {
     /// 12. Proof-debt subtractive check.
     /// 13. Receipt emission.
     /// 14. Failure tracking and safe-mode activation.
+    /// Run the autonomous loop until its configured iteration limit is reached.
+    ///
+    /// This compatibility entry point retains the historical error on a finite
+    /// limit. UI callers that need a safe stop signal should use
+    /// [`Self::run_until_stopped`] instead.
     pub async fn run(&self) -> Result<()> {
+        match self.run_internal(None).await? {
+            LoopTermination::IterationLimitReached => {
+                self.check_max_iterations(self.config.max_iterations)
+            }
+            LoopTermination::StopRequested => Ok(()),
+        }
+    }
+
+    /// Run until the configured finite limit or a caller-owned stop signal.
+    ///
+    /// A requested stop is deliberately observed only between cycles, after a
+    /// cycle has emitted its receipt and reached a durable queue boundary.
+    pub async fn run_until_stopped(&self, stop_requested: &AtomicBool) -> Result<LoopTermination> {
+        self.run_internal(Some(stop_requested)).await
+    }
+
+    async fn run_internal(&self, stop_requested: Option<&AtomicBool>) -> Result<LoopTermination> {
         loop {
+            if Self::stop_requested(stop_requested) {
+                return Ok(LoopTermination::StopRequested);
+            }
             // Snapshot state for this iteration.
             let iteration = {
                 let mut state = self
@@ -369,8 +409,12 @@ impl AutonomousLoop {
                     mode: LoopMode::Subtractive,
                     ..CycleMetrics::default()
                 })?;
-                self.sleep_iteration().await;
-                self.check_max_iterations(iteration)?;
+                if self.sleep_iteration_or_stopped(stop_requested).await {
+                    return Ok(LoopTermination::StopRequested);
+                }
+                if self.max_iterations_reached(iteration) {
+                    return Ok(LoopTermination::IterationLimitReached);
+                }
                 continue;
             }
 
@@ -431,8 +475,12 @@ impl AutonomousLoop {
                         mode: LoopMode::Additive,
                         ..CycleMetrics::default()
                     })?;
-                    self.sleep_iteration().await;
-                    self.check_max_iterations(iteration)?;
+                    if self.sleep_iteration_or_stopped(stop_requested).await {
+                        return Ok(LoopTermination::StopRequested);
+                    }
+                    if self.max_iterations_reached(iteration) {
+                        return Ok(LoopTermination::IterationLimitReached);
+                    }
                     continue;
                 }
                 Err(e) => {
@@ -451,8 +499,12 @@ impl AutonomousLoop {
                         mode: LoopMode::Additive,
                         ..CycleMetrics::default()
                     })?;
-                    self.sleep_iteration().await;
-                    self.check_max_iterations(iteration)?;
+                    if self.sleep_iteration_or_stopped(stop_requested).await {
+                        return Ok(LoopTermination::StopRequested);
+                    }
+                    if self.max_iterations_reached(iteration) {
+                        return Ok(LoopTermination::IterationLimitReached);
+                    }
                     continue;
                 }
             };
@@ -477,15 +529,13 @@ impl AutonomousLoop {
                     let error_msg = e.to_string();
                     cycle_errors.push(error_msg.clone());
                     self.viscosity_record(false, false, FactDisposition::Reject, 0, 0);
-                    self.update_state(|s| {
-                        s.tasks_failed += 1;
-                        s.consecutive_failures += 1;
-                        s.last_error = Some(error_msg.clone());
-                        s.current_job = None;
-                    });
-
-                    // Cancel the job and mark gap as attempted.
-                    let _ = self.queue.cancel(&job_id, "execution-error");
+                    // The durable queue transition is the authority for terminal job state.
+                    // Do not clear in-memory state or suppress the gap if cancellation fails.
+                    let cancellation_error =
+                        self.cancel_failed_job(&job_id, "execution-error").err();
+                    if let Some(error) = &cancellation_error {
+                        cycle_errors.push(error.to_string());
+                    }
                     let err_gap_key = format!(
                         "{}|{}",
                         payload
@@ -497,7 +547,8 @@ impl AutonomousLoop {
                             .and_then(|v| v.as_str())
                             .unwrap_or(""),
                     );
-                    if !err_gap_key.is_empty() && err_gap_key != "|" {
+                    if cancellation_error.is_none() && !err_gap_key.is_empty() && err_gap_key != "|"
+                    {
                         let _ = self
                             .attempted_gaps
                             .lock()
@@ -512,8 +563,15 @@ impl AutonomousLoop {
                         mode: LoopMode::Additive,
                         ..CycleMetrics::default()
                     })?;
-                    self.sleep_iteration().await;
-                    self.check_max_iterations(iteration)?;
+                    if let Some(error) = cancellation_error {
+                        return Err(error);
+                    }
+                    if self.sleep_iteration_or_stopped(stop_requested).await {
+                        return Ok(LoopTermination::StopRequested);
+                    }
+                    if self.max_iterations_reached(iteration) {
+                        return Ok(LoopTermination::IterationLimitReached);
+                    }
                     continue;
                 }
             };
@@ -563,7 +621,14 @@ impl AutonomousLoop {
                                 Ok(audit_result) if !audit_result.survived => {
                                     FactDisposition::Quarantine
                                 }
-                                _ => effective_disposition,
+                                // AUTO-003 fix: audit errors must quarantine,
+                                // not promote. The old `_ =>` catch-all let
+                                // both Ok(survived=true) and Err promote the fact.
+                                Ok(_) => effective_disposition,
+                                Err(e) => {
+                                    eprintln!("WARN: hostile audit failed; quarantining candidate: {e}");
+                                    FactDisposition::Quarantine
+                                }
                             }
                         } else {
                             effective_disposition
@@ -629,20 +694,18 @@ impl AutonomousLoop {
                     .unwrap_or(""),
             );
 
+            let mut cancellation_error = None;
             if exec_result.success {
                 self.complete_successful_job(&job_id, &lease)?;
             } else {
-                self.update_state(|s| {
-                    s.tasks_failed += 1;
-                    s.consecutive_failures += 1;
-                    s.current_job = None;
-                    s.last_error = exec_result.error.clone();
-                });
-                let _ = self.queue.cancel(&job_id, "execution-failed");
+                cancellation_error = self.cancel_failed_job(&job_id, "execution-failed").err();
+                if let Some(error) = &cancellation_error {
+                    cycle_errors.push(error.to_string());
+                }
             }
 
-            // Mark this gap as attempted.
-            if !gap_key.is_empty() && gap_key != "|" {
+            // Mark this gap as attempted only after its durable queue transition.
+            if cancellation_error.is_none() && !gap_key.is_empty() && gap_key != "|" {
                 let _ = self.attempted_gaps.lock().map(|mut g| g.insert(gap_key));
             }
 
@@ -704,11 +767,19 @@ impl AutonomousLoop {
             // 14. Check consecutive failures → safe mode.
             self.check_safe_mode();
 
+            if let Some(error) = cancellation_error {
+                return Err(error);
+            }
+
             // 15. Check max iterations.
-            self.check_max_iterations(iteration)?;
+            if self.max_iterations_reached(iteration) {
+                return Ok(LoopTermination::IterationLimitReached);
+            }
 
             // 16. Sleep between iterations (viscosity-adjusted).
-            self.sleep_iteration().await;
+            if self.sleep_iteration_or_stopped(stop_requested).await {
+                return Ok(LoopTermination::StopRequested);
+            }
         }
     }
 
@@ -770,6 +841,31 @@ impl AutonomousLoop {
         state.consecutive_failures = 0;
         state.current_job = None;
         state.last_error = None;
+        Ok(())
+    }
+
+    /// Persist a failed-job cancellation before exposing its terminal state in memory.
+    ///
+    /// A failed append leaves the durable job leased, so the in-memory loop must
+    /// preserve that fact and avoid suppressing the gap as already attempted.
+    fn cancel_failed_job(&self, job_id: &ArtifactId, reason: &str) -> Result<()> {
+        if let Err(error) = self.queue.cancel(job_id, reason) {
+            let error = format!("durable queue cancellation failed: {error}");
+            let mut state = self.state.lock().map_err(|lock_error| {
+                anyhow::anyhow!("state lock after cancellation failure: {lock_error}")
+            })?;
+            state.consecutive_failures += 1;
+            state.last_error = Some(error.clone());
+            return Err(anyhow::anyhow!(error));
+        }
+
+        let mut state = self.state.lock().map_err(|lock_error| {
+            anyhow::anyhow!("state lock after durable cancellation: {lock_error}")
+        })?;
+        state.tasks_failed += 1;
+        state.consecutive_failures += 1;
+        state.current_job = None;
+        state.last_error = Some(reason.to_string());
         Ok(())
     }
 
@@ -1102,15 +1198,35 @@ impl AutonomousLoop {
         }
     }
 
-    /// Check if max_iterations has been reached. Returns Err to break the loop.
+    /// Check whether a finite loop has reached its configured limit.
+    fn max_iterations_reached(&self, iteration: usize) -> bool {
+        self.config.max_iterations > 0 && iteration >= self.config.max_iterations
+    }
+
+    /// Compatibility helper retained for callers/tests expecting the historical
+    /// limit error from [`Self::run`].
     fn check_max_iterations(&self, iteration: usize) -> Result<()> {
-        if self.config.max_iterations > 0 && iteration >= self.config.max_iterations {
+        if self.max_iterations_reached(iteration) {
             return Err(anyhow::anyhow!(
                 "max_iterations ({}) reached — loop terminating",
                 self.config.max_iterations
             ));
         }
         Ok(())
+    }
+
+    fn stop_requested(stop_requested: Option<&AtomicBool>) -> bool {
+        stop_requested.is_some_and(|signal| signal.load(Ordering::Acquire))
+    }
+
+    /// Sleep without interrupting an active cycle, then observe a requested
+    /// stop at the next safe boundary.
+    async fn sleep_iteration_or_stopped(&self, stop_requested: Option<&AtomicBool>) -> bool {
+        if Self::stop_requested(stop_requested) {
+            return true;
+        }
+        self.sleep_iteration().await;
+        Self::stop_requested(stop_requested)
     }
 
     /// Sleep for the configured interval, adjusted by viscosity.
@@ -1352,6 +1468,23 @@ mod tests {
         assert_eq!(state.iteration, 2);
     }
 
+    #[tokio::test]
+    async fn explicit_stop_prevents_a_new_cycle_from_starting() {
+        let autonomous_loop = AutonomousLoop::from_config(LoopConfig {
+            memory_dir: temp_dir("stop-before-cycle-memory"),
+            queue_dir: temp_dir("stop-before-cycle-queue"),
+            ..Default::default()
+        })
+        .unwrap();
+        let stop = AtomicBool::new(true);
+
+        let termination = autonomous_loop.run_until_stopped(&stop).await.unwrap();
+
+        assert_eq!(termination, LoopTermination::StopRequested);
+        assert_eq!(autonomous_loop.state_snapshot().iteration, 0);
+        assert!(autonomous_loop.receipt_history().unwrap().is_empty());
+    }
+
     #[test]
     fn durable_completion_failure_does_not_advance_in_memory_completion() {
         let memory_dir = temp_dir("completion-failure-memory");
@@ -1393,6 +1526,55 @@ mod tests {
         assert_eq!(state.current_job.as_deref(), Some(job_id_string.as_str()));
         let queue_snapshot = autonomous_loop.queue.snapshot().unwrap();
         assert_eq!(queue_snapshot.jobs[0].state, JobStateV1::Leased);
+    }
+
+    #[test]
+    fn cancellation_failure_keeps_the_leased_job_and_does_not_mark_the_gap_attempted() {
+        let memory_dir = temp_dir("cancel-failure-memory");
+        let queue_dir = temp_dir("cancel-failure-queue");
+        let autonomous_loop = AutonomousLoop::from_config(LoopConfig {
+            memory_dir,
+            queue_dir: queue_dir.clone(),
+            ..Default::default()
+        })
+        .unwrap();
+        let job = JobV1::new(
+            autonomous_loop.queue.namespace_id(),
+            "cancel-failure-job",
+            "test",
+            serde_json::json!({"fact_id": "fact:cancel", "gap_type": "missing-context"}),
+            CanonicalToolSideEffectClass::ReadOnly,
+            None,
+            None,
+        );
+        let job_id = job.job_id.clone();
+        let job_id_string = job_id.to_string();
+        autonomous_loop.queue.enqueue_job(job).unwrap();
+        autonomous_loop
+            .queue
+            .acquire_next("autonomous-loop", 300)
+            .unwrap()
+            .unwrap();
+        autonomous_loop.update_state(|state| {
+            state.current_job = Some(job_id_string.clone());
+        });
+        std::fs::write(queue_dir.join("queue.ndjson"), "not-json\n").unwrap();
+
+        let result = autonomous_loop.cancel_failed_job(&job_id, "execution-error");
+
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("durable queue cancellation failed"));
+        let state = autonomous_loop.state_snapshot();
+        assert_eq!(state.tasks_failed, 0);
+        assert_eq!(state.current_job.as_deref(), Some(job_id_string.as_str()));
+        assert!(state
+            .last_error
+            .as_deref()
+            .is_some_and(|error| error.contains("durable queue cancellation failed")));
+        assert!(autonomous_loop.attempted_gaps.lock().unwrap().is_empty());
     }
 
     #[tokio::test]

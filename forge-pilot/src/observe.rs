@@ -377,7 +377,13 @@ pub async fn observe_scope(
         scope_health,
         degradations,
         #[cfg(feature = "governance")]
-        governance: Some(crate::governance_gate::observe_governance(store).await),
+        governance: match crate::governance_gate::observe_governance(store).await {
+            Ok(obs) => Some(obs),
+            Err(e) => {
+                tracing::warn!(error = %e, "governance observation failed in observe_scope");
+                None
+            }
+        },
     })
 }
 

@@ -175,22 +175,11 @@ pub mod predicates {
 /// - `constitutional_amendment_pending` — constitutional-memory amendment state
 /// - `mechanism_fit_disposition` — mechanism-runtime fit run disposition
 ///
-/// Returns a default (empty) observation on any error — fail-open by design.
-/// This function is read-only and never writes governance artifacts.
-///
-/// For strict (fail-closed) behavior, use [`observe_governance_with_mode`]
-/// with [`GovernanceMode::Strict`].
-pub async fn observe_governance(store: &MemoryStore) -> GovernanceObservation {
-    match observe_governance_inner(store).await {
-        Ok(obs) => obs,
-        Err(err) => {
-            tracing::warn!(
-                error = %err,
-                "governance observation failed, returning default (fail-open)"
-            );
-            GovernanceObservation::default()
-        }
-    }
+/// AUTH-002 fix: strict (fail-closed) governance observation is now the default.
+/// The old fail-open behavior is available via [`observe_governance_fail_open`].
+/// Strict mode returns Err when governance observation fails or no claims found.
+pub async fn observe_governance(store: &MemoryStore) -> Result<GovernanceObservation, GovernanceGateError> {
+    observe_governance_with_mode(store, GovernanceMode::Strict).await
 }
 
 /// LIB-001: Observe governance with explicit mode selection.
@@ -551,7 +540,9 @@ mod tests {
             ..Default::default()
         };
         let store = MemoryStore::open(config).expect("open store");
-        let obs = observe_governance(&store).await;
+        // AUTH-002 fix: observe_governance is now strict by default.
+        // This test verifies the old fail-open behavior; use fail-open mode explicitly.
+        let obs = observe_governance_with_mode(&store, GovernanceMode::FailOpen).await.unwrap();
         assert_eq!(obs.effect_preflight_status, None);
         assert!(!obs.assurance_ready);
         assert!(!obs.authority_delegation_valid);
@@ -587,9 +578,7 @@ mod tests {
         )
         .await;
 
-        let obs = observe_governance(&store).await;
-
-        // Verify non-default observation was populated.
+        let obs = observe_governance(&store).await.expect("governance observation with populated store");
         assert_eq!(
             obs.effect_preflight_status.as_deref(),
             Some("commit_eligible")
@@ -634,7 +623,7 @@ mod tests {
 
         insert_governance_claim(&store, predicates::CONTINUITY_INCIDENT_ACTIVE, "true").await;
 
-        let obs = observe_governance(&store).await;
+        let obs = observe_governance(&store).await.expect("governance observation with populated store");
         assert!(obs.continuity_incident_active);
 
         let gate = gate_execution(&obs);

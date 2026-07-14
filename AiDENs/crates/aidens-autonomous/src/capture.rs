@@ -98,10 +98,10 @@ impl ResultCapture {
                 continue;
             }
 
-            // Search for duplicates in the autonomous namespace.
+            // Search for duplicates in both the autonomous and autonomous_candidates namespaces.
             let existing = self
                 .memory
-                .search(sentence, Some(&["autonomous".to_string()]), Some(5))
+                .search(sentence, Some(&["autonomous".to_string(), "autonomous_candidates".to_string()]), Some(5))
                 .await?;
 
             let is_duplicate = existing.iter().any(|r| {
@@ -122,10 +122,13 @@ impl ResultCapture {
                 0.5
             };
 
-            // Add the new fact.
+            // AUTO-001 fix: write to quarantine namespace first.
+            // Facts are only promoted to "autonomous" after evaluation/audit gates pass.
+            // Rejected candidates remain in "autonomous_candidates" and are not searchable
+            // in the normal "autonomous" namespace.
             let fact_id = self
                 .memory
-                .add_fact("autonomous", sentence, Some(&source), Some(confidence))
+                .add_fact("autonomous_candidates", sentence, Some(&source), Some(confidence))
                 .await?;
 
             // Add graph edge connecting new fact to source fact.

@@ -93,14 +93,16 @@ impl HostileAuditGate {
             .map_err(|e| anyhow!("audit request failed: {e}"))?;
 
         if !resp.status().is_success() {
-            // If the auditor is unavailable, fail open (allow the fact)
-            // but record the audit failure. Better to proceed than block
-            // the entire loop because the auditor is down.
+            // AUTO-003 fix: fail-closed when auditor is unavailable.
+            // The old behavior allowed the fact (fail-open), which increases
+            // permissiveness when a safety dependency fails. Now we return
+            // survived=false with an "unknown" disposition that prevents
+            // promotion and does not repay proof debt.
             return Ok(AuditResult {
-                survived: true,
-                assessment: "auditor unavailable — fail open".to_string(),
-                issues: vec!["auditor service unavailable".to_string()],
-                confidence: 0.5,
+                survived: false,
+                assessment: "auditor unavailable — fail closed (unknown disposition)".to_string(),
+                issues: vec!["auditor service unavailable — candidate quarantined".to_string()],
+                confidence: 0.0,
             });
         }
 
