@@ -67,7 +67,7 @@ impl LocalProofProfileV1 {
     pub fn local_exact(obligations: Vec<ProofObligationV1>) -> Self {
         let material = obligations
             .iter()
-            .map(|obligation| obligation.obligation_id.0.clone())
+            .map(|obligation| obligation.obligation_id.as_str().clone())
             .collect::<Vec<_>>()
             .join("|");
         Self {
@@ -162,7 +162,7 @@ impl ProofDebtLedgerV1 {
             .map(|obligation| ProofDebtItemV1 {
                 debt_id: generated_artifact_id_from_material(
                     "proof-debt",
-                    &format!("{}|{}", artifact_ref.0, obligation.obligation_id.0),
+                    &format!("{}|{}", artifact_ref.as_str(), obligation.obligation_id.as_str()),
                 ),
                 obligation_id: obligation.obligation_id.clone(),
                 restriction: if obligation.is_waived() {
@@ -187,7 +187,7 @@ impl ProofDebtLedgerV1 {
             .collect::<Vec<_>>();
         let material = items
             .iter()
-            .map(|item| item.debt_id.0.clone())
+            .map(|item| item.debt_id.as_str().clone())
             .collect::<Vec<_>>()
             .join("|");
         Self {
@@ -260,7 +260,7 @@ impl ProofWaiverReceiptV1 {
         Self {
             receipt_id: generated_artifact_id_from_material(
                 "proof-waiver",
-                &format!("{}|{}|{}", obligation_id.0, approver, rationale),
+                &format!("{}|{}|{}", obligation_id.as_str(), approver, rationale),
             ),
             obligation_id,
             approver,
@@ -295,7 +295,7 @@ impl PromotionEligibilityReportV1 {
                 "promotion-eligibility",
                 &format!(
                     "{}|{}|{}",
-                    artifact_ref.0, profile.profile_id.0, debt.ledger_id.0
+                    artifact_ref.as_str(), profile.profile_id.as_str(), debt.ledger_id.as_str()
                 ),
             ),
             artifact_ref,

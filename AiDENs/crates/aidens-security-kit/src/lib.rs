@@ -50,7 +50,7 @@ pub fn attest_tool_invocation(
     let attestation_envelope_id = receipt
         .attestation_envelope_id
         .clone()
-        .unwrap_or_else(|| format!("attn_{}", receipt.receipt_id).into());
+        .unwrap_or_else(|| stack_ids::AttestationEnvelopeId::new(format!("attn_{}", receipt.receipt_id)));
 
     let trace_context = receipt.trace_ctx.trace_id.clone();
     let signing_time = if !receipt.finished_at.is_empty() {
@@ -93,9 +93,9 @@ pub fn attest_tool_invocation(
         "mcp-tool",
         signer_identity.clone(),
         signing_time.clone(),
-        trust_root_set_id.clone().into(),
+        stack_ids::TrustRootSetId::new(trust_root_set_id.clone()),
         provenance_summary.clone(),
-        disclosure_policy_id.clone().into(),
+        stack_ids::DisclosurePolicyId::new(disclosure_policy_id.clone()),
         None,
         attestation_exchange::AttestationReplayabilityClassV1::Replayable,
         Vec::new(),
@@ -112,9 +112,9 @@ pub fn attest_tool_invocation(
             schema_identity: "mcp-tool".into(),
             signer_identity,
             signing_time,
-            trust_root_set_id: trust_root_set_id.into(),
+            trust_root_set_id: stack_ids::TrustRootSetId::new(trust_root_set_id),
             provenance_summary,
-            disclosure_policy_id: disclosure_policy_id.into(),
+            disclosure_policy_id: stack_ids::DisclosurePolicyId::new(disclosure_policy_id),
             artifact_admission_policy_id: None,
             replayability_class: attestation_exchange::AttestationReplayabilityClassV1::Replayable,
             revocation_refs: Vec::new(),

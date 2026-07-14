@@ -265,7 +265,7 @@ impl PermitGrantV1 {
         self.attempt_id = Some(context.attempt_id.clone());
         self.scope = format!(
             "{};run={};attempt={}",
-            self.scope, context.run_id.0, context.attempt_id.0
+            self.scope, context.run_id.as_str(), context.attempt_id.as_str()
         );
         self
     }
@@ -337,10 +337,10 @@ impl PermitGrantV1 {
         ) else {
             return false;
         };
-        if grant_run_id.0.is_empty()
-            || grant_attempt_id.0.is_empty()
-            || run_id.0.is_empty()
-            || attempt_id.0.is_empty()
+        if grant_run_id.as_str().is_empty()
+            || grant_attempt_id.as_str().is_empty()
+            || run_id.as_str().is_empty()
+            || attempt_id.as_str().is_empty()
             || grant_run_id != run_id
             || grant_attempt_id != attempt_id
         {
@@ -427,7 +427,7 @@ impl ApprovalRequestV1 {
         self.attempt_id = Some(context.attempt_id.clone());
         self.scope = format!(
             "{};run={};attempt={}",
-            self.scope, context.run_id.0, context.attempt_id.0
+            self.scope, context.run_id.as_str(), context.attempt_id.as_str()
         );
         self
     }
@@ -593,7 +593,7 @@ struct PermitUseMaterial<'a> {
 fn permit_use_material(input: PermitUseMaterial<'_>) -> String {
     format!(
         "aidens.permit-use.v1;permit={};issuer={};scope={};risk={};tool={};sandbox={};run={};attempt={};allowed={};event_time={};denial_reason={}",
-        input.permit_id.0,
+        input.permit_id.as_str(),
         input.issuer_id,
         input.scope,
         input.risk,

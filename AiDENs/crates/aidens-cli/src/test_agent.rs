@@ -537,7 +537,7 @@ pub(crate) fn coding_agent_v11a_evidence(
     };
     let mut semantic_state = aidens_contracts::SemanticStateV1::exact_supported(
         output_artifact.artifact_ref.clone(),
-        proof_profile.profile_id.0.clone(),
+        proof_profile.profile_id.as_str().clone(),
     )
     .with_view_disclosure(&view_disclosure);
     for degradation in &degradation_records {
@@ -1183,20 +1183,20 @@ pub(crate) fn write_test_agent_run_bundle(
                 .display()
                 .to_string(),
         ],
-        provider_receipts: vec![input.output.receipt.receipt_id.0.clone()],
+        provider_receipts: vec![input.output.receipt.receipt_id.as_str().clone()],
         tool_receipts: input
             .output
             .receipt
             .tool_invocation_receipts
             .iter()
-            .map(|receipt| receipt.receipt_id.0.clone())
+            .map(|receipt| receipt.receipt_id.as_str().clone())
             .collect(),
         permit_receipts: input
             .output
             .receipt
             .permit_use_receipts
             .iter()
-            .map(|receipt| receipt.receipt_id.0.clone())
+            .map(|receipt| receipt.receipt_id.as_str().clone())
             .collect(),
     })?;
     write_json_file(path, &bundle)

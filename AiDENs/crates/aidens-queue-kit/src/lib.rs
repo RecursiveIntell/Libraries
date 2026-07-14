@@ -333,7 +333,7 @@ impl DurableQueueLogV1 {
             .collect::<BTreeMap<_, _>>();
 
         let mut jobs = snapshot.jobs;
-        jobs.sort_by_key(|job| (job.created_at, job.job_id.0.clone()));
+        jobs.sort_by_key(|job| (job.created_at, job.job_id.as_str().clone()));
         for job in jobs {
             let stale_lease = job
                 .lease_id
@@ -593,34 +593,34 @@ impl DurableQueueLogV1 {
         let job = snapshot
             .job(job_id)
             .cloned()
-            .ok_or_else(|| QueueError::JobNotFound(job_id.0.clone()))?;
+            .ok_or_else(|| QueueError::JobNotFound(job_id.as_str().clone()))?;
         if job.state.is_terminal() {
-            return Err(QueueError::TerminalJob(job_id.0.clone()));
+            return Err(QueueError::TerminalJob(job_id.as_str().clone()));
         }
         if to_state == JobStateV1::Completed {
             let requested_lease_id = lease_id
                 .clone()
-                .ok_or_else(|| QueueError::LeaseRequired(job_id.0.clone()))?;
+                .ok_or_else(|| QueueError::LeaseRequired(job_id.as_str().clone()))?;
             let current_lease_id = job
                 .lease_id
                 .clone()
-                .ok_or_else(|| QueueError::LeaseRequired(job_id.0.clone()))?;
+                .ok_or_else(|| QueueError::LeaseRequired(job_id.as_str().clone()))?;
             if requested_lease_id != current_lease_id {
                 return Err(QueueError::LeaseMismatch {
-                    job_id: job_id.0.clone(),
-                    expected: current_lease_id.0,
-                    actual: requested_lease_id.0,
+                    job_id: job_id.as_str().clone(),
+                    expected: current_lease_id.as_str(),
+                    actual: requested_lease_id.as_str(),
                 });
             }
             let lease = snapshot
                 .leases
                 .iter()
                 .find(|lease| lease.lease_id == requested_lease_id && lease.active)
-                .ok_or_else(|| QueueError::LeaseRequired(job_id.0.clone()))?;
+                .ok_or_else(|| QueueError::LeaseRequired(job_id.as_str().clone()))?;
             if lease.is_expired_at(now) {
                 return Err(QueueError::LeaseExpired {
-                    job_id: job_id.0.clone(),
-                    lease_id: lease.lease_id.0.clone(),
+                    job_id: job_id.as_str().clone(),
+                    lease_id: lease.lease_id.as_str().clone(),
                 });
             }
         }

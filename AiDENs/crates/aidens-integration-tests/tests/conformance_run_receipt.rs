@@ -90,7 +90,7 @@ fn conformance_run_receipt_records_all_fixture_results() {
         receipt.passed_count >= 1,
         "at least valid_minimal should pass"
     );
-    assert!(receipt.receipt_id.0.starts_with("conformance-run:"));
+    assert!(receipt.receipt_id.as_str().starts_with("conformance-run:"));
 }
 
 #[test]

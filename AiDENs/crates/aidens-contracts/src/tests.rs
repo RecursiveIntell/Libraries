@@ -100,8 +100,8 @@ fn p30_run_identity_is_deterministic_from_explicit_execution_material() {
 #[test]
 fn execution_context_exposes_stack_trace_and_attempt() {
     let context = AidensRunContextV1::new("stack-contracts-smoke");
-    assert_eq!(context.stack_trace_ctx().trace_id, context.trace_id.0);
-    assert_eq!(context.stack_attempt_id().as_str(), context.attempt_id.0);
+    assert_eq!(context.stack_trace_ctx().trace_id, context.trace_id.as_str());
+    assert_eq!(context.stack_attempt_id().as_str(), context.attempt_id.as_str());
 }
 
 #[test]
@@ -925,7 +925,7 @@ fn p07_golden_fixtures_deserialize() {
 
     let manifest = include_str!("../../../tests/fixtures/p07/generated_schema_manifest_v1.json");
     let manifest: GeneratedSchemaManifestV1 = serde_json::from_str(manifest).unwrap();
-    assert_eq!(manifest.manifest_id.0, "generated-schema-manifest:v1");
+    assert_eq!(manifest.manifest_id.as_str(), "generated-schema-manifest:v1");
 
     let report = include_str!("../../../tests/fixtures/p07/schema_compatibility_report_v1.json");
     let report: SchemaCompatibilityReportV1 = serde_json::from_str(report).unwrap();
@@ -1252,7 +1252,7 @@ fn p08_reference_artifact_constructors_are_typed() {
     );
 
     assert_eq!(
-        report.report_id.0.split(':').next(),
+        report.report_id.as_str().split(':').next(),
         Some("reference-interpreter-report")
     );
     assert!(!report.passed);
@@ -1444,12 +1444,12 @@ fn p11_queue_daemon_artifact_constructors_preserve_idempotency_and_safe_mode() {
     assert!(occurrence.identity_is_not_timestamp_only());
     assert!(signal.idempotency_key.contains("filesystem"));
     assert_eq!(job.kind, ArtifactKindV1::Job);
-    assert!(job.attempt_family_id.0.starts_with("attempt-family:"));
+    assert!(job.attempt_family_id.as_str().starts_with("attempt-family:"));
     assert_eq!(lease.kind, ArtifactKindV1::QueueLease);
     let expected_lease_material = format!(
         "{}|{}|{}|{}",
-        job.namespace_id.0,
-        job.job_id.0,
+        job.namespace_id.as_str(),
+        job.job_id.as_str(),
         "daemon-a",
         lease
             .acquired_at
@@ -1459,7 +1459,7 @@ fn p11_queue_daemon_artifact_constructors_preserve_idempotency_and_safe_mode() {
         lease.lease_id,
         local_artifact_id_from_stack_digest("queue-lease", &expected_lease_material)
     );
-    let fallback_material = format!("{}|{}|{}|0", job.namespace_id.0, job.job_id.0, "daemon-a");
+    let fallback_material = format!("{}|{}|{}|0", job.namespace_id.as_str(), job.job_id.as_str(), "daemon-a");
     assert_ne!(
         lease.lease_id,
         local_artifact_id_from_stack_digest("queue-lease", &fallback_material)

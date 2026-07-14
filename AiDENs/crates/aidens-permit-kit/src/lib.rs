@@ -214,9 +214,9 @@ impl PermitRevocationStoreV1 {
             .to_string();
         ledger
             .revocations
-            .entry(permit_id.0.clone())
+            .entry(permit_id.as_str().clone())
             .or_insert_with(|| PermitRevocationRecordV1 {
-                permit_id: permit_id.0.clone(),
+                permit_id: permit_id.as_str().clone(),
                 revoked_by: revoked_by.into(),
                 reason: reason.into(),
                 recorded_at_unix_nanos,
@@ -225,7 +225,7 @@ impl PermitRevocationStoreV1 {
     }
 
     fn is_revoked(&self, permit_id: &ArtifactId) -> Result<bool, std::io::Error> {
-        Ok(self.load()?.revocations.contains_key(&permit_id.0))
+        Ok(self.load()?.revocations.contains_key(&permit_id.as_str()))
     }
 
     fn load(&self) -> Result<PermitRevocationLedgerV1, std::io::Error> {

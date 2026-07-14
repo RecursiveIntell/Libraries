@@ -787,7 +787,7 @@ fn permit_commands_emit_typed_approval_and_permit_artifacts() {
     assert_eq!(request.sandbox_root, "/repo");
 
     let approval = permit_command(PermitCommand::Approve {
-        request_id: request.request_id.0.clone(),
+        request_id: request.request_id.as_str().clone(),
         tool_id: "aidens:file-write:1".into(),
         risk: "file-write".into(),
         sandbox_root: "/repo".into(),
@@ -808,7 +808,7 @@ fn permit_commands_emit_typed_approval_and_permit_artifacts() {
     );
 
     let denial = permit_command(PermitCommand::Deny {
-        request_id: request.request_id.0,
+        request_id: request.request_id.as_str(),
         decided_by: "operator".into(),
         reason: "no".into(),
     })
@@ -885,7 +885,7 @@ fn permit_approval_rejects_request_id_bound_to_different_context() {
 
     for (tool_id, risk, sandbox_root, run_id, attempt_id) in mismatched_contexts {
         let error = permit_command(PermitCommand::Approve {
-            request_id: request.request_id.0.clone(),
+            request_id: request.request_id.as_str().clone(),
             tool_id: tool_id.into(),
             risk: risk.into(),
             sandbox_root: sandbox_root.into(),
@@ -939,7 +939,7 @@ fn p10_coding_commands_read_propose_apply_and_packetize() {
     .unwrap();
     let request: ApprovalRequestV1 = serde_json::from_str(&request).unwrap();
     let approval = permit_command(PermitCommand::Approve {
-        request_id: request.request_id.0,
+        request_id: request.request_id.as_str(),
         tool_id: "aidens:patch-apply:1".into(),
         risk: "file-write".into(),
         sandbox_root: root.canonicalize().unwrap().display().to_string(),

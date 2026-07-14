@@ -480,6 +480,7 @@ dependencies = [
  "llm-tool-runtime",
  "serde",
  "serde_json",
+ "stack-ids",
  "thiserror 2.0.18",
 ]
 

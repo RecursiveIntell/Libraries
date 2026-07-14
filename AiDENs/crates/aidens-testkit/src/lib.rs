@@ -744,7 +744,7 @@ fn reference_tool_exposure_value(case: &ReferenceCaseV1) -> Result<Value, Refere
         .get("tools")
         .and_then(Value::as_array)
         .ok_or_else(|| ReferenceError::MissingField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: "tools".into(),
         })?;
 
@@ -883,7 +883,7 @@ fn reference_receipt_lineage_value(case: &ReferenceCaseV1) -> Result<Value, Refe
         .get("receipts")
         .and_then(Value::as_array)
         .ok_or_else(|| ReferenceError::MissingField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: "receipts".into(),
         })?;
     let mut nodes = Vec::new();
@@ -923,7 +923,7 @@ fn reference_temporal_query_value(case: &ReferenceCaseV1) -> Result<Value, Refer
         .get("records")
         .and_then(Value::as_array)
         .ok_or_else(|| ReferenceError::MissingField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: "records".into(),
         })?;
     let temporal_index_exact = case
@@ -1035,7 +1035,7 @@ fn reference_proof_debt_value(case: &ReferenceCaseV1) -> Result<Value, Reference
         .get("obligations")
         .and_then(Value::as_array)
         .ok_or_else(|| ReferenceError::MissingField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: "obligations".into(),
         })?;
     let mut debt_ids = Vec::new();
@@ -1105,7 +1105,7 @@ fn reference_semantic_state_value(case: &ReferenceCaseV1) -> Result<Value, Refer
         .get("exactness")
         .and_then(Value::as_str)
         .ok_or_else(|| ReferenceError::MissingField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: "exactness".into(),
         })?;
     let degradation_ids = optional_string_array(&case.input, "degradation_record_ids");
@@ -1268,7 +1268,7 @@ fn string_field(case: &ReferenceCaseV1, field: &str) -> Result<String, Reference
         .and_then(Value::as_str)
         .map(str::to_string)
         .ok_or_else(|| ReferenceError::MissingField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: field.into(),
         })
 }
@@ -1288,7 +1288,7 @@ fn optional_datetime_field(
         None | Some(Value::Null) => Ok(None),
         Some(Value::String(raw)) => parse_datetime_field(raw, field, case).map(Some),
         Some(_) => Err(ReferenceError::InvalidField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: field.into(),
             reason: "expected string or null".into(),
         }),
@@ -1305,7 +1305,7 @@ fn value_string_field(
         .and_then(Value::as_str)
         .map(str::to_string)
         .ok_or_else(|| ReferenceError::InvalidField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: field.into(),
             reason: "expected string".into(),
         })
@@ -1328,7 +1328,7 @@ fn optional_value_datetime_field(
         None | Some(Value::Null) => Ok(None),
         Some(Value::String(raw)) => parse_datetime_field(raw, field, case).map(Some),
         Some(_) => Err(ReferenceError::InvalidField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: field.into(),
             reason: "expected string or null".into(),
         }),
@@ -1354,7 +1354,7 @@ fn parse_datetime_field(
     DateTime::parse_from_rfc3339(raw)
         .map(|value| value.with_timezone(&Utc))
         .map_err(|error| ReferenceError::InvalidField {
-            case_id: case.case_id.0.clone(),
+            case_id: case.case_id.as_str().clone(),
             field: field.into(),
             reason: error.to_string(),
         })

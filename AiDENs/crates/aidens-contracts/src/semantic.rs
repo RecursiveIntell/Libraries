@@ -43,7 +43,7 @@ pub struct SemanticStateV1 {
 impl SemanticStateV1 {
     pub fn exact_supported(artifact_ref: ArtifactId, proof_carrier: impl Into<String>) -> Self {
         Self {
-            state_id: generated_artifact_id_from_material("semantic-state", &artifact_ref.0),
+            state_id: generated_artifact_id_from_material("semantic-state", &artifact_ref.as_str()),
             artifact_ref,
             provenance_carrier: "declared-input-manifest".into(),
             truth_carrier: "canonical-owner-or-admitted-facade".into(),
@@ -148,7 +148,7 @@ impl SemanticContradictionRecordV1 {
         let reason_code = reason_code.into();
         let material = format!(
             "{}|{}|{}",
-            artifact_ref.0,
+            artifact_ref.as_str(),
             witness_ids
                 .iter()
                 .map(|id| id.0.clone())
@@ -201,7 +201,7 @@ impl ExecutionContaminationRecordV1 {
                 "execution-contamination",
                 &format!(
                     "{}|{}|{}",
-                    artifact_ref.0, execution_context_ref.0, reason_code
+                    artifact_ref.as_str(), execution_context_ref.as_str(), reason_code
                 ),
             ),
             artifact_ref,
@@ -280,7 +280,7 @@ impl LocalDegradationRecordV1 {
         Self {
             degradation_id: generated_artifact_id_from_material(
                 "degradation-record",
-                &format!("{}|{}|{}", artifact_ref.0, reason_code, guarantee_weakened),
+                &format!("{}|{}|{}", artifact_ref.as_str(), reason_code, guarantee_weakened),
             ),
             artifact_ref,
             reason_code,
