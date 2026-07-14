@@ -45,6 +45,10 @@ fn sample_receipt() -> ToolReceipt {
         retry_owner: ToolRetryOwner::LlmPipeline,
         replay_link: Some("replay://tool-run-1".into()),
         provider_call_id: Some("provider-call-1".into()),
+        phase: llm_tool_runtime::ToolReceiptPhase::default(),
+        resolution: llm_tool_runtime::ToolReceiptResolution::default(),
+        authority_lineage: vec![],
+        preflight_receipt_id: None,
     }
 }
 

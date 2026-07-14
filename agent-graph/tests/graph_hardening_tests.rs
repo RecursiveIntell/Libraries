@@ -4,11 +4,9 @@ use agent_graph::receipt::ReplayError;
 use agent_graph::{CheckpointPolicy, GraphSpecV1};
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::{fs, process::Command};
-use std::collections::BTreeMap;
 
 #[derive(Clone)]
 struct FailingSaver;
