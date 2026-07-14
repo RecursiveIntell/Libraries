@@ -142,7 +142,8 @@ pub fn lloyd_max_batch_gpu(
     seed: u64,
 ) -> Result<(Vec<u8>, Vec<f32>)> {
     if !cuda_ready() {
-        return crate::fallback::lloyd_max_batch_cpu(vectors, n, dim, k, n_levels, seed);
+        return crate::fallback::lloyd_max_batch_cpu(vectors, n, dim, k, n_levels, seed)
+            .map_err(GpuError::InvalidConfig);
     }
     lloyd_max_batch_cuda(vectors, n, dim, k, n_levels, seed)
 }
@@ -230,7 +231,8 @@ pub fn lloyd_max_decode_batch_gpu(
     if !cuda_ready() {
         return crate::fallback::lloyd_max_decode_batch_cpu(
             indices, norms, n, dim, k, n_levels, seed,
-        );
+        )
+        .map_err(GpuError::InvalidConfig);
     }
     lloyd_max_decode_cuda(indices, norms, n, dim, k, n_levels, seed)
 }

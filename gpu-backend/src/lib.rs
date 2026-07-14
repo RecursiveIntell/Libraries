@@ -122,12 +122,14 @@ pub fn lloyd_max_batch(
     {
         if let Some(ctx) = GpuContext::init() {
             if n >= GpuContext::GPU_MIN_BATCH_SIZE {
-                return cuda::lloyd_max_batch_gpu(ctx, vectors, n, dim, k, n_levels, seed);
+                return cuda::lloyd_max_batch_gpu(ctx, vectors, n, dim, k, n_levels, seed)
+                    .map_err(GpuError::InvalidConfig);
             }
         }
     }
 
     fallback::lloyd_max_batch_cpu(vectors, n, dim, k, n_levels, seed)
+        .map_err(GpuError::InvalidConfig)
 }
 
 /// Batched Lloyd-Max decode.
@@ -156,12 +158,14 @@ pub fn lloyd_max_decode_batch(
             if n >= GpuContext::GPU_MIN_BATCH_SIZE {
                 return cuda::lloyd_max_decode_batch_gpu(
                     ctx, indices, norms, n, dim, k, n_levels, seed,
-                );
+                )
+                .map_err(GpuError::InvalidConfig);
             }
         }
     }
 
     fallback::lloyd_max_decode_batch_cpu(indices, norms, n, dim, k, n_levels, seed)
+        .map_err(GpuError::InvalidConfig)
 }
 
 /// Bit-pack quantized indices into compact byte array.

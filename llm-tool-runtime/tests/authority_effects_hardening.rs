@@ -227,6 +227,7 @@ fn effect_descriptor() -> ToolDescriptor {
         },
         output_size_limit_bytes: None,
         provider_payload: None,
+        rollback_contract: None,
     }
 }
 

@@ -1083,4 +1083,30 @@ mod hardening_tests {
             );
         }
     }
+
+    #[test]
+    fn search_config_nan_weight_preserves_other_numeric_fields() {
+        let mut config = SearchConfig::default();
+        let expected_vector_weight = config.vector_weight;
+        let expected_sparse_weight = config.sparse_weight;
+        let expected_candidate_pool_size = config.candidate_pool_size;
+        let expected_rerank_flag = config.rerank_from_f32;
+        let expected_derive_sparse = config.derive_sparse_from_dense;
+
+        config.bm25_weight = f64::NAN;
+
+        let err = config.normalize_and_validate(768).unwrap_err();
+        match err {
+            MemoryError::InvalidConfig { field, reason: _ } => {
+                assert_eq!(field, "search.bm25_weight")
+            }
+            _ => panic!("expected InvalidConfig for non-finite numeric field"),
+        }
+
+        assert_eq!(config.vector_weight, expected_vector_weight);
+        assert_eq!(config.sparse_weight, expected_sparse_weight);
+        assert_eq!(config.candidate_pool_size, expected_candidate_pool_size);
+        assert_eq!(config.rerank_from_f32, expected_rerank_flag);
+        assert_eq!(config.derive_sparse_from_dense, expected_derive_sparse);
+    }
 }

@@ -230,6 +230,7 @@ fn evaluate_candidate(
     candidate: &ClaimCandidateV1,
     execution_success: bool,
     contradicting_fact_ids: &[String],
+    evidence_score: Option<f64>,
 ) -> EvaluationReportV1 {
     let source_span = candidate
         .source_spans
@@ -246,6 +247,54 @@ fn evaluate_candidate(
         content: &candidate.claim,
         execution_success,
         retrieval_evidence: candidate.retrieval_evidence.clone(),
+        evidence_score,
+        contradicting_fact_ids: if contradicting_fact_ids.is_empty() {
+            candidate.contradicting_fact_ids.clone()
+        } else {
+            contradicting_fact_ids.to_vec()
+        },
+        source_span,
+    })
+}
+
+async fn evaluate_candidate_with_search(
+    gate: &EvaluationGate,
+    memory: &aidens_memory_kit::CanonicalMemoryAdapter,
+    candidate: &ClaimCandidateV1,
+    execution_success: bool,
+    contradicting_fact_ids: &[String],
+) -> EvaluationReportV1 {
+    let namespaces = ["autonomous".to_string()];
+    let evidence = memory
+        .search(&candidate.claim, Some(&namespaces), Some(5))
+        .await
+        .unwrap_or_default();
+    let retrieval_evidence = evidence
+        .iter()
+        .map(|result| result.source.result_id())
+        .collect::<Vec<_>>();
+    let evidence_score = if evidence.is_empty() {
+        0.0
+    } else {
+        let score = evidence.len() as f64 / 5.0;
+        score.clamp(0.0, 1.0)
+    };
+    let source_span = candidate
+        .source_spans
+        .first()
+        .map(|span| SourceSpanQualityV1 {
+            start: span.output_byte_range.start,
+            end: span.output_byte_range.end,
+            source_len: span.output_byte_len,
+            output_digest_present: !span.output_digest.is_empty(),
+            model_name_present: !span.model_name.is_empty(),
+            prompt_config_digest_present: !span.prompt_config_digest.is_empty(),
+        });
+    gate.evaluate_claim(&ClaimEvaluationInputV1 {
+        content: &candidate.claim,
+        execution_success,
+        retrieval_evidence,
+        evidence_score: Some(evidence_score),
         contradicting_fact_ids: if contradicting_fact_ids.is_empty() {
             candidate.contradicting_fact_ids.clone()
         } else {
@@ -468,6 +517,7 @@ impl AutonomousLoop {
                     &case.candidate,
                     true,
                     &case.contradicting_fact_ids,
+                    None,
                 )
             })
             .collect()
@@ -762,8 +812,14 @@ impl AutonomousLoop {
             let mut evaluation_reports = Vec::new();
             for candidate in &capture_outcome.candidates {
                 let fact_id = &candidate.candidate_fact_id;
-                let report =
-                    evaluate_candidate(&self.evaluation, candidate, exec_result.success, &[]);
+                let report = evaluate_candidate_with_search(
+                    &self.evaluation,
+                    &self.capture.memory,
+                    candidate,
+                    exec_result.success,
+                    &[],
+                )
+                .await;
                 let disposition = report.disposition;
                 let score = report.score;
                 evaluation_reports.push(report);

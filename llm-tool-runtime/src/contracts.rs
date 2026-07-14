@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -14,6 +15,32 @@ use std::fmt;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use thiserror::Error;
+
+#[async_trait]
+pub trait CompensatingAction: Send + Sync {
+    async fn compensate(&self, receipt: &ToolReceipt) -> Result<(), ToolError>;
+}
+
+#[derive(Debug)]
+pub struct ControlData<T>(pub(crate) T);
+
+#[derive(Debug, Clone)]
+pub struct UntrustedData<T>(pub T);
+
+/// Accepts only trusted control data.
+///
+/// `UntrustedData` cannot be passed into this function directly.
+///
+/// ```compile_fail
+/// use llm_tool_runtime::{accept_control_data, UntrustedData};
+///
+/// let untrusted = UntrustedData("payload".to_string());
+/// // Type mismatch: this function expects `ControlData`, not `UntrustedData`.
+/// accept_control_data(untrusted);
+/// ```
+pub fn accept_control_data<T>(data: ControlData<T>) -> T {
+    data.0
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolExecutionPermitScope {
@@ -504,7 +531,7 @@ impl EffectIntent {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ToolDescriptor {
     pub name: String,
     pub version: String,
@@ -534,6 +561,21 @@ pub struct ToolDescriptor {
     pub output_size_limit_bytes: Option<usize>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub provider_payload: Option<Value>,
+    #[serde(skip)]
+    pub rollback_contract: Option<Arc<dyn CompensatingAction + Send + Sync>>,
+}
+
+impl std::fmt::Debug for ToolDescriptor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ToolDescriptor")
+            .field("name", &self.name)
+            .field("version", &self.version)
+            .field("backend_kind", &self.backend_kind)
+            .field("read_only", &self.read_only)
+            .field("side_effect_class", &self.side_effect_class)
+            .field("has_rollback", &self.rollback_contract.is_some())
+            .finish()
+    }
 }
 
 impl ToolDescriptor {

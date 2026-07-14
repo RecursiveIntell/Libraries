@@ -420,7 +420,7 @@ async fn import_claim_version_succeeds() {
     assert_eq!(result.status, "complete");
     assert_eq!(result.record_count, 1);
     assert!(!result.was_duplicate);
-    assert_eq!(result.source_envelope_id, "env-001");
+    assert_eq!(result.source_envelope_id, "envelope:env-001");
 }
 
 #[tokio::test]
@@ -844,11 +844,11 @@ async fn duplicate_envelope_id_different_digests_do_not_duplicate_queries() {
 
     let claim_a = claims
         .iter()
-        .find(|row| row.claim_id.as_str() == "claim-A")
+        .find(|row| row.claim_id.as_str() == "claim:claim-A")
         .expect("claim-A should be present");
     let claim_b = claims
         .iter()
-        .find(|row| row.claim_id.as_str() == "claim-B")
+        .find(|row| row.claim_id.as_str() == "claim:claim-B")
         .expect("claim-B should be present");
     assert_eq!(
         claim_a.source_exported_at.as_deref(),

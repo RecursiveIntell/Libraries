@@ -95,9 +95,35 @@ pub fn lloyd_max_batch_cpu(
     k: usize,
     n_levels: usize,
     _seed: u64,
-) -> Result<(Vec<u8>, Vec<f32>)> {
+) -> std::result::Result<(Vec<u8>, Vec<f32>), String> {
+    if k == 0 {
+        return Err("k must be greater than zero".to_string());
+    }
+    if n_levels > 256 {
+        return Err("n_levels cannot exceed 256".to_string());
+    }
+
+    let total_elements = n
+        .checked_mul(dim)
+        .ok_or_else(|| "n * dim overflows usize".to_string())?;
+    if vectors.len() != total_elements {
+        return Err(format!(
+            "dimension mismatch: expected {total_elements}, got {}",
+            vectors.len()
+        ));
+    }
+
+    if dim % k != 0 {
+        return Err(format!("dim ({}) must be divisible by k ({})", dim, k));
+    }
+
     let blocks_per_vector = dim / k;
-    let total_blocks = n * blocks_per_vector;
+    let total_blocks = n
+        .checked_mul(blocks_per_vector)
+        .ok_or_else(|| "n * blocks_per_vector overflows usize".to_string())?;
+    let total_indices = total_blocks
+        .checked_mul(k)
+        .ok_or_else(|| "total_blocks * k overflows usize".to_string())?;
     let mut indices = vec![0u8; total_blocks * k];
     let mut norms = vec![0.0f32; total_blocks];
 
@@ -138,6 +164,10 @@ pub fn lloyd_max_batch_cpu(
         }
     }
 
+    if indices.len() != total_indices {
+        return Err("internal overflow in output size calculation".to_string());
+    }
+
     Ok((indices, norms))
 }
 
@@ -150,10 +180,42 @@ pub fn lloyd_max_decode_batch_cpu(
     k: usize,
     n_levels: usize,
     __seed: u64,
-) -> Result<Vec<f32>> {
+) -> std::result::Result<Vec<f32>, String> {
+    if k == 0 {
+        return Err("k must be greater than zero".to_string());
+    }
+    if n_levels == 0 {
+        return Err("n_levels must be greater than zero".to_string());
+    }
+    if n_levels > 256 {
+        return Err("n_levels cannot exceed 256".to_string());
+    }
+
+    if norms.is_empty() {
+        return Err("norms input must not be empty".to_string());
+    }
+
+    if dim % k != 0 {
+        return Err(format!("dim ({}) must be divisible by k ({})", dim, k));
+    }
+
     let blocks_per_vector = dim / k;
+    let expected_output_len = n
+        .checked_mul(dim)
+        .ok_or_else(|| "n * dim overflows usize".to_string())?;
+    let total_blocks = n
+        .checked_mul(blocks_per_vector)
+        .ok_or_else(|| "n * blocks_per_vector overflows usize".to_string())?;
+    if norms.len() != total_blocks {
+        return Err(format!(
+            "dimension mismatch: expected {}, got {}",
+            total_blocks,
+            norms.len()
+        ));
+    }
+
     let centroids = gaussian_centroids(n_levels);
-    let mut output = vec![0.0f32; n * dim];
+    let mut output = vec![0.0f32; expected_output_len];
 
     for vec_idx in 0..n {
         for block_idx in 0..blocks_per_vector {
@@ -361,6 +423,37 @@ mod tests {
         hadamard_batch_cpu(&mut d2, n, dim, 42).unwrap();
 
         assert_eq!(d1, d2);
+    }
+
+    #[test]
+    fn lloyd_batch_rejects_zero_k() {
+        let result = lloyd_max_batch_cpu(&[0.0], 1, 1, 0, 8, 42);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn lloyd_batch_rejects_large_level_count() {
+        let result = lloyd_max_batch_cpu(&[0.0; 4], 1, 4, 2, 257, 42);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn lloyd_batch_rejects_dimension_overflow() {
+        let vectors = vec![0.0f32; 1];
+        let result = lloyd_max_batch_cpu(&vectors, usize::MAX, 2, 1, 8, 42);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn lloyd_decode_rejects_empty_norms() {
+        let result = lloyd_max_decode_batch_cpu(&[0u8; 4], &[], 1, 4, 2, 8, 42);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn lloyd_decode_rejects_large_level_count() {
+        let result = lloyd_max_decode_batch_cpu(&[0u8; 4], &[1.0, 2.0], 1, 4, 2, 257, 42);
+        assert!(result.is_err());
     }
 
     #[test]

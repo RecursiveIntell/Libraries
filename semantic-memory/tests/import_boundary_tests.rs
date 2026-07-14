@@ -104,12 +104,7 @@ fn make_multi_record_envelope(id: &str) -> ImportEnvelope {
 
 #[tokio::test]
 async fn rejects_empty_envelope_id() {
-    let (store, _dir) = test_store();
-    let mut env = make_envelope("", "ns");
-    env.envelope_id = EnvelopeId::new("");
-    let err = store.import_envelope(&env).await.unwrap_err();
-    assert_eq!(err.kind(), "import_invalid");
-    assert!(err.to_string().contains("envelope_id"));
+    assert!(EnvelopeId::try_new("").is_err());
 }
 
 #[tokio::test]
@@ -187,7 +182,7 @@ async fn imports_single_fact_envelope() {
     assert_eq!(receipt.status, ImportStatus::Complete);
     assert_eq!(receipt.record_count, 1);
     assert!(!receipt.was_duplicate);
-    assert_eq!(receipt.envelope_id.as_str(), "env-1");
+    assert_eq!(receipt.envelope_id.as_str(), "envelope:env-1");
     assert!(receipt.trace_id.is_some());
 
     // Verify the fact was actually stored
@@ -352,7 +347,7 @@ async fn import_status_returns_receipts() {
         .await
         .unwrap();
     assert_eq!(receipts.len(), 1);
-    assert_eq!(receipts[0].envelope_id.as_str(), "status-1");
+    assert_eq!(receipts[0].envelope_id.as_str(), "envelope:status-1");
     assert_eq!(receipts[0].status, ImportStatus::Complete);
 }
 
@@ -496,8 +491,8 @@ fn envelope_id_display_and_equality() {
     let id1 = EnvelopeId::new("abc-123");
     let id2 = EnvelopeId::new("abc-123");
     assert_eq!(id1, id2);
-    assert_eq!(id1.to_string(), "abc-123");
-    assert_eq!(id1.as_str(), "abc-123");
+    assert_eq!(id1.to_string(), "envelope:abc-123");
+    assert_eq!(id1.as_str(), "envelope:abc-123");
 }
 
 #[test]
@@ -817,7 +812,7 @@ async fn canonical_v2_batch_import_preserves_export_meta_receipts() {
         .unwrap();
     let entry = imports
         .into_iter()
-        .find(|entry| entry.source_envelope_id == "cb-v2-meta")
+        .find(|entry| entry.source_envelope_id == "envelope:cb-v2-meta")
         .expect("v2 import log entry");
 
     assert_eq!(entry.schema_version, PROJECTION_IMPORT_BATCH_V2_SCHEMA);
@@ -1033,7 +1028,10 @@ async fn canonical_v3_batch_import_preserves_kernel_payload_receipts() {
         .rebuildable_kernel_batch_v3()
         .expect("kernel receipt should deserialize")
         .expect("kernel receipt should be present");
-    assert_eq!(rebuilt.source_envelope_id.as_str(), "env-kernel-v3");
+    assert_eq!(
+        rebuilt.source_envelope_id.as_str(),
+        "envelope:env-kernel-v3"
+    );
 
     let claims = store
         .query_claim_versions({
@@ -1130,18 +1128,19 @@ async fn canonical_batch_reports_historical_digest_migration_conflict_explicitly
     let failed = logs
         .iter()
         .find(|entry| {
-            entry.source_envelope_id == "cb-migrate"
-                && entry.content_digest == "digest-cb-migrate-historical"
+            entry.source_envelope_id == "envelope:cb-migrate"
+                && entry.status == "failed"
+                && entry
+                    .failure_reason
+                    .as_deref()
+                    .is_some_and(|reason| reason.contains("historical digest migration replay"))
         })
         .expect("historical replay should leave an explicit failed receipt");
     assert_eq!(failed.status, "failed");
-    assert!(
-        failed
-            .failure_reason
-            .as_deref()
-            .is_some_and(|reason| reason.contains("historical digest migration replay")),
-        "failure receipt should explain the digest migration seam explicitly"
-    );
+    assert!(failed
+        .failure_reason
+        .as_deref()
+        .is_some_and(|reason| reason.contains("historical digest migration replay")));
 }
 
 #[tokio::test]
@@ -1149,7 +1148,7 @@ async fn canonical_batch_rollback_on_second_bad_record() {
     let (store, _dir) = test_store();
     // First record is valid, second is missing required fields
     let batch = serde_json::json!({
-        "source_envelope_id": "cb-rollback",
+        "source_envelope_id": "envelope:cb-rollback",
         "schema_version": "projection_import_batch_v1",
         "export_schema_version": "export_envelope_v1",
         "content_digest": "digest-rollback",
@@ -1158,9 +1157,9 @@ async fn canonical_batch_rollback_on_second_bad_record() {
         "records": [
             {
                 "kind": "claim_version",
-                "claim_version_id": "cv-good",
-                "claim_id": "c-good",
-                "subject_entity_id": "ent-1",
+                "claim_version_id": "claim-version:cv-good",
+                "claim_id": "claim:c-good",
+                "subject_entity_id": "entity:ent-1",
                 "predicate": "has_type",
                 "object_anchor": "function",
                 "projection_family": "forge",
@@ -1169,7 +1168,7 @@ async fn canonical_batch_rollback_on_second_bad_record() {
             },
             {
                 "kind": "claim_version",
-                "claim_version_id": "cv-bad"
+                "claim_version_id": "claim-version:cv-bad"
                 // missing all other required fields
             }
         ]
@@ -1190,7 +1189,7 @@ async fn canonical_batch_rollback_on_second_bad_record() {
         .unwrap();
     let entry = logs
         .iter()
-        .find(|l| l.source_envelope_id == "cb-rollback")
+        .find(|l| l.source_envelope_id == "envelope:cb-rollback")
         .expect("failed batch should leave an import receipt");
     assert_eq!(entry.status, "failed");
     assert!(entry.failure_reason.is_some());
@@ -1201,7 +1200,7 @@ async fn canonical_batch_rollback_on_second_bad_record() {
         .unwrap();
     let failure = failures
         .iter()
-        .find(|f| f.source_envelope_id == "cb-rollback")
+        .find(|f| f.source_envelope_id == "envelope:cb-rollback")
         .expect("failed batch should leave a durable failure receipt");
     assert_eq!(failure.schema_version, PROJECTION_IMPORT_BATCH_V2_SCHEMA);
     assert_eq!(failure.error_kind, "import_invalid");
@@ -1268,7 +1267,7 @@ async fn canonical_v2_batch_failure_receipt_preserves_evidence_bundle_receipts()
         .unwrap();
     let failure = failures
         .iter()
-        .find(|f| f.source_envelope_id == "cb-v2-failure")
+        .find(|f| f.source_envelope_id == "envelope:cb-v2-failure")
         .expect("typed v2 failure receipt");
     assert_eq!(failure.schema_version, PROJECTION_IMPORT_BATCH_V2_SCHEMA);
     assert_eq!(
@@ -1311,7 +1310,7 @@ async fn canonical_batch_trace_id_preserved_in_log() {
         .unwrap();
     let entry = logs
         .iter()
-        .find(|l| l.source_envelope_id == "cb-trace")
+        .find(|l| l.source_envelope_id == "envelope:cb-trace")
         .unwrap();
     assert_eq!(entry.claim_count, 1);
     assert_eq!(entry.source_authority, "forge");
@@ -1343,7 +1342,7 @@ async fn canonical_batch_trace_ctx_extra_fields_are_not_durably_persisted() {
     let stored_trace_id: Option<String> = conn
         .query_row(
             "SELECT trace_id FROM projection_import_log WHERE source_envelope_id = ?1",
-            ["cb-trace-shape"],
+            ["envelope:cb-trace-shape"],
             |row| row.get(0),
         )
         .unwrap();
@@ -1380,7 +1379,7 @@ async fn canonical_batch_records_distinct_import_and_export_schema_versions() {
         .unwrap();
     let entry = logs
         .iter()
-        .find(|l| l.source_envelope_id == "cb-version-law")
+        .find(|l| l.source_envelope_id == "envelope:cb-version-law")
         .unwrap();
 
     assert_eq!(entry.schema_version, "projection_import_batch_v2");
@@ -1440,7 +1439,7 @@ async fn canonical_batch_rejects_invalid_preferred_temporal_order() {
 async fn canonical_batch_rejects_overlapping_preferred_claims_in_batch() {
     let (store, _dir) = test_store();
     let batch = serde_json::json!({
-        "source_envelope_id": "cb-pref-overlap-batch",
+        "source_envelope_id": "envelope:cb-pref-overlap-batch",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
         "content_digest": "digest-pref-overlap-batch",
@@ -1451,18 +1450,18 @@ async fn canonical_batch_rejects_overlapping_preferred_claims_in_batch() {
         "records": [
             {
                 "kind": "claim_version",
-                "claim_id": "claim-overlap",
-                "claim_version_id": "claim-overlap-v1",
+                "claim_id": "claim:claim-overlap",
+                "claim_version_id": "claim-version:claim-overlap-v1",
                 "claim_state": "active",
                 "projection_family": "forge_verification",
-                "subject_entity_id": "ent-overlap",
+                "subject_entity_id": "entity:ent-overlap",
                 "predicate": "has_type",
                 "object_anchor": "function",
                 "scope_key": { "namespace": "canonical-ns" },
                 "valid_from": "2026-01-01T00:00:00Z",
                 "valid_to": "2026-02-01T00:00:00Z",
                 "preferred_open": true,
-                "source_envelope_id": "cb-pref-overlap-batch",
+                "source_envelope_id": "envelope:cb-pref-overlap-batch",
                 "source_authority": "forge",
                 "freshness": "current",
                 "contradiction_status": "none",
@@ -1471,18 +1470,18 @@ async fn canonical_batch_rejects_overlapping_preferred_claims_in_batch() {
             },
             {
                 "kind": "claim_version",
-                "claim_id": "claim-overlap",
-                "claim_version_id": "claim-overlap-v2",
+                "claim_id": "claim:claim-overlap",
+                "claim_version_id": "claim-version:claim-overlap-v2",
                 "claim_state": "active",
                 "projection_family": "forge_verification",
-                "subject_entity_id": "ent-overlap",
+                "subject_entity_id": "entity:ent-overlap",
                 "predicate": "has_type",
                 "object_anchor": "function",
                 "scope_key": { "namespace": "canonical-ns" },
                 "valid_from": "2026-01-15T00:00:00Z",
                 "valid_to": "2026-02-15T00:00:00Z",
                 "preferred_open": true,
-                "source_envelope_id": "cb-pref-overlap-batch",
+                "source_envelope_id": "envelope:cb-pref-overlap-batch",
                 "source_authority": "forge",
                 "freshness": "current",
                 "contradiction_status": "none",
@@ -1506,7 +1505,7 @@ async fn canonical_batch_rejects_overlapping_preferred_claim_with_existing_prefe
     let (store, _dir) = test_store();
 
     let existing = serde_json::json!({
-        "source_envelope_id": "cb-pref-existing-base",
+        "source_envelope_id": "envelope:cb-pref-existing-base",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
         "content_digest": "digest-pref-existing-base",
@@ -1516,18 +1515,18 @@ async fn canonical_batch_rejects_overlapping_preferred_claim_with_existing_prefe
         "transformed_at": "2026-03-07T00:00:01Z",
         "records": [{
             "kind": "claim_version",
-            "claim_id": "claim-existing-overlap",
-            "claim_version_id": "claim-existing-overlap-v1",
+            "claim_id": "claim:claim-existing-overlap",
+            "claim_version_id": "claim-version:claim-existing-overlap-v1",
             "claim_state": "active",
             "projection_family": "forge_verification",
-            "subject_entity_id": "ent-overlap-existing",
+            "subject_entity_id": "entity:ent-overlap-existing",
             "predicate": "has_type",
             "object_anchor": "function",
             "scope_key": { "namespace": "canonical-ns" },
             "valid_from": "2026-01-01T00:00:00Z",
             "valid_to": "2026-02-01T00:00:00Z",
             "preferred_open": true,
-            "source_envelope_id": "cb-pref-existing-base",
+            "source_envelope_id": "envelope:cb-pref-existing-base",
             "source_authority": "forge",
             "freshness": "current",
             "contradiction_status": "none",
@@ -1542,7 +1541,7 @@ async fn canonical_batch_rejects_overlapping_preferred_claim_with_existing_prefe
         .unwrap();
 
     let overlapping = serde_json::json!({
-        "source_envelope_id": "cb-pref-existing-overlap",
+        "source_envelope_id": "envelope:cb-pref-existing-overlap",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
         "content_digest": "digest-pref-existing-overlap",
@@ -1552,18 +1551,18 @@ async fn canonical_batch_rejects_overlapping_preferred_claim_with_existing_prefe
         "transformed_at": "2026-03-08T00:00:01Z",
         "records": [{
             "kind": "claim_version",
-            "claim_id": "claim-existing-overlap",
-            "claim_version_id": "claim-existing-overlap-v2",
+            "claim_id": "claim:claim-existing-overlap",
+            "claim_version_id": "claim-version:claim-existing-overlap-v2",
             "claim_state": "active",
             "projection_family": "forge_verification",
-            "subject_entity_id": "ent-overlap-existing",
+            "subject_entity_id": "entity:ent-overlap-existing",
             "predicate": "has_type",
             "object_anchor": "function",
             "scope_key": { "namespace": "canonical-ns" },
             "valid_from": "2026-01-15T00:00:00Z",
             "valid_to": "2026-03-01T00:00:00Z",
             "preferred_open": true,
-            "source_envelope_id": "cb-pref-existing-overlap",
+            "source_envelope_id": "envelope:cb-pref-existing-overlap",
             "source_authority": "forge",
             "freshness": "current",
             "contradiction_status": "none",
@@ -1585,7 +1584,7 @@ async fn canonical_batch_rejects_overlapping_preferred_claim_with_existing_prefe
 async fn canonical_batch_rejects_overlapping_preferred_relations_in_batch() {
     let (store, _dir) = test_store();
     let batch = serde_json::json!({
-        "source_envelope_id": "cb-pref-rel-overlap-batch",
+        "source_envelope_id": "envelope:cb-pref-rel-overlap-batch",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
         "content_digest": "digest-pref-rel-overlap-batch",
@@ -1596,8 +1595,8 @@ async fn canonical_batch_rejects_overlapping_preferred_relations_in_batch() {
         "records": [
             {
                 "kind": "relation_version",
-                "relation_version_id": "rel-overlap-v1",
-                "subject_entity_id": "rel-overlap-entity",
+                "relation_version_id": "relation-version:rel-overlap-v1",
+                "subject_entity_id": "entity:rel-overlap-entity",
                 "predicate": "affects",
                 "object_anchor": "target-1",
                 "scope_key": { "namespace": "canonical-ns" },
@@ -1606,15 +1605,15 @@ async fn canonical_batch_rejects_overlapping_preferred_relations_in_batch() {
                 "valid_to": "2026-02-01T00:00:00Z",
                 "preferred_open": true,
                 "source_confidence": 0.9,
-                "source_envelope_id": "cb-pref-rel-overlap-batch",
+                "source_envelope_id": "envelope:cb-pref-rel-overlap-batch",
                 "source_authority": "forge",
                 "freshness": "current",
                 "contradiction_status": "none"
             },
             {
                 "kind": "relation_version",
-                "relation_version_id": "rel-overlap-v2",
-                "subject_entity_id": "rel-overlap-entity",
+                "relation_version_id": "relation-version:rel-overlap-v2",
+                "subject_entity_id": "entity:rel-overlap-entity",
                 "predicate": "affects",
                 "object_anchor": "target-1",
                 "scope_key": { "namespace": "canonical-ns" },
@@ -1623,7 +1622,7 @@ async fn canonical_batch_rejects_overlapping_preferred_relations_in_batch() {
                 "valid_to": "2026-02-15T00:00:00Z",
                 "preferred_open": true,
                 "source_confidence": 0.88,
-                "source_envelope_id": "cb-pref-rel-overlap-batch",
+                "source_envelope_id": "envelope:cb-pref-rel-overlap-batch",
                 "source_authority": "forge",
                 "freshness": "current",
                 "contradiction_status": "none"

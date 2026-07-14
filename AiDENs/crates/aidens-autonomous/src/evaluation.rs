@@ -51,6 +51,7 @@ pub struct ClaimEvaluationInputV1<'a> {
     pub execution_success: bool,
     pub retrieval_evidence: Vec<String>,
     pub contradicting_fact_ids: Vec<String>,
+    pub evidence_score: Option<f64>,
     pub source_span: Option<SourceSpanQualityV1>,
 }
 
@@ -89,6 +90,7 @@ impl EvaluationGate {
             execution_success,
             retrieval_evidence: Vec::new(),
             contradicting_fact_ids: Vec::new(),
+            evidence_score: None,
             source_span: None,
         })
         .disposition
@@ -106,9 +108,27 @@ impl EvaluationGate {
             execution_success,
             retrieval_evidence: Vec::new(),
             contradicting_fact_ids: Vec::new(),
+            evidence_score: None,
             source_span: None,
         });
         (report.disposition, report.score)
+    }
+
+    /// Evaluate content with an explicit evidence score supplied by caller.
+    pub fn evaluate_with_evidence(
+        &self,
+        content: &str,
+        execution_success: bool,
+        evidence_score: f64,
+    ) -> EvaluationReportV1 {
+        self.evaluate_claim(&ClaimEvaluationInputV1 {
+            content,
+            execution_success,
+            retrieval_evidence: Vec::new(),
+            contradicting_fact_ids: Vec::new(),
+            evidence_score: Some(evidence_score),
+            source_span: None,
+        })
     }
 
     /// Evaluate one claim using evidence, contradiction, and source-span
@@ -134,10 +154,19 @@ impl EvaluationGate {
             .as_ref()
             .is_some_and(SourceSpanQualityV1::is_complete);
         let has_retrieval_evidence = !input.retrieval_evidence.is_empty();
+        let evidence_score = input.evidence_score.unwrap_or_else(|| {
+            if has_retrieval_evidence {
+                1.0
+            } else {
+                0.0
+            }
+        });
+        let evidence_score = evidence_score.clamp(0.0, 1.0);
+        let has_supporting_evidence = evidence_score >= 0.30;
         let contradiction_detected = !input.contradicting_fact_ids.is_empty();
         let mut score = lexical_quality_score(input.content);
-        if has_retrieval_evidence {
-            score += 0.40;
+        if has_supporting_evidence {
+            score += 0.45 * evidence_score;
         }
         if source_span_complete {
             score += 0.35;
@@ -146,8 +175,7 @@ impl EvaluationGate {
             score = score.min(0.49);
         }
         let score = score.clamp(0.0, 1.0);
-        let insufficient_evidence = !has_retrieval_evidence || !source_span_complete;
-        let abstained = insufficient_evidence || contradiction_detected;
+        let abstained = !has_supporting_evidence || contradiction_detected;
         let disposition = if abstained {
             FactDisposition::Quarantine
         } else if score >= 0.75 {
@@ -477,6 +505,7 @@ mod tests {
             execution_success: true,
             retrieval_evidence: vec![],
             contradicting_fact_ids: vec![],
+            evidence_score: None,
             source_span: None,
         };
         let sourced = ClaimEvaluationInputV1 {
@@ -484,6 +513,7 @@ mod tests {
             execution_success: true,
             retrieval_evidence: vec!["fact:queue-contract".into()],
             contradicting_fact_ids: vec![],
+            evidence_score: None,
             source_span: Some(SourceSpanQualityV1 {
                 start: 0,
                 end: 33,
@@ -508,6 +538,7 @@ mod tests {
             execution_success: true,
             retrieval_evidence: vec!["fact:support".into()],
             contradicting_fact_ids: vec!["fact:contradiction".into()],
+            evidence_score: None,
             source_span: Some(SourceSpanQualityV1 {
                 start: 0,
                 end: 64,
@@ -520,5 +551,49 @@ mod tests {
 
         assert_eq!(report.disposition, FactDisposition::Quarantine);
         assert!(report.contradiction_detected);
+    }
+
+    #[test]
+    fn unsourced_claim_stays_quarantined_even_with_good_lexical_signal() {
+        let gate = EvaluationGate::new();
+        let report = gate.evaluate_claim(&ClaimEvaluationInputV1 {
+            content: "The autonomous cache now persists entries using a quorum-backed vector index.",
+            execution_success: true,
+            retrieval_evidence: Vec::new(),
+            contradicting_fact_ids: Vec::new(),
+            evidence_score: Some(0.0),
+            source_span: Some(SourceSpanQualityV1 {
+                start: 0,
+                end: 65,
+                source_len: 65,
+                output_digest_present: true,
+                model_name_present: true,
+                prompt_config_digest_present: true,
+            }),
+        });
+
+        assert_eq!(report.disposition, FactDisposition::Quarantine);
+    }
+
+    #[test]
+    fn claim_with_search_evidence_can_promote() {
+        let gate = EvaluationGate::new();
+        let report = gate.evaluate_claim(&ClaimEvaluationInputV1 {
+            content: "The autonomous runtime persists execution plans through the immutable fact ledger.",
+            execution_success: true,
+            retrieval_evidence: vec!["fact:existing-plan-runtime".into()],
+            contradicting_fact_ids: Vec::new(),
+            evidence_score: Some(0.95),
+            source_span: Some(SourceSpanQualityV1 {
+                start: 0,
+                end: 67,
+                source_len: 67,
+                output_digest_present: true,
+                model_name_present: true,
+                prompt_config_digest_present: true,
+            }),
+        });
+
+        assert_eq!(report.disposition, FactDisposition::Promote);
     }
 }

@@ -38,6 +38,7 @@ fn test_descriptor(name: &str, backend: ToolBackendKind) -> ToolDescriptor {
         exposure_policy: ToolExposurePolicy::default(),
         receipt_persistence: ToolReceiptPersistence::Ephemeral,
         effect_target: Default::default(),
+        rollback_contract: None,
         output_size_limit_bytes: None,
         provider_payload: None,
     }

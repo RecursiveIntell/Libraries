@@ -563,6 +563,18 @@ impl ToolRuntime {
                 approval_state.clone(),
             ),
         };
+
+        if result.is_err() {
+            if let Some(action) = &descriptor.rollback_contract {
+                if let Err(error) = action.compensate(&receipt).await {
+                    return ToolExecution {
+                        result: Err(error),
+                        receipt,
+                    };
+                }
+            }
+        }
+
         if let Some(preflight) = &preflight_receipt {
             receipt.preflight_receipt_id = Some(preflight.receipt_id.clone());
         }
@@ -900,14 +912,16 @@ async fn wait_for_cancel(flag: &AtomicBool) {
 mod tests {
     use super::*;
     use crate::{
-        Tool, ToolApprovalKind, ToolBackendKind, ToolBudgetContext, ToolCall, ToolCtx,
-        ToolDescriptor, ToolExposureMode, ToolExposurePolicy, ToolIdempotencyClass, ToolOriginKind,
-        ToolOutputMode, ToolPlannerStage, ToolReceiptPersistence, ToolResult, ToolSideEffectClass,
+        CompensatingAction, Tool, ToolApprovalKind, ToolBackendKind, ToolBudgetContext, ToolCall,
+        ToolCtx, ToolDescriptor, ToolErrorClass, ToolExposureMode, ToolExposurePolicy,
+        ToolIdempotencyClass, ToolOriginKind, ToolOutputMode, ToolPlannerStage,
+        ToolReceiptPersistence, ToolResult, ToolSideEffectClass,
     };
     use async_trait::async_trait;
     use semantic_memory_forge::FORGE_TOOL_RECEIPT_V2_SCHEMA;
     use serde_json::json;
     use stack_ids::{AttemptId, TraceCtx, TrialId};
+    use std::sync::atomic::{AtomicBool, AtomicUsize};
 
     #[derive(Clone)]
     struct EchoTool {
@@ -917,6 +931,38 @@ mod tests {
     struct SlowTool {
         descriptor: ToolDescriptor,
         delay_ms: u64,
+    }
+
+    struct FailingTool {
+        descriptor: ToolDescriptor,
+    }
+
+    #[derive(Clone)]
+    struct TestRollback {
+        called: Arc<AtomicBool>,
+    }
+
+    #[async_trait]
+    impl CompensatingAction for TestRollback {
+        async fn compensate(&self, receipt: &crate::ToolReceipt) -> Result<(), ToolError> {
+            let _ = receipt.replay_link.as_deref();
+            self.called.store(true, Ordering::SeqCst);
+            Ok(())
+        }
+    }
+
+    #[async_trait]
+    impl Tool for FailingTool {
+        fn descriptor(&self) -> &ToolDescriptor {
+            &self.descriptor
+        }
+
+        async fn invoke(&self, _ctx: &ToolCtx, _call: &ToolCall) -> Result<ToolResult, ToolError> {
+            Err(ToolError::new(
+                ToolErrorClass::Execution,
+                "execution failed for rollback coverage",
+            ))
+        }
     }
 
     #[async_trait]
@@ -1001,6 +1047,7 @@ mod tests {
             },
             output_size_limit_bytes: None,
             provider_payload: None,
+            rollback_contract: None,
         }
     }
 
@@ -1658,5 +1705,75 @@ mod tests {
         let mut incomplete = execution.receipt.clone();
         incomplete.authority_lineage.clear();
         assert!(incomplete.verify_authority_lineage().is_err());
+    }
+
+    #[tokio::test]
+    async fn runtime_calls_compensation_contract_on_failure() {
+        let mut registry = ToolRegistry::new();
+        let called = Arc::new(AtomicBool::new(false));
+        let mut descriptor = echo_descriptor();
+        descriptor.name = "failing_tool".into();
+        descriptor.rollback_contract = Some(Arc::new(TestRollback {
+            called: called.clone(),
+        }));
+        // AUTH-008: durable receipt persistence requires a sink
+        descriptor.receipt_persistence = ToolReceiptPersistence::Ephemeral;
+        registry.register(FailingTool { descriptor });
+        let runtime = ToolRuntime::new(registry);
+
+        let execution = runtime
+            .execute(
+                &tool_ctx(),
+                &ToolCall::new(
+                    "failing_tool",
+                    "1.0.0",
+                    json!({"message": "will fail"}),
+                    ToolOriginKind::Test,
+                ),
+                None,
+                None,
+            )
+            .await;
+
+        assert!(execution.result.is_err());
+        assert_eq!(
+            execution.receipt.error_class,
+            Some(ToolErrorClass::Execution)
+        );
+        assert!(called.load(Ordering::SeqCst));
+    }
+
+    #[tokio::test]
+    async fn runtime_does_not_call_compensation_contract_without_contract() {
+        let mut registry = ToolRegistry::new();
+        let called = Arc::new(AtomicBool::new(false));
+        let mut descriptor = echo_descriptor();
+        descriptor.name = "failing_tool".into();
+        descriptor.rollback_contract = None;
+        // AUTH-008: durable receipt persistence requires a sink
+        descriptor.receipt_persistence = ToolReceiptPersistence::Ephemeral;
+        registry.register(FailingTool { descriptor });
+        let runtime = ToolRuntime::new(registry);
+
+        let execution = runtime
+            .execute(
+                &tool_ctx(),
+                &ToolCall::new(
+                    "failing_tool",
+                    "1.0.0",
+                    json!({"message": "will fail"}),
+                    ToolOriginKind::Test,
+                ),
+                None,
+                None,
+            )
+            .await;
+
+        assert!(execution.result.is_err());
+        assert_eq!(
+            execution.receipt.error_class,
+            Some(ToolErrorClass::Execution)
+        );
+        assert!(!called.load(Ordering::SeqCst));
     }
 }

@@ -130,6 +130,7 @@ impl<P> SearchMemoryTool<P> {
                 mcp_surface_kind: crate::McpSurfaceKind::Tool,
                 exposure_policy: ToolExposurePolicy::default(),
                 receipt_persistence: ToolReceiptPersistence::Ephemeral,
+                rollback_contract: None,
                 effect_target: crate::EffectTargetSpec::default(),
                 output_size_limit_bytes: Some(128 * 1024),
                 provider_payload: None,
@@ -198,6 +199,7 @@ impl<P> ReadArtifactTool<P> {
                 mcp_surface_kind: crate::McpSurfaceKind::Resource,
                 exposure_policy: ToolExposurePolicy::default(),
                 receipt_persistence: ToolReceiptPersistence::Ephemeral,
+                rollback_contract: None,
                 effect_target: crate::EffectTargetSpec::default(),
                 output_size_limit_bytes: Some(256 * 1024),
                 provider_payload: None,
@@ -270,6 +272,7 @@ impl<P> RunVerificationTool<P> {
                 mcp_surface_kind: crate::McpSurfaceKind::Tool,
                 exposure_policy: ToolExposurePolicy::default(),
                 receipt_persistence: ToolReceiptPersistence::ForgeRaw,
+                rollback_contract: None,
                 effect_target: crate::EffectTargetSpec {
                     aliases: vec!["candidate_id".into()],
                     compound: Vec::new(),
@@ -344,6 +347,7 @@ impl<P> ApplyPatchPreviewTool<P> {
                 mcp_surface_kind: crate::McpSurfaceKind::Tool,
                 exposure_policy: ToolExposurePolicy::default(),
                 receipt_persistence: ToolReceiptPersistence::ForgeRaw,
+                rollback_contract: None,
                 effect_target: crate::EffectTargetSpec {
                     aliases: vec!["target".into()],
                     compound: Vec::new(),
@@ -420,6 +424,7 @@ impl<P> SubmitPatchTool<P> {
                     ..Default::default()
                 },
                 receipt_persistence: ToolReceiptPersistence::ForgeRaw,
+                rollback_contract: None,
                 effect_target: crate::EffectTargetSpec {
                     aliases: vec!["target".into()],
                     compound: Vec::new(),
