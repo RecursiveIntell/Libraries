@@ -4028,4 +4028,36 @@ mod tests {
             "a corpus write must force a revision-bound miss"
         );
     }
+
+    /// MEM-012: UTF-8 text compaction must not panic on multi-byte characters.
+    #[tokio::test]
+    async fn utf8_truncation_does_not_panic_on_multibyte() {
+        let config = MemoryConfig {
+            embedding: crate::config::EmbeddingConfig {
+                dimensions: 768,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(crate::embedder::MockEmbedder::new(768)),
+        )
+        .unwrap();
+
+        // CJK, emoji, combining marks — must not panic
+        let texts = [
+            "这是一段中文文本，需要被正确处理而不是 panic".to_string(),
+            "🎉🎊🎈 Party time with emoji 🎂🎉".to_string(),
+            "e\u{0301} = é (combining mark test)".to_string(),
+            "Многобайтовые символы UTF-8".to_string(),
+        ];
+
+        for text in &texts {
+            // This exercises the compaction/truncation paths
+            let _ = store.add_fact("utf8-test", text, None, None).await;
+            let results = store.search(text, Some(1), None, None).await;
+            assert!(results.is_ok(), "search must not panic on UTF-8: {}", text);
+        }
+    }
 }
