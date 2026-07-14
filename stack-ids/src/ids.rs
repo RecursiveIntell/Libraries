@@ -143,18 +143,30 @@ macro_rules! define_id {
 
             fn from_str(value: &str) -> Result<Self, Self::Err> {
                 let family = family_name(stringify!($name));
-                let expected = format!("{family}:");
-                let payload = value.strip_prefix(&expected).ok_or_else(|| IdParseError {
-                    family: family.clone(),
-                    reason: "missing or incorrect family prefix",
-                })?;
-                if !valid_payload(payload) {
+                // Accept family-prefixed values directly
+                if let Some((actual_family, payload)) = value.split_once(':') {
+                    if actual_family != family {
+                        return Err(IdParseError {
+                            family: family.clone(),
+                            reason: "cross-family substitution",
+                        });
+                    }
+                    if !valid_payload(payload) {
+                        return Err(IdParseError {
+                            family,
+                            reason: "payload is empty or non-canonical",
+                        });
+                    }
+                    return Ok(Self(value.to_string()));
+                }
+                // Accept unprefixed values and prepend the family (backward compat)
+                if !valid_payload(value) {
                     return Err(IdParseError {
                         family,
                         reason: "payload is empty or non-canonical",
                     });
                 }
-                Ok(Self(value.to_owned()))
+                Ok(Self(format!("{family}:{value}")))
             }
         }
 
