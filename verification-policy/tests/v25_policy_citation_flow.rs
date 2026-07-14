@@ -129,7 +129,7 @@ fn policy_decision_carries_v25_citation_shape() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "applicability-context-v25"
+        "applicability-context:applicability-context-v25"
     );
     assert_eq!(
         decision_from_example.citation_status,
