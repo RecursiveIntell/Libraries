@@ -478,8 +478,8 @@ mod tests {
         ProjectionVisibilityClass, EXPORT_ENVELOPE_V3_SCHEMA,
     };
     use stack_ids::{
-        AssertionGroupId, ClaimFamilyId, ClaimId, ConstraintId, EntityId, EnvelopeId, OperatorId,
-        RegionDigestId, RegionId, ScopeKey,
+        AssertionGroupId, ClaimFamilyId, ClaimId, ClaimVersionId, ConstraintId, EntityId,
+        EnvelopeId, OperatorId, RegionDigestId, RegionId, ScopeKey,
     };
 
     fn rich_batch(envelope_id: &str, claim_suffix: &str) -> ProjectionImportBatchV3 {
@@ -488,7 +488,7 @@ mod tests {
             ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
                     claim_id: Some(ClaimId::new(format!("claim-{claim_suffix}-1"))),
-                    claim_version_id: Some(format!("claim-version-{claim_suffix}-1").into()),
+                    claim_version_id: Some(ClaimVersionId::new(&format!("claim-version-{claim_suffix}-1"))),
                     subject_entity_id: EntityId::new(format!("entity-{claim_suffix}-1")),
                     predicate: "supports".into(),
                     object_anchor: serde_json::json!("result"),
@@ -527,7 +527,7 @@ mod tests {
             ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
                     claim_id: Some(ClaimId::new(format!("claim-{claim_suffix}-2"))),
-                    claim_version_id: Some(format!("claim-version-{claim_suffix}-2").into()),
+                    claim_version_id: Some(ClaimVersionId::new(&format!("claim-version-{claim_suffix}-2"))),
                     subject_entity_id: EntityId::new(format!("entity-{claim_suffix}-2")),
                     predicate: "supports".into(),
                     object_anchor: serde_json::json!("result"),
@@ -696,7 +696,7 @@ mod tests {
             .map(|claim_id| ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
                     claim_id: Some(ClaimId::new(claim_id.clone())),
-                    claim_version_id: Some(claim_id.clone().into()),
+                    claim_version_id: Some(ClaimVersionId::new(&claim_id)),
                     subject_entity_id: EntityId::new(format!("entity-{claim_id}")),
                     predicate: "supports".into(),
                     object_anchor: serde_json::json!("result"),

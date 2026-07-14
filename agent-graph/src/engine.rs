@@ -348,10 +348,10 @@ impl AgentGraph {
         let (result, summary) = executor.execute(start_node).await;
         let deltas = recording.lock().await.clone();
         let finished_at = summary.finished_at.unwrap_or_else(chrono::Utc::now);
-        let steps = deltas
-            .iter()
-            .map(|delta| StepExecutionReceiptV1 {
-                step_index: delta.step_index,
+                let steps = deltas
+                    .iter()
+                    .map(|delta| StepExecutionReceiptV1 {
+                        step_index: delta.step_index,
                 agent_id: delta.node_name.clone(),
                 started_at,
                 finished_at,
@@ -370,23 +370,26 @@ impl AgentGraph {
                 message: error.to_string(),
             },
         };
-        let terminal_receipt = GraphExecutionReceiptV1 {
-            graph_id: self.compute_graph_hash(),
-            execution_id: summary.run_id,
-            started_at,
-            finished_at,
+                let terminal_receipt = GraphExecutionReceiptV1 {
+                    graph_id: self.compute_graph_hash(),
+                    execution_id: summary.run_id,
+                    started_at,
+                    finished_at,
             steps,
             memory_generations: Vec::new(),
             recovery_state: None,
-            outcome,
-        };
-        result?;
+                    outcome,
+                };
+                result?;
+                let environment = std::env::vars().collect();
         Ok(RunBundleV1 {
             graph_spec: self.graph_spec_v1(),
             input_state,
             step_state_deltas: deltas,
+            model_call_envelopes: Vec::new(),
             tool_call_envelopes: Vec::new(),
             memory_read_envelopes: Vec::new(),
+            environment,
             terminal_receipt,
         })
     }
@@ -450,6 +453,17 @@ impl AgentGraph {
                 return Err(ReplayError::EnvelopeDivergence {
                     step_index: envelope.step_index,
                     reason: format!("tool envelope '{}' digest mismatch", envelope.tool_name),
+                });
+            }
+        }
+        for envelope in &bundle.model_call_envelopes {
+            if envelope.step_index >= bundle.step_state_deltas.len()
+                || digest_value(&envelope.request) != envelope.request_digest
+                || digest_value(&envelope.response) != envelope.response_digest
+            {
+                return Err(ReplayError::EnvelopeDivergence {
+                    step_index: envelope.step_index,
+                    reason: format!("model envelope '{}' digest mismatch", envelope.model_name),
                 });
             }
         }

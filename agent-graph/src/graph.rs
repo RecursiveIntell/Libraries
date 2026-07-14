@@ -56,6 +56,10 @@ pub struct GraphSpecV1 {
 impl GraphSpecV1 {
     /// Stable digest of the recursively key-sorted JSON representation.
     pub fn canonical_digest(&self) -> String {
+        fn canonical_key(value: &Value) -> Vec<u8> {
+            serde_json::to_vec(&sort_json(value)).expect("JSON values serialize")
+        }
+
         fn sort_json(value: &Value) -> Value {
             match value {
                 Value::Object(map) => {
@@ -72,7 +76,10 @@ impl GraphSpecV1 {
             }
         }
 
-        let value = serde_json::to_value(self).expect("GraphSpecV1 serializes");
+        let mut value = serde_json::to_value(self).expect("GraphSpecV1 serializes");
+        if let Some(Value::Array(edges)) = value.get_mut("edges") {
+            edges.sort_by(|left, right| canonical_key(left).cmp(&canonical_key(right)));
+        }
         let bytes = serde_json::to_vec(&sort_json(&value)).expect("JSON values serialize");
         format!("blake3:{}", blake3::hash(&bytes).to_hex())
     }
@@ -126,6 +133,12 @@ impl AgentGraph {
     /// Create a new graph builder.
     pub fn builder() -> AgentGraphBuilder {
         AgentGraphBuilder::new()
+    }
+
+    /// Update checkpoint persistence behavior.
+    pub fn with_checkpoint_policy(mut self, policy: CheckpointPolicy) -> Self {
+        self.checkpoint_policy = policy;
+        self
     }
 
     // ── Internal helpers used by both graph.rs and engine.rs ──

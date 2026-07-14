@@ -51,6 +51,10 @@ fn tool_receipt_adapter_preserves_lineage() {
         replay_link: None,
         tool_run_id: "run-1".into(),
         provider_call_id: None,
+        phase: llm_tool_runtime::ToolReceiptPhase::default(),
+        resolution: llm_tool_runtime::ToolReceiptResolution::default(),
+        authority_lineage: vec![],
+        preflight_receipt_id: None,
     };
 
     let control = ControlReceipt::from(&receipt);
@@ -151,6 +155,10 @@ fn canonical_forge_receipt_matches_tool_receipt_lineage_in_control_adapter() {
         replay_link: Some("tool_run:run-1".into()),
         tool_run_id: "run-1".into(),
         provider_call_id: None,
+        phase: llm_tool_runtime::ToolReceiptPhase::default(),
+        resolution: llm_tool_runtime::ToolReceiptResolution::default(),
+        authority_lineage: vec![],
+        preflight_receipt_id: None,
     };
 
     let canonical_forge = tool_receipt.to_forge_tool_receipt_v2(json!({

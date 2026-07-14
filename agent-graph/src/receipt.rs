@@ -6,7 +6,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 /// Reference to semantic-memory generation/candidate provenance that influenced graph context.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -39,6 +39,17 @@ pub struct ToolCallReceipt {
     pub arguments_digest: String,
     pub result_digest: String,
     pub duration_ms: u64,
+}
+
+/// Recorded request and response replacing an LLM/model dependency during replay.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ModelCallEnvelopeV1 {
+    pub step_index: usize,
+    pub model_name: String,
+    pub request: Value,
+    pub response: Value,
+    pub request_digest: String,
+    pub response_digest: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -103,8 +114,12 @@ pub struct RunBundleV1 {
     pub graph_spec: crate::graph::GraphSpecV1,
     pub input_state: HashMap<String, Value>,
     pub step_state_deltas: Vec<StepStateDeltaV1>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub model_call_envelopes: Vec<ModelCallEnvelopeV1>,
     pub tool_call_envelopes: Vec<ToolCallEnvelopeV1>,
     pub memory_read_envelopes: Vec<MemoryReadEnvelopeV1>,
+    #[serde(default)]
+    pub environment: BTreeMap<String, String>,
     pub terminal_receipt: GraphExecutionReceiptV1,
 }
 

@@ -4,9 +4,11 @@ use agent_graph::receipt::ReplayError;
 use agent_graph::{CheckpointPolicy, GraphSpecV1};
 use async_trait::async_trait;
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::{fs, process::Command};
+use std::collections::BTreeMap;
 
 #[derive(Clone)]
 struct FailingSaver;
@@ -267,5 +269,66 @@ async fn recorded_run_replays_offline_and_localizes_mutation() {
     assert!(matches!(
         error,
         ReplayError::StepDivergence { step_index: 1, .. }
+    ));
+}
+
+#[tokio::test]
+async fn recorded_run_bundle_captures_environment_for_replay_contract() {
+    let graph = AgentGraph::builder()
+        .with_name("replay-bundle-environment")
+        .add_node(
+            "one",
+            node!(|state| async move {
+                state.set("value", 1).await?;
+                Ok(())
+            }),
+        )
+        .set_finish_point("one")
+        .build()
+        .unwrap();
+
+    let bundle = graph
+        .record_run_bundle("one", AgentState::new(), GraphConfig::default())
+        .await
+        .expect("record run");
+
+    assert!(bundle.environment.len() > 0);
+    assert_eq!(
+        bundle.tool_call_envelopes.is_empty(),
+        true,
+        "tool envelopes are optional and captured when no tool calls occur"
+    );
+    assert_eq!(
+        bundle.model_call_envelopes.is_empty(),
+        true,
+        "model envelopes are optional and captured when no model calls occur"
+    );
+}
+
+#[tokio::test]
+async fn verify_replay_detects_model_envelope_digest_mismatch() {
+    let graph = AgentGraph::builder()
+        .with_name("replay-model-mismatch")
+        .add_node("one", node!(|state| async move { state.set("value", 1).await?; Ok(()) }))
+        .set_finish_point("one")
+        .build()
+        .unwrap();
+    let mut bundle = graph
+        .record_run_bundle("one", AgentState::new(), GraphConfig::default())
+        .await
+        .unwrap();
+    bundle.model_call_envelopes.push(agent_graph::receipt::ModelCallEnvelopeV1 {
+        step_index: 0,
+        model_name: "lm".into(),
+        request: json!({"query": "hello"}),
+        response: json!({"answer": "world"}),
+        request_digest: "blake3:bad".into(),
+        response_digest: "blake3:also-bad".into(),
+    });
+
+    let error = graph.verify_replay(&mut bundle).unwrap_err();
+    assert!(matches!(
+        error,
+        ReplayError::EnvelopeDivergence { .. } | ReplayError::TerminalDivergence { .. }
     ));
 }
