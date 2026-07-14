@@ -1,197 +1,242 @@
-//! Boundary profile definitions.
+//! Enforced RFC 8785 boundary admission profiles.
 //!
-//! A BoundaryProfile defines the constraints and policies under which JCS operates:
-//! - **Dialect**: The JSON dialect (canonical, compact, etc.)
-//! - **SchemaId & SchemaVersion**: Schema identification for validation
-//! - **CanonicalizationProfile**: What transformations are applied
-//! - **UnknownFieldPolicy**: How to handle unknown fields during schema validation
-//! - **ResourceCeilings**: Limits on object count, string length, array length, depth
+//! A profile contains only rules enforced by BoundaryProfile::parse.
+//! Earlier metadata-only dialect, schema_id, schema_version,
+//! canonicalization, unknown_field_policy, and max_float_digits fields
+//! were removed: this crate has exactly one RFC 8785 dialect/profile, schema
+//! identity and unknown-field admission belong to a configured schema engine,
+//! and an arbitrary decimal digit cap would conflict with ECMAScript number
+//! serialization.
 
-use crate::error::JcsError;
+use crate::{parse_with_dup_check, Canonicalizer, JcsError};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-/// JSON dialect variants.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "snake_case")]
-pub enum Dialect {
-    /// Canonical JSON (RFC 8785 JCS).
-    #[default]
-    Canonical,
-    /// Compact form (minified, no extra whitespace).
-    Compact,
-    /// Pretty-printed for human readability.
-    Pretty,
-}
-
-/// Canonicalization profile — what transformations are applied.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "snake_case")]
-pub enum CanonicalizationProfile {
-    /// Strict RFC 8785 (only Unicode escapes, no sorting hints).
-    #[default]
-    Strict,
-    /// RFC 8785 + normalize field ordering hints.
-    Normalized,
-    /// Application-specific profile.
-    Custom,
-}
-
-/// Policy for unknown fields encountered during schema validation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "snake_case")]
-pub enum UnknownFieldPolicy {
-    /// Reject with error.
-    #[default]
-    Reject,
-    /// Strip unknown fields silently.
-    Strip,
-    /// Pass unknown fields through unchanged.
-    PassThrough,
-}
-
-/// Resource ceiling limits for a boundary profile.
+/// Resource budgets enforced for every profiled parse.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ResourceCeilings {
-    /// Maximum number of top-level keys (default: 128).
-    pub max_object_keys: usize,
-    /// Maximum total string length in bytes (default: 1MB).
-    pub max_string_bytes: usize,
-    /// Maximum array length (default: 1024).
-    pub max_array_len: usize,
-    /// Maximum nesting depth (default: 32).
+    /// Maximum UTF-8 input size before JSON parsing begins.
+    pub max_input_bytes: usize,
+    /// Maximum aggregate number of JSON values, including the root.
+    pub max_nodes: usize,
+    /// Maximum container nesting depth, with the root at depth zero.
     pub max_depth: usize,
-    /// Maximum number of semantically-relevant float digits (default: 17 for f64 precision).
-    pub max_float_digits: usize,
+    /// Maximum number of properties in any one object.
+    pub max_object_keys: usize,
+    /// Maximum UTF-8 byte length of any one property name or string value.
+    pub max_string_bytes: usize,
+    /// Maximum number of elements in any one array.
+    pub max_array_len: usize,
 }
 
 impl Default for ResourceCeilings {
     fn default() -> Self {
         Self {
-            max_object_keys: 128,
-            max_string_bytes: 1 << 20, // 1 MiB
-            max_array_len: 1024,
+            max_input_bytes: 1 << 20,
+            max_nodes: 100_000,
             max_depth: 32,
-            max_float_digits: 17,
+            max_object_keys: 128,
+            max_string_bytes: 1 << 20,
+            max_array_len: 1024,
         }
     }
 }
 
-/// A boundary profile with all constraints and policies.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// One rule recorded by a successful boundary admission.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EnforcedRule {
+    /// Stable machine-readable rule name.
+    pub rule: String,
+    /// Maximum observed use for quantitative rules.
+    pub used: Option<usize>,
+    /// Configured ceiling for quantitative rules.
+    pub limit: Option<usize>,
+}
+
+/// Receipt proving which rules were applied to an admitted input.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BoundaryEnforcementReceipt {
+    /// The single canonicalization contract supported by this crate.
+    pub canonicalization_profile: String,
+    /// Rules applied in stable evaluation order.
+    pub enforced_rules: Vec<EnforcedRule>,
+}
+
+/// Parsed and canonicalized output admitted by a boundary profile.
+#[derive(Debug, Clone, PartialEq)]
+pub struct BoundaryAdmission {
+    /// Duplicate-free parsed JSON value.
+    pub value: Value,
+    /// RFC 8785 canonical UTF-8 bytes for value.
+    pub canonical_bytes: Vec<u8>,
+    /// Receipt enumerating every enforced rule.
+    pub receipt: BoundaryEnforcementReceipt,
+}
+
+/// RFC 8785 admission profile containing only executable resource policy.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct BoundaryProfile {
-    /// JSON dialect for this profile.
-    pub dialect: Dialect,
-    /// Schema identifier (e.g., `"https://example.com/schema"`).
-    pub schema_id: Option<String>,
-    /// Schema version string (e.g., `"1.2.0"`).
-    pub schema_version: Option<String>,
-    /// Canonicalization profile.
-    pub canonicalization: CanonicalizationProfile,
-    /// Policy for unknown fields during schema validation.
-    pub unknown_field_policy: UnknownFieldPolicy,
-    /// Resource ceiling limits.
+    /// Resource budgets applied by BoundaryProfile::parse.
     pub resource_ceilings: ResourceCeilings,
 }
 
-impl Default for BoundaryProfile {
-    fn default() -> Self {
-        Self {
-            dialect: Dialect::Canonical,
-            schema_id: None,
-            schema_version: None,
-            canonicalization: CanonicalizationProfile::Strict,
-            unknown_field_policy: UnknownFieldPolicy::Reject,
-            resource_ceilings: ResourceCeilings::default(),
-        }
-    }
+#[derive(Default)]
+struct ResourceUse {
+    nodes: usize,
+    depth: usize,
+    object_keys: usize,
+    string_bytes: usize,
+    array_len: usize,
 }
 
 impl BoundaryProfile {
-    /// Creates a default boundary profile with RFC 8785 canonicalization.
+    /// Creates a profile with explicit enforced budgets.
+    pub fn new(resource_ceilings: ResourceCeilings) -> Self {
+        Self { resource_ceilings }
+    }
+
+    /// Creates the default RFC 8785 admission profile.
     pub fn rfc8785() -> Self {
         Self::default()
     }
 
-    /// Creates a boundary profile with the given schema ID and version.
-    pub fn with_schema(mut self, id: impl Into<String>, version: impl Into<String>) -> Self {
-        self.schema_id = Some(id.into());
-        self.schema_version = Some(version.into());
-        self
+    /// Parses, budget-checks, and canonicalizes one JSON input.
+    pub fn parse(&self, input: &str) -> Result<BoundaryAdmission, JcsError> {
+        self.check(
+            "input_bytes",
+            input.len(),
+            self.resource_ceilings.max_input_bytes,
+        )?;
+        let value = parse_with_dup_check(input)?;
+        let mut use_counts = ResourceUse::default();
+        self.inspect(&value, 0, &mut use_counts)?;
+        let canonical_bytes = Canonicalizer::new().canonicalize_bytes(&value)?;
+
+        let rules = [
+            (
+                "input_bytes",
+                input.len(),
+                self.resource_ceilings.max_input_bytes,
+            ),
+            ("nodes", use_counts.nodes, self.resource_ceilings.max_nodes),
+            ("depth", use_counts.depth, self.resource_ceilings.max_depth),
+            (
+                "object_keys",
+                use_counts.object_keys,
+                self.resource_ceilings.max_object_keys,
+            ),
+            (
+                "string_bytes",
+                use_counts.string_bytes,
+                self.resource_ceilings.max_string_bytes,
+            ),
+            (
+                "array_len",
+                use_counts.array_len,
+                self.resource_ceilings.max_array_len,
+            ),
+        ]
+        .into_iter()
+        .map(|(rule, used, limit)| EnforcedRule {
+            rule: rule.to_owned(),
+            used: Some(used),
+            limit: Some(limit),
+        })
+        .chain(
+            ["duplicate_keys", "canonicalization"]
+                .into_iter()
+                .map(|rule| EnforcedRule {
+                    rule: rule.to_owned(),
+                    used: None,
+                    limit: None,
+                }),
+        )
+        .collect();
+
+        Ok(BoundaryAdmission {
+            value,
+            canonical_bytes,
+            receipt: BoundaryEnforcementReceipt {
+                canonicalization_profile: "rfc8785".to_owned(),
+                enforced_rules: rules,
+            },
+        })
     }
 
-    /// Validates a parsed JSON value against resource ceilings.
-    pub fn check_resources(&self, value: &serde_json::Value) -> Result<(), JcsError> {
-        self.check_resources_inner(value, 0)
+    /// Checks a programmatically-created value against structural budgets.
+    pub fn check_resources(&self, value: &Value) -> Result<(), JcsError> {
+        self.inspect(value, 0, &mut ResourceUse::default())
     }
 
-    fn check_resources_inner(
+    fn inspect(
         &self,
-        value: &serde_json::Value,
+        value: &Value,
         depth: usize,
+        use_counts: &mut ResourceUse,
     ) -> Result<(), JcsError> {
-        use crate::error::JcsError::ResourceCeilingExceeded;
-
-        if depth > self.resource_ceilings.max_depth {
-            return Err(ResourceCeilingExceeded {
-                resource: "depth".to_string(),
-                used: depth,
-                limit: self.resource_ceilings.max_depth,
-            });
-        }
+        use_counts.nodes += 1;
+        use_counts.depth = use_counts.depth.max(depth);
+        self.check("nodes", use_counts.nodes, self.resource_ceilings.max_nodes)?;
+        self.check("depth", depth, self.resource_ceilings.max_depth)?;
 
         match value {
-            serde_json::Value::Object(map) => {
-                if map.len() > self.resource_ceilings.max_object_keys {
-                    return Err(ResourceCeilingExceeded {
-                        resource: "object_keys".to_string(),
-                        used: map.len(),
-                        limit: self.resource_ceilings.max_object_keys,
-                    });
-                }
-                for (k, v) in map.iter() {
-                    if k.len() > self.resource_ceilings.max_string_bytes {
-                        return Err(ResourceCeilingExceeded {
-                            resource: "string_bytes".to_string(),
-                            used: k.len(),
-                            limit: self.resource_ceilings.max_string_bytes,
-                        });
-                    }
-                    self.check_resources_inner(v, depth + 1)?;
+            Value::Object(map) => {
+                use_counts.object_keys = use_counts.object_keys.max(map.len());
+                self.check(
+                    "object_keys",
+                    map.len(),
+                    self.resource_ceilings.max_object_keys,
+                )?;
+                for (key, child) in map {
+                    use_counts.string_bytes = use_counts.string_bytes.max(key.len());
+                    self.check(
+                        "string_bytes",
+                        key.len(),
+                        self.resource_ceilings.max_string_bytes,
+                    )?;
+                    self.inspect(child, depth + 1, use_counts)?;
                 }
             }
-            serde_json::Value::Array(arr) => {
-                if arr.len() > self.resource_ceilings.max_array_len {
-                    return Err(ResourceCeilingExceeded {
-                        resource: "array_len".to_string(),
-                        used: arr.len(),
-                        limit: self.resource_ceilings.max_array_len,
-                    });
-                }
-                for v in arr.iter() {
-                    self.check_resources_inner(v, depth + 1)?;
+            Value::Array(items) => {
+                use_counts.array_len = use_counts.array_len.max(items.len());
+                self.check(
+                    "array_len",
+                    items.len(),
+                    self.resource_ceilings.max_array_len,
+                )?;
+                for child in items {
+                    self.inspect(child, depth + 1, use_counts)?;
                 }
             }
-            serde_json::Value::String(s) if s.len() > self.resource_ceilings.max_string_bytes => {
-                return Err(ResourceCeilingExceeded {
-                    resource: "string_bytes".to_string(),
-                    used: s.len(),
-                    limit: self.resource_ceilings.max_string_bytes,
-                });
+            Value::String(string) => {
+                use_counts.string_bytes = use_counts.string_bytes.max(string.len());
+                self.check(
+                    "string_bytes",
+                    string.len(),
+                    self.resource_ceilings.max_string_bytes,
+                )?;
             }
             _ => {}
         }
         Ok(())
     }
 
-    /// Human-readable identifier for this profile.
-    pub fn identifier(&self) -> String {
-        match (&self.schema_id, &self.schema_version) {
-            (Some(id), Some(ver)) => format!("{id}:{ver}"),
-            (Some(id), None) => id.clone(),
-            _ => "default".to_string(),
+    fn check(&self, resource: &str, used: usize, limit: usize) -> Result<(), JcsError> {
+        if used > limit {
+            return Err(JcsError::ResourceCeilingExceeded {
+                resource: resource.to_owned(),
+                used,
+                limit,
+            });
         }
+        Ok(())
+    }
+
+    /// Stable identifier for the only supported canonicalization profile.
+    pub fn identifier(&self) -> &'static str {
+        "rfc8785"
     }
 }
 
@@ -201,65 +246,19 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn test_default_profile() {
-        let p = BoundaryProfile::default();
-        assert_eq!(p.dialect, Dialect::Canonical);
-        assert!(p.schema_id.is_none());
-        assert_eq!(p.canonicalization, CanonicalizationProfile::Strict);
-        assert_eq!(p.unknown_field_policy, UnknownFieldPolicy::Reject);
+    fn check_resources_accepts_bounded_value() {
+        BoundaryProfile::default()
+            .check_resources(&json!({"a": "hello", "b": [1, 2, 3]}))
+            .unwrap();
     }
 
     #[test]
-    fn test_profile_with_schema() {
-        let p = BoundaryProfile::default().with_schema("https://example.com/s", "1.0.0");
-        assert_eq!(p.schema_id.as_deref(), Some("https://example.com/s"));
-        assert_eq!(p.schema_version.as_deref(), Some("1.0.0"));
-    }
-
-    #[test]
-    fn test_check_resources_ok() {
-        let p = BoundaryProfile::default();
-        let val = json!({"a": "hello", "b": [1, 2, 3]});
-        p.check_resources(&val).unwrap();
-    }
-
-    #[test]
-    fn test_check_resources_depth_exceeded() {
-        let mut p = BoundaryProfile::default();
-        p.resource_ceilings.max_depth = 2;
-
-        // Depth 3 exceeds limit of 2
-        let val = json!({"a": {"b": {"c": 1}}});
-        let result = p.check_resources(&val);
+    fn check_resources_rejects_excess_depth() {
+        let mut profile = BoundaryProfile::default();
+        profile.resource_ceilings.max_depth = 2;
         assert!(matches!(
-            result,
-            Err(JcsError::ResourceCeilingExceeded { .. })
-        ));
-    }
-
-    #[test]
-    fn test_check_resources_object_keys_exceeded() {
-        let mut p = BoundaryProfile::default();
-        p.resource_ceilings.max_object_keys = 2;
-
-        let val = json!({"a": 1, "b": 2, "c": 3});
-        let result = p.check_resources(&val);
-        assert!(matches!(
-            result,
-            Err(JcsError::ResourceCeilingExceeded { .. })
-        ));
-    }
-
-    #[test]
-    fn test_check_resources_string_bytes_exceeded() {
-        let mut p = BoundaryProfile::default();
-        p.resource_ceilings.max_string_bytes = 5;
-
-        let val = json!({"toolong": "x"});
-        let result = p.check_resources(&val);
-        assert!(matches!(
-            result,
-            Err(JcsError::ResourceCeilingExceeded { .. })
+            profile.check_resources(&json!({"a": {"b": {"c": 1}}})),
+            Err(JcsError::ResourceCeilingExceeded { ref resource, .. }) if resource == "depth"
         ));
     }
 }

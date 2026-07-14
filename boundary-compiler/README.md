@@ -68,49 +68,41 @@ Run it: `cargo run --example quick_start` (see `examples/`).
 
 ### Boundary profiles
 
-A `BoundaryProfile` is a configuration bundle that names the
-canonicalization dialect, the schema id + version, the
-canonicalization profile, the unknown-field policy, and the resource
-ceilings. It travels with the canonicalized value as a typed
-contract — not a free-form string.
+A `BoundaryProfile` contains only resource rules that the crate
+actually enforces. `parse` checks the input-byte budget before
+allocation, rejects decoded duplicate keys, enforces aggregate node
+and depth budgets plus per-container/string budgets, and emits RFC
+8785 bytes with a receipt listing every applied rule.
 
 ```rust
-use boundary_compiler::{
-    BoundaryProfile, CanonicalizationProfile, Dialect, ResourceCeilings,
-    SchemaValidator, UnknownFieldPolicy,
-};
+use boundary_compiler::{BoundaryProfile, ResourceCeilings};
 
-let profile = BoundaryProfile::builder()
-    .dialect(Dialect::StrictJSON)
-    .canonicalization(CanonicalizationProfile::Rfc8785)
-    .unknown_fields(UnknownFieldPolicy::Reject)
-    .resource_ceilings(ResourceCeilings {
-        max_depth: 32,
-        max_keys: 10_000,
-        max_value_bytes: 1_048_576, // 1 MB
-    })
-    .schema_id("https://schemas.example.com/claim-v1")
-    .schema_version("1.0.0")
-    .build();
+let profile = BoundaryProfile::new(ResourceCeilings {
+    max_input_bytes: 1_048_576,
+    max_nodes: 100_000,
+    max_depth: 32,
+    max_object_keys: 128,
+    max_string_bytes: 1_048_576,
+    max_array_len: 1024,
+});
+let admitted = profile.parse(r#"{"b":2,"a":1}"#)?;
+assert_eq!(admitted.canonical_bytes, br#"{"a":1,"b":2}"#);
+# Ok::<(), boundary_compiler::JcsError>(())
 ```
 
-`UnknownFieldPolicy::Reject` is the strict mode — values with
-fields not in the declared schema are rejected. `Strip` removes
-them silently. `Accept` allows them.
-
-`ResourceCeilings` is a DoS guard. The default profile is 32 levels
-deep and 10,000 keys per object, which is enough for any normal
-payload but not for an adversarial one. Tighten it for your context.
+The old dialect, schema ID/version, canonicalization-profile,
+unknown-field-policy, and float-digit fields were removed because
+they were metadata without behavior. This crate supports one dialect:
+RFC 8785. Schema identity and unknown-field policy belong to a real
+schema validator. A decimal digit cap would conflict with RFC 8785's
+required IEEE-754/ECMAScript number serialization.
 
 ### Schema validation
 
-`SchemaValidator` is currently a pass-through with the validation
-result struct in place. The actual JSON Schema validator (via
-`jsonschema` crate) is wired in via a future `schema-validation`
-feature flag. For now, use the boundary profile's
-`UnknownFieldPolicy` to reject non-conforming payloads, and use
-`semantic-memory` (which depends on this crate) if you need full
-JSON Schema validation.
+`SchemaValidator` fails closed because no schema engine is configured
+in this base crate. Applications requiring schema identity,
+unknown-field admission, or schema versioning must use a configured
+schema-validation layer before treating a value as admitted.
 
 ## Error handling
 
