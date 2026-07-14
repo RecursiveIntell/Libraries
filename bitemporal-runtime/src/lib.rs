@@ -2,6 +2,18 @@
 //!
 //! Bitemporal truth primitives for append-supersede temporal data.
 //!
+//! ## Model clarification (BOUND-009)
+//!
+//! This crate implements **dual-time append history**, not full interval
+//! bitemporality. Records carry point `valid_time` and `recorded_time`
+//! timestamps. There are no valid/transaction interval ends, overlap
+//! policies, or explicit retraction intervals. Future-effective changes,
+//! cessation, retroactive corrections with intervals, and overlapping
+//! validity require higher-level modeling on top of this primitive.
+//! Renaming to "dual-time-append-history" was considered but rejected
+//! to preserve API stability; this documentation is the canonical
+//! clarification of the current model's scope.
+//!
 //! ## Core concepts
 //!
 //! - **valid_time**: When something is true in the domain (business time)
