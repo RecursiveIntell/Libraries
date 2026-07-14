@@ -266,6 +266,10 @@ impl From<&ExecutionPermit> for llm_tool_runtime::ToolExecutionPermit {
             permit.approval_record_id().cloned(),
             permit.scope().namespace(),
             permit.scope().target_key(),
+            stack_ids::ContentDigest::compute(b"verification-policy-method"),
+            stack_ids::ContentDigest::compute(b"verification-policy-effect"),
+            None,
+            "verification-policy-nonce",
         )
     }
 }

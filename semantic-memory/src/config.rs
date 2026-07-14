@@ -106,12 +106,11 @@ impl Default for MemoryConfig {
 }
 
 impl MemoryConfig {
-    /// Normalize and validate configuration into a concrete runtime shape.
-    ///
-    /// This is the single canonical config entry point used by store creation.
-    pub fn normalize_and_validate(mut self) -> Result<Self, MemoryError> {
+    /// Normalize configuration and return every recoverable numeric correction.
+    pub fn normalize_with_report(mut self) -> Result<(Self, ConfigCorrectionReport), MemoryError> {
         self.embedding.normalize_and_validate()?;
-        self.limits = self.limits.normalize_and_validate()?;
+        let (limits, report) = self.limits.normalize_with_report();
+        self.limits = limits;
         let timeout_cap_secs = self.limits.embedding_timeout.as_secs().max(1);
         self.embedding.timeout_secs = self.embedding.timeout_secs.min(timeout_cap_secs);
         self.search
@@ -122,7 +121,14 @@ impl MemoryConfig {
         {
             self.hnsw.dimensions = self.embedding.dimensions;
         }
-        Ok(self)
+        Ok((self, report))
+    }
+
+    /// Normalize and validate configuration into a concrete runtime shape.
+    ///
+    /// This is the single canonical config entry point used by store creation.
+    pub fn normalize_and_validate(self) -> Result<Self, MemoryError> {
+        Ok(self.normalize_with_report()?.0)
     }
 }
 
@@ -839,6 +845,7 @@ impl MemoryLimits {
         const MAX_CHUNKS_PER_DOCUMENT: usize = 1_000_000;
         const MAX_CONTENT_BYTES: usize = 64 * 1024 * 1024;
         const MAX_EMBEDDING_TIMEOUT_SECS: u64 = 300;
+        const MAX_DB_SIZE_BYTES: u64 = 1 << 50;
 
         let defaults = Self::default();
         let mut report = ConfigCorrectionReport::default();
@@ -900,6 +907,14 @@ impl MemoryLimits {
                 "limits.max_embedding_concurrency",
                 "exceeds hard upper bound",
                 "clamped to 32".to_string(),
+            );
+        }
+        if self.max_db_size_bytes > MAX_DB_SIZE_BYTES {
+            self.max_db_size_bytes = MAX_DB_SIZE_BYTES;
+            report.corrected(
+                "limits.max_db_size_bytes",
+                "exceeds hard upper bound",
+                format!("clamped to {MAX_DB_SIZE_BYTES}"),
             );
         }
         if self.embedding_timeout.is_zero() {
@@ -985,13 +1000,29 @@ mod hardening_tests {
         assert_eq!(corrected.embedding_timeout, Duration::from_secs(19));
     }
 
+    #[test]
+    fn memory_config_returns_structured_correction_report() {
+        let mut config = MemoryConfig::default();
+        config.limits.max_facts_per_namespace = 0;
+        let (normalized, report) = config.normalize_with_report().unwrap();
+        assert_eq!(
+            normalized.limits.max_facts_per_namespace,
+            MemoryLimits::default().max_facts_per_namespace
+        );
+        assert_eq!(report.corrections.len(), 1);
+        assert_eq!(
+            report.corrections[0].field,
+            "limits.max_facts_per_namespace"
+        );
+    }
+
     proptest! {
         #[test]
         fn arbitrary_single_bad_limit_preserves_other_valid_fields(
             chunks in 1usize..10_000,
             content in 1usize..10_000_000,
             concurrency in 1usize..=32,
-            db_size in any::<u64>(),
+            db_size in 0u64..=(1u64 << 50),
             timeout in 1u64..=300,
         ) {
             let original = MemoryLimits {

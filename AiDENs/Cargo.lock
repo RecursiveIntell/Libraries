@@ -901,6 +901,7 @@ version = "0.2.0"
 dependencies = [
  "chrono",
  "hex",
+ "ring",
  "serde",
  "serde_json",
  "sha2",
@@ -3053,6 +3054,7 @@ version = "0.5.10"
 dependencies = [
  "bitemporal-runtime",
  "blake3",
+ "boundary-compiler",
  "bytemuck",
  "cc",
  "chrono",

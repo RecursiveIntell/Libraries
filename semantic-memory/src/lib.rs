@@ -1410,8 +1410,10 @@ impl MemoryStore {
         };
         for (i, text) in texts.iter().enumerate() {
             match self.inner.embedding_cache.lock() {
-                Ok(mut cache) => {
-                    if let Some(cached) = cache.get(&cache_key(text)).cloned() {
+                Ok(cache) => {
+                    // `peek` is deliberately non-mutating. Until the entire provider
+                    // batch validates, even LRU recency ordering is transactional.
+                    if let Some(cached) = cache.peek(&cache_key(text)).cloned() {
                         results.push(Some(cached));
                     } else {
                         results.push(None);
