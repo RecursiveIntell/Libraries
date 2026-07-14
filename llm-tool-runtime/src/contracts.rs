@@ -1,6 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use chrono::{DateTime, Utc};
 use stack_ids::{
     ApplicabilityContextId, ApprovalGrantId, ApprovalRecordId, ArtifactId, AttemptId,
     AttestationEnvelopeId, CompiledObligationSetId, CompositionReceiptId, ContentDigest,
@@ -10,6 +11,8 @@ use stack_ids::{
     TrialId,
 };
 use std::fmt;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -30,12 +33,17 @@ impl ToolExecutionPermitScope {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct ToolExecutionPermit {
     execution_permit_id: ExecutionPermitId,
     decision_id: PolicyDecisionId,
     approval_record_id: Option<ApprovalRecordId>,
     scope: ToolExecutionPermitScope,
+    expires_at: Option<DateTime<Utc>>,
+    nonce: String,
+    consumed: AtomicBool,
+    method_digest: ContentDigest,
+    effect_digest: ContentDigest,
 }
 
 impl ToolExecutionPermit {
@@ -46,6 +54,10 @@ impl ToolExecutionPermit {
         approval_record_id: Option<ApprovalRecordId>,
         namespace: impl Into<String>,
         target_key: impl Into<String>,
+        method_digest: ContentDigest,
+        effect_digest: ContentDigest,
+        expires_at: Option<DateTime<Utc>>,
+        nonce: impl Into<String>,
     ) -> Self {
         Self {
             execution_permit_id,
@@ -55,6 +67,11 @@ impl ToolExecutionPermit {
                 namespace: namespace.into(),
                 target_key: target_key.into(),
             },
+            expires_at,
+            nonce: nonce.into(),
+            consumed: AtomicBool::new(false),
+            method_digest,
+            effect_digest,
         }
     }
 
@@ -76,6 +93,60 @@ impl ToolExecutionPermit {
     /// Returns the namespace/target scope enforced by this permit.
     pub fn scope(&self) -> &ToolExecutionPermitScope {
         &self.scope
+    }
+
+    /// Returns the expiry instant, when the issuing policy imposed one.
+    pub fn expires_at(&self) -> Option<&DateTime<Utc>> {
+        self.expires_at.as_ref()
+    }
+
+    /// Returns the issuer-provided replay nonce.
+    pub fn nonce(&self) -> &str {
+        &self.nonce
+    }
+
+    /// Returns the tool method digest bound to this permit.
+    pub fn method_digest(&self) -> &ContentDigest {
+        &self.method_digest
+    }
+
+    /// Returns the typed effect digest bound to this permit.
+    pub fn effect_digest(&self) -> &ContentDigest {
+        &self.effect_digest
+    }
+
+    /// Validates expiry and exact method/effect bindings without consuming the permit.
+    pub fn validate_binding(
+        &self,
+        method_digest: &ContentDigest,
+        effect_digest: &ContentDigest,
+        now: DateTime<Utc>,
+    ) -> Result<(), ToolError> {
+        if self.expires_at.as_ref().is_some_and(|expiry| expiry <= &now) {
+            return Err(ToolError::new(ToolErrorClass::Denied, "execution permit expired"));
+        }
+        if &self.method_digest != method_digest || &self.effect_digest != effect_digest {
+            return Err(ToolError::new(
+                ToolErrorClass::Denied,
+                "execution permit method/effect binding mismatch",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Atomically consumes this one-shot permit.
+    pub fn consume(&self) -> Result<(), ToolError> {
+        if self
+            .consumed
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .is_err()
+        {
+            return Err(ToolError::new(
+                ToolErrorClass::Denied,
+                "execution permit already consumed",
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -172,8 +243,17 @@ pub enum McpSurfaceKind {
 #[serde(rename_all = "snake_case")]
 pub enum ToolReceiptPersistence {
     #[default]
+    Durable,
     Ephemeral,
+    /// Legacy name for durable Forge raw-receipt persistence.
     ForgeRaw,
+}
+
+impl ToolReceiptPersistence {
+    /// Returns whether this mode requires durable preflight and outcome receipts.
+    pub fn is_durable(&self) -> bool {
+        matches!(self, Self::Durable | Self::ForgeRaw)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
