@@ -138,6 +138,23 @@ impl RoutingFunction for DescribedRouter {
     }
 }
 
+struct MapConditionRouter(Vec<(&'static str, i32)>);
+
+#[async_trait]
+impl RoutingFunction for MapConditionRouter {
+    async fn route(&self, _state: &AgentState, _config: &GraphConfig) -> Result<RouterOutput> {
+        Ok(RouterOutput::Next(None))
+    }
+
+    fn condition_spec(&self) -> Value {
+        let mut map = serde_json::Map::new();
+        for (key, value) in &self.0 {
+            map.insert((*key).to_string(), json!(value));
+        }
+        Value::Object(map)
+    }
+}
+
 fn semantic_graph(
     schema: &'static str,
     condition: &'static str,
@@ -160,6 +177,31 @@ fn semantic_graph(
         .set_finish_point("b")
         .build()
         .unwrap()
+}
+
+#[test]
+fn graph_digest_ignores_condition_key_order() {
+    let order_one = vec![("z", 3), ("a", 1), ("m", 2)];
+    let mut order_two = order_one.clone();
+    order_two.reverse();
+
+    let graph_one = AgentGraph::builder()
+        .with_name("condition-order")
+        .add_node("a", Box::new(SchemaNode("a-schema")))
+        .add_conditional_edge("a", Box::new(MapConditionRouter(order_one)))
+        .set_finish_point("a")
+        .build()
+        .unwrap();
+
+    let graph_two = AgentGraph::builder()
+        .with_name("condition-order")
+        .add_node("a", Box::new(SchemaNode("a-schema")))
+        .add_conditional_edge("a", Box::new(MapConditionRouter(order_two)))
+        .set_finish_point("a")
+        .build()
+        .unwrap();
+
+    assert_eq!(graph_one.compute_graph_hash(), graph_two.compute_graph_hash());
 }
 
 #[test]
