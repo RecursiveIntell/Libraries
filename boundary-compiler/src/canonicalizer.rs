@@ -311,4 +311,125 @@ mod tests {
         let result = parse_with_dup_check(s);
         assert!(matches!(result, Err(JcsError::DuplicateKey { .. })));
     }
+
+    // ===== RFC 8785 Appendix B conformance tests =====
+    // These test vectors are from RFC 8785 §3.2.2.2 (string escapes),
+    // §3.2.2.3 (number formatting), and the property-order examples.
+
+    #[test]
+    fn rfc8785_number_1e_minus_300() {
+        // RFC 8785 §3.2.2.3: 1e-300 → "1e-300" (not "1.0e-300")
+        let c = Canonicalizer::new();
+        let val: Value = serde_json::from_str("1e-300").unwrap();
+        assert_eq!(c.canonicalize(&val).unwrap(), "1e-300");
+    }
+
+    #[test]
+    fn rfc8785_number_100000000000000000000() {
+        // Large integer must stay as integer
+        let c = Canonicalizer::new();
+        let val: Value = serde_json::from_str("100000000000000000000").unwrap();
+        assert_eq!(c.canonicalize(&val).unwrap(), "100000000000000000000");
+    }
+
+    #[test]
+    fn rfc8785_number_negative_zero() {
+        // RFC 8785 §3.2.2.3: -0 → "-0" per ECMAScript JSON.stringify
+        // NOTE: serde_json::from_str("-0") normalizes to 0 (loses sign).
+        // This is a known serde_json limitation. A fully conformant JCS
+        // implementation would need a custom number parser to preserve -0.
+        // We document the gap rather than assert incorrect behavior.
+        let c = Canonicalizer::new();
+        let val: Value = serde_json::from_str("-0").unwrap();
+        let out = c.canonicalize(&val).unwrap();
+        // serde_json normalizes -0 to 0, so we get "0" not "-0"
+        assert_eq!(out, "0");
+    }
+
+    #[test]
+    fn rfc8785_number_3_1415() {
+        // Simple decimal
+        let c = Canonicalizer::new();
+        let val: Value = serde_json::from_str("3.1415").unwrap();
+        assert_eq!(c.canonicalize(&val).unwrap(), "3.1415");
+    }
+
+    #[test]
+    fn rfc8785_number_1e_plus30() {
+        // 1e30 → "1e+30" per ryu_js format
+        let c = Canonicalizer::new();
+        let val: Value = serde_json::from_str("1e30").unwrap();
+        let out = c.canonicalize(&val).unwrap();
+        assert!(out.starts_with("1e"), "expected exponential notation, got {out}");
+    }
+
+    #[test]
+    fn rfc8785_string_control_chars() {
+        // RFC 8785 §3.2.2.2: U+0000–U+001F must be \uXXXX
+        let c = Canonicalizer::new();
+        // Tab should be \t (allowed short escape), U+0001 should be \u0001
+        let val = json!("a\tb\u{0001}c");
+        let out = c.canonicalize(&val).unwrap();
+        assert!(out.contains("\\t"), "tab should be \\t: {out}");
+        assert!(out.contains("\\u0001"), "U+0001 should be \\u0001: {out}");
+    }
+
+    #[test]
+    fn rfc8785_string_delete_control() {
+        // U+007F (DEL) is NOT in U+0000-U+001F range — must be literal, not escaped
+        let c = Canonicalizer::new();
+        let val = json!("a\u{007f}b");
+        let out = c.canonicalize(&val).unwrap();
+        assert!(out.contains("\u{007f}"), "DEL should be literal: {out}");
+        assert!(!out.contains("\\u007f"), "DEL should not be escaped: {out}");
+    }
+
+    #[test]
+    fn rfc8785_property_order_utf16() {
+        // RFC 8785 §3.2.3: keys sorted by UTF-16 code units.
+        // "𝍢" (U+1D362) has UTF-16 code units [0xD834, 0xDF62].
+        // "Z" has UTF-16 code unit [0x005A].
+        // 0x005A < 0xD834, so "Z" must come before "𝍢".
+        let c = Canonicalizer::new();
+        let val = json!({"𝍢": 1, "Z": 2});
+        let out = c.canonicalize(&val).unwrap();
+        let z_pos = out.find("\"Z\"").unwrap();
+        let supplementary_pos = out.find("\"𝍢\"").unwrap();
+        assert!(z_pos < supplementary_pos, "Z must sort before 𝍢: {out}");
+    }
+
+    #[test]
+    fn rfc8785_property_order_a_vs_ab() {
+        // Shorter string that is a prefix of longer sorts first (UTF-16 comparison)
+        let c = Canonicalizer::new();
+        let val = json!({"ab": 1, "a": 2});
+        let out = c.canonicalize(&val).unwrap();
+        assert_eq!(out, r#"{"a":2,"ab":1}"#);
+    }
+
+    #[test]
+    fn rfc8785_nested_complex() {
+        // Complex nested structure with mixed types
+        let c = Canonicalizer::new();
+        let input = r#"{"b":1,"a":{"d":true,"c":null}}"#;
+        let val = parse_with_dup_check(input).unwrap();
+        let out = c.canonicalize(&val).unwrap();
+        assert_eq!(out, r#"{"a":{"c":null,"d":true},"b":1}"#);
+    }
+
+    #[test]
+    fn rfc8785_empty_containers() {
+        let c = Canonicalizer::new();
+        assert_eq!(c.canonicalize(&json!({})).unwrap(), "{}");
+        assert_eq!(c.canonicalize(&json!([])).unwrap(), "[]");
+    }
+
+    #[test]
+    fn rfc8785_unicode_escape_equivalence() {
+        // "\u0041" and "A" must produce the same canonical output
+        let c = Canonicalizer::new();
+        let a = parse_with_dup_check(r#""\u0041""#).unwrap();
+        let b = parse_with_dup_check(r#""A""#).unwrap();
+        assert_eq!(c.canonicalize(&a).unwrap(), c.canonicalize(&b).unwrap());
+    }
 }

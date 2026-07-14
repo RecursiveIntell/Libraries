@@ -15,8 +15,10 @@ pub mod cuda;
 pub mod error;
 pub mod fallback;
 pub mod simd_nearest;
+pub mod validated;
 
 pub use error::GpuError;
+pub use validated::{QuantProfile, TensorShape};
 
 /// Result type for GPU operations.
 pub type Result<T> = std::result::Result<T, GpuError>;
@@ -89,7 +91,7 @@ pub fn hadamard_batch(data: &mut [f32], n: usize, dim: usize, seed: u64) -> Resu
     fallback::hadamard_batch_cpu(data, n, dim, seed)
 }
 
-/// Batched Lloyd-Max quantization.
+/// Batched Lloyd-Max quantization (QUANT-001 hardened).
 ///
 /// Quantizes a block of `n` vectors, each of `dim` scalars, into
 /// `n_levels` codebook entries per block of size `k`.
@@ -105,18 +107,11 @@ pub fn lloyd_max_batch(
     n_levels: usize,
     seed: u64,
 ) -> Result<(Vec<u8>, Vec<f32>)> {
-    if vectors.len() != n * dim {
-        return Err(GpuError::DimensionMismatch {
-            expected: n * dim,
-            got: vectors.len(),
-        });
-    }
-    if dim % k != 0 {
-        return Err(GpuError::InvalidConfig(format!(
-            "dim ({}) must be divisible by k ({})",
-            dim, k
-        )));
-    }
+    // QUANT-001: validate all parameters before dispatch
+    let shape = TensorShape::new(n, dim)?;
+    shape.validate_data(vectors)?;
+    // k==0 is caught by QuantProfile::new
+    let _profile = QuantProfile::new(k, n_levels, n_levels.ilog2() as usize + 1)?;
 
     #[cfg(feature = "gpu")]
     {
@@ -132,7 +127,7 @@ pub fn lloyd_max_batch(
         .map_err(GpuError::InvalidConfig)
 }
 
-/// Batched Lloyd-Max decode.
+/// Batched Lloyd-Max decode (QUANT-001 hardened).
 ///
 /// Reconstructs approximate f32 vectors from quantized indices and norms.
 pub fn lloyd_max_decode_batch(
@@ -144,13 +139,11 @@ pub fn lloyd_max_decode_batch(
     n_levels: usize,
     seed: u64,
 ) -> Result<Vec<f32>> {
-    let blocks_per_vector = dim / k;
-    if indices.len() != n * blocks_per_vector * k {
-        return Err(GpuError::DimensionMismatch {
-            expected: n * blocks_per_vector * k,
-            got: indices.len(),
-        });
-    }
+    // QUANT-001: validate all parameters
+    let shape = TensorShape::new(n, dim)?;
+    let profile = QuantProfile::new(k, n_levels, n_levels.ilog2() as usize + 1)?;
+    profile.validate_indices(&shape, indices)?;
+    profile.validate_norms(&shape, norms)?;
 
     #[cfg(feature = "gpu")]
     {
