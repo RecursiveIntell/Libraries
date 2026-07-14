@@ -11,7 +11,9 @@ use forge_pilot::{bootstrap, LoopConfig, LoopRunnerResources};
 use knowledge_runtime::config::{EntityConfig, ProjectionConfig, QueryConfig};
 use knowledge_runtime::{RuntimeConfig, Scope};
 use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder};
-use stack_ids::{AssertionGroupId, ClaimFamilyId, ClaimVersionId, EntityId, EnvelopeId, ScopeKey};
+use stack_ids::{
+    AssertionGroupId, ClaimFamilyId, ClaimId, ClaimVersionId, EntityId, EnvelopeId, ScopeKey,
+};
 use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
@@ -212,7 +214,7 @@ pub async fn import_promoted_hyperedge_batch(
     let records = vec![
         ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                claim_id: Some(ClaimId::new(format!("{batch_id}-claim-1"))),
                 claim_version_id: Some(ClaimVersionId::new(format!("{batch_id}-claim-1"))),
                 subject_entity_id: EntityId::new(format!("{batch_id}-entity-1")),
                 predicate: "supports".into(),
@@ -267,7 +269,7 @@ pub async fn import_promoted_hyperedge_batch(
         },
         ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                claim_id: Some(ClaimId::new(format!("{batch_id}-claim-2"))),
                 claim_version_id: Some(ClaimVersionId::new(format!("{batch_id}-claim-2"))),
                 subject_entity_id: EntityId::new(format!("{batch_id}-entity-2")),
                 predicate: "supports".into(),
@@ -375,6 +377,13 @@ pub fn base_loop_config(scope: Scope) -> LoopConfig {
         execution_backend_preference: "host".into(),
         ..ForgeConfig::default()
     };
+    // Tests need a permissive policy to exercise execution paths.
+    // Production default is deny (AUTH-001 fix); tests explicitly opt in.
+    use verification_policy::PolicySnapshot;
+    config.policy_snapshots = vec![PolicySnapshot::permissive(
+        "forge-pilot.test",
+        "2026-03-12T00:00:00Z",
+    )];
     config
 }
 

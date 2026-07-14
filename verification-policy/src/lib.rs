@@ -494,6 +494,47 @@ impl PolicySnapshot {
         }
     }
 
+    /// Builds a deny-default policy snapshot that blocks all methods and
+    /// promotions. Used as a fail-closed fallback when governance state is
+    /// unavailable (AUTH-001 fix).
+    pub fn deny(
+        policy_version: impl Into<String>,
+        effective_from: impl Into<String>,
+    ) -> Self {
+        Self {
+            schema_version: POLICY_SNAPSHOT_V1_SCHEMA.into(),
+            policy_version: policy_version.into(),
+            effective_from: effective_from.into(),
+            effective_to: None,
+            autonomy_ceiling: AutonomyCeiling::AdvisoryOnly,
+            method_rules: vec![],
+            blocked_promotions_when_degraded: true,
+            blocked_promotions_when_budget_exhausted: true,
+            citation: V25CitationContext {
+                applicability_context_id: Some(ApplicabilityContextId::new(
+                    "deny-applicability-context",
+                )),
+                profile_set_id: Some(ProfileSetId::new("deny-profile-set")),
+                composition_receipt_id: Some(CompositionReceiptId::new(
+                    "deny-composition-receipt",
+                )),
+                effective_constitution_id: Some(EffectiveConstitutionId::new(
+                    "deny-effective-constitution",
+                )),
+                compiled_obligation_set_id: Some(CompiledObligationSetId::new(
+                    "deny-compiled-obligation-set",
+                )),
+                composition_conflict_set_id: None,
+                profile_exception_bundle_ids: Vec::new(),
+            },
+            obligation_refs: V25ControlObligationRefs {
+                required_obligation_refs: vec![],
+                blocking_obligation_refs: vec!["obligation:deny-all".into()],
+                monitoring_obligation_refs: vec![],
+            },
+        }
+    }
+
     /// Validates snapshot metadata needed to evaluate a policy version.
     pub fn validate(&self) -> Result<(), &'static str> {
         require_schema_version(

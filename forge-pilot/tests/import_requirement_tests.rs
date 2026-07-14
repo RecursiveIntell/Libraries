@@ -83,6 +83,9 @@ async fn source_files_without_imports_surface_import_required() {
     let report = runner.run().await.unwrap();
     assert_eq!(report.halt_reason, HaltReason::AdvisoryOnlyFallback);
     assert_eq!(report.iterations_completed, 1);
+    // The AdvisoryOnly action_family comes from the plan kind
+    // (AdvisoryOnlyVerificationPlan), not the governance gate.
+    // The governance gate returns Allow with a permissive policy.
     assert_eq!(
         report.iterations[0].action_family,
         Some(ActionFamily::AdvisoryOnly)

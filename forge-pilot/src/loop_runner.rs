@@ -316,8 +316,20 @@ impl LoopRunner {
                         ));
                     }
                     crate::governance_gate::GovernanceGateResult::AdvisoryOnly { reason } => {
-                        tracing::info!(reason = %reason, "governance gate advisory-only mode");
+                        tracing::warn!(reason = %reason, "governance gate advisory-only mode; halting execution");
                         totals.advisory_only_steps = true;
+                        // AUTH-003 fix: AdvisoryOnly must NOT proceed to execution.
+                        // Only an Authorized result permits effect invocation.
+                        return Ok(self.finish_report(
+                            started_at,
+                            trace_ctx.clone(),
+                            attempt_id.clone(),
+                            started,
+                            iterations,
+                            totals,
+                            HaltReason::AdvisoryOnlyFallback,
+                            Some(&*observation),
+                        ));
                     }
                     crate::governance_gate::GovernanceGateResult::Allow => {}
                 }
@@ -452,8 +464,11 @@ impl LoopRunner {
                             .first()
                             .cloned()
                             .unwrap_or_else(|| {
-                                verification_policy::PolicySnapshot::permissive(
-                                    "forge-pilot.fallback",
+                                // AUTH-001 fix: fail-closed when no policy is configured.
+                                // Use deny-default instead of permissive to prevent
+                                // missing governance state from increasing authority.
+                                verification_policy::PolicySnapshot::deny(
+                                    "forge-pilot.fallback-deny",
                                     iteration_started_at.clone(),
                                 )
                             })
@@ -538,6 +553,7 @@ impl LoopRunner {
                     &selected.plan,
                     permit,
                     &self.config,
+                    &self.resources.forge_store,
                 )
                 .await?;
                 action_family = Some(action.family);
