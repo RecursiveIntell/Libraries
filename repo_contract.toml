@@ -1,0 +1,1356 @@
+# Canonical repository support and certification contract.
+# Generated views: SUPPORT_PROFILE.md and scripts/lane_manifest.json.
+schema_version = "repo_contract_v1"
+owner = "RecursiveIntell"
+required_gates = ["fmt", "check", "test", "clippy"]
+lane_manifest_generated_by = "repo_contract.toml"
+support_receipt_date = "2026-03-22"
+
+[lanes]
+supported = ["contract-schema-gen", "forge-memory-bridge", "forge-pilot", "kernel-conformance", "kernel-execution", "kernel-oracles", "knowledge-runtime", "living-memory/living-memory", "llm-tool-runtime", "recursive-kernel-core", "semantic-memory", "semantic-memory-forge", "stack-ids", "verification-adjudication", "verification-calibration", "verification-control", "verification-policy"]
+governance = ["assurance-runtime", "attestation-exchange", "authority-delegation", "constitutional-memory", "continuity-runtime", "effect-runtime", "mechanism-runtime"]
+doc_certified = ["forge-pilot", "profile-runtime", "effect-runtime", "verification-policy", "semantic-memory-forge"]
+panic_audit = ["contract-schema-gen", "forge-memory-bridge", "forge-pilot", "kernel-conformance", "kernel-execution", "kernel-oracles", "knowledge-runtime", "living-memory/living-memory", "llm-tool-runtime", "recursive-kernel-core", "semantic-memory", "semantic-memory-forge", "stack-ids", "verification-adjudication", "verification-calibration", "verification-control", "verification-policy"]
+
+[[workspaces]]
+path = "."
+manifest = "Cargo.toml"
+maturity = "supported"
+support_tier = "mixed"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 64
+
+[[workspaces]]
+path = "AiDENs"
+manifest = "AiDENs/Cargo.toml"
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 37
+
+[[workspaces]]
+path = "Primitives"
+manifest = "Primitives/Cargo.toml"
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 11
+
+[[workspaces]]
+path = "agent-graph-mcp"
+manifest = "agent-graph-mcp/Cargo.toml"
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 1
+
+[[workspaces]]
+path = "cea-bridge"
+manifest = "cea-bridge/Cargo.toml"
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 1
+
+[[workspaces]]
+path = "context-governor"
+manifest = "context-governor/Cargo.toml"
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 1
+
+[[workspaces]]
+path = "knowledge-router"
+manifest = "knowledge-router/Cargo.toml"
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 1
+
+[[workspaces]]
+path = "poly-kv"
+manifest = "poly-kv/Cargo.toml"
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 2
+
+[[workspaces]]
+path = "scr-runtime"
+manifest = "scr-runtime/Cargo.toml"
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 4
+
+[[workspaces]]
+path = "semantic-memory-mcp"
+manifest = "semantic-memory-mcp/Cargo.toml"
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 1
+
+[[workspaces]]
+path = "turbo-quant/tools/semantic_memory_harness"
+manifest = "turbo-quant/tools/semantic_memory_harness/Cargo.toml"
+maturity = "experimental"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+package_count = 1
+
+[[packages]]
+name = "aidens-agency-kit"
+manifest = "AiDENs/crates/aidens-agency-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-app-kit"
+manifest = "AiDENs/crates/aidens-app-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-arbiter-kit"
+manifest = "AiDENs/crates/aidens-arbiter-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-autonomous"
+manifest = "AiDENs/crates/aidens-autonomous/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-boundary-kit"
+manifest = "AiDENs/crates/aidens-boundary-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-budget-kit"
+manifest = "AiDENs/crates/aidens-budget-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-capability-kit"
+manifest = "AiDENs/crates/aidens-capability-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-cli"
+manifest = "AiDENs/crates/aidens-cli/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-config"
+manifest = "AiDENs/crates/aidens-config/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-contracts"
+manifest = "AiDENs/crates/aidens-contracts/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-daemon-kit"
+manifest = "AiDENs/crates/aidens-daemon-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-delegation-kit"
+manifest = "AiDENs/crates/aidens-delegation-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-governance-kit"
+manifest = "AiDENs/crates/aidens-governance-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-integration-tests"
+manifest = "AiDENs/crates/aidens-integration-tests/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-kernel-kit"
+manifest = "AiDENs/crates/aidens-kernel-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-memory-kit"
+manifest = "AiDENs/crates/aidens-memory-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = ["semantic-memory-integration"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-memory-tools"
+manifest = "AiDENs/crates/aidens-memory-tools/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-permit-kit"
+manifest = "AiDENs/crates/aidens-permit-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-plan-kit"
+manifest = "AiDENs/crates/aidens-plan-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-profile-coding"
+manifest = "AiDENs/crates/aidens-profile-coding/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-profile-daemon"
+manifest = "AiDENs/crates/aidens-profile-daemon/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-profile-desktop"
+manifest = "AiDENs/crates/aidens-profile-desktop/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-profile-memory"
+manifest = "AiDENs/crates/aidens-profile-memory/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-profile-research"
+manifest = "AiDENs/crates/aidens-profile-research/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-provider-kit"
+manifest = "AiDENs/crates/aidens-provider-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-queue-kit"
+manifest = "AiDENs/crates/aidens-queue-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-receipts"
+manifest = "AiDENs/crates/aidens-receipts/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-repair-kit"
+manifest = "AiDENs/crates/aidens-repair-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-runner"
+manifest = "AiDENs/crates/aidens-runner/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-schedule-kit"
+manifest = "AiDENs/crates/aidens-schedule-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-security-kit"
+manifest = "AiDENs/crates/aidens-security-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-testkit"
+manifest = "AiDENs/crates/aidens-testkit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-tool-kit"
+manifest = "AiDENs/crates/aidens-tool-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-tui"
+manifest = "AiDENs/crates/aidens-tui/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens-wake-kit"
+manifest = "AiDENs/crates/aidens-wake-kit/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "aidens"
+manifest = "AiDENs/crates/aidens/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "boundary-compiler-core"
+manifest = "AiDENs/crates/boundary-compiler-core/Cargo.toml"
+version = "0.1.0"
+workspaces = ["AiDENs"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "cea-core"
+manifest = "Primitives/cea-core/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "cea-sqlite"
+manifest = "Primitives/cea-sqlite/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "cea-store"
+manifest = "Primitives/cea-store/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "check-runner-sys"
+manifest = "Primitives/check-runner-sys/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "check-runner"
+manifest = "Primitives/check-runner/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = ["container", "default"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "effect-signature"
+manifest = "Primitives/effect-signature/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "forge-policy"
+manifest = "Primitives/forge-policy/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "mindstate-core"
+manifest = "Primitives/mindstate-core/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "sandbox-workspace"
+manifest = "Primitives/sandbox-workspace/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "stabilizer-core"
+manifest = "Primitives/stabilizer-core/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "typed-patch"
+manifest = "Primitives/typed-patch/Cargo.toml"
+version = "0.1.0"
+workspaces = [".", "Primitives"]
+maturity = "supported"
+support_tier = "internal"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "agent-graph-mcp"
+manifest = "agent-graph-mcp/Cargo.toml"
+version = "0.1.0"
+workspaces = ["agent-graph-mcp"]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "agent-graph"
+manifest = "agent-graph/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = ["checkpointing", "default", "rusqlite"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "agent-guard"
+manifest = "agent-guard/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = ["default", "mcp"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "ai-batch-queue"
+manifest = "ai-batch-queue/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["Josh"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "assurance-runtime"
+manifest = "assurance-runtime/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "supported"
+support_tier = "governance"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "attestation-exchange"
+manifest = "attestation-exchange/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "supported"
+support_tier = "governance"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "authority-delegation"
+manifest = "authority-delegation/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "supported"
+support_tier = "governance"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "bitemporal-runtime"
+manifest = "bitemporal-runtime/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = ["default", "schema", "sqlite"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "boundary-compiler"
+manifest = "boundary-compiler/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "cea-bridge"
+manifest = "cea-bridge/Cargo.toml"
+version = "0.1.0"
+workspaces = ["cea-bridge"]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "claim-ledger"
+manifest = "claim-ledger/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "comfyui-rs"
+manifest = "comfyui-rs/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["Josh"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "compressed-scorer"
+manifest = "compressed-scorer/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["sikmindz"]
+features = ["c-kernels", "default", "fib", "no_std", "turbo"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "constitutional-memory"
+manifest = "constitutional-memory/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "supported"
+support_tier = "governance"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "constraint-compiler"
+manifest = "constraint-compiler/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "context-governor"
+manifest = "context-governor/Cargo.toml"
+version = "0.2.0"
+workspaces = ["context-governor"]
+maturity = "production"
+support_tier = "certified"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = ["default", "sqlite-store"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "continuity-runtime"
+manifest = "continuity-runtime/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "supported"
+support_tier = "governance"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "contract-schema-gen"
+manifest = "contract-schema-gen/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "discovery-portfolio"
+manifest = "discovery-portfolio/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "effect-runtime"
+manifest = "effect-runtime/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "supported"
+support_tier = "governance"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "federated-settlement"
+manifest = "federated-settlement/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "fib-quant"
+manifest = "fib-quant/Cargo.toml"
+version = "0.1.0-beta.4"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = ["compat", "default", "gpu", "gpu_codebook_lookup", "kv", "mmap", "parallel", "quant-codec-core", "rayon"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "forge-memory-bridge"
+manifest = "forge-memory-bridge/Cargo.toml"
+version = "0.1.1"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "forge-pilot"
+manifest = "forge-pilot/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = ["default", "governance"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "gpu-backend"
+manifest = "gpu-backend/Cargo.toml"
+version = "0.1.0-alpha.2"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["sikmindz"]
+features = ["cudarc", "default", "gpu", "precompiled-ptx"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "hnsw-bench"
+manifest = "hnsw-bench/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = ["hnsw", "usearch-backend"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "hyperquant"
+manifest = "hyperquant/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["sikmindz"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "agent-queue"
+manifest = "job-queue/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["Josh"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "kernel-conformance"
+manifest = "kernel-conformance/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "kernel-execution"
+manifest = "kernel-execution/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "kernel-oracles"
+manifest = "kernel-oracles/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "knowledge-router"
+manifest = "knowledge-router/Cargo.toml"
+version = "0.1.0"
+workspaces = ["knowledge-router"]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "knowledge-runtime"
+manifest = "knowledge-runtime/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "forge-engine"
+manifest = "living-memory/living-memory/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = ["danger-sm-write", "default"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "llm-output-parser"
+manifest = "llm-output-parser/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = ["default", "yaml"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "llm-pipeline"
+manifest = "llm-pipeline/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["Josh"]
+features = ["default", "openai", "yaml"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "llm-tool-runtime"
+manifest = "llm-tool-runtime/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "mechanism-runtime"
+manifest = "mechanism-runtime/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "supported"
+support_tier = "governance"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "ollama-vision"
+manifest = "ollama-vision/Cargo.toml"
+version = "0.2.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "poly-kv"
+manifest = "poly-kv/Cargo.toml"
+version = "0.1.0-alpha.3"
+workspaces = ["poly-kv"]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = ["adaptive-budget", "default", "fib", "fib-quant", "full-stack", "gpu", "gpu-backend", "gpu_codebook_lookup", "parallel_pool", "temporal-truth", "turbo", "turbo-quant", "typed-ids"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "quant-codec-core"
+manifest = "poly-kv/crates/quant-codec-core/Cargo.toml"
+version = "0.1.0-alpha.1"
+workspaces = [".", "poly-kv"]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["sikmindz"]
+features = ["default", "serde"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "profile-runtime"
+manifest = "profile-runtime/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "quant-eval"
+manifest = "quant-eval/Cargo.toml"
+version = "0.1.1"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["sikmindz"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "quant-governor"
+manifest = "quant-governor/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["sikmindz"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "receipt-bench"
+manifest = "receipt-bench/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = ["sm-adapter"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "recursive-kernel-core"
+manifest = "recursive-kernel-core/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "remote-oracle-admission"
+manifest = "remote-oracle-admission/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "scr-runtime-compression"
+manifest = "scr-runtime-compression/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["sikmindz"]
+features = ["default", "fib", "polar", "qjl", "turbo"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "scr-audit-adapter"
+manifest = "scr-runtime/crates/scr-audit-adapter/Cargo.toml"
+version = "0.1.0"
+workspaces = ["scr-runtime"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "scr-cli"
+manifest = "scr-runtime/crates/scr-cli/Cargo.toml"
+version = "0.1.0"
+workspaces = ["scr-runtime"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "scr-kernel"
+manifest = "scr-runtime/crates/scr-kernel/Cargo.toml"
+version = "0.1.0"
+workspaces = ["scr-runtime"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "scr-reference"
+manifest = "scr-runtime/crates/scr-reference/Cargo.toml"
+version = "0.1.0"
+workspaces = ["scr-runtime"]
+maturity = "beta"
+support_tier = "preview"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "semantic-memory-forge"
+manifest = "semantic-memory-forge/Cargo.toml"
+version = "0.1.1"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "semantic-memory-mcp"
+manifest = "semantic-memory-mcp/Cargo.toml"
+version = "0.5.4"
+workspaces = ["semantic-memory-mcp"]
+maturity = "production"
+support_tier = "certified"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = ["candle-embedder", "claim-integration", "compression-governor", "decoder", "default", "discord", "full", "hnsw", "integration", "late-interaction", "llm-parser", "multiscale", "orchestration", "rl-routing", "routing", "search", "stable", "subgraph-pruning", "subtraction", "turbo-quant-codec"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "semantic-memory"
+manifest = "semantic-memory/Cargo.toml"
+version = "0.5.10"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = ["admin-ops", "benchmark", "brute-force", "candle-embedder", "community", "compression-governor", "decoder", "default", "discord", "hnsw", "integration", "late-interaction", "matryoshka", "multiscale", "poly-kv-codec", "provenance", "rl-routing", "routing", "subgraph-pruning", "subtraction", "temporal", "testing", "topology", "turbo-quant-codec", "usearch-backend"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "spec-execution"
+manifest = "spec-execution/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "stack-ids"
+manifest = "stack-ids/Cargo.toml"
+version = "0.1.1"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "tauri-queue"
+manifest = "tauri-queue/Cargo.toml"
+version = "0.3.0"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["Josh"]
+features = ["default", "sqlite"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "turbo-quant"
+manifest = "turbo-quant/Cargo.toml"
+version = "0.2.3"
+workspaces = ["."]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["sikmindz"]
+features = ["default"]
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "turbo-quant-semantic-memory-harness"
+manifest = "turbo-quant/tools/semantic_memory_harness/Cargo.toml"
+version = "0.0.0"
+workspaces = ["turbo-quant/tools/semantic_memory_harness"]
+maturity = "experimental"
+support_tier = "incubating"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "verification-adjudication"
+manifest = "verification-adjudication/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "verification-calibration"
+manifest = "verification-calibration/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "verification-control"
+manifest = "verification-control/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+
+[[packages]]
+name = "verification-policy"
+manifest = "verification-policy/Cargo.toml"
+version = "0.1.0"
+workspaces = ["."]
+maturity = "production"
+support_tier = "certified"
+owners = ["RecursiveIntell"]
+features = []
+required_gates = ["fmt", "check", "test", "clippy"]
+

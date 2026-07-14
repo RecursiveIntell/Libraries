@@ -10,8 +10,8 @@
 //!   pick up.
 //! - [`executor::LoopExecutor`] — executes queued jobs through the
 //!   plan-act-verify loop and returns [`executor::ExecutionResult`] values.
-//! - [`capture::ResultCapture`] — stores execution outputs as facts in semantic
-//!   memory with deduplication and graph-edge linkage.
+//! - [`capture::ResultCapture`] — stages source-bound execution outputs in the
+//!   candidate namespace for evidence-gated evaluation.
 //! - [`evaluation::EvaluationGate`] — evaluates captured facts for promotion,
 //!   quarantine, or rejection.
 //! - [`loop_driver::AutonomousLoop`] — ties everything together into a
@@ -33,22 +33,30 @@ pub mod receipt;
 pub mod task_generator;
 pub mod viscosity;
 
-pub use capture::{CaptureOutcome, ResultCapture};
+pub use capture::{
+    CaptureOutcome, ClaimCandidateV1, OutputByteRangeV1, ResultCapture, SourceSpanV1,
+};
 pub use entropy_search::{
     DomainEntropy, DomainStats, EntropyGradientSearcher, EntropySearchConfig,
 };
-pub use evaluation::{EvaluationGate, FactDisposition};
+pub use evaluation::{
+    ClaimEvaluationInputV1, EvaluationGate, EvaluationReportV1, FactDisposition,
+    SourceSpanQualityV1,
+};
 pub use executor::{ExecutionResult, LoopExecutor};
 pub use gap_detector::{DetectedGap, GapDetector, GapType};
 pub use hostile_audit::{AuditResult, HostileAuditGate};
-pub use loop_driver::{AutonomousLoop, LoopConfig, LoopState, LoopTermination};
+pub use loop_driver::{
+    AutonomousLoop, CandidateBundleV1, LoopConfig, LoopMode, LoopState, LoopTermination,
+    ReplayCaseV1,
+};
 pub use missions::{Mission, MissionImpl, MissionQuery, MissionScheduler, ScheduledMission};
 pub use proof_debt::{
     classify_risk, PaymentMethod, ProofDebtBudget, ProofDebtEntry, ProofDebtReceipt, RiskClass,
 };
 pub use receipt::{
-    CycleReceiptInputV1, CycleReceiptV1, LoopMode, ReceiptEmitter, ReceiptLedger,
-    ViscositySignalSnapshot,
+    CommittedLoopStateV1, CycleReceiptInputV1, CycleReceiptV1, LoopMode as CycleMode,
+    ReceiptEmitter, ReceiptLedger, ViscositySignalSnapshot,
 };
 pub use task_generator::TaskGenerator;
 pub use viscosity::{StrictnessLevel, ViscosityConfig, ViscosityController, ViscositySignal};

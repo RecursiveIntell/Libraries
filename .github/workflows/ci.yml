@@ -1,4 +1,4 @@
-name: hardening-and-v25
+name: repository-certification
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
   pull_request:
 
 jobs:
+  # workspace-lane: .
   hardening-gate:
     runs-on: ubuntu-latest
     steps:
@@ -28,8 +29,57 @@ jobs:
             ripgrep
       - run: python3 scripts/check_action_pinning.py
       - run: python3 scripts/check_supply_chain_policy.py
+      - run: python3 scripts/discover_workspaces.py
+      - run: python3 scripts/check_schema_registry.py
+      - run: python3 scripts/generate_from_repo_contract.py --check
       - run: cargo metadata --no-deps --format-version 1 | python3 scripts/check_workspace_hygiene.py
       - run: make gate
+
+  # Every active Cargo workspace outside the repository root is independently
+  # certified. The workspace-lane declarations are machine-checked by
+  # scripts/discover_workspaces.py.
+  # workspace-lane: AiDENs
+  # workspace-lane: Primitives
+  # workspace-lane: agent-graph-mcp
+  # workspace-lane: cea-bridge
+  # workspace-lane: context-governor
+  # workspace-lane: knowledge-router
+  # workspace-lane: poly-kv
+  # workspace-lane: scr-runtime
+  # workspace-lane: semantic-memory-mcp
+  # workspace-lane: turbo-quant/tools/semantic_memory_harness
+  independent-workspaces:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - AiDENs
+          - Primitives
+          - agent-graph-mcp
+          - cea-bridge
+          - context-governor
+          - knowledge-router
+          - poly-kv
+          - scr-runtime
+          - semantic-memory-mcp
+          - turbo-quant/tools/semantic_memory_harness
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          workspaces: ${{ matrix.workspace }}
+      - name: Format
+        run: cargo fmt --manifest-path "${{ matrix.workspace }}/Cargo.toml" --all -- --check
+      - name: Check
+        run: cargo check --manifest-path "${{ matrix.workspace }}/Cargo.toml" --workspace --all-targets
+      - name: Test
+        run: cargo test --manifest-path "${{ matrix.workspace }}/Cargo.toml" --workspace --all-targets
+      - name: Clippy
+        run: cargo clippy --manifest-path "${{ matrix.workspace }}/Cargo.toml" --workspace --all-targets -- -D warnings
 
   # Security gate: fails on vulnerability-grade advisories (CVEs, soundness
   # issues) and yanked crate versions. Tauri/webkit2gtk transitive
@@ -45,7 +95,7 @@ jobs:
           # manifest-path separately, so arguments must not repeat it.
           arguments: --workspace
 
-  v25-production-closure:
+  production-closure:
     runs-on: ubuntu-latest
     needs: hardening-gate
     steps:

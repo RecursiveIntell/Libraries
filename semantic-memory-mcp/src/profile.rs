@@ -156,6 +156,13 @@ impl ToolProfile {
     pub fn allows_http_route(self) -> bool {
         matches!(self, Self::Full)
     }
+
+    /// Return whether this caller capability authorizes invoking `tool_name`.
+    /// This is intentionally separate from route discovery and hiding.
+    pub fn allows_tool(self, tool_name: &str) -> bool {
+        self.manifest()
+            .map_or(true, |grants| grants.iter().any(|grant| grant.name == tool_name))
+    }
 }
 
 impl std::fmt::Display for ToolProfile {

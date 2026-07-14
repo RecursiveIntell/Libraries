@@ -191,11 +191,10 @@ pub fn format_ollama_http_error(
     body: Result<String, String>,
 ) -> MemoryError {
     match body {
-        Ok(body) => MemoryError::Other(format!(
-            "Ollama returned HTTP {}: {}",
-            status,
-            &body[..body.len().min(500)]
-        )),
+        Ok(body) => {
+            let preview: String = body.chars().take(500).collect();
+            MemoryError::Other(format!("Ollama returned HTTP {}: {}", status, preview))
+        }
         Err(err) => MemoryError::Other(format!("Ollama returned HTTP {status}; {err}")),
     }
 }

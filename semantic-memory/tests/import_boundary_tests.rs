@@ -494,7 +494,7 @@ fn projection_freshness_variants_are_distinct() {
 #[test]
 fn envelope_id_display_and_equality() {
     let id1 = EnvelopeId::new("abc-123");
-    let id2 = EnvelopeId::from("abc-123".to_string());
+    let id2 = EnvelopeId::new("abc-123");
     assert_eq!(id1, id2);
     assert_eq!(id1.to_string(), "abc-123");
     assert_eq!(id1.as_str(), "abc-123");

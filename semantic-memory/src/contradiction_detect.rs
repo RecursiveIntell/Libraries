@@ -181,11 +181,15 @@ fn antonym_hit(a: &HashSet<String>, b: &HashSet<String>) -> bool {
 /// Returns `None` when there is no copula or the value is not entity-like —
 /// this keeps "the server is fast" from competing with "the server is built".
 fn subject_value(original: &str) -> Option<(HashSet<String>, String)> {
-    let lower = original.to_lowercase();
     // Find " is " or " are " (with surrounding spaces to avoid substrings).
-    let (idx, kw_len) = [" is ", " are ", " was ", " were "]
-        .iter()
-        .find_map(|kw| lower.find(kw).map(|i| (i, kw.len())))?;
+    let (idx, kw_len) = original.char_indices().find_map(|(idx, _)| {
+        [" is ", " are ", " was ", " were "].iter().find_map(|kw| {
+            original
+                .get(idx..idx + kw.len())
+                .filter(|candidate| candidate.eq_ignore_ascii_case(kw))
+                .map(|_| (idx, kw.len()))
+        })
+    })?;
     let subject = &original[..idx];
     let after = &original[idx + kw_len..];
 

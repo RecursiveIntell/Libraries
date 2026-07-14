@@ -17,7 +17,7 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::runtime::Handle;
 use tokio::task::block_in_place;
 
@@ -28,6 +28,10 @@ const MAX_DIRECT_IDS: usize = 100;
 const MAX_RERANK_RESULTS: usize = 50;
 const MAX_RERANK_CONTENT_BYTES: usize = 2_000;
 const RERANK_MODEL: &str = "granite4.1:3b";
+const MAX_CONCURRENT_CONNECTIONS: usize = 16;
+const CONNECTION_READ_TIMEOUT: Duration = Duration::from_secs(2);
+const CONNECTION_WRITE_TIMEOUT: Duration = Duration::from_secs(2);
+const CONNECTION_IDLE_TIMEOUT: Duration = Duration::from_secs(2);
 
 fn truncate_rerank_content(content: &str) -> &str {
     if content.len() <= MAX_RERANK_CONTENT_BYTES {
@@ -161,9 +165,14 @@ pub fn start_http_server(
                 Err(_) => continue,
             };
 
-            if active.fetch_add(1, Ordering::AcqRel) >= 32 {
+            if active.fetch_add(1, Ordering::AcqRel) >= MAX_CONCURRENT_CONNECTIONS {
                 active.fetch_sub(1, Ordering::AcqRel);
-                let _ = stream.shutdown(std::net::Shutdown::Both);
+                let mut stream = stream;
+                let _ = stream.set_write_timeout(Some(CONNECTION_WRITE_TIMEOUT));
+                let _ = stream.write_all(
+                    b"HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\nRetry-After: 1\r\n\r\n",
+                );
+                let _ = stream.flush();
                 continue;
             }
             let bridge = bridge.clone();
@@ -191,14 +200,15 @@ fn handle_connection(
 ) {
     const MAX_HEADER_BYTES: usize = 16 * 1024;
     const MAX_HEADER_COUNT: usize = 64;
-    let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
-    let _ = stream.set_write_timeout(Some(Duration::from_secs(2)));
+    let read_deadline = Instant::now() + CONNECTION_READ_TIMEOUT;
+    let _ = stream.set_read_timeout(Some(CONNECTION_IDLE_TIMEOUT));
+    let _ = stream.set_write_timeout(Some(CONNECTION_WRITE_TIMEOUT));
     let Ok(reader_stream) = stream.try_clone() else {
         return;
     };
     let mut reader = BufReader::new(reader_stream);
     let mut request_line = String::new();
-    if !read_bounded_line(&mut reader, 4096, &mut request_line) {
+    if !read_bounded_line(&mut reader, 4096, read_deadline, &mut request_line) {
         return;
     }
 
@@ -218,7 +228,7 @@ fn handle_connection(
     loop {
         let mut header = String::new();
         let remaining = MAX_HEADER_BYTES.saturating_sub(header_bytes);
-        if !read_bounded_line(&mut reader, remaining, &mut header) {
+        if !read_bounded_line(&mut reader, remaining, read_deadline, &mut header) {
             return;
         }
         if header.trim().is_empty() {
@@ -278,7 +288,10 @@ fn handle_connection(
     }
 
     let mut body = vec![0u8; content_length];
-    if content_length > 0 && reader.read_exact(&mut body).is_err() {
+    if content_length > 0
+        && (!enforce_read_deadline(reader.get_ref(), read_deadline)
+            || reader.read_exact(&mut body).is_err())
+    {
         return;
     }
     let body_str = String::from_utf8_lossy(&body);
@@ -341,14 +354,32 @@ fn handle_connection(
     let _ = stream.flush();
 }
 
-fn read_bounded_line(reader: &mut BufReader<TcpStream>, max: usize, output: &mut String) -> bool {
+fn read_bounded_line(
+    reader: &mut BufReader<TcpStream>,
+    max: usize,
+    deadline: Instant,
+    output: &mut String,
+) -> bool {
     if max == 0 {
+        return false;
+    }
+    if !enforce_read_deadline(reader.get_ref(), deadline) {
         return false;
     }
     let Ok(read) = reader.take((max + 1) as u64).read_line(output) else {
         return false;
     };
     read > 0 && read <= max && output.ends_with('\n')
+}
+
+fn enforce_read_deadline(stream: &TcpStream, deadline: Instant) -> bool {
+    let remaining = deadline.saturating_duration_since(Instant::now());
+    if remaining.is_zero() {
+        return false;
+    }
+    stream
+        .set_read_timeout(Some(remaining.min(CONNECTION_IDLE_TIMEOUT)))
+        .is_ok()
 }
 
 fn is_loopback_authority(value: &str) -> bool {

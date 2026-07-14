@@ -236,7 +236,7 @@ pub(crate) async fn import_status(
     store: &MemoryStore,
     envelope_id: &projection_import::EnvelopeId,
 ) -> Result<Vec<projection_import::ImportReceipt>, MemoryError> {
-    let eid = envelope_id.0.clone();
+    let eid = envelope_id.as_str().to_string();
     store
         .with_read_conn(move |conn| {
             let mut stmt = conn.prepare(
@@ -269,7 +269,7 @@ pub(crate) async fn import_status(
                         projection_import::ImportStatus::AlreadyImported
                     );
                     projection_import::ImportReceipt {
-                        envelope_id: projection_import::EnvelopeId(eid),
+                        envelope_id: projection_import::EnvelopeId::new(eid),
                         schema_version: sv,
                         content_digest: cd,
                         status: status_parsed,

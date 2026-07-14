@@ -91,6 +91,16 @@ pub fn insert_fact_with_fts_q8(
             db::store_sparse_vector(tx, &format!("fact:{fact_id}"), weights, representation)?;
         }
 
+        let changed = tx.execute(
+            "UPDATE authority_state SET retrieval_epoch = retrieval_epoch + 1 WHERE id = 1",
+            [],
+        )?;
+        if changed != 1 {
+            return Err(MemoryError::Other(
+                "failed to advance corpus authority epoch after fact insert".to_string(),
+            ));
+        }
+
         Ok(())
     })
 }

@@ -1,89 +1,176 @@
 # RecursiveIntell Libraries
 
-A Rust workspace for local-first AI memory, evidence, retrieval, quantization, and runtime governance. The repository contains active libraries, integration crates, experiments, historical plans, and benchmark assets. A crate README and its source are authoritative for that crate; dated plans and archived Codex packets are historical evidence, not current runtime contracts.
+This repository is a Rust library ecosystem for governed agent runtimes, durable memory, verification, causal tooling, and efficient inference. Repository claims come from executable manifests and gates: `repo_contract.toml` defines support scope, `schemas/` owns schema truth, and CI certifies every active Cargo workspace independently.
 
-## Semantic-memory stack
+## Ecosystem map
 
-```mermaid
-flowchart LR
-    F[Forge / verification producers] -->|ExportEnvelopeV3| B[forge-memory-bridge]
-    B -->|ProjectionImportBatchV3| SM[semantic-memory]
-    A[Applications] --> SM
-    H[Hermes] --> MCP[semantic-memory-mcp]
-    C[Claude Code] --> MCP
-    X[Codex] --> MCP
-    MCP --> SM
-    MCP --> KR[knowledge-runtime]
-    MCP --> CL[claim-ledger]
-    SM --> DB[(SQLite V36 authoritative memory)]
-    SM --> IDX[FTS5 + rebuildable vector/sparse acceleration]
-    CL --> LEDGER[(Verified JSONL or snapshot + retained tail)]
-```
+| Area | Primary packages | Purpose |
+| --- | --- | --- |
+| Memory and retrieval | `semantic-memory`, `semantic-memory-mcp`, `semantic-memory-forge`, `forge-memory-bridge`, `knowledge-runtime` | Durable local memory, retrieval, projections, graph operations, and MCP access |
+| Claims and verification | `claim-ledger`, `verification-*`, `assurance-runtime`, `attestation-exchange` | Evidence, proof debt, adjudication, calibration, policy, and release decisions |
+| Governed execution | `forge-pilot`, `kernel-*`, `effect-runtime`, `mechanism-runtime`, `authority-delegation` | Policy-bounded planning, execution, effects, delegation, and conformance |
+| Quantization and storage | `turbo-quant`, `fib-quant`, `hyperquant`, `poly-kv`, `compressed-scorer` | Quantized representations, compressed candidate stores, scoring, and evaluation |
+| Agent applications | `AiDENs`, `agent-graph`, `agent-graph-mcp`, `llm-*` | Agent capability kits, orchestration, model pipelines, and tool runtimes |
+| Causal and systems primitives | `Primitives`, `cea-bridge`, `context-governor`, `scr-runtime` | Causal attribution, sandboxing, context governance, and reference runtimes |
 
-Authority boundaries:
+Package-local source, manifests, and tests remain authoritative for package behavior. This README describes repository organization and certification scope; it does not override crate contracts.
 
-- Forge producers own raw verification/export truth.
-- `forge-memory-bridge` performs explicit projection transformation; it does not become the authority for source evidence.
-- `semantic-memory` owns searchable memory, governed memory state, retrieval evidence, and schema migrations through V36.
-- `claim-ledger` defines hash-chained claim/evidence/support authority, proof debt, verification, snapshots, and compaction. Persistence publication is caller-owned.
-- `semantic-memory-mcp` exposes bounded MCP profiles and combines witnessed retrieval with optional verified claim trust.
-- `knowledge-runtime` owns orchestration policy, not stored memory or claim truth.
+## Support and maturity
 
-See [`docs/semantic-memory-ecosystem.md`](docs/semantic-memory-ecosystem.md) for the detailed state, replay, trust, and integration diagrams.
+The canonical per-package values, owners, features, and required gates are in [`repo_contract.toml`](repo_contract.toml). The repository currently contains 112 unique active packages across overlapping workspaces.
 
-## Primary crates
+| Maturity | Support tier | Packages | Meaning |
+| --- | --- | ---: | --- |
+| Production | Certified | 19 | Release-facing packages required to pass the declared certification gates |
+| Supported | Governance | 7 | Default-enabled governance surfaces checked with the root workspace |
+| Supported | Internal | 11 | Shared primitive packages supported for repository use |
+| Beta | Preview | 41 | Independently checked preview APIs that may still evolve |
+| Experimental | Incubating | 34 | Research, integration, benchmark, or early-stage surfaces without a production support claim |
 
-| Crate | Role |
-| --- | --- |
-| [`semantic-memory`](semantic-memory/) | Durable hybrid retrieval, governed memory state, receipts, replay, graph/projection/procedural APIs |
-| [`semantic-memory-mcp`](semantic-memory-mcp/) | MCP server, runtime profiles, witnessed retrieval, authority decisions, agent integrations |
-| [`claim-ledger`](claim-ledger/) | Claim/evidence domain, hash-chain verification, proof debt, snapshots and compaction |
-| [`semantic-memory-forge`](semantic-memory-forge/) | Forge export envelope production |
-| [`forge-memory-bridge`](forge-memory-bridge/) | Forge export to semantic-memory projection transformation |
-| [`knowledge-runtime`](knowledge-runtime/) | Runtime orchestration and policy integration |
-| [`turbo-quant`](turbo-quant/) | Vector quantization and candidate-generation research/implementation |
-| [`fib-quant`](fib-quant/) | Fibonacci quantization research crate; already part of this workspace |
+The 17 production-certified root members are:
 
-The workspace contains additional crates. Inspect root `Cargo.toml` for the exact current member/default-member set rather than relying on a copied list.
+- `contract-schema-gen`
+- `forge-memory-bridge`
+- `forge-pilot`
+- `kernel-conformance`
+- `kernel-execution`
+- `kernel-oracles`
+- `knowledge-runtime`
+- `living-memory/living-memory`
+- `llm-tool-runtime`
+- `recursive-kernel-core`
+- `semantic-memory`
+- `semantic-memory-forge`
+- `stack-ids`
+- `verification-adjudication`
+- `verification-calibration`
+- `verification-control`
+- `verification-policy`
 
-## Build and test
+The two independently certified production packages are `context-governor` and `semantic-memory-mcp`. “Production” is a repository support classification, not a claim that every optional feature is certified in every environment.
 
-From the repository root:
+## Workspace map
+
+Every active `Cargo.toml` containing `[workspace]` has a CI lane. Package counts are workspace membership counts, so the nested `Primitives` members also appear in the root count.
+
+| Workspace root | Members | CI scope |
+| --- | ---: | --- |
+| `.` | 64 | Root hardening and repository gates |
+| `AiDENs` | 37 | Independent fmt, check, test, and clippy |
+| `Primitives` | 11 | Independent fmt, check, test, and clippy |
+| `agent-graph-mcp` | 1 | Independent fmt, check, test, and clippy |
+| `cea-bridge` | 1 | Independent fmt, check, test, and clippy |
+| `context-governor` | 1 | Independent fmt, check, test, and clippy |
+| `knowledge-router` | 1 | Independent fmt, check, test, and clippy |
+| `poly-kv` | 2 | Independent fmt, check, test, and clippy |
+| `scr-runtime` | 4 | Independent fmt, check, test, and clippy |
+| `semantic-memory-mcp` | 1 | Independent fmt, check, test, and clippy |
+| `turbo-quant/tools/semantic_memory_harness` | 1 | Independent fmt, check, test, and clippy |
+
+### Root workspace members (64)
+
+Production-certified members are listed above. Governance-supported members are:
+
+- `assurance-runtime`
+- `attestation-exchange`
+- `authority-delegation`
+- `constitutional-memory`
+- `continuity-runtime`
+- `effect-runtime`
+- `mechanism-runtime`
+
+The remaining active root members are:
+
+- `agent-graph`
+- `agent-guard`
+- `ai-batch-queue`
+- `bitemporal-runtime`
+- `boundary-compiler`
+- `claim-ledger`
+- `comfyui-rs`
+- `compressed-scorer`
+- `constraint-compiler`
+- `discovery-portfolio`
+- `fib-quant`
+- `gpu-backend`
+- `hnsw-bench`
+- `hyperquant`
+- `federated-settlement`
+- `job-queue`
+- `llm-output-parser`
+- `llm-pipeline`
+- `poly-kv/crates/quant-codec-core`
+- `ollama-vision`
+- `Primitives/cea-core`
+- `Primitives/cea-sqlite`
+- `Primitives/cea-store`
+- `Primitives/check-runner`
+- `Primitives/check-runner-sys`
+- `Primitives/effect-signature`
+- `Primitives/forge-policy`
+- `Primitives/mindstate-core`
+- `Primitives/sandbox-workspace`
+- `Primitives/stabilizer-core`
+- `Primitives/typed-patch`
+- `quant-governor`
+- `quant-eval`
+- `receipt-bench`
+- `profile-runtime`
+- `remote-oracle-admission`
+- `scr-runtime-compression`
+- `spec-execution`
+- `tauri-queue`
+- `turbo-quant`
+
+## Repository truth surfaces
+
+- [`repo_contract.toml`](repo_contract.toml) is the source for workspace/package maturity, support tiers, owners, features, required gates, and certification lanes.
+- [`SUPPORT_PROFILE.md`](SUPPORT_PROFILE.md) and [`scripts/lane_manifest.json`](scripts/lane_manifest.json) are generated views. `python3 scripts/generate_from_repo_contract.py --check` rejects drift.
+- [`schemas/`](schemas/) is the authoritative schema registry. [`schemas/schema_manifest.json`](schemas/schema_manifest.json) records every schema ID, version, owner, compatibility rule, file, and byte digest.
+- `contracts/schemas/` is a generated compatibility mirror. Its registry manifest must be byte-identical to the authoritative manifest; legacy wave manifests are non-authoritative views.
+- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) declares one lane for every active workspace root. Discovery ignores only archived, salvage, fixture, fuzz, and build-output trees.
+- Dated plans, audits, dashboards, receipts, and run packets are evidence, not current runtime contracts. Generated run bundles belong under `docs/archive/runs/<id>/` and must not become active repository truth.
+
+## Validation
+
+Run the repository-truth gates from the repository root:
 
 ```bash
-cargo check --workspace
-cargo test --workspace
+python3 scripts/check_schema_registry.py
+python3 scripts/discover_workspaces.py
+python3 scripts/generate_from_repo_contract.py --check
+```
+
+Validate the root workspace:
+
+```bash
 cargo fmt --all -- --check
+cargo check --workspace --all-targets
+cargo test --workspace --all-targets
+cargo clippy --workspace --all-targets -- -D warnings
 ```
 
-Targeted semantic-memory verification:
+Validate an independent workspace by replacing `<workspace>` with a path from the workspace map:
 
 ```bash
-cargo test -p semantic-memory
-cargo test -p semantic-memory --no-default-features --features brute-force
-cargo test -p claim-ledger
-cargo check -p semantic-memory-mcp --all-features
-cargo test -p semantic-memory-mcp --features full
+cargo fmt --manifest-path <workspace>/Cargo.toml --all -- --check
+cargo check --manifest-path <workspace>/Cargo.toml --workspace --all-targets
+cargo test --manifest-path <workspace>/Cargo.toml --workspace --all-targets
+cargo clippy --manifest-path <workspace>/Cargo.toml --workspace --all-targets -- -D warnings
 ```
 
-Some all-workspace or all-feature jobs require local model services, optional system libraries, GPUs, or substantial runtime. A passing targeted command is evidence only for the exact feature set and environment that command exercised.
+CI executes these independent-workspace commands as a matrix. Optional GPU, GUI, model-service, and platform integrations may require additional system dependencies; a passing command certifies only the manifest, features, targets, and environment it actually exercised.
 
-## Documentation
+## Stable operating doctrine
 
-- [`docs/README.md`](docs/README.md) — active documentation index
-- [`docs/semantic-memory-ecosystem.md`](docs/semantic-memory-ecosystem.md) — semantic-memory authority and data-flow map
-- [`semantic-memory/docs/evaluation/scifact/README.md`](semantic-memory/docs/evaluation/scifact/README.md) — official BEIR SciFact retrieval evaluation protocol
-- [`docs/plans/`](docs/plans/) — dated implementation plans; source may have superseded them
-- [`docs/archive/`](docs/archive/) — explicitly historical material
+- Current source, Cargo metadata, generated-contract checks, schema digests, and test results outrank prose and historical receipts.
+- One concern has one authority: support scope lives in `repo_contract.toml`; schema truth lives in `schemas/`; generated mirrors cannot self-promote.
+- Retrieval candidates, caches, indexes, projections, compressed stores, and orchestration state do not become claim, evidence, or policy authority merely by being useful.
+- Recall authority does not imply assertion or action authority. Boundary crossings require explicit typed decisions and receipts.
+- Compatibility claims must name a schema ID and version. Breaking semantic changes require a new major version; unversioned schemas use exact compatibility.
+- Certification claims must name the workspace, feature set, command, and environment. Partial or targeted checks are not whole-repository certification.
+- Generated artifacts are reproducible views. Drift is a gate failure, and hand edits belong in the authoritative input instead.
 
-## Repository rules
+## Documentation and licensing
 
-- SQLite/governed state and verified ledgers are authoritative; sidecars and compressed pools are rebuildable candidate accelerators.
-- Candidate discovery never mutates verification state by itself.
-- Recall authority does not imply assertion or action authority.
-- Benchmark claims must name the corpus, feature set, executable/configuration, and receipt basis.
-- Do not infer current behavior from archived plans, static tool counts, or old release packets.
-
-## License
-
-Individual crates declare their licenses in their manifests and crate-local license files. Do not assume one workspace-wide license where a crate states otherwise.
+Active documentation is indexed from [`docs/README.md`](docs/README.md); historical material lives under `docs/archive/`. Individual packages declare their own licenses in package manifests and license files, so no single license should be inferred for the entire repository.

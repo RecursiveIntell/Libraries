@@ -1,6 +1,6 @@
 {
   "schema_version": "lane_manifest_v1",
-  "generated_by": "V28 remediation pack",
+  "generated_by": "repo_contract.toml",
   "supported_lane": [
     "contract-schema-gen",
     "forge-memory-bridge",

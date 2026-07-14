@@ -3920,6 +3920,7 @@ mod tests {
         )
         .unwrap();
         store.embed_document("already cached").await.unwrap();
+        store.embed_document("more recently cached").await.unwrap();
         let before: Vec<_> = store
             .inner
             .embedding_cache
@@ -3930,7 +3931,7 @@ mod tests {
             .collect();
 
         let error = store
-            .embed_documents_batch(&["new valid", "new invalid"])
+            .embed_documents_batch(&["already cached", "new valid", "new invalid"])
             .await
             .unwrap_err();
         assert_eq!(error.kind(), "non_finite_embedding_value");
@@ -3971,5 +3972,58 @@ mod tests {
             search_cache_key("same query", 5, "usearch:g2", RetrievalEpoch(8));
         assert_ne!(before, after_write);
         assert_ne!(after_write, after_backend_rebuild);
+    }
+
+    #[tokio::test]
+    async fn fact_write_changes_the_live_search_cache_identity() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = MemoryConfig {
+            base_dir: dir.path().to_path_buf(),
+            search: SearchConfig {
+                min_similarity: -1.0,
+                ..SearchConfig::default()
+            },
+            ..MemoryConfig::default()
+        };
+        let store = MemoryStore::open_with_embedder(
+            config,
+            Box::new(PartiallyInvalidBatchEmbedder { dimensions: 768 }),
+        )
+        .unwrap();
+        store
+            .add_fact("cache", "alpha before write", None, None)
+            .await
+            .unwrap();
+        store.search("alpha", Some(5), None, None).await.unwrap();
+        let before = store
+            .inner
+            .search_cache
+            .lock()
+            .unwrap()
+            .iter()
+            .next()
+            .unwrap()
+            .0
+            .clone();
+
+        store
+            .add_fact("cache", "beta after write", None, None)
+            .await
+            .unwrap();
+        store.search("alpha", Some(5), None, None).await.unwrap();
+        let after = store
+            .inner
+            .search_cache
+            .lock()
+            .unwrap()
+            .iter()
+            .next()
+            .unwrap()
+            .0
+            .clone();
+        assert_ne!(
+            before, after,
+            "a corpus write must force a revision-bound miss"
+        );
     }
 }

@@ -743,6 +743,39 @@ mod http_server_tests {
         );
         assert!(result.is_err());
     }
+
+    #[test]
+    fn http_limits_concurrent_connections_to_sixteen_and_returns_503() {
+        let dir = tempfile::tempdir().unwrap();
+        let bridge = open_bridge(dir.path());
+        let (port, _rt) = start_http(bridge);
+
+        let mut held = Vec::new();
+        for _ in 0..16 {
+            let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+            stream
+                .write_all(b"GET /health HTTP/1.1\r\n")
+                .unwrap();
+            held.push(stream);
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        let mut rejected = 0;
+        for _ in 0..4 {
+            let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+            stream
+                .set_read_timeout(Some(std::time::Duration::from_secs(1)))
+                .unwrap();
+            let mut response = String::new();
+            stream.read_to_string(&mut response).unwrap();
+            if response.contains("503 Service Unavailable") {
+                rejected += 1;
+            }
+        }
+
+        assert_eq!(held.len(), 16);
+        assert_eq!(rejected, 4, "all excess connections must receive 503");
+    }
 }
 
 #[cfg(feature = "full")]

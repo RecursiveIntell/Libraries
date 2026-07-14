@@ -3053,7 +3053,6 @@ version = "0.5.10"
 dependencies = [
  "bitemporal-runtime",
  "blake3",
- "boundary-compiler",
  "bytemuck",
  "cc",
  "chrono",
@@ -3318,6 +3317,7 @@ name = "stack-ids"
 version = "0.1.1"
 dependencies = [
  "blake3",
+ "boundary-compiler",
  "chrono",
  "schemars",
  "serde",
