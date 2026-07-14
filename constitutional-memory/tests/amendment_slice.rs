@@ -1,6 +1,4 @@
-use constitutional_memory::{
-    evaluate_amendment, evaluate_archive_compaction, AmendmentProposalV1, CharterBundleV1,
-};
+use constitutional_memory::{evaluate_amendment, evaluate_archive_compaction, AmendmentProposalV1};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -11,7 +9,6 @@ struct AmendmentFixture {
 
 #[derive(Debug, Deserialize)]
 struct ArchiveFixture {
-    charter_bundle: CharterBundleV1,
     preserved_refs: Vec<String>,
     dropped_detail_refs: Vec<String>,
     guaranteed_query_modes: Vec<String>,
@@ -53,7 +50,7 @@ fn happy_amendment_fixture_retains_rollback_lane() {
     let fixture = load_fixture("happy-path.json");
     let archive = load_archive_fixture("archive-compaction.json");
     let (archive_manifest, guarantee, _) = evaluate_archive_compaction(
-        archive.charter_bundle.charter_bundle_id,
+        fixture.amendment_proposal.charter_bundle_id.clone(),
         archive.preserved_refs,
         archive.dropped_detail_refs,
         archive.guaranteed_query_modes,

@@ -8,5 +8,5 @@
   },
   "preserved_refs": ["doctrine:v19/current", "amendment:v19/2"],
   "dropped_detail_refs": ["note:v19/old-1", "note:v19/old-2"],
-  "guaranteed_query_modes": ["by-amendment", "by-rollback-handle"]
+  "guaranteed_query_modes": ["by-amendment", "by-rollback-handle", "by-doctrine-version"]
 }

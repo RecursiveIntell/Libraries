@@ -14,8 +14,8 @@
 use std::time::Instant;
 
 use ai_batch_queue::{
-    BatchItemHandler, BatchItemStatus, BatchQueue, ItemResult, OverwritePolicy, SizeBucket,
-    build_job,
+    build_job, BatchItemHandler, BatchItemStatus, BatchQueue, ItemResult, OverwritePolicy,
+    SizeBucket,
 };
 
 /// A simple handler that "processes" image files by simulating work.
@@ -55,15 +55,23 @@ async fn main() -> anyhow::Result<()> {
     let items = vec![
         ("img-1".into(), "/photos/cat.jpg".into(), SizeBucket::Small),
         ("img-2".into(), "/photos/dog.jpg".into(), SizeBucket::Medium),
-        ("img-3".into(), "/photos/sunset.jpg".into(), SizeBucket::Large),
+        (
+            "img-3".into(),
+            "/photos/sunset.jpg".into(),
+            SizeBucket::Large,
+        ),
         ("img-4".into(), "/photos/park.jpg".into(), SizeBucket::Small),
-        ("img-5".into(), "/photos/river.jpg".into(), SizeBucket::Medium),
+        (
+            "img-5".into(),
+            "/photos/river.jpg".into(),
+            SizeBucket::Medium,
+        ),
     ];
 
     let job = build_job(
-        "llava:13b",            // resource key (model name)
-        "tag",                  // operation
-        OverwritePolicy::Skip,  // skip already-processed items
+        "llava:13b",           // resource key (model name)
+        "tag",                 // operation
+        OverwritePolicy::Skip, // skip already-processed items
         items,
     );
 
@@ -98,7 +106,11 @@ async fn main() -> anyhow::Result<()> {
         // Process
         let start = Instant::now();
         let result = handler
-            .process(&item.data, &job_snapshot.resource_key, &job_snapshot.operation)
+            .process(
+                &item.data,
+                &job_snapshot.resource_key,
+                &job_snapshot.operation,
+            )
             .await;
         let duration_ms = start.elapsed().as_millis() as u64;
 
@@ -111,7 +123,11 @@ async fn main() -> anyhow::Result<()> {
             Err(e) => (BatchItemStatus::Failed, Some(format!("{:#}", e))),
         };
 
-        let status_icon = if status == BatchItemStatus::Completed { "✓" } else { "✗" };
+        let status_icon = if status == BatchItemStatus::Completed {
+            "✓"
+        } else {
+            "✗"
+        };
         queue.update_item(&job_id, &item.id, status, error, Some(duration_ms))?;
         completed += 1;
 
@@ -149,11 +165,7 @@ async fn main() -> anyhow::Result<()> {
 
     // ── Final ETA state ──────────────────────────────────────────────
     println!("\n=== ETA Sample Store ===");
-    for bucket in [
-        SizeBucket::Small,
-        SizeBucket::Medium,
-        SizeBucket::Large,
-    ] {
+    for bucket in [SizeBucket::Small, SizeBucket::Medium, SizeBucket::Large] {
         let count = queue.eta_sample_count("llava:13b", "tag", bucket);
         println!("  {:?}: {} samples", bucket, count);
     }

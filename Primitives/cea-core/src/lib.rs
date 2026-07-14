@@ -34,8 +34,8 @@ pub use error::CeaCoreError;
 pub use graph::{CausalEdge, CausalGraph, CausalNode, CoverageSummary, EdgeStats};
 pub use predict::{predict, predict_with_config, PredictionConfig};
 pub use types::{
-    AnchorKind, CausalPrediction, EditOpKind, EditOpSignature, FileIndex, OpIndex, RiskFlag,
-    ScopeTag,
+    AnchorKind, CausalPrediction, EditOpKind, EditOpSignature, EvidenceKind, FileIndex,
+    ObservationIdentity, OpIndex, RiskFlag, ScopeTag,
 };
 
 #[cfg(test)]

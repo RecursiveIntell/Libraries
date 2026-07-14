@@ -330,7 +330,7 @@ mod tests {
         };
         let records = vec![ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                claim_id: Some(ClaimId::new("claim-1")),
                 claim_version_id: Some(ClaimVersionId::new("claim-v1")),
                 subject_entity_id: EntityId::new("entity-1"),
                 predicate: "supports".into(),

@@ -94,6 +94,8 @@ fn make_attributed_run(triples: Vec<AttributionTriple>) -> AttributedRunResult {
         triples,
         check_result,
         run_hash,
+        observation_key: None,
+        evidence_kind: forge_engine::EvidenceKind::Observational,
     }
 }
 
@@ -803,11 +805,11 @@ fn i4_cea_prediction_returns_neutral_for_unknown_sigs() {
 // I5: cea_zero_shot_requires_explicit_enable
 // ─────────────────────────────────────────────────────────────
 
-/// I5: Default config: enable_zero_shot = false.
-/// Even with zero_shot_eligible = true, runtime must NOT skip checks.
-/// Enable it: runtime skips checks and uses predicted score.
+/// I5: Association-only graph evidence can never authorize check skipping.
+/// Runtime opt-in is necessary but not sufficient: an interventional gate must
+/// independently qualify the evidence before checks may be skipped.
 #[test]
-fn i5_cea_zero_shot_requires_explicit_enable() {
+fn i5_cea_zero_shot_requires_interventional_evidence_gate() {
     // Default config: enable_zero_shot must be false
     let default_config = CeaConfig::default();
     assert!(
@@ -837,7 +839,8 @@ fn i5_cea_zero_shot_requires_explicit_enable() {
         graph.update_edge(cause_idx, effect_idx, 0.9);
     }
 
-    // With coverage_threshold set low enough, prediction should be zero_shot_eligible
+    // Exact high-sample association can produce a useful advisory prediction,
+    // but it is not interventional evidence.
     let config_high_coverage = CeaConfig {
         zero_shot_coverage_threshold: 0.5, // We'll have 100% coverage (1 sig, 1 known)
         risk_confidence_threshold: 0.55,
@@ -845,14 +848,10 @@ fn i5_cea_zero_shot_requires_explicit_enable() {
     };
 
     let prediction = predict(std::slice::from_ref(&sig), &graph, &config_high_coverage);
-    assert!(
-        prediction.zero_shot_eligible,
-        "prediction should be zero_shot_eligible when coverage >= threshold"
-    );
+    assert!(!prediction.zero_shot_eligible);
 
     // ── Simulate runtime behavior ──
-    // Even though zero_shot_eligible is true, runtime must NOT skip checks
-    // unless config.enable_zero_shot is true.
+    // Runtime must not skip checks from association-only evidence.
 
     // Case 1: Default config (enable_zero_shot = false)
     // Runtime should NOT use zero-shot even if prediction says eligible
@@ -863,7 +862,7 @@ fn i5_cea_zero_shot_requires_explicit_enable() {
         "with enable_zero_shot=false, must NOT skip checks even if zero_shot_eligible"
     );
 
-    // Case 2: Explicitly enabled
+    // Case 2: Explicit opt-in alone is still insufficient.
     let enabled_config = CeaConfig {
         enable_zero_shot: true,
         risk_confidence_threshold: 0.55,
@@ -875,8 +874,8 @@ fn i5_cea_zero_shot_requires_explicit_enable() {
     let should_skip_checks_enabled =
         enabled_config.enable_zero_shot && prediction_enabled.zero_shot_eligible;
     assert!(
-        should_skip_checks_enabled,
-        "with enable_zero_shot=true and eligible, should skip checks"
+        !should_skip_checks_enabled,
+        "opt-in must not bypass the independent interventional evidence gate"
     );
 
     // Verify the prediction has a non-trivial correctness score when known

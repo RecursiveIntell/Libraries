@@ -17,7 +17,7 @@ use semantic_memory_forge::{
     ExportClaim, ExportEnvelopeV1, ExportEnvelopeV2, ExportEnvelopeV3, ExportRecord,
     EXPORT_ENVELOPE_V1_SCHEMA,
 };
-use stack_ids::{EntityId, EnvelopeId, ScopeKey};
+use stack_ids::{ClaimId, EntityId, EnvelopeId, ScopeKey};
 use tempfile::TempDir;
 
 fn open_store(base_dir: &std::path::Path) -> MemoryStore {
@@ -130,7 +130,7 @@ fn permutation(choice: u8) -> [usize; 3] {
 fn base_records() -> Vec<ExportRecord> {
     vec![
         ExportRecord::Claim(ExportClaim {
-            claim_id: None,
+            claim_id: Some(ClaimId::new("claim-order-1")),
             claim_version_id: Some("claim-version-order-1".into()),
             subject_entity_id: EntityId::new("entity-order-1"),
             predicate: "supports".into(),
@@ -145,7 +145,7 @@ fn base_records() -> Vec<ExportRecord> {
             metadata: None,
         }),
         ExportRecord::Claim(ExportClaim {
-            claim_id: None,
+            claim_id: Some(ClaimId::new("claim-order-2")),
             claim_version_id: Some("claim-version-order-2".into()),
             subject_entity_id: EntityId::new("entity-order-2"),
             predicate: "supports".into(),
@@ -160,7 +160,7 @@ fn base_records() -> Vec<ExportRecord> {
             metadata: None,
         }),
         ExportRecord::Claim(ExportClaim {
-            claim_id: None,
+            claim_id: Some(ClaimId::new("claim-order-3")),
             claim_version_id: Some("claim-version-order-3".into()),
             subject_entity_id: EntityId::new("entity-order-3"),
             predicate: "supports".into(),

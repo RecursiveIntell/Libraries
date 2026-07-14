@@ -58,7 +58,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let output = simple_call.invoke(&ollama_ctx, input).await?;
 
-    println!("\n  Response: {}\n", output.value.as_str().unwrap_or("(non-string output)"));
+    println!(
+        "\n  Response: {}\n",
+        output.value.as_str().unwrap_or("(non-string output)")
+    );
     if let Some(ref model_name) = output.model {
         println!("  Model: {}", model_name);
     }
@@ -155,13 +158,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("  Backend: {}", openai_ctx.backend.name());
         println!("  Base URL: {}", openai_ctx.base_url);
 
-        let openai_call = LlmCall::new(
-            "openai-summarize",
-            "Summarize in one sentence: {input}",
-        )
-        .with_model(model)
-        .with_config(LlmConfig::default().with_max_tokens(256))
-        .expecting_text();
+        let openai_call = LlmCall::new("openai-summarize", "Summarize in one sentence: {input}")
+            .with_model(model)
+            .with_config(LlmConfig::default().with_max_tokens(256))
+            .expecting_text();
 
         let openai_input = json!("The Rust ownership system prevents memory safety bugs at compile time without garbage collection");
         println!("\n  Prompt input: {}\n", openai_input);
@@ -170,7 +170,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         println!(
             "\n  Response: {}\n",
-            openai_output.value.as_str().unwrap_or("(non-string output)")
+            openai_output
+                .value
+                .as_str()
+                .unwrap_or("(non-string output)")
         );
         if let Some(ref model_name) = openai_output.model {
             println!("  Model: {}", model_name);

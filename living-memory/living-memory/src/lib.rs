@@ -72,9 +72,11 @@ pub use lab::{
 // CEA types
 pub use cea::{
     attribute_effects, build_edit_op_signature, compute_run_hash, load_graph, load_graph_with_tx,
-    predict, update_graph, update_graph_with_tx, AttributedRunResult, AttributionTriple,
-    CausalEdge, CausalGraph, CausalNode, CausalPrediction, CoverageSummary, EditOpSignature,
-    RiskFlag, UpdateResult,
+    predict, update_graph, update_graph_with_tx, AblationClassification, AblationReceipt,
+    AttributedRunResult, AttributionTriple, CausalAttributionEngine, CausalEdge,
+    CausalExperimentResult, CausalGraph, CausalNode, CausalPrediction, CausalUpdateReceipt,
+    CoverageSummary, EditOpSignature, EvidenceKind, PredictionDisposition, PredictionGate,
+    PredictionGateReason, PredictionReceipt, PredictionSummary, RiskFlag, UpdateResult,
 };
 
 // Baseline types
@@ -86,9 +88,9 @@ pub use baseline::{
 // Experiment types
 pub use experiment::{
     AnalysisRecord, CacheMode, EffectKind, EvidenceRecord, ExecutionRecord, ExperimentConfig,
-    ExperimentDiff, ExperimentExportRecord, ExperimentMode, ExperimentResult,
-    PairedExperimentRunner, RunIdentity, StatisticsPolicy, TrialRecord, TrialSide,
-    TypedLocatedEffect,
+    ExperimentDiff, ExperimentExportRecord, ExperimentMode, ExperimentResult, NetworkMode,
+    PairedExperimentRunner, PairedTrialResult, RunIdentity, StatisticsPolicy, TrialRecord,
+    TrialSide, TypedLocatedEffect,
 };
 
 // Scoring types

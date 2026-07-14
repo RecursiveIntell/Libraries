@@ -1,5 +1,6 @@
 //! Tests for experiment execution, typed diffs, hypothesis updates, and scoring policies.
 
+use async_trait::async_trait;
 use forge_engine::baseline::*;
 use forge_engine::experiment::*;
 use forge_engine::lab::evaluate::ScoreVector;
@@ -9,6 +10,251 @@ use forge_engine::{
     CausalHypothesis, CheckKind, CheckResult, ClaimStrength, EffectSignature,
     ExperimentEvidenceBundle, ForgeLimits, HypothesisStatus, LocatedEffect, ParsedCheckOutput,
 };
+use std::path::Path;
+use std::sync::{Arc, Mutex};
+
+struct TinyAdapter;
+impl forge_engine::ProjectAdapter for TinyAdapter {
+    fn detect(_: &Path) -> bool
+    where
+        Self: Sized,
+    {
+        true
+    }
+    fn name(&self) -> &str {
+        "tiny"
+    }
+    fn check_commands(&self, _: &forge_engine::ForgeConfig) -> Vec<forge_engine::CheckCommand> {
+        vec![forge_engine::CheckCommand {
+            kind: CheckKind::Test,
+            program: "tiny".into(),
+            args: vec![],
+            env: vec![],
+        }]
+    }
+    fn parse_check_output(
+        &self,
+        cmd: &forge_engine::CheckCommand,
+        _: &str,
+        _: &str,
+        exit_code: i32,
+    ) -> ParsedCheckOutput {
+        let effects = if exit_code == 0 {
+            vec![]
+        } else {
+            vec![LocatedEffect {
+                file: Some("code.rs".into()),
+                line: Some(2),
+                col: None,
+                message: "new_failure".into(),
+                sig: EffectSignature {
+                    check_kind: "test".into(),
+                    outcome: "fail".into(),
+                    severity: "error".into(),
+                    message_class: "new_failure".into(),
+                    line_offset_from_edit: None,
+                },
+            }]
+        };
+        ParsedCheckOutput {
+            check_kind: cmd.kind.clone(),
+            exit_code,
+            effects,
+            raw_stdout: String::new(),
+            raw_stderr: String::new(),
+        }
+    }
+}
+
+struct TinyBackend {
+    prepared: Arc<Mutex<Vec<std::path::PathBuf>>>,
+}
+#[async_trait]
+impl forge_engine::ExecutionBackend for TinyBackend {
+    fn kind(&self) -> forge_engine::ExecutionBackendKind {
+        forge_engine::ExecutionBackendKind::Host
+    }
+    async fn prepare_workspace(
+        &self,
+        fixture: &Path,
+    ) -> forge_engine::ForgeResult<forge_engine::Workspace> {
+        let workspace = sandbox_workspace::prepare_workspace(fixture)?;
+        self.prepared
+            .lock()
+            .unwrap()
+            .push(workspace.host_path.clone());
+        Ok(workspace)
+    }
+    async fn run_command(
+        &self,
+        workspace: &Path,
+        _: &str,
+        _: &[&str],
+        _: &[(&str, &str)],
+        _: u64,
+    ) -> forge_engine::ForgeResult<forge_engine::CommandOutput> {
+        let fail = std::fs::read_to_string(workspace.join("code.rs"))
+            .unwrap()
+            .contains("CAUSE");
+        Ok(forge_engine::CommandOutput {
+            stdout: String::new(),
+            stderr: String::new(),
+            exit_code: if fail { 1 } else { 0 },
+            duration_ms: 1,
+        })
+    }
+    async fn collect_logs(
+        &self,
+        _: &forge_engine::CommandOutput,
+        _: &forge_engine::CommandOutput,
+        _: &forge_engine::CommandOutput,
+    ) -> forge_engine::ForgeResult<forge_engine::LogBundle> {
+        Err(forge_engine::ForgeError::Other(
+            "unused by paired runner".into(),
+        ))
+    }
+}
+
+fn tiny_patch() -> forge_engine::StructuredPatch {
+    forge_engine::StructuredPatch {
+        patch_id: uuid::Uuid::new_v4(),
+        summary: "cause".into(),
+        notes: vec![],
+        edits: vec![forge_engine::FileEdit {
+            path: "code.rs".into(),
+            mode: None,
+            ops: vec![forge_engine::EditOp::Insert {
+                anchor: forge_engine::Anchor::AfterLine {
+                    line: 1,
+                    context_before: vec!["fn main() {}".into()],
+                    context_after: vec![],
+                },
+                lines: vec!["// CAUSE".into()],
+            }],
+        }],
+    }
+}
+
+fn two_op_patch() -> forge_engine::StructuredPatch {
+    let mut patch = tiny_patch();
+    patch.edits[0].ops.push(forge_engine::EditOp::Insert {
+        anchor: forge_engine::Anchor::BeforeLine {
+            line: 1,
+            context_before: vec![],
+            context_after: vec!["fn main() {}".into()],
+        },
+        lines: vec!["// harmless B".into()],
+    });
+    patch
+}
+
+#[tokio::test]
+async fn singleton_ablation_uses_exact_effect_sets_for_two_operations() {
+    let fixture = tempfile::tempdir().unwrap();
+    std::fs::write(fixture.path().join("code.rs"), "fn main() {}\n").unwrap();
+    let backend = TinyBackend {
+        prepared: Arc::new(Mutex::new(Vec::new())),
+    };
+    let adapter = TinyAdapter;
+    let config = Box::leak(Box::new(forge_engine::ForgeConfig::default()));
+    let store_dir = tempfile::tempdir().unwrap();
+    let store = forge_engine::ForgeStore::open(&store_dir.path().join("forge.db")).unwrap();
+    let engine =
+        forge_engine::CausalAttributionEngine::new(&store, &backend, &adapter, config, "v1");
+    let receipts = engine
+        .run_singleton_ablations(fixture.path(), &two_op_patch())
+        .await
+        .unwrap();
+    assert_eq!(receipts.len(), 2);
+    assert_eq!(
+        receipts[0].classification,
+        forge_engine::AblationClassification::Supported
+    );
+    assert_eq!(
+        receipts[1].classification,
+        forge_engine::AblationClassification::Contradicted
+    );
+    assert_eq!(
+        receipts[0].evidence_kind,
+        forge_engine::EvidenceKind::Ablation
+    );
+    assert!(receipts[0].comparable);
+    assert_eq!(receipts[0].removed_effect_count, 1);
+    assert_eq!(receipts[1].persisting_effect_count, 1);
+    assert!(!receipts[0].full_patch_digest.is_empty());
+    assert!(receipts[0].ablated_patch_digest.is_some());
+    assert!(!receipts[0].baseline_digest.is_empty());
+    assert!(!receipts[0].config_digest.is_empty());
+    assert!(receipts[0].verify_integrity());
+    let mut tampered = receipts[0].clone();
+    tampered.full_patch_digest.push('x');
+    assert!(!tampered.verify_integrity());
+}
+
+#[tokio::test]
+async fn repeated_pairs_are_fresh_and_keep_all_arm_records() {
+    let fixture = tempfile::tempdir().unwrap();
+    std::fs::write(fixture.path().join("code.rs"), "fn main() {}\n").unwrap();
+    let prepared = Arc::new(Mutex::new(Vec::new()));
+    let backend = TinyBackend {
+        prepared: prepared.clone(),
+    };
+    let adapter = TinyAdapter;
+    let config = forge_engine::ForgeConfig::default();
+    let runner = PairedExperimentRunner::new(&backend, &adapter, &config);
+    let result = runner
+        .run(
+            fixture.path(),
+            &tiny_patch(),
+            &ExperimentConfig {
+                mode: ExperimentMode::RepeatedPaired,
+                trial_count: 3,
+                ..ExperimentConfig::default()
+            },
+        )
+        .await
+        .unwrap();
+    assert_eq!(result.trials.len(), 6);
+    assert_eq!(result.pairs.len(), 3);
+    let workspaces = prepared.lock().unwrap();
+    assert_eq!(workspaces.len(), 6);
+    assert_eq!(
+        workspaces
+            .iter()
+            .collect::<std::collections::BTreeSet<_>>()
+            .len(),
+        6
+    );
+    assert!(result
+        .pairs
+        .iter()
+        .all(|pair| !pair.diff.statistically_meaningful));
+}
+
+#[tokio::test]
+async fn zero_repeated_trials_is_rejected() {
+    let fixture = tempfile::tempdir().unwrap();
+    std::fs::write(fixture.path().join("code.rs"), "fn main() {}\n").unwrap();
+    let backend = TinyBackend {
+        prepared: Arc::new(Mutex::new(Vec::new())),
+    };
+    let adapter = TinyAdapter;
+    let config = forge_engine::ForgeConfig::default();
+    let runner = PairedExperimentRunner::new(&backend, &adapter, &config);
+    let error = runner
+        .run(
+            fixture.path(),
+            &tiny_patch(),
+            &ExperimentConfig {
+                mode: ExperimentMode::RepeatedPaired,
+                trial_count: 0,
+                ..ExperimentConfig::default()
+            },
+        )
+        .await
+        .unwrap_err();
+    assert!(error.to_string().contains("trial_count"));
+}
 
 fn make_check_result(fmt: bool, clippy: bool, test: bool) -> CheckResult {
     CheckResult {

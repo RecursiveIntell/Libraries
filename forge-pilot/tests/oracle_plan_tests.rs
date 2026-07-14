@@ -102,10 +102,61 @@ async fn oracle_plan_executes_and_roundtrips_through_canonical_v3_lane() {
         &candidate.plan,
         &permit,
         &config,
+        &resources.forge_store,
     )
     .await
     .unwrap();
     assert_eq!(action.family, ActionFamily::Oracle);
+
+    let execution = action.oracle_execution.as_ref().unwrap();
+    let observed_binary = execution
+        .assessment
+        .as_ref()
+        .map(|assessment| assessment.supported)
+        .or_else(|| {
+            execution
+                .delta_parity
+                .as_ref()
+                .map(|assessment| assessment.parity_match)
+        })
+        .or_else(|| {
+            execution
+                .temporal_replay
+                .as_ref()
+                .map(|assessment| assessment.matched_expected_hash)
+        });
+    let (expected_support, expected_contradictions) = if let Some(supported) = observed_binary {
+        (u64::from(supported), u64::from(!supported))
+    } else {
+        match &execution.refutation.as_ref().unwrap().outcome {
+            kernel_oracles::OracleRefutationOutcome::FlipWitness { .. } => (1, 0),
+            kernel_oracles::OracleRefutationOutcome::NoFlipFound { .. } => (0, 1),
+            kernel_oracles::OracleRefutationOutcome::NotApplicable { .. } => (0, 0),
+        }
+    };
+    let bundle = action.bundle.as_ref().unwrap();
+    let expected_correctness = if expected_support > 0 && expected_contradictions == 0 {
+        1.0
+    } else {
+        0.0
+    };
+    assert_eq!(bundle.scores.correctness, expected_correctness);
+    assert_eq!(bundle.scores.novelty, 0.0);
+    assert_eq!(bundle.scores.stability, 0.0);
+    assert_eq!(bundle.scores.weighted_total, expected_correctness);
+    assert!(bundle.pair_comparability.is_none());
+    assert_eq!(bundle.hypotheses[0].support_count, expected_support);
+    assert_eq!(
+        bundle.hypotheses[0].contradiction_count,
+        expected_contradictions
+    );
+    assert_eq!(
+        bundle.hypotheses[0].confidence,
+        forge_engine::local_hypothesis_support_confidence(
+            expected_support,
+            expected_contradictions,
+        )
+    );
 
     let roundtrip = canonical_roundtrip(
         action.bundle.as_ref().unwrap(),

@@ -478,7 +478,7 @@ mod tests {
         ProjectionVisibilityClass, EXPORT_ENVELOPE_V3_SCHEMA,
     };
     use stack_ids::{
-        AssertionGroupId, ClaimFamilyId, ConstraintId, EntityId, EnvelopeId, OperatorId,
+        AssertionGroupId, ClaimFamilyId, ClaimId, ConstraintId, EntityId, EnvelopeId, OperatorId,
         RegionDigestId, RegionId, ScopeKey,
     };
 
@@ -487,7 +487,7 @@ mod tests {
         let records = vec![
             ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
-                    claim_id: None,
+                    claim_id: Some(ClaimId::new(format!("claim-{claim_suffix}-1"))),
                     claim_version_id: Some(format!("claim-version-{claim_suffix}-1").into()),
                     subject_entity_id: EntityId::new(format!("entity-{claim_suffix}-1")),
                     predicate: "supports".into(),
@@ -526,7 +526,7 @@ mod tests {
             },
             ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
-                    claim_id: None,
+                    claim_id: Some(ClaimId::new(format!("claim-{claim_suffix}-2"))),
                     claim_version_id: Some(format!("claim-version-{claim_suffix}-2").into()),
                     subject_entity_id: EntityId::new(format!("entity-{claim_suffix}-2")),
                     predicate: "supports".into(),
@@ -695,7 +695,7 @@ mod tests {
             .iter()
             .map(|claim_id| ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
-                    claim_id: None,
+                    claim_id: Some(ClaimId::new(claim_id.clone())),
                     claim_version_id: Some(claim_id.clone().into()),
                     subject_entity_id: EntityId::new(format!("entity-{claim_id}")),
                     predicate: "supports".into(),

@@ -341,7 +341,7 @@ fn doctor_reports_provider_capability_matrix_without_cloud_or_native_overclaims(
     assert!(!openai_compatible
         .states
         .contains(&CapabilityStateV1::Healthy));
-    assert!(openai_compatible
+    assert!(!openai_compatible
         .states
         .contains(&CapabilityStateV1::ExecutableThisTurn));
     assert!(openai_compatible
@@ -571,10 +571,10 @@ fn package_examples_manifest_covers_public_profiles_honestly() {
     }));
     assert!(manifest.examples.iter().any(|example| {
         example.path == "examples/aidens.ollama.toml"
-            && example.status == ReleaseSurfaceStateV1::Partial
+            && example.status == ReleaseSurfaceStateV1::Degraded
             && example
                 .reason_codes
-                .contains(&"provider-local-service-required:ollama".into())
+                .contains(&"provider-live-probe-required:ollama".into())
     }));
 }
 
@@ -1115,7 +1115,7 @@ api_key = "configured"
 }
 
 #[test]
-fn provider_check_reports_ollama_chat_with_native_tool_loop() {
+fn provider_check_requires_a_live_probe_before_claiming_ollama_execution() {
     let root = temp_root();
     std::fs::create_dir_all(&root).unwrap();
     let path = root.join("aidens.toml");
@@ -1136,22 +1136,20 @@ model = "llama3"
     let report: serde_json::Value =
         serde_json::from_str(&provider_check(Some(path.display().to_string())).unwrap()).unwrap();
 
-    assert_eq!(report["executable"], true);
-    assert_eq!(report["route"], "ollama-chat");
-    assert_eq!(report["native_tool_loop"], true);
+    assert_eq!(report["executable"], false);
+    assert_eq!(report["route"], "unavailable");
+    assert_eq!(report["native_tool_loop"], false);
     assert_eq!(report["structured_output"], false);
     assert_eq!(report["support_label"], "partial-local-chat");
     assert_eq!(report["support_tier"], "partial");
     assert!(report["reason_codes"]
         .as_array()
         .unwrap()
-        .contains(&serde_json::json!("ollama-local-service-required")));
+        .contains(&serde_json::json!("ollama-live-probe-required")));
     assert!(report["reason_codes"]
         .as_array()
         .unwrap()
-        .contains(&serde_json::json!(
-            "ollama-native-tool-loop-via-function-calling"
-        )));
+        .contains(&serde_json::json!("ollama-native-tool-loop-unproven")));
     assert_ne!(report["route"], "native-ollama");
     let _ = std::fs::remove_dir_all(&root);
 }

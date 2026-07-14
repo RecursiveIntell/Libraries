@@ -370,24 +370,32 @@ impl GraphSnapshot {
         let edges = graph
             .graph
             .edge_references()
-            .map(|edge| {
+            .map(|edge| -> Result<EdgeRecord, CeaCoreError> {
                 let source_id = graph
                     .graph
                     .node_weight(edge.source())
                     .map(node_identifier)
-                    .expect("petgraph edge references must point to a valid source node");
+                    .ok_or_else(|| {
+                        CeaCoreError::GraphCorruption(
+                            "edge references a missing source node while saving graph".to_string(),
+                        )
+                    })?;
                 let target_id = graph
                     .graph
                     .node_weight(edge.target())
                     .map(node_identifier)
-                    .expect("petgraph edge references must point to a valid target node");
-                EdgeRecord {
+                    .ok_or_else(|| {
+                        CeaCoreError::GraphCorruption(
+                            "edge references a missing target node while saving graph".to_string(),
+                        )
+                    })?;
+                Ok(EdgeRecord {
                     source_id,
                     target_id,
                     edge: edge.weight().clone(),
-                }
+                })
             })
-            .collect::<Vec<_>>();
+            .collect::<Result<Vec<_>, _>>()?;
 
         Ok(Self {
             version: GRAPH_SCHEMA_VERSION,

@@ -359,6 +359,20 @@ impl cea_store::CeaStoreWriteTx for SqliteCeaWriteTx<'_, '_> {
         Ok(count > 0)
     }
 
+    fn apply_graph_decay(
+        &self,
+        version_id: &str,
+        factor: f64,
+    ) -> Result<(), cea_store::CeaStoreError> {
+        self.tx
+            .execute(
+                "UPDATE cea_edges SET weight = weight * ?1 WHERE version_id = ?2",
+                rusqlite::params![factor.clamp(0.0, 1.0), version_id],
+            )
+            .map_err(|error| cea_store::CeaStoreError::Backend(error.to_string()))?;
+        Ok(())
+    }
+
     fn upsert_node(
         &self,
         node_id: &str,

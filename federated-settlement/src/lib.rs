@@ -26,7 +26,120 @@ pub const SHARED_REPLAY_SLICE_V1_SCHEMA: &str = "shared_replay_slice_v1";
 pub const SHARED_DIVERGENCE_REPORT_V1_SCHEMA: &str = "shared_divergence_report_v1";
 pub const TREATY_SUSPENSION_V1_SCHEMA: &str = "treaty_suspension_v1";
 
-// Canonical v25 citations embed ApplicabilityContextId, ProfileSetId,
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+pub enum SettlementValidationError {
+    #[error("invalid artifact state: {0}")]
+    InvalidState(&'static str),
+    #[error("invalid artifact linkage: {0}")]
+    InvalidLinkage(&'static str),
+    #[error("duplicate runtime identity: {0}")]
+    DuplicateRuntime(String),
+}
+
+pub type SettlementValidationResult = Result<(), SettlementValidationError>;
+
+/// Validates treaty, identity, equivalence, and case linkage before settlement.
+/// This remains a pure artifact check; it does not create global authority.
+pub fn validate_settlement_inputs(
+    treaty: &TreatyBundleV1,
+    identities: &RuntimeIdentitySetV1,
+    equivalence: &CrossRuntimeEquivalenceBundleV1,
+    case: &SettlementCaseV1,
+) -> SettlementValidationResult {
+    if treaty.schema_version != TREATY_BUNDLE_V1_SCHEMA
+        || identities.schema_version != RUNTIME_IDENTITY_SET_V1_SCHEMA
+        || equivalence.schema_version != CROSS_RUNTIME_EQUIVALENCE_BUNDLE_V1_SCHEMA
+        || case.schema_version != SETTLEMENT_CASE_V1_SCHEMA
+    {
+        return Err(SettlementValidationError::InvalidState(
+            "unsupported settlement artifact schema version",
+        ));
+    }
+    if treaty.treaty_bundle_id != identities.treaty_bundle_id
+        || treaty.treaty_bundle_id != equivalence.treaty_bundle_id
+        || treaty.treaty_bundle_id != case.treaty_bundle_id
+    {
+        return Err(SettlementValidationError::InvalidLinkage(
+            "treaty linkage is inconsistent across settlement artifacts",
+        ));
+    }
+    if identities.runtime_identity_set_id != equivalence.runtime_identity_set_id {
+        return Err(SettlementValidationError::InvalidLinkage(
+            "equivalence bundle does not refer to the runtime identity set",
+        ));
+    }
+    if equivalence.equivalence_bundle_id != case.equivalence_bundle_id {
+        return Err(SettlementValidationError::InvalidLinkage(
+            "settlement case does not refer to the equivalence bundle",
+        ));
+    }
+    let mut party_names = std::collections::BTreeSet::new();
+    for party in &treaty.parties {
+        if party.runtime_name.trim().is_empty()
+            || party.local_authority.trim().is_empty()
+            || party.admission_lane.trim().is_empty()
+        {
+            return Err(SettlementValidationError::InvalidState(
+                "treaty party contains an empty admission field",
+            ));
+        }
+        if !party_names.insert(party.runtime_name.clone()) {
+            return Err(SettlementValidationError::DuplicateRuntime(
+                party.runtime_name.clone(),
+            ));
+        }
+    }
+    let mut identity_names = std::collections::BTreeSet::new();
+    for identity in &identities.identities {
+        if !party_names.contains(&identity.runtime_name)
+            || identity.local_subject_ref.trim().is_empty()
+            || identity.shared_subject_ref.trim().is_empty()
+            || identity.evidence_ref.trim().is_empty()
+        {
+            return Err(SettlementValidationError::InvalidLinkage(
+                "runtime identity is not admitted by the treaty or lacks evidence",
+            ));
+        }
+        if !identity_names.insert(identity.runtime_name.clone()) {
+            return Err(SettlementValidationError::DuplicateRuntime(
+                identity.runtime_name.clone(),
+            ));
+        }
+    }
+    if identity_names != party_names {
+        return Err(SettlementValidationError::InvalidLinkage(
+            "treaty parties and runtime identities do not match",
+        ));
+    }
+    for evidence in &equivalence.evidence {
+        if evidence.local_claim_ref.trim().is_empty()
+            || evidence.shared_claim_ref.trim().is_empty()
+            || evidence.evidence_refs.is_empty()
+        {
+            return Err(SettlementValidationError::InvalidState(
+                "equivalence evidence is incomplete",
+            ));
+        }
+    }
+    let mut replay_names = std::collections::BTreeSet::new();
+    for requirement in &case.replay_requirements {
+        if !identity_names.contains(&requirement.runtime_name)
+            || !replay_names.insert(requirement.runtime_name.clone())
+        {
+            return Err(SettlementValidationError::InvalidLinkage(
+                "replay requirements must name each admitted runtime at most once",
+            ));
+        }
+    }
+    for dissent in &case.local_dissent {
+        if !identity_names.contains(&dissent.runtime_name) {
+            return Err(SettlementValidationError::InvalidLinkage(
+                "local dissent names a runtime outside the admitted identity set",
+            ));
+        }
+    }
+    Ok(())
+}
 // CompositionReceiptId, EffectiveConstitutionId, and CompiledObligationSetId.
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

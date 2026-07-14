@@ -796,6 +796,24 @@ mock_response = "configured response"
     }
 
     #[tokio::test]
+    async fn from_plan_accepts_a_constructible_ollama_boundary_without_a_liveness_claim() {
+        let plan = AiDENsProfile::ChatOnly
+            .expand("configured-ollama-agent")
+            .unwrap();
+        let mut provider = ProviderSpecV1::new("ollama");
+        provider.model = Some("fixture-model".into());
+        provider.base_url = Some("http://127.0.0.1:9".into());
+
+        let app = AiDENsApp::from_plan(plan)
+            .provider_spec(provider)
+            .build()
+            .await
+            .expect("a constructible boundary must be usable even without a live probe receipt");
+
+        assert_eq!(app.provider_route().route_label, "unavailable");
+    }
+
+    #[tokio::test]
     async fn from_plan_honors_bound_provider_and_plan_tools() {
         let plan = AiDENsProfile::CodingAgent
             .expand("from-plan-agent")

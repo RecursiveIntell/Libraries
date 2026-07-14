@@ -84,8 +84,13 @@ pub fn conservative_reliability(alpha: f64, beta: f64) -> f64 {
     lower.clamp(0.0, 1.0)
 }
 
-pub fn effective_sample_size(total_samples: f64) -> f64 {
-    (total_samples - 2.0).max(0.0)
+/// Return the observed number of independent sample units.
+///
+/// `EdgeStats` keeps the Beta prior in `alpha` and `beta`; callers of this
+/// function pass observations only. Subtracting the two prior pseudo-counts
+/// here would therefore erase the first two real observations.
+pub fn effective_sample_size(observed_sample_units: f64) -> f64 {
+    observed_sample_units.max(0.0)
 }
 
 pub fn sample_factor(effective_sample_size: f64) -> f64 {

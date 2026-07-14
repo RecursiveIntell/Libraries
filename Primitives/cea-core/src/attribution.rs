@@ -6,9 +6,13 @@ use typed_patch::{Anchor, EditOp, LineAttributionMap, StructuredPatch};
 
 use crate::error::CeaCoreError;
 use crate::scope::infer_scope;
-use crate::types::{AnchorKind, EditOpKind, EditOpSignature, FileIndex, OpIndex};
+use crate::types::{
+    AnchorKind, EditOpKind, EditOpSignature, EvidenceKind, FileIndex, ObservationIdentity, OpIndex,
+};
 
 const RUN_HASH_VERSION: &[u8] = b"cea-core:run-hash:v2";
+const IDENTIFIED_RUN_HASH_VERSION: &[u8] = b"cea-core:run-hash:v3";
+const OBSERVATION_KEY_VERSION: &[u8] = b"cea-core:observation-key:v1";
 const CAUSE_HASH_VERSION: &[u8] = b"cea-core:cause:v2";
 const EFFECT_HASH_VERSION: &[u8] = b"cea-core:effect:v2";
 
@@ -29,6 +33,14 @@ pub struct AttributedRunResult {
     pub triples: Vec<AttributionTriple>,
     pub check_result: CheckResult,
     pub run_hash: String,
+    /// Stable idempotency key derived only from execution identity.
+    ///
+    /// The run hash still binds observed content for integrity. Replays with
+    /// conflicting content but the same observation identity must not update
+    /// learning twice.
+    pub observation_key: Option<String>,
+    /// Typed provenance retained so storage can enforce the telemetry boundary.
+    pub evidence_kind: EvidenceKind,
 }
 
 impl AttributedRunResult {
@@ -37,9 +49,36 @@ impl AttributedRunResult {
             triples,
             check_result,
             run_hash: String::new(),
+            observation_key: None,
+            evidence_kind: EvidenceKind::Observational,
         };
         run.run_hash = compute_run_hash(&run);
         run
+    }
+
+    /// Construct a run whose hash is bound to its independently executed
+    /// observation identity and evidence grade.
+    pub fn with_observation(
+        triples: Vec<AttributionTriple>,
+        check_result: CheckResult,
+        evidence_kind: EvidenceKind,
+        observation_identity: ObservationIdentity,
+    ) -> Self {
+        let mut run = Self {
+            triples,
+            check_result,
+            run_hash: String::new(),
+            observation_key: Some(compute_observation_key(&observation_identity)),
+            evidence_kind,
+        };
+        run.run_hash =
+            compute_run_hash_with_observation(&run, evidence_kind, &observation_identity);
+        run
+    }
+
+    /// Return the stable key used by storage-level replay protection.
+    pub fn idempotency_key(&self) -> &str {
+        self.observation_key.as_deref().unwrap_or(&self.run_hash)
     }
 }
 
@@ -340,8 +379,50 @@ pub fn attribute_effects_with_config(
 }
 
 pub fn compute_run_hash(result: &AttributedRunResult) -> String {
+    compute_run_hash_inner(result, None)
+}
+
+fn compute_run_hash_with_observation(
+    result: &AttributedRunResult,
+    evidence_kind: EvidenceKind,
+    identity: &ObservationIdentity,
+) -> String {
+    compute_run_hash_inner(result, Some((evidence_kind, identity)))
+}
+
+fn compute_observation_key(identity: &ObservationIdentity) -> String {
     let mut hasher = blake3::Hasher::new();
-    hasher.update(RUN_HASH_VERSION);
+    hasher.update(OBSERVATION_KEY_VERSION);
+    update_optional_hash_field(&mut hasher, Some(&identity.observation_id));
+    update_optional_hash_field(&mut hasher, Some(&identity.run_id));
+    update_optional_hash_field(&mut hasher, Some(&identity.trial_id));
+    update_optional_hash_field(&mut hasher, identity.patch_digest.as_deref());
+    update_optional_hash_field(&mut hasher, identity.base_digest.as_deref());
+    update_optional_hash_field(&mut hasher, identity.config_digest.as_deref());
+    hasher.finalize().to_hex().to_string()
+}
+
+fn compute_run_hash_inner(
+    result: &AttributedRunResult,
+    observation: Option<(EvidenceKind, &ObservationIdentity)>,
+) -> String {
+    let mut hasher = blake3::Hasher::new();
+    let identified = observation.is_some();
+    hasher.update(if identified {
+        IDENTIFIED_RUN_HASH_VERSION
+    } else {
+        RUN_HASH_VERSION
+    });
+
+    if let Some((evidence_kind, identity)) = observation {
+        hasher.update(evidence_kind_label(evidence_kind).as_bytes());
+        update_optional_hash_field(&mut hasher, Some(&identity.observation_id));
+        update_optional_hash_field(&mut hasher, Some(&identity.run_id));
+        update_optional_hash_field(&mut hasher, Some(&identity.trial_id));
+        update_optional_hash_field(&mut hasher, identity.patch_digest.as_deref());
+        update_optional_hash_field(&mut hasher, identity.base_digest.as_deref());
+        update_optional_hash_field(&mut hasher, identity.config_digest.as_deref());
+    }
 
     for category in check_categories(&result.check_result) {
         hasher.update(category.check_kind.as_bytes());
@@ -370,6 +451,29 @@ pub fn compute_run_hash(result: &AttributedRunResult) -> String {
     }
 
     hasher.finalize().to_hex().to_string()
+}
+
+fn evidence_kind_label(kind: EvidenceKind) -> &'static str {
+    match kind {
+        EvidenceKind::Observational => "observational",
+        EvidenceKind::PairedInterventional => "paired_interventional",
+        EvidenceKind::Ablation => "ablation",
+        EvidenceKind::Counterfactual => "counterfactual",
+        EvidenceKind::SyntheticTelemetry => "synthetic_telemetry",
+    }
+}
+
+fn update_optional_hash_field(hasher: &mut blake3::Hasher, value: Option<&str>) {
+    match value {
+        Some(value) => {
+            hasher.update(&[1]);
+            hasher.update(&(value.len() as u64).to_le_bytes());
+            hasher.update(value.as_bytes());
+        }
+        None => {
+            hasher.update(&[0]);
+        }
+    }
 }
 
 pub fn attribution_score(distance: i32, severity: &str, decay_factor: f64) -> f64 {

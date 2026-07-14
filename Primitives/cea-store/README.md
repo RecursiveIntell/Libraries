@@ -1,22 +1,26 @@
 # cea-store
 
-## Role
-Storage contract and row types for causal edit attribution graphs
+Transactional persistence contract for the CEA **observational association** graph.
 
-## Snapshot position
-- Path: `Primitives/cea-store`
-- Position: **Excluded**
-- Plane: **Supporting crate**
-- Snapshot status: **Critical dependency**
+## Contract
 
-## What this crate is for
-This README exists to satisfy manifest truth and to give contributors a truthful front door for the current library stack. The active finish-line control plane lives at the repository root in `PACK_README.md`, `MASTER_ISSUE_MATRIX.md`, `MASTER_ISSUE_CHANGE_MATRIX.md`, `AGENTS.md`, and the docs index at `docs/README.md`.
+`cea-store` persists nodes, normalized attribution weights, Beta edge statistics,
+negative observations, version-scoped decay, and an idempotent run log. A graph
+update and its run-log entry commit or roll back together.
 
-## Non-negotiables
-- Keep this crate aligned with the canonical authority map.
-- Do not let local convenience APIs become de facto truth surfaces.
-- Add or update tests when crossing a semantic seam.
-- Prefer explicit versioned contracts over drift-by-example.
+Identified observations deduplicate by `AttributedRunResult::idempotency_key()`;
+legacy content-only runs fall back to their content hash. Replaying the same
+observation identity with changed content cannot inflate graph evidence.
 
-## Current proof posture
-This snapshot review was static. Treat this crate as **not build-certified from this pack alone** until the relevant Rust gates are re-run in a toolchain-backed environment.
+## Evidence boundary
+
+Only `EvidenceKind::Observational` can enter the edge store. Paired,
+ablation, counterfactual, and synthetic-telemetry evidence remain in typed
+receipts owned by the execution layer. This prevents a storage round trip from
+silently erasing evidence grade.
+
+## Verification
+
+```bash
+cargo test -p cea-store --all-targets
+```

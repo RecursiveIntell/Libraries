@@ -146,12 +146,12 @@ User request + repo context + evidence + traces
 
 **predictor.rs**
 - `CausalPrediction` computation from graph + patch
-- Coverage fraction, risk flag extraction, zero-shot eligibility
+- Coverage fraction, risk flags, neutral unknown blending, and a fail-closed execution gate
 - Correctness prediction formula (CEA.md §3.3)
 
 **store.rs**
 - Persist/load CEA data (cea_nodes, cea_edges, cea_run_log)
-- Idempotent update (run_hash deduplication)
+- Idempotent update (`observation_key`; legacy content-hash fallback)
 
 ---
 
@@ -179,7 +179,7 @@ User request + repo context + evidence + traces
 | Patch caps        | `patch/validate.rs`              |
 | Attempt order     | `runtime/stabilizer.rs`          |
 | No network sealed | `exec/container.rs`              |
-| CEA idempotent    | `cea/store.rs` (run_hash check)  |
+| CEA idempotent    | `cea-store` (`idempotency_key` check) |
 | CEA no raw source | `cea/instrumentation.rs`         |
 
 ## External boundaries

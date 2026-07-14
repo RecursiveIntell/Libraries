@@ -430,7 +430,7 @@ fn mixed_inferential_batch() -> ProjectionImportBatchV3 {
     let records = vec![
         ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                claim_id: Some(ClaimId::new("claim-mixed-1")),
                 claim_version_id: Some("claim-version-mixed-1".into()),
                 subject_entity_id: EntityId::new("entity-mixed-1"),
                 predicate: "supports".into(),

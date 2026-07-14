@@ -4,18 +4,20 @@
 
 ## Overview
 
-**Causal Edit Attribution (CEA)** is a subsystem that treats code-generation evaluation as a
-*causal inference problem* rather than a black-box scoring problem.
+**Causal Edit Attribution (CEA)** is a local experimental subsystem for learning
+edit/effect associations and testing causal hypotheses with matched execution and
+bounded interventions.
 
-Traditional eval: `patch → run checks → score`
-CEA eval:         `patch → instrument run → (cause, effect) pairs → causal graph update → score + attribution`
+```text
+patch -> fresh matched baseline/patched checks -> differential effects
+      -> observational proximity hypotheses + patch-level receipt
+      -> bounded edit ablations -> intervention receipts
+```
 
-Over many runs, the causal graph becomes a codebase-specific predictive model. When the graph
-has sufficient coverage, Forge can produce `CausalPrediction` — a predicted score with
-confidence bounds — from patch topology alone, before running any checks.
-
-This is the proprietary core of forge-engine. The graph lives in `forge.db` and is
-specific to the codebase it was trained on. It is not transferable without the training runs.
+The graph in `forge.db` stores observational associations only. It can produce an
+advisory `CausalPrediction` for prioritization, but graph coverage is not causal proof
+and never authorizes check skipping. Patch-level and edit-ablation evidence remain
+typed, integrity-bound receipts whose claims are limited to the captured workload.
 
 ---
 
@@ -45,13 +47,15 @@ A structural fingerprint of an observable check outcome:
 - `line_offset_from_edit`: signed integer — how many lines from the closest edit op
   did this effect appear? (requires mapping check output lines back to source positions)
 
-### 1.3 CausalEdge
-A directed edge in the causal graph: `EditOpSignature → EffectSignature`
-- `weight`: f64 — accumulated causal score (see §2.3)
-- `count`: u64 — number of times this (cause, effect) pair was observed
-- `last_seen`: timestamp
-- `version_id`: which BasisVersion was active when this edge was observed
-- `confidence`: f64 — `count / (count + prior_weight)` — Bayesian-style confidence
+### 1.3 Association edge
+A directed observational edge: `EditOpSignature -> EffectSignature`.
+- `weight`: accumulated normalized attribution contribution;
+- `count`: observed positive/negative sample count;
+- `alpha` / `beta`: persisted Beta evidence;
+- `version_id`: scoped model version; and
+- `confidence`: conservative reliability times sample-sufficiency and coverage factors.
+
+An edge localizes a candidate relationship; it is not an intervention result.
 
 ### 1.4 CausalGraph
 A directed graph stored in `forge.db` (serialized via petgraph + JSON, or as edge rows).
@@ -65,7 +69,7 @@ Output of `predict(patch)`:
 - `confidence`: f64 — overall confidence based on graph coverage for this patch's signatures
 - `coverage_fraction`: f64 — fraction of edit op signatures in this patch that have graph edges
 - `risk_flags`: Vec<RiskFlag> — high-risk (cause, effect) pairs detected with confidence > threshold
-- `zero_shot_eligible`: bool — true if coverage_fraction >= configured threshold (default 0.80)
+- `zero_shot_eligible`: currently always false for association-only graph evidence
 
 ### 1.6 RiskFlag
 - `op_signature`: EditOpSignature — the edit op that is risky
@@ -78,17 +82,16 @@ Output of `predict(patch)`:
 
 ### 2.1 Instrumented run flow
 ```
-instrument_run(patch, backend):
-  1. snapshot repo state (hash every source file)
-  2. apply patch → record which EditOp touched which line ranges in which files
-  3. run checks with output capture (stdout/stderr per check)
-  4. parse check outputs → extract EffectSignatures with source positions
-  5. for each EffectSignature with a source position:
-       find closest EditOp by line distance → form (EditOpSignature, EffectSignature, distance)
-  6. filter: only attribute effects within MAX_LINE_DISTANCE (default: 50 lines)
-     for effects with no nearby edit, attribute to nearest by file
-  7. collect all (EditOpSig, EffectSig, distance) triples → AttributedRunResult
-  8. return AttributedRunResult (does NOT update graph — caller decides)
+run_and_observe(fixture, patch, config):
+  1. prepare independent baseline and patched workspaces
+  2. capture baseline provenance for both arms and verify comparability
+  3. run the same checker plan on both arms
+  4. apply the structured patch only to the patched arm and retain its line map
+  5. remove baseline-stable effects from the patched result
+  6. normalize proximity contributions across candidate edits
+  7. persist only observational triples transactionally
+  8. emit a patch-level paired-intervention receipt plus advisory predictions
+  9. optionally remove one edit at a time in fresh workspaces and emit ablation receipts
 ```
 
 ### 2.2 Output parsing (Rust/Cargo)
@@ -106,29 +109,25 @@ instrument_run(patch, backend):
 - Map test name → source file + line via `cargo test -- --format=json` if available
 - Effect: `{ check_kind: test, outcome: fail, message_class: <test_fn_name> }`
 
-### 2.3 Edge weight update formula
-When a (cause, effect) pair is observed:
-```
-new_weight = old_weight + attribution_score(distance, outcome_severity)
+### 2.3 Edge updates
+Candidate scores combine distance, severity, and line-map confidence, then use a
+bounded softmax so all causes for one effect sum to `1.0`. `cea-store` persists
+those normalized weights exactly; it does not recompute a second scoring formula.
+When a known cause recurs without a previously seen effect, the edge receives a
+negative observation. Optional historical decay is version-scoped.
 
-attribution_score(distance, severity):
-  base = match severity {
-    error    => 1.0,
-    warning  => 0.5,
-    test_fail => 0.8,
-    pass      => 0.1,  // positive attribution — edit didn't break this
-  }
-  decay = 1.0 / (1.0 + distance / 10.0)  // closer edits get more credit
-  base * decay
-```
+Stable baseline passes/failures and fixed baseline failures do not become proximity
+edges. Improvements remain patch-level local outcome evidence.
 
-For **pass** effects (the check passed for this edit's file/scope), create positive
-attribution edges. These are equally important: they represent what the graph *knows*
-is safe.
+### 2.4 Integrity and idempotency
+Identified runs have two digests:
 
-### 2.4 Idempotency
-Each `AttributedRunResult` has a content hash. `update_graph` is a no-op if the hash
-already exists in `cea_run_log`. This ensures re-runs don't double-count.
+- `run_hash` binds observation identity plus observed content for integrity; and
+- `observation_key` binds stable execution identity for idempotency.
+
+`update_graph` records the idempotency key in `cea_run_log`. Replaying the same
+identity with altered content cannot update learning twice, while independent trial
+IDs contribute independently. Legacy unidentified runs fall back to their content hash.
 
 ---
 
@@ -158,12 +157,15 @@ where:
 
 Unknown signatures contribute 0.5 (neutral prior) weighted by `(1 - coverage_fraction)`.
 
-### 3.4 Zero-shot eligibility
-`zero_shot_eligible = coverage_fraction >= cea.zero_shot_coverage_threshold`
-Default threshold: 0.80.
+### 3.4 Prediction gate
+Coverage is necessary for a useful advisory prediction but is never sufficient to
+replace verification. The engine returns `RunChecks` when any precondition fails,
+including disabled opt-in, insufficient independent runs, low/partial coverage,
+fuzzy-only evidence, scope/config mismatch, missing intervention evidence, risk
+flags, or unknown effects.
 
-When eligible, the runtime can skip checks and use `predicted_correctness` as the score.
-This must be **explicitly enabled** in config: `cea.enable_zero_shot = false` by default.
+The association graph deliberately reports `zero_shot_eligible = false`; therefore
+the current runtime does not skip checks even if `cea.enable_zero_shot` is set.
 
 ---
 
@@ -198,7 +200,7 @@ CREATE TABLE cea_edges (
 ### Table: cea_run_log
 ```sql
 CREATE TABLE cea_run_log (
-  run_hash     TEXT PRIMARY KEY,  -- blake3 of AttributedRunResult content
+  run_hash     TEXT PRIMARY KEY,  -- observation idempotency key; legacy rows may use content hash
   eval_id      TEXT NOT NULL,
   edges_added  INTEGER NOT NULL,
   edges_updated INTEGER NOT NULL,
@@ -225,13 +227,13 @@ struct ArchiveCellCea {
   dominant_cause_sigs: Vec<EditOpSignature>,  // top 3 cause signatures in this cell
   causal_fingerprint: String,                  // blake3 of sorted dominant_cause_sigs
   mean_correctness_confidence: f64,
-  zero_shot_eligible: bool,
+  advisory_prediction_only: bool,
 }
 ```
 
-Archive cells in the same bin should ideally have *different* causal fingerprints — this
-provides causal diversity on top of strategy diversity. The MAP-Elites emitter can use
-causal fingerprint distance as an additional diversity dimension.
+Archive cells in the same bin may use different observational association fingerprints as
+a diversity heuristic. Fingerprint distance does not establish causal diversity and cannot
+change the mandatory verification gate.
 
 ---
 
@@ -261,8 +263,8 @@ When a candidate is promoted to BasisVersion:
 - For line_offset_from_edit: after patch apply, maintain a line-mapping table
   (original line → patched line) to translate check output positions back to edit positions.
 - Start with pass/fail at file level if position mapping is unavailable; improve incrementally.
-- CEA is additive — early runs with sparse graphs are valid; predictions simply have low
-  confidence and are not zero-shot eligible.
+- Sparse graphs are valid but advisory. Unknown signatures blend toward a neutral prior,
+  fuzzy matching is off by default, and the prediction gate remains fail-closed.
 
 ---
 

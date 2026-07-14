@@ -717,7 +717,7 @@ fn example_reason_codes(cfg: &AiDENsConfigV1, profile_id: &str) -> Vec<String> {
         reasons.push("provider-not-executable-in-local-smoke".into());
     }
     if cfg.provider.kind == "ollama" {
-        reasons.push("provider-local-service-required:ollama".into());
+        reasons.push("provider-live-probe-required:ollama".into());
         reasons.push("provider-surface-partial:ollama-chat".into());
     }
     if cfg.memory_mode == MemoryModeV1::Required && cfg.memory.store_root.is_none() {

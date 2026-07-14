@@ -1,5 +1,6 @@
 use constitutional_memory::{
-    evaluate_amendment, evaluate_archive_compaction, AmendmentProposalV1, CharterBundleV1,
+    evaluate_amendment, evaluate_archive_compaction, validate_amendment_artifacts,
+    AmendmentProposalV1, CharterBundleV1, ConstitutionalValidationError,
 };
 use serde::Deserialize;
 
@@ -57,7 +58,7 @@ fn amendment_approval_requires_archive_outputs_and_semantic_diff() {
     let amendment = load_amendment_fixture("semantic-diff-linked-amendment.json");
     let archive = load_archive_fixture("archive-compaction.json");
     let (archive_manifest, guarantee, _) = evaluate_archive_compaction(
-        archive.charter_bundle.charter_bundle_id,
+        amendment.amendment_proposal.charter_bundle_id.clone(),
         archive.preserved_refs,
         archive.dropped_detail_refs,
         archive.guaranteed_query_modes,
@@ -73,4 +74,30 @@ fn amendment_approval_requires_archive_outputs_and_semantic_diff() {
     assert!(decision.semantic_diff_id.is_some());
     assert!(decision.archive_manifest_id.is_some());
     assert!(!decision.advisory_only);
+}
+
+#[test]
+fn amendment_validation_rejects_archive_charter_mismatch() {
+    let amendment = load_amendment_fixture("semantic-diff-linked-amendment.json");
+    let archive = load_archive_fixture("archive-compaction.json");
+    let (mut archive_manifest, guarantee, _) = evaluate_archive_compaction(
+        archive.charter_bundle.charter_bundle_id,
+        archive.preserved_refs,
+        archive.dropped_detail_refs,
+        archive.guaranteed_query_modes,
+    );
+    archive_manifest.charter_bundle_id = stack_ids::CharterBundleId::new("wrong-charter");
+
+    let error = validate_amendment_artifacts(
+        &amendment.amendment_proposal,
+        Some(&archive_manifest),
+        Some(&guarantee),
+    )
+    .expect_err("mismatched charter linkage must be rejected");
+    assert_eq!(
+        error,
+        ConstitutionalValidationError::InvalidLinkage(
+            "archive manifest charter does not match amendment proposal"
+        )
+    );
 }

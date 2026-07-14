@@ -36,7 +36,7 @@ use semantic_memory_forge::{
 };
 use stack_ids::{
     AssertionGroupId, ClaimFamilyId, ClaimId, ClaimVersionId, ContentDigest, EntityId, EnvelopeId,
-    EpisodeId, TraceCtx,
+    EpisodeId, RelationVersionId, TraceCtx,
 };
 use tempfile::TempDir;
 
@@ -121,7 +121,7 @@ fn make_claim_envelope_with_scope(
 ) -> ExportEnvelopeV1 {
     let records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new(claim_id)),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new(subject_entity_id),
         predicate: "has_type".into(),
         object_anchor: serde_json::json!("function"),
@@ -227,7 +227,7 @@ fn make_claim_with_evidence_envelope(ns: &str) -> ExportEnvelopeV1 {
     let records = vec![
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-ev")),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             subject_entity_id: EntityId::new("ent-ev"),
             predicate: "is_tested".into(),
             object_anchor: serde_json::json!(true),
@@ -242,7 +242,7 @@ fn make_claim_with_evidence_envelope(ns: &str) -> ExportEnvelopeV1 {
         }),
         ExportRecord::EvidenceRef(ExportEvidenceRef {
             claim_id: ClaimId::new("claim-ev"),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             fetch_handle: "forge://evidence/run-42/artifact-7".into(),
             source_authority: "forge".into(),
             metadata: None,
@@ -385,7 +385,7 @@ fn make_causal_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
     let records = vec![
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-causal")),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             subject_entity_id: EntityId::new("ent-causal"),
             predicate: "changes_outcome".into(),
             object_anchor: serde_json::json!("verified"),
@@ -413,7 +413,10 @@ fn make_causal_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
             })),
         }),
         ExportRecord::Relation(semantic_memory_forge::ExportRelation {
-            relation_version_id: None,
+            relation_version_id: Some(RelationVersionId::new(format!(
+                "relation-fixture-{}",
+                line!()
+            ))),
             subject_entity_id: EntityId::new("ent-causal"),
             predicate: "causes".into(),
             object_anchor: serde_json::json!({
@@ -433,7 +436,7 @@ fn make_causal_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
         }),
         ExportRecord::EvidenceRef(ExportEvidenceRef {
             claim_id: ClaimId::new("claim-causal"),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             fetch_handle: "forge://evidence/run:causal-query/artifact-7".into(),
             source_authority: "forge".into(),
             metadata: Some(serde_json::json!({
@@ -461,7 +464,7 @@ fn make_verification_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
     let records = vec![
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-verification")),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             subject_entity_id: EntityId::new("ent-verification"),
             predicate: "verification_bundle_has_trials".into(),
             object_anchor: serde_json::json!("verification trial evidence"),
@@ -478,7 +481,10 @@ fn make_verification_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
             })),
         }),
         ExportRecord::Relation(semantic_memory_forge::ExportRelation {
-            relation_version_id: None,
+            relation_version_id: Some(RelationVersionId::new(format!(
+                "relation-fixture-{}",
+                line!()
+            ))),
             subject_entity_id: EntityId::new("ent-verification"),
             predicate: "verification_trial_baseline".into(),
             object_anchor: serde_json::json!({
@@ -502,7 +508,10 @@ fn make_verification_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
             })),
         }),
         ExportRecord::Relation(semantic_memory_forge::ExportRelation {
-            relation_version_id: None,
+            relation_version_id: Some(RelationVersionId::new(format!(
+                "relation-fixture-{}",
+                line!()
+            ))),
             subject_entity_id: EntityId::new("ent-verification"),
             predicate: "verification_trial_patched".into(),
             object_anchor: serde_json::json!({
@@ -526,7 +535,10 @@ fn make_verification_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
             })),
         }),
         ExportRecord::Relation(semantic_memory_forge::ExportRelation {
-            relation_version_id: None,
+            relation_version_id: Some(RelationVersionId::new(format!(
+                "relation-fixture-{}",
+                line!()
+            ))),
             subject_entity_id: EntityId::new("ent-verification"),
             predicate: "verification_refutation_placebo".into(),
             object_anchor: serde_json::json!({
@@ -550,7 +562,10 @@ fn make_verification_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
             })),
         }),
         ExportRecord::Relation(semantic_memory_forge::ExportRelation {
-            relation_version_id: None,
+            relation_version_id: Some(RelationVersionId::new(format!(
+                "relation-fixture-{}",
+                line!()
+            ))),
             subject_entity_id: EntityId::new("ent-verification"),
             predicate: "verification_refutation_dummy_outcome".into(),
             object_anchor: serde_json::json!({
@@ -574,7 +589,10 @@ fn make_verification_projection_envelope(ns: &str) -> ExportEnvelopeV1 {
             })),
         }),
         ExportRecord::Relation(semantic_memory_forge::ExportRelation {
-            relation_version_id: None,
+            relation_version_id: Some(RelationVersionId::new(format!(
+                "relation-fixture-{}",
+                line!()
+            ))),
             subject_entity_id: EntityId::new("ent-verification"),
             predicate: "verification_refutation_subsample_stability".into(),
             object_anchor: serde_json::json!({
@@ -1080,7 +1098,7 @@ async fn query_temporal_respects_recorded_at_cutoff_on_imported_projection_rows(
 
     let first_records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new("claim-legacy")),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new("ent-temporal-recorded"),
         predicate: "status".into(),
         object_anchor: serde_json::json!("archived"),
@@ -1113,7 +1131,7 @@ async fn query_temporal_respects_recorded_at_cutoff_on_imported_projection_rows(
 
     let second_records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new("claim-current")),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new("ent-temporal-recorded"),
         predicate: "status".into(),
         object_anchor: serde_json::json!("current"),
@@ -1224,7 +1242,7 @@ async fn query_temporal_explicitly_filters_hybrid_route_by_recorded_at() {
 
     let first_records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new("claim-hybrid-baseline")),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new("ent-temporal-hybrid"),
         predicate: "status".into(),
         object_anchor: serde_json::json!("baseline"),
@@ -1257,7 +1275,7 @@ async fn query_temporal_explicitly_filters_hybrid_route_by_recorded_at() {
 
     let second_records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new("claim-hybrid-current")),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new("ent-temporal-hybrid"),
         predicate: "status".into(),
         object_anchor: serde_json::json!("current"),
@@ -1370,7 +1388,7 @@ async fn query_temporal_explicitly_filters_entity_route_by_recorded_at() {
 
     let first_records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new("claim-entity-route-baseline")),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new("ent-temporal-entity-route"),
         predicate: "status".into(),
         object_anchor: serde_json::json!("baseline"),
@@ -1403,7 +1421,7 @@ async fn query_temporal_explicitly_filters_entity_route_by_recorded_at() {
 
     let second_records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new("claim-entity-route-current")),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new("ent-temporal-entity-route"),
         predicate: "status".into(),
         object_anchor: serde_json::json!("current"),
@@ -1518,7 +1536,7 @@ async fn query_temporal_explicitly_filters_mixed_route_by_recorded_at() {
 
     let first_records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new("claim-mixed-baseline")),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new("ent-temporal-mixed-route"),
         predicate: "status".into(),
         object_anchor: serde_json::json!("baseline"),
@@ -1551,7 +1569,7 @@ async fn query_temporal_explicitly_filters_mixed_route_by_recorded_at() {
 
     let second_records = vec![ExportRecord::Claim(ExportClaim {
         claim_id: Some(ClaimId::new("claim-mixed-current")),
-        claim_version_id: None,
+        claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
         subject_entity_id: EntityId::new("ent-temporal-mixed-route"),
         predicate: "status".into(),
         object_anchor: serde_json::json!("current"),
@@ -1672,7 +1690,7 @@ async fn temporal_query_answers_from_imported_projection_rows() {
     let records = vec![
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-old")),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             subject_entity_id: EntityId::new("ent-temporal"),
             predicate: "status".into(),
             object_anchor: serde_json::json!("archived"),
@@ -1687,7 +1705,7 @@ async fn temporal_query_answers_from_imported_projection_rows() {
         }),
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-current")),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             subject_entity_id: EntityId::new("ent-temporal"),
             predicate: "status".into(),
             object_anchor: serde_json::json!("current"),
@@ -2433,7 +2451,7 @@ async fn kr105_bounded_entity_candidate_expansion_uses_imported_aliases() {
     let records = vec![
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-alias")),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             subject_entity_id: EntityId::new("ent-alias"),
             predicate: "owns".into(),
             object_anchor: serde_json::json!("pipeline"),
@@ -2512,7 +2530,7 @@ async fn e2e001_canonical_path_with_all_record_types() {
     let records = vec![
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-e2e")),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             subject_entity_id: EntityId::new("ent-e2e"),
             predicate: "has_type".into(),
             object_anchor: serde_json::json!("function"),
@@ -2526,7 +2544,10 @@ async fn e2e001_canonical_path_with_all_record_types() {
             metadata: None,
         }),
         ExportRecord::Relation(ExportRelation {
-            relation_version_id: None,
+            relation_version_id: Some(RelationVersionId::new(format!(
+                "relation-fixture-{}",
+                line!()
+            ))),
             subject_entity_id: EntityId::new("ent-e2e"),
             predicate: "depends_on".into(),
             object_anchor: serde_json::json!("ent-dep"),
@@ -2541,7 +2562,7 @@ async fn e2e001_canonical_path_with_all_record_types() {
         }),
         ExportRecord::EvidenceRef(ExportEvidenceRef {
             claim_id: ClaimId::new("claim-e2e"),
-            claim_version_id: None,
+            claim_version_id: Some(ClaimVersionId::new(format!("fixture-version-{}", line!()))),
             fetch_handle: "forge://evidence/run-99/artifact-1".into(),
             source_authority: "forge".into(),
             metadata: None,

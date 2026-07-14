@@ -74,8 +74,8 @@ correctness_gate = 0.95
 
 [cea]
 enabled = true
-enable_zero_shot = false                  # MUST be false by default; requires explicit opt-in
-zero_shot_coverage_threshold = 0.80       # fraction of edit op sigs that must have graph edges
+enable_zero_shot = false                  # legacy opt-in; never sufficient to skip checks
+zero_shot_coverage_threshold = 0.80       # advisory exact-coverage precondition for the gate
 risk_confidence_threshold = 0.60          # confidence above which a (cause, effect) is a risk flag
 max_line_distance_for_attribution = 50    # max lines between edit op and attributed effect
 attribution_decay_factor = 10.0           # distance decay: 1/(1 + dist/factor)
@@ -95,10 +95,10 @@ allow_semantic_memory_write = false       # must also be gated by Cargo feature 
 - `sealed_local`: container-only with `--network=none`; model router blocks remote
 
 ### `cea.enable_zero_shot`
-Disabled by default. When enabled, `ForgeRuntime::run_attempts()` will skip live checks
-for patches where `CausalPrediction.zero_shot_eligible == true` and use the predicted
-score instead. This is an advanced feature — enable only after the CEA graph has accumulated
-at least `cea.min_runs_before_prediction` runs.
+Disabled by default and not sufficient to skip checks. Association-only predictions set
+`zero_shot_eligible = false`. The engine's prediction gate also requires independent runs,
+full exact coverage, matching scope/configuration, no risk/unknown effects, and separate
+intervention-qualified evidence. The current runtime therefore always executes live checks.
 
 ### `danger.allow_semantic_memory_write`
 Cannot be enabled at runtime if the crate was compiled without the `danger-sm-write` feature.

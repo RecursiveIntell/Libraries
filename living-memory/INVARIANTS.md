@@ -121,9 +121,13 @@ Not allowed:
 **Enforcement point:** `invariants::validate_cea_no_raw_source(node)` called in
 `cea::instrumentation::CausalInstrument::extract_signatures()`
 
-## I10 — CEA graph updates are idempotent
-The same `AttributedRunResult` (identified by its blake3 content hash) must not update
-the graph more than once. This prevents double-counting on retries.
+## I10 — CEA graph updates are idempotent and observational-only
+An identified execution has a content-bound `run_hash` and an identity-bound
+`observation_key`. The same execution identity must not update the graph more than once,
+even if a retry presents conflicting content. Distinct trial identities remain independent.
+Only `EvidenceKind::Observational` may enter the association edge store; paired,
+ablation, counterfactual, and synthetic telemetry evidence remain receipt-only.
 
-**Enforcement point:** `cea::store::CeaStore::update_graph()` checks `cea_run_log` first.
-If `run_hash` already present → return `Ok(UpdateResult::AlreadyProcessed)`, no graph change.
+**Enforcement point:** `cea_store::update_graph()` checks the idempotency key in
+`cea_run_log` before mutation and rejects non-observational evidence before opening a write
+transaction.

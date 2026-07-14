@@ -1,18 +1,69 @@
 # forge-engine
 
-Causal edit attribution and structured patch evaluation engine.
+Local execution and evidence engine for structured code-patch experiments.
 
-## Usage
+## Responsibilities
 
-```rust
-use forge_engine::{ForgeConfig, ForgeError, MindState};
+`forge-engine` validates and applies `StructuredPatch` values, executes Cargo
+checks in fresh workspaces, compares matched baseline/patched arms, persists
+operational evidence, and coordinates causal-edit attribution (CEA). It does
+not own semantic-memory truth or promote local results into general claims.
+
+## CEA execution model
+
+The public `CausalAttributionEngine` supports:
+
+- advisory prediction over an **observational** edit/effect association graph;
+- fresh matched baseline/patched pairs, including repeated pairs;
+- a differential check view that excludes baseline-stable failures;
+- bounded singleton edit ablations on fresh workspaces;
+- deterministic, integrity-bound update and ablation receipts; and
+- an explicit prediction gate that defaults to `RunChecks`.
+
+Evidence grades are intentionally separate:
+
+1. `Observational` — proximity/co-occurrence used for localization and advisory prediction;
+2. `PairedInterventional` — a local patch-level effect under a captured workload;
+3. `Ablation` / `Counterfactual` — edit-removal or replacement evidence;
+4. `SyntheticTelemetry` — forbidden from the code-association graph.
+
+A receipt proves what ran and binds its inputs/results. It does not prove
+causality outside the captured workload. Individual edit responsibility is not
+promoted from proximity alone.
+
+## Persistence and identity
+
+The canonical operational database is `forge.db`. Observational graph updates
+are transactional. Identified runs carry both:
+
+- a content-bound `run_hash` for integrity; and
+- an identity-only `observation_key` for replay idempotency.
+
+Interventional evidence remains receipt-bearing and does not enter the
+observational edge store. Raw source is excluded from CEA node signatures and
+receipts.
+
+## Prediction safety
+
+Association-only graph data cannot authorize check skipping. Fuzzy matching is
+off by default and remains advisory when explicitly enabled. Unknown signatures
+blend toward a neutral prior. The current runtime gate remains fail-closed even
+when `enable_zero_shot` is set.
+
+## Local evidence
+
+`examples/cea_replay_eval.rs` exercises deterministic prediction cases and a
+tiny two-operation Cargo ablation fixture. The latest local report is
+`../docs/benchmarks/CEA_ENGINE_LOCAL_2026-07-13.md`. It records zero risk recall
+on the small labeled fixture set, so prediction remains advisory.
+
+## Verification
+
+```bash
+cargo test -p cea-core -p cea-store -p cea-sqlite --all-targets
+cargo test -p forge-engine --all-targets
+cargo run -p forge-engine --example cea_replay_eval --   --output target/cea-eval/receipt.json
 ```
-
-## What this crate is for
-
-`forge-engine` owns the execution-heavy lane: compile mindstate, validate and
-apply structured patches, run checks, score candidate outcomes, persist
-operational evidence, and update causal edit-attribution state.
 
 ## Authority boundary
 
@@ -20,20 +71,4 @@ operational evidence, and update causal edit-attribution state.
 - `forge-memory-bridge` owns transformation only.
 - `semantic-memory` owns durable projected/queryable truth.
 - `forge-engine` owns operational verification work on top of those crates.
-
-## Ecosystem
-
-**Depends on:**
-- `stack-ids` -- identity primitives (`EnvelopeId`, `ClaimVersionId`, `AttemptId`, `TrialId`, etc.)
-- `semantic-memory`, `semantic-memory-forge`, `forge-memory-bridge`
-- `llm-tool-runtime`
-
-**Depended on by:**
-- `forge-pilot`
-- `kernel-conformance` (dev-dependency)
-
-## stack-ids integration
-
-Uses `EnvelopeId`, `ClaimVersionId`, `RelationVersionId`, `AttemptId`,
-`TrialId`, and `ContentDigest` from `stack-ids` for export provenance,
-causal attribution, and content addressing.
+- `forge-pilot` consumes receipts and must not invent scores, comparability, or support.

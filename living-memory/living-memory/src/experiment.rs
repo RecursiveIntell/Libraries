@@ -25,7 +25,7 @@ pub enum ExperimentMode {
 // ── Typed effect kinds ──
 
 /// Classification of an observed effect from experiment comparison.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectKind {
     CompileFailure,
@@ -75,7 +75,15 @@ pub struct TrialRecord {
     /// Whether caches were warm.
     pub cache_mode: CacheMode,
     /// Whether network was available.
+    ///
+    /// Retained for deserializing legacy records. New code must use
+    /// `network_mode`; a `false` legacy value means only "not known available".
+    #[serde(default)]
     pub network_available: bool,
+    /// Explicit network observation. Unknown is deliberately not treated as
+    /// unavailable, since that would manufacture a comparability claim.
+    #[serde(default)]
+    pub network_mode: NetworkMode,
     /// Whether timing data is admissible.
     pub timing_admissible: bool,
 }
@@ -94,6 +102,16 @@ pub enum TrialSide {
 pub enum CacheMode {
     Cold,
     Warm,
+    Unknown,
+}
+
+/// The observed availability of network access for a trial.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum NetworkMode {
+    Available,
+    Unavailable,
+    #[default]
     Unknown,
 }
 
@@ -251,18 +269,14 @@ fn diff_effects(
     regressions: &mut u32,
     improvements: &mut u32,
 ) {
-    let baseline_classes: std::collections::BTreeSet<_> = baseline_effects
-        .iter()
-        .map(|e| &e.sig.message_class)
-        .collect();
-    let patched_classes: std::collections::BTreeSet<_> = patched_effects
-        .iter()
-        .map(|e| &e.sig.message_class)
-        .collect();
+    let baseline_identities: std::collections::BTreeSet<_> =
+        baseline_effects.iter().map(effect_identity).collect();
+    let patched_identities: std::collections::BTreeSet<_> =
+        patched_effects.iter().map(effect_identity).collect();
 
     // New in patched (regressions)
     for eff in patched_effects {
-        if !baseline_classes.contains(&eff.sig.message_class) {
+        if !baseline_identities.contains(&effect_identity(eff)) {
             *regressions += 1;
             out.push(TypedLocatedEffect {
                 kind: EffectKind::WarningRegression,
@@ -277,7 +291,7 @@ fn diff_effects(
 
     // Gone from patched (improvements)
     for eff in baseline_effects {
-        if !patched_classes.contains(&eff.sig.message_class) {
+        if !patched_identities.contains(&effect_identity(eff)) {
             *improvements += 1;
             out.push(TypedLocatedEffect {
                 kind: EffectKind::WarningImprovement,
@@ -289,6 +303,28 @@ fn diff_effects(
             });
         }
     }
+}
+
+/// A checker effect identity intentionally includes location.  Message class
+/// alone is an observational grouping, not enough to call an effect stable.
+fn effect_identity(
+    effect: &crate::exec::backend::LocatedEffect,
+) -> (
+    String,
+    String,
+    String,
+    String,
+    Option<std::path::PathBuf>,
+    Option<u32>,
+) {
+    (
+        effect.sig.check_kind.clone(),
+        effect.sig.outcome.clone(),
+        effect.sig.severity.clone(),
+        effect.sig.message_class.clone(),
+        effect.file.clone(),
+        effect.line,
+    )
 }
 
 // ── Statistics policy ──
@@ -413,6 +449,23 @@ pub struct ExperimentResult {
     pub diff: ExperimentDiff,
     pub trials: Vec<TrialRecord>,
     pub completed_at: String,
+    /// Each independently prepared matched pair.  The legacy top-level fields
+    /// remain the first pair for compatibility.
+    pub pairs: Vec<PairedTrialResult>,
+}
+
+/// Complete record for one fresh baseline/patched pair.
+#[derive(Debug, Clone)]
+pub struct PairedTrialResult {
+    pub pair_index: u32,
+    pub baseline_descriptor: BaselineDescriptor,
+    pub patched_descriptor: BaselineDescriptor,
+    pub baseline_result: CheckResult,
+    pub patched_result: CheckResult,
+    pub line_map: crate::runtime::patch::apply::LineAttributionMap,
+    pub diff: ExperimentDiff,
+    pub comparable: bool,
+    pub comparability_reasons: Vec<String>,
 }
 
 /// Real experiment runner that executes baseline and patched checks.
@@ -454,34 +507,54 @@ impl<'a> PairedExperimentRunner<'a> {
 
         tracing::info!(run_id = %run_id, mode = ?experiment_config.mode, "starting experiment");
 
-        // Prepare workspace
-        let workspace = self.backend.prepare_workspace(fixture_path).await?;
-        let ws_path = &workspace.host_path;
-
-        // Capture baseline provenance
-        let baseline_descriptor = crate::baseline::capture_baseline_provenance(ws_path).await?;
-
-        let timeout = self.config.container.command_timeout_secs;
+        let pair_count = match experiment_config.mode {
+            ExperimentMode::RepeatedPaired => experiment_config.trial_count,
+            _ => 1,
+        };
+        if pair_count == 0 {
+            return Err(ForgeError::Config(
+                "trial_count must be at least one".to_string(),
+            ));
+        }
         let mut all_trials = Vec::new();
-
-        // Run baseline checks
-        tracing::info!(run_id = %run_id, "running baseline checks");
-        let baseline_result = self
-            .run_checks(ws_path, timeout, TrialSide::Baseline, &mut all_trials)
-            .await?;
-
-        // Apply patch to workspace
-        tracing::info!(run_id = %run_id, "applying patch");
-        let _line_map = crate::runtime::patch::apply::apply_patch(patch, ws_path)?;
-
-        // Run patched checks
-        tracing::info!(run_id = %run_id, "running patched checks");
-        let patched_result = self
-            .run_checks(ws_path, timeout, TrialSide::Patched, &mut all_trials)
-            .await?;
-
-        // Compute typed diff
-        let diff = ExperimentDiff::from_paired(&baseline_result, &patched_result);
+        let mut pairs = Vec::with_capacity(pair_count as usize);
+        for pair_index in 0..pair_count {
+            pairs.push(
+                self.run_pair(fixture_path, Some(patch), pair_index, &mut all_trials)
+                    .await?,
+            );
+        }
+        // All control arms must share provenance.  A fresh workspace is not
+        // sufficient if its captured baseline has drifted between trials.
+        if let Some(reference) = pairs
+            .first()
+            .map(|pair| pair.baseline_descriptor.fingerprint())
+        {
+            for pair in &mut pairs {
+                if pair.baseline_descriptor.fingerprint() != reference {
+                    pair.comparable = false;
+                    pair.comparability_reasons
+                        .push("baseline fingerprint drift across repeated pairs".to_string());
+                }
+            }
+        }
+        let first = pairs.first().cloned().ok_or_else(|| {
+            ForgeError::Config("experiment produced no paired trials".to_string())
+        })?;
+        if experiment_config.comparability.require_fingerprint_match
+            && pairs.iter().any(|pair| !pair.comparable)
+        {
+            let reasons = pairs
+                .iter()
+                .flat_map(|pair| pair.comparability_reasons.clone())
+                .collect();
+            return Err(ForgeError::PairIncomparable { reasons });
+        }
+        let diff = aggregate_diffs(
+            &pairs,
+            &experiment_config.statistics_policy,
+            &experiment_config.comparability,
+        );
 
         let completed_at = chrono::Utc::now().to_rfc3339();
         tracing::info!(
@@ -494,12 +567,70 @@ impl<'a> PairedExperimentRunner<'a> {
         Ok(ExperimentResult {
             run_id,
             mode: experiment_config.mode,
-            baseline_descriptor,
-            baseline_result,
-            patched_result,
+            baseline_descriptor: first.baseline_descriptor,
+            baseline_result: first.baseline_result,
+            patched_result: first.patched_result,
             diff,
             trials: all_trials,
             completed_at,
+            pairs,
+        })
+    }
+
+    /// Execute one matched pair in two independently prepared workspaces.
+    pub async fn run_pair(
+        &self,
+        fixture_path: &Path,
+        patch: Option<&crate::runtime::patch::types::StructuredPatch>,
+        pair_index: u32,
+        trials: &mut Vec<TrialRecord>,
+    ) -> ForgeResult<PairedTrialResult> {
+        let timeout = self.config.container.command_timeout_secs;
+        let baseline_workspace = self.backend.prepare_workspace(fixture_path).await?;
+        let baseline_descriptor =
+            crate::baseline::capture_baseline_provenance(&baseline_workspace.host_path).await?;
+        let baseline_result = self
+            .run_checks(
+                &baseline_workspace.host_path,
+                timeout,
+                TrialSide::Baseline,
+                trials,
+            )
+            .await?;
+
+        let patched_workspace = self.backend.prepare_workspace(fixture_path).await?;
+        let patched_descriptor =
+            crate::baseline::capture_baseline_provenance(&patched_workspace.host_path).await?;
+        let line_map = match patch {
+            Some(patch) => {
+                crate::runtime::patch::apply::apply_patch(patch, &patched_workspace.host_path)?
+            }
+            None => crate::runtime::patch::apply::LineAttributionMap::default(),
+        };
+        let patched_result = self
+            .run_checks(
+                &patched_workspace.host_path,
+                timeout,
+                TrialSide::Patched,
+                trials,
+            )
+            .await?;
+        let mut comparability_reasons = Vec::new();
+        if baseline_descriptor.fingerprint() != patched_descriptor.fingerprint() {
+            comparability_reasons
+                .push("baseline fingerprint differs between matched workspaces".to_string());
+        }
+        let comparable = comparability_reasons.is_empty();
+        Ok(PairedTrialResult {
+            pair_index,
+            baseline_descriptor,
+            patched_descriptor,
+            baseline_result: baseline_result.clone(),
+            patched_result: patched_result.clone(),
+            line_map,
+            diff: ExperimentDiff::from_paired(&baseline_result, &patched_result),
+            comparable,
+            comparability_reasons,
         })
     }
 
@@ -586,10 +717,112 @@ impl<'a> PairedExperimentRunner<'a> {
             duration_ms,
             seed: 0,
             cache_mode: CacheMode::Unknown,
-            network_available: true,
+            // ExecutionBackend does not expose network isolation state.  Keep
+            // the legacy bool conservative and expose no known-good claim.
+            network_available: false,
+            network_mode: NetworkMode::Unknown,
             timing_admissible: false,
         });
 
         Ok(check_result)
     }
+}
+
+fn aggregate_diffs(
+    pairs: &[PairedTrialResult],
+    statistics: &StatisticsPolicy,
+    comparability: &ComparabilityPolicy,
+) -> ExperimentDiff {
+    let Some(first) = pairs.first() else {
+        return ExperimentDiff {
+            effects: Vec::new(),
+            regressions: 0,
+            improvements: 0,
+            stable_failures: 0,
+            stable_passes: 0,
+            statistically_meaningful: false,
+            sample_warning: Some("no paired trials were available".to_string()),
+        };
+    };
+    let mut aggregate = first.diff.clone();
+    if pairs.len() <= 1 {
+        return aggregate;
+    }
+    aggregate.regressions = pairs
+        .iter()
+        .map(|pair| pair.diff.regressions)
+        .min()
+        .unwrap_or(0);
+    aggregate.improvements = pairs
+        .iter()
+        .map(|pair| pair.diff.improvements)
+        .min()
+        .unwrap_or(0);
+    aggregate.stable_failures = pairs
+        .iter()
+        .map(|pair| pair.diff.stable_failures)
+        .max()
+        .unwrap_or(0);
+    aggregate.stable_passes = pairs
+        .iter()
+        .map(|pair| pair.diff.stable_passes)
+        .min()
+        .unwrap_or(0);
+    // Keep only effects whose full normalized identity is seen in every pair;
+    // repeated trials are evidence of stability, not a way to multiply count.
+    let common: std::collections::BTreeSet<_> = pairs.iter().skip(1).fold(
+        first
+            .diff
+            .effects
+            .iter()
+            .map(typed_effect_identity)
+            .collect(),
+        |acc: std::collections::BTreeSet<_>, pair| {
+            acc.intersection(
+                &pair
+                    .diff
+                    .effects
+                    .iter()
+                    .map(typed_effect_identity)
+                    .collect(),
+            )
+            .cloned()
+            .collect()
+        },
+    );
+    aggregate.effects = first
+        .diff
+        .effects
+        .iter()
+        .filter(|effect| common.contains(&typed_effect_identity(effect)))
+        .cloned()
+        .collect();
+    let required = statistics.min_paired_trials.max(comparability.min_trials) as usize;
+    aggregate.statistically_meaningful = pairs.len() >= required
+        && pairs.iter().all(|pair| pair.comparable)
+        && pairs.iter().all(|pair| {
+            pair.diff.regressions == aggregate.regressions
+                && pair.diff.improvements == aggregate.improvements
+        });
+    aggregate.sample_warning = if aggregate.statistically_meaningful {
+        None
+    } else {
+        Some(format!(
+            "{} comparable paired trials required for a meaningful claim; observed {}",
+            required,
+            pairs.len()
+        ))
+    };
+    aggregate
+}
+
+fn typed_effect_identity(
+    effect: &TypedLocatedEffect,
+) -> (EffectKind, Option<PathBuf>, Option<u32>, String) {
+    (
+        effect.kind.clone(),
+        effect.file.clone(),
+        effect.line,
+        effect.message.clone(),
+    )
 }

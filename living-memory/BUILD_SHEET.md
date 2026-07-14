@@ -8,10 +8,10 @@ Implement **forge-engine**, a new Rust crate that:
 3. Validates diffs with **host or container** execution backends (auto-detect container runtime).
 4. Implements stabilization policy: **Innovative attempt → Stabilize #1 → Stabilize #2 → Clamp novelty**.
 5. Provides **ForgeLab** discovery loop (MAP-Elites) over candidate algebras, evaluating on Rust fixtures.
-6. **[PROPRIETARY]** Builds a **Causal Edit Attribution (CEA)** graph: instruments build/test pipelines to
-   trace which specific edit operations caused which outcomes. Over runs, this produces a codebase-specific
-   predictive layer that eventually allows zero-shot patch validation — predicting correctness from topology
-   alone before running a single check. See `CEA.md` for the full specification.
+6. **[PROPRIETARY]** Runs **Causal Edit Attribution (CEA)** experiments: fresh matched
+   baseline/patched checks produce local patch-level receipts; normalized proximity edges remain observational;
+   and bounded edit ablations test edit-level hypotheses. Graph prediction is advisory and never replaces checks.
+   See `CEA.md` for the evidence contract.
 
 ## Absolute Constraints (non-negotiable)
 - **DO NOT MODIFY semantic-memory behavior, schema, migrations, or tests.**
@@ -109,8 +109,8 @@ ForgeLab can:
 CausalAttributionEngine can:
 - Instrument a check run and capture per-edit-op outcome signals
 - Build/update the causal graph in `forge.db`
-- Query graph for patch topology → predicted score (zero-shot)
-- Report causal confidence and coverage over archive cells
+- Query the observational graph for advisory patch-risk and coverage estimates
+- Report evidence grade, sample sufficiency, prediction degradations, and ablation receipts
 
 ## Milestones (implement in order, no skipping)
 1. **Safety scaffolding** — config + forge.db + refuse-to-open + CI gates
@@ -137,7 +137,7 @@ Optional CLI:
 ```bash
 cargo run -p forge-engine -- eval --suite <path>
 cargo run -p forge-engine -- runtime --repo <path> --request "<text>"
-cargo run -p forge-engine -- cea --query <patch-json>   # zero-shot prediction
+cargo run -p forge-engine -- cea --query <patch-json>   # advisory prediction; checks remain mandatory
 ```
 
 ## Read these documents and implement exactly

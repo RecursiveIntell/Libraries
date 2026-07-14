@@ -155,7 +155,7 @@ CREATE INDEX idx_cea_edges_version ON cea_edges(version_id);
 ### cea_run_log
 ```sql
 CREATE TABLE cea_run_log (
-  run_hash      TEXT PRIMARY KEY,   -- blake3 of AttributedRunResult; idempotency key
+  run_hash      TEXT PRIMARY KEY,   -- observation idempotency key; legacy rows may use content hash
   eval_id       TEXT NOT NULL,
   edges_added   INTEGER NOT NULL,
   edges_updated INTEGER NOT NULL,

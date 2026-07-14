@@ -175,6 +175,9 @@ pub struct CeaConfig {
     pub causal_drift_warning_threshold: f64,
     #[serde(default = "default_min_runs")]
     pub min_runs_before_prediction: usize,
+    /// Hard cap for singleton ablation executions per patch.
+    #[serde(default = "default_max_singleton_ablations")]
+    pub max_singleton_ablations: usize,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -317,13 +320,16 @@ fn default_max_line_distance() -> u32 {
     50
 }
 fn default_attribution_decay() -> f64 {
-    10.0
+    0.995
 }
 fn default_causal_drift_threshold() -> f64 {
     0.25
 }
 fn default_min_runs() -> usize {
     5
+}
+fn default_max_singleton_ablations() -> usize {
+    8
 }
 
 impl Default for ForgeConfig {
@@ -441,6 +447,7 @@ impl Default for CeaConfig {
             attribution_decay_factor: default_attribution_decay(),
             causal_drift_warning_threshold: default_causal_drift_threshold(),
             min_runs_before_prediction: default_min_runs(),
+            max_singleton_ablations: default_max_singleton_ablations(),
         }
     }
 }

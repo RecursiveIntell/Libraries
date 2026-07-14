@@ -16,13 +16,14 @@ A promoted BasisVersion is the only thing `ForgeRuntime` accepts outside of lab 
 | Stability variance on repeat set    | <= 0.15              |
 | Invariant violations on red-team suite | == 0              |
 | Forbidden path edits                | == 0 (unless task permits) |
-| CEA: causal drift vs. baseline      | < 0.25 (if CEA enabled) |
+| CEA: association drift vs. baseline | < 0.25 (if CEA enabled) |
 
 "Baseline" = the most recently promoted BasisVersion. For `v0001`, baseline is `ForgeConfig::default()`.
 
 Red-team suite: see SECURITY.md. Must exist and run as part of promotion.
-CEA criterion: if CEA is enabled and the graph has coverage, the candidate's causal fingerprint
-must not drift more than `cea.causal_drift_warning_threshold` from the baseline version's fingerprint.
+CEA criterion: if CEA is enabled and the observational graph has coverage, the candidate's
+association fingerprint must not drift more than `cea.causal_drift_warning_threshold` from the
+baseline snapshot. This is a conservative drift guard, not a causal identification claim.
 
 ---
 
@@ -134,15 +135,15 @@ At runtime, after loading a BasisVersion:
 ## CEA drift monitoring (post-promotion)
 After promotion, ForgeRuntime:
 1. Loads the frozen `cea_fingerprint` for the active BasisVersion.
-2. After each instrumented run, computes the run's causal fingerprint.
-3. Computes fractional edge weight change vs. frozen fingerprint.
+2. After each instrumented run, computes the run's observational association fingerprint.
+3. Computes fractional observational edge-weight change vs. the frozen snapshot.
 4. If change exceeds `cea.causal_drift_warning_threshold`:
    - Emit `ForgeEvent::CausalDriftWarning { version_id, drift_score }`.
    - Log prominently.
    - Does NOT fail the run.
 5. If drift consistently exceeds threshold over N runs (configurable):
    - Emit `ForgeEvent::CausalDriftAlert` — signals that the codebase has changed enough
-     that the promoted version's causal model may be stale; re-run Lab.
+     that the promoted version's association model may be stale; re-run Lab.
 
 ---
 

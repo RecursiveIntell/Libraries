@@ -128,6 +128,10 @@ pub enum ReceiptKind {
     TrialMetrics,
     CheckResult,
     PatchApplicationRecord,
+    /// Serialized causal-graph update receipt from CEA.
+    CausalUpdate,
+    /// Serialized singleton-ablation receipt from CEA.
+    Ablation,
 }
 
 /// Where a receipt's artifact is stored.
@@ -255,6 +259,8 @@ pub enum RefutationArtifactType {
     DummyOutcome,
     /// Subsample split stability check.
     SubsampleStability,
+    /// A bounded removal of one patch operation, evaluated against the full patch.
+    SingletonAblation,
 }
 
 /// Falsification artifact carried by the evidence bundle.

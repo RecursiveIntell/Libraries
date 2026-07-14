@@ -41,7 +41,7 @@ pub use evaluation::{EvaluationGate, FactDisposition};
 pub use executor::{ExecutionResult, LoopExecutor};
 pub use gap_detector::{DetectedGap, GapDetector, GapType};
 pub use hostile_audit::{AuditResult, HostileAuditGate};
-pub use loop_driver::{AutonomousLoop, LoopConfig, LoopState};
+pub use loop_driver::{AutonomousLoop, LoopConfig, LoopState, LoopTermination};
 pub use missions::{Mission, MissionImpl, MissionQuery, MissionScheduler, ScheduledMission};
 pub use proof_debt::{
     classify_risk, PaymentMethod, ProofDebtBudget, ProofDebtEntry, ProofDebtReceipt, RiskClass,

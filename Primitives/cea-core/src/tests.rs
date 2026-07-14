@@ -478,3 +478,144 @@ fn contradictions_lower_conservative_confidence() {
         "contradictions should reduce confidence: clean={clean} noisy={noisy}"
     );
 }
+
+#[test]
+fn calibration_treats_sample_units_as_observed_evidence() {
+    assert_eq!(crate::effective_sample_size(0.0), 0.0);
+    assert!(crate::sample_factor(crate::effective_sample_size(1.0)) > 0.0);
+    assert!(
+        crate::sample_factor(crate::effective_sample_size(2.0))
+            > crate::sample_factor(crate::effective_sample_size(1.0))
+    );
+}
+
+#[test]
+fn run_hash_binds_independent_observation_identity() {
+    let result = check_result(true, true, true, Vec::new(), Vec::new(), Vec::new());
+    let identity = crate::ObservationIdentity::new("observation-1", "run-1", "trial-1");
+    let same = AttributedRunResult::with_observation(
+        Vec::new(),
+        result.clone(),
+        crate::EvidenceKind::PairedInterventional,
+        identity.clone(),
+    );
+    let replay = AttributedRunResult::with_observation(
+        Vec::new(),
+        result.clone(),
+        crate::EvidenceKind::PairedInterventional,
+        identity,
+    );
+    let independent = AttributedRunResult::with_observation(
+        Vec::new(),
+        result.clone(),
+        crate::EvidenceKind::PairedInterventional,
+        crate::ObservationIdentity::new("observation-2", "run-2", "trial-2"),
+    );
+
+    assert_eq!(same.run_hash, replay.run_hash);
+    assert_ne!(same.run_hash, independent.run_hash);
+    assert_eq!(
+        AttributedRunResult::new(Vec::new(), result.clone()).run_hash,
+        AttributedRunResult::new(Vec::new(), result).run_hash
+    );
+    assert!(!crate::EvidenceKind::SyntheticTelemetry.is_code_interventional());
+}
+
+#[test]
+fn prediction_neutrally_blends_unknown_coverage_and_disables_hash_fuzzing_by_default() {
+    let patch = sample_patch();
+    let known = build_edit_op_signature(
+        &patch.edits[0].ops[0],
+        0,
+        patch.edits[0].ops.len(),
+        0,
+        patch.edits.len(),
+        "rs",
+    )
+    .unwrap();
+    let mut changed_hash = known.clone();
+    changed_hash.context_hash = "f".repeat(64);
+    let pass = global_pass_effect_signature("test");
+    let run = AttributedRunResult::new(
+        vec![AttributionTriple {
+            cause: known.clone(),
+            effect: pass,
+            distance: 0,
+            weight: 1.0,
+        }],
+        check_result(true, true, true, Vec::new(), Vec::new(), Vec::new()),
+    );
+    let mut graph = CausalGraph::new();
+    graph
+        .ingest_run(
+            &run,
+            &AttributionConfig {
+                decay_factor: 1.0,
+                ..AttributionConfig::default()
+            },
+        )
+        .unwrap();
+
+    let prediction = crate::predict_with_config(
+        &[known, changed_hash],
+        &graph,
+        &crate::PredictionConfig::default(),
+    );
+    assert!((prediction.coverage_fraction - 0.5).abs() < 1e-12);
+    assert!((prediction.predicted_correctness - 0.75).abs() < 1e-12);
+    assert!(!prediction.zero_shot_eligible);
+}
+
+#[test]
+fn fuzzy_matching_does_not_treat_empty_context_digest_as_structural_evidence() {
+    let empty_context_hash = blake3::hash(b"").to_hex().to_string();
+    let known = crate::EditOpSignature {
+        op_kind: crate::EditOpKind::Replace,
+        anchor_kind: crate::AnchorKind::Range,
+        lines_added: 1,
+        lines_removed: 1,
+        context_hash: empty_context_hash.clone(),
+        file_extension: "rs".to_string(),
+        scope_tag: crate::ScopeTag::Unknown,
+        op_index: crate::OpIndex(0),
+        file_index: crate::FileIndex(0),
+    };
+    let unrelated = crate::EditOpSignature {
+        lines_added: 100,
+        lines_removed: 100,
+        op_index: crate::OpIndex(4),
+        file_index: crate::FileIndex(3),
+        ..known.clone()
+    };
+    let run = AttributedRunResult::new(
+        vec![AttributionTriple {
+            cause: known,
+            effect: global_pass_effect_signature("test"),
+            distance: 0,
+            weight: 1.0,
+        }],
+        check_result(true, true, true, Vec::new(), Vec::new(), Vec::new()),
+    );
+    let mut graph = CausalGraph::new();
+    graph
+        .ingest_run(
+            &run,
+            &AttributionConfig {
+                decay_factor: 1.0,
+                ..AttributionConfig::default()
+            },
+        )
+        .unwrap();
+
+    let prediction = crate::predict_with_config(
+        &[unrelated],
+        &graph,
+        &crate::PredictionConfig {
+            enable_fuzzy_matching: true,
+            ..crate::PredictionConfig::default()
+        },
+    );
+
+    assert_eq!(prediction.coverage_fraction, 0.0);
+    assert_eq!(prediction.predicted_correctness, 0.5);
+}

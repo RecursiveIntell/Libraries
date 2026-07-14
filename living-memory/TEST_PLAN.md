@@ -187,17 +187,20 @@ Tests that are flaky by nature (container availability) must use feature flags o
 - Assert `context_hash` is a 64-char hex string (blake3).
 
 **I3: `cea_graph_update_is_idempotent`**
-- Run `update_graph(result)` twice with same `AttributedRunResult`.
-- Assert `cea_edges` weights unchanged after second call (run_hash deduplicated).
+- Replay the same identified observation with identical and conflicting content.
+- Assert `cea_edges` remain unchanged after the first commit (`observation_key` deduplicated).
+- Assert distinct independent trial IDs each contribute once.
 
 **I4: `cea_prediction_returns_neutral_for_unknown_sigs`**
 - Predict on a patch with no matching graph edges.
 - Assert `coverage_fraction == 0.0`, `confidence` is low, `zero_shot_eligible == false`.
 
-**I5: `cea_zero_shot_requires_explicit_enable`**
-- Default config: `enable_zero_shot = false`.
-- Even with `zero_shot_eligible = true`, runtime must NOT skip checks.
-- Enable it: runtime skips checks and uses predicted score.
+**I5: `cea_prediction_gate_is_fail_closed`**
+- Default config returns `RunChecks`.
+- Association-only evidence cannot set `zero_shot_eligible`.
+- Exercise every rejection reason: opt-in, independent runs, exact coverage, fuzzy-only,
+  scope/config mismatch, intervention evidence, risk flags, and unknown effects.
+- Enabling the legacy flag alone must never skip checks.
 
 ---
 

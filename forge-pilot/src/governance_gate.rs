@@ -178,7 +178,9 @@ pub mod predicates {
 /// AUTH-002 fix: strict (fail-closed) governance observation is now the default.
 /// The old fail-open behavior is available via [`observe_governance_fail_open`].
 /// Strict mode returns Err when governance observation fails or no claims found.
-pub async fn observe_governance(store: &MemoryStore) -> Result<GovernanceObservation, GovernanceGateError> {
+pub async fn observe_governance(
+    store: &MemoryStore,
+) -> Result<GovernanceObservation, GovernanceGateError> {
     observe_governance_with_mode(store, GovernanceMode::Strict).await
 }
 
@@ -542,7 +544,9 @@ mod tests {
         let store = MemoryStore::open(config).expect("open store");
         // AUTH-002 fix: observe_governance is now strict by default.
         // This test verifies the old fail-open behavior; use fail-open mode explicitly.
-        let obs = observe_governance_with_mode(&store, GovernanceMode::FailOpen).await.unwrap();
+        let obs = observe_governance_with_mode(&store, GovernanceMode::FailOpen)
+            .await
+            .unwrap();
         assert_eq!(obs.effect_preflight_status, None);
         assert!(!obs.assurance_ready);
         assert!(!obs.authority_delegation_valid);
@@ -578,7 +582,9 @@ mod tests {
         )
         .await;
 
-        let obs = observe_governance(&store).await.expect("governance observation with populated store");
+        let obs = observe_governance(&store)
+            .await
+            .expect("governance observation with populated store");
         assert_eq!(
             obs.effect_preflight_status.as_deref(),
             Some("commit_eligible")
@@ -623,7 +629,9 @@ mod tests {
 
         insert_governance_claim(&store, predicates::CONTINUITY_INCIDENT_ACTIVE, "true").await;
 
-        let obs = observe_governance(&store).await.expect("governance observation with populated store");
+        let obs = observe_governance(&store)
+            .await
+            .expect("governance observation with populated store");
         assert!(obs.continuity_incident_active);
 
         let gate = gate_execution(&obs);

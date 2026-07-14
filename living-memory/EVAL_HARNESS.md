@@ -102,11 +102,12 @@ else:
   tag_novelty = 1.0 - overlap
 
 # Secondary: topology novelty (optional)
-if cea enabled and graph has coverage:
-  cea_pred = CausalAttributionEngine::predict(patch)
-  # Use causal fingerprint distance from archive cell fingerprints
-  topology_novelty = causal_fingerprint_distance(cea_pred, archive_cell_fingerprints)
-  novelty = (tag_novelty * 0.7 + topology_novelty * 0.3) * task.weights.novelty
+if cea enabled and the observational graph has exact coverage:
+  cea_pred = CausalAttributionEngine::predict_patch(patch)
+  # Association-fingerprint distance is an optional diversity heuristic only.
+  topology_diversity = association_fingerprint_distance(cea_pred, archive_cell_fingerprints)
+  record topology_diversity separately unless an explicit measured scoring policy includes it
+  run the configured checks regardless of the advisory prediction
 else:
   novelty = tag_novelty * task.weights.novelty
 ```

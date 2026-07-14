@@ -634,12 +634,12 @@ fn reference_provider_route_value(case: &ReferenceCaseV1) -> Result<Value, Refer
             if model_configured {
                 (
                     true,
-                    true,
-                    "ollama-chat",
+                    false,
+                    "unavailable",
                     vec![
                         "ollama-chat-boundary-configured",
-                        "ollama-local-service-required",
-                        "ollama-native-tool-loop-via-function-calling",
+                        "ollama-live-probe-required",
+                        "ollama-native-tool-loop-unproven",
                     ],
                 )
             } else {
@@ -676,7 +676,7 @@ fn reference_provider_route_value(case: &ReferenceCaseV1) -> Result<Value, Refer
             vec!["unsupported-provider-kind"],
         ),
     };
-    let native_tool_loop = kind == "ollama" && model_configured;
+    let native_tool_loop = false;
     Ok(json!({
         "configured": configured,
         "executable": executable,

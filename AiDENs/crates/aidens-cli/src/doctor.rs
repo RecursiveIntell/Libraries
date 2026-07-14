@@ -107,8 +107,8 @@ pub(crate) fn provider_capability_matrix_truths() -> Vec<RuntimeCapabilityTruthV
                 }
                 ProviderBackendStatusV1::Executable => {
                     states.push(CapabilityStateV1::Available);
-                    states.push(CapabilityStateV1::ExecutableThisTurn);
                     if entry.provider_kind == "mock" {
+                        states.push(CapabilityStateV1::ExecutableThisTurn);
                         states.push(CapabilityStateV1::Healthy);
                     }
                 }

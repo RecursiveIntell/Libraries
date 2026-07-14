@@ -1013,25 +1013,28 @@ fn compressed_candidate_vector_outcome(
                 Ok(qv) => qv,
                 Err(_) => continue,
             };
-            let approx_vec: Vec<f32> = qv.data
+            let approx_vec: Vec<f32> = qv
+                .data
                 .iter()
                 .map(|&q| (q as f32 - qv.zero_point as f32) * qv.scale)
                 .collect();
-            let approx_sim = cosine_similarity(query_embedding, &approx_vec)
-                .unwrap_or(0.0) as f64;
+            let approx_sim = cosine_similarity(query_embedding, &approx_vec).unwrap_or(0.0) as f64;
             candidates.push((format!("fact:{id}"), approx_sim));
         }
     }
 
-    candidates.sort_by(|a, b| {
-        b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-    });
+    candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
     candidates.truncate(candidate_k);
 
     if candidates.is_empty() {
         return brute_force_vector_outcome(
-            conn, query_embedding, pool_size, min_similarity,
-            namespaces, source_types, session_ids,
+            conn,
+            query_embedding,
+            pool_size,
+            min_similarity,
+            namespaces,
+            source_types,
+            session_ids,
         );
     }
 

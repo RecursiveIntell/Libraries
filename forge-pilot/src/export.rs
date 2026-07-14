@@ -67,6 +67,7 @@ pub async fn canonical_roundtrip(
     forge_store: &ForgeStore,
     memory_store: &MemoryStore,
 ) -> Result<RoundtripResult, PilotError> {
+    persist_bundle_in_canonical_store(bundle, forge_store)?;
     let envelope = export_bundle(bundle, namespace, forge_store).await?;
     let batch = transform_envelope_v3(&envelope)?;
 
@@ -102,6 +103,14 @@ pub async fn canonical_roundtrip(
         #[cfg(feature = "governance")]
         export_receipt,
     })
+}
+
+fn persist_bundle_in_canonical_store(
+    bundle: &ExperimentEvidenceBundle,
+    forge_store: &ForgeStore,
+) -> Result<(), PilotError> {
+    forge_store.insert_local_evidence_bundle(bundle)?;
+    Ok(())
 }
 
 pub async fn import_recent_forge_bundles(

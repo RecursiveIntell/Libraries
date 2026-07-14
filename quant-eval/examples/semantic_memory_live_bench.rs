@@ -99,8 +99,8 @@ fn main() {
 
     // Build compressed scorer (8-bit per-dimension quantization)
     let bits = 8;
-    let mut per_dim = PerDimScorer::new(embedding_dim, bits)
-        .expect("failed to build per-dim scorer");
+    let mut per_dim =
+        PerDimScorer::new(embedding_dim, bits).expect("failed to build per-dim scorer");
     let refs: Vec<&[f32]> = embeddings.iter().map(|v| v.as_slice()).collect();
     per_dim.fit(&refs).expect("failed to fit scorer");
 

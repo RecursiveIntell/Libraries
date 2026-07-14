@@ -3,6 +3,12 @@ pub mod instrumentation;
 pub mod predictor;
 pub mod store;
 
+pub use cea_core::EvidenceKind;
+pub use engine::{
+    AblationClassification, AblationReceipt, CausalAttributionEngine, CausalExperimentResult,
+    CausalUpdateReceipt, PredictionDisposition, PredictionGate, PredictionGateReason,
+    PredictionReceipt, PredictionSummary,
+};
 pub use graph::{CausalEdge, CausalGraph, CausalNode};
 pub use instrumentation::{
     attribute_effects, build_edit_op_signature, compute_run_hash, AttributedRunResult,
@@ -10,3 +16,4 @@ pub use instrumentation::{
 };
 pub use predictor::{predict, CausalPrediction, CoverageSummary, RiskFlag};
 pub use store::{load_graph, load_graph_with_tx, update_graph, update_graph_with_tx, UpdateResult};
+pub mod engine;

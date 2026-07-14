@@ -102,6 +102,46 @@ async fn loop_runner_executes_oracle_and_patch_families_with_real_roundtrips() {
         patch_report.iterations[0].action_family,
         Some(ActionFamily::PairedPatch)
     );
+    let canonical_store = open_forge_store(&patch_dir.path().join("patch-loop-forge"));
+    let bundle_id = canonical_store
+        .list_recent_evidence_bundle_ids(1)
+        .unwrap()
+        .into_iter()
+        .next()
+        .unwrap();
+    let bundle = canonical_store
+        .get_evidence_bundle(&bundle_id)
+        .unwrap()
+        .unwrap()
+        .local_bundle()
+        .unwrap();
+    let attribution: serde_json::Value =
+        serde_json::from_str(bundle.attribution_json.as_deref().unwrap()).unwrap();
+    let causal = &attribution["causal_update_receipts"].as_array().unwrap()[0];
+    assert_eq!(
+        bundle.run_id.as_deref(),
+        causal["observation_identity"]["run_id"].as_str()
+    );
+    assert_eq!(
+        bundle.patch_hash.as_deref(),
+        causal["patch_digest"].as_str()
+    );
+    let receipt_id = format!("cea-update:{}", causal["receipt_digest"].as_str().unwrap());
+    let receipt = bundle
+        .receipts
+        .iter()
+        .find(|receipt| receipt.receipt_id == receipt_id)
+        .unwrap();
+    match &receipt.storage {
+        forge_engine::ReceiptStorage::Inline(payload) => {
+            assert!(receipt.verify_content(payload.as_bytes()));
+            assert_eq!(
+                serde_json::from_str::<serde_json::Value>(payload).unwrap(),
+                *causal
+            );
+        }
+        _ => panic!("CEA receipt must be inline and exactly hash-bound"),
+    }
 }
 
 #[tokio::test]

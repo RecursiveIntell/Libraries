@@ -150,6 +150,12 @@ impl ToolProfile {
     pub fn allows_http_maintenance(self) -> bool {
         matches!(self, Self::Full)
     }
+
+    /// HTTP has no implicit privilege escalation: only the full operator
+    /// profile exposes its non-health transport surface.
+    pub fn allows_http_route(self) -> bool {
+        matches!(self, Self::Full)
+    }
 }
 
 impl std::fmt::Display for ToolProfile {

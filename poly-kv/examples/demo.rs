@@ -4,10 +4,11 @@
 //!   cargo run --example demo
 
 use poly_kv::{
-    create_codec, CompressedBlock, Digest, PoolManifest,
+    create_codec,
     policy::{CompressionPolicy, FibConfig, CODEC_FIB_K4_N32},
     receipt::{now_unix, PoolBuildReceipt},
     shape::{AttentionType, KvTensorShape},
+    CompressedBlock, Digest, PoolManifest,
 };
 
 fn main() {
@@ -66,10 +67,7 @@ fn main() {
     println!("  num_tokens     : {}", manifest.num_shared_tokens);
     println!("  pool_size      : {} bytes", manifest.pool_size_bytes);
     println!("  raw_size       : {} bytes", raw_size_bytes);
-    println!(
-        "  compression    : {:.1}×",
-        manifest.compression_ratio,
-    );
+    println!("  compression    : {:.1}×", manifest.compression_ratio,);
     println!("  build_seed     : {}", manifest.build_seed);
     println!("  validation     : OK");
 
@@ -124,10 +122,7 @@ fn main() {
     println!("    payload_hash : {}…", &block.payload_digest.hex()[..16]);
     println!("    original_dim : {}", block.original_dim);
     println!("    comp_bytes   : {}", block.compressed_bytes);
-    println!(
-        "    block_ratio  : {:.1}×",
-        block.compression_ratio(),
-    );
+    println!("    block_ratio  : {:.1}×", block.compression_ratio(),);
 
     // Decode (decompress)
     let decoded = codec.decode(&encoded, seed).expect("decode");
@@ -190,9 +185,18 @@ fn main() {
     println!("\n── 4. PoolBuildReceipt ──");
     println!("  schema_version   : {}", receipt.schema_version);
     println!("  pool_digest      : {}…", &receipt.pool_digest.hex()[..16]);
-    println!("  layer_digests    : {} entries", receipt.layer_digests.len());
-    println!("  codebook_digest  : {}…", &receipt.codebook_digest.hex()[..16]);
-    println!("  rotation_digest  : {}…", &receipt.rotation_digest.hex()[..16]);
+    println!(
+        "  layer_digests    : {} entries",
+        receipt.layer_digests.len()
+    );
+    println!(
+        "  codebook_digest  : {}…",
+        &receipt.codebook_digest.hex()[..16]
+    );
+    println!(
+        "  rotation_digest  : {}…",
+        &receipt.rotation_digest.hex()[..16]
+    );
     println!("  total_tokens     : {}", receipt.total_tokens);
     println!("  pool_size_bytes  : {}", receipt.pool_size_bytes);
     println!("  raw_size_bytes   : {}", receipt.raw_size_bytes);

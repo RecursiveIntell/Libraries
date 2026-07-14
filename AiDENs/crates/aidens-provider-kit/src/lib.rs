@@ -855,6 +855,16 @@ pub fn build_provider(spec: ProviderSpecV1) -> anyhow::Result<Arc<dyn AiDENsProv
     Ok(provider)
 }
 
+/// Reports whether a provider specification can construct a chat boundary in
+/// this process without making a network request.
+///
+/// This is deliberately distinct from `provider_readiness_for_spec`: a
+/// constructible HTTP client is not evidence that its remote endpoint is live
+/// or executable this turn.
+pub fn provider_has_constructible_chat_boundary(spec: &ProviderSpecV1) -> anyhow::Result<bool> {
+    Ok(build_provider(spec.clone())?.capabilities().chat_completion)
+}
+
 pub fn provider_backend_matrix() -> ProviderBackendMatrixV1 {
     ProviderBackendMatrixV1::new(vec![
         ProviderBackendMatrixEntryV1 {
@@ -1272,18 +1282,17 @@ pub fn provider_readiness_receipt_for_spec(spec: &ProviderSpecV1) -> ProviderRea
             provider_kind: normalized,
             model: spec.model.clone(),
             configured: model_configured,
-            executable: model_configured,
-            native_tool_loop_executable: true,
-            route_label: if model_configured {
-                ProviderRouteKindV1::OllamaChat.to_string()
-            } else {
-                ProviderRouteKindV1::Unavailable.to_string()
-            },
+            // Configuration identifies an implemented boundary, not a live one.
+            // A synchronous configuration read has no bounded successful chat/tool
+            // probe to justify an executable-this-turn claim.
+            executable: false,
+            native_tool_loop_executable: false,
+            route_label: ProviderRouteKindV1::Unavailable.to_string(),
             reason_codes: if model_configured {
                 vec![
                     "ollama-chat-boundary-configured".into(),
-                    "ollama-local-service-required".into(),
-                    "ollama-native-tool-loop-via-function-calling".into(),
+                    "ollama-live-probe-required".into(),
+                    "ollama-native-tool-loop-unproven".into(),
                 ]
             } else {
                 vec!["ollama-model-missing".into()]
@@ -1304,20 +1313,19 @@ pub fn provider_readiness_receipt_for_spec(spec: &ProviderSpecV1) -> ProviderRea
             .base_url
             .as_deref()
             .is_some_and(|base_url| openai_compatible_chat_endpoint(base_url).is_ok());
-        let api_key_configured = openai_compatible_api_key_from_env().is_some();
-        let executable =
-            model_configured && base_url_configured && base_url_usable && api_key_configured;
+        let _credentials_configured = openai_compatible_api_key_from_env().is_some();
         let reason_codes = if !model_configured {
             vec!["openai-compatible-model-missing".into()]
         } else if !base_url_configured {
             vec!["openai-compatible-base-url-missing".into()]
         } else if !base_url_usable {
             vec!["openai-compatible-base-url-invalid".into()]
-        } else if !api_key_configured {
+        } else if !_credentials_configured {
             vec!["api-key-missing".into()]
         } else {
             vec![
                 "openai-compatible-http-boundary-configured".into(),
+                "openai-compatible-live-probe-required".into(),
                 "native-tool-loop-unproven".into(),
             ]
         };
@@ -1325,13 +1333,11 @@ pub fn provider_readiness_receipt_for_spec(spec: &ProviderSpecV1) -> ProviderRea
             provider_kind: normalized,
             model: spec.model.clone(),
             configured: model_configured && base_url_configured && base_url_usable,
-            executable,
+            // Credentials and a syntactically valid endpoint are prerequisites,
+            // not proof that this process can execute a provider call now.
+            executable: false,
             native_tool_loop_executable: false,
-            route_label: if executable {
-                ProviderRouteKindV1::OpenAiCompatible.to_string()
-            } else {
-                ProviderRouteKindV1::Unavailable.to_string()
-            },
+            route_label: ProviderRouteKindV1::Unavailable.to_string(),
             reason_codes,
         });
     }
@@ -1659,7 +1665,7 @@ mod tests {
     }
 
     #[test]
-    fn production_openai_compatible_readiness_requires_current_env_credential() {
+    fn production_openai_compatible_configuration_requires_a_live_probe_for_readiness() {
         let mut spec = ProviderSpecV1::new("openai-compatible");
         spec.model = Some("fixture-model".into());
         spec.base_url = Some("http://127.0.0.1:9".into());
@@ -1675,12 +1681,13 @@ mod tests {
             provider_readiness_for_spec(&spec)
         });
         assert!(available.configured);
-        assert!(available.executable);
+        assert!(!available.executable);
         assert!(!available.native_tool_loop_executable);
-        assert_eq!(available.route_label, "openai-compatible");
+        assert_eq!(available.route_label, "unavailable");
         assert!(available
             .reason_codes
-            .contains(&"native-tool-loop-unproven".into()));
+            .contains(&"openai-compatible-live-probe-required".into()));
+        assert!(provider_has_constructible_chat_boundary(&spec).unwrap());
     }
 
     #[tokio::test]
@@ -1898,25 +1905,24 @@ mod tests {
     }
 
     #[test]
-    fn ollama_chat_route_supports_native_tool_loop() {
+    fn configured_ollama_is_not_live_executable_without_a_probe_receipt() {
         let mut spec = ProviderSpecV1::new("ollama");
         spec.model = Some("llama3".into());
+        spec.base_url = Some("http://127.0.0.1:9".into());
 
         let readiness = provider_readiness_for_spec(&spec);
         let route = route_receipt_v2_for_spec(&spec);
 
-        assert!(readiness.executable);
-        assert!(readiness.native_tool_loop_executable);
-        assert_eq!(route.route, ProviderRouteKindV1::OllamaChat);
-        assert_eq!(route.route_label, "ollama-chat");
-        assert!(route.chat_completion_executable);
-        assert!(route.native_tool_loop);
+        assert!(readiness.configured);
+        assert!(!readiness.executable);
+        assert!(!readiness.native_tool_loop_executable);
+        assert_eq!(route.route, ProviderRouteKindV1::Unavailable);
+        assert_eq!(route.route_label, "unavailable");
+        assert!(!route.chat_completion_executable);
+        assert!(!route.native_tool_loop);
         assert!(route
             .reason_codes
-            .contains(&"ollama-native-tool-loop-via-function-calling".into()));
-        assert!(route
-            .reason_codes
-            .contains(&"ollama-local-service-required".into()));
+            .contains(&"ollama-live-probe-required".into()));
     }
 
     #[tokio::test]

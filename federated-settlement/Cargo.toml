@@ -10,6 +10,7 @@ license = "MIT"
 schemars = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 stack-ids = { version = "0.1.1", path = "../stack-ids" }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }

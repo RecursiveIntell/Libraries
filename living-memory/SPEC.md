@@ -30,24 +30,21 @@ A new crate `forge-engine` that depends on `semantic-memory` (read-only).
 - Promotion to immutable `BasisVersion`
 
 ### 1.3 Causal Edit Attribution (CEA) [PROPRIETARY]
-CEA is a subsystem that goes beyond pass/fail scoring by attributing observable build/test
-outcomes to specific edit operations in a StructuredPatch.
+CEA combines an observational edit/effect association graph with explicit matched-pair
+and singleton-ablation execution.
 
-**Core idea:** Each EditOp (Insert/Replace/Delete at a given anchor) is a *cause candidate*.
-Each check outcome (fmt-fail line, clippy lint, test failure message) is an *effect*. CEA
-instruments runs to collect (cause, effect) pairs and builds a directed causal graph stored
-in `forge.db`. Over many runs, the graph gains predictive power — allowing Forge to estimate
-patch correctness from topology before executing any check.
+- Proximity/co-occurrence produces advisory localization hypotheses only.
+- A fresh matched baseline/full-patch pair supports a local patch-level effect under the
+  captured workload when provenance and checker plans are comparable.
+- Removing an edit and re-executing the same workload can support, contradict, or leave
+  an edit-level hypothesis inconclusive.
+- Synthetic Hermes tool telemetry is isolated in a separate database/model and cannot
+  train the code-edit graph.
+- Receipts bind identities, configuration, patches, outcomes, and degradations; they prove
+  execution/integrity, not general causality.
+- Predictions remain advisory and the runtime prediction gate defaults to `RunChecks`.
 
-**Why this is novel:**
-- Existing code-gen eval systems treat runs as black boxes: patch in, score out.
-- CEA breaks the black box: it builds a codebase-specific causal model of how edits interact
-  with the build/test system.
-- The causal graph is trained on *your* codebase and is proprietary IP stored locally.
-- Once the graph has sufficient coverage, it enables zero-shot validation: predict score from
-  patch topology without running fmt/clippy/test.
-
-See `CEA.md` for the full specification.
+See `CEA.md` for the detailed evidence and persistence contract.
 
 ## 2. Non-functional requirements
 - Must NOT modify `semantic-memory` crate, DB schema, migrations, or tests.

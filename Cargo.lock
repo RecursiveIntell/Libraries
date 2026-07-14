@@ -13,6 +13,7 @@ name = "agent-graph"
 version = "0.2.0"
 dependencies = [
  "async-trait",
+ "blake3",
  "chrono",
  "criterion 0.5.1",
  "futures",
@@ -2051,6 +2052,7 @@ dependencies = [
  "serde",
  "serde_json",
  "stack-ids",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

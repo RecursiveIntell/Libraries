@@ -14,8 +14,8 @@ use forge_engine::lab::evidence::{
     RefutationArtifact, RefutationArtifactOutcome, RefutationArtifactType,
 };
 use forge_engine::{
-    select_backend, CargoAdapter, ExperimentConfig, ExperimentEvidenceBundle,
-    PairedExperimentRunner, ProjectAdapter, StructuredPatch,
+    select_backend, CargoAdapter, CausalAttributionEngine, ExperimentConfig,
+    ExperimentEvidenceBundle, ForgeStore, ProjectAdapter, StructuredPatch,
 };
 use kernel_oracles::{
     evaluate_causal_refuter, evaluate_conservative, evaluate_delta_parity, evaluate_exact_bounded,
@@ -175,6 +175,10 @@ pub struct PatchExecution {
     pub run_id: String,
     pub improvements: u32,
     pub regressions: u32,
+    pub cea_receipt_digests: Vec<String>,
+    pub ablation_receipt_digests: Vec<String>,
+    pub patch_digest: Option<String>,
+    pub degradation_reasons: Vec<String>,
 }
 
 /// Full outcome of executing a plan, including the evidence bundle and execution details.
@@ -200,6 +204,7 @@ pub async fn execute_plan(
     plan: &PlanKind,
     permit: &ExecutionPermit,
     config: &LoopConfig,
+    forge_store: &ForgeStore,
 ) -> Result<ActionOutcome, PilotError> {
     if permit.scope().target_key() != target_key {
         return Err(PilotError::Other(format!(
@@ -231,6 +236,7 @@ pub async fn execute_plan(
                 patch,
                 experiment_config,
                 config,
+                forge_store,
             )
             .await
         }
@@ -359,6 +365,7 @@ async fn execute_oracle_plan(
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn execute_patch_plan(
     observation: &Observation,
     target_key: &str,
@@ -367,6 +374,7 @@ async fn execute_patch_plan(
     patch: &StructuredPatch,
     experiment_config: &ExperimentConfig,
     config: &LoopConfig,
+    forge_store: &ForgeStore,
 ) -> Result<ActionOutcome, PilotError> {
     let backend = select_backend(&config.forge_config)?;
     let fixture = Path::new(fixture_path);
@@ -376,8 +384,18 @@ async fn execute_patch_plan(
         });
     }
     let adapter = CargoAdapter;
-    let runner = PairedExperimentRunner::new(backend.as_ref(), &adapter, &config.forge_config);
-    let experiment_result = runner.run(fixture, patch, experiment_config).await?;
+    let engine = CausalAttributionEngine::new(
+        forge_store,
+        backend.as_ref(),
+        &adapter,
+        &config.forge_config,
+        "forge-pilot.code-model.v1",
+    );
+    let eval_id = format!("forge-pilot:cea:{}", uuid::Uuid::new_v4());
+    let causal_result = engine
+        .run_and_observe(fixture, patch, experiment_config, &eval_id)
+        .await?;
+    let ablation_receipts = engine.run_singleton_ablations(fixture, patch).await?;
     let bundle = build_bundle_from_patch(PatchBundleInput {
         plan,
         target_key,
@@ -386,13 +404,14 @@ async fn execute_patch_plan(
             .as_ref()
             .and_then(|batch| batch.trace_ctx.as_ref().map(|ctx| ctx.trace_id.clone())),
         scope_namespace: &observation.scope_key.namespace,
-        experiment_result: &experiment_result,
+        causal_result: &causal_result,
+        ablation_receipts: &ablation_receipts,
         known_threats: observation
             .degradations
             .iter()
             .map(|degradation| degradation.kind.clone())
             .collect(),
-    });
+    })?;
 
     Ok(ActionOutcome {
         family: ActionFamily::PairedPatch,
@@ -400,14 +419,37 @@ async fn execute_patch_plan(
         bundle: Some(bundle),
         oracle_execution: None,
         patch_execution: Some(PatchExecution {
-            run_id: experiment_result.run_id.clone(),
-            improvements: experiment_result.diff.improvements,
-            regressions: experiment_result.diff.regressions,
+            run_id: causal_result.experiment.run_id.clone(),
+            improvements: causal_result.experiment.diff.improvements,
+            regressions: causal_result.experiment.diff.regressions,
+            cea_receipt_digests: causal_result
+                .receipts
+                .iter()
+                .map(|receipt| receipt.receipt_digest.clone())
+                .collect(),
+            ablation_receipt_digests: ablation_receipts
+                .iter()
+                .map(|receipt| receipt.receipt_digest.clone())
+                .collect(),
+            patch_digest: causal_result
+                .receipts
+                .first()
+                .map(|receipt| receipt.patch_digest.clone()),
+            degradation_reasons: causal_result
+                .receipts
+                .iter()
+                .flat_map(|receipt| receipt.degradation_reasons.clone())
+                .chain(
+                    ablation_receipts
+                        .iter()
+                        .flat_map(|receipt| receipt.degradation_reasons.clone()),
+                )
+                .collect(),
         }),
         advisory_only: false,
         outcome_signature: format!(
             "patch:improvements={} regressions={}",
-            experiment_result.diff.improvements, experiment_result.diff.regressions
+            causal_result.experiment.diff.improvements, causal_result.experiment.diff.regressions
         ),
     })
 }

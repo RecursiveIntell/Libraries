@@ -9,10 +9,12 @@
 //!   semantic-memory-mcp --memory-dir /path --embedder ollama --embedding-url http://localhost:11434
 
 use clap::Parser;
+use fs2::FileExt;
 use rmcp::ServiceExt;
 #[cfg(not(all(feature = "stable", not(feature = "full"))))]
 use std::path::Path;
 use std::path::PathBuf;
+use std::{fs::File, fs::OpenOptions};
 use tracing_subscriber::EnvFilter;
 
 use semantic_memory_mcp::bridge::{self, EmbedderBackend};
@@ -82,6 +84,16 @@ struct Cli {
     #[arg(long)]
     http_only: bool,
 
+    /// Listen for lightweight local MCP relays using the daily agent profile.
+    /// The relay transports raw MCP stdio over loopback; this process remains
+    /// the only owner of the store and embedding model.
+    #[arg(long)]
+    mcp_agent_port: Option<u16>,
+
+    /// Listen for lightweight local MCP relays using the full operator profile.
+    #[arg(long)]
+    mcp_admin_port: Option<u16>,
+
     /// Enable TurboQuant compressed vector candidate backend.
     /// When enabled, embeddings are compressed using turbo-quant codecs for
     /// faster candidate generation, with exact f32 rerank for final results.
@@ -108,6 +120,61 @@ struct Cli {
         arg(long, default_value = "lean")
     )]
     tool_profile: ToolProfile,
+}
+
+/// Serve a profile over loopback TCP. Clients do not open the database: a
+/// tiny stdio relay forwards their MCP bytes to this listener instead.
+fn start_mcp_relay_listener(
+    runtime: &tokio::runtime::Handle,
+    port: u16,
+    bridge: semantic_memory_mcp::bridge::MemoryBridge,
+    profile: ToolProfile,
+) -> std::io::Result<()> {
+    runtime.block_on(async move {
+        let listener = tokio::net::TcpListener::bind(("127.0.0.1", port)).await?;
+        eprintln!("MCP relay listener ({profile}) on 127.0.0.1:{port}");
+        tokio::spawn(async move {
+            loop {
+                let Ok((stream, peer)) = listener.accept().await else {
+                    break;
+                };
+                let bridge = bridge.clone();
+                tokio::spawn(async move {
+                    let server = server::SemanticMemoryServer::from_profile(bridge, profile);
+                    match server.serve(stream).await {
+                        Ok(service) => {
+                            if let Err(error) = service.waiting().await {
+                                eprintln!("MCP relay client {peer} ended with error: {error}");
+                            }
+                        }
+                        Err(error) => eprintln!("MCP relay client {peer} failed: {error}"),
+                    }
+                });
+            }
+        });
+        Ok(())
+    })
+}
+
+/// Hold an advisory lock for the entire lifetime of a store owner. This turns
+/// an accidental second direct launch into a clear startup error instead of a
+/// competing model/database/index owner.
+fn acquire_owner_lock(memory_dir: &str) -> anyhow::Result<File> {
+    let path = PathBuf::from(format!("{memory_dir}.owner.lock"));
+    let file = OpenOptions::new()
+        .create(true)
+        .read(true)
+        .write(true)
+        .open(&path)
+        .map_err(|error| {
+            anyhow::anyhow!("failed to open owner lock {}: {error}", path.display())
+        })?;
+    file.try_lock_exclusive().map_err(|_| {
+        anyhow::anyhow!(
+            "semantic-memory owner already running for {memory_dir}; use the configured relay instead of opening the store directly"
+        )
+    })?;
+    Ok(file)
 }
 
 #[cfg(not(all(feature = "stable", not(feature = "full"))))]
@@ -148,6 +215,7 @@ fn main() -> anyhow::Result<()> {
         .init();
 
     let cli = Cli::parse();
+    let _owner_lock = acquire_owner_lock(&cli.memory_dir)?;
 
     eprintln!("semantic-memory-mcp starting...");
     eprintln!("  memory_dir: {}", cli.memory_dir);
@@ -213,6 +281,23 @@ fn main() -> anyhow::Result<()> {
 
     // Create the MCP server
     let server = server::SemanticMemoryServer::from_profile(bridge.clone(), cli.tool_profile);
+
+    if let Some(port) = cli.mcp_agent_port {
+        start_mcp_relay_listener(
+            &rt.handle().clone(),
+            port,
+            bridge.clone(),
+            ToolProfile::Agent,
+        )?;
+    }
+    if let Some(port) = cli.mcp_admin_port {
+        start_mcp_relay_listener(
+            &rt.handle().clone(),
+            port,
+            bridge.clone(),
+            ToolProfile::Full,
+        )?;
+    }
 
     // Start HTTP server if --http-port was specified.
     // When only HTTP is needed (no MCP client), use --http-only to skip stdio.

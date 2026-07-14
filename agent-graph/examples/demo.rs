@@ -18,22 +18,31 @@ async fn main() -> Result<()> {
         .with_name("demo-graph")
         .set_entry_point("input")
         // input node: seed the state
-        .add_node("input", node!("input", |state| async move {
-            println!("    > [input] setting initial value = 42");
-            state.set("value", 42_i64).await?;
-            state.set("step", "input_done").await?;
-            Ok(())
-        }))
+        .add_node(
+            "input",
+            node!("input", |state| async move {
+                println!("    > [input] setting initial value = 42");
+                state.set("value", 42_i64).await?;
+                state.set("step", "input_done").await?;
+                Ok(())
+            }),
+        )
         .add_edge("input", "process")
         // process node: transform the value
-        .add_node("process", node!("process", |state| async move {
-            let value: i64 = state.get("value").await?;
-            let doubled = value * 2;
-            println!("    > [process] received value={}, doubling to {}", value, doubled);
-            state.set("value", doubled).await?;
-            state.set("step", "process_done").await?;
-            Ok(())
-        }))
+        .add_node(
+            "process",
+            node!("process", |state| async move {
+                let value: i64 = state.get("value").await?;
+                let doubled = value * 2;
+                println!(
+                    "    > [process] received value={}, doubling to {}",
+                    value, doubled
+                );
+                state.set("value", doubled).await?;
+                state.set("step", "process_done").await?;
+                Ok(())
+            }),
+        )
         // conditional edge: router decides where to go from process
         .add_conditional_edge(
             "process",
@@ -49,13 +58,16 @@ async fn main() -> Result<()> {
             }),
         )
         // output node: emit final result
-        .add_node("output", node!("output", |state| async move {
-            let value: i64 = state.get("value").await?;
-            let step: String = state.get("step").await?;
-            println!("    > [output] final value={}, last_step={}", value, step);
-            state.set("step", "output_done").await?;
-            Ok(())
-        }))
+        .add_node(
+            "output",
+            node!("output", |state| async move {
+                let value: i64 = state.get("value").await?;
+                let step: String = state.get("step").await?;
+                println!("    > [output] final value={}, last_step={}", value, step);
+                state.set("step", "output_done").await?;
+                Ok(())
+            }),
+        )
         .add_edge("output", END)
         // attach checkpoint store for persistence
         .with_checkpoint_store(checkpoint_store.clone())
@@ -75,14 +87,22 @@ async fn main() -> Result<()> {
 
     let final_value: i64 = result.get("value").await?;
     let final_step: String = result.get("step").await?;
-    println!("    Final state: value={}, step={}\n", final_value, final_step);
+    println!(
+        "    Final state: value={}, step={}\n",
+        final_value, final_step
+    );
 
     // ── 3. Inspect checkpoint store ───────────────────────────────────────
     println!("[3] Inspecting checkpoint store");
     let runs = checkpoint_store.list_runs().await;
     println!("    Runs recorded: {}", runs.len());
     for run in &runs {
-        println!("    Run: id={}, status={:?}, attempts={}", run.run_id, run.status, run.attempts.len());
+        println!(
+            "    Run: id={}, status={:?}, attempts={}",
+            run.run_id,
+            run.status,
+            run.attempts.len()
+        );
         for attempt in &run.attempts {
             println!(
                 "      attempt: node={}, status={:?}, input={}",
@@ -97,19 +117,25 @@ async fn main() -> Result<()> {
     let graph2 = AgentGraph::builder()
         .with_name("router-demo")
         .set_entry_point("input")
-        .add_node("input", node!("input", |state| async move {
-            state.set("value", 10_i64).await?;
-            println!("    > [input] set value=10 (low, will skip output)");
-            Ok(())
-        }))
+        .add_node(
+            "input",
+            node!("input", |state| async move {
+                state.set("value", 10_i64).await?;
+                println!("    > [input] set value=10 (low, will skip output)");
+                Ok(())
+            }),
+        )
         .add_edge("input", "process")
-        .add_node("process", node!("process", |state| async move {
-            let value: i64 = state.get("value").await?;
-            let doubled = value * 2;
-            println!("    > [process] doubled to {}", doubled);
-            state.set("value", doubled).await?;
-            Ok(())
-        }))
+        .add_node(
+            "process",
+            node!("process", |state| async move {
+                let value: i64 = state.get("value").await?;
+                let doubled = value * 2;
+                println!("    > [process] doubled to {}", doubled);
+                state.set("value", doubled).await?;
+                Ok(())
+            }),
+        )
         .add_conditional_edge(
             "process",
             router!(|state| async move {
@@ -118,23 +144,32 @@ async fn main() -> Result<()> {
                     println!("    > [router] value={} > 50 → 'output'", value);
                     Ok(Some("output".to_string()))
                 } else {
-                    println!("    > [router] value={} <= 50 → END (skipping output)", value);
+                    println!(
+                        "    > [router] value={} <= 50 → END (skipping output)",
+                        value
+                    );
                     Ok(None)
                 }
             }),
         )
-        .add_node("output", node!("output", |state| async move {
-            let value: i64 = state.get("value").await?;
-            println!("    > [output] reached! value={}", value);
-            Ok(())
-        }))
+        .add_node(
+            "output",
+            node!("output", |state| async move {
+                let value: i64 = state.get("value").await?;
+                println!("    > [output] reached! value={}", value);
+                Ok(())
+            }),
+        )
         .add_edge("output", END)
         .build()?;
 
     let state2 = AgentState::new();
     let result2 = graph2.execute("input", state2).await?;
     let final_value2: i64 = result2.get("value").await?;
-    println!("    Final value (low path): {} (output node was skipped)\n", final_value2);
+    println!(
+        "    Final value (low path): {} (output node was skipped)\n",
+        final_value2
+    );
 
     // ── 5. Mermaid diagram ────────────────────────────────────────────────
     println!("[5] Graph Mermaid diagram:");

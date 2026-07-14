@@ -50,6 +50,9 @@ pub struct CeaEdgeRow {
 
 pub trait CeaStoreWriteTx {
     fn has_run(&self, run_hash: &str) -> Result<bool, CeaStoreError>;
+    /// Decay historical edge mass independently of this run's attribution
+    /// weights. The factor is applied before adding the new observation.
+    fn apply_graph_decay(&self, version_id: &str, factor: f64) -> Result<(), CeaStoreError>;
     fn upsert_node(
         &self,
         node_id: &str,
@@ -105,14 +108,27 @@ pub fn update_graph<S: CeaStore>(
     result: &cea_core::AttributedRunResult,
     eval_id: &str,
     version_id: &str,
-    decay_factor: f64,
+    graph_decay_factor: f64,
 ) -> Result<UpdateResult, CeaStoreError> {
     use std::collections::{BTreeMap, BTreeSet};
 
+    if !graph_decay_factor.is_finite() || !(0.0..=1.0).contains(&graph_decay_factor) {
+        return Err(CeaStoreError::Backend(format!(
+            "graph_decay_factor must be finite and in [0, 1], got {graph_decay_factor}"
+        )));
+    }
+    if result.evidence_kind != cea_core::EvidenceKind::Observational {
+        return Err(CeaStoreError::Backend(format!(
+            "only observational attribution may enter the code association graph; {:?} evidence remains receipt-only",
+            result.evidence_kind
+        )));
+    }
+
     store.with_write_tx(|tx| {
-        if tx.has_run(&result.run_hash)? {
+        if tx.has_run(result.idempotency_key())? {
             return Ok(UpdateResult::AlreadyProcessed);
         }
+        tx.apply_graph_decay(version_id, graph_decay_factor)?;
 
         let mut edges_added = 0_usize;
         let mut edges_updated = 0_usize;
@@ -129,10 +145,8 @@ pub fn update_graph<S: CeaStore>(
                 &serde_json::to_string(&triple.effect)?,
             )?;
 
-            let score =
-                cea_core::attribution_score(triple.distance, &triple.effect.severity, decay_factor);
             let edge_id = format!("{cause_id}_{effect_id}_{version_id}");
-            if tx.upsert_edge(&edge_id, &cause_id, &effect_id, score, version_id)? {
+            if tx.upsert_edge(&edge_id, &cause_id, &effect_id, triple.weight, version_id)? {
                 edges_added += 1;
             } else {
                 edges_updated += 1;
@@ -156,7 +170,7 @@ pub fn update_graph<S: CeaStore>(
         }
 
         tx.insert_run_log(
-            &result.run_hash,
+            result.idempotency_key(),
             eval_id,
             edges_added as i64,
             edges_updated as i64,
@@ -259,6 +273,16 @@ mod tests {
     impl CeaStoreWriteTx for FakeWriteTx<'_> {
         fn has_run(&self, run_hash: &str) -> Result<bool, CeaStoreError> {
             Ok(self.state.borrow().run_hashes.contains(run_hash))
+        }
+
+        fn apply_graph_decay(&self, version_id: &str, factor: f64) -> Result<(), CeaStoreError> {
+            let factor = factor.clamp(0.0, 1.0);
+            for ((_, _, stored_version_id), edge) in self.state.borrow_mut().edges.iter_mut() {
+                if stored_version_id == version_id {
+                    edge.weight *= factor;
+                }
+            }
+            Ok(())
         }
 
         fn upsert_node(
@@ -488,6 +512,20 @@ mod tests {
         )
     }
 
+    fn identified_result(
+        cause_seed: &str,
+        effect_seed: &str,
+        observation_id: &str,
+    ) -> AttributedRunResult {
+        let result = sample_result_with(cause_seed, effect_seed);
+        AttributedRunResult::with_observation(
+            result.triples,
+            result.check_result,
+            cea_core::EvidenceKind::Observational,
+            cea_core::ObservationIdentity::new(observation_id, "run", "trial"),
+        )
+    }
+
     #[test]
     fn update_graph_rolls_back_when_run_log_insert_fails() {
         let store = FakeStore {
@@ -522,6 +560,146 @@ mod tests {
         assert_eq!(second, UpdateResult::AlreadyProcessed);
         assert_eq!(store.load_nodes().unwrap().len(), 2);
         assert_eq!(store.load_edges(None).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn observation_identity_is_idempotent_even_if_replayed_content_changes() {
+        let store = FakeStore {
+            state: RefCell::new(FakeState::default()),
+            fail_run_log: false,
+        };
+        let first = identified_result("shared", "first", "observation-1");
+        let conflicting_replay = identified_result("shared", "second", "observation-1");
+        assert_ne!(first.run_hash, conflicting_replay.run_hash);
+
+        assert!(matches!(
+            update_graph(&store, &first, "eval-1", "v1", 0.95).unwrap(),
+            UpdateResult::Applied { .. }
+        ));
+        assert_eq!(
+            update_graph(&store, &conflicting_replay, "eval-2", "v1", 0.95).unwrap(),
+            UpdateResult::AlreadyProcessed
+        );
+        let edges = store.load_edges(Some("v1")).unwrap();
+        assert_eq!(edges.len(), 1);
+        assert_eq!(
+            edges[0].effect_node_id,
+            cea_core::effect_node_id(&sample_effect("first"))
+        );
+    }
+
+    #[test]
+    fn interventional_evidence_cannot_enter_the_observational_edge_store() {
+        let store = FakeStore {
+            state: RefCell::new(FakeState::default()),
+            fail_run_log: false,
+        };
+        let result = sample_result("intervention");
+        let result = AttributedRunResult::with_observation(
+            result.triples,
+            result.check_result,
+            cea_core::EvidenceKind::Ablation,
+            cea_core::ObservationIdentity::new("ablation", "run", "trial"),
+        );
+
+        let error = update_graph(&store, &result, "eval", "v1", 0.95).unwrap_err();
+        assert!(error.to_string().contains("only observational attribution"));
+        assert!(store.load_nodes().unwrap().is_empty());
+        assert!(store.load_edges(None).unwrap().is_empty());
+    }
+
+    #[test]
+    fn update_graph_persists_normalized_attribution_weights_exactly() {
+        let store = FakeStore {
+            state: RefCell::new(FakeState::default()),
+            fail_run_log: false,
+        };
+        let effect = sample_effect("shared");
+        let result = AttributedRunResult::new(
+            vec![
+                AttributionTriple {
+                    cause: sample_signature("left"),
+                    effect: effect.clone(),
+                    distance: 1,
+                    weight: 0.25,
+                },
+                AttributionTriple {
+                    cause: sample_signature("right"),
+                    effect,
+                    distance: 99,
+                    weight: 0.75,
+                },
+            ],
+            CheckResult {
+                fmt_pass: true,
+                clippy_pass: false,
+                test_pass: true,
+                fmt_output: ParsedCheckOutput::default(),
+                clippy_output: ParsedCheckOutput::default(),
+                test_output: ParsedCheckOutput::default(),
+                total_duration_ms: 1,
+            },
+        );
+
+        update_graph(&store, &result, "eval", "v1", 0.95).unwrap();
+        let weights = store
+            .load_edges(Some("v1"))
+            .unwrap()
+            .into_iter()
+            .map(|edge| edge.weight)
+            .collect::<Vec<_>>();
+        assert_eq!(weights.len(), 2);
+        assert!(weights.iter().any(|weight| (*weight - 0.25).abs() < 1e-12));
+        assert!(weights.iter().any(|weight| (*weight - 0.75).abs() < 1e-12));
+        assert!((weights.iter().sum::<f64>() - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn graph_decay_is_scoped_to_the_updated_version() {
+        let store = FakeStore {
+            state: RefCell::new(FakeState::default()),
+            fail_run_log: false,
+        };
+
+        update_graph(&store, &sample_result("v1"), "eval-v1", "v1", 1.0).unwrap();
+        update_graph(&store, &sample_result("v2"), "eval-v2", "v2", 1.0).unwrap();
+        let v2_weight_before = store.load_edges(Some("v2")).unwrap()[0].weight;
+
+        update_graph(
+            &store,
+            &sample_result_with("v1", "v1-next"),
+            "eval-v1-next",
+            "v1",
+            0.5,
+        )
+        .unwrap();
+
+        let v2_weight_after = store.load_edges(Some("v2")).unwrap()[0].weight;
+        assert_eq!(
+            v2_weight_after, v2_weight_before,
+            "updating v1 must not decay the independent v2 model"
+        );
+    }
+
+    #[test]
+    fn update_graph_rejects_non_finite_decay_without_mutation() {
+        let store = FakeStore {
+            state: RefCell::new(FakeState::default()),
+            fail_run_log: false,
+        };
+
+        let error = update_graph(
+            &store,
+            &sample_result("invalid-decay"),
+            "eval-invalid",
+            "v1",
+            f64::NAN,
+        )
+        .unwrap_err();
+
+        assert!(error.to_string().contains("graph_decay_factor"));
+        assert!(store.load_edges(None).unwrap().is_empty());
+        assert!(store.load_nodes().unwrap().is_empty());
     }
 
     #[test]

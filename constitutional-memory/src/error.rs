@@ -7,6 +7,8 @@ pub enum ConstitutionalValidationError {
     MissingField(&'static str),
     #[error("invalid artifact state: {0}")]
     InvalidState(&'static str),
+    #[error("invalid artifact linkage: {0}")]
+    InvalidLinkage(&'static str),
 }
 
 impl ConstitutionalValidationError {
@@ -14,6 +16,7 @@ impl ConstitutionalValidationError {
         match self {
             Self::MissingField(..) => "missing_field",
             Self::InvalidState(..) => "invalid_state",
+            Self::InvalidLinkage(..) => "invalid_linkage",
         }
     }
 }

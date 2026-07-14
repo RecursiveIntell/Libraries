@@ -5,6 +5,64 @@ use serde::de::{self, Deserializer, Visitor};
 use serde::ser::Serializer;
 use serde::{Deserialize, Serialize};
 
+/// Grade of the evidence that produced an observation.
+///
+/// Proximity attribution is observational; only explicit paired,
+/// counterfactual, or ablation executions are code interventions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EvidenceKind {
+    #[default]
+    Observational,
+    PairedInterventional,
+    Ablation,
+    Counterfactual,
+    SyntheticTelemetry,
+}
+
+impl EvidenceKind {
+    pub fn is_code_interventional(self) -> bool {
+        matches!(
+            self,
+            Self::PairedInterventional | Self::Ablation | Self::Counterfactual
+        )
+    }
+}
+
+/// Stable identity for one independently executed observation.
+///
+/// Optional digests bind the observation to its evaluated inputs without
+/// forcing legacy callers to provide data they did not record.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct ObservationIdentity {
+    pub observation_id: String,
+    pub run_id: String,
+    pub trial_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub patch_digest: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_digest: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub config_digest: Option<String>,
+}
+
+impl ObservationIdentity {
+    pub fn new(
+        observation_id: impl Into<String>,
+        run_id: impl Into<String>,
+        trial_id: impl Into<String>,
+    ) -> Self {
+        Self {
+            observation_id: observation_id.into(),
+            run_id: run_id.into(),
+            trial_id: trial_id.into(),
+            patch_digest: None,
+            base_digest: None,
+            config_digest: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EditOpKind {
     Insert,

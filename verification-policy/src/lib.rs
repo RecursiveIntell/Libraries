@@ -497,10 +497,7 @@ impl PolicySnapshot {
     /// Builds a deny-default policy snapshot that blocks all methods and
     /// promotions. Used as a fail-closed fallback when governance state is
     /// unavailable (AUTH-001 fix).
-    pub fn deny(
-        policy_version: impl Into<String>,
-        effective_from: impl Into<String>,
-    ) -> Self {
+    pub fn deny(policy_version: impl Into<String>, effective_from: impl Into<String>) -> Self {
         Self {
             schema_version: POLICY_SNAPSHOT_V1_SCHEMA.into(),
             policy_version: policy_version.into(),
@@ -515,9 +512,7 @@ impl PolicySnapshot {
                     "deny-applicability-context",
                 )),
                 profile_set_id: Some(ProfileSetId::new("deny-profile-set")),
-                composition_receipt_id: Some(CompositionReceiptId::new(
-                    "deny-composition-receipt",
-                )),
+                composition_receipt_id: Some(CompositionReceiptId::new("deny-composition-receipt")),
                 effective_constitution_id: Some(EffectiveConstitutionId::new(
                     "deny-effective-constitution",
                 )),

@@ -1,46 +1,42 @@
 # forge-pilot
 
-Closed-loop orchestrator that sits on top of Forge export, bridge/import, runtime advisories, and kernel oracles.
-
-## Usage
-
-```rust
-use forge_pilot::{execute_plan, ActionOutcome, LoopConfig, PatchPlanSeed};
-```
+Closed-loop orchestrator over Forge execution, canonical export/import, runtime
+advisories, and kernel oracles.
 
 ## Scope
 
-This crate scores targets, builds plans, performs canonical roundtrips, and
-records bounded loop execution without taking ownership of truth.
+`forge-pilot` scores targets, builds bounded plans, executes them, and records
+canonical roundtrips without taking ownership of truth. It does not compensate
+for unresolved kernel uncertainty or promote local output into supported truth
+on its own.
 
-## Non-goals
+## CEA integration
 
-- no direct authority writes as the normal path
-- no compensation for unresolved kernel uncertainty
-- no promotion of pilot output into supported truth on its own
+For `PairedPatch` plans, the pilot uses the already-open canonical `ForgeStore`
+and the real `CausalAttributionEngine`. It exports:
 
-## Running
+- matched-pair check outcomes and comparability;
+- integrity-bound observational update receipts;
+- bounded singleton-ablation receipts and refutation artifacts;
+- advisory prediction summaries; and
+- explicit degradation warnings.
+
+Patch-level improvements/regressions remain local outcome evidence. Causal
+hypothesis support and contradiction counts come only from comparable ablation
+receipts. Missing update receipts make verification trials incomplete. Unmeasured
+novelty or single-pair stability use compatibility zeros that are explicitly
+excluded from weighted scoring and disclosed in bundle warnings.
+
+## Running and verification
 
 ```bash
 cargo run -p forge-pilot --
+cargo test -p forge-pilot --test cea_bundle_tests
+cargo test -p forge-pilot --test loop_roundtrip_tests
 ```
 
 ## Ecosystem
 
-**Depends on:**
-- `stack-ids` -- identity primitives (`AttemptId`, `TraceCtx`, `TrialId`, `ClaimVersionId`, etc.)
-- `constraint-compiler`, `forge-memory-bridge`, `kernel-execution`, `kernel-oracles`
-- `recursive-kernel-core`, `semantic-memory`, `semantic-memory-forge`
-- `knowledge-runtime`, `forge-engine` (living-memory)
-- `verification-adjudication`, `verification-calibration`, `verification-control`, `verification-policy`
-- Optional governance: `assurance-runtime`, `attestation-exchange`, `authority-delegation`, `constitutional-memory`, `continuity-runtime`, `effect-runtime`, `mechanism-runtime`
-
-**Depended on by:**
-- `contract-schema-gen`
-- `kernel-conformance` (dev-dependency)
-
-## stack-ids integration
-
-Uses `AttemptId`, `TraceCtx`, `TrialId`, `EnvelopeId`, `ScopeKey`,
-`ClaimVersionId`, `ContentDigest`, and `OracleSliceId` from `stack-ids` for
-loop execution tracing, content addressing, and target identification.
+The pilot depends on `forge-engine`, `semantic-memory`,
+`semantic-memory-forge`, `forge-memory-bridge`, `knowledge-runtime`, kernel
+execution/oracle crates, and the verification policy/control stack.

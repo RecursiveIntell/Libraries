@@ -105,7 +105,7 @@ mod tests {
             .enumerate()
             .map(|(index, claim_id)| ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
-                    claim_id: None,
+                    claim_id: Some(ClaimId::new(format!("claim-{index}"))),
                     claim_version_id: Some((*claim_id).into()),
                     subject_entity_id: EntityId::new(format!("entity-{index}")),
                     predicate: "supports".into(),
@@ -946,7 +946,7 @@ mod tests {
         let scope = ScopeKey::namespace_only("c005-v3");
         let records = vec![ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
-                claim_id: None,
+                claim_id: Some(ClaimId::new("claim-c005-v3")),
                 claim_version_id: Some(ClaimVersionId::new("claim-c005-v3")),
                 subject_entity_id: EntityId::new("entity-c005"),
                 predicate: "supports".into(),

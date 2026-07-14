@@ -800,6 +800,54 @@ INSERT INTO forge_meta VALUES ('created_at',     strftime('%Y-%m-%dT%H:%M:%SZ', 
         Ok(())
     }
 
+    /// Persist the complete local authoring bundle in the canonical Forge store.
+    ///
+    /// Unlike the legacy field-wise insertion API, this preserves local metadata
+    /// such as CEA receipts and attribution JSON through a later reload.
+    pub fn insert_local_evidence_bundle(
+        &self,
+        bundle: &ExperimentEvidenceBundle,
+    ) -> ForgeResult<()> {
+        let canonical_bundle_json = serde_json::to_string(&bundle.to_canonical_evidence_bundle())?;
+        let scores_json = serde_json::to_string(&bundle.scores)?;
+        let hypotheses_json = serde_json::to_string(&bundle.hypotheses)?;
+        let verification_plan_json = bundle
+            .verification
+            .as_ref()
+            .map(serde_json::to_string)
+            .transpose()?;
+        let diff_json = bundle
+            .experiment_diff
+            .as_ref()
+            .map(serde_json::to_string)
+            .transpose()?;
+        let assessment_json = bundle
+            .assessment
+            .as_ref()
+            .map(serde_json::to_string)
+            .transpose()?;
+        let warnings_json = serde_json::to_string(&bundle.warnings)?;
+        self.lock_conn()?.execute(
+            "INSERT OR REPLACE INTO evidence_bundles (bundle_id, candidate_id, eval_id, version_id, trace_id, canonical_bundle_json, scores_json, hypotheses_json, verification_plan_json, diff_json, assessment_json, warnings_json, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+            rusqlite::params![
+                bundle.bundle_id,
+                bundle.candidate_id,
+                bundle.eval_id,
+                bundle.version_id,
+                bundle.trace_id.as_deref().unwrap_or("forge-engine"),
+                canonical_bundle_json,
+                scores_json,
+                hypotheses_json,
+                verification_plan_json,
+                diff_json,
+                assessment_json,
+                warnings_json,
+                bundle.created_at,
+            ],
+        )?;
+        Ok(())
+    }
+
     pub fn get_evidence_bundle(&self, bundle_id: &str) -> ForgeResult<Option<EvidenceBundleRow>> {
         match self.lock_conn()?.query_row(
             "SELECT bundle_id, candidate_id, eval_id, version_id, trace_id, canonical_bundle_json, scores_json, hypotheses_json, verification_plan_json, diff_json, assessment_json, warnings_json, created_at FROM evidence_bundles WHERE bundle_id = ?1",

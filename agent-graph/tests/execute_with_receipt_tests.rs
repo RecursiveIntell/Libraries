@@ -166,7 +166,9 @@ async fn execute_with_interrupt_reports_failure_not_complete() {
         .add_node(
             "fail_node",
             node!(|_state| async move {
-                Err::<(), _>(AgentGraphError::ExecutionError("deliberate test failure".to_string()))
+                Err::<(), _>(AgentGraphError::ExecutionError(
+                    "deliberate test failure".to_string(),
+                ))
             }),
         )
         .build()

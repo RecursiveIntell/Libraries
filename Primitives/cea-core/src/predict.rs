@@ -16,6 +16,22 @@ pub struct PredictionConfig {
     pub fuzzy_top_k: usize,
     /// Minimum sample units per signature to treat confidence as fully evidence-backed.
     pub min_samples_per_signature: usize,
+    /// Structural matching is advisory-only and must be explicitly enabled.
+    #[serde(default)]
+    pub enable_fuzzy_matching: bool,
+    /// Minimum interpretable structural agreement required for a fuzzy match.
+    #[serde(default = "default_min_structural_similarity")]
+    pub min_structural_similarity: f64,
+    /// Maximum coverage a fuzzy match may contribute.
+    #[serde(default = "default_fuzzy_coverage_cap")]
+    pub fuzzy_coverage_cap: f64,
+}
+
+fn default_min_structural_similarity() -> f64 {
+    0.75
+}
+fn default_fuzzy_coverage_cap() -> f64 {
+    0.25
 }
 
 impl Default for PredictionConfig {
@@ -25,6 +41,9 @@ impl Default for PredictionConfig {
             zero_shot_coverage_threshold: 0.6,
             fuzzy_top_k: 3,
             min_samples_per_signature: calibration::MIN_SAMPLES_PER_SIGNATURE,
+            enable_fuzzy_matching: false,
+            min_structural_similarity: default_min_structural_similarity(),
+            fuzzy_coverage_cap: default_fuzzy_coverage_cap(),
         }
     }
 }
@@ -67,7 +86,7 @@ pub fn predict_with_config(
     let mut signature_confidences = Vec::new();
 
     for signature in signatures {
-        let matches = resolve_signature_matches(signature, graph, config.fuzzy_top_k);
+        let matches = resolve_signature_matches(signature, graph, config);
         let signature_coverage = matches
             .iter()
             .map(|candidate| candidate.coverage_weight)
@@ -77,7 +96,8 @@ pub fn predict_with_config(
             continue;
         }
 
-        let mut signature_confidence = 1.0_f64;
+        let mut signature_confidence = 0.0_f64;
+        let mut signature_edge_count = 0_usize;
 
         for matched in matches {
             for (target_index, edge) in graph.outgoing_edges(matched.node_index) {
@@ -89,14 +109,18 @@ pub fn predict_with_config(
 
                 let edge_observations = edge.stats.observations as f64;
                 let match_coverage = matched.coverage_weight;
+                let raw_reliability =
+                    calibration::conservative_reliability(edge.stats.alpha, edge.stats.beta)
+                        * match_coverage;
+                signature_confidence += raw_reliability;
+                signature_edge_count += 1;
                 let edge_conservative_confidence = calibration::advisory_confidence(
-                    calibration::conservative_reliability(edge.stats.alpha, edge.stats.beta),
-                    match_coverage,
+                    raw_reliability,
+                    1.0,
                     edge_observations,
                     1,
                     config.min_samples_per_signature,
                 );
-                signature_confidence = signature_confidence.min(edge_conservative_confidence);
 
                 let signal = edge.weight.max(0.0) * edge.stats.mean() * match_coverage;
                 if signal <= f64::EPSILON {
@@ -123,7 +147,9 @@ pub fn predict_with_config(
             }
         }
 
-        signature_confidences.push(signature_confidence);
+        if signature_edge_count > 0 {
+            signature_confidences.push(signature_confidence / signature_edge_count as f64);
+        }
     }
 
     let coverage_fraction = (coverage_total / signatures.len() as f64).clamp(0.0, 1.0);
@@ -133,11 +159,12 @@ pub fn predict_with_config(
     } else {
         (positive / total_signal).clamp(0.0, 1.0)
     };
-    let blended_correctness = modeled_correctness;
+    let blended_correctness =
+        modeled_correctness * coverage_fraction + 0.5 * (1.0 - coverage_fraction);
     let signature_confidence = if signature_confidences.is_empty() {
         0.0
     } else {
-        signature_confidences.into_iter().fold(1.0, f64::min)
+        signature_confidences.iter().sum::<f64>() / signature_confidences.len() as f64
     };
     let confidence = calibration::advisory_confidence(
         signature_confidence,
@@ -162,10 +189,10 @@ pub fn predict_with_config(
         }
     }
 
-    let zero_shot_eligible = coverage_fraction >= config.zero_shot_coverage_threshold
-        && confidence >= config.risk_confidence_threshold
-        && calibration::effective_sample_size(sample_evidence) >= ZERO_SHOT_MIN_EFFECTIVE_SAMPLES
-        && risk_flags.is_empty();
+    // A graph edge records association. Independent interventional support is
+    // required before any caller may skip checks, and that evidence is not
+    // represented in this legacy graph snapshot.
+    let zero_shot_eligible = false;
 
     risk_flags.sort_by(|left, right| {
         right
@@ -209,7 +236,7 @@ struct RawRiskCandidate {
 fn resolve_signature_matches(
     signature: &EditOpSignature,
     graph: &CausalGraph,
-    fuzzy_top_k: usize,
+    config: &PredictionConfig,
 ) -> Vec<MatchCandidate> {
     let node_id = edit_op_node_id(signature);
     if let Some(node_index) = graph.node_index_map.get(&node_id) {
@@ -219,12 +246,16 @@ fn resolve_signature_matches(
         }];
     }
 
+    if !config.enable_fuzzy_matching {
+        return Vec::new();
+    }
+
     let mut fuzzy = graph
         .cause_nodes()
         .into_iter()
         .filter_map(|(node_index, candidate)| {
             let similarity = heuristic_similarity(signature, candidate);
-            (similarity > 0.0).then_some((node_index, similarity))
+            (similarity >= config.min_structural_similarity).then_some((node_index, similarity))
         })
         .collect::<Vec<_>>();
 
@@ -235,7 +266,7 @@ fn resolve_signature_matches(
             .unwrap_or(Ordering::Equal)
             .then_with(|| left.0.index().cmp(&right.0.index()))
     });
-    fuzzy.truncate(fuzzy_top_k.max(1));
+    fuzzy.truncate(config.fuzzy_top_k.max(1));
 
     let total_similarity = fuzzy.iter().map(|(_, similarity)| *similarity).sum::<f64>();
     if total_similarity <= f64::EPSILON {
@@ -246,14 +277,14 @@ fn resolve_signature_matches(
         .into_iter()
         .map(|(node_index, similarity)| MatchCandidate {
             node_index,
-            coverage_weight: similarity,
+            coverage_weight: similarity.min(config.fuzzy_coverage_cap.clamp(0.0, 1.0)),
         })
         .collect()
 }
 
 fn heuristic_similarity(left: &EditOpSignature, right: &EditOpSignature) -> f64 {
-    let mut score = 0.0;
-    let mut max_score = 0.0;
+    let mut score: f64 = 0.0;
+    let mut max_score: f64 = 0.0;
 
     max_score += 3.0;
     if left.op_kind == right.op_kind {
@@ -276,17 +307,34 @@ fn heuristic_similarity(left: &EditOpSignature, right: &EditOpSignature) -> f64 
     }
 
     max_score += 2.0;
-    score += shared_prefix_ratio(&left.context_hash, &right.context_hash) * 2.0;
+    score += line_change_similarity(left, right) * 2.0;
+
+    // Cryptographic digests are opaque: either an informative source context
+    // matches exactly or it supplies no structural evidence. The digest of an
+    // empty context is shared by every range edit and must not count as a match.
+    max_score += 3.0;
+    if is_informative_context_hash(&left.context_hash)
+        && is_informative_context_hash(&right.context_hash)
+        && left.context_hash == right.context_hash
+    {
+        score += 3.0;
+    }
 
     (score / max_score).clamp(0.0, 1.0)
 }
 
-fn shared_prefix_ratio(left: &str, right: &str) -> f64 {
-    let max_len = left.len().min(right.len()).max(1) as f64;
-    let shared = left
-        .chars()
-        .zip(right.chars())
-        .take_while(|(left, right)| left == right)
-        .count() as f64;
-    shared / max_len
+fn line_change_similarity(left: &EditOpSignature, right: &EditOpSignature) -> f64 {
+    fn ratio(left: u32, right: u32) -> f64 {
+        match (left, right) {
+            (0, 0) => 1.0,
+            _ => f64::from(left.min(right)) / f64::from(left.max(right).max(1)),
+        }
+    }
+
+    (ratio(left.lines_added, right.lines_added) + ratio(left.lines_removed, right.lines_removed))
+        / 2.0
+}
+
+fn is_informative_context_hash(hash: &str) -> bool {
+    !hash.is_empty() && hash != blake3::hash(b"").to_hex().as_str()
 }

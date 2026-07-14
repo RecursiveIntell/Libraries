@@ -92,10 +92,13 @@ score_summary = 0.70 * correctness + 0.20 * novelty + 0.10 * stability
 
 ## Causal diversity (CEA augmentation)
 
-When CEA is enabled and `cea_prediction.zero_shot_eligible`:
-- Each archive cell stores `cea_fingerprint` = blake3 of sorted dominant `EditOpSignature` hashes.
-- During emitter selection, prefer emitting from parent cells with *different* `cea_fingerprint`
-  values (maximizes causal diversity alongside behavioral diversity).
+When CEA is enabled and an advisory prediction has adequate exact coverage:
+- an archive cell may store `cea_fingerprint` as a digest of sorted dominant observational
+  `EditOpSignature` hashes; and
+- emitter selection may use fingerprint distance as a diversity heuristic.
+
+This is association diversity, not proof of causal diversity, and it does not affect the
+mandatory check-execution gate.
 
 ---
 

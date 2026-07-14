@@ -168,6 +168,62 @@ pub struct RetirementBundleV1 {
     pub horizon_only: bool,
 }
 
+/// Validates the cross-artifact invariants required before an amendment can be
+/// admitted to the approval evaluator.
+pub fn validate_amendment_artifacts(
+    proposal: &AmendmentProposalV1,
+    archive_manifest: Option<&ArchiveManifestV1>,
+    historical_query_guarantee: Option<&HistoricalQueryGuaranteeV1>,
+) -> ConstitutionalValidationResult {
+    if proposal.schema_version != AMENDMENT_PROPOSAL_V1_SCHEMA {
+        return Err(ConstitutionalValidationError::InvalidState(
+            "amendment proposal schema version is not supported",
+        ));
+    }
+    if proposal
+        .rollback_handle
+        .as_deref()
+        .map_or(true, str::is_empty)
+    {
+        return Err(ConstitutionalValidationError::MissingField(
+            "rollback_handle",
+        ));
+    }
+    let archive = archive_manifest.ok_or(ConstitutionalValidationError::MissingField(
+        "archive_manifest",
+    ))?;
+    let guarantee = historical_query_guarantee.ok_or(
+        ConstitutionalValidationError::MissingField("historical_query_guarantee"),
+    )?;
+    if archive.schema_version != ARCHIVE_MANIFEST_V1_SCHEMA
+        || guarantee.schema_version != HISTORICAL_QUERY_GUARANTEE_V1_SCHEMA
+    {
+        return Err(ConstitutionalValidationError::InvalidState(
+            "archive artifact schema version is not supported",
+        ));
+    }
+    if archive.charter_bundle_id != proposal.charter_bundle_id {
+        return Err(ConstitutionalValidationError::InvalidLinkage(
+            "archive manifest charter does not match amendment proposal",
+        ));
+    }
+    if guarantee.archive_manifest_id != archive.archive_manifest_id {
+        return Err(ConstitutionalValidationError::InvalidLinkage(
+            "historical query guarantee does not refer to the archive manifest",
+        ));
+    }
+    if proposal
+        .required_historical_query_modes
+        .iter()
+        .any(|mode| !guarantee.guaranteed_query_modes.contains(mode))
+    {
+        return Err(ConstitutionalValidationError::InvalidLinkage(
+            "historical query guarantee does not cover all proposal modes",
+        ));
+    }
+    Ok(())
+}
+
 pub fn evaluate_amendment(
     proposal: &AmendmentProposalV1,
     migration_obligations_satisfied: bool,
@@ -177,7 +233,9 @@ pub fn evaluate_amendment(
 ) -> AmendmentDecisionV1 {
     let rollback_ready = proposal.rollback_handle.is_some();
     let semantic_diff_ready = proposal.semantic_diff_id.is_some();
-    let archive_ready = archive_manifest.is_some() && historical_query_guarantee.is_some();
+    let archive_ready =
+        validate_amendment_artifacts(proposal, archive_manifest, historical_query_guarantee)
+            .is_ok();
     let disposition = if proposal.advisory_only {
         AmendmentDisposition::AdvisoryOnly
     } else if !rollback_ready {

@@ -1368,6 +1368,7 @@ dependencies = [
  "schemars",
  "serde",
  "stack-ids",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

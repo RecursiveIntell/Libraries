@@ -64,11 +64,12 @@ Required tasks:
 ---
 
 ## CEA security
-- CEA data never leaves `forge.db` (local-only).
-- `EditOpSignature.context_hash` is a one-way blake3 hash; raw context cannot be recovered.
-- Test `I2` in TEST_PLAN.md enforces that raw source never appears in CEA nodes.
-- If CEA output is somehow corrupted, `predict()` returns a low-confidence prediction
-  (not an error) — the system degrades gracefully.
+- The canonical observational graph remains local in `forge.db`.
+- Exported CEA receipts contain structural identities and cryptographic digests, not raw source.
+- Hermes synthetic tool telemetry is isolated in `cea-telemetry-v2.db` and cannot train the graph.
+- `EditOpSignature.context_hash` is a one-way BLAKE3 digest; hash prefixes are not similarity.
+- Test `I2` in `TEST_PLAN.md` enforces that raw source never appears in CEA nodes.
+- Unknown/corrupt prediction input degrades to advisory low-confidence output and `RunChecks`.
 
 ---
 

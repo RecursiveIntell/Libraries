@@ -82,8 +82,8 @@ impl SemanticMemoryServer {
             bridge: Arc::new(bridge),
             tool_router: Self::tool_router(),
         };
-        debug_assert_eq!(server.tool_router.list_all().len(), 13);
-        eprintln!("Tool profile: stable (13 compile-time tools visible)");
+        debug_assert_eq!(server.tool_router.list_all().len(), 10);
+        eprintln!("Tool profile: stable (10 read-only compile-time tools visible)");
         server
     }
 
@@ -1056,9 +1056,7 @@ impl SemanticMemoryServer {
         }
     }
 
-    #[tool(
-        description = "Add a fact to the knowledge base. This stable build fails closed because no trusted authenticated authority issuer is injected into the MCP composition root."
-    )]
+    #[allow(dead_code)]
     fn sm_add_fact(
         &self,
         Parameters(AddFactParams {
@@ -1088,10 +1086,7 @@ impl SemanticMemoryServer {
         ))
     }
 
-    #[tool(
-        description = "Create a replacement fact and link it to a stale fact via 'supersedes' edge. Use instead of deleting outdated facts. Returns new fact id and edge id.",
-        annotations(idempotent_hint = true)
-    )]
+    #[allow(dead_code)]
     fn sm_supersede_fact(
         &self,
         Parameters(SupersedeFactParams {
@@ -1156,10 +1151,7 @@ impl SemanticMemoryServer {
         }))
     }
 
-    #[tool(
-        description = "Add a durable, typed graph edge between two nodes. Edge types: semantic, temporal, causal, entity. Idempotent — same edge returns existing ID.",
-        annotations(idempotent_hint = true)
-    )]
+    #[allow(dead_code)]
     fn sm_add_graph_edge(
         &self,
         Parameters(params): Parameters<AddGraphEdgeParams>,
@@ -1309,9 +1301,6 @@ mod tests {
             "sm_get_fact_neighbors",
             "sm_graph_path",
             "sm_search_conversations",
-            "sm_add_fact",
-            "sm_supersede_fact",
-            "sm_add_graph_edge",
             "sm_decide_assertion_authority",
             "sm_decide_action_authority",
         ]
@@ -1330,6 +1319,9 @@ mod tests {
             );
         }
         for forbidden in [
+            "sm_add_fact",
+            "sm_supersede_fact",
+            "sm_add_graph_edge",
             "sm_delete_fact",
             "sm_route_query",
             "sm_create_claim",
