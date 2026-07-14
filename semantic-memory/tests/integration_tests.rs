@@ -322,6 +322,7 @@ async fn test_v3_migration() {
     assert!(!dirty, "Fresh DB should not have dirty embeddings");
 }
 
+#[cfg(feature = "admin-ops")]
 #[tokio::test]
 async fn test_embedding_dirty_flag() {
     let tmp = TempDir::new().unwrap();
@@ -364,6 +365,7 @@ async fn test_embedding_dirty_flag() {
     }
 }
 
+#[cfg(feature = "admin-ops")]
 #[tokio::test]
 async fn test_reembed_all_includes_messages() {
     let (store, _tmp) = test_store();

@@ -42,6 +42,7 @@ fn make_meta(effect_type: &str, cause_ids: Vec<&str>) -> EpisodeMeta {
 // 1. Multi-episode reembed regression
 // ──────────────────────────────────────────────────────────────────────
 
+#[cfg(feature = "admin-ops")]
 #[tokio::test]
 async fn reembed_preserves_sibling_episode_identity() {
     let (store, _dir) = test_store();
@@ -464,6 +465,7 @@ async fn integrity_surfaces_episode_level_drift() {
 // 7. Migration continuity (simulated)
 // ──────────────────────────────────────────────────────────────────────
 
+#[cfg(feature = "admin-ops")]
 #[tokio::test]
 async fn legacy_ep0_migration_then_add_sibling() {
     let (store, _dir) = test_store();
@@ -559,6 +561,7 @@ async fn legacy_ep0_migration_then_add_sibling() {
 // Additional: reembed isolation with embedding verification
 // ──────────────────────────────────────────────────────────────────────
 
+#[cfg(feature = "admin-ops")]
 #[tokio::test]
 async fn reembed_does_not_collapse_multiple_episodes_per_document() {
     let (store, dir) = test_store();

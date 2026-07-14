@@ -60,6 +60,7 @@ async fn add_fact_stores_q8() {
 }
 
 /// 5.2 - reembed_all regenerates embeddings (including q8) and search still works.
+#[cfg(feature = "admin-ops")]
 #[tokio::test]
 async fn reembed_all_regenerates_q8() {
     let (store, _tmp) = test_store();

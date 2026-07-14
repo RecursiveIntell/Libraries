@@ -47,10 +47,15 @@
 //! so future readers can dispatch.
 
 use std::collections::HashMap;
-use std::fs;
+use std::fs::{self, File};
 use std::hash::Hasher;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::RwLock;
+#[cfg(unix)]
+use std::os::unix::fs::symlink;
+#[cfg(windows)]
+use std::os::windows::fs::symlink_dir;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
@@ -64,6 +69,7 @@ use usearch::Index;
 /// switching to F16 or F8 saves memory at a recall cost. See
 /// HNSW_RESEARCH_2026-06-02.md §10a.
 const SCALAR_KIND: ScalarKind = ScalarKind::F32;
+const CURRENT_GENERATION_DIR: &str = "CURRENT";
 
 /// Sentinel value used to detect end-of-iteration when reading the
 /// keymap file. (Not actually needed for the sidecar format, but kept
@@ -114,6 +120,11 @@ pub struct UsearchBackend {
     /// True if the in-memory state has diverged from the on-disk sidecar
     /// and a `save()` is needed.
     dirty: std::sync::atomic::AtomicBool,
+
+    #[cfg(test)]
+    test_add_fail_on_call: std::sync::atomic::AtomicUsize,
+    #[cfg(test)]
+    test_add_call_count: std::sync::atomic::AtomicUsize,
 }
 
 impl UsearchBackend {
@@ -141,6 +152,10 @@ impl UsearchBackend {
             id_to_key: RwLock::new(HashMap::new()),
             config,
             dirty: std::sync::atomic::AtomicBool::new(false),
+            #[cfg(test)]
+            test_add_fail_on_call: std::sync::atomic::AtomicUsize::new(0),
+            #[cfg(test)]
+            test_add_call_count: std::sync::atomic::AtomicUsize::new(0),
         })
     }
 
@@ -150,8 +165,8 @@ impl UsearchBackend {
         basename: &str,
         config: VectorIndexConfig,
     ) -> Result<Self, MemoryError> {
-        // Read the manifest first to verify the on-disk format matches.
-        let manifest_path = manifest_path(dir, basename);
+        let active_root = resolve_active_root(dir)?;
+        let manifest_path = manifest_path(&active_root, basename);
         let manifest_bytes = fs::read(&manifest_path).map_err(|e| {
             MemoryError::StorageError(format!(
                 "usearch sidecar manifest read failed at {:?}: {e}",
@@ -174,6 +189,18 @@ impl UsearchBackend {
                 manifest.hnsw_sidecar_format_version
             )));
         }
+        if manifest.dimensions != config.dimensions {
+            return Err(MemoryError::StorageError(format!(
+                "usearch manifest dimensions mismatch: manifest={} config={}",
+                manifest.dimensions, config.dimensions
+            )));
+        }
+
+        if !verify_manifest_consistency_in_root(&active_root, &manifest)? {
+            return Err(MemoryError::StorageError(
+                "usearch sidecar failed persistence verification; rebuild from SQLite".to_string(),
+            ));
+        }
 
         // Build the empty index, then load the usearch bytes into it.
         let options = IndexOptions {
@@ -189,7 +216,7 @@ impl UsearchBackend {
             MemoryError::HnswError(format!("usearch::Index::new failed during load: {e:?}"))
         })?;
 
-        let data_path = dir.join(&manifest.data_file_name);
+        let data_path = active_root.join(&manifest.data_file_name);
         let data_path_str = data_path.to_str().ok_or_else(|| {
             MemoryError::StorageError(format!("non-UTF8 data path: {:?}", data_path))
         })?;
@@ -198,28 +225,19 @@ impl UsearchBackend {
         })?;
 
         // Load the keymap.
-        let keys_path = dir.join(&manifest.keys_file_name);
+        let keys_path = active_root.join(&manifest.keys_file_name);
         let keymap_raw = fs::read_to_string(&keys_path).map_err(|e| {
             MemoryError::StorageError(format!(
                 "usearch keymap read failed at {:?}: {e}",
                 keys_path
             ))
         })?;
-        let mut key_to_id = HashMap::new();
-        let mut id_to_key = HashMap::new();
-        for line in keymap_raw.lines() {
-            if line.is_empty() {
-                continue;
-            }
-            if let Some((id_str, key)) = line.split_once('\t') {
-                if let Ok(id) = id_str.parse::<u64>() {
-                    if id == KEYMAP_SENTINEL {
-                        continue;
-                    }
-                    key_to_id.insert(key.to_string(), id);
-                    id_to_key.insert(id, key.to_string());
-                }
-            }
+        let (key_to_id, id_to_key, key_count) = parse_keymap(&keymap_raw)?;
+        if key_count != manifest.vector_count {
+            return Err(MemoryError::StorageError(format!(
+                "usearch sidecar key count mismatch: manifest={} file={}",
+                manifest.vector_count, key_count
+            )));
         }
 
         Ok(Self {
@@ -228,6 +246,10 @@ impl UsearchBackend {
             id_to_key: RwLock::new(id_to_key),
             config,
             dirty: std::sync::atomic::AtomicBool::new(false),
+            #[cfg(test)]
+            test_add_fail_on_call: std::sync::atomic::AtomicUsize::new(0),
+            #[cfg(test)]
+            test_add_call_count: std::sync::atomic::AtomicUsize::new(0),
         })
     }
 
@@ -266,6 +288,8 @@ impl UsearchBackend {
         // Do not publish either mapping until usearch accepts the vector. This keeps
         // both directions unchanged on collision or backend insertion failure.
         let index = self.index.write().unwrap_or_else(|e| e.into_inner());
+        #[cfg(test)]
+        self.maybe_fail_index_add("insert_with_id")?;
         index
             .add(id, vector)
             .map_err(|e| MemoryError::HnswError(format!("usearch::Index::add failed: {e:?}")))?;
@@ -286,17 +310,54 @@ impl UsearchBackend {
         self.insert_with_id(key, vector, id)
     }
 
+    #[cfg(test)]
+    fn set_test_add_failure_on_call(&self, call_number: usize) {
+        self.test_add_call_count
+            .store(0, std::sync::atomic::Ordering::SeqCst);
+        self.test_add_fail_on_call
+            .store(call_number, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    #[cfg(test)]
+    fn maybe_fail_index_add(&self, op: &str) -> Result<(), MemoryError> {
+        let fail_call = self
+            .test_add_fail_on_call
+            .load(std::sync::atomic::Ordering::SeqCst);
+        if fail_call == 0 {
+            return Ok(());
+        }
+
+        let call_number = self
+            .test_add_call_count
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst)
+            + 1;
+        if call_number == fail_call {
+            return Err(MemoryError::HnswError(format!(
+                "mocked usearch::Index::add failure in {op} on add call {call_number}"
+            )));
+        }
+        Ok(())
+    }
+
     /// Save the in-memory state to the sidecar format. Atomic replace.
     pub fn save_to_disk(&self, dir: &Path, basename: &str) -> Result<(), MemoryError> {
         fs::create_dir_all(dir).map_err(|e| {
             MemoryError::StorageError(format!("usearch sidecar dir create failed: {:?}: {e}", dir))
+        })?;
+        let generation_id = generate_generation_id();
+        let generation_dir = dir.join(format!(".{generation_id}"));
+        fs::create_dir_all(&generation_dir).map_err(|e| {
+            MemoryError::StorageError(format!(
+                "usearch generation dir create failed: {:?}: {e}",
+                generation_dir
+            ))
         })?;
 
         // Save the usearch bytes via save_to_buffer + atomic write.
         // usearch requires us to pre-allocate the destination buffer; the
         // size comes from serialized_length() and must be re-checked
         // immediately before the call (the index can grow between calls).
-        let data_path = dir.join(data_file_name(basename));
+        let data_path = generation_dir.join(data_file_name(basename));
         let _data_path_str = data_path.to_str().ok_or_else(|| {
             MemoryError::StorageError(format!("non-UTF8 data path: {:?}", data_path))
         })?;
@@ -316,24 +377,13 @@ impl UsearchBackend {
             len
         };
         let _ = written; // suppress unused warning
-                         // Atomic replace: write to tmp, rename.
-        let data_tmp = dir.join(format!("{}.tmp", data_file_name(basename)));
-        fs::write(&data_tmp, &bytes).map_err(|e| {
-            MemoryError::StorageError(format!(
-                "usearch data tmp write failed: {:?}: {e}",
-                data_tmp
-            ))
-        })?;
-        fs::rename(&data_tmp, &data_path).map_err(|e| {
-            MemoryError::StorageError(format!(
-                "usearch data rename failed: {:?} → {:?}: {e}",
-                data_tmp, data_path
-            ))
-        })?;
         drop(index);
+        fs::write(&data_path, &bytes).map_err(|e| {
+            MemoryError::StorageError(format!("usearch data write failed: {:?}: {e}", data_path))
+        })?;
 
         // Save the keymap (line-delimited "u64\tkey").
-        let keys_path = dir.join(keys_file_name(basename));
+        let keys_path = generation_dir.join(keys_file_name(basename));
         let keymap_raw = {
             let id_to_key = self.id_to_key.read().unwrap_or_else(|e| e.into_inner());
             let mut s = String::new();
@@ -343,18 +393,8 @@ impl UsearchBackend {
             s.push_str(&format!("{}\n", KEYMAP_SENTINEL));
             s
         };
-        let keys_tmp = dir.join(format!("{}.tmp", keys_file_name(basename)));
-        fs::write(&keys_tmp, &keymap_raw).map_err(|e| {
-            MemoryError::StorageError(format!(
-                "usearch keys tmp write failed: {:?}: {e}",
-                keys_tmp
-            ))
-        })?;
-        fs::rename(&keys_tmp, &keys_path).map_err(|e| {
-            MemoryError::StorageError(format!(
-                "usearch keys rename failed: {:?} → {:?}: {e}",
-                keys_tmp, keys_path
-            ))
+        fs::write(&keys_path, &keymap_raw).map_err(|e| {
+            MemoryError::StorageError(format!("usearch keys write failed: {:?}: {e}", keys_path))
         })?;
 
         // Write the manifest last, after both files are on disk.
@@ -379,25 +419,43 @@ impl UsearchBackend {
             source_sqlite_epoch: Some(current_epoch_secs()),
             created_at: chrono::Utc::now().to_rfc3339(),
         };
-        let manifest_path = manifest_path(dir, basename);
+        let manifest_path = generation_dir.join(manifest_file_name(basename));
         let manifest_json = serde_json::to_vec_pretty(&manifest)
             .map_err(|e| MemoryError::StorageError(format!("manifest serialize failed: {e}")))?;
-        let manifest_tmp = dir.join(format!("{}.tmp", manifest_file_name(basename)));
-        fs::write(&manifest_tmp, &manifest_json).map_err(|e| {
+        fs::write(&manifest_path, &manifest_json).map_err(|e| {
             MemoryError::StorageError(format!(
-                "manifest tmp write failed: {:?}: {e}",
-                manifest_tmp
-            ))
-        })?;
-        fs::rename(&manifest_tmp, &manifest_path).map_err(|e| {
-            MemoryError::StorageError(format!(
-                "manifest rename failed: {:?} → {:?}: {e}",
-                manifest_tmp, manifest_path
+                "usearch manifest write failed: {:?}: {e}",
+                manifest_path
             ))
         })?;
 
+        sync_directory(&generation_dir)?;
+        publish_generation_directory(dir, &generation_dir)?;
+        sync_directory(dir)?;
+
         self.dirty.store(false, std::sync::atomic::Ordering::SeqCst);
         Ok(())
+    }
+
+    /// Check whether on-disk sidecar files are consistent for the active generation.
+    pub fn verify_persistence(dir: &Path) -> Result<bool, MemoryError> {
+        let active_root = resolve_active_root(dir)?;
+        let manifest_path = discover_manifest_path(&active_root)?;
+        let manifest_bytes = fs::read(&manifest_path).map_err(|e| {
+            MemoryError::StorageError(format!(
+                "usearch sidecar manifest read failed at {:?}: {e}",
+                manifest_path
+            ))
+        })?;
+        let manifest: UsearchSidecarManifestV1 = serde_json::from_slice(&manifest_bytes).map_err(
+            |e| {
+                MemoryError::StorageError(format!(
+                    "usearch sidecar manifest parse failed at {:?}: {e}",
+                    manifest_path
+                ))
+            },
+        )?;
+        verify_manifest_consistency_in_root(&active_root, &manifest)
     }
 
     #[allow(dead_code)]
@@ -462,9 +520,57 @@ impl VectorBackend for UsearchBackend {
     }
 
     fn update(&self, key: String, vector: &[f32]) -> Result<(), MemoryError> {
-        // For usearch, update is a delete + insert (no in-place mutation).
-        self.delete(&key)?;
-        self.insert(key, vector)
+        validate_dimensions_vs_config(vector.len(), self.config.dimensions)?;
+        let old_id = {
+            let key_to_id = self.key_to_id.read().unwrap_or_else(|e| e.into_inner());
+            key_to_id.get(&key).copied()
+        };
+
+        let mut new_id = hash_key_with_epoch(&key);
+        while old_id == Some(new_id) || self.id_to_key.read().unwrap_or_else(|e| e.into_inner()).contains_key(&new_id) {
+            new_id = hash_key_with_epoch(&key);
+        }
+
+        let index = self.index.write().unwrap_or_else(|e| e.into_inner());
+        #[cfg(test)]
+        self.maybe_fail_index_add("update")?;
+        index
+            .add(new_id, vector)
+            .map_err(|e| MemoryError::HnswError(format!("usearch::Index::add failed: {e:?}")))?;
+
+        if let Some(old_id) = old_id {
+            let removed = index
+                .remove(old_id)
+                .map_err(|e| {
+                    MemoryError::HnswError(format!("usearch::Index::remove failed: {e:?}"))
+                })?;
+            if removed == 0 {
+                let _ = index.remove(new_id);
+                return Err(MemoryError::HnswError(
+                    "usearch update failed because old vector was not removable".to_string(),
+                ));
+            }
+        }
+
+        let mut key_to_id = self.key_to_id.write().unwrap_or_else(|e| e.into_inner());
+        let mut id_to_key = self.id_to_key.write().unwrap_or_else(|e| e.into_inner());
+        if let Some(existing_key) = id_to_key.get(&new_id) {
+            if existing_key != &key {
+                let _ = index.remove(new_id);
+                return Err(MemoryError::HnswError(format!(
+                    "usearch update collision: id {new_id} is already owned by '{existing_key}'"
+                )));
+            }
+        }
+        if let Some(old_id) = old_id {
+            key_to_id.remove(&key);
+            id_to_key.remove(&old_id);
+        }
+        key_to_id.insert(key.clone(), new_id);
+        id_to_key.insert(new_id, key);
+
+        self.dirty.store(true, std::sync::atomic::Ordering::SeqCst);
+        Ok(())
     }
 
     fn search(&self, query: &[f32], top_k: usize) -> Result<Vec<VectorHit>, MemoryError> {
@@ -541,6 +647,215 @@ fn validate_dimensions_vs_config(actual: usize, expected: usize) -> Result<(), M
 fn manifest_path(dir: &Path, basename: &str) -> std::path::PathBuf {
     dir.join(manifest_file_name(basename))
 }
+
+fn resolve_active_root(dir: &Path) -> Result<PathBuf, MemoryError> {
+    let current = dir.join(CURRENT_GENERATION_DIR);
+    let metadata = match fs::symlink_metadata(&current) {
+        Ok(metadata) => metadata,
+        Err(_) => return Ok(dir.to_path_buf()),
+    };
+
+    if metadata.file_type().is_symlink() {
+        let target = fs::read_link(&current).map_err(|e| {
+            MemoryError::StorageError(format!(
+                "usearch CURRENT link resolve failed at {:?}: {e}",
+                current
+            ))
+        })?;
+        if target.is_absolute() {
+            Ok(target)
+        } else {
+            Ok(current.join(target))
+        }
+    } else if metadata.is_dir() {
+        Ok(current)
+    } else {
+        Ok(dir.to_path_buf())
+    }
+}
+
+fn discover_manifest_path(active_root: &Path) -> Result<PathBuf, MemoryError> {
+    let mut found: Option<PathBuf> = None;
+    for entry in fs::read_dir(active_root).map_err(|e| {
+        MemoryError::StorageError(format!(
+            "usearch manifest directory read failed at {:?}: {e}",
+            active_root
+        ))
+    })? {
+        let entry = entry.map_err(|e| {
+            MemoryError::StorageError(format!(
+                "usearch manifest directory read failed at {:?}: {e}",
+                active_root
+            ))
+        })?;
+        let path = entry.path();
+        if path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext == "json")
+            .unwrap_or(false)
+            && path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("")
+                .ends_with(".hnsw.manifest.json")
+        {
+            if found.is_some() {
+                return Err(MemoryError::StorageError(
+                    "usearch persistence has multiple manifest files in active root".to_string(),
+                ));
+            }
+            found = Some(path);
+        }
+    }
+    found.ok_or_else(|| {
+        MemoryError::StorageError("usearch persistence check found no manifest file".to_string())
+    })
+}
+
+fn verify_manifest_consistency_in_root(
+    active_root: &Path,
+    manifest: &UsearchSidecarManifestV1,
+) -> Result<bool, MemoryError> {
+    let data_path = active_root.join(&manifest.data_file_name);
+    let keys_path = active_root.join(&manifest.keys_file_name);
+
+    let data = match fs::read(&data_path) {
+        Ok(data) => data,
+        Err(_) => return Ok(false),
+    };
+    if blake3_digest_hex(&data) != manifest.data_digest {
+        return Ok(false);
+    }
+
+    let keymap_raw = match fs::read_to_string(&keys_path) {
+        Ok(raw) => raw,
+        Err(_) => return Ok(false),
+    };
+    let (_, _, key_count) = match parse_keymap(&keymap_raw) {
+        Ok(parsed) => parsed,
+        Err(_) => return Ok(false),
+    };
+    if blake3_digest_hex(keymap_raw.as_bytes()) != manifest.keys_digest {
+        return Ok(false);
+    }
+    Ok(key_count == manifest.vector_count)
+}
+
+fn parse_keymap(
+    raw: &str,
+) -> Result<(HashMap<String, u64>, HashMap<u64, String>, u64), MemoryError> {
+    let mut key_to_id = HashMap::new();
+    let mut id_to_key = HashMap::new();
+    let mut key_count = 0u64;
+
+    for line in raw.lines() {
+        if line.is_empty() {
+            continue;
+        }
+        let mut parts = line.splitn(2, '\t');
+        let id_str = parts.next().unwrap_or("");
+        let id = id_str.parse::<u64>().map_err(|_| {
+            MemoryError::StorageError("usearch keymap file contains non-numeric id".to_string())
+        })?;
+        let key = match parts.next() {
+            Some(v) => v,
+            None => {
+                if id == KEYMAP_SENTINEL {
+                    continue;
+                }
+                return Err(MemoryError::StorageError(
+                    "usearch keymap file contains malformed sentinel".to_string(),
+                ));
+            }
+        };
+        key_to_id.insert(key.to_string(), id);
+        id_to_key.insert(id, key.to_string());
+        key_count += 1;
+    }
+
+    Ok((key_to_id, id_to_key, key_count))
+}
+
+fn sync_directory(path: &Path) -> Result<(), MemoryError> {
+    let file = File::open(path).map_err(|e| {
+        MemoryError::StorageError(format!("usearch directory sync failed at {:?}: {e}", path))
+    })?;
+    file.sync_all().map_err(|e| {
+        MemoryError::StorageError(format!("usearch directory sync_all failed at {:?}: {e}", path))
+    })
+}
+
+fn publish_generation_directory(root: &Path, generation_dir: &Path) -> Result<(), MemoryError> {
+    let remove_existing = |path: &Path| -> Result<(), MemoryError> {
+        let metadata = fs::symlink_metadata(path).map_err(|e| {
+            MemoryError::StorageError(format!(
+                "usearch current metadata read failed at {:?}: {e}",
+                path
+            ))
+        })?;
+        if metadata.is_dir() {
+            fs::remove_dir_all(path).map_err(|e| {
+                MemoryError::StorageError(format!("usearch generation cleanup failed: {e}"))
+            })?;
+        } else {
+            fs::remove_file(path).map_err(|e| {
+                MemoryError::StorageError(format!("usearch generation cleanup failed: {e}"))
+            })?;
+        }
+        Ok(())
+    };
+
+    let current = root.join(CURRENT_GENERATION_DIR);
+    if fs::symlink_metadata(&current).is_ok() {
+        remove_existing(&current)?;
+    }
+
+    let staging = root.join(format!(".tmp-{}", CURRENT_GENERATION_DIR));
+    if fs::symlink_metadata(&staging).is_ok() {
+        remove_existing(&staging)?;
+    }
+
+    #[cfg(unix)]
+    {
+        symlink(generation_dir, &staging).map_err(|e| {
+            MemoryError::StorageError(format!(
+                "usearch generation publish symlink staging failed at {:?}: {e}",
+                staging
+            ))
+        })?;
+    }
+    #[cfg(windows)]
+    {
+        symlink_dir(generation_dir, &staging).map_err(|e| {
+            MemoryError::StorageError(format!(
+                "usearch generation publish symlink staging failed at {:?}: {e}",
+                staging
+            ))
+        })?;
+    }
+
+    fs::rename(&staging, &current).map_err(|e| {
+        MemoryError::StorageError(format!(
+            "usearch generation publish rename failed: {:?} -> {:?}: {e}",
+            staging, current
+        ))
+    })?;
+
+    Ok(())
+}
+
+fn hash_key_with_epoch(key: &str) -> u64 {
+    let mut hasher = std::hash::DefaultHasher::new();
+    hasher.write(key.as_bytes());
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    hasher.write_u128(nanos);
+    hasher.finish()
+}
+
 fn manifest_file_name(basename: &str) -> String {
     format!("{basename}.hnsw.manifest.json")
 }
@@ -579,6 +894,7 @@ fn blake3_digest_hex(bytes: &[u8]) -> String {
 mod tests {
     use super::*;
     use std::collections::HashSet;
+    use std::path::PathBuf;
     use tempfile::TempDir;
 
     fn test_config() -> VectorIndexConfig {
@@ -590,6 +906,15 @@ mod tests {
             max_elements: 100,
             compaction_threshold: 0.3,
             flush_interval_secs: None,
+        }
+    }
+
+    fn active_root_for_test(dir: &std::path::Path) -> PathBuf {
+        let current = dir.join(CURRENT_GENERATION_DIR);
+        if current.exists() {
+            current
+        } else {
+            dir.to_path_buf()
         }
     }
 
@@ -666,17 +991,71 @@ mod tests {
         b.insert("fact:c".to_string(), &[0.0, 0.0, 1.0, 0.0])
             .unwrap();
         b.save(dir, "test").unwrap();
+        let root = active_root_for_test(dir);
 
         // Verify the on-disk files exist
-        assert!(dir.join("test.hnsw.manifest.json").exists());
-        assert!(dir.join("test.hnsw.data").exists());
-        assert!(dir.join("test.hnsw.keys").exists());
+        assert!(root.join("test.hnsw.manifest.json").exists());
+        assert!(root.join("test.hnsw.data").exists());
+        assert!(root.join("test.hnsw.keys").exists());
 
         // Load into a new backend
         let b2 = UsearchBackend::load(dir, "test", test_config()).unwrap();
         assert_eq!(b2.len(), 3);
         let hits = b2.search(&[1.0, 0.0, 0.0, 0.0], 1).unwrap();
         assert_eq!(hits[0].key, "fact:a");
+    }
+
+    /// MEM-007: update must not lose the old vector if index insert fails.
+    #[test]
+    fn update_preserves_old_state_on_index_failure() {
+        let b = UsearchBackend::new(test_config()).unwrap();
+        b.set_test_add_failure_on_call(2);
+        b.insert("fact:orig".to_string(), &[1.0, 0.0, 0.0, 0.0])
+            .unwrap();
+        assert_eq!(b.len(), 1);
+        let result = b.update("fact:orig".to_string(), &[0.0, 0.0, 1.0, 0.0]);
+        assert!(
+            result.is_err(),
+            "update should fail on mocked second index.add call"
+        );
+        assert_eq!(b.len(), 1, "old vector must still be present");
+        let hits = b.search(&[1.0, 0.0, 0.0, 0.0], 1).unwrap();
+        assert_eq!(hits[0].key, "fact:orig");
+    }
+
+    /// MEM-008: load must reject corrupted keys via digest mismatch.
+    #[test]
+    fn load_rejects_corrupted_keys_with_digest_mismatch() {
+        let tmp = TempDir::new().unwrap();
+        let dir = tmp.path();
+        let b = UsearchBackend::new(test_config()).unwrap();
+        b.insert("fact:a".to_string(), &[1.0, 0.0, 0.0, 0.0]).unwrap();
+        b.save_to_disk(dir, "test").unwrap();
+        let root = active_root_for_test(dir);
+        fs::write(root.join("test.hnsw.keys"), "CORRUPTED\n").unwrap();
+        let result = UsearchBackend::load(dir, "test", test_config());
+        assert!(result.is_err(), "load with corrupted keys must fail");
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("persistence verification"));
+    }
+
+    /// MEM-008: partial-write detection on manifest/key mismatch after crash.
+    #[test]
+    fn verify_persistence_detects_partial_write_mismatch() {
+        let tmp = TempDir::new().unwrap();
+        let dir = tmp.path();
+        let b = UsearchBackend::new(test_config()).unwrap();
+        b.insert("fact:a".to_string(), &[1.0, 0.0, 0.0, 0.0]).unwrap();
+        b.insert("fact:b".to_string(), &[0.0, 1.0, 0.0, 0.0]).unwrap();
+        b.save_to_disk(dir, "test").unwrap();
+
+        let root = active_root_for_test(dir);
+        fs::remove_file(root.join("test.hnsw.keys")).unwrap();
+        assert!(!UsearchBackend::verify_persistence(dir).unwrap());
+        let result = UsearchBackend::load(dir, "test", test_config());
+        assert!(result.is_err(), "load should fail after partial write simulation");
     }
 
     #[test]
@@ -744,4 +1123,5 @@ mod tests {
         );
         assert!(!b.key_to_id.read().unwrap().contains_key("fact:second"));
     }
+
 }

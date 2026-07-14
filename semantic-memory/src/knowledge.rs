@@ -1130,6 +1130,20 @@ impl MemoryStore {
         Ok(())
     }
 
+    #[cfg(not(feature = "admin-ops"))]
+    #[doc = r#"
+    ```compile_fail
+    use semantic_memory::MemoryStore;
+
+    fn main() {
+        let _ = MemoryStore::update_fact;
+        let _ = MemoryStore::delete_fact;
+        let _ = MemoryStore::delete_namespace;
+        let _ = MemoryStore::reembed_all;
+    }
+    ```"#]
+    pub(crate) const _MEM014_ADMIN_OPS_GUARD: () = ();
+
     /// **DANGER**: physically deletes every truth-bearing row in a namespace.
     /// This is admin-only and gated behind the `admin-ops` feature. Ordinary
     /// callers must use governed supersession/forgetting flows instead.

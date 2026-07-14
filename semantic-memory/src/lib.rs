@@ -1756,8 +1756,16 @@ impl MemoryStore {
                 self.verify_integrity(db::VerifyMode::Full).await
             }
             db::ReconcileAction::ReEmbed => {
-                self.reembed_all().await?;
-                self.verify_integrity(db::VerifyMode::Full).await
+                #[cfg(feature = "admin-ops")]
+                {
+                    self.reembed_all().await?;
+                    self.verify_integrity(db::VerifyMode::Full).await
+                }
+
+                #[cfg(not(feature = "admin-ops"))]
+                Err(MemoryError::Other(
+                    "reconcile ReEmbed is admin-only; enable `admin-ops`".to_string(),
+                ))
             }
         }
     }
@@ -3061,6 +3069,7 @@ impl MemoryStore {
     }
 
     /// Re-embed all facts, chunks, messages, and episodes. Call after changing embedding models.
+    #[cfg(feature = "admin-ops")]
     pub async fn reembed_all(&self) -> Result<usize, MemoryError> {
         let mut count = 0usize;
         let batch_size = self.inner.config.embedding.batch_size;

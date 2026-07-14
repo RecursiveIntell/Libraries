@@ -48,6 +48,7 @@ async fn append(store: &MemoryStore, key: &str, namespace: &str, content: &str) 
         .clone()
 }
 
+#[cfg(feature = "admin-ops")]
 #[tokio::test]
 async fn forget_closes_canonical_and_derived_access_paths() {
     let (store, _tmp) = test_store();
