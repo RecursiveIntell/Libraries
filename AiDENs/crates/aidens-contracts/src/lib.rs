@@ -117,7 +117,8 @@ pub fn generated_artifact_id_from_material(prefix: &str, material: &str) -> Arti
 /// must use `generated_artifact_id_from_material` with stable material.
 pub fn display_only_unstable_id(prefix: &str) -> ArtifactId {
     let sequence = DISPLAY_ONLY_UNSTABLE_ID_COUNTER.fetch_add(1, Ordering::Relaxed);
-    ArtifactId::new(format!("{prefix}:local-process-seq-{sequence}"))
+    // Use dot separator to avoid family-prefix colon conflict
+    ArtifactId::new(format!("{prefix}.local-process-seq-{sequence}"))
 }
 
 /// AiDENs-local wrapper pointer to a canonical owner artifact or owner type.
@@ -219,7 +220,9 @@ fn non_authoritative_display_digest_string(digest: &StackContentDigest) -> Strin
 
 fn local_artifact_id_from_stack_digest(prefix: &str, material: &str) -> ArtifactId {
     let digest = StackContentDigest::compute_str(material);
-    ArtifactId::new(format!("{prefix}:{}", digest.hex()))
+    // Use a dot separator to avoid the family-prefix colon conflict.
+    // ArtifactId::new() will prepend "artifact:" family prefix.
+    ArtifactId::new(format!("{prefix}.{}", digest.hex()))
 }
 
 fn generated_artifact_id_from_framed_fields(
@@ -322,7 +325,10 @@ impl AidensRunContextV1 {
     }
 
     pub fn stack_attempt_id(&self) -> StackAttemptId {
-        StackAttemptId::new(self.attempt_id.as_str().clone())
+        // Strip any existing family prefix from the attempt_id before re-wrapping
+        let raw = self.attempt_id.as_str();
+        let payload = raw.split_once(':').map(|(_, p)| p).unwrap_or(raw);
+        StackAttemptId::new(payload)
     }
 }
 

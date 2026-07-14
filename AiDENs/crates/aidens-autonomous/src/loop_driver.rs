@@ -1802,7 +1802,7 @@ mod tests {
             .unwrap()
             .unwrap();
         let mut invalid_lease = acquired.lease;
-        invalid_lease.lease_id = aidens_contracts::ArtifactId::new("lease:wrong");
+        invalid_lease.lease_id = aidens_contracts::ArtifactId::new("wrong.lease");
         autonomous_loop.update_state(|state| {
             state.current_job = Some(job_id.to_string());
         });
