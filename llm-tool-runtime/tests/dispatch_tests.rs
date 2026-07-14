@@ -97,12 +97,12 @@ impl Tool for ArtifactTool {
     async fn invoke(&self, _ctx: &ToolCtx, _call: &ToolCall) -> Result<ToolResult, ToolError> {
         Ok(ToolResult::artifact_refs(vec![
             ToolArtifactRef {
-                artifact_id: ArtifactId::from("artifact-001"),
+                artifact_id: ArtifactId::new("artifact-001"),
                 label: None,
                 mime_type: None,
             },
             ToolArtifactRef {
-                artifact_id: ArtifactId::from("artifact-002"),
+                artifact_id: ArtifactId::new("artifact-002"),
                 label: None,
                 mime_type: None,
             },
@@ -277,7 +277,7 @@ fn tool_result_text_mode() {
 #[test]
 fn tool_result_artifact_refs_mode() {
     let result = ToolResult::artifact_refs(vec![ToolArtifactRef {
-        artifact_id: ArtifactId::from("ref-1"),
+        artifact_id: ArtifactId::new("ref-1"),
         label: None,
         mime_type: None,
     }]);

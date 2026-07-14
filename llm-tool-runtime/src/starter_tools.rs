@@ -221,7 +221,10 @@ where
             .get("artifact_id")
             .and_then(|value| value.as_str())
             .unwrap_or_default();
-        let content = self.port.read(&ArtifactId::new(artifact_id)).await?;
+        let artifact_id_parsed = ArtifactId::try_new(artifact_id).map_err(|e| {
+            ToolError::new(crate::ToolErrorClass::InvalidArguments, format!("invalid artifact_id: {e}"))
+        })?;
+        let content = self.port.read(&artifact_id_parsed).await?;
         Ok(ToolResult::text(content.content))
     }
 }
@@ -672,7 +675,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             read_result.display_text.as_deref(),
-            Some("artifact:artifact-1")
+            Some("artifact:artifact:artifact-1")
         );
 
         let verification_tool = RunVerificationTool::new(Arc::new(TestVerificationPort));

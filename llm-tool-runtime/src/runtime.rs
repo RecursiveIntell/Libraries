@@ -1278,7 +1278,7 @@ mod tests {
                 .remote_oracle_lease_id
                 .as_ref()
                 .map(|id| id.as_str()),
-            Some("lease-1")
+            Some("remote-oracle-lease:lease-1")
         );
         assert_eq!(
             execution
@@ -1286,7 +1286,7 @@ mod tests {
                 .remote_slice_result_id
                 .as_ref()
                 .map(|id| id.as_str()),
-            Some("result-1")
+            Some("remote-slice-result:result-1")
         );
         assert_eq!(
             execution
@@ -1294,7 +1294,7 @@ mod tests {
                 .attestation_envelope_id
                 .as_ref()
                 .map(|id| id.as_str()),
-            Some("attestation-1")
+            Some("attestation-envelope:attestation-1")
         );
         assert_eq!(
             execution
@@ -1302,7 +1302,7 @@ mod tests {
                 .cross_runtime_replay_ticket_id
                 .as_ref()
                 .map(|id| id.as_str()),
-            Some("cross-runtime-replay-ticket-1")
+            Some("cross-runtime-replay-ticket:cross-runtime-replay-ticket-1")
         );
         assert_eq!(execution.receipt.planner_stage, ToolPlannerStage::Audit);
         assert_eq!(sink.0.lock().unwrap().len(), 2);

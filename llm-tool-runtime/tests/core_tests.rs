@@ -246,7 +246,7 @@ fn test_tool_receipt_serialization_roundtrip_all_optional_fields() {
             .remote_oracle_lease_id
             .as_ref()
             .map(|id| id.as_str()),
-        Some("lease-1")
+        Some("remote-oracle-lease:lease-1")
     );
     assert_eq!(deserialized.error_class, Some(ToolErrorClass::Timeout));
     assert_eq!(
@@ -497,7 +497,9 @@ async fn test_starter_tool_invalid_input() {
 
     let err = tool.invoke(&ctx, &call).await.unwrap_err();
     assert_eq!(err.class, ToolErrorClass::InvalidArguments);
-    assert!(err.message.contains("artifact not found"));
+    // BOUND-006 fix: empty artifact_id is now rejected at parse time
+    // before reaching the reader port.
+    assert!(err.message.contains("invalid artifact_id") || err.message.contains("artifact not found"));
 }
 
 // ===========================================================================
