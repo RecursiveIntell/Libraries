@@ -45,7 +45,10 @@ pub mod schema;
 pub use canonicalizer::{
     canonicalize_flexible, parse_and_validate, parse_with_dup_check, Canonicalizer,
 };
-pub use digest::ContentDigest;
+pub use digest::{
+    ContentDigest, DigestMetadata, CANONICALIZATION_PROFILE, CANONICAL_JSON_DOMAIN,
+    DEFAULT_SCHEMA_ID, DEFAULT_SCHEMA_VERSION, DIGEST_ALGORITHM,
+};
 pub use error::JcsError;
 pub use profile::{
     BoundaryAdmission, BoundaryEnforcementReceipt, BoundaryProfile, EnforcedRule, ResourceCeilings,
