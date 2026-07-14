@@ -222,7 +222,10 @@ where
             .and_then(|value| value.as_str())
             .unwrap_or_default();
         let artifact_id_parsed = ArtifactId::try_new(artifact_id).map_err(|e| {
-            ToolError::new(crate::ToolErrorClass::InvalidArguments, format!("invalid artifact_id: {e}"))
+            ToolError::new(
+                crate::ToolErrorClass::InvalidArguments,
+                format!("invalid artifact_id: {e}"),
+            )
         })?;
         let content = self.port.read(&artifact_id_parsed).await?;
         Ok(ToolResult::text(content.content))

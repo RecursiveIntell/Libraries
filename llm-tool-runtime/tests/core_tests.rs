@@ -499,7 +499,9 @@ async fn test_starter_tool_invalid_input() {
     assert_eq!(err.class, ToolErrorClass::InvalidArguments);
     // BOUND-006 fix: empty artifact_id is now rejected at parse time
     // before reaching the reader port.
-    assert!(err.message.contains("invalid artifact_id") || err.message.contains("artifact not found"));
+    assert!(
+        err.message.contains("invalid artifact_id") || err.message.contains("artifact not found")
+    );
 }
 
 // ===========================================================================
