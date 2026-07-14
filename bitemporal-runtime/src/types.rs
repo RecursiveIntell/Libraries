@@ -154,16 +154,7 @@ impl SupersessionReceipt {
     /// records differing only in their value produce different digests.
     /// The receipt_digest additionally binds the two record digests so
     /// the supersession relationship is itself tamper-evident.
-    pub fn new<T>(superseded: BitemporalRecord<T>, superseding: BitemporalRecord<T>) -> Self
-    where
-        T: Serialize,
-    {
-        Self::try_new(superseded, superseding).expect("record serialization failed")
-    }
-
-    /// Fallible receipt constructor used by append paths so serialization
-    /// failure cannot be confused with a digest of empty content.
-    pub fn try_new<T>(
+    pub fn new<T>(
         superseded: BitemporalRecord<T>,
         superseding: BitemporalRecord<T>,
     ) -> Result<Self, crate::BitemporalError>
@@ -210,6 +201,17 @@ impl SupersessionReceipt {
             superseded_digest,
             receipt_digest,
         })
+    }
+
+    /// Compatibility alias for the fallible constructor.
+    pub fn try_new<T>(
+        superseded: BitemporalRecord<T>,
+        superseding: BitemporalRecord<T>,
+    ) -> Result<Self, crate::BitemporalError>
+    where
+        T: Serialize,
+    {
+        Self::new(superseded, superseding)
     }
 
     /// Compute the SHA-256 digest of a record's full content (id,
@@ -268,7 +270,7 @@ mod tests {
             recorded_time: now,
             value: (),
         };
-        let receipt = SupersessionReceipt::new(superseded, superseding);
+        let receipt = SupersessionReceipt::new(superseded, superseding).unwrap();
         assert!(!receipt.receipt_digest.is_empty());
         assert_eq!(receipt.superseded.superseded_id, "v1");
         assert_eq!(receipt.superseding_id, "v2");

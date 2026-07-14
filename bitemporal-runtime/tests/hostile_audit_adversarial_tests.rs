@@ -225,7 +225,8 @@ fn receipt_digest_is_deterministic_for_same_inputs() {
             recorded_time: now,
             value: (),
         },
-    );
+    )
+    .unwrap();
     let b = SupersessionReceipt::new(
         BitemporalRecord {
             id: "x".into(),
@@ -239,7 +240,8 @@ fn receipt_digest_is_deterministic_for_same_inputs() {
             recorded_time: now,
             value: (),
         },
-    );
+    )
+    .unwrap();
     assert_eq!(
         a.receipt_digest, b.receipt_digest,
         "receipt_digest must be deterministic"
@@ -268,7 +270,8 @@ fn receipt_digest_changes_when_any_input_changes() {
             recorded_time: t0,
             value: (),
         },
-    );
+    )
+    .unwrap();
     let r2 = SupersessionReceipt::new(
         BitemporalRecord {
             id: "x".into(),
@@ -282,7 +285,8 @@ fn receipt_digest_changes_when_any_input_changes() {
             recorded_time: t1,
             value: (),
         }, // recorded_time differs
-    );
+    )
+    .unwrap();
     assert_ne!(
         r1.receipt_digest, r2.receipt_digest,
         "changing recorded_time must change digest"
@@ -300,7 +304,8 @@ fn receipt_digest_changes_when_any_input_changes() {
             recorded_time: t0,
             value: (),
         },
-    );
+    )
+    .unwrap();
     assert_ne!(
         r1.receipt_digest, r3.receipt_digest,
         "changing id case must change digest"
@@ -326,7 +331,8 @@ fn receipt_digest_is_sha256_hex() {
             recorded_time: now,
             value: (),
         },
-    );
+    )
+    .unwrap();
     assert_eq!(r.receipt_digest.len(), 64, "SHA-256 produces 64 hex chars");
     assert!(
         r.receipt_digest.chars().all(|c| c.is_ascii_hexdigit()),
@@ -366,7 +372,8 @@ fn receipt_carries_correct_superseded_and_superseding_ids() {
             recorded_time: t1,
             value: (),
         },
-    );
+    )
+    .unwrap();
     assert_eq!(r1.superseded.superseded_id, "v1");
     assert_eq!(r1.superseding_id, "v2");
     assert_eq!(r1.superseded.superseded_recorded_time, t0);
@@ -385,7 +392,8 @@ fn receipt_carries_correct_superseded_and_superseding_ids() {
             recorded_time: t2,
             value: (),
         },
-    );
+    )
+    .unwrap();
     assert_eq!(r2.superseded.superseded_id, "v2");
     assert_eq!(r2.superseding_id, "v3");
 }

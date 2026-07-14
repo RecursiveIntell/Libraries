@@ -40,7 +40,7 @@ where
 
     // Create supersession receipts for each prior version
     for prior in prior_versions {
-        let receipt = SupersessionReceipt::try_new(prior, new_record.clone())?;
+        let receipt = SupersessionReceipt::new(prior, new_record.clone())?;
         receipts.push(receipt);
     }
 
