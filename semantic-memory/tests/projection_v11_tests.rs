@@ -713,7 +713,7 @@ async fn claim_query_filters_by_claim_version_id() {
             "env-claim-version-filter-old",
             &scope_key,
             "claim-version-filter",
-            "claim-version-filter-v1",
+            "claim-version:claim-version-filter-v1",
             "claim version filter old",
             "2026-01-01T00:00:00Z",
             Some("2026-02-01T00:00:00Z"),
@@ -738,7 +738,7 @@ async fn claim_query_filters_by_claim_version_id() {
 
     let mut query = ProjectionQuery::new(scope_key);
     query.claim_id = Some(ClaimId::new("claim-version-filter"));
-    query.claim_version_id = Some(ClaimVersionId::new("claim-version-filter-v1"));
+    query.claim_version_id = Some(ClaimVersionId::new("claim-version:claim-version-filter-v1"));
     let claims = store.query_claim_versions(query).await.unwrap();
 
     assert_eq!(
@@ -748,7 +748,7 @@ async fn claim_query_filters_by_claim_version_id() {
     );
     assert_eq!(
         claims[0].claim_version_id.as_str(),
-        "claim-version-filter-v1"
+        "claim-version:claim-version-filter-v1"
     );
     assert_eq!(claims[0].content, "claim version filter old");
 }
