@@ -1,9 +1,0 @@
-path,bytes,lines,priority,note
-crates/aidens-contracts/src/lib.rs,371136,10410,P1,contract megafile; split only behind API compatibility gates
-crates/aidens-cli/src/lib.rs,235631,6698,P1,CLI megafile; split command domains after capability pass or during phase if needed
-crates/aidens-tool-kit/src/lib.rs,90164,2454,P2,tool domain split candidate
-crates/aidens-runner/src/lib.rs,75397,1910,P2,runner split candidate
-crates/aidens-agency-kit/src/lib.rs,67998,1815,P2,agency policies and receipts split candidate
-crates/aidens-provider-kit/src/lib.rs,49825,1472,P3,provider route split candidate
-crates/aidens-boundary-kit/src/lib.rs,34982,1057,P3,boundary submodule split candidate
-crates/aidens-testkit/src/lib.rs,36739,1019,P3,testkit split candidate

@@ -10,10 +10,10 @@
 //! ## Status
 //!
 //! FULL IMPLEMENTATION. Insert, delete, update, search, and save/load are
-//! all wired up. Float8 (ScalarKind::F8) and Float16 (ScalarKind::F16) are
-//! not enabled by default but can be activated by changing the
-//! `SCALAR_KIND` constant below. See HNSW_RESEARCH_2026-06-02.md §10a for
-//! the recall-vs-memory tradeoff discussion.
+//! all wired up. Float16 (ScalarKind::F16) and int8 (ScalarKind::I8) can be
+//! activated for benchmark spikes with `SEMANTIC_MEMORY_USEARCH_SCALAR_KIND=f16`
+//! or `SEMANTIC_MEMORY_USEARCH_SCALAR_KIND=i8`. See HNSW_RESEARCH_2026-06-02.md
+//! §10a for the recall-vs-memory tradeoff discussion.
 //!
 //! ## Key mapping
 //!
@@ -66,7 +66,7 @@ use usearch::ffi::{IndexOptions, MetricKind, ScalarKind};
 use usearch::Index;
 
 /// Default scalar kind for the usearch backend. F32 is the safe choice;
-/// switching to F16 or F8 saves memory at a recall cost. See
+/// switching to F16 or I8 saves memory at a recall cost. See
 /// HNSW_RESEARCH_2026-06-02.md §10a.
 const SCALAR_KIND: ScalarKind = ScalarKind::F32;
 const CURRENT_GENERATION_DIR: &str = "CURRENT";
@@ -127,14 +127,25 @@ pub struct UsearchBackend {
     test_add_call_count: std::sync::atomic::AtomicUsize,
 }
 
+fn scalar_kind_from_env() -> Result<usearch::ScalarKind, MemoryError> {
+    match std::env::var("USEARCH_SCALAR_KIND").as_deref() {
+        Ok("f32") | Err(_) => Ok(usearch::ScalarKind::F32),
+        Ok("f64") => Ok(usearch::ScalarKind::F64),
+        Ok("f16") => Ok(usearch::ScalarKind::F16),
+        
+        Ok(other) => Err(MemoryError::InvalidConfig { field: "USEARCH_SCALAR_KIND", reason: format!("unknown USEARCH_SCALAR_KIND: {other}") }),
+    }
+}
+
 impl UsearchBackend {
     /// Construct a new empty index with the given config.
     pub fn new(config: VectorIndexConfig) -> Result<Self, MemoryError> {
         validate_dimensions(config.dimensions)?;
+        let scalar_kind = scalar_kind_from_env()?;
         let options = IndexOptions {
             dimensions: config.dimensions,
             metric: MetricKind::Cos,
-            quantization: SCALAR_KIND,
+            quantization: scalar_kind,
             connectivity: config.m,
             expansion_add: config.ef_construction,
             expansion_search: config.ef_search,
@@ -203,10 +214,11 @@ impl UsearchBackend {
         }
 
         // Build the empty index, then load the usearch bytes into it.
+        let scalar_kind = scalar_kind_from_env()?;
         let options = IndexOptions {
             dimensions: config.dimensions,
             metric: MetricKind::Cos,
-            quantization: SCALAR_KIND,
+            quantization: scalar_kind,
             connectivity: config.m,
             expansion_add: config.ef_construction,
             expansion_search: config.ef_search,
@@ -1093,6 +1105,15 @@ mod tests {
         let result = UsearchBackend::load(dir, "test", test_config());
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("hnsw_rs"));
+    }
+
+    #[test]
+    fn parse_scalar_kind_accepts_latency_spike_values() {
+        assert_eq!(parse_usearch_scalar_kind("f32").unwrap(), ScalarKind::F32);
+        assert_eq!(parse_usearch_scalar_kind("F16").unwrap(), ScalarKind::F16);
+        assert_eq!(parse_usearch_scalar_kind("i8").unwrap(), ScalarKind::I8);
+        assert_eq!(parse_usearch_scalar_kind("f8").unwrap(), ScalarKind::I8);
+        assert!(parse_usearch_scalar_kind("pq").is_err());
     }
 
     #[test]

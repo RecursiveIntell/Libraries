@@ -80,12 +80,15 @@ with tempfile.TemporaryDirectory(prefix="aidens_p31b_replay_") as td_s:
         raise SystemExit(finish(0, "passed", "PASS: extracted package self-replay passed"))
 
     combined = (result.stdout + "\n" + result.stderr).lower()
+    if (
+        "../" in combined
+        and ("failed to read" in combined or "no such file" in combined)
+    ) or "/tmp/libraries/" in combined or "failed to find a workspace root" in combined:
+        receipt["blockers"].append("external_path_dependency_unavailable_in_extracted_package")
+        raise SystemExit(finish(2, "blocked", "FAIL: package self-replay blocked by unavailable external path dependency"))
     if "cargo" in combined and ("not found" in combined or "no such file" in combined):
         receipt["blockers"].append("cargo_or_toolchain_missing_in_replay")
         raise SystemExit(finish(2, "blocked", "FAIL: package self-replay blocked by missing cargo/toolchain"))
-    if "../" in combined and ("failed to read" in combined or "no such file" in combined):
-        receipt["blockers"].append("external_path_dependency_unavailable_in_extracted_package")
-        raise SystemExit(finish(2, "blocked", "FAIL: package self-replay blocked by unavailable external path dependency"))
     if "permission denied" in combined or "permissionerror" in combined:
         receipt["blockers"].append("permission_denied_in_extracted_replay")
         receipt["verifier_stdout_tail"] = result.stdout[-6000:]

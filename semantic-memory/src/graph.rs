@@ -15,6 +15,13 @@ const DEFAULT_MAX_GRAPH_NODES: usize = 500;
 const DEFAULT_MAX_EDGES_PER_NODE: usize = 50;
 const DEFAULT_GRAPH_TRAVERSAL_DEADLINE_MS: u64 = 5_000;
 
+/// Maximum number of namespace member edges (facts + documents) to expand
+/// during a single BFS visit.  Without this cap, a namespace with hundreds
+/// of facts causes the BFS to visit every one of them, and each fact visit
+/// can trigger expensive derived-edge computation.  50 is enough to bridge
+/// through a namespace without exploding the search space.
+const NAMESPACE_EDGE_BFS_CAP: usize = 50;
+
 pub(crate) fn graph_view(inner: Arc<MemoryStoreInner>) -> Arc<dyn GraphView> {
     Arc::new(StoreGraphView { inner })
 }
@@ -168,6 +175,11 @@ fn shortest_path(
     max_edges_per_node: usize,
     deadline_ms: u64,
 ) -> Result<Option<Vec<String>>, MemoryError> {
+    // During path traversal we skip derived semantic edges (the O(n²)
+    // all-embeddings scan).  Stored graph edges and entity edges are
+    // sufficient for relationship/path queries and are O(1) per node.
+    // Semantic edges are only useful for explicit neighbors() expansion.
+    let compute_semantic = false;
     let mut visited = HashSet::from([from.to_string()]);
     let mut parents = BTreeMap::<String, String>::new();
     let mut queue = VecDeque::from([(from.to_string(), 0usize)]);
@@ -366,6 +378,8 @@ fn outgoing_edges(
         }
         ParsedNodeId::Opaque => Vec::new(),
     };
+    // Merge in first-class stored graph edges from the graph_edges table.
+    edges.extend(crate::graph_edges::stored_edges_for_node(conn, node_id)?);
     edges.sort_by(|a, b| {
         a.source
             .cmp(&b.source)
@@ -378,9 +392,11 @@ fn namespace_edges(conn: &Connection, namespace: &str) -> Result<Vec<GraphEdge>,
     let mut edges = Vec::new();
 
     let mut facts_stmt =
-        conn.prepare("SELECT id FROM facts WHERE namespace = ?1 ORDER BY id ASC")?;
+        conn.prepare("SELECT id FROM facts WHERE namespace = ?1 ORDER BY id ASC LIMIT ?2")?;
     let fact_ids = facts_stmt
-        .query_map(params![namespace], |row| row.get::<_, String>(0))?
+        .query_map(params![namespace, NAMESPACE_EDGE_BFS_CAP as i64], |row| {
+            row.get::<_, String>(0)
+        })?
         .collect::<Result<Vec<_>, _>>()?;
     for fact_id in fact_ids {
         edges.push(entity_edge(
@@ -393,9 +409,11 @@ fn namespace_edges(conn: &Connection, namespace: &str) -> Result<Vec<GraphEdge>,
     }
 
     let mut docs_stmt =
-        conn.prepare("SELECT id FROM documents WHERE namespace = ?1 ORDER BY id ASC")?;
+        conn.prepare("SELECT id FROM documents WHERE namespace = ?1 ORDER BY id ASC LIMIT ?2")?;
     let document_ids = docs_stmt
-        .query_map(params![namespace], |row| row.get::<_, String>(0))?
+        .query_map(params![namespace, NAMESPACE_EDGE_BFS_CAP as i64], |row| {
+            row.get::<_, String>(0)
+        })?
         .collect::<Result<Vec<_>, _>>()?;
     for document_id in document_ids {
         edges.push(entity_edge(

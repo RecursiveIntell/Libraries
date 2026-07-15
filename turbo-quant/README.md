@@ -1,17 +1,21 @@
 # turbo-quant
 
-Experimental vector compression sidecars for embedding search.
+Experimental codec substrate: PolarQuant, TurboQuant, and QJL sketches,
+with bit-packed wire formats and a KV-cache shadow mode.
 
-`turbo-quant` implements three compression sidecars (`PolarQuant`,
-`TurboQuant`, and QJL sketches) and the surrounding infrastructure
-needed to use them in a real retrieval system: bit-packed wire
-formats, candidate generation, exact rerank, KV-cache shadow mode,
-and a complete benchmark harness that validates quality against a
-raw-vector reference.
+`turbo-quant` is a **research-grade vector codec**. It ships three
+quantization primitives (`PolarQuant`, `TurboQuant`, and QJL sketches)
+and the surrounding infrastructure needed to use them: bit-packed wire
+formats, candidate generation, exact rerank, KV-cache shadow mode, and a
+benchmark harness that validates quality against a raw-vector reference.
 
-**Status:** experimental / research substrate. See the
-"Scope and limits" section below for what this crate is and is not
-safe to claim.
+**Status:** experimental / research substrate. The P27 real-workload
+audit ([`docs/codex-runs/P27/REAL_BENCH_AUDIT.md](docs/codex-runs/P27/REAL_BENCH_AUDIT.md))
+shows the candidate-search sidecar story **fails on BEIR scifact** (5,181
+docs, 300 queries, 384-dim `all-minilm`): top-k overlap 0.049 and
+top-1 rerank recovery 0.307. The crate's surviving use case is
+**KV-cache shadow mode** (different problem: per-vector reconstruction,
+not ranking). See the "Scope and limits" section for the full claim law.
 
 ## What's in the box
 
@@ -31,16 +35,15 @@ safe to claim.
   Source: `src/packed.rs`, `src/wire.rs`.
 - **KV-cache shadow mode** — `KvRuntimeConfig`, `KvShadowToken`.
   Lets you score a compressed KV cache against a raw baseline and
-  emit a `KvShadowReceipt`. Experimental, not for production.
+  emit a `KvShadowReceipt`. The **surviving** use case for this crate.
   Source: `src/kv.rs`.
 - **Codec profiles** — typed `CodecProfileV1` that captures the
   codec kind, dim, bits, projections, rotation, and a
   `profile_digest` (FNV-1a 64-bit) for receipt comparison.
   Source: `src/profile.rs`.
-- **Benchmark harness** — `tools/semantic_memory_harness/`
-  validates the sidecar against `semantic_memory::search::cosine_similarity`
-  as the raw-vector reference, and emits a
-  `SemanticMemoryHarnessSummaryV1` receipt.
+- **Benchmark harness** — `tools/semantic_memory_harness/` runs a
+  synthetic smoke test; `examples/real_bench.rs` runs a real-workload
+  BEIR benchmark and emits a `RealBenchmarkReceiptV1`.
 
 ## Quick Start
 
@@ -76,80 +79,74 @@ benchmark with semantic-memory harness).
 
 ## Benchmarks — measured
 
-These are real numbers from the P26 release-evidence
-(`docs/release-evidence/0.2.0/semantic_memory_harness_receipt.json`).
-They are run on a synthetic deterministic corpus
-(`synthetic-deterministic-unit-vectors-v1`, 128 vectors × 32 dim,
-12 queries, k=10, oversample=4, TurboQuant 8-bit, 16 QJL
-projections, fast-Hadamard rotation, seed=42):
+### P27 real-workload audit (BEIR scifact, 2026-06-10)
 
-| Metric | Value | Notes |
+The current load-bearing evidence. Receipt at
+[`docs/codex-runs/P27/REAL_BENCH_RECEIPT.json`](docs/codex-runs/P27/REAL_BENCH_RECEIPT.json);
+writeup at
+[`docs/codex-runs/P27/REAL_BENCH_AUDIT.md`](docs/codex-runs/P27/REAL_BENCH_AUDIT.md).
+
+Run on BEIR `scifact` (5,181 docs, 300 test queries, 339 positive qrels,
+384-dim `all-minilm` embeddings via local Ollama), codec: TurboQuant
+8-bit, 32 QJL projections, seed=42, rotation=Auto, oversample=4 (40
+candidates → top-10):
+
+| Metric | Value | Threshold | Verdict |
+|---|---|---|---|
+| **Top-k overlap (cand vs exact top-10, Jaccard)** | 0.049 | ≥ 0.30 | **FAIL** (6.1× too low) |
+| **Exact-rerank recovery @1 (top-1 gt in candidate top-40)** | 0.307 | ≥ 0.80 | **FAIL** (2.6× too low) |
+| Recall@1 (post-rerank) | 0.777 | — | misleading — see audit |
+| Recall@5 (post-rerank) | 0.433 | — | |
+| Recall@10 (post-rerank) | 0.787 | — | |
+| Rank drift mean / p95 / max | 10.46 / 29 / 39 | — | wrong docs consistently ranked higher |
+| Score error mean / p95 / max | 0.20 / 0.45 / 0.80 | — | large vs [-1, 1] range |
+| Candidate-search latency p50 / p95 | 35 ms / 250 ms | — | full scan of 5,181 codes |
+
+**Storage** (the part that kills the "sidecar" framing):
+
+| Layout | Bytes | vs raw |
 |---|---|---|
-| **Recall@1 (after exact rerank)** | 0.917 | 11/12 queries had the raw top-1 in the reranked top-1 |
-| **Recall@5 (after exact rerank)** | 0.983 | 11.8/12 queries |
-| **Recall@10 (after exact rerank)** | 0.992 | 11.9/12 queries |
-| **Exact-rerank recovery rate** | 0.917 | top-1 in compressed candidates → top-1 in raw |
-| **Top-k overlap (compressed top-10 vs raw top-10)** | 0.567 | Exploratory metric — see note |
-| **Rank drift (mean)** | 0.083 | Position changes in top-10 |
-| **Rank drift (p95)** | 1.0 | |
-| **Rank drift (max)** | 1 | |
-| **Score error (mean)** | 0.479 | Absolute score difference, compressed vs raw |
-| **Score error (p95)** | 1.085 | |
-| **Score error (max)** | 1.203 | |
+| Raw fp32 | 7,958,016 | 1.00× |
+| Sidecar only | 4,870,140 | 1.63× compression |
+| **Sidecar + raw** (for exact rerank) | **12,828,156** | **0.62× (1.6× LARGER than raw)** |
 
-**Storage (128 vectors × 32 dim):**
+The sidecar is **not actually a sidecar** — it is a primary index that
+still requires the raw vectors to produce useful results, and together
+they're worse than storing raw alone.
 
-| Layout | Bytes | Ratio to raw |
-|---|---|---|
-| Raw f32 (reference) | 16,384 | 1.0× |
-| f16 baseline | 8,192 | 0.5× |
-| TurboQuant sidecar (no fallback) | 10,240 | 0.625× |
-| TurboQuant sidecar + exact fallback | 26,624 | 1.625× |
+**Verdict:** the candidate-search sidecar story does not survive a
+real-workload test. The crate's surviving use case is **KV-cache shadow
+mode**, which is a different problem (per-vector reconstruction, not
+ranking) and is supported by separate P26 evidence (see
+`docs/codex-runs/P26/SEMANTIC_MEMORY_PROOF_RECEIPT.json` for the
+KV-shadow proof).
 
-The sidecar is **0.625× the raw size** when the raw fallback is
-*not* kept. With the fallback, total storage is 1.625× raw — this
-is the production configuration where you keep the compressed
-sidecar *and* the raw vector for the rerank step. The
-"exact-rerank recovery rate" is the gate: at 0.917 (11/12 queries
-exact top-1) the harness passed.
+Reproduce:
+```bash
+TQ_EMBED_MODEL=all-minilm:latest \
+  cargo run --release --example real_bench -- \
+    --corpus docs/codex-runs/P27/corpus.tqcb \
+    --out /tmp/bench/receipt.json \
+    --bits 8 --projections 32 --seed 42 --rotation auto
+```
 
-**P31 retrieval-benchmark numbers (semantic-memory, May 2026):**
+The corpus binary (8.4 MB) and full build/bench logs are in
+`docs/codex-runs/P27/`. The harness skill is at
+`~/.hermes/skills/mlops/turbo-quant-beir-bench-harness/`.
 
-Run on a different harness with 1,000 vectors × 384 dim, 50
-queries, k=10, candidate multiplier 20:
+### Prior evidence (P26, synthetic)
 
-| Metric | Value |
-|---|---|
-| Candidate scoring p50 | 138.0 ms |
-| Candidate scoring p95 | 148.1 ms |
-| Exact rerank p95 | 0.087 ms |
-| Mean abs score error | 0.0024 |
-| P95 abs score error | 0.0061 |
-| NDCG@10 | 1.0 |
-| Mean rank drift | 0.0 |
-| Recall@10 | 1.0 |
+The earlier P26 evidence at
+`docs/codex-runs/P26/SEMANTIC_MEMORY_PROOF_RECEIPT.json` is **synthetic**
+(1,000×384 random unit vectors, 50 queries) and shows `recall@10 = 1.0`
+on that corpus. P27 supersedes it for any real-workload claim: the same
+codec that scored 1.0 on synthetic scores 0.787 (post-rerank, with
+candidates missing the top-1 70% of the time) on BEIR scifact. The
+synthetic number is not wrong but is not representative of real
+retrieval.
 
-**P32 retrieval-benchmark numbers (semantic-memory, May 2026, smoke):**
-
-Same harness, 1,000 × 384, 50 queries, with the optimized
-candidate-then-exact flow:
-
-| Metric | Value |
-|---|---|
-| Candidate scoring p50 | 109.1 ms |
-| Candidate scoring p95 | 111.3 ms |
-| Exact rerank p95 | 0.046 ms |
-| Mean abs score error | 0.0024 |
-| P95 abs score error | 0.0061 |
-| NDCG@10 | 1.0 |
-| Recall@10 | 1.0 |
-| Fallback rate | 0.0 |
-
-Both P31 and P32 receipts classify as `green`. The full receipts
-are at
-`semantic-memory/docs/codex-runs/archive/.../turboquant-*-benchmark-summary.json`.
-
-To reproduce: `cd turbo-quant && cargo run --release --example bench_embeddings`.
+The `tools/semantic_memory_harness/` synthetic harness is retained for
+fast CI smoke tests, not as deployment evidence.
 
 ## C Kernels
 
@@ -187,17 +184,26 @@ evidence:
 - "better than semantic-memory"
 - "proven deployment quality"
 - "no dataset-specific calibration needed"
+- "candidate search sidecar" / "vector search sidecar" — see P27 audit;
+  this story fails on real workloads and is **not allowed** as a
+  crate-level claim.
+- "exact-rerank recovers the sidecar's missing candidates" — the
+  P27 number (0.307 top-1 recovery at 4× oversample) is the falsified
+  claim this rule replaces.
 
 What's allowed:
 
 - "experimental codec substrate"
-- "derived sidecar (not canonical vectors)"
-- "approximate scoring; exact fallback or rerank required"
+- "quantization primitives for PolarQuant / TurboQuant / QJL"
+- "KV-cache shadow mode (per-vector reconstruction, not ranking)"
 - "workload-specific benchmark receipts required"
-- "semantic-memory reference harness validates retrieval drift locally"
+- "approximate scoring; exact fallback or rerank is caller responsibility"
+- "P26 evidence supports KV-cache shadow; P27 evidence shows vector-search
+  sidecar fails on BEIR scifact — see `docs/codex-runs/P27/REAL_BENCH_AUDIT.md`"
 
 The full release-claim law is at
-`turbo-quant/AGENTS.md` (P26 patch).
+`turbo-quant/AGENTS.md` (P26 patch) and
+`~/.hermes/skills/software-development/recursiveintell-doctrine/`.
 
 ## What's verified
 
@@ -256,19 +262,29 @@ notes are in `RELEASE_NOTES.md` and the receipts in
 
 ## Where it's used
 
-`turbo-quant` is the experimental vector compression sidecar for:
+`turbo-quant` is the experimental vector codec substrate for:
 
-- [`semantic-memory`](../semantic-memory) — every projection
-  import with `AdmissibilityClass::Standard` or below can route
-  through the sidecar (gated by `quant-governor`).
-- [`scr-runtime-compression`](../scr-runtime-compression) —
-  the cross-runtime compression scheduler can use
-  `TurboSidecarCode` for batched candidate generation.
+- [`semantic-memory`](../semantic-memory) — the codec primitives
+  (`PolarQuant`, `TurboQuant`, QJL sketches) are available, but
+  the **candidate-search sidecar route is gated off by default** as
+  of P27 (2026-06-10). The P27 audit
+  (`docs/codex-runs/P27/REAL_BENCH_AUDIT.md`) shows the sidecar fails
+  on real workloads (BEIR scifact). Subsystems that need approximate
+  scoring must run their own workload-specific benchmark and prove
+  exact_rerank_recovery_at_1 ≥ 0.80 on their data before enabling
+  the sidecar route.
+- [`scr-runtime-compression`](../scr-runtime-compression) — the
+  cross-runtime compression scheduler can use the codec primitives
+  for batched compression; this path is unaffected by P27 (it is a
+  compression, not a retrieval, use case).
 - The KV-cache shadow mode is used by the
-  `tools/semantic_memory_harness/` to validate the sidecar
-  against a raw-vector reference.
+  `tools/semantic_memory_harness/` to validate the codec against
+  a raw-vector reference. This is the **surviving** use case for
+  the crate.
 
 Adopting `turbo-quant` directly is appropriate for systems that
-need a vector compression sidecar with a documented, receipted
-benchmark harness, and that can run their own workload-specific
-benchmarks to confirm the sidecar is appropriate.
+need a research-grade vector codec (per-vector reconstruction,
+not approximate ranking) and that can run their own workload-specific
+benchmarks to confirm the codec is appropriate for their use case.
+The candidate-search sidecar is **not** recommended as a drop-in
+component — see P27.

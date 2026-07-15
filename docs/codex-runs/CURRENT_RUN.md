@@ -1,6 +1,6 @@
 # Current Codex Run
 
 Current run: `P30`
-Updated UTC: `2026-05-24T01:20:26Z`
+Updated UTC: `2026-06-12T22:20:05Z`
 
 Historical run material in `docs/codex-runs/archive/` is evidence, not active instruction.

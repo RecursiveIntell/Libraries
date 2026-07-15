@@ -1,7 +1,0 @@
-Domain,Canonical Owner,AiDENs/P29 Rule
-Memory truth,semantic-memory / constitutional-memory,"AiDENs may adapt/display/wire, not own canonical truth"
-Kernel truth,recursive-kernel-core / kernel-*,"AiDENs may route/display, not own canonical truth"
-Governance truth,verification-* / assurance-runtime / authority-delegation,"AiDENs may expose, not replace"
-Provider/tool contracts,llm-tool-runtime / provider owners,AiDENs may wrap locally with receipts
-Schema generation,contract-schema-gen / canonical contract owners,"AiDENs may validate, not become generator owner"
-P29 package/evidence,AiDENs,P29 owns package replay/verifier/evidence for this run

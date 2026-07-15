@@ -12,16 +12,36 @@ PATTERNS = [
     ("no_degradation", re.compile(r"\bno\s+degradation\b|\bno\s+quality\s+loss\b", re.I)),
     ("google_impl", re.compile(r"\bofficial\s+Google\b|\bGoogle\s+implementation\b", re.I)),
 ]
-ALLOW_CONTEXT = re.compile(r"\b(do not|forbidden|avoid|remove|unqualified|paper claims?|not claim|must not)\b", re.I)
+ALLOW_CONTEXT = re.compile(
+    r"\b(do not|forbidden|avoid|remove|unqualified|paper claims?|not claim|must not|"
+    r"scope and limits|release-claim law|release claim law)\b",
+    re.I,
+)
+LIST_ITEM_QUOTED = re.compile(r"^\s*[-*]\s*[\"'].+[\"']\s*$")
 
+# When a line matches a marker like "forbidden" / "scope and limits" / "must not",
+# bullet-list items that *quote* the phrase under that marker are describing the
+# contract rather than asserting the claim. We allow up to 12 lines after the
+# last marker for quoted list items.
 findings = []
 for rel in FILES:
     p = ROOT / rel
     if not p.exists():
         continue
-    for lineno, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
+    lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
+    last_marker = -100
+    for lineno, line in enumerate(lines, start=1):
+        is_marker = bool(ALLOW_CONTEXT.search(line))
+        if is_marker:
+            last_marker = lineno
+            # A marker line itself is quoting/listing the contract — skip it.
+            continue
+        in_forbidden_window = (lineno - last_marker) <= 12
+        is_quoted_list_item = bool(LIST_ITEM_QUOTED.match(line))
+        if in_forbidden_window and is_quoted_list_item:
+            continue
         for name, pat in PATTERNS:
-            if pat.search(line) and not ALLOW_CONTEXT.search(line):
+            if pat.search(line):
                 findings.append({"file": rel, "line": lineno, "pattern": name, "text": line.strip()})
 
 print(json.dumps({"forbidden_claim_findings": findings, "count": len(findings)}, indent=2))

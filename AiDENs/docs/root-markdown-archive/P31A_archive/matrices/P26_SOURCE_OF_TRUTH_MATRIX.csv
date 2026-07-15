@@ -1,9 +1,0 @@
-Concept,Canonical owner,AiDENs role,P26 rule
-Episode identity,stack-ids / semantic-memory,consume/display only,No local episode semantics
-Evidence package/export,semantic-memory-forge,route/display only,No local evidence promotion
-Bridge import,forge-memory-bridge,invoke/record evidence,No local import reinterpretation
-Queryable memory,semantic-memory / knowledge-runtime,ground agent context,No local truth store
-Tool receipts,llm-tool-runtime / aidens support layer,emit/support receipts,Do not hide degraded route
-Verification/governance,verification-*,invoke/display support result,No canonical adjudication locally
-AgentSpecV1,AiDENs support layer,own local operator contract,Must disclose non-canonical status
-PlanActVerify loop,AiDENs runner/support layer,own local orchestration,Bounded and evidence-bearing

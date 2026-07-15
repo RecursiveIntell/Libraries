@@ -1,3 +1,22 @@
+// turbo-quant semantic-memory proof harness.
+//
+// DEPRECATED 2026-06-10 by the P27 real-workload audit. This harness
+// runs a synthetic 1,000x384 unit-vector corpus and reports
+// `recall@10 = 1.0`. P27 ran the same codec on BEIR `scifact` (5,181
+// docs, 300 test queries, 339 qrels) and got
+// `exact_rerank_recovery_at_1 = 0.307` — the codec misses the top-1
+// ground truth 70% of the time, even with 4x oversample.
+//
+// This harness is RETAINED for fast CI smoke tests and to preserve
+// the P26 KV-shadow evidence at
+// `docs/codex-runs/P26/SEMANTIC_MEMORY_PROOF_RECEIPT.json`. It is NOT
+// a source of retrieval-quality claims — those come from the P27
+// benchmark (see `docs/codex-runs/P27/REAL_BENCH_AUDIT.md` and the
+// `real_bench` example in the parent crate).
+//
+// For the deprecation rationale and replacement harness, see
+// `tools/semantic_memory_harness/README.md`.
+
 use std::{
     collections::{BTreeMap, BTreeSet},
     env, fs,

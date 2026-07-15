@@ -113,6 +113,7 @@ pub(crate) fn rebuild_hnsw_from_sqlite(
         let rows = stmt.query_map([], |row| {
             Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
         })?;
+        let mut fact_count_inserted = 0usize;
         for row in rows {
             let (id, blob) = row?;
             match db::decode_f32_le(&blob, config.dimensions) {
@@ -122,6 +123,7 @@ pub(crate) fn rebuild_hnsw_from_sqlite(
                         tracing::warn!("Failed to insert {} into HNSW: {}", key, e);
                     } else {
                         fact_inserts.insert(key, ());
+                        fact_count_inserted += 1;
                     }
                 }
                 Err(error) => {
@@ -130,6 +132,7 @@ pub(crate) fn rebuild_hnsw_from_sqlite(
                 }
             }
         }
+        let _ = fact_count_inserted; // suppress unused warning
     }
 
     // Load chunk embeddings

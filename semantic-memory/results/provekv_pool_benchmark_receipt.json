@@ -1,0 +1,19 @@
+{
+  "authoritative_store": "semantic-memory sqlite f32 embeddings",
+  "backend": "provekv_pool_candidate_then_exact_f32",
+  "candidate_only": true,
+  "codec_family": "provekv_pool",
+  "codec_profile": "semantic-memory-f32-derived-candidate-v1",
+  "compression_ratio_vs_embedding_f32": 23.77076532462822,
+  "dim": 384,
+  "elapsed_ms": 4255,
+  "embedding_snapshot_digest": "blake3:a545cb5b4a5d240f3b380be1f5cecad5bcb7a6a2f2e0a6ef4485992d5946e43b",
+  "exact_f32_rerank_required": true,
+  "generation_id": "77224f40-9f27-4372-a051-0206415f43e4",
+  "item_map_count": 128,
+  "payload_bytes": 8271,
+  "pool_manifest_digest": "blake3:514317b7e9c2b09f122e729b2947fcd0016258a408113eabc599421cbbc14d30",
+  "raw_f32_bytes": 196608,
+  "row_count": 128,
+  "schema_version": "semantic_memory_provekv_pool_benchmark_receipt_v1"
+}

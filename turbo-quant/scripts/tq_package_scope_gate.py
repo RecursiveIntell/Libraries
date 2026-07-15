@@ -34,6 +34,8 @@ ALLOWED_ROOTS = {
     "CHANGELOG.md",
     "RELEASE_NOTES.md",
     "LICENSE",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
 }
 ALLOWED_PREFIXES = (
     "src/",
