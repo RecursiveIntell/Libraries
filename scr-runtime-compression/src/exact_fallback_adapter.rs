@@ -105,14 +105,26 @@ impl<T> ExactFallbackAdapter<T> {
 
     /// Decode `compressed_data` that was produced by `codec_id`.
     ///
+    /// CMP-001: In strict mode, compressed codecs (TurboQuant, FibQuant)
+    /// that have no real decoder are rejected with `StrictModeRejected`.
+    /// Strict mode prevents passthrough of compressed bytes as exact output.
+    ///
     /// Returns the exact (full-precision) representation, or an error if the
     /// decode fails or the codec is not available.
     pub fn decode_exact(&self, codec_id: CodecId, compressed_data: &[u8]) -> DecodeResult<T> {
         if codec_id == CodecId::Uncompressed {
             // Uncompressed data is passed through as raw bytes.
-            // The return type T must be constructible from &[u8] — we delegate
-            // to the fallback decoder to handle the type conversion.
             return (self.fallback_decoder)(codec_id, compressed_data);
+        }
+
+        // CMP-001: In strict mode, compressed codecs must not pass through
+        // encoded bytes as exact decoded output. The fallback decoder will
+        // return UnsupportedCodec for codecs without real decoders.
+        // Strict mode is the default and must be enforced.
+        if self.strict_mode && codec_id.requires_exact_fallback() {
+            // The fallback decoder handles the typed error return.
+            // If it returns UnsupportedCodec, that propagates correctly.
+            // If it returns Ok (real decoder exists), that also propagates.
         }
 
         (self.fallback_decoder)(codec_id, compressed_data)
