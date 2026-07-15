@@ -174,7 +174,7 @@ fn canonical_bundle_roundtrip_preserves_authoritative_contract() {
         Some("trace-canonical".into()),
     );
     bundle.run_id = Some("run-canonical".into());
-    bundle.attempt_id = Some("attempt-canonical".into());
+    bundle.attempt_id = Some("attempt:attempt-canonical".into());
     bundle.causal_question = Some("Did the canonical adapter preserve bundle authority?".into());
     bundle.unit_definition = Some("one paired canonical adapter proof".into());
     bundle.identification_rationale = Some("same backend, same scope, same adapter".into());
@@ -476,10 +476,10 @@ fn episode_meta_and_content_capture_verification_artifacts() {
     let content = bundle.to_episode_content();
     assert!(content.contains("Treatment: kind=patch_applied"));
     assert!(content.contains(
-        "Trial trial-baseline-1 / attempt attempt-verification-1: Baseline completed=true"
+        "Trial trial:trial-baseline-1 / attempt attempt:attempt-verification-1: Baseline completed=true"
     ));
     assert!(content.contains(
-        "Trial trial-patched-1 / attempt attempt-verification-1: Patched completed=true"
+        "Trial trial:trial-patched-1 / attempt attempt:attempt-verification-1: Patched completed=true"
     ));
     assert!(content.contains("Refutation Placebo"));
     assert!(content.contains("Refutation SubsampleStability failed: high variance across folds"));
