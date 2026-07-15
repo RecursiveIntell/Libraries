@@ -63,8 +63,8 @@ async fn forge_tool_receipt_sink_persists_raw_receipt() {
 
     let stored = store.get_tool_receipt("receipt-1").unwrap().unwrap();
     assert_eq!(stored.tool_name, "run_verification");
-    assert_eq!(stored.attempt_id, "attempt-1");
-    assert_eq!(stored.trial_id, "trial-1");
+    assert_eq!(stored.attempt_id, "attempt:attempt-1");
+    assert_eq!(stored.trial_id, "trial:trial-1");
     assert_eq!(stored.provider_call_id.as_deref(), Some("provider-call-1"));
     assert_eq!(stored.trace_id, receipt.trace_ctx.trace_id);
     assert!(stored.raw_payload_json.contains("run_verification"));
