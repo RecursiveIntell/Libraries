@@ -352,6 +352,25 @@ pub async fn observe_scope(
         });
     }
 
+    // GOV-001: Observe governance with fail-closed semantics. If governance
+    // observation fails, record a degradation and produce an Unavailable quality.
+    #[cfg(feature = "governance")]
+    let governance_obs = match crate::governance_gate::observe_governance(store).await {
+        Ok(obs) => obs,
+        Err(e) => {
+            degradations.push(ObservationDegradation {
+                kind: "governance_observation_failed".into(),
+                detail: e.to_string(),
+            });
+            crate::governance_gate::GovernanceObservation {
+                quality: crate::governance_gate::ObservationQuality::Unavailable {
+                    reason: e.to_string(),
+                },
+                ..Default::default()
+            }
+        }
+    };
+
     Ok(Observation {
         scope_key,
         paths,
@@ -377,7 +396,7 @@ pub async fn observe_scope(
         scope_health,
         degradations,
         #[cfg(feature = "governance")]
-        governance: Some(crate::governance_gate::observe_governance(store).await),
+        governance: Some(governance_obs),
     })
 }
 
