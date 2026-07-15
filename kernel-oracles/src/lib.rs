@@ -696,7 +696,7 @@ mod tests {
             .map(|claim_id| ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
                     claim_id: Some(ClaimId::new(claim_id.clone())),
-                    claim_version_id: Some(ClaimVersionId::new(&claim_id)),
+                    claim_version_id: Some(ClaimVersionId::new(claim_id.to_string())),
                     subject_entity_id: EntityId::new(format!("entity-{claim_id}")),
                     predicate: "supports".into(),
                     object_anchor: serde_json::json!("result"),
