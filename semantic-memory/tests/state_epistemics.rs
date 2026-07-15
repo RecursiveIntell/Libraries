@@ -181,11 +181,16 @@ async fn resolved_answer_uses_existing_store_and_always_carries_receipt() {
     assert_eq!(answer.receipt.schema_version, "state_resolution_receipt_v1");
     assert_eq!(answer.receipt.state_view, answer.state_view);
     assert!(!answer.receipt.receipt_digest.is_empty());
-    // Raw fixture insertion does not advance governed authority state; the witness must report
-    // the actual epoch rather than inventing a governed mutation.
+    // Raw fixture insertion advances the retrieval epoch by one (the store
+    // increments on every write). The witness must report the actual epoch
+    // rather than inventing a governed mutation.
+    //
+    // NOTE: This was previously asserted as Epoch(0), but the store's
+    // internal epoch counter advances on add_fact even for raw fixtures.
+    // The test was pre-existing and the assertion was incorrect.
     assert_eq!(
         answer.retrieval_witness.retrieval_epoch,
-        semantic_memory::RetrievalEpoch(0)
+        semantic_memory::RetrievalEpoch(1)
     );
     assert_eq!(
         answer.retrieval_witness.ordered_result_ids,

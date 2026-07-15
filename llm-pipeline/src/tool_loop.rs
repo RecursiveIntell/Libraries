@@ -958,6 +958,8 @@ mod tests {
             receipt_persistence: ToolReceiptPersistence::Ephemeral,
             output_size_limit_bytes: None,
             provider_payload: None,
+            effect_target: Default::default(),
+            rollback_contract: None,
         }
     }
 

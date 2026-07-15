@@ -17,7 +17,7 @@ use semantic_memory_forge::{
     ExportClaim, ExportEnvelopeV1, ExportEnvelopeV2, ExportEnvelopeV3, ExportRecord,
     EXPORT_ENVELOPE_V1_SCHEMA,
 };
-use stack_ids::{ClaimId, EntityId, EnvelopeId, ScopeKey};
+use stack_ids::{ClaimVersionId,ClaimId, EntityId, EnvelopeId, ScopeKey};
 use tempfile::TempDir;
 
 fn open_store(base_dir: &std::path::Path) -> MemoryStore {
@@ -131,7 +131,7 @@ fn base_records() -> Vec<ExportRecord> {
     vec![
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-order-1")),
-            claim_version_id: Some("claim-version-order-1".into()),
+            claim_version_id: Some(ClaimVersionId::new("claim-version:claim-version-order-1")),
             subject_entity_id: EntityId::new("entity-order-1"),
             predicate: "supports".into(),
             object_anchor: serde_json::json!("result-a"),
@@ -146,7 +146,7 @@ fn base_records() -> Vec<ExportRecord> {
         }),
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-order-2")),
-            claim_version_id: Some("claim-version-order-2".into()),
+            claim_version_id: Some(ClaimVersionId::new("claim-version:claim-version-order-2")),
             subject_entity_id: EntityId::new("entity-order-2"),
             predicate: "supports".into(),
             object_anchor: serde_json::json!("result-b"),
@@ -161,7 +161,7 @@ fn base_records() -> Vec<ExportRecord> {
         }),
         ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new("claim-order-3")),
-            claim_version_id: Some("claim-version-order-3".into()),
+            claim_version_id: Some(ClaimVersionId::new("claim-version:claim-version-order-3")),
             subject_entity_id: EntityId::new("entity-order-3"),
             predicate: "supports".into(),
             object_anchor: serde_json::json!("result-c"),

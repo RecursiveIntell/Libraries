@@ -492,7 +492,7 @@ mod tests {
         };
         let older = transform_envelope_v3(&sample_v3_envelope()).unwrap();
         let mut newer = older.clone();
-        newer.source_envelope_id = "env-v3-new".into();
+        newer.source_envelope_id = EnvelopeId::new("envelope:env-v3-new");
         let expected = compile_batch(&older, &policy).graph_hash;
         let snapshots = vec![
             TemporalReplaySnapshot {

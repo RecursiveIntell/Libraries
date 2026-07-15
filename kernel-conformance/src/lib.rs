@@ -106,7 +106,7 @@ mod tests {
             .map(|(index, claim_id)| ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
                     claim_id: Some(ClaimId::new(format!("claim-{index}"))),
-                    claim_version_id: Some((*claim_id).into()),
+                    claim_version_id: Some(ClaimVersionId::new(claim_id.clone())),
                     subject_entity_id: EntityId::new(format!("entity-{index}")),
                     predicate: "supports".into(),
                     object_anchor: serde_json::json!("result"),
@@ -1023,12 +1023,12 @@ mod tests {
         );
         // The digest in the batch must match the source envelope's computed digest.
         assert!(
-            !batch.content_digest.0.is_empty(),
+            !batch.content_digest.hex().is_empty(),
             "LIB-C005: content_digest must be carried through from source envelope"
         );
         // Verify it's actually the Blake3 format (hex, 64 chars).
         assert_eq!(
-            batch.content_digest.0.len(),
+            batch.content_digest.hex().len(),
             64,
             "LIB-C005: content_digest must be a 64-char hex string (BLAKE3)"
         );
