@@ -55,7 +55,7 @@ fn valid_payload(payload: &str) -> bool {
     let mut characters = payload.chars();
     matches!(characters.next(), Some(first) if first.is_ascii_alphanumeric())
         && characters.all(|character| {
-            character.is_ascii_alphanumeric() || matches!(character, '-' | '.' | '_' | '~')
+            character.is_ascii_alphanumeric() || matches!(character, '-' | '.' | '_' | '~' | ':')
         })
 }
 

@@ -182,11 +182,11 @@ fn hyperedge_compilation_groups_records_by_assertion_group() {
     let group = output
         .hyperedges
         .iter()
-        .find(|edge| edge.edge_id == "assertion_group:group-1")
+        .find(|edge| edge.edge_id == "assertion_group:assertion-group:group-1")
         .expect("assertion hyperedge expected");
     assert_eq!(
         group.member_node_ids,
-        vec!["claim-version-1".to_string(), "claim-version-2".to_string()]
+        vec!["claim-version:claim-version-1".to_string(), "claim-version:claim-version-2".to_string()]
     );
 }
 
@@ -246,14 +246,14 @@ fn invalidation_cones_cover_peer_nodes_in_hyperedge() {
     let cone = output
         .invalidation_cones
         .iter()
-        .find(|cone| cone.source_node_id == "claim-version-1")
+        .find(|cone| cone.source_node_id == "claim-version:claim-version-1")
         .expect("expected cone for first claim");
     assert!(cone
         .affected_node_ids
-        .contains(&"claim-version-2".to_string()));
+        .contains(&"claim-version:claim-version-2".to_string()));
     assert!(cone
         .affected_hyperedge_ids
-        .contains(&"assertion_group:group-1".to_string()));
+        .contains(&"assertion_group:assertion-group:group-1".to_string()));
 }
 
 #[test]
@@ -292,11 +292,11 @@ fn thin_export_does_not_invent_assertion_hyperedges_without_group() {
     let group_hyperedge = output
         .hyperedges
         .iter()
-        .find(|edge| edge.edge_id == "assertion_group:group-1")
+        .find(|edge| edge.edge_id == "assertion_group:assertion-group:group-1")
         .expect("explicitly semanticized records should keep their provided grouping");
     assert_eq!(
         group_hyperedge.member_node_ids,
-        vec!["claim-version-1".to_string()]
+        vec!["claim-version:claim-version-1".to_string()]
     );
 }
 
@@ -651,11 +651,11 @@ fn kern_002_non_inferential_records_do_not_mint_nodes() {
         .map(|node| node.node_id.as_str())
         .collect::<Vec<_>>();
 
-    assert!(node_ids.contains(&"claim-version-mixed-1"));
-    assert!(node_ids.contains(&"relation-version-mixed-2"));
+    assert!(node_ids.contains(&"claim-version:claim-version-mixed-1"));
+    assert!(node_ids.contains(&"relation-version:relation-version-mixed-2"));
     assert!(!node_ids.contains(&"episode-mixed-1"));
     assert!(!node_ids.contains(&"entity-alias"));
-    assert!(!node_ids.contains(&"claim-version-ref-1"));
+    assert!(!node_ids.contains(&"claim-version:claim-version-ref-1"));
 }
 
 #[test]

@@ -262,7 +262,7 @@ pub fn compile_batch(batch: &ProjectionImportBatchV3, policy: &CompilerPolicy) -
         && oracle_candidate_node_ids.len() <= 8
     {
         vec![OracleSliceCandidate {
-            oracle_slice_id: OracleSliceId::new(format!("oracle:{}", batch.source_envelope_id)),
+            oracle_slice_id: OracleSliceId::new(format!("oracle-slice:{}", batch.source_envelope_id)),
             node_ids: oracle_candidate_node_ids,
         }]
     } else {
