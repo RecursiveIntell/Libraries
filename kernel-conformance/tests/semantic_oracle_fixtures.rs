@@ -31,7 +31,7 @@ fn golden_v1_envelope() -> ExportEnvelopeV1 {
             metadata: None,
         }),
         ExportRecord::Episode(ExportEpisode {
-            episode_id: Some(EpisodeId::new("ep-oracle-1")),
+            episode_id: Some(EpisodeId::new("episode:ep-oracle-1")),
             document_id: "doc-oracle-1".into(),
             cause_ids: vec!["cause-build-1".into()],
             effect_type: "test_observation".into(),
@@ -76,7 +76,7 @@ fn golden_fixture_episode_identity_preserved() {
             _ => None,
         })
         .expect("episode present");
-    assert_eq!(ep.episode_id.as_str(), "ep-oracle-1");
+    assert_eq!(ep.episode_id.as_str(), "episode:ep-oracle-1");
     assert_eq!(ep.document_id, "doc-oracle-1");
 }
 
