@@ -660,7 +660,7 @@ mod tests {
                 constraint_id: ConstraintId::new("edge-triad"),
                 kind: "hyperedge".into(),
                 variable_ids: vec!["target".into(), "peer-b".into(), "peer-c".into()],
-                operator_id: OperatorId::new("kernel-oracles:tests"),
+                operator_id: OperatorId::new("tests"),
             }],
             regions: vec![CompiledRegion {
                 region_id: RegionId::new("region:oracle-triad"),
@@ -819,8 +819,8 @@ mod tests {
             policy_version: "policy-1".into(),
             include_hyperedges: true,
         };
-        let older = rich_batch("env-old", "old");
-        let newer = rich_batch("env-new", "new");
+        let older = rich_batch("envelope:env-old", "old");
+        let newer = rich_batch("envelope:env-new", "new");
         let expected = compile_batch(&older, &policy);
         let replay = evaluate_temporal_replay(
             &[
@@ -841,7 +841,7 @@ mod tests {
 
         assert!(replay.matched_expected_hash);
         assert_eq!(replay.selected_recorded_at, "2026-03-08T00:00:00Z");
-        assert_eq!(replay.source_envelope_id, "env-old");
+        assert_eq!(replay.source_envelope_id, "envelope:env-old");
     }
 
     #[test]
@@ -882,7 +882,7 @@ mod tests {
         let replay = replay_as_of(
             &[TemporalReplaySnapshot {
                 recorded_at: "2026-03-08T00:00:00Z".into(),
-                batch: rich_batch("env-old", "old"),
+                batch: rich_batch("envelope:env-old", "old"),
             }],
             "not-a-real-timestamp",
             &policy,
@@ -900,7 +900,7 @@ mod tests {
         let replay = replay_as_of(
             &[TemporalReplaySnapshot {
                 recorded_at: "not-a-real-timestamp".into(),
-                batch: rich_batch("env-old", "old"),
+                batch: rich_batch("envelope:env-old", "old"),
             }],
             "2026-03-09T00:00:00Z",
             &policy,
@@ -912,7 +912,7 @@ mod tests {
     #[test]
     fn causal_refuter_emits_flip_witness_for_single_peer_removal() {
         let compiled = compiled_fixture();
-        let result = evaluate_causal_refuter(&compiled, "claim-version-alpha-1", 1);
+        let result = evaluate_causal_refuter(&compiled, "claim-version:claim-version-alpha-1", 1);
 
         assert_eq!(result.mode, RefutationMode::CausalRefuter);
         assert!(matches!(
@@ -924,7 +924,7 @@ mod tests {
     #[test]
     fn minimal_perturbation_search_defaults_to_one_step_budget() {
         let compiled = compiled_fixture();
-        let result = minimal_perturbation_witness(&compiled, "claim-version-alpha-1", 0);
+        let result = minimal_perturbation_witness(&compiled, "claim-version:claim-version-alpha-1", 0);
 
         assert!(matches!(
             result.outcome,
@@ -936,8 +936,8 @@ mod tests {
     #[test]
     fn causal_refuter_budget_is_exhausted_before_flip_is_possible() {
         let (compiled, claims) = compile_many_claim_fixture(11);
-        let target = &claims[0];
-        let result = evaluate_causal_refuter(&compiled, target, 10);
+        let target = format!("claim-version:{}", &claims[0]);
+        let result = evaluate_causal_refuter(&compiled, &target, 10);
 
         match result.outcome {
             OracleRefutationOutcome::NoFlipFound { searched_budget } => {
@@ -977,7 +977,7 @@ mod tests {
     #[test]
     fn minimal_perturbation_preserves_small_graph_flip_witness() {
         let compiled = compiled_fixture();
-        let result = minimal_perturbation_witness(&compiled, "claim-version-alpha-1", 4);
+        let result = minimal_perturbation_witness(&compiled, "claim-version:claim-version-alpha-1", 4);
 
         assert!(matches!(
             result.outcome,
@@ -989,7 +989,7 @@ mod tests {
     #[test]
     fn delta_parity_matches_full_recompute_on_recomputed_nodes() {
         let compiled = compiled_fixture();
-        let parity = evaluate_delta_parity(&compiled, &["claim-version-alpha-2".into()], 4);
+        let parity = evaluate_delta_parity(&compiled, &["claim-version:claim-version-alpha-2".into()], 4);
 
         assert!(parity.parity_match);
         assert!(!parity.recomputed_node_ids.is_empty());
