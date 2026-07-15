@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Routing record linking a syndrome to a repair candidate and its blast radius.",
+  "properties": {
+    "blast_radius_node_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "region_id": {
+      "type": "string"
+    },
+    "repair_surface": {
+      "type": "string"
+    },
+    "route_id": {
+      "type": "string"
+    },
+    "routed_before_global_invalidation": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "syndrome_id": {
+      "type": "string"
+    },
+    "witness_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "blast_radius_node_ids",
+    "candidate_id",
+    "region_id",
+    "repair_surface",
+    "route_id",
+    "routed_before_global_invalidation",
+    "schema_version",
+    "syndrome_id",
+    "witness_refs"
+  ],
+  "title": "SyndromeRouteRecord",
+  "type": "object"
+}

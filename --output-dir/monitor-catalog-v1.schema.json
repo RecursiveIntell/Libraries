@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "MonitorDefinitionV1": {
+      "properties": {
+        "monitor": {
+          "type": "string"
+        },
+        "threshold": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "monitor",
+        "threshold"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "evaluation_cadence": {
+      "type": "string"
+    },
+    "false_positive_budget": {
+      "type": "string"
+    },
+    "monitor_catalog_id": {
+      "type": "string"
+    },
+    "monitor_definitions": {
+      "items": {
+        "$ref": "#/definitions/MonitorDefinitionV1"
+      },
+      "type": "array"
+    },
+    "owner_ref": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "evaluation_cadence",
+    "false_positive_budget",
+    "monitor_catalog_id",
+    "owner_ref",
+    "schema_version"
+  ],
+  "title": "MonitorCatalogV1",
+  "type": "object"
+}

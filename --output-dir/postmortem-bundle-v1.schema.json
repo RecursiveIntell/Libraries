@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "corrective_actions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "owner_ref": {
+      "type": "string"
+    },
+    "postmortem_bundle_id": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string"
+    },
+    "root_cause_summary": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "corrective_actions",
+    "incident_case_id",
+    "owner_ref",
+    "postmortem_bundle_id",
+    "published_at",
+    "root_cause_summary",
+    "schema_version"
+  ],
+  "title": "PostmortemBundleV1",
+  "type": "object"
+}

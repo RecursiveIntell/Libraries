@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "authority_lease_id": {
+      "type": "string"
+    },
+    "delegated_rights": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "delegation_bundle_id": {
+      "type": "string"
+    },
+    "further_delegation_permitted": {
+      "type": "boolean"
+    },
+    "reduced_ceilings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_requirements": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "authority_lease_id",
+    "delegated_rights",
+    "delegation_bundle_id",
+    "further_delegation_permitted",
+    "reduced_ceilings",
+    "replay_requirements",
+    "schema_version"
+  ],
+  "title": "DelegationBundleV1",
+  "type": "object"
+}

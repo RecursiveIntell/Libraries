@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "argument_structure": {
+      "type": "string"
+    },
+    "assurance_case_id": {
+      "type": "string"
+    },
+    "claim_summary": {
+      "type": "string"
+    },
+    "evidence_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "open_obligations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "ready_for_release": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "argument_structure",
+    "assurance_case_id",
+    "claim_summary",
+    "evidence_refs",
+    "open_obligations",
+    "ready_for_release",
+    "schema_version"
+  ],
+  "title": "AssuranceCaseV1",
+  "type": "object"
+}

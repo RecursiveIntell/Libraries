@@ -1,0 +1,948 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "CausalQuestion": {
+      "description": "The causal question being investigated.",
+      "properties": {
+        "description": {
+          "description": "Natural language description of the causal question.",
+          "type": "string"
+        },
+        "unit_definition": {
+          "description": "The unit of analysis (e.g., \"code patch\", \"configuration change\").",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "unit_definition"
+      ],
+      "type": "object"
+    },
+    "ComparabilitySnapshot": {
+      "description": "Immutable comparability snapshot for a paired experiment family.",
+      "properties": {
+        "backend_family": {
+          "description": "Backend family used for execution.",
+          "type": "string"
+        },
+        "comparable": {
+          "description": "Explicit verdict when known; `None` preserves absence rather than inference.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "config_flags": {
+          "description": "Sorted execution-affecting flags.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "selected_checks": {
+          "description": "Ordered list of checks run for the pair.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "timeout_class": {
+          "description": "Effective timeout class.",
+          "type": "string"
+        },
+        "violations": {
+          "default": [],
+          "description": "Violations recorded during comparability checking.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "workload_id": {
+          "description": "Which workload was exercised.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "backend_family",
+        "config_flags",
+        "selected_checks",
+        "timeout_class",
+        "workload_id"
+      ],
+      "type": "object"
+    },
+    "EnvironmentFingerprint": {
+      "description": "Fingerprint of the execution environment.\n\nUsed to detect environment drift that could affect reproducibility.",
+      "properties": {
+        "env_hash": {
+          "description": "Hash of the full environment specification (e.g., pip freeze hash).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package_versions": {
+          "description": "Key package versions (e.g., {\"dowhy\": \"0.11\", \"numpy\": \"1.26\"})."
+        },
+        "platform": {
+          "description": "OS / platform identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "python_version": {
+          "description": "Python version (if sidecar).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "package_versions"
+      ],
+      "type": "object"
+    },
+    "EstimatorKind": {
+      "description": "Kind of estimator used.",
+      "oneOf": [
+        {
+          "description": "Difference-in-differences.",
+          "enum": [
+            "diff_in_diff"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Propensity score matching.",
+          "enum": [
+            "propensity_score"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Instrumental variables.",
+          "enum": [
+            "instrumental_variables"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Ordinary least squares.",
+          "enum": [
+            "o_l_s"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Bayesian estimation.",
+          "enum": [
+            "bayesian"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Simple before/after comparison.",
+          "enum": [
+            "before_after"
+          ],
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Custom estimator.",
+          "properties": {
+            "custom": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "custom"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "EstimatorMeta": {
+      "description": "Metadata about an estimator or refuter invocation.\n\nCaptures everything needed to reproduce or audit the estimation.",
+      "properties": {
+        "environment": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/EnvironmentFingerprint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Environment fingerprint for the execution."
+        },
+        "failure_mode": {
+          "description": "How the estimator failed, if it did.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/EstimatorKind"
+            }
+          ],
+          "description": "The kind of estimator."
+        },
+        "parameters": {
+          "description": "Parameters passed to the estimator."
+        },
+        "random_seed": {
+          "description": "Random seed, if applicable for reproducibility.",
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "request_schema_version": {
+          "description": "Versioned request schema identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "response_schema_version": {
+          "description": "Versioned response schema identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeout_secs": {
+          "description": "Timeout applied to the execution.",
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "version": {
+          "description": "Version of the estimator (semver or commit hash).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "parameters",
+        "version"
+      ],
+      "type": "object"
+    },
+    "EvidenceBundleId": {
+      "description": "Opaque identifier for an evidence bundle.",
+      "type": "string"
+    },
+    "OutcomeSpec": {
+      "description": "Outcome specification.",
+      "properties": {
+        "description": {
+          "description": "What outcome is being measured.",
+          "type": "string"
+        },
+        "measurement_method": {
+          "description": "Measurement method.",
+          "type": "string"
+        },
+        "outcome_type": {
+          "description": "Whether outcome is binary, continuous, ordinal, etc.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "measurement_method",
+        "outcome_type"
+      ],
+      "type": "object"
+    },
+    "PromotionState": {
+      "description": "Promotion state for the claim represented by this bundle.",
+      "oneOf": [
+        {
+          "properties": {
+            "state": {
+              "enum": [
+                "not_promoted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "state": {
+              "enum": [
+                "eligible"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "blocked"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason",
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "promoted_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "state": {
+              "enum": [
+                "promoted"
+              ],
+              "type": "string"
+            },
+            "version_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "RefutationArtifactRecord": {
+      "description": "First-class refutation artifact preserved in canonical raw truth.",
+      "properties": {
+        "artifact_id": {
+          "description": "Artifact identifier.",
+          "type": "string"
+        },
+        "artifact_type": {
+          "description": "Artifact type / family name.",
+          "type": "string"
+        },
+        "attempt_id": {
+          "description": "Attempt that emitted the artifact, when available.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "details": {
+          "description": "Structured debug/detail payload when available.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "estimate_delta": {
+          "description": "Effect delta / estimate change when available.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "result": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/RefutationResult"
+            }
+          ],
+          "description": "Artifact outcome."
+        },
+        "trial_id": {
+          "description": "Trial that emitted the artifact, when available.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "result"
+      ],
+      "type": "object"
+    },
+    "RefutationAttempt": {
+      "description": "A refutation attempt and its result.",
+      "properties": {
+        "estimator_kind": {
+          "description": "Estimator used for the refutation.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "description": "Refutation method (e.g., \"placebo_treatment\", \"random_cause\", \"subset_data\").",
+          "type": "string"
+        },
+        "parameters": {
+          "description": "Parameters for the refutation."
+        },
+        "result": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/RefutationResult"
+            }
+          ],
+          "description": "Result of the refutation attempt."
+        }
+      },
+      "required": [
+        "method",
+        "result"
+      ],
+      "type": "object"
+    },
+    "RefutationResult": {
+      "description": "Result of a refutation attempt.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Refutation did not invalidate the original estimate.",
+          "properties": {
+            "passed": {
+              "properties": {
+                "estimate_change": {
+                  "description": "How much the estimate changed under the refutation test.",
+                  "format": "double",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "passed"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Refutation invalidated the original estimate.",
+          "properties": {
+            "failed": {
+              "properties": {
+                "estimate_change": {
+                  "description": "How much the estimate changed.",
+                  "format": "double",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "description": "Description of how/why the refutation succeeded.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "failed"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Refutation could not be completed.",
+          "properties": {
+            "inconclusive": {
+              "properties": {
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "inconclusive"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Refutation was not attempted (e.g., not applicable).",
+          "properties": {
+            "skipped": {
+              "properties": {
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "skipped"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "TreatmentSpec": {
+      "description": "Treatment specification.",
+      "properties": {
+        "baseline_description": {
+          "description": "Baseline condition description.",
+          "type": "string"
+        },
+        "description": {
+          "description": "What intervention is being tested.",
+          "type": "string"
+        },
+        "paired_trials": {
+          "description": "Whether paired baseline-vs-patched trials were used.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "baseline_description",
+        "description",
+        "paired_trials"
+      ],
+      "type": "object"
+    },
+    "VerificationLifecycleState": {
+      "description": "Compact lifecycle state that can be projected into memory-visible truth.",
+      "enum": [
+        "unverified",
+        "verified",
+        "contradicted",
+        "superseded"
+      ],
+      "type": "string"
+    },
+    "VerificationSummary": {
+      "description": "Compact verification summary designed for projection/import visibility.",
+      "properties": {
+        "comparability_snapshot_version": {
+          "description": "Immutable comparability snapshot version when carried by the source.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completed_trial_count": {
+          "description": "Number of completed trials contributing to the summary.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "failed_refutation_count": {
+          "description": "Number of failed refutation artifacts.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "lifecycle_state": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/VerificationLifecycleState"
+            }
+          ],
+          "description": "Verification lifecycle."
+        },
+        "notes": {
+          "default": [],
+          "description": "Human-readable, source-authored notes.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "passed_refutation_count": {
+          "description": "Number of passed refutation artifacts.",
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "promotion_state": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/PromotionState"
+            }
+          ],
+          "description": "Promotion state."
+        }
+      },
+      "required": [
+        "completed_trial_count",
+        "failed_refutation_count",
+        "lifecycle_state",
+        "passed_refutation_count",
+        "promotion_state"
+      ],
+      "type": "object"
+    },
+    "VerificationTrialRecord": {
+      "description": "First-class verification trial record preserved in canonical raw truth.",
+      "properties": {
+        "attempt_id": {
+          "description": "Retry lineage / attempt family.",
+          "type": "string"
+        },
+        "completed": {
+          "description": "Whether the trial completed.",
+          "type": "boolean"
+        },
+        "receipt_handles": {
+          "default": [],
+          "description": "Opaque receipt handles tied to this trial.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "side": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/VerificationTrialSide"
+            }
+          ],
+          "description": "Which side of the paired family this trial belongs to."
+        },
+        "trial_id": {
+          "description": "Trial identifier.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "attempt_id",
+        "completed",
+        "side",
+        "trial_id"
+      ],
+      "type": "object"
+    },
+    "VerificationTrialSide": {
+      "description": "Baseline-vs-patched side for a verification trial.",
+      "enum": [
+        "baseline",
+        "patched"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "An evidence bundle capturing the full methodological chain.\n\nThis is the minimal but real evidence-bundle substrate required by the canonical verification pipeline. Every field maps to a requirement in the master delta spec.",
+  "properties": {
+    "attempt_id": {
+      "description": "Attempt ID for retry lineage.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "claim_ids": {
+      "description": "Claim IDs this bundle provides evidence for.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "comparability_snapshot": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ComparabilitySnapshot"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Immutable comparability snapshot for the paired family, when known."
+    },
+    "comparability_snapshot_version": {
+      "description": "Comparability snapshot version (immutable once set).",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "confidence": {
+      "description": "Confidence in the estimate (0.0 - 1.0).",
+      "format": "float",
+      "type": "number"
+    },
+    "covariates": {
+      "description": "Covariates and confounders recorded.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "created_at": {
+      "description": "When the bundle was created.",
+      "type": "string"
+    },
+    "estimate": {
+      "description": "The causal estimate (effect size).",
+      "format": "double",
+      "type": "number"
+    },
+    "estimate_uncertainty": {
+      "description": "Standard error or uncertainty measure.",
+      "format": "double",
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "estimator_kind": {
+      "description": "Estimator kind (e.g., \"diff_in_diff\", \"propensity_score\", \"iv\").",
+      "type": "string"
+    },
+    "estimator_meta": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/EstimatorMeta"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Structured estimator metadata for replay/audit."
+    },
+    "estimator_version": {
+      "description": "Estimator version (semantic versioning or commit hash).",
+      "type": "string"
+    },
+    "id": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/EvidenceBundleId"
+        }
+      ],
+      "description": "Unique bundle identifier."
+    },
+    "identification_rationale": {
+      "description": "Identification rationale (why we believe the causal identification is valid).",
+      "type": "string"
+    },
+    "metadata": {
+      "description": "Additional metadata."
+    },
+    "outcome": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/OutcomeSpec"
+        }
+      ],
+      "description": "Outcome specification."
+    },
+    "question": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/CausalQuestion"
+        }
+      ],
+      "description": "The causal question being investigated."
+    },
+    "raw_receipt_handle": {
+      "description": "Raw receipt handle (opaque reference to the underlying raw data).",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "refutation_artifacts": {
+      "default": [],
+      "description": "First-class refutation artifacts with stable identities and lineage.",
+      "items": {
+        "$ref": "#/definitions/RefutationArtifactRecord"
+      },
+      "type": "array"
+    },
+    "refutations": {
+      "description": "Refutation attempts and their results.",
+      "items": {
+        "$ref": "#/definitions/RefutationAttempt"
+      },
+      "type": "array"
+    },
+    "replay_handle": {
+      "description": "Replay handle (linkage to original execution for replay).",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_envelope_id": {
+      "description": "Source envelope ID if this bundle originated from an export.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trace_ctx": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TraceCtx"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Trace context for correlation."
+    },
+    "treatment": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/TreatmentSpec"
+        }
+      ],
+      "description": "Treatment specification."
+    },
+    "trial_count": {
+      "description": "Number of trials / observations.",
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "trial_id": {
+      "description": "Trial ID for the specific execution.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "variance_aware": {
+      "description": "Whether variance-aware repeated trials were used.",
+      "type": "boolean"
+    },
+    "verification_summary": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/VerificationSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Compact verification/promotion summary for projection consumers."
+    },
+    "verification_trials": {
+      "default": [],
+      "description": "Explicit paired verification-trial family.",
+      "items": {
+        "$ref": "#/definitions/VerificationTrialRecord"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "claim_ids",
+    "confidence",
+    "covariates",
+    "created_at",
+    "estimate",
+    "estimator_kind",
+    "estimator_version",
+    "id",
+    "identification_rationale",
+    "outcome",
+    "question",
+    "refutations",
+    "treatment",
+    "trial_count",
+    "variance_aware"
+  ],
+  "title": "EvidenceBundle",
+  "type": "object"
+}

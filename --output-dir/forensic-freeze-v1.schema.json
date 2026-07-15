@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "forensic_freeze_id": {
+      "type": "string"
+    },
+    "frozen_surfaces": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "initiated_at": {
+      "type": "string"
+    },
+    "retention_hold_until": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "forensic_freeze_id",
+    "frozen_surfaces",
+    "incident_case_id",
+    "initiated_at",
+    "retention_hold_until",
+    "schema_version"
+  ],
+  "title": "ForensicFreezeV1",
+  "type": "object"
+}

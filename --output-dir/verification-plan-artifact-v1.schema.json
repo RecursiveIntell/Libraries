@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CheapCheckKindV1": {
+      "description": "Kind of lightweight preflight check in the cheap-check ladder.",
+      "enum": [
+        "schema_validation",
+        "provenance_audit",
+        "replay_preflight",
+        "oracle_preflight",
+        "refutation_preflight"
+      ],
+      "type": "string"
+    },
+    "CheapCheckStatusV1": {
+      "description": "Status of a single cheap-check preflight evaluation.",
+      "properties": {
+        "check": {
+          "$ref": "#/definitions/CheapCheckKindV1"
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "satisfied": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "check",
+        "satisfied"
+      ],
+      "type": "object"
+    },
+    "EvidenceAdmissibilityV1": {
+      "enum": [
+        "admissible",
+        "restricted",
+        "inadmissible",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "ExactnessLevelV1": {
+      "enum": [
+        "exact",
+        "conservative",
+        "approximate",
+        "heuristic"
+      ],
+      "type": "string"
+    },
+    "ProofProfileV1": {
+      "description": "Proof profile describing evidence admissibility, cheap-check status, and remaining obligations.",
+      "properties": {
+        "admissible_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "cheap_checks": {
+          "items": {
+            "$ref": "#/definitions/CheapCheckStatusV1"
+          },
+          "type": "array"
+        },
+        "evidence_admissibility": {
+          "$ref": "#/definitions/EvidenceAdmissibilityV1"
+        },
+        "profile_name": {
+          "type": "string"
+        },
+        "proof_obligations_remaining": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_admissibility",
+        "profile_name"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Serializable verification plan artifact emitted per iteration.\n\nCaptures proof obligations, admissible evidence, cheapest check ladders, and policy blockers for downstream adjudication.",
+  "properties": {
+    "admissible_evidence": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "blocked_checks": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "cheap_check_ladder": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/CheapCheckStatusV1"
+      },
+      "type": "array"
+    },
+    "cheapest_checks": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "degradation_flags": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "policy_blockers": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "promotion_blocked_on_missing_proof": {
+      "type": "boolean"
+    },
+    "proof_obligations_remaining": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "proof_profile": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ProofProfileV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "refutation_suggestions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_preconditions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "replay_recipe": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "target_exactness": {
+      "$ref": "#/definitions/ExactnessLevelV1"
+    }
+  },
+  "required": [
+    "plan_id",
+    "promotion_blocked_on_missing_proof",
+    "schema_version",
+    "target_exactness"
+  ],
+  "title": "VerificationPlanArtifactV1",
+  "type": "object"
+}

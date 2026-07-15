@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "budget_consumed_percent": {
+      "format": "double",
+      "type": "number"
+    },
+    "error_budget_ledger_id": {
+      "type": "string"
+    },
+    "last_updated_at": {
+      "type": "string"
+    },
+    "remaining_budget_percent": {
+      "format": "double",
+      "type": "number"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "service_level_profile_id": {
+      "type": "string"
+    },
+    "window": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "budget_consumed_percent",
+    "error_budget_ledger_id",
+    "last_updated_at",
+    "remaining_budget_percent",
+    "schema_version",
+    "service_level_profile_id",
+    "window"
+  ],
+  "title": "ErrorBudgetLedgerV1",
+  "type": "object"
+}

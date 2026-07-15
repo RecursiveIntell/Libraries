@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BudgetExhaustionBehaviorV1": {
+      "enum": [
+        "emit_typed_degradation_and_hold_advisory"
+      ],
+      "type": "string"
+    },
+    "ExperimentBudgetClassV1": {
+      "enum": [
+        "small",
+        "medium",
+        "large"
+      ],
+      "type": "string"
+    },
+    "ExperimentMaxExactnessV1": {
+      "enum": [
+        "bounded_exact"
+      ],
+      "type": "string"
+    },
+    "HumanReviewAllowanceV1": {
+      "enum": [
+        "one_required_if_rollout"
+      ],
+      "type": "string"
+    },
+    "OracleAllowanceV1": {
+      "enum": [
+        "one_exact_slice"
+      ],
+      "type": "string"
+    },
+    "RefuterAllowanceV1": {
+      "enum": [
+        "up_to_1",
+        "up_to_3"
+      ],
+      "type": "string"
+    },
+    "ReplayAllowanceV1": {
+      "enum": [
+        "full_replay_family"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "budget_class": {
+      "$ref": "#/definitions/ExperimentBudgetClassV1"
+    },
+    "exhaustion_behavior": {
+      "$ref": "#/definitions/BudgetExhaustionBehaviorV1"
+    },
+    "experiment_budget_id": {
+      "type": "string"
+    },
+    "human_review_allowance": {
+      "$ref": "#/definitions/HumanReviewAllowanceV1"
+    },
+    "max_exactness": {
+      "$ref": "#/definitions/ExperimentMaxExactnessV1"
+    },
+    "oracle_allowance": {
+      "$ref": "#/definitions/OracleAllowanceV1"
+    },
+    "refuter_allowance": {
+      "$ref": "#/definitions/RefuterAllowanceV1"
+    },
+    "replay_allowance": {
+      "$ref": "#/definitions/ReplayAllowanceV1"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "budget_class",
+    "exhaustion_behavior",
+    "experiment_budget_id",
+    "human_review_allowance",
+    "max_exactness",
+    "oracle_allowance",
+    "refuter_allowance",
+    "replay_allowance",
+    "schema_version"
+  ],
+  "title": "ExperimentBudgetV1",
+  "type": "object"
+}

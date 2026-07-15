@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "affected_surfaces": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "hazard_library_id": {
+      "type": "string"
+    },
+    "hazard_scenario_id": {
+      "type": "string"
+    },
+    "required_monitor_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "severity_baseline": {
+      "type": "string"
+    },
+    "trigger_conditions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "hazard_library_id",
+    "hazard_scenario_id",
+    "schema_version",
+    "severity_baseline"
+  ],
+  "title": "HazardScenarioV1",
+  "type": "object"
+}

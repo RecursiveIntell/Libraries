@@ -1,0 +1,165 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ApprovalRequirement": {
+      "enum": [
+        "none",
+        "human_review"
+      ],
+      "type": "string"
+    },
+    "AutonomyCeiling": {
+      "enum": [
+        "advisory_only",
+        "verification_only",
+        "promotion_eligible"
+      ],
+      "type": "string"
+    },
+    "CheckMethod": {
+      "description": "Verification method used by a check plan to evaluate a case.",
+      "enum": [
+        "exact_bounded_oracle",
+        "conservative_oracle",
+        "delta_parity_oracle",
+        "temporal_replay_oracle",
+        "causal_refuter",
+        "minimal_perturbation_oracle",
+        "paired_patch",
+        "advisory_only"
+      ],
+      "type": "string"
+    },
+    "MethodPolicy": {
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        },
+        "approval_requirement": {
+          "$ref": "#/definitions/ApprovalRequirement"
+        },
+        "max_autonomy": {
+          "$ref": "#/definitions/AutonomyCeiling"
+        },
+        "method": {
+          "$ref": "#/definitions/CheckMethod"
+        }
+      },
+      "required": [
+        "allowed",
+        "approval_requirement",
+        "max_autonomy",
+        "method"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Constitutional citation context attached to governance review artifacts.\n\nTracks which applicability, profile, composition, and obligation artifacts were consulted when producing a review decision.",
+  "properties": {
+    "applicability_context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "autonomy_ceiling": {
+      "$ref": "#/definitions/AutonomyCeiling"
+    },
+    "blocked_promotions_when_budget_exhausted": {
+      "default": false,
+      "type": "boolean"
+    },
+    "blocked_promotions_when_degraded": {
+      "default": false,
+      "type": "boolean"
+    },
+    "blocking_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "compiled_obligation_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_constitution_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_from": {
+      "type": "string"
+    },
+    "effective_to": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "method_rules": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/MethodPolicy"
+      },
+      "type": "array"
+    },
+    "monitoring_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "required_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "autonomy_ceiling",
+    "effective_from",
+    "policy_version",
+    "schema_version"
+  ],
+  "title": "PolicySnapshot",
+  "type": "object"
+}

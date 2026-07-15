@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CompiledObligationKindV1": {
+      "enum": [
+        "approval",
+        "check",
+        "monitor",
+        "evidence",
+        "disclosure",
+        "residency",
+        "tenancy",
+        "assurance",
+        "continuity",
+        "effect",
+        "delegation",
+        "replay",
+        "rollback",
+        "compensation",
+        "post_hoc_review",
+        "warning",
+        "block"
+      ],
+      "type": "string"
+    },
+    "ConflictClassRuleV1": {
+      "properties": {
+        "blocking": {
+          "type": "boolean"
+        },
+        "conflict_class": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "review_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "blocking",
+        "conflict_class",
+        "explanation",
+        "review_path"
+      ],
+      "type": "object"
+    },
+    "ExceptionAdmissibilityRuleV1": {
+      "properties": {
+        "allowed_obligation_families": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "exception_class": {
+          "type": "string"
+        },
+        "requires_approval_refs": {
+          "type": "boolean"
+        },
+        "requires_expiry": {
+          "type": "boolean"
+        },
+        "residual_obligations_mandatory": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "exception_class",
+        "requires_approval_refs",
+        "requires_expiry",
+        "residual_obligations_mandatory"
+      ],
+      "type": "object"
+    },
+    "FoldClassV1": {
+      "enum": [
+        "intersection",
+        "union",
+        "min_of_maxima",
+        "max_of_minima",
+        "earliest_expiry",
+        "conflict_if_different",
+        "block_dominant"
+      ],
+      "type": "string"
+    },
+    "ObligationFamilyRuleV1": {
+      "properties": {
+        "admissible_exception_classes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "block_on_unresolved_conflict": {
+          "type": "boolean"
+        },
+        "downgrade_behavior": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "fold_class": {
+          "$ref": "#/definitions/FoldClassV1"
+        },
+        "monotone_additions_expected": {
+          "type": "boolean"
+        },
+        "obligation_family": {
+          "type": "string"
+        },
+        "output_kind": {
+          "$ref": "#/definitions/CompiledObligationKindV1"
+        }
+      },
+      "required": [
+        "block_on_unresolved_conflict",
+        "downgrade_behavior",
+        "explanation",
+        "fold_class",
+        "monotone_additions_expected",
+        "obligation_family",
+        "output_kind"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "composition_rule_set_id": {
+      "type": "string"
+    },
+    "conflict_classes": {
+      "items": {
+        "$ref": "#/definitions/ConflictClassRuleV1"
+      },
+      "type": "array"
+    },
+    "downgrade_behavior": {
+      "type": "string"
+    },
+    "exception_rules": {
+      "items": {
+        "$ref": "#/definitions/ExceptionAdmissibilityRuleV1"
+      },
+      "type": "array"
+    },
+    "family_rules": {
+      "items": {
+        "$ref": "#/definitions/ObligationFamilyRuleV1"
+      },
+      "type": "array"
+    },
+    "reference_evaluator_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "composition_rule_set_id",
+    "downgrade_behavior",
+    "reference_evaluator_version",
+    "schema_version",
+    "version"
+  ],
+  "title": "CompositionRuleSetV1",
+  "type": "object"
+}

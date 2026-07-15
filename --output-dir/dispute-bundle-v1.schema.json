@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "DisputeDispositionV1": {
+      "description": "Current disposition of a dispute bundle.",
+      "enum": [
+        "open",
+        "resolved",
+        "escalated",
+        "rejected"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "A dispute challenging one or more artifacts with counterevidence and escalation target.",
+  "properties": {
+    "basis_of_challenge": {
+      "type": "string"
+    },
+    "challenged_artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "counterevidence_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "current_disposition": {
+      "$ref": "#/definitions/DisputeDispositionV1"
+    },
+    "dispute_bundle_id": {
+      "type": "string"
+    },
+    "escalation_target": {
+      "type": "string"
+    },
+    "replay_or_recheck_request": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "basis_of_challenge",
+    "current_disposition",
+    "dispute_bundle_id",
+    "escalation_target",
+    "replay_or_recheck_request",
+    "schema_version"
+  ],
+  "title": "DisputeBundleV1",
+  "type": "object"
+}

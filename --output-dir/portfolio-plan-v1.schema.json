@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "campaign_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "discovery_program_id": {
+      "type": "string"
+    },
+    "portfolio_plan_id": {
+      "type": "string"
+    },
+    "review_load_rationale": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "utility_rationale": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "discovery_program_id",
+    "portfolio_plan_id",
+    "review_load_rationale",
+    "schema_version",
+    "utility_rationale"
+  ],
+  "title": "PortfolioPlanV1",
+  "type": "object"
+}

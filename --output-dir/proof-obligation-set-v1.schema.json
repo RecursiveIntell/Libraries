@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ProofObligationV1": {
+      "properties": {
+        "blocking": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "obligation_id": {
+          "type": "string"
+        },
+        "satisfied": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "blocking",
+        "description",
+        "obligation_id",
+        "satisfied"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "normative_ast_id": {
+      "type": "string"
+    },
+    "obligations": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/ProofObligationV1"
+      },
+      "type": "array"
+    },
+    "proof_obligation_set_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "spec_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "normative_ast_id",
+    "proof_obligation_set_id",
+    "schema_version",
+    "spec_bundle_id"
+  ],
+  "title": "ProofObligationSetV1",
+  "type": "object"
+}

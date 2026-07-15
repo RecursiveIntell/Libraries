@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RequirementControlMappingEntryV1": {
+      "properties": {
+        "control": {
+          "type": "string"
+        },
+        "evidence_family": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "control",
+        "evidence_family",
+        "requirement"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "gap_classification_default": {
+      "type": "string"
+    },
+    "mappings": {
+      "items": {
+        "$ref": "#/definitions/RequirementControlMappingEntryV1"
+      },
+      "type": "array"
+    },
+    "owner_ref": {
+      "type": "string"
+    },
+    "regulatory_regime_profile_id": {
+      "type": "string"
+    },
+    "requirement_control_map_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "gap_classification_default",
+    "owner_ref",
+    "regulatory_regime_profile_id",
+    "requirement_control_map_id",
+    "schema_version"
+  ],
+  "title": "RequirementControlMapV1",
+  "type": "object"
+}

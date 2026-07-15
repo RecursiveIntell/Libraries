@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "deployment_profile_id": {
+      "type": "string"
+    },
+    "hazard_register_id": {
+      "type": "string"
+    },
+    "hazards": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "last_reviewed_at": {
+      "type": "string"
+    },
+    "owner_ref": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "severity_class": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "deployment_profile_id",
+    "hazard_register_id",
+    "hazards",
+    "last_reviewed_at",
+    "owner_ref",
+    "schema_version",
+    "severity_class"
+  ],
+  "title": "HazardRegisterV1",
+  "type": "object"
+}

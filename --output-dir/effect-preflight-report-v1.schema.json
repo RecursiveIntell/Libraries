@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BudgetSufficiencyResultV1": {
+      "description": "Whether the budget allocation is sufficient for the intended effect.",
+      "enum": [
+        "sufficient",
+        "insufficient"
+      ],
+      "type": "string"
+    },
+    "CheckResultV1": {
+      "description": "Binary pass/fail result for a preflight check gate.",
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "type": "string"
+    },
+    "EffectPreflightDispositionV1": {
+      "description": "Outcome disposition of a preflight check determining whether an effect may proceed to commit.",
+      "enum": [
+        "blocked",
+        "advisory_only",
+        "commit_eligible"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Result of preflight checks against an effect intent, gating commit eligibility.\n\nA `CommitEligible` disposition requires all check results to be passing and budget to be sufficient.",
+  "properties": {
+    "admission_check_result": {
+      "$ref": "#/definitions/CheckResultV1"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "blocking_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "budget_sufficiency_result": {
+      "$ref": "#/definitions/BudgetSufficiencyResultV1"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "decision_basis_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dependency_reachability_result": {
+      "$ref": "#/definitions/CheckResultV1"
+    },
+    "disposition": {
+      "$ref": "#/definitions/EffectPreflightDispositionV1"
+    },
+    "effect_intent_id": {
+      "type": "string"
+    },
+    "effect_preflight_report_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "input_integrity_result": {
+      "$ref": "#/definitions/CheckResultV1"
+    },
+    "monitoring_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "required_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "admission_check_result",
+    "applicability_context_id",
+    "budget_sufficiency_result",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "dependency_reachability_result",
+    "disposition",
+    "effect_intent_id",
+    "effect_preflight_report_id",
+    "effective_constitution_id",
+    "generated_at",
+    "input_integrity_result",
+    "notes",
+    "profile_set_id",
+    "schema_version"
+  ],
+  "title": "EffectPreflightReportV1",
+  "type": "object"
+}

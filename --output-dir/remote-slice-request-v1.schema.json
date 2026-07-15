@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RemoteExactnessClassV1": {
+      "enum": [
+        "exact",
+        "bounded_exact"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "properties": {
+    "allowed_disclosure_policy": {
+      "type": "string"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "challenge_expectations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "exactness_target": {
+      "$ref": "#/definitions/RemoteExactnessClassV1"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "remote_oracle_lease_id": {
+      "type": "string"
+    },
+    "remote_slice_request_id": {
+      "type": "string"
+    },
+    "requested_slice_definition": {
+      "type": "string"
+    },
+    "required_artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "trust_root_set_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed_disclosure_policy",
+    "applicability_context_id",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "effective_constitution_id",
+    "exactness_target",
+    "profile_set_id",
+    "remote_oracle_lease_id",
+    "remote_slice_request_id",
+    "requested_slice_definition",
+    "schema_version",
+    "trust_root_set_id"
+  ],
+  "title": "RemoteSliceRequestV1",
+  "type": "object"
+}

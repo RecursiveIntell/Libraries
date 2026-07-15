@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RefuterKindV1": {
+      "description": "Kind of refutation check applied to an experiment.",
+      "enum": [
+        "negative_control",
+        "placebo",
+        "subset_stability",
+        "human_review"
+      ],
+      "type": "string"
+    },
+    "RefuterPromotionImpactV1": {
+      "description": "Impact of a refuter result on promotion eligibility.",
+      "enum": [
+        "keeps_canary_eligible",
+        "blocks_promotion",
+        "requires_human_review"
+      ],
+      "type": "string"
+    },
+    "RefuterStateV1": {
+      "description": "Pass/fail/skip state of a refuter check.",
+      "enum": [
+        "pass",
+        "fail",
+        "skipped"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Result of a single refuter check against a counterfactual slice.",
+  "properties": {
+    "counterfactual_slice_id": {
+      "type": "string"
+    },
+    "promotion_impact": {
+      "$ref": "#/definitions/RefuterPromotionImpactV1"
+    },
+    "refuter_kind": {
+      "$ref": "#/definitions/RefuterKindV1"
+    },
+    "refuter_result_id": {
+      "type": "string"
+    },
+    "replay_linkage": {
+      "type": "string"
+    },
+    "result_summary": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/definitions/RefuterStateV1"
+    }
+  },
+  "required": [
+    "counterfactual_slice_id",
+    "promotion_impact",
+    "refuter_kind",
+    "refuter_result_id",
+    "replay_linkage",
+    "result_summary",
+    "schema_version",
+    "state"
+  ],
+  "title": "RefuterResultV1",
+  "type": "object"
+}

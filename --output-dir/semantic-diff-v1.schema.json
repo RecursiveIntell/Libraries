@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "TruthStateV1": {
+      "enum": [
+        "asserted",
+        "supported",
+        "refuted",
+        "abstained",
+        "unknown"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "changed_fields": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "evidence_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "from_truth_state": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TruthStateV1"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "semantic_diff_id": {
+      "type": "string"
+    },
+    "semantics_profile_id": {
+      "type": "string"
+    },
+    "subject_id": {
+      "type": "string"
+    },
+    "subject_kind": {
+      "type": "string"
+    },
+    "to_truth_state": {
+      "$ref": "#/definitions/TruthStateV1"
+    }
+  },
+  "required": [
+    "changed_fields",
+    "reason",
+    "schema_version",
+    "semantic_diff_id",
+    "semantics_profile_id",
+    "subject_id",
+    "subject_kind",
+    "to_truth_state"
+  ],
+  "title": "SemanticDiffV1",
+  "type": "object"
+}

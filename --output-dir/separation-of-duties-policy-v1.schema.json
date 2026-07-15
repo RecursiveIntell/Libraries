@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "emergency_exceptions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "prohibited_role_combinations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_dual_control_classes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_reviewer_independence": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "separation_of_duties_policy_id": {
+      "type": "string"
+    },
+    "violation_consequences": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "emergency_exceptions",
+    "prohibited_role_combinations",
+    "required_dual_control_classes",
+    "required_reviewer_independence",
+    "schema_version",
+    "separation_of_duties_policy_id",
+    "violation_consequences"
+  ],
+  "title": "SeparationOfDutiesPolicyV1",
+  "type": "object"
+}

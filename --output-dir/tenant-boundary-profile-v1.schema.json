@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CrossTenantQueryDefaultV1": {
+      "enum": [
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "TenantIsolationClassV1": {
+      "enum": [
+        "hard_logical_isolation"
+      ],
+      "type": "string"
+    },
+    "TenantKeyKindV1": {
+      "enum": [
+        "account_id"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "cross_tenant_query_default": {
+      "$ref": "#/definitions/CrossTenantQueryDefaultV1"
+    },
+    "isolation_class": {
+      "$ref": "#/definitions/TenantIsolationClassV1"
+    },
+    "key_management_segregation": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "shared_service_allowances": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tenant_boundary_profile_id": {
+      "type": "string"
+    },
+    "tenant_key_kind": {
+      "$ref": "#/definitions/TenantKeyKindV1"
+    }
+  },
+  "required": [
+    "cross_tenant_query_default",
+    "isolation_class",
+    "key_management_segregation",
+    "schema_version",
+    "tenant_boundary_profile_id",
+    "tenant_key_kind"
+  ],
+  "title": "TenantBoundaryProfileV1",
+  "type": "object"
+}

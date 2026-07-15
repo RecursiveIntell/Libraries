@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allowed_regions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "data_class_ceiling": {
+      "type": "string"
+    },
+    "degradation_behavior": {
+      "type": "string"
+    },
+    "dependency_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "operating_envelope_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "traffic_ceiling": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed_regions",
+    "data_class_ceiling",
+    "degradation_behavior",
+    "dependency_constraints",
+    "operating_envelope_id",
+    "schema_version",
+    "traffic_ceiling"
+  ],
+  "title": "OperatingEnvelopeV1",
+  "type": "object"
+}

@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ExecutionStateV1": {
+      "description": "Terminal or in-progress state of an effect or compensation execution.",
+      "enum": [
+        "completed",
+        "partial",
+        "cancelled",
+        "timed_out",
+        "failed",
+        "in_progress"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Record of an effect's execution outcome including state, partial-completion flags, and generated side-effects.\n\nThe `partial_execution` flag must be consistent with `execution_state`, and completed receipts must not carry a cancellation reason.",
+  "properties": {
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "cancellation_reason": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "effect_commit_decision_id": {
+      "type": "string"
+    },
+    "effect_execution_receipt_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "execution_state": {
+      "$ref": "#/definitions/ExecutionStateV1"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "generated_effect_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "observed_external_handle": {
+      "type": "string"
+    },
+    "partial_execution": {
+      "type": "boolean"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "provider_route": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "timeout_exhausted": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "applicability_context_id",
+    "cancellation_reason",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "effect_commit_decision_id",
+    "effect_execution_receipt_id",
+    "effective_constitution_id",
+    "execution_state",
+    "generated_at",
+    "generated_effect_refs",
+    "observed_external_handle",
+    "partial_execution",
+    "profile_set_id",
+    "provider_route",
+    "schema_version",
+    "timeout_exhausted"
+  ],
+  "title": "EffectExecutionReceiptV1",
+  "type": "object"
+}

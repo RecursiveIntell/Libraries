@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ControlCoverageStateV1": {
+      "enum": [
+        "covered",
+        "partial",
+        "gap_present"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "control_mapping_id": {
+      "type": "string"
+    },
+    "control_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "coverage_state": {
+      "$ref": "#/definitions/ControlCoverageStateV1"
+    },
+    "gaps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "hazard_register_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "control_mapping_id",
+    "control_refs",
+    "coverage_state",
+    "gaps",
+    "hazard_register_id",
+    "schema_version"
+  ],
+  "title": "ControlMappingV1",
+  "type": "object"
+}

@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "LocalDissentRecordV1": {
+      "properties": {
+        "blocks_shared_settlement": {
+          "type": "boolean"
+        },
+        "local_dissent_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "runtime_name": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "blocks_shared_settlement",
+        "local_dissent_id",
+        "reason",
+        "runtime_name",
+        "schema_version"
+      ],
+      "type": "object"
+    },
+    "ReplayRequirementV1": {
+      "properties": {
+        "replay_available": {
+          "type": "boolean"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "runtime_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "replay_available",
+        "required",
+        "runtime_name"
+      ],
+      "type": "object"
+    },
+    "SharedDispositionV1": {
+      "properties": {
+        "advisory_only": {
+          "type": "boolean"
+        },
+        "disposition_label": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "shared_disposition_id": {
+          "type": "string"
+        },
+        "treatment": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "advisory_only",
+        "disposition_label",
+        "schema_version",
+        "shared_disposition_id",
+        "treatment"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Canonical v25 constitutional citation shared by effect and downstream consumer artifacts.",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "equivalence_bundle_id": {
+      "type": "string"
+    },
+    "local_dissent": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/LocalDissentRecordV1"
+      },
+      "type": "array"
+    },
+    "non_admitted": {
+      "type": "boolean"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "replay_requirements": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/ReplayRequirementV1"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "settlement_case_id": {
+      "type": "string"
+    },
+    "shared_disposition": {
+      "$ref": "#/definitions/SharedDispositionV1"
+    },
+    "treaty_bundle_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "applicability_context_id",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "effective_constitution_id",
+    "equivalence_bundle_id",
+    "non_admitted",
+    "profile_set_id",
+    "schema_version",
+    "settlement_case_id",
+    "shared_disposition",
+    "treaty_bundle_id"
+  ],
+  "title": "SettlementCaseV1",
+  "type": "object"
+}

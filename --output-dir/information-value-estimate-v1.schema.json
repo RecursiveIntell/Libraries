@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "campaign_id": {
+      "type": "string"
+    },
+    "estimated_review_cost": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "expected_information_gain": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "information_value_estimate_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "campaign_id",
+    "estimated_review_cost",
+    "expected_information_gain",
+    "information_value_estimate_id",
+    "schema_version"
+  ],
+  "title": "InformationValueEstimateV1",
+  "type": "object"
+}

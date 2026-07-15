@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "EffectCommitDispositionV1": {
+      "description": "Authorization outcome of a commit decision: denied, advisory-only, or authorized for execution.",
+      "enum": [
+        "denied",
+        "advisory_only",
+        "authorized"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "Authorization decision for committing an effect, linking intent and preflight report to an execution permit.\n\nAuthorized decisions must carry an execution permit and approver refs. Denied decisions must carry a refusal reason and must not mint permits.",
+  "properties": {
+    "applicability_context_id": {
+      "type": "string"
+    },
+    "approval_grant_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "approval_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "approver_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "blocking_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "compiled_obligation_set_id": {
+      "type": "string"
+    },
+    "composition_conflict_set_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "composition_receipt_id": {
+      "type": "string"
+    },
+    "decision_basis_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "decision_state": {
+      "$ref": "#/definitions/EffectCommitDispositionV1"
+    },
+    "effect_commit_decision_id": {
+      "type": "string"
+    },
+    "effect_intent_id": {
+      "type": "string"
+    },
+    "effect_preflight_report_id": {
+      "type": "string"
+    },
+    "effective_constitution_id": {
+      "type": "string"
+    },
+    "execution_permit_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "monitoring_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_exception_bundle_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "profile_set_id": {
+      "type": "string"
+    },
+    "refusal_reason": {
+      "type": "string"
+    },
+    "required_obligation_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicability_context_id",
+    "approver_refs",
+    "compiled_obligation_set_id",
+    "composition_receipt_id",
+    "decision_state",
+    "effect_commit_decision_id",
+    "effect_intent_id",
+    "effect_preflight_report_id",
+    "effective_constitution_id",
+    "generated_at",
+    "profile_set_id",
+    "refusal_reason",
+    "schema_version"
+  ],
+  "title": "EffectCommitDecisionV1",
+  "type": "object"
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "allowed_effect_families": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "authority_lease_id": {
+      "type": "string"
+    },
+    "capability_class_id": {
+      "type": "string"
+    },
+    "grantee": {
+      "type": "string"
+    },
+    "grantor": {
+      "type": "string"
+    },
+    "hard_ceilings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "required_receipts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "revocation_conditions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "time_window": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "allowed_effect_families",
+    "authority_lease_id",
+    "capability_class_id",
+    "grantee",
+    "grantor",
+    "hard_ceilings",
+    "required_receipts",
+    "revocation_conditions",
+    "schema_version",
+    "scope",
+    "time_window"
+  ],
+  "title": "AuthorityLeaseV1",
+  "type": "object"
+}

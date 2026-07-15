@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "affected_refs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "attestation_revocation_id": {
+      "type": "string"
+    },
+    "blast_radius": {
+      "type": "string"
+    },
+    "dispute_linkage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_time": {
+      "type": "string"
+    },
+    "required_local_invalidation_behavior": {
+      "type": "string"
+    },
+    "revocation_reason": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "attestation_revocation_id",
+    "blast_radius",
+    "effective_time",
+    "required_local_invalidation_behavior",
+    "revocation_reason",
+    "schema_version"
+  ],
+  "title": "AttestationRevocationV1",
+  "type": "object"
+}

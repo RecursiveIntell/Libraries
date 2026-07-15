@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "admissibility_notes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "alternative_comparison_option": {
+      "type": "boolean"
+    },
+    "cost_metadata": {
+      "type": "string"
+    },
+    "dummy_outcome_option": {
+      "type": "boolean"
+    },
+    "negative_control_option": {
+      "type": "boolean"
+    },
+    "placebo_option": {
+      "type": "boolean"
+    },
+    "refuter_suite_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "subset_stability_option": {
+      "type": "boolean"
+    },
+    "treatment_definition_check": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "alternative_comparison_option",
+    "cost_metadata",
+    "dummy_outcome_option",
+    "negative_control_option",
+    "placebo_option",
+    "refuter_suite_id",
+    "schema_version",
+    "subset_stability_option",
+    "treatment_definition_check"
+  ],
+  "title": "RefuterSuiteV1",
+  "type": "object"
+}

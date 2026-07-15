@@ -1,0 +1,229 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BaggageEntry": {
+      "description": "A single baggage entry (key-value pair).",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "type": "object"
+    },
+    "CaseRegion": {
+      "description": "Scope and location metadata for a verification case target.",
+      "properties": {
+        "as_of_recorded_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "claim_version_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "region_digest_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "region_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope_key": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ScopeKey"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "target_key"
+      ],
+      "type": "object"
+    },
+    "ScopeKey": {
+      "description": "Compact, hashable representation of all scope dimensions.\n\nThis is the canonical partition key for the stack. Two `ScopeKey`s are equal iff all four fields match exactly.\n\n## Display format\n\n`namespace[/domain][@workspace_id][#repo_id]`\n\nExamples: - `prod` — namespace only - `prod/code` — with domain - `prod/code@ws1#myrepo` — fully specified",
+      "properties": {
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "repo_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspace_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace"
+      ],
+      "type": "object"
+    },
+    "TerminalDisposition": {
+      "description": "Terminal outcome of a closed verification case.",
+      "enum": [
+        "eligible_for_promotion",
+        "advisory_only",
+        "degraded_no_promotion",
+        "refuted",
+        "quarantined",
+        "rolled_back",
+        "exhausted",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "TraceCtx": {
+      "description": "In-process trace context for cross-crate correlation.\n\nWraps a W3C-compatible trace ID and optional parent span ID. Additional bounded baggage can be attached for cross-boundary metadata.",
+      "properties": {
+        "baggage": {
+          "description": "Bounded baggage for cross-boundary metadata. Keys and values must be short ASCII strings. No sensitive data.",
+          "items": {
+            "$ref": "#/definitions/BaggageEntry"
+          },
+          "type": "array"
+        },
+        "parent_id": {
+          "description": "Optional parent span ID (W3C: 16 hex chars).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace_id": {
+          "description": "The trace ID (W3C: 32 hex chars, or any opaque string for legacy compat).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "VerificationCaseClass": {
+      "description": "Classification of the issue that opened a verification case.",
+      "enum": [
+        "active_syndrome",
+        "fragile_node",
+        "thin_export",
+        "unverified_claim_version",
+        "refutation_gap",
+        "supersession_verification",
+        "comparability_drift",
+        "calibration_caveat",
+        "scope_stale",
+        "query_turn"
+      ],
+      "type": "string"
+    },
+    "VerificationCaseLifecycleState": {
+      "description": "Lifecycle state of a verification case from open to closed.",
+      "enum": [
+        "open",
+        "planned",
+        "executing",
+        "closed"
+      ],
+      "type": "string"
+    }
+  },
+  "description": "A single verification case tracking a governance issue from open to closed.\n\nCases are opened by the observation phase, assigned check plans, executed through verification attempts, and closed with a terminal disposition.",
+  "properties": {
+    "advisory_only": {
+      "type": "boolean"
+    },
+    "attempt_id": {
+      "type": "string"
+    },
+    "case_id": {
+      "type": "string"
+    },
+    "class": {
+      "$ref": "#/definitions/VerificationCaseClass"
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "lifecycle_state": {
+      "$ref": "#/definitions/VerificationCaseLifecycleState"
+    },
+    "non_authoritative": {
+      "type": "boolean"
+    },
+    "opened_at": {
+      "type": "string"
+    },
+    "region": {
+      "$ref": "#/definitions/CaseRegion"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "terminal_disposition": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TerminalDisposition"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trace_ctx": {
+      "$ref": "#/definitions/TraceCtx"
+    }
+  },
+  "required": [
+    "advisory_only",
+    "attempt_id",
+    "case_id",
+    "class",
+    "degraded",
+    "lifecycle_state",
+    "non_authoritative",
+    "opened_at",
+    "region",
+    "schema_version",
+    "trace_ctx"
+  ],
+  "title": "VerificationCase",
+  "type": "object"
+}

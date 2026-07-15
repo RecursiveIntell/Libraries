@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "IncidentSeverityV1": {
+      "enum": [
+        "sev1",
+        "sev2",
+        "sev3",
+        "sev4"
+      ],
+      "type": "string"
+    },
+    "IncidentStatusV1": {
+      "enum": [
+        "active",
+        "contained",
+        "resolved"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "commander_ref": {
+      "type": "string"
+    },
+    "incident_case_id": {
+      "type": "string"
+    },
+    "opened_at": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "service_level_profile_id": {
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/definitions/IncidentSeverityV1"
+    },
+    "status": {
+      "$ref": "#/definitions/IncidentStatusV1"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "commander_ref",
+    "incident_case_id",
+    "opened_at",
+    "schema_version",
+    "service_level_profile_id",
+    "severity",
+    "status",
+    "summary"
+  ],
+  "title": "IncidentCaseV1",
+  "type": "object"
+}
