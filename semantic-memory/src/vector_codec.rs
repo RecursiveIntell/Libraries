@@ -152,16 +152,35 @@ impl VectorArtifactV1 {
     }
 }
 
-/// Object-safe vector codec boundary for derived vector artifacts.
+/// INT-001: Object-safe vector codec boundary for derived vector artifacts.
+///
+/// This trait is the semantic-memory consumer-facing boundary. It should
+/// eventually be replaced by direct consumption of the canonical
+/// `quant_codec_core::VectorCodec` trait. Until then, implementations of
+/// this trait should also implement the canonical trait where practical.
 pub trait VectorCodec: Send + Sync {
     /// Codec profile identity.
     fn profile(&self) -> &VectorCodecProfileV1;
+
+    /// INT-001: Codec capabilities — what operations this codec supports.
+    fn capabilities(&self) -> CodecCapabilityInfo {
+        CodecCapabilityInfo::default()
+    }
 
     /// Encode a raw f32 vector into a byte artifact.
     fn encode(&self, vector: &[f32]) -> Result<VectorArtifactV1, MemoryError>;
 
     /// Decode an artifact back to f32 for reference scoring or differential tests.
     fn decode(&self, artifact: &VectorArtifactV1) -> Result<Vec<f32>, MemoryError>;
+}
+
+/// INT-001: Codec capability information for semantic-memory consumers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct CodecCapabilityInfo {
+    /// Codec can estimate inner product from compressed form.
+    pub can_score_inner_product: bool,
+    /// Codec is lossless (raw f32 representation).
+    pub is_lossless: bool,
 }
 
 fn validate_artifact_profile(
@@ -219,6 +238,13 @@ impl VectorCodec for RawF32Codec {
         &self.profile
     }
 
+    fn capabilities(&self) -> CodecCapabilityInfo {
+        CodecCapabilityInfo {
+            can_score_inner_product: false,
+            is_lossless: true,
+        }
+    }
+
     fn encode(&self, vector: &[f32]) -> Result<VectorArtifactV1, MemoryError> {
         db::validate_embedding(vector, dim_usize(self.profile.dim))?;
         Ok(VectorArtifactV1::new(
@@ -251,6 +277,13 @@ impl Sq8Codec {
 impl VectorCodec for Sq8Codec {
     fn profile(&self) -> &VectorCodecProfileV1 {
         &self.profile
+    }
+
+    fn capabilities(&self) -> CodecCapabilityInfo {
+        CodecCapabilityInfo {
+            can_score_inner_product: false,
+            is_lossless: false,
+        }
     }
 
     fn encode(&self, vector: &[f32]) -> Result<VectorArtifactV1, MemoryError> {
@@ -356,6 +389,13 @@ impl TurboQuantCodec {
 impl VectorCodec for TurboQuantCodec {
     fn profile(&self) -> &VectorCodecProfileV1 {
         &self.profile
+    }
+
+    fn capabilities(&self) -> CodecCapabilityInfo {
+        CodecCapabilityInfo {
+            can_score_inner_product: true,
+            is_lossless: false,
+        }
     }
 
     fn encode(&self, vector: &[f32]) -> Result<VectorArtifactV1, MemoryError> {

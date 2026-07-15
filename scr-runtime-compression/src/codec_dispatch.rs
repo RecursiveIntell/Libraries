@@ -64,7 +64,7 @@ where
 {
     // CMP-001: Dispatch is now effective — it determines which codec
     // the adapter will use, and is captured in the closure.
-    let selected_codec = match &dispatch {
+    let _selected_codec = match &dispatch {
         CodecDispatch::Force(codec) => *codec,
         CodecDispatch::Governed { policy, request } => {
             match evaluate(request.clone(), policy) {
