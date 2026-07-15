@@ -62,6 +62,10 @@ fn tool_runtime_to_pilot_to_control_lineage_stays_coherent() {
         replay_link: Some("tool_run:run-1".into()),
         tool_run_id: "run-1".into(),
         provider_call_id: None,
+        phase: llm_tool_runtime::ToolReceiptPhase::default(),
+        resolution: llm_tool_runtime::ToolReceiptResolution::default(),
+        authority_lineage: vec![],
+        preflight_receipt_id: None,
     };
     let forge_receipt = tool_receipt.to_forge_tool_receipt_v2(json!({
         "fixture": "execution_evidence_lineage",
