@@ -82,7 +82,11 @@ impl LoopConfig {
 }
 
 fn patch_seed_target_family(target_key: &str) -> Option<&str> {
-    target_key.split_once(':').map(|(family, _)| family)
+    // Try colon first (legacy format), then hyphen (BOUND-006 format)
+    target_key
+        .split_once(':')
+        .map(|(family, _)| family)
+        .or_else(|| target_key.split_once('-').map(|(family, _)| family))
 }
 
 impl Default for LoopConfig {
