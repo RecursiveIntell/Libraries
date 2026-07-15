@@ -128,12 +128,17 @@ pub struct UsearchBackend {
 }
 
 fn scalar_kind_from_env() -> Result<usearch::ScalarKind, MemoryError> {
-    match std::env::var("USEARCH_SCALAR_KIND").as_deref() {
-        Ok("f32") | Err(_) => Ok(usearch::ScalarKind::F32),
-        Ok("f64") => Ok(usearch::ScalarKind::F64),
-        Ok("f16") => Ok(usearch::ScalarKind::F16),
-        
-        Ok(other) => Err(MemoryError::InvalidConfig { field: "USEARCH_SCALAR_KIND", reason: format!("unknown USEARCH_SCALAR_KIND: {other}") }),
+    let kind = std::env::var("USEARCH_SCALAR_KIND").unwrap_or_else(|_| "f32".to_string());
+    parse_usearch_scalar_kind(&kind)
+}
+
+fn parse_usearch_scalar_kind(kind: &str) -> Result<usearch::ScalarKind, MemoryError> {
+    match kind.to_lowercase().as_str() {
+        "f32" => Ok(usearch::ScalarKind::F32),
+        "f64" => Ok(usearch::ScalarKind::F64),
+        "f16" => Ok(usearch::ScalarKind::F16),
+        "i8" | "f8" => Ok(usearch::ScalarKind::I8),
+        other => Err(MemoryError::InvalidConfig { field: "USEARCH_SCALAR_KIND", reason: format!("unknown scalar kind: {other}") }),
     }
 }
 
