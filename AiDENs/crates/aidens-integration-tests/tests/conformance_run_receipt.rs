@@ -72,7 +72,7 @@ fn conformance_run_receipt_records_all_fixture_results() {
         });
     }
 
-    let profile_id = ArtifactId::new(format!("boundary-compiler-profile:{}", profile.profile_id));
+    let profile_id = ArtifactId::new(format!("{}", profile.profile_id));
     let receipt = ConformanceRunReceiptV1::new(
         profile_id,
         results,
@@ -109,7 +109,7 @@ fn conformance_run_receipt_all_passes() {
         reason_codes: vec!["boundary-compile-accepted".to_string()],
     };
 
-    let profile_id = ArtifactId::new(format!("boundary-compiler-profile:{}", profile.profile_id));
+    let profile_id = ArtifactId::new(format!("{}", profile.profile_id));
     let receipt = ConformanceRunReceiptV1::new(profile_id, vec![fixture_result], None);
 
     assert_eq!(receipt.fixture_count, 1);
@@ -136,7 +136,7 @@ fn conformance_run_receipt_serializes_round_trip() {
         reason_codes: vec!["boundary-compile-accepted".to_string()],
     };
 
-    let profile_id = ArtifactId::new(format!("boundary-compiler-profile:{}", profile.profile_id));
+    let profile_id = ArtifactId::new(format!("{}", profile.profile_id));
     let receipt = ConformanceRunReceiptV1::new(
         profile_id,
         vec![fixture_result],

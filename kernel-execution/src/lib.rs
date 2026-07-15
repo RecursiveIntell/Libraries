@@ -951,7 +951,7 @@ mod tests {
             ],
             constraints: vec![
                 ConstraintUnit {
-                    constraint_id: ConstraintId::new("assertion-group:group-1"),
+                    constraint_id: ConstraintId::new("group-1"),
                     kind: "hyperedge".into(),
                     variable_ids: vec!["node-a".into(), "node-b".into()],
                     operator_id: OperatorId::new(CONSTRAINT_COMPILER_OPERATOR_ID),
@@ -978,8 +978,8 @@ mod tests {
                     "nuisance_edge:node-a:nuisance:comparability:v1".into(),
                 ],
                 constraint_ids: vec![
-                    ConstraintId::new("assertion-group:group-1"),
-                    ConstraintId::new("nuisance-edge:node-a-nuisance-comparability-v1"),
+                    ConstraintId::new("group-1"),
+                    ConstraintId::new("node-a-nuisance-comparability-v1"),
                 ],
                 bounded_default_unit_of_work: true,
             }],
@@ -1028,7 +1028,7 @@ mod tests {
             }],
             constraints: vec![
                 ConstraintUnit {
-                    constraint_id: ConstraintId::new("edge:imbalance"),
+                    constraint_id: ConstraintId::new("imbalance"),
                     kind: "hyperedge".into(),
                     variable_ids: vec!["node-a".into(), "node-b".into()],
                     operator_id: OperatorId::new(CONSTRAINT_COMPILER_OPERATOR_ID),
@@ -1046,7 +1046,7 @@ mod tests {
                 node_ids: vec!["node-a".into(), "node-b".into()],
                 hyperedge_ids: vec!["edge:imbalance".into()],
                 constraint_ids: vec![
-                    ConstraintId::new("edge:imbalance"),
+                    ConstraintId::new("imbalance"),
                     ConstraintId::new("node-a-bias"),
                 ],
                 bounded_default_unit_of_work: true,

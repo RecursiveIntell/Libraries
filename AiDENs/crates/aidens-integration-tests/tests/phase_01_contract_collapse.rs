@@ -113,7 +113,7 @@ fn canonical_id_roundtrip() {
         TypeId::of::<stack_ids::ArtifactId>()
     );
 
-    let id = aidens_contracts::ArtifactId::new("artifact:phase-01");
+    let id = aidens_contracts::ArtifactId::new("phase-01");
     let stack_id: stack_ids::ArtifactId = id.clone();
     let contracts_id: aidens_contracts::ArtifactId = stack_id.clone();
 

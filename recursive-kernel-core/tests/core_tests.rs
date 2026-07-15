@@ -120,7 +120,7 @@ fn test_syndrome_serde_roundtrip() {
 #[test]
 fn test_residual_artifact_monotone_flag() {
     let residual_mono = ResidualArtifact {
-        constraint_id: ConstraintId::new("c:mono"),
+        constraint_id: ConstraintId::new("mono"),
         residual_micros: 500,
         monotone_nonincreasing: true,
     };
@@ -130,7 +130,7 @@ fn test_residual_artifact_monotone_flag() {
     assert!(deserialized.monotone_nonincreasing);
 
     let residual_non_mono = ResidualArtifact {
-        constraint_id: ConstraintId::new("c:nonmono"),
+        constraint_id: ConstraintId::new("nonmono"),
         residual_micros: 1200,
         monotone_nonincreasing: false,
     };
@@ -176,7 +176,7 @@ fn test_certificate_with_oracle_slice() {
     let cert = CertificateArtifact {
         certificate_id: "cert-with-oracle".into(),
         certified_node_id: "node-certified".into(),
-        satisfied_constraint_ids: vec![ConstraintId::new("c:sat1")],
+        satisfied_constraint_ids: vec![ConstraintId::new("sat1")],
         oracle_slice_id: Some(OracleSliceId::new("oracle-slice-42")),
     };
     let json = serde_json::to_string(&cert).unwrap();
@@ -194,7 +194,7 @@ fn test_certificate_without_oracle_slice() {
     let cert = CertificateArtifact {
         certificate_id: "cert-no-oracle".into(),
         certified_node_id: "node-standalone".into(),
-        satisfied_constraint_ids: vec![ConstraintId::new("c:sat1"), ConstraintId::new("c:sat2")],
+        satisfied_constraint_ids: vec![ConstraintId::new("sat1"), ConstraintId::new("sat2")],
         oracle_slice_id: None,
     };
     let json = serde_json::to_string(&cert).unwrap();
@@ -220,7 +220,7 @@ fn test_refutation_result_flip_witness_found() {
         outcome: KernelRefutationOutcome::FlipWitnessFound,
         witness: Some(PerturbationWitness {
             changed_node_ids: vec!["node-a".into(), "node-b".into()],
-            changed_constraint_ids: vec![ConstraintId::new("c:changed")],
+            changed_constraint_ids: vec![ConstraintId::new("changed")],
             budget_used: 42,
         }),
         notes: vec!["flip detected at iteration 7".into()],
@@ -274,7 +274,7 @@ fn test_refutation_result_unsupported() {
 fn test_perturbation_witness_serde_roundtrip() {
     let witness = PerturbationWitness {
         changed_node_ids: vec!["n1".into(), "n2".into(), "n3".into()],
-        changed_constraint_ids: vec![ConstraintId::new("c:p1"), ConstraintId::new("c:p2")],
+        changed_constraint_ids: vec![ConstraintId::new("p1"), ConstraintId::new("p2")],
         budget_used: 17,
     };
     let json = serde_json::to_string(&witness).unwrap();

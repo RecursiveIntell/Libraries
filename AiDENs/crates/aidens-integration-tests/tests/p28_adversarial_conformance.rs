@@ -146,7 +146,7 @@ async fn p28_adversarial_tool_sandbox_blocks_symlink_and_dirty_patch_paths() {
 fn p28_adversarial_receipt_proof_degradation_and_temporal_fixtures_hold() {
     let context = ExecutionContextEnvelopeV1::local_started(
         "aidens.tool.run_checks",
-        ArtifactId::new("attempt-family:p28-adversarial-timeout"),
+        ArtifactId::new("p28-adversarial-timeout"),
         "local",
         "aidens:run-checks:1",
     )
@@ -181,7 +181,7 @@ fn p28_adversarial_receipt_proof_degradation_and_temporal_fixtures_hold() {
     );
     obligation.waived_by.push(waiver.receipt_id);
     let profile = LocalProofProfileV1::local_exact(vec![obligation]);
-    let debt = ProofDebtLedgerV1::from_profile(ArtifactId::new("artifact:p28-waiver"), &profile);
+    let debt = ProofDebtLedgerV1::from_profile(ArtifactId::new("p28-waiver"), &profile);
     assert!(!profile.proof_satisfied());
     assert!(debt.blocks_promotion());
 
@@ -194,7 +194,7 @@ fn p28_adversarial_receipt_proof_degradation_and_temporal_fixtures_hold() {
 #[test]
 fn p28_adversarial_reserved_horizon_and_agency_fixtures_do_not_promote_truth() {
     let graph = aidens_contracts::CompiledRegionGraphV1::new(
-        ArtifactId::new("graph:p28-storage-adversarial"),
+        ArtifactId::new("p28-storage-adversarial"),
         RegionGraphKindV1::Inference,
         Some(RegionGraphKindV1::Storage),
         4,
@@ -212,7 +212,7 @@ fn p28_adversarial_reserved_horizon_and_agency_fixtures_do_not_promote_truth() {
     assert_eq!(graph.activation_level, V11ActivationLevelV1::ReservedDraft);
     assert!(!graph.can_claim_active_v11b_runtime());
 
-    let accepted_claim = ArtifactId::new("claim:p28-support-core");
+    let accepted_claim = ArtifactId::new("p28-support-core");
     let support = SupportCoreV1::new(
         vec![accepted_claim.clone()],
         Vec::new(),
@@ -240,7 +240,7 @@ fn p28_adversarial_reserved_horizon_and_agency_fixtures_do_not_promote_truth() {
     assert!(!plan.can_mutate_runtime_state());
 
     let admission =
-        ExternalArtifactAdmissionDecisionV1::default_quarantine(ArtifactId::new("external:p28"));
+        ExternalArtifactAdmissionDecisionV1::default_quarantine(ArtifactId::new("p28"));
     assert_eq!(
         admission.disposition,
         ExternalAdmissionDispositionV1::Quarantined

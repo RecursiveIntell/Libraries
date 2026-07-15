@@ -1,6 +1,6 @@
 #[test]
 fn stack_import_smoke() {
-    let artifact_id = stack_ids::ArtifactId::new("artifact:aidens-stack-smoke");
+    let artifact_id = stack_ids::ArtifactId::new("aidens-stack-smoke");
     let digest = stack_ids::ContentDigest::compute_str("aidens-stack-smoke");
     let tool_result = llm_tool_runtime::ToolResult::text("ok");
     let operator = recursive_kernel_core::constraint_compiler_operator();

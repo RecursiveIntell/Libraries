@@ -113,9 +113,9 @@ impl TargetKind {
     /// Returns the stable key used for history tracking and receipts.
     pub fn stable_key(&self) -> String {
         match self {
-            Self::FragileNode { node_id, .. } => format!("fragile:{node_id}"),
-            Self::ActiveSyndrome { signature } => format!("syndrome:{signature}"),
-            Self::ThinExport { marker } => format!("thin_export:{marker}"),
+            Self::FragileNode { node_id, .. } => format!("fragile-{node_id}"),
+            Self::ActiveSyndrome { signature } => format!("syndrome-{signature}"),
+            Self::ThinExport { marker } => format!("thin-export-{marker}"),
             Self::UnverifiedClaimVersion { claim_version_id } => {
                 format!("unverified:{}", claim_version_id.as_str())
             }
@@ -123,7 +123,7 @@ impl TargetKind {
                 target_node_id,
                 claim_version_id,
             } => format!(
-                "refutation_gap:{target_node_id}:{}",
+                "refutation-gap-{target_node_id}-{}",
                 claim_version_id
                     .as_ref()
                     .map(|id| id.as_str())
@@ -133,15 +133,15 @@ impl TargetKind {
                 claim_version_id,
                 supersedes_claim_version_id,
             } => format!(
-                "supersession:{}:{}",
+                "supersession-{}-{}",
                 claim_version_id.as_str(),
                 supersedes_claim_version_id.as_str()
             ),
-            Self::ComparabilityDrift { detail } => format!("comparability:{detail}"),
-            Self::CalibrationCaveat { marker } => format!("calibration:{marker}"),
+            Self::ComparabilityDrift { detail } => format!("comparability-{detail}"),
+            Self::CalibrationCaveat { marker } => format!("calibration-{marker}"),
             Self::ScopeStale { last_import_at } => {
                 format!(
-                    "scope_stale:{}",
+                    "scope-stale-{}",
                     last_import_at.as_deref().unwrap_or("none")
                 )
             }

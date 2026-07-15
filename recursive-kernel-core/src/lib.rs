@@ -247,7 +247,7 @@ mod tests {
         let witness = WitnessArtifact {
             witness_id: "wit-1".into(),
             target_node_id: "node-1".into(),
-            supporting_constraint_ids: vec![ConstraintId::new("constraint:1")],
+            supporting_constraint_ids: vec![ConstraintId::new("1")],
             belief_micros: 750_000,
         };
         let encoded = serde_json::to_string(&witness).unwrap();

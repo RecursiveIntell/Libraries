@@ -2029,7 +2029,7 @@ fn p16_golden_fixtures_deserialize() {
 #[test]
 fn p17_attestation_and_settlement_names_are_canonical_reexports() {
     let envelope = AttestationEnvelopeV1::new(
-        stack_ids::AttestationEnvelopeId::new("attestation:remote-a"),
+        stack_ids::AttestationEnvelopeId::new("attestation-envelope:remote-a"),
         "claim-record",
         "1",
         StackContentDigest::compute_str("remote-ready"),
@@ -2038,7 +2038,7 @@ fn p17_attestation_and_settlement_names_are_canonical_reexports() {
         "2026-04-29T00:00:00Z",
         stack_ids::TrustRootSetId::new("trust-root-set:remote-a"),
         "producer remote-a signed claim-record artifact",
-        stack_ids::DisclosurePolicyId::new("disclosure:claims"),
+        stack_ids::DisclosurePolicyId::new("disclosure-policy:claims"),
         Some(stack_ids::ArtifactAdmissionPolicyId::new(
             "artifact-admission:claims",
         )),

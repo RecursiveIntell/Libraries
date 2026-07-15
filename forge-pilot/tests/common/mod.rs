@@ -71,7 +71,7 @@ pub fn sample_bundle(bundle_id: &str) -> ExperimentEvidenceBundle {
             cea_predicted_correctness: None,
         },
         hypotheses: vec![CausalHypothesis {
-            hypothesis_id: format!("hypothesis:{bundle_id}"),
+            hypothesis_id: format!("hypothesis-{bundle_id}"),
             cause_signature: "baseline".into(),
             effect_signature: "evidence".into(),
             confidence: 0.6,
@@ -80,7 +80,7 @@ pub fn sample_bundle(bundle_id: &str) -> ExperimentEvidenceBundle {
             contradiction_count: 0,
         }],
         verification: None,
-        trace_id: Some(format!("trace:{bundle_id}")),
+        trace_id: Some(format!("trace-{bundle_id}")),
         experiment_diff: None,
         attribution_json: None,
         assessment: Some(EvidenceAssessment {
@@ -91,8 +91,8 @@ pub fn sample_bundle(bundle_id: &str) -> ExperimentEvidenceBundle {
         }),
         warnings: vec!["test fixture".into()],
         created_at: "2026-03-11T00:00:00Z".into(),
-        run_id: Some(format!("run:{bundle_id}")),
-        attempt_id: Some(format!("attempt:{bundle_id}")),
+        run_id: Some(format!("run-{bundle_id}")),
+        attempt_id: Some(format!("attempt-{bundle_id}")),
         causal_question: Some("Does this fixture remain queryable?".into()),
         unit_definition: Some("test bundle".into()),
         bundle_scope: None,
@@ -152,7 +152,7 @@ pub fn persist_bundle_in_forge(store: &ForgeStore, bundle: &ExperimentEvidenceBu
 pub fn promoted_bundle(bundle_id: &str) -> ExperimentEvidenceBundle {
     let mut bundle = sample_bundle(bundle_id);
     bundle.promotion_state = Some(semantic_memory_forge::PromotionState::Promoted {
-        version_id: Some(format!("version:{bundle_id}")),
+        version_id: Some(format!("version-{bundle_id}")),
         promoted_at: Some("2026-03-11T00:00:00Z".into()),
     });
     bundle
@@ -231,7 +231,7 @@ pub async fn import_promoted_hyperedge_batch(
                         "lifecycle_state": "verified",
                         "promotion_state": {
                             "state": "promoted",
-                            "version_id": format!("version:{batch_id}"),
+                            "version_id": format!("version-{batch_id}"),
                             "promoted_at": "2026-03-11T00:00:00Z"
                         },
                         "completed_trial_count": 1,
@@ -241,14 +241,14 @@ pub async fn import_promoted_hyperedge_batch(
                     },
                     "promotion_state": {
                         "state": "promoted",
-                        "version_id": format!("version:{batch_id}"),
+                        "version_id": format!("version-{batch_id}"),
                         "promoted_at": "2026-03-11T00:00:00Z"
                     }
                 })),
             }),
             semantics: Some(ExportRecordSemanticsV3 {
-                claim_family_id: Some(ClaimFamilyId::new(format!("family:{batch_id}"))),
-                assertion_group_id: Some(AssertionGroupId::new(format!("group:{batch_id}"))),
+                claim_family_id: Some(ClaimFamilyId::new(format!("claim-family:{batch_id}"))),
+                assertion_group_id: Some(AssertionGroupId::new(format!("assertion-group:{batch_id}"))),
                 relation_group_id: None,
                 joint_evidence_group_id: None,
                 constraint_seed_kind: Some(ConstraintSeedKind::Hyperedge),
@@ -284,8 +284,8 @@ pub async fn import_promoted_hyperedge_batch(
                 metadata: None,
             }),
             semantics: Some(ExportRecordSemanticsV3 {
-                claim_family_id: Some(ClaimFamilyId::new(format!("family:{batch_id}"))),
-                assertion_group_id: Some(AssertionGroupId::new(format!("group:{batch_id}"))),
+                claim_family_id: Some(ClaimFamilyId::new(format!("claim-family:{batch_id}"))),
+                assertion_group_id: Some(AssertionGroupId::new(format!("assertion-group:{batch_id}"))),
                 relation_group_id: None,
                 joint_evidence_group_id: None,
                 constraint_seed_kind: Some(ConstraintSeedKind::Hyperedge),
@@ -317,7 +317,7 @@ pub async fn import_promoted_hyperedge_batch(
         ExportEnvelopeV3::compute_digest("forge", &scope, &records, Some(&export_meta), None)
             .unwrap();
     let envelope = ExportEnvelopeV3 {
-        envelope_id: EnvelopeId::new(format!("env:{batch_id}")),
+        envelope_id: EnvelopeId::new(format!("envelope:{batch_id}")),
         schema_version: EXPORT_ENVELOPE_V3_SCHEMA.into(),
         content_digest: digest,
         source_authority: "forge".into(),

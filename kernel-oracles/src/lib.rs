@@ -657,7 +657,7 @@ mod tests {
                 member_node_ids: vec!["target".into(), "peer-b".into(), "peer-c".into()],
             }],
             constraints: vec![ConstraintUnit {
-                constraint_id: ConstraintId::new("constraint:edge:triad"),
+                constraint_id: ConstraintId::new("edge-triad"),
                 kind: "hyperedge".into(),
                 variable_ids: vec!["target".into(), "peer-b".into(), "peer-c".into()],
                 operator_id: OperatorId::new("kernel-oracles:tests"),
@@ -667,7 +667,7 @@ mod tests {
                 region_digest_id: RegionDigestId::new("region-digest:oracle-triad"),
                 node_ids: vec!["target".into(), "peer-b".into(), "peer-c".into()],
                 hyperedge_ids: vec!["edge:triad".into()],
-                constraint_ids: vec![ConstraintId::new("constraint:edge:triad")],
+                constraint_ids: vec![ConstraintId::new("edge-triad")],
                 bounded_default_unit_of_work: true,
             }],
             invalidation_cones: vec![],
