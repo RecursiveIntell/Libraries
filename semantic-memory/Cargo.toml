@@ -1,6 +1,6 @@
 [package]
 name = "semantic-memory"
-version = "0.5.10"
+version = "0.5.11"
 edition = "2021"
 rust-version = "1.75"
 description = "Local-first hybrid semantic search (SQLite + FTS5 + usearch 2.25) with bitemporal truth and typed receipts"
@@ -112,10 +112,10 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
 chrono = { workspace = true, features = ["serde"] }
-stack-ids = { version = "0.1.1", path = "../stack-ids" }
+stack-ids = { version = "0.1.2", path = "../stack-ids" }
 forge-memory-bridge = { version = "0.1.1", path = "../forge-memory-bridge" }
 schemars = { workspace = true }
-boundary-compiler = { version = "0.1.0", path = "../boundary-compiler" }
+boundary-compiler = { version = "0.1.1", path = "../boundary-compiler" }
 bitemporal-runtime = { version = "0.1.0", path = "../bitemporal-runtime" }
 
 # Vector search backends may be compiled together intentionally. Runtime dispatch has explicit,

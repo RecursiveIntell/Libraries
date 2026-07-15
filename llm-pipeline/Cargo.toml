@@ -18,8 +18,8 @@ openai = []
 
 [dependencies]
 llm-output-parser = { version = "0.2.0", path = "../llm-output-parser" }
-llm-tool-runtime = { version = "0.1.0", path = "../llm-tool-runtime" }
-stack-ids = { version = "0.1.1", path = "../stack-ids" }
+llm-tool-runtime = { version = "0.1.1", path = "../llm-tool-runtime" }
+stack-ids = { version = "0.1.2", path = "../stack-ids" }
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12", features = ["json", "stream"] }
 serde = { version = "1", features = ["derive"] }

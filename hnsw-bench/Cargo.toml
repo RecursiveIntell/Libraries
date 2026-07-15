@@ -6,7 +6,9 @@ description = "HNSW backend benchmark: hnsw_rs 0.3 vs usearch 2.25. Generates a 
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["benchmark", "hnsw", "usearch", "vector-search"]
-categories = ["development-tools", "benchmarking", "database"]
+categories = ["development-tools", "science", "database"]
+repository = "https://github.com/RecursiveIntell/Libraries"
+homepage = "https://github.com/RecursiveIntell/Libraries"
 publish = false
 
 [[bin]]
@@ -24,10 +26,10 @@ path = "src/main.rs"
 # features below is *not* enough — cargo merges features of the same
 # crate across the entire resolution. Without this, the hnsw backend
 # is always active regardless of which feature this crate enables.
-semantic-memory = { path = "../semantic-memory", default-features = false }
+semantic-memory = { version = "0.5.11", path = "../semantic-memory", default-features = false }
 
 # Benchmark substrate (reproducible receipts)
-receipt-bench = { path = "../receipt-bench" }
+receipt-bench = { version = "0.1.0", path = "../receipt-bench" }
 
 # Utilities
 serde = { version = "1.0", features = ["derive"] }

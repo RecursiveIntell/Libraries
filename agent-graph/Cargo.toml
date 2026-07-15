@@ -7,6 +7,9 @@ license = "MIT"
 readme = "README.md"
 keywords = ["ai", "llm", "agents", "graph", "workflow"]
 categories = ["algorithms", "asynchronous"]
+repository = "https://github.com/RecursiveIntell/Libraries"
+homepage = "https://github.com/RecursiveIntell/Libraries/agent-graph"
+documentation = "https://docs.rs/agent-graph"
 
 [dependencies]
 # Async runtime
@@ -34,7 +37,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 tracing = "0.1"
 
 # Shared identity/trace primitives
-stack-ids = { version = "0.1.1", path = "../stack-ids" }
+stack-ids = { version = "0.1.2", path = "../stack-ids" }
 
 # Cryptographic hashing for execution receipts (GRAPH-001 fix)
 blake3 = { workspace = true }

@@ -7,7 +7,7 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sikmindz/receipt-bench"
 keywords = ["benchmark", "receipt", "provenance", "replay"]
-categories = ["development-tools", "benchmarking"]
+categories = ["development-tools", "science"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
