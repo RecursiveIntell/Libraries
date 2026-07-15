@@ -8,6 +8,32 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
+/// Typed validation failures for canonical IDs.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IdError {
+    Empty,
+    InvalidCharacter(char),
+    TooLong,
+}
+
+impl std::fmt::Display for IdError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Empty => f.write_str("ID must not be empty or whitespace"),
+            Self::InvalidCharacter(c) => write!(f, "ID contains invalid control character {c:?}"),
+            Self::TooLong => f.write_str("ID exceeds the 512 byte limit"),
+        }
+    }
+}
+impl std::error::Error for IdError {}
+
+fn validate_id(value: &str) -> Result<(), IdError> {
+    if value.trim().is_empty() { return Err(IdError::Empty); }
+    if value.len() > 512 { return Err(IdError::TooLong); }
+    if let Some(c) = value.chars().find(|c| c.is_control()) { return Err(IdError::InvalidCharacter(c)); }
+    Ok(())
+}
+
 /// Macro to generate an opaque string-wrapper ID type with standard impls.
 macro_rules! define_id {
     (
@@ -15,61 +41,37 @@ macro_rules! define_id {
         $name:ident
     ) => {
         $(#[$meta])*
-        #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+        #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
         #[serde(transparent)]
-        pub struct $name(pub String);
+        pub struct $name(String);
 
         impl $name {
-            /// Create from any string-like value.
+            /// Legacy constructor retained for source compatibility; validates input.
             pub fn new(value: impl Into<String>) -> Self {
-                Self(value.into())
+                Self::try_new(value).expect("invalid ID; use a lifecycle constructor")
             }
-
-            /// Generate a new random UUID v4 ID.
-            pub fn generate() -> Self {
-                Self(uuid::Uuid::new_v4().to_string())
+            pub fn try_new(value: impl Into<String>) -> Result<Self, IdError> {
+                let value = value.into(); validate_id(&value)?; Ok(Self(value))
             }
-
-            /// Borrow as a string slice.
-            pub fn as_str(&self) -> &str {
-                &self.0
-            }
-
-            /// Returns true if the inner string is empty.
-            pub fn is_empty(&self) -> bool {
-                self.0.is_empty()
-            }
+            pub fn random(domain: &str) -> Self { Self::new(format!("v1:{domain}:{}", uuid::Uuid::new_v4())) }
+            pub fn deterministic(domain: &str, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:det:{}", value.as_ref())) }
+            pub fn version(domain: &str, version: impl AsRef<str>, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:{}:{}", version.as_ref(), value.as_ref())) }
+            pub fn imported(domain: &str, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:import:{}", value.as_ref())) }
+            pub fn receipt(domain: &str, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:receipt:{}", value.as_ref())) }
+            pub fn local(domain: &str, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:local:{}", value.as_ref())) }
+            pub fn as_str(&self) -> &str { &self.0 }
+            pub fn is_empty(&self) -> bool { self.0.is_empty() }
+            /// Named adapter for unvalidated historical wire values.
+            pub fn from_legacy(value: impl Into<String>) -> Result<Self, IdError> { Self::try_new(value) }
         }
-
-        impl std::fmt::Display for $name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str(&self.0)
-            }
-        }
-
-        impl From<String> for $name {
-            fn from(value: String) -> Self {
-                Self(value)
-            }
-        }
-
-        impl From<&str> for $name {
-            fn from(value: &str) -> Self {
-                Self(value.to_string())
-            }
-        }
-
-        impl AsRef<str> for $name {
-            fn as_ref(&self) -> &str {
-                &self.0
-            }
-        }
-
-        impl FromStr for $name {
-            type Err = std::convert::Infallible;
-
-            fn from_str(value: &str) -> Result<Self, Self::Err> {
-                Ok(Self::new(value))
+        impl std::fmt::Display for $name { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str(&self.0) } }
+        impl From<&str> for $name { fn from(value: &str) -> Self { Self::new(value) } }
+        impl AsRef<str> for $name { fn as_ref(&self) -> &str { &self.0 } }
+        impl TryFrom<String> for $name { type Error = IdError; fn try_from(value: String) -> Result<Self, Self::Error> { Self::try_new(value) } }
+        impl FromStr for $name { type Err = IdError; fn from_str(value: &str) -> Result<Self, Self::Err> { Self::try_new(value) } }
+        impl<'de> Deserialize<'de> for $name {
+            fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                let value = String::deserialize(d)?; Self::try_new(value).map_err(serde::de::Error::custom)
             }
         }
     };
@@ -1230,6 +1232,9 @@ define_id!(
     /// Opaque identifier for a policy impact diff artifact.
     PolicyImpactDiffId
 );
+
+impl AttemptId { pub fn generate() -> Self { Self::random("attempt") } }
+impl TrialId { pub fn generate() -> Self { Self::random("trial") } }
 
 #[cfg(test)]
 #[path = "ids_tests.rs"]
