@@ -58,7 +58,7 @@ pub async fn bootstrap_source_workspace(
     if pipeline.delta.is_noop() {
         let import_result = semantic_memory::ProjectionImportResult {
             source_envelope_id: format!(
-                "workspace-source-envelope:{}",
+                "workspace-source-envelope-{}",
                 pipeline.current_manifest.manifest_id
             ),
             status: "already_imported".into(),

@@ -74,7 +74,7 @@ pub(crate) fn build_manifest_snapshot(
     );
 
     BootstrapManifestSnapshot {
-        manifest_id: format!("workspace-source-manifest:{manifest_seed}"),
+        manifest_id: format!("workspace-source-manifest-{manifest_seed}"),
         namespace: namespace.to_string(),
         file_count,
         chunk_count,
@@ -337,7 +337,7 @@ pub fn manifest_from_batch(batch: &ProjectionImportBatchV3) -> Option<BootstrapM
     );
 
     Some(BootstrapManifestSnapshot {
-        manifest_id: format!("workspace-source-manifest:{manifest_seed}"),
+        manifest_id: format!("workspace-source-manifest-{manifest_seed}"),
         namespace: batch.scope_key.namespace.clone(),
         file_count,
         chunk_count,

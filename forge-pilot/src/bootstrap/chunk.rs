@@ -79,7 +79,7 @@ fn build_chunk(
     ));
 
     ChunkRecord {
-        chunk_id: format!("workspace-source-chunk:{chunk_seed}"),
+        chunk_id: format!("workspace-source-chunk-{chunk_seed}"),
         chunk_index,
         content: content.to_string(),
         content_digest,

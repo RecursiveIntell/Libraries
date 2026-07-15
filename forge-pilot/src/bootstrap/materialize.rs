@@ -94,15 +94,15 @@ fn manifest_claim(
     Ok(ExportRecordV3 {
         record: ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new(format!(
-                "workspace-source-manifest-claim:{}",
+                "workspace-source-manifest-claim-{}",
                 manifest.manifest_id
             ))),
             claim_version_id: Some(ClaimVersionId::new(format!(
-                "workspace-source-manifest-version:{}",
+                "workspace-source-manifest-version-{}",
                 manifest.manifest_id
             ))),
             subject_entity_id: EntityId::new(format!(
-                "workspace-source-manifest-entity:{}",
+                "workspace-source-manifest-entity-{}",
                 manifest.namespace
             )),
             predicate: "describes_workspace_source_manifest".into(),
@@ -166,15 +166,15 @@ fn file_claim(
         file.relative_path,
         file.content_digest.hex()
     ));
-    let claim_id = format!("workspace-source-file-claim:{path_seed}:{version_seed}");
+    let claim_id = format!("workspace-source-file-claim-{path_seed}-{version_seed}");
 
     ExportRecordV3 {
         record: ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new(claim_id.clone())),
             claim_version_id: Some(ClaimVersionId::new(format!(
-                "workspace-source-file-version:{version_seed}"
+                "workspace-source-file-version-{version_seed}"
             ))),
-            subject_entity_id: EntityId::new(format!("workspace-source-file:{path_seed}")),
+            subject_entity_id: EntityId::new(format!("workspace-source-file-{path_seed}")),
             predicate: "describes_workspace_source_file".into(),
             object_anchor: serde_json::json!({
                 "path": file.relative_path,
@@ -209,10 +209,10 @@ fn file_evidence_ref(
     ExportRecordV3 {
         record: ExportRecord::EvidenceRef(ExportEvidenceRef {
             claim_id: ClaimId::new(format!(
-                "workspace-source-file-claim:{path_seed}:{version_seed}"
+                "workspace-source-file-claim-{path_seed}-{version_seed}"
             )),
             claim_version_id: Some(ClaimVersionId::new(format!(
-                "workspace-source-file-version:{version_seed}"
+                "workspace-source-file-version-{version_seed}"
             ))),
             fetch_handle: format!("workspace-source://{}", file.relative_path),
             source_authority: crate::bootstrap::types::BOOTSTRAP_SOURCE_AUTHORITY.into(),
@@ -240,14 +240,14 @@ fn chunk_claim(
     ExportRecordV3 {
         record: ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new(format!(
-                "{}:{}",
-                chunk.chunk_id, manifest.manifest_id
+                "{}-{}",
+                chunk.chunk_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(chunk.chunk_id.as_str()), manifest.manifest_id
             ))),
             claim_version_id: Some(ClaimVersionId::new(format!(
-                "workspace-source-chunk-version:{version_seed}"
+                "workspace-source-chunk-version-{version_seed}"
             ))),
             subject_entity_id: EntityId::new(format!(
-                "workspace-source-chunk-entity:{}",
+                "workspace-source-chunk-entity-{}",
                 chunk.chunk_id
             )),
             predicate: "describes_workspace_source_chunk".into(),
@@ -305,15 +305,15 @@ fn symbol_claim(
     ExportRecordV3 {
         record: ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new(format!(
-                "{}:{}",
-                symbol.symbol_id, manifest.manifest_id
+                "{}-{}",
+                symbol.symbol_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(symbol.symbol_id.as_str()), manifest.manifest_id
             ))),
             claim_version_id: Some(ClaimVersionId::new(format!(
-                "workspace-source-symbol-version:{version_seed}"
+                "workspace-source-symbol-version-{version_seed}"
             ))),
             subject_entity_id: EntityId::new(format!(
-                "workspace-source-symbol-entity:{}",
-                symbol.symbol_id
+                "workspace-source-symbol-entity-{}",
+                symbol.symbol_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(symbol.symbol_id.as_str())
             )),
             predicate: "describes_workspace_source_symbol".into(),
             object_anchor: serde_json::json!({
@@ -368,13 +368,13 @@ fn deletion_claim(
     ExportRecordV3 {
         record: ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new(format!(
-                "workspace-source-deletion-claim:{deletion_seed}"
+                "workspace-source-deletion-claim-{deletion_seed}"
             ))),
             claim_version_id: Some(ClaimVersionId::new(format!(
-                "workspace-source-deletion-version:{deletion_seed}"
+                "workspace-source-deletion-version-{deletion_seed}"
             ))),
             subject_entity_id: EntityId::new(format!(
-                "workspace-source-file-deletion:{}",
+                "workspace-source-file-deletion-{}",
                 crate::bootstrap::manifest::digest_text(&deleted.path)
             )),
             predicate: "describes_workspace_source_deletion".into(),

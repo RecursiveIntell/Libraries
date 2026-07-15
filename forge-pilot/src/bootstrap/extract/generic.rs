@@ -9,7 +9,7 @@ pub(crate) fn extract(file: &SourceFileRecord) -> Vec<SymbolRecord> {
             if !title.is_empty() {
                 symbols.push(SymbolRecord {
                     symbol_id: format!(
-                        "workspace-source-symbol:{}",
+                        "workspace-source-symbol-{}",
                         crate::bootstrap::manifest::digest_text(&format!(
                             "{}:{}:section:{}:{}",
                             file.relative_path,

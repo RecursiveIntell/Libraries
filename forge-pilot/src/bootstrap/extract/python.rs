@@ -46,7 +46,7 @@ fn symbol(
 ) -> SymbolRecord {
     SymbolRecord {
         symbol_id: format!(
-            "workspace-source-symbol:{}",
+            "workspace-source-symbol-{}",
             crate::bootstrap::manifest::digest_text(&format!(
                 "{}:{}:{}:{}:{}",
                 file.relative_path,

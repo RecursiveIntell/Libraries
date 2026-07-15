@@ -28,7 +28,7 @@ pub(crate) fn build_source_envelope(
 
     Ok(ExportEnvelopeV3 {
         envelope_id: EnvelopeId::new(format!(
-            "workspace-source-envelope:{}",
+            "workspace-source-envelope-{}",
             manifest.manifest_id
         )),
         schema_version: EXPORT_ENVELOPE_V3_SCHEMA.into(),
