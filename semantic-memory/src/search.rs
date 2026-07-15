@@ -17,6 +17,34 @@ use std::collections::BinaryHeap;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
+/// SEM-001: Search corruption policy — strict or degraded.
+///
+/// Strict mode: corrupt authoritative rows cause search to fail.
+/// Degraded mode: corrupt rows are skipped but omissions are receipted.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum SearchCorruptionPolicy {
+    /// SEM-001: Strict mode — fail on corrupt authoritative rows.
+    /// This is the default. Corrupt rows produce a MemoryError.
+    #[default]
+    Strict,
+    /// SEM-001: Degraded mode — skip corrupt rows but report omissions.
+    /// Opt-in only. The search result includes a receipt of skipped rows.
+    Degraded,
+}
+
+/// SEM-001: Receipt for rows skipped during degraded search.
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct SearchOmissionReceipt {
+    /// Number of rows skipped due to invalid embedding blobs.
+    pub invalid_embedding_count: usize,
+    /// Number of rows skipped due to wrong dimensions.
+    pub wrong_dimension_count: usize,
+    /// IDs of skipped rows (up to a limit for readability).
+    pub skipped_ids: Vec<String>,
+    /// Policy in effect during the search.
+    pub policy: String,
+}
+
 /// Per-table row count above which vector search emits a warning.
 const VECTOR_SCAN_WARN_THRESHOLD: usize = 50_000;
 /// Per-table row count above which brute-force vector search is refused.
@@ -303,6 +331,8 @@ fn scan_vector_rows(
         let stored_embedding = match crate::db::decode_f32_le(&row.blob, expected_dims) {
             Ok(embedding) => embedding,
             Err(error) => {
+                // SEM-001: In strict mode, corrupt rows fail the search.
+                // In degraded mode, skip and receipt the omission.
                 tracing::warn!(
                     error = %error,
                     table = table_label,
