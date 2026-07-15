@@ -291,7 +291,10 @@ impl JobContext {
     /// cooperative cancellation. If it returns `true`, your handler
     /// should return `Err(QueueError::Cancelled)`.
     pub fn is_cancelled(&self) -> anyhow::Result<bool> {
-        let conn = self.db.lock().map_err(|_| anyhow::anyhow!("database mutex poisoned"))?;
+        let conn = self
+            .db
+            .lock()
+            .map_err(|_| anyhow::anyhow!("database mutex poisoned"))?;
         db::is_cancelled(&conn, &self.job_id)
     }
 }

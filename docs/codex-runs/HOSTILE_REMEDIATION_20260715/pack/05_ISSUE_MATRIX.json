@@ -1,0 +1,718 @@
+{
+  "schema_version": "libraries.hostile-remediation.issue-matrix.v1",
+  "generated_at": "2026-07-15",
+  "source": {
+    "repository": "RecursiveIntell/Libraries",
+    "branch": "p32-schema-compat",
+    "commit": "c65972dbdf0ee5a7b472019b12c905a9de77c5c9"
+  },
+  "severity_order": [
+    "P0",
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "closure_law": "An issue closes only when every acceptance gate has source-bound evidence, required commands are not skipped, independent review passes, and post-merge validation succeeds.",
+  "issues": [
+    {
+      "id": "CTRL-001",
+      "phase": "-1",
+      "severity": "P1",
+      "title": "Establish a truthful active-run control surface",
+      "surfaces": [
+        "AGENTS.md",
+        "PROMPT.md",
+        "CLAUDE.md",
+        "docs/codex-runs/"
+      ],
+      "failure_mode": "Current root agent instructions describe older single-agent/V29 and v9 runs. Agents may execute obsolete sequencing and completion rules.",
+      "root_cause": "Long-lived mutable prose has no source-bound active-run pointer.",
+      "evidence": [
+        "AGENTS.md says no multi-agent coordination is required",
+        "PROMPT.md references older V5 audit tensor",
+        "CLAUDE.md targets an older v9 finish line"
+      ],
+      "required_changes": [
+        "Install this pack in an immutable run directory",
+        "Add one small active-run pointer",
+        "Preserve prior instructions as superseded history",
+        "Create and validate run/state.json against the actual checkout"
+      ],
+      "acceptance": [
+        "Exactly one active run directory is named",
+        "Baseline commit/tree match checkout",
+        "State validates",
+        "Every agent receives pack path and task ID"
+      ],
+      "validation": [
+        "python3 tools/verify_pack.py --pack .",
+        "python3 tools/validate_json.py --schema schemas/run_state.schema.json --document run/state.json",
+        "git diff --check"
+      ],
+      "rollback": "Restore the prior active-run pointer; preserve this run directory and logs."
+    },
+    {
+      "id": "AG-001",
+      "phase": "0",
+      "severity": "P0",
+      "title": "Preserve graph execution failures instead of returning Complete",
+      "surfaces": [
+        "agent-graph/src/engine.rs",
+        "agent-graph/src/interrupt.rs",
+        "agent-graph/src/error.rs"
+      ],
+      "failure_mode": "execute_with_interrupt maps non-interrupt errors to ExecutionResult::Complete with cloned state.",
+      "root_cause": "Interrupt control flow and ordinary failure share one error channel, and the public result has no preserved error path.",
+      "evidence": [
+        "engine.rs contains an Err(_) => ExecutionResult::Complete(state_clone) equivalent",
+        "interrupt.rs documents Complete as normal completion"
+      ],
+      "required_changes": [
+        "Return Result<ExecutionResult, AgentGraphError>",
+        "Use a typed interrupt stop reason",
+        "Preserve original errors",
+        "Prevent failure completion events/receipts",
+        "Add node/cancel/checkpoint/interrupt regression tests"
+      ],
+      "acceptance": [
+        "Ordinary failure returns Err",
+        "Cancellation is typed",
+        "Only explicit interrupts return Interrupted",
+        "No failure emits completion state",
+        "Compatibility adapter cannot recreate false success"
+      ],
+      "validation": [
+        "cargo test -p agent-graph --all-features",
+        "cargo clippy -p agent-graph --all-targets --all-features -- -D warnings",
+        "cargo doc -p agent-graph --no-deps --all-features"
+      ],
+      "rollback": "Keep a deprecated adapter to the new Result API; never restore false-success semantics."
+    },
+    {
+      "id": "GOV-001",
+      "phase": "0",
+      "severity": "P0",
+      "title": "Make missing, malformed, contradictory, or unavailable governance fail closed",
+      "surfaces": [
+        "forge-pilot/src/governance_gate.rs",
+        "forge-pilot/src/observe.rs",
+        "forge-pilot/src/loop_runner.rs"
+      ],
+      "failure_mode": "Observation errors and absence collapse into a default all-false observation that resolves to Allow; malformed booleans become false.",
+      "root_cause": "Control value and observation quality share primitive boolean/default fields, and FailOpen is default.",
+      "evidence": [
+        "GovernanceMode::FailOpen is default",
+        "observation errors return GovernanceObservation::default()",
+        "default observation is allowed",
+        "unrecognized booleans return false"
+      ],
+      "required_changes": [
+        "Introduce observed/missing/malformed/unavailable/contradictory states",
+        "Default fail closed",
+        "Require scoped expiring continuity exception",
+        "Carry quality and exception lineage into receipts",
+        "Reject malformed values"
+      ],
+      "acceptance": [
+        "Missing blocks",
+        "Malformed blocks",
+        "Store failure blocks",
+        "Contradictory state cannot allow",
+        "Only a valid continuity exception can override",
+        "Reason codes are receipted"
+      ],
+      "validation": [
+        "cargo test -p forge-pilot --all-features governance",
+        "cargo test -p forge-pilot --all-features",
+        "cargo clippy -p forge-pilot --all-targets --all-features -- -D warnings"
+      ],
+      "rollback": "Legacy fail-open may exist only behind a disabled-by-default explicit compatibility feature with receipts."
+    },
+    {
+      "id": "CMP-001",
+      "phase": "0",
+      "severity": "P0",
+      "title": "Remove fake exact decoding and ignored codec dispatch",
+      "surfaces": [
+        "scr-runtime-compression/src/codec_dispatch.rs",
+        "scr-runtime-compression/src/exact_fallback_adapter.rs",
+        "scr-runtime-compression/src/error.rs"
+      ],
+      "failure_mode": "Turbo/Fib decode helpers return encoded bytes unchanged; dispatch is ignored; Q8/Q4 become Uncompressed; strict_mode is inert.",
+      "root_cause": "Scaffolding was promoted into a production-facing semantic boundary without a real wire contract or backend registry.",
+      "evidence": [
+        "_dispatch parameter",
+        "Q8/Q4 => Uncompressed",
+        "turbo_quant_decode/fib_quant_decode return data.to_vec()",
+        "strict_mode does not affect decode_exact"
+      ],
+      "required_changes": [
+        "Return UnsupportedCodec until real decoder exists",
+        "Make dispatch effective",
+        "Validate versioned envelope/profile/artifact/dimensions/resource limits",
+        "Return typed decoded vectors",
+        "Remove silent substitutions",
+        "Enforce strict mode"
+      ],
+      "acceptance": [
+        "Compressed bytes cannot pass as exact output",
+        "Unavailable backend is typed error",
+        "Tampering is rejected",
+        "Known-answer fixtures pass",
+        "Dispatch is observable"
+      ],
+      "validation": [
+        "cargo test -p scr-runtime-compression --no-default-features",
+        "cargo test -p scr-runtime-compression --no-default-features --features turbo",
+        "cargo test -p scr-runtime-compression --no-default-features --features fib",
+        "cargo test -p scr-runtime-compression --all-features",
+        "python3 tools/check_placeholder_codecs.py --repo ."
+      ],
+      "rollback": "Disable compression and use authoritative raw vectors; never restore pass-through decoding."
+    },
+    {
+      "id": "ID-001",
+      "phase": "1",
+      "severity": "P1",
+      "title": "Make stack-ids the exclusive canonical ID type and construction authority",
+      "surfaces": [
+        "stack-ids/src/ids.rs",
+        "stack-ids/src/lib.rs",
+        "stack-ids/src/trace.rs"
+      ],
+      "failure_mode": "IDs expose public String internals, infallible parsing, arbitrary construction, and generic UUID generation for all semantic families.",
+      "root_cause": "The crate centralizes type names but not lifecycle-specific invariants, provenance, or minting law.",
+      "evidence": [
+        "pub struct $name(pub String)",
+        "FromStr uses Infallible",
+        "generate exists for every ID",
+        "tests accept empty IDs"
+      ],
+      "required_changes": [
+        "Private representations",
+        "Classify random/deterministic/version/imported/receipt/local IDs",
+        "Lifecycle-specific constructors",
+        "TryFrom with typed errors",
+        "Validating serde",
+        "Domain/version framing",
+        "Compile-fail authorization tests"
+      ],
+      "acceptance": [
+        "Empty/malformed fail",
+        "Restricted IDs cannot mint randomly",
+        "Deterministic vectors are pinned",
+        "Legacy strings use named adapters",
+        "trybuild rejects tuple construction and unauthorized minting"
+      ],
+      "validation": [
+        "cargo test -p stack-ids --all-features",
+        "cargo clippy -p stack-ids --all-targets --all-features -- -D warnings",
+        "cargo doc -p stack-ids --no-deps --all-features"
+      ],
+      "rollback": "Dual-read/single-write with alias and supersession records; never reinterpret stored IDs destructively."
+    },
+    {
+      "id": "ID-002",
+      "phase": "1",
+      "severity": "P1",
+      "title": "Remove competing ID generators and raw canonical ID strings",
+      "surfaces": [
+        "agent-graph",
+        "ai-batch-queue",
+        "job-queue",
+        "claim-ledger",
+        "semantic-memory",
+        "AiDENs",
+        "poly-kv/crates/quant-codec-core"
+      ],
+      "failure_mode": "Multiple crates generate UUID/ULID IDs, define local *Id types, and expose public *_id: String fields.",
+      "root_cause": "No enforceable repository boundary prevents local identity systems.",
+      "evidence": [
+        "direct uuid/ulid dependencies",
+        "claim-ledger/src/ids.rs",
+        "quant-codec-core/src/ids.rs",
+        "QueueJob.id and graph receipt strings",
+        "AiDENs ArtifactId reuse for run/trace/attempt"
+      ],
+      "required_changes": [
+        "Inventory all ID readers/writers/wire/storage",
+        "Add only truly cross-crate concepts to stack-ids",
+        "Migrate direct generators",
+        "Keep DB-local keys local and typed",
+        "Install exact expiring enforcement exceptions"
+      ],
+      "acceptance": [
+        "No unallowlisted production uuid/ulid outside stack-ids",
+        "No unallowlisted public *Id definitions outside stack-ids",
+        "No canonical public *_id: String",
+        "All exceptions are exact/owned/expiring",
+        "Golden wire/storage tests pass"
+      ],
+      "validation": [
+        "python3 tools/check_id_authority.py --repo . --allowlist config/id_authority_allowlist.json",
+        "cargo check --workspace --all-targets --all-features",
+        "cargo test --workspace --all-targets --all-features"
+      ],
+      "rollback": "Retain legacy columns/adapters for one compatibility window; new code writes canonical IDs plus aliases."
+    },
+    {
+      "id": "DIG-001",
+      "phase": "2",
+      "severity": "P1",
+      "title": "Replace separator-based digest composition with typed length framing",
+      "surfaces": [
+        "stack-ids/src/digest.rs",
+        "poly-kv/crates/quant-codec-core/src/digest.rs"
+      ],
+      "failure_mode": "DigestBuilder uses a NUL separator, so embedded NUL can collide across field boundaries. Digest strings also have weak validation boundaries.",
+      "root_cause": "Structured digest domains are untyped concatenations instead of versioned framed encodings.",
+      "evidence": [
+        "separator hashes b\\x00",
+        "ContentDigest has public String state",
+        "quant-codec-core length-prefix implementation is a partial reference"
+      ],
+      "required_changes": [
+        "Bind domain/version/field count/tag/length/bytes",
+        "Private validating digest representation",
+        "Explicit V1/V2 compatibility",
+        "Pinned adversarial vectors",
+        "Unify or clearly separate digest authorities"
+      ],
+      "acceptance": [
+        "['a\\0','b'] differs from ['a','\\0b']",
+        "Domain/version/order/tags are bound",
+        "Invalid serde fails",
+        "V1 remains explicitly readable"
+      ],
+      "validation": [
+        "cargo test -p stack-ids digest --all-features",
+        "cargo test -p quant-codec-core --all-features"
+      ],
+      "rollback": "Retain V1 verifier and append supersession mappings; never silently rewrite historical digests."
+    },
+    {
+      "id": "SCP-001",
+      "phase": "2",
+      "severity": "P1",
+      "title": "Prevent lossy ScopeKey-to-legacy namespace collapse",
+      "surfaces": [
+        "stack-ids/src/scope.rs",
+        "scope bridge/storage callers"
+      ],
+      "failure_mode": "to_legacy_namespace returns only namespace even when domain/workspace/repo are present.",
+      "root_cause": "A lossy projection is exposed as an ordinary conversion without policy or error.",
+      "evidence": [
+        "ScopeKey::to_legacy_namespace returns &self.namespace"
+      ],
+      "required_changes": [
+        "Return Result and reject multidimensional scopes",
+        "Add explicit lossy policy for exceptional paths",
+        "Receipt dropped dimensions",
+        "Audit tenant/repo boundary callers"
+      ],
+      "acceptance": [
+        "Namespace-only round-trips",
+        "Multidimensional ordinary conversion fails",
+        "Authorized loss is receipted",
+        "Cross-tenant/repo collision tests pass"
+      ],
+      "validation": [
+        "cargo test -p stack-ids scope --all-features",
+        "cargo test -p forge-memory-bridge --all-features",
+        "cargo test -p semantic-memory --no-default-features --features brute-force"
+      ],
+      "rollback": "Keep old behavior only in a named deprecated lossy adapter after canonical dimensions are persisted."
+    },
+    {
+      "id": "LED-001",
+      "phase": "2",
+      "severity": "P1",
+      "title": "Make claim-ledger parsing, IDs, and completeness fail closed",
+      "surfaces": [
+        "claim-ledger/src/ids.rs",
+        "claim-ledger/src/ledger.rs",
+        "claim-ledger/src/types.rs"
+      ],
+      "failure_mode": "Malformed JSONL lines are dropped, serialization errors become empty strings, IDs use newline joining/truncation, and there is no anchored head receipt.",
+      "root_cause": "Convenience APIs erase material errors and a valid prefix is treated as a complete ledger.",
+      "evidence": [
+        "filter_map(...from_str(...).ok())",
+        "unwrap_or_default in digest/serialization",
+        "parts.join('\\n') with caller-selected length"
+      ],
+      "required_changes": [
+        "Strict Result parser with line/offset/prefix state",
+        "Canonical stack IDs and framed digests",
+        "Remove material fallbacks",
+        "Anchored head receipt",
+        "Tamper/suffix/malformed/sequence tests"
+      ],
+      "acceptance": [
+        "Any malformed nonblank line fails",
+        "Suffix truncation fails against head",
+        "Mutations/order/sequence fail",
+        "All ledger IDs use canonical authority"
+      ],
+      "validation": [
+        "cargo test -p claim-ledger --all-features",
+        "cargo clippy -p claim-ledger --all-targets --all-features -- -D warnings",
+        "python3 tools/check_id_authority.py --repo . --allowlist config/id_authority_allowlist.json"
+      ],
+      "rollback": "Strict V1 reader plus V2 writer/head receipts; preserve original bytes and migration receipts."
+    },
+    {
+      "id": "INT-001",
+      "phase": "3",
+      "severity": "P1",
+      "title": "Create one codec/profile/wire contract for interchangeable backends",
+      "surfaces": [
+        "poly-kv/crates/quant-codec-core",
+        "turbo-quant",
+        "fib-quant",
+        "semantic-memory/src/vector_codec.rs",
+        "scr-runtime-compression"
+      ],
+      "failure_mode": "Multiple VectorCodec traits, CodecId types, profile/digest formats, and score semantics require backend-specific integration.",
+      "root_cause": "Backends evolved independently and adapters became additional semantic authorities.",
+      "evidence": [
+        "quant-codec-core/src/codec.rs",
+        "semantic-memory/src/vector_codec.rs",
+        "scr-runtime-compression CodecId",
+        "turbo profile FNV digest",
+        "fib profile type"
+      ],
+      "required_changes": [
+        "One canonical contract crate",
+        "Typed score/normalization/capabilities/resource limits",
+        "One versioned envelope/profile digest law",
+        "Registry routes but does not invent semantics",
+        "Raw f32 remains authoritative",
+        "Common conformance corpus"
+      ],
+      "acceptance": [
+        "Turbo/Fib implement same trait",
+        "semantic-memory consumes only canonical registry",
+        "Unsupported capabilities are typed",
+        "All behavior fields affect digest",
+        "Backends swap without domain code changes",
+        "Corruption/version/resource tests pass"
+      ],
+      "validation": [
+        "cargo test -p quant-codec-core --all-features",
+        "cargo test -p turbo-quant --all-features",
+        "cargo test -p fib-quant --all-features",
+        "cargo test -p semantic-memory --no-default-features --features brute-force",
+        "cargo test -p semantic-memory --no-default-features --features hnsw",
+        "cargo test -p semantic-memory --no-default-features --features brute-force,turbo-quant-codec",
+        "cargo test -p scr-runtime-compression --all-features"
+      ],
+      "rollback": "Disable compressed backends and rebuild sidecars from authoritative raw vectors; retain versioned readers."
+    },
+    {
+      "id": "QUE-001",
+      "phase": "4",
+      "severity": "P1",
+      "title": "Make ai-batch-queue claim and completion atomic",
+      "surfaces": [
+        "ai-batch-queue/src/queue.rs",
+        "ai-batch-queue/src/executor.rs",
+        "ai-batch-queue/src/types.rs"
+      ],
+      "failure_mode": "next_queued clones without claiming; mark_running is separate; mark_completed can complete pending/running work; missing/poisoned state is often silent.",
+      "root_cause": "Mutex<Vec<Job>> is both store and scheduler without claim tokens or a strict state machine.",
+      "evidence": [
+        "next_queued clone",
+        "separate mark_running",
+        "mark_completed only checks failure count/status",
+        "retry_failed can succeed on missing job",
+        "lock errors return defaults"
+      ],
+      "required_changes": [
+        "Atomic claim_next(worker) with generation/token",
+        "Completion requires all terminal",
+        "Typed transition/lock errors",
+        "Lightweight handles",
+        "Notify/channel wakeup",
+        "Explicit running cancellation semantics"
+      ],
+      "acceptance": [
+        "Concurrent executors cannot double-claim",
+        "Nonterminal completion fails",
+        "Missing/poisoned/invalid are distinct",
+        "Retry lineage obeys AttemptId/TrialId law",
+        "Fairness/cancellation races pass"
+      ],
+      "validation": [
+        "cargo test -p ai-batch-queue --all-features",
+        "cargo clippy -p ai-batch-queue --all-targets --all-features -- -D warnings"
+      ],
+      "rollback": "Compatibility adapter may call new atomic operations; old scheduler only behind explicit feature."
+    },
+    {
+      "id": "QUE-002",
+      "phase": "4",
+      "severity": "P2",
+      "title": "Make job-queue cancellation, heartbeat, lease, and DB concurrency explicit",
+      "surfaces": [
+        "job-queue/src/lib.rs",
+        "job-queue/src/executor.rs",
+        "job-queue/src/db.rs"
+      ],
+      "failure_mode": "Cancellation errors become false, heartbeat errors are ignored, process_one nests errors inside Ok, and one mutexed connection serializes DB work.",
+      "root_cause": "Operational uncertainty is represented as benign state; spawn_blocking is mistaken for DB concurrency.",
+      "evidence": [
+        "is_cancelled unwrap_or(false)",
+        "heartbeat result discarded",
+        "process_one Err => Ok(Some(success=false))",
+        "Arc<Mutex<Connection>>"
+      ],
+      "required_changes": [
+        "Typed indeterminate cancellation",
+        "Escalate heartbeat failure and lease loss",
+        "Outer Result reflects infrastructure failure",
+        "Writer plus bounded reader strategy",
+        "Lease ownership race tests"
+      ],
+      "acceptance": [
+        "Cancellation lookup failure cannot silently continue",
+        "Lease loss prevents commit",
+        "Stale worker cannot finalize",
+        "Read concurrency is measured and not globally mutexed"
+      ],
+      "validation": [
+        "cargo test -p job-queue --all-features",
+        "cargo clippy -p job-queue --all-targets --all-features -- -D warnings"
+      ],
+      "rollback": "Preserve schema/ownership columns; connection strategy may revert without reverting stricter result semantics."
+    },
+    {
+      "id": "SEM-001",
+      "phase": "4",
+      "severity": "P1",
+      "title": "Align semantic-memory search corruption behavior with strict integrity claims",
+      "surfaces": [
+        "semantic-memory/src/search.rs",
+        "semantic-memory/src/db.rs",
+        "semantic-memory/src/types.rs"
+      ],
+      "failure_mode": "Brute-force search skips malformed embedding rows with warnings, silently returning incomplete results.",
+      "root_cause": "Availability policy is implicit and absent from result/receipt state.",
+      "evidence": [
+        "crate docs claim malformed stored data is surfaced",
+        "search.rs warns and skips invalid embedding rows"
+      ],
+      "required_changes": [
+        "Explicit strict/degraded policy",
+        "Strict fails on corrupt authoritative rows",
+        "Degraded is opt-in and receipts exact omissions/reasons",
+        "Apply same policy across backends"
+      ],
+      "acceptance": [
+        "Strict search fails",
+        "Degraded search reports omissions",
+        "Receipt binds policy",
+        "Integrity and search use consistent decode"
+      ],
+      "validation": [
+        "cargo test -p semantic-memory --no-default-features --features brute-force",
+        "cargo test -p semantic-memory --no-default-features --features hnsw"
+      ],
+      "rollback": "Default strict; compatibility degraded path requires typed acceptance and receipt."
+    },
+    {
+      "id": "CI-001",
+      "phase": "5",
+      "severity": "P1",
+      "title": "Certify every required workspace and feature lane",
+      "surfaces": [
+        ".github/workflows/",
+        "Cargo.toml",
+        "AiDENs/Cargo.toml",
+        "Primitives/Cargo.toml",
+        "poly-kv/Cargo.toml"
+      ],
+      "failure_mode": "Principal gates deeply test a subset; nested workspaces and alternative feature backends are not independently certified; push trigger omits actual default branch.",
+      "root_cause": "Supported-lane evidence is interpreted as repository-wide certification.",
+      "evidence": [
+        "61 root members at baseline",
+        "17 supported-lane entries",
+        "ci push main/master",
+        "independent AiDENs/Primitives/poly-kv workspaces"
+      ],
+      "required_changes": [
+        "Deterministic workspace inventory",
+        "fmt/check/clippy/test/doc for required workspaces",
+        "Explicit alternative feature lanes",
+        "Actual default branch trigger",
+        "Pinned MSRV/stable/platform lanes",
+        "Required status checks"
+      ],
+      "acceptance": [
+        "All required workspaces have statuses",
+        "All supported feature configurations are explicit",
+        "Default branch gets CI",
+        "Skipped required lane blocks",
+        "Inventory is deterministic"
+      ],
+      "validation": [
+        "python3 tools/workspace_inventory.py --repo . --output evidence/workspace_inventory.json",
+        "python3 tools/run_validation_matrix.py --repo . --pack-dir <pack> --matrix <pack>/config/validation_matrix.json --output-dir evidence/commands --stage final"
+      ],
+      "rollback": "New CI may observe non-required briefly, but release remains blocked until required and green."
+    },
+    {
+      "id": "LINT-001",
+      "phase": "5",
+      "severity": "P1",
+      "title": "Make lint policy mandatory or explicitly exempted",
+      "surfaces": [
+        "Cargo.toml",
+        "**/Cargo.toml",
+        "scripts/check_no_prod_panics.sh"
+      ],
+      "failure_mode": "Workspace lints are opt-in per package; panic scan is lane-scoped and text-based.",
+      "root_cause": "Root lint prose is treated as law without mechanical inheritance.",
+      "evidence": [
+        "root workspace lints",
+        "member manifests missing [lints] workspace=true",
+        "supported-lane panic scanner"
+      ],
+      "required_changes": [
+        "Inventory inheritance",
+        "Add workspace=true or exact expiring exemptions",
+        "Clippy every required lane",
+        "AST/compiler-aware panic enforcement"
+      ],
+      "acceptance": [
+        "All required packages inherit or exempt",
+        "No unclassified production shortcuts",
+        "New member without inheritance fails gate"
+      ],
+      "validation": [
+        "python3 tools/check_lint_inheritance.py --repo .",
+        "cargo clippy --workspace --all-targets --all-features -- -D warnings"
+      ],
+      "rollback": "Removing the lint gate also removes release-ready status; exemptions stay exact and expiring."
+    },
+    {
+      "id": "EVD-001",
+      "phase": "5",
+      "severity": "P1",
+      "title": "Separate evidence recording from verification and bind receipts to source/environment",
+      "surfaces": [
+        "scripts/run_release_gates.py",
+        "scripts/generate_closeout_receipt.py",
+        "STATUS_EVIDENCE_MANIFEST.json",
+        "release/closeout_receipt_v1.json"
+      ],
+      "failure_mode": "Gate rewrites evidence it checks; checked-in evidence disagrees; receipts lack commit/tree/lock/toolchain/platform/workspace/command/log binding.",
+      "root_cause": "Mutable derivative evidence is treated as independent proof and verify has write side effects.",
+      "evidence": [
+        "run_release_gates writes manifest then generates/checks receipt",
+        "audited evidence manifest records a fail",
+        "older receipt records all pass"
+      ],
+      "required_changes": [
+        "Read-only verify",
+        "Separate record-evidence",
+        "Bind source/environment/argv/cwd/exit/log hashes",
+        "Store logs by digest",
+        "Require clean tree",
+        "Never omit failed/skipped commands"
+      ],
+      "acceptance": [
+        "Verify performs no writes",
+        "Any source/log mismatch fails",
+        "Manifest/receipt agree",
+        "Every required command has receipt",
+        "Tree is clean after verify"
+      ],
+      "validation": [
+        "python3 tools/check_evidence_consistency.py --repo . --strict",
+        "python3 tools/run_validation_matrix.py --repo . --pack-dir <pack> --matrix <pack>/config/validation_matrix.json --output-dir evidence/commands --stage final",
+        "git diff --exit-code"
+      ],
+      "rollback": "Preserve old receipts as superseded history; never overwrite or delete command logs."
+    },
+    {
+      "id": "DOC-001",
+      "phase": "5",
+      "severity": "P1",
+      "title": "Bind benchmark and readiness claims to reproducible evidence",
+      "surfaces": [
+        "fib-quant/README.md",
+        "turbo-quant/README.md",
+        "poly-kv/README.md",
+        "status/support docs"
+      ],
+      "failure_mode": "Measured JSON, projected binary, small fixture recall, and broad architecture claims are mixed and can read as production guarantees.",
+      "root_cause": "Documentation changed independently of a source-bound claims manifest and benchmark receipt.",
+      "evidence": [
+        "latest audited commit adds 50x/100% recall wording",
+        "READMEs mix measured and projected values"
+      ],
+      "required_changes": [
+        "Classify each quantitative claim",
+        "Bind measured claims to receipts",
+        "Record corpus/query/model/dim/hardware/toolchain/commit/command",
+        "Remove unsupported universal/production wording",
+        "Add claims manifest"
+      ],
+      "acceptance": [
+        "Every quantitative claim resolves to a receipt or is projected/paper-reported",
+        "No unsupported production claim",
+        "Examples compile or are labeled pseudocode"
+      ],
+      "validation": [
+        "python3 tools/check_claims_manifest.py --repo .",
+        "cargo test -p fib-quant --all-features",
+        "cargo test -p turbo-quant --all-features",
+        "cargo test --manifest-path poly-kv/Cargo.toml --workspace --all-targets --all-features"
+      ],
+      "rollback": "Revert to conservative nonclaims while preserving benchmark receipts."
+    },
+    {
+      "id": "PERF-001",
+      "phase": "6",
+      "severity": "P2",
+      "title": "Optimize only after correctness with reproducible baselines",
+      "surfaces": [
+        "stack-ids",
+        "ai-batch-queue",
+        "job-queue",
+        "semantic-memory",
+        "codec stack"
+      ],
+      "failure_mode": "String IDs, payload clones, linear queue scans, polling, one DB connection, and JSON materialization impose avoidable cost.",
+      "root_cause": "No unified performance budget or source-bound allocation/latency evidence.",
+      "evidence": [
+        "String-backed IDs",
+        "Mutex<Vec<Job>> clones",
+        "2-second poll",
+        "Arc<Mutex<Connection>>",
+        "compute_json materializes Value/String"
+      ],
+      "required_changes": [
+        "Before/after receipts",
+        "Compact ID internals where compatible",
+        "Indexed queues/lightweight claims",
+        "Event wakeup",
+        "Measured SQLite strategy",
+        "Streaming canonical serialization only after semantics freeze"
+      ],
+      "acceptance": [
+        "Same workload/environment",
+        "No conformance regression",
+        "Allocation/latency/throughput reported with workload/confidence",
+        "Every optimization reversible"
+      ],
+      "validation": [
+        "cargo bench -p agent-graph",
+        "cargo bench -p turbo-quant",
+        "cargo bench -p fib-quant",
+        "bash scripts/final_gate.sh --repo . --pack-dir <pack> --run-dir <run>"
+      ],
+      "rollback": "Isolate each optimization and preserve correctness-first fallback."
+    }
+  ]
+}

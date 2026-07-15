@@ -1,0 +1,13 @@
+{
+  "schema_version": "libraries.phase-receipt.v1",
+  "phase": "",
+  "input_commit": "",
+  "output_commit": "",
+  "output_tree": "",
+  "tasks": [],
+  "issue_states": {},
+  "command_receipts": [],
+  "open_blockers": [],
+  "rollback_ref": "",
+  "verdict": "blocked"
+}

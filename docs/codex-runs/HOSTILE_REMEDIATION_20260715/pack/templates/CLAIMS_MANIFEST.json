@@ -1,0 +1,22 @@
+{
+  "schema_version": "libraries.claims-manifest.v1",
+  "claims": [
+    {
+      "path": "fib-quant/README.md",
+      "claim": "<verbatim quantitative claim line>",
+      "classification": "measured_local",
+      "receipt": "evidence/benchmarks/<receipt>.json",
+      "scope": {
+        "corpus": "",
+        "queries": 0,
+        "dimensions": 0,
+        "model_or_embedding_source": "",
+        "hardware": "",
+        "toolchain": "",
+        "commit": "",
+        "command_receipt": ""
+      },
+      "limitations": []
+    }
+  ]
+}

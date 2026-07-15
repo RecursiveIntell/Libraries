@@ -26,9 +26,5 @@ pub enum QuantCodecError {
 
     /// INT-001: Resource limit exceeded.
     #[error("resource limit exceeded: {limit} (value={value}, max={max})")]
-    ResourceLimitExceeded {
-        limit: String,
-        value: u64,
-        max: u64,
-    },
+    ResourceLimitExceeded { limit: String, value: u64, max: u64 },
 }

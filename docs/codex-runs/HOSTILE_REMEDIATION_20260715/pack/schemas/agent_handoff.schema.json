@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "libraries.agent-handoff.v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "issue_ids",
+    "branch",
+    "base_commit",
+    "head_commit",
+    "changed_files",
+    "commands",
+    "acceptance_gates",
+    "residual_risks",
+    "rollback",
+    "verdict"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "libraries.agent-handoff.v1"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "issue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "branch": {
+      "type": "string"
+    },
+    "base_commit": {
+      "type": "string"
+    },
+    "head_commit": {
+      "type": "string"
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "status",
+          "receipt"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "skipped",
+              "blocked"
+            ]
+          },
+          "receipt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "acceptance_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "gate",
+          "status",
+          "evidence"
+        ],
+        "properties": {
+          "gate": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "satisfied",
+              "unsatisfied",
+              "blocked"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rollback": {
+      "type": "object"
+    },
+    "verdict": {
+      "enum": [
+        "ready_for_review",
+        "blocked",
+        "incomplete"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

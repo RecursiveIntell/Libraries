@@ -11,7 +11,8 @@ impl JobHandler for LongRunningJob {
     async fn execute(&self, ctx: &JobContext) -> Result<JobResult, QueueError> {
         for i in 0..self.duration_secs {
             // Check for cancellation each second
-            if ctx.is_cancelled() {
+            // QUE-002: is_cancelled now returns Result; treat lookup failure as not cancelled
+            if ctx.is_cancelled().unwrap_or(false) {
                 println!("Job {} cancelled at step {}", ctx.job_id, i);
                 return Err(QueueError::Cancelled);
             }

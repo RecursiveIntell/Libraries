@@ -181,7 +181,10 @@ mod tests {
         let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(CodecId::TurboQuant));
         let data = b"compressed_payload";
         let result = adapter.decode_exact(CodecId::TurboQuant, data);
-        assert!(result.is_err(), "turbo_quant decode must not succeed without a real decoder");
+        assert!(
+            result.is_err(),
+            "turbo_quant decode must not succeed without a real decoder"
+        );
         let err = result.unwrap_err();
         assert!(
             matches!(err, DecompressError::UnsupportedCodec(_)),
@@ -195,7 +198,10 @@ mod tests {
         let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(CodecId::FibQuant));
         let data = b"compressed_payload";
         let result = adapter.decode_exact(CodecId::FibQuant, data);
-        assert!(result.is_err(), "fib_quant decode must not succeed without a real decoder");
+        assert!(
+            result.is_err(),
+            "fib_quant decode must not succeed without a real decoder"
+        );
         let err = result.unwrap_err();
         assert!(
             matches!(err, DecompressError::UnsupportedCodec(_)),

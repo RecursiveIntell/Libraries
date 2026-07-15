@@ -9,8 +9,7 @@ pub mod ids;
 pub mod shape;
 
 pub use codec::{
-    CodecCapabilities, CodecProfile, CodecResourceLimits, KvCacheCodec, ScoreSemantics,
-    VectorCodec,
+    CodecCapabilities, CodecProfile, CodecResourceLimits, KvCacheCodec, ScoreSemantics, VectorCodec,
 };
 pub use digest::{ArtifactDigest, CodecProfileDigest};
 pub use dtype::DType;

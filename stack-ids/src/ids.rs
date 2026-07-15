@@ -28,9 +28,15 @@ impl std::fmt::Display for IdError {
 impl std::error::Error for IdError {}
 
 fn validate_id(value: &str) -> Result<(), IdError> {
-    if value.trim().is_empty() { return Err(IdError::Empty); }
-    if value.len() > 512 { return Err(IdError::TooLong); }
-    if let Some(c) = value.chars().find(|c| c.is_control()) { return Err(IdError::InvalidCharacter(c)); }
+    if value.trim().is_empty() {
+        return Err(IdError::Empty);
+    }
+    if value.len() > 512 {
+        return Err(IdError::TooLong);
+    }
+    if let Some(c) = value.chars().find(|c| c.is_control()) {
+        return Err(IdError::InvalidCharacter(c));
+    }
     Ok(())
 }
 
@@ -66,8 +72,8 @@ macro_rules! define_id {
         }
         impl std::fmt::Display for $name { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str(&self.0) } }
         impl From<&str> for $name { fn from(value: &str) -> Self { Self::new(value) } }
+        impl From<String> for $name { fn from(value: String) -> Self { Self::new(value) } }
         impl AsRef<str> for $name { fn as_ref(&self) -> &str { &self.0 } }
-        impl TryFrom<String> for $name { type Error = IdError; fn try_from(value: String) -> Result<Self, Self::Error> { Self::try_new(value) } }
         impl FromStr for $name { type Err = IdError; fn from_str(value: &str) -> Result<Self, Self::Err> { Self::try_new(value) } }
         impl<'de> Deserialize<'de> for $name {
             fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
@@ -1233,8 +1239,81 @@ define_id!(
     PolicyImpactDiffId
 );
 
-impl AttemptId { pub fn generate() -> Self { Self::random("attempt") } }
-impl TrialId { pub fn generate() -> Self { Self::random("trial") } }
+impl AttemptId {
+    pub fn generate() -> Self {
+        Self::random("attempt")
+    }
+}
+impl TrialId {
+    pub fn generate() -> Self {
+        Self::random("trial")
+    }
+}
+
+/// Backward-compatible generate() for all ID types that had it before ID-001.
+/// These delegate to random() with a sensible domain prefix.
+macro_rules! impl_generate {
+    ($name:ident, $domain:literal) => {
+        impl $name {
+            pub fn generate() -> Self {
+                Self::random($domain)
+            }
+        }
+    };
+}
+
+impl_generate!(ClaimId, "claim");
+impl_generate!(ClaimVersionId, "claim_version");
+impl_generate!(EpisodeId, "episode");
+impl_generate!(RelationVersionId, "relation_version");
+impl_generate!(FitRunId, "fit_run");
+impl_generate!(CampaignDecisionTraceId, "campaign_decision");
+impl_generate!(AmendmentDecisionId, "amendment_decision");
+impl_generate!(ApprovalGrantId, "approval_grant");
+impl_generate!(ArchiveManifestId, "archive_manifest");
+impl_generate!(HistoricalQueryGuaranteeId, "historical_query");
+impl_generate!(CompactionReceiptId, "compaction_receipt");
+impl_generate!(ProofEvaluationReceiptId, "proof_eval_receipt");
+impl_generate!(SelfHostingBuildReceiptId, "self_hosting_build");
+impl_generate!(SettlementReceiptId, "settlement_receipt");
+impl_generate!(SharedDivergenceReportId, "shared_divergence");
+impl_generate!(SharedReplaySliceId, "shared_replay_slice");
+impl_generate!(SharedViewDowngradeId, "shared_view_downgrade");
+impl_generate!(TreatySuspensionId, "treaty_suspension");
+impl_generate!(GeneratedConformanceCorpusId, "gen_conformance_corpus");
+impl_generate!(GeneratedInterpreterBundleId, "gen_interpreter_bundle");
+impl_generate!(GeneratedMigrationPlanId, "gen_migration_plan");
+impl_generate!(GeneratedSchemaBundleId, "gen_schema_bundle");
+impl_generate!(VerificationCaseId, "verification_case");
+impl_generate!(ExecutionPermitId, "execution_permit");
+impl_generate!(PolicyDecisionId, "policy_decision");
+impl_generate!(CheckPlanId, "check_plan");
+impl_generate!(ControlReceiptId, "control_receipt");
+impl_generate!(LedgerEntryId, "ledger_entry");
+impl_generate!(RepairCandidateId, "repair_candidate");
+impl_generate!(RepairRouteId, "repair_route");
+impl_generate!(EffectBlockReceiptId, "effect_block_receipt");
+impl_generate!(EffectReviewCaseId, "effect_review_case");
+impl_generate!(ContinuityReviewCaseId, "continuity_review_case");
+impl_generate!(DelegationReviewCaseId, "delegation_review_case");
+impl_generate!(ReleaseGateCaseId, "release_gate_case");
+impl_generate!(ExactnessBudgetId, "exactness_budget");
+impl_generate!(ArtifactTransportId, "artifact_transport");
+impl_generate!(BoundaryRepairRecordId, "boundary_repair_record");
+impl_generate!(CalibrationSnapshotId, "calibration_snapshot");
+impl_generate!(NuisanceStateId, "nuisance_state");
+impl_generate!(ApprovalRecordId, "approval_record");
+impl_generate!(ApplicabilityContextId, "applicability_context");
+impl_generate!(CompiledObligationSetId, "compiled_obligation_set");
+impl_generate!(CompositionConflictSetId, "composition_conflict_set");
+impl_generate!(CompositionReceiptId, "composition_receipt");
+impl_generate!(CompositionRuleSetId, "composition_rule_set");
+impl_generate!(EffectiveConstitutionId, "effective_constitution");
+impl_generate!(PolicyImpactDiffId, "policy_impact_diff");
+impl_generate!(ProfileSetId, "profile_set");
+impl_generate!(PromotionDecisionId, "promotion_decision");
+impl_generate!(RefutationDecisionId, "refutation_decision");
+impl_generate!(RollbackPlanId, "rollback_plan");
 
 #[cfg(test)]
 #[path = "ids_tests.rs"]

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "libraries.claims-manifest.v1",
+  "type": "object",
+  "required": ["schema_version", "claims"],
+  "properties": {
+    "schema_version": {"const": "libraries.claims-manifest.v1"},
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "claim", "classification", "limitations"],
+        "properties": {
+          "path": {"type": "string"},
+          "claim": {"type": "string"},
+          "classification": {"enum": ["measured_local", "projected", "paper_reported", "unverified"]},
+          "receipt": {"type": ["string", "null"]},
+          "scope": {"type": "object"},
+          "limitations": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -58,3 +58,6 @@ serde_json = "1"
 [[bench]]
 name = "turbo_quant_search"
 harness = false
+
+[lints]
+workspace = true

@@ -17,7 +17,9 @@ async fn test_ordinary_error_is_failed_not_complete() {
         .add_node(
             "fail_node",
             node!(|_state| async move {
-                Err::<(), AgentGraphError>(AgentGraphError::ExecutionError("intentional failure".to_string()))
+                Err::<(), AgentGraphError>(AgentGraphError::ExecutionError(
+                    "intentional failure".to_string(),
+                ))
             }),
         )
         .build()

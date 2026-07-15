@@ -20,3 +20,5 @@ digest = "0.10"
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }
+[lints]
+workspace = true

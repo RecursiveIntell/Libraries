@@ -1,0 +1,372 @@
+{
+  "schema_version": "libraries.hostile-remediation.workstreams.v1",
+  "max_parallel_implementers": 3,
+  "integration_branch": "remediation/hostile-audit-20260715",
+  "shared_file_owner": "hermes-integration",
+  "workstreams": [
+    {
+      "task_id": "CTRL-001-RUN-CONTROL",
+      "phase": "-1",
+      "issue_ids": [
+        "CTRL-001"
+      ],
+      "depends_on": [],
+      "write_scope": [
+        "<run-dir>/**",
+        "AGENTS.md",
+        "PROMPT.md"
+      ],
+      "role": "run-control",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P0-AG-001",
+      "phase": "0",
+      "issue_ids": [
+        "AG-001"
+      ],
+      "depends_on": [
+        "CTRL-001-RUN-CONTROL"
+      ],
+      "write_scope": [
+        "agent-graph/**"
+      ],
+      "role": "rust-runtime",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P0-GOV-001",
+      "phase": "0",
+      "issue_ids": [
+        "GOV-001"
+      ],
+      "depends_on": [
+        "CTRL-001-RUN-CONTROL"
+      ],
+      "write_scope": [
+        "forge-pilot/**"
+      ],
+      "role": "governance",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P0-CMP-001",
+      "phase": "0",
+      "issue_ids": [
+        "CMP-001"
+      ],
+      "depends_on": [
+        "CTRL-001-RUN-CONTROL"
+      ],
+      "write_scope": [
+        "scr-runtime-compression/**"
+      ],
+      "role": "codec-integration",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P0-INTEGRATION",
+      "phase": "0",
+      "issue_ids": [
+        "AG-001",
+        "GOV-001",
+        "CMP-001"
+      ],
+      "depends_on": [
+        "P0-AG-001",
+        "P0-GOV-001",
+        "P0-CMP-001"
+      ],
+      "write_scope": [
+        "integration-only"
+      ],
+      "role": "integration-review",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P1-ID-INVENTORY",
+      "phase": "1",
+      "issue_ids": [
+        "ID-001",
+        "ID-002"
+      ],
+      "depends_on": [
+        "P0-INTEGRATION"
+      ],
+      "write_scope": [
+        "<run-dir>/evidence/id_inventory.json"
+      ],
+      "role": "read-only-audit",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P1-STACK-IDS-V2",
+      "phase": "1",
+      "issue_ids": [
+        "ID-001"
+      ],
+      "depends_on": [
+        "P1-ID-INVENTORY"
+      ],
+      "write_scope": [
+        "stack-ids/**"
+      ],
+      "role": "identity",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P1-ID-MIGRATION",
+      "phase": "1",
+      "issue_ids": [
+        "ID-002"
+      ],
+      "depends_on": [
+        "P1-STACK-IDS-V2"
+      ],
+      "write_scope": [
+        "assigned-per-wave"
+      ],
+      "role": "migration-coordination",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P1-ID-ENFORCEMENT",
+      "phase": "1",
+      "issue_ids": [
+        "ID-002"
+      ],
+      "depends_on": [
+        "P1-ID-MIGRATION"
+      ],
+      "write_scope": [
+        "scripts/**",
+        "config/**",
+        "Cargo.toml",
+        "**/Cargo.toml"
+      ],
+      "role": "repository-gate",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P2-DIGEST",
+      "phase": "2",
+      "issue_ids": [
+        "DIG-001"
+      ],
+      "depends_on": [
+        "P1-STACK-IDS-V2"
+      ],
+      "write_scope": [
+        "stack-ids/src/digest.rs",
+        "stack-ids/tests/**",
+        "poly-kv/crates/quant-codec-core/src/digest.rs"
+      ],
+      "role": "digest-contract",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P2-SCOPE",
+      "phase": "2",
+      "issue_ids": [
+        "SCP-001"
+      ],
+      "depends_on": [
+        "P1-ID-MIGRATION"
+      ],
+      "write_scope": [
+        "stack-ids/src/scope.rs",
+        "assigned callers"
+      ],
+      "role": "boundary",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P2-LEDGER",
+      "phase": "2",
+      "issue_ids": [
+        "LED-001"
+      ],
+      "depends_on": [
+        "P2-DIGEST",
+        "P1-ID-MIGRATION"
+      ],
+      "write_scope": [
+        "claim-ledger/**"
+      ],
+      "role": "ledger",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P3-CODEC-CORE",
+      "phase": "3",
+      "issue_ids": [
+        "INT-001"
+      ],
+      "depends_on": [
+        "P2-DIGEST",
+        "P1-ID-MIGRATION"
+      ],
+      "write_scope": [
+        "poly-kv/crates/quant-codec-core/**"
+      ],
+      "role": "codec-contract",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P3-TURBO",
+      "phase": "3",
+      "issue_ids": [
+        "INT-001"
+      ],
+      "depends_on": [
+        "P3-CODEC-CORE"
+      ],
+      "write_scope": [
+        "turbo-quant/**"
+      ],
+      "role": "codec-backend",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P3-FIB",
+      "phase": "3",
+      "issue_ids": [
+        "INT-001"
+      ],
+      "depends_on": [
+        "P3-CODEC-CORE"
+      ],
+      "write_scope": [
+        "fib-quant/**"
+      ],
+      "role": "codec-backend",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P3-MEMORY",
+      "phase": "3",
+      "issue_ids": [
+        "INT-001",
+        "SEM-001"
+      ],
+      "depends_on": [
+        "P3-TURBO",
+        "P3-FIB"
+      ],
+      "write_scope": [
+        "semantic-memory/**"
+      ],
+      "role": "integration",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P3-ADAPTER",
+      "phase": "3",
+      "issue_ids": [
+        "INT-001",
+        "CMP-001"
+      ],
+      "depends_on": [
+        "P3-TURBO",
+        "P3-FIB"
+      ],
+      "write_scope": [
+        "scr-runtime-compression/**",
+        "assigned poly-kv paths"
+      ],
+      "role": "integration",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P4-AI-BATCH",
+      "phase": "4",
+      "issue_ids": [
+        "QUE-001"
+      ],
+      "depends_on": [
+        "P0-INTEGRATION",
+        "P1-ID-MIGRATION"
+      ],
+      "write_scope": [
+        "ai-batch-queue/**"
+      ],
+      "role": "concurrency",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P4-JOB-QUEUE",
+      "phase": "4",
+      "issue_ids": [
+        "QUE-002"
+      ],
+      "depends_on": [
+        "P0-INTEGRATION",
+        "P1-ID-MIGRATION"
+      ],
+      "write_scope": [
+        "job-queue/**"
+      ],
+      "role": "concurrency",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P4-SEMANTIC",
+      "phase": "4",
+      "issue_ids": [
+        "SEM-001"
+      ],
+      "depends_on": [
+        "P3-MEMORY"
+      ],
+      "write_scope": [
+        "semantic-memory/src/search.rs",
+        "semantic-memory/src/db.rs",
+        "semantic-memory/src/types.rs"
+      ],
+      "role": "storage-integrity",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P5-RELEASE",
+      "phase": "5",
+      "issue_ids": [
+        "CI-001",
+        "LINT-001",
+        "EVD-001",
+        "DOC-001"
+      ],
+      "depends_on": [
+        "P2-LEDGER",
+        "P3-ADAPTER",
+        "P4-AI-BATCH",
+        "P4-JOB-QUEUE",
+        "P4-SEMANTIC"
+      ],
+      "write_scope": [
+        ".github/**",
+        "scripts/**",
+        "release/**",
+        "docs/status/readmes",
+        "Cargo.toml manifests"
+      ],
+      "role": "release-engineering",
+      "review_role": "hostile-reviewer"
+    },
+    {
+      "task_id": "P6-PERFORMANCE",
+      "phase": "6",
+      "issue_ids": [
+        "PERF-001"
+      ],
+      "depends_on": [
+        "P5-RELEASE"
+      ],
+      "write_scope": [
+        "assigned optimization paths",
+        "bench evidence"
+      ],
+      "role": "performance",
+      "review_role": "hostile-reviewer"
+    }
+  ]
+}

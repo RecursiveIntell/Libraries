@@ -1,0 +1,77 @@
+{
+  "schema_version": "libraries.placeholder-codec-report.v1",
+  "findings": [
+    {
+      "rule": "q8_q4_silent_uncompressed",
+      "path": "semantic-memory/src/quantize_governed.rs",
+      "line": 60,
+      "text": "CodecProfile::Q8 => scr_runtime_compression::CodecId::Uncompressed,"
+    },
+    {
+      "rule": "q8_q4_silent_uncompressed",
+      "path": "semantic-memory/src/quantize_governed.rs",
+      "line": 61,
+      "text": "CodecProfile::Q4 => scr_runtime_compression::CodecId::Uncompressed,"
+    },
+    {
+      "rule": "ignored_dispatch",
+      "path": "scr-runtime-compression/src/codec_dispatch.rs",
+      "line": 54,
+      "text": "pub fn build_adapter<T>(_dispatch: CodecDispatch) -> ExactFallbackAdapter<T>"
+    },
+    {
+      "rule": "q8_q4_silent_uncompressed",
+      "path": "scr-runtime-compression/src/codec_dispatch.rs",
+      "line": 93,
+      "text": "quant_governor::CodecProfile::Q8 => CodecId::Uncompressed, // Q8 not yet implemented"
+    },
+    {
+      "rule": "q8_q4_silent_uncompressed",
+      "path": "scr-runtime-compression/src/codec_dispatch.rs",
+      "line": 94,
+      "text": "quant_governor::CodecProfile::Q4 => CodecId::Uncompressed, // Q4 not yet implemented"
+    },
+    {
+      "rule": "decode_placeholder_todo",
+      "path": "scr-runtime-compression/src/codec_dispatch.rs",
+      "line": 106,
+      "text": "// TODO: Implement actual turbo-quant decode"
+    },
+    {
+      "rule": "decode_identity_passthrough",
+      "path": "scr-runtime-compression/src/codec_dispatch.rs",
+      "line": 112,
+      "text": "Ok(data.to_vec()) // Placeholder - just pass through for now"
+    },
+    {
+      "rule": "decode_placeholder_todo",
+      "path": "scr-runtime-compression/src/codec_dispatch.rs",
+      "line": 121,
+      "text": "// TODO: Implement actual fib-quant decode"
+    },
+    {
+      "rule": "decode_identity_passthrough",
+      "path": "scr-runtime-compression/src/codec_dispatch.rs",
+      "line": 127,
+      "text": "Ok(data.to_vec()) // Placeholder - just pass through for now"
+    },
+    {
+      "rule": "decode_identity_passthrough",
+      "path": "scr-runtime-compression/src/exact_fallback_adapter.rs",
+      "line": 71,
+      "text": "///         CodecId::Uncompressed => Ok(data.to_vec()),"
+    },
+    {
+      "rule": "decode_identity_passthrough",
+      "path": "scr-runtime-compression/src/exact_fallback_adapter.rs",
+      "line": 180,
+      "text": "CodecId::Uncompressed => Ok(data.to_vec()),"
+    },
+    {
+      "rule": "decode_identity_passthrough",
+      "path": "scr-runtime-compression/src/exact_fallback_adapter.rs",
+      "line": 247,
+      "text": "let adapter = ExactFallbackAdapter::new(Box::new(|_codec_id, data| Ok(data.to_vec())))"
+    }
+  ]
+}

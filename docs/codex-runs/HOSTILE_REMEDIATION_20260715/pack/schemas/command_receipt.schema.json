@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "libraries.command-receipt.v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "name",
+    "argv",
+    "cwd",
+    "started_at",
+    "finished_at",
+    "duration_ms",
+    "exit_code",
+    "source",
+    "stdout",
+    "stderr"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "libraries.command-receipt.v1"
+    },
+    "receipt_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string"
+    },
+    "issue_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "argv": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "cwd": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "finished_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "exit_code": {
+      "type": "integer"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "commit",
+        "tree",
+        "dirty"
+      ],
+      "properties": {
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tree": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dirty": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "status_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cargo_lock_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "environment": {
+      "type": "object"
+    },
+    "stdout": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer"
+        }
+      }
+    },
+    "stderr": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -199,7 +199,9 @@ pub mod predicates {
 ///
 /// For explicit fail-open compatibility, use [`observe_governance_with_mode`]
 /// with [`GovernanceMode::FailOpen`].
-pub async fn observe_governance(store: &MemoryStore) -> Result<GovernanceObservation, GovernanceGateError> {
+pub async fn observe_governance(
+    store: &MemoryStore,
+) -> Result<GovernanceObservation, GovernanceGateError> {
     observe_governance_with_mode(store, GovernanceMode::Strict).await
 }
 
@@ -317,45 +319,39 @@ async fn observe_governance_inner(
             predicates::EFFECT_PREFLIGHT => {
                 observation.effect_preflight_status = Some(claim.content.clone());
             }
-            predicates::ASSURANCE_READY => {
-                match parse_bool_claim(&claim.content) {
-                    Some(v) => observation.assurance_ready = v,
-                    None => {
-                        malformed_count += 1;
-                        degradations.push(GovernanceDegradation {
-                            surface: claim.predicate.clone(),
-                            reason: format!("malformed boolean value: '{}'", claim.content),
-                            blocks_promotion: true,
-                        });
-                    }
+            predicates::ASSURANCE_READY => match parse_bool_claim(&claim.content) {
+                Some(v) => observation.assurance_ready = v,
+                None => {
+                    malformed_count += 1;
+                    degradations.push(GovernanceDegradation {
+                        surface: claim.predicate.clone(),
+                        reason: format!("malformed boolean value: '{}'", claim.content),
+                        blocks_promotion: true,
+                    });
                 }
-            }
-            predicates::AUTHORITY_DELEGATION_VALID => {
-                match parse_bool_claim(&claim.content) {
-                    Some(v) => observation.authority_delegation_valid = v,
-                    None => {
-                        malformed_count += 1;
-                        degradations.push(GovernanceDegradation {
-                            surface: claim.predicate.clone(),
-                            reason: format!("malformed boolean value: '{}'", claim.content),
-                            blocks_promotion: true,
-                        });
-                    }
+            },
+            predicates::AUTHORITY_DELEGATION_VALID => match parse_bool_claim(&claim.content) {
+                Some(v) => observation.authority_delegation_valid = v,
+                None => {
+                    malformed_count += 1;
+                    degradations.push(GovernanceDegradation {
+                        surface: claim.predicate.clone(),
+                        reason: format!("malformed boolean value: '{}'", claim.content),
+                        blocks_promotion: true,
+                    });
                 }
-            }
-            predicates::CONTINUITY_INCIDENT_ACTIVE => {
-                match parse_bool_claim(&claim.content) {
-                    Some(v) => observation.continuity_incident_active = v,
-                    None => {
-                        malformed_count += 1;
-                        degradations.push(GovernanceDegradation {
-                            surface: claim.predicate.clone(),
-                            reason: format!("malformed boolean value: '{}'", claim.content),
-                            blocks_promotion: true,
-                        });
-                    }
+            },
+            predicates::CONTINUITY_INCIDENT_ACTIVE => match parse_bool_claim(&claim.content) {
+                Some(v) => observation.continuity_incident_active = v,
+                None => {
+                    malformed_count += 1;
+                    degradations.push(GovernanceDegradation {
+                        surface: claim.predicate.clone(),
+                        reason: format!("malformed boolean value: '{}'", claim.content),
+                        blocks_promotion: true,
+                    });
                 }
-            }
+            },
             predicates::CONSTITUTIONAL_AMENDMENT_PENDING => {
                 match parse_bool_claim(&claim.content) {
                     Some(v) => observation.constitutional_amendment_pending = v,
@@ -673,7 +669,10 @@ mod tests {
         let store = MemoryStore::open(config).expect("open store");
         let result = observe_governance(&store).await;
         // GOV-001: Default mode is Strict, so missing governance fails closed.
-        assert!(result.is_err(), "empty store should fail closed in strict mode");
+        assert!(
+            result.is_err(),
+            "empty store should fail closed in strict mode"
+        );
         assert!(matches!(
             result.unwrap_err(),
             GovernanceGateError::NoGovernanceClaims
