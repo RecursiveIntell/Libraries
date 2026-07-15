@@ -278,7 +278,7 @@ mod tests {
         let sk1 = ScopeKey::from_legacy_namespace("my-ns");
         let sk2 = ScopeKey::from_legacy_namespace("my-ns");
         assert_eq!(sk1, sk2);
-        assert_eq!(sk1.to_legacy_namespace(), "my-ns");
+        assert_eq!(sk1.to_legacy_namespace().unwrap(), "my-ns");
     }
 
     #[test]

@@ -131,8 +131,27 @@ impl ScopeKey {
     /// This is only valid for ScopeKeys that were created from a legacy namespace
     /// (i.e. all dimensions except namespace are None). For multi-dimensional
     /// scopes, use the `namespace` field directly.
-    pub fn to_legacy_namespace(&self) -> &str {
-        &self.namespace
+    pub fn to_legacy_namespace(&self) -> Result<&str, ScopeError> {
+        if self.is_namespace_only() {
+            Ok(&self.namespace)
+        } else {
+            Err(ScopeError::LossyProjection)
+        }
+    }
+
+    pub fn to_legacy_namespace_lossy(
+        &self,
+        _policy: LossyScopePolicy,
+    ) -> (String, ScopeLossReceipt) {
+        (
+            self.namespace.clone(),
+            ScopeLossReceipt {
+                namespace: self.namespace.clone(),
+                dropped_domain: self.domain.clone(),
+                dropped_workspace_id: self.workspace_id.clone(),
+                dropped_repo_id: self.repo_id.clone(),
+            },
+        )
     }
 
     /// Returns true if this scope has only a namespace (no domain/workspace/repo).
@@ -140,6 +159,28 @@ impl ScopeKey {
         self.domain.is_none() && self.workspace_id.is_none() && self.repo_id.is_none()
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LossyScopePolicy {
+    Authorized,
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScopeLossReceipt {
+    pub namespace: String,
+    pub dropped_domain: Option<String>,
+    pub dropped_workspace_id: Option<String>,
+    pub dropped_repo_id: Option<String>,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ScopeError {
+    LossyProjection,
+}
+impl std::fmt::Display for ScopeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("scope has dimensions not representable by a legacy namespace")
+    }
+}
+impl std::error::Error for ScopeError {}
 
 impl std::fmt::Display for ScopeKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -224,7 +265,7 @@ mod tests {
     #[test]
     fn legacy_namespace_roundtrip() {
         let sk = ScopeKey::from_legacy_namespace("my-namespace");
-        assert_eq!(sk.to_legacy_namespace(), "my-namespace");
+        assert_eq!(sk.to_legacy_namespace().unwrap(), "my-namespace");
         assert!(sk.is_namespace_only());
     }
 
