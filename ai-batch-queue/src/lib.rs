@@ -171,6 +171,8 @@ where
         completed_at: None,
         reordered: false,
         reorder_note: None,
+        claim_generation: 0,
+        claimed_by: None,
     }
 }
 
@@ -217,5 +219,7 @@ where
         completed_at: None,
         reordered: false,
         reorder_note: None,
+        claim_generation: 0,
+        claimed_by: None,
     }
 }
