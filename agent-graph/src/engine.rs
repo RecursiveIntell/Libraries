@@ -118,7 +118,13 @@ impl AgentGraph {
                     graph_hash: Some(self.compute_graph_hash()),
                 }),
             },
-            Err(_) => ExecutionResult::Complete(state_clone),
+            // AG-001: Preserve ordinary errors as Failed, not Complete.
+            // Only InterruptError maps to Interrupted; everything else
+            // is a real failure that must not be silently erased.
+            Err(e) => ExecutionResult::Failed {
+                error: e,
+                state: state_clone,
+            },
         }
     }
 
