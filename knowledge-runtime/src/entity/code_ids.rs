@@ -75,10 +75,10 @@ pub fn code_entity_id(kind: &CodeEntityKind, qualified_path: &str, scope: &Scope
         .unwrap_or(&scope.namespace);
 
     EntityId::new(format!(
-        "code:{}:{}:{}",
+        "code-{}.{}.{}",
         scope_prefix,
         kind.as_str(),
-        qualified_path
+        qualified_path.replace("::", "__")
     ))
 }
 
@@ -88,10 +88,16 @@ pub fn code_entity_id(kind: &CodeEntityKind, qualified_path: &str, scope: &Scope
 /// or `None` if the ID doesn't match the expected format.
 pub fn code_entity_display_path(id: &EntityId) -> Option<String> {
     let s = id.as_str();
-    let rest = s.strip_prefix("code:")?;
-    // Skip scope_prefix (first segment)
-    let after_scope = rest.find(':').map(|i| &rest[i + 1..])?;
-    Some(after_scope.to_string())
+    let rest = s.strip_prefix("entity:code-")?;
+    let after_scope = rest.find(".").map(|i| &rest[i + 1..])?;
+    // Restore `::` from `__` and split kind from path with `:`.
+    let restored = after_scope.replace("__", "::");
+    let colon = restored.find("::").map(|i| &restored[..i])?;
+    // The format is `kind.restored_path` — replace the first `.` with `:` for display.
+    let dot = after_scope.find(".")?;
+    let kind = &after_scope[..dot];
+    let path = after_scope[dot + 1..].replace("__", "::");
+    Some(format!("{kind}:{path}"))
 }
 
 /// Parse a code entity ID back into its components.
@@ -100,16 +106,14 @@ pub fn code_entity_display_path(id: &EntityId) -> Option<String> {
 /// does not match the `code:{scope}:{kind}:{path}` format.
 pub fn parse_code_entity_id(id: &EntityId) -> Option<(String, CodeEntityKind, String)> {
     let s = id.as_str();
-    let rest = s.strip_prefix("code:")?;
+    let rest = s.strip_prefix("entity:code-")?;
+    let first_dot = rest.find(".")?;
+    let scope_prefix = &rest[..first_dot];
+    let after_scope = &rest[first_dot + 1..];
 
-    // Split: scope_prefix:kind:path
-    let first_colon = rest.find(':')?;
-    let scope_prefix = &rest[..first_colon];
-    let after_scope = &rest[first_colon + 1..];
-
-    let second_colon = after_scope.find(':')?;
-    let kind_str = &after_scope[..second_colon];
-    let path = &after_scope[second_colon + 1..];
+    let second_dot = after_scope.find('.')?;
+    let kind_str = &after_scope[..second_dot];
+    let path = after_scope[second_dot + 1..].replace("__", "::");
 
     let kind = match kind_str {
         "repo" => CodeEntityKind::Repo,
@@ -142,7 +146,7 @@ mod tests {
             repo_id: Some("myrepo".into()),
         };
         let id = code_entity_id(&CodeEntityKind::Function, "lib::search", &scope);
-        assert_eq!(id.as_str(), "code:myrepo:function:lib::search");
+        assert_eq!(id.as_str(), "entity:code-myrepo.function.lib__search");
     }
 
     #[test]
@@ -154,14 +158,14 @@ mod tests {
             repo_id: None,
         };
         let id = code_entity_id(&CodeEntityKind::Function, "lib::search", &scope);
-        assert_eq!(id.as_str(), "code:ws1:function:lib::search");
+        assert_eq!(id.as_str(), "entity:code-ws1.function.lib__search");
     }
 
     #[test]
     fn code_id_falls_back_to_namespace() {
         let scope = ScopeKey::namespace_only("prod");
         let id = code_entity_id(&CodeEntityKind::Function, "lib::search", &scope);
-        assert_eq!(id.as_str(), "code:prod:function:lib::search");
+        assert_eq!(id.as_str(), "entity:code-prod.function.lib__search");
     }
 
     #[test]

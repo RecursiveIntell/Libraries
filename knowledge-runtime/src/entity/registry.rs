@@ -401,7 +401,7 @@ mod tests {
 
     fn make_entity(name: &str, scope: ScopeKey, aliases: Vec<&str>) -> Entity {
         Entity {
-            id: EntityId::new(format!("{}@{}", name.to_lowercase(), scope)),
+            id: EntityId::new(format!("{}-at-{}", name.to_lowercase(), scope.namespace)),
             canonical_name: name.to_string(),
             kind: EntityKind::Person,
             scope,
@@ -459,7 +459,7 @@ mod tests {
 
         let mut reg = EntityRegistry::new(16, 100);
         reg.register(Entity {
-            id: EntityId::new("alice-a"),
+            id: EntityId::new("entity:alice-a"),
             canonical_name: "Alice".into(),
             kind: EntityKind::Person,
             scope: scope_a.clone(),
@@ -468,7 +468,7 @@ mod tests {
         })
         .unwrap();
         reg.register(Entity {
-            id: EntityId::new("alice-b"),
+            id: EntityId::new("entity:alice-b"),
             canonical_name: "Alice".into(),
             kind: EntityKind::Person,
             scope: scope_b.clone(),
@@ -482,8 +482,8 @@ mod tests {
 
         assert_eq!(result_a.quality, MatchQuality::ExactCanonical);
         assert_eq!(result_b.quality, MatchQuality::ExactCanonical);
-        assert_eq!(result_a.entity.unwrap().id.as_str(), "alice-a");
-        assert_eq!(result_b.entity.unwrap().id.as_str(), "alice-b");
+        assert_eq!(result_a.entity.unwrap().id.as_str(), "entity:alice-a");
+        assert_eq!(result_b.entity.unwrap().id.as_str(), "entity:alice-b");
     }
 
     #[test]
@@ -503,7 +503,7 @@ mod tests {
 
         let mut reg = EntityRegistry::new(16, 100);
         reg.register(Entity {
-            id: EntityId::new("alice-a"),
+            id: EntityId::new("entity:alice-a"),
             canonical_name: "Alice".into(),
             kind: EntityKind::Person,
             scope: scope_a.clone(),
@@ -521,7 +521,7 @@ mod tests {
         assert_eq!(result.quality, MatchQuality::Unresolved);
         // But it appears as an alternative
         assert_eq!(result.alternatives.len(), 1);
-        assert_eq!(result.alternatives[0].id.as_str(), "alice-a");
+        assert_eq!(result.alternatives[0].id.as_str(), "entity:alice-a");
     }
 
     #[test]
@@ -536,7 +536,7 @@ mod tests {
 
         let mut reg = EntityRegistry::new(16, 100);
         reg.register(Entity {
-            id: EntityId::new("alice-ns"),
+            id: EntityId::new("entity:alice-ns"),
             canonical_name: "Alice".into(),
             kind: EntityKind::Person,
             scope: ns_scope.clone(),
@@ -569,7 +569,7 @@ mod tests {
             .unwrap();
         // Re-register with different alias
         let updated = Entity {
-            id: EntityId::new(format!("alice@{}", scope)),
+            id: EntityId::new(format!("alice-at-{}", scope.namespace)),
             canonical_name: "Alice".into(),
             kind: EntityKind::Person,
             scope: scope.clone(),
