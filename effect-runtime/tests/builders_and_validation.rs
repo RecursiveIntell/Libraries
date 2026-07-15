@@ -190,6 +190,6 @@ fn validation_accepts_authorized_commit_with_permit_and_grant() {
     .expect("authorized commit should validate");
     assert_eq!(
         commit.execution_permit_id.as_ref().unwrap().as_str(),
-        "permit_ok"
+        "execution-permit:permit_ok"
     );
 }
