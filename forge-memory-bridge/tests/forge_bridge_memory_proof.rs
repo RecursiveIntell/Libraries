@@ -47,12 +47,12 @@ fn build_full_envelope() -> ExportEnvelopeV1 {
     let trace = TraceCtx::generate();
 
     let prior_claim_id = ClaimId::new("claim-old-version");
-    let prior_rel_ver_id = RelationVersionId::new("rel-ver-old");
+    let prior_rel_ver_id = RelationVersionId::new("relation-version:rel-ver-old");
 
     let records = vec![
         // 1. Claim with supersedes_claim_id set
         ExportRecord::Claim(ExportClaim {
-            claim_id: Some(ClaimId::new("claim-new")),
+            claim_id: Some(ClaimId::new("claim:claim-new")),
             claim_version_id: None,
             subject_entity_id: EntityId::new("entity-rust-lang"),
             predicate: "has_paradigm".into(),
@@ -76,14 +76,14 @@ fn build_full_envelope() -> ExportEnvelopeV1 {
             valid_to: None,
             confidence: 0.85,
             projection_family: "forge_verification".into(),
-            source_claim_id: Some(ClaimId::new("claim-new")),
+            source_claim_id: Some(ClaimId::new("claim:claim-new")),
             source_episode_id: None,
             supersedes_relation_version_id: Some(prior_rel_ver_id.clone()),
             metadata: None,
         }),
         // 3. Evidence ref
         ExportRecord::EvidenceRef(ExportEvidenceRef {
-            claim_id: ClaimId::new("claim-new"),
+            claim_id: ClaimId::new("claim:claim-new"),
             claim_version_id: None,
             fetch_handle: "forge://evidence/run-99/artifact-3".into(),
             source_authority: "forge".into(),
@@ -149,7 +149,7 @@ fn build_canonical_evidence_bundle() -> EvidenceBundle {
         0.97,
     );
     bundle.id = EvidenceBundleId::new("evidence-proof-001");
-    bundle.claim_ids = vec![ClaimId::new("claim-new")];
+    bundle.claim_ids = vec![ClaimId::new("claim:claim-new")];
     bundle.comparability_snapshot_version = Some("cmp-proof-001".into());
     bundle.verification_summary = Some(VerificationSummary {
         lifecycle_state: VerificationLifecycleState::Verified,
@@ -203,11 +203,11 @@ fn build_full_envelope_v3() -> ExportEnvelopeV3 {
     let envelope_v2 = build_full_envelope_v2();
     let mut source_records = envelope_v2.records.clone();
     if let ExportRecord::Claim(claim) = &mut source_records[0] {
-        claim.claim_id = Some(ClaimId::new("claim-new"));
-        claim.claim_version_id = Some(ClaimVersionId::new("claim-new-v1"));
+        claim.claim_id = Some(ClaimId::new("claim:claim-new"));
+        claim.claim_version_id = Some(ClaimVersionId::new("claim-version:claim-new-v1"));
     }
     if let ExportRecord::Relation(relation) = &mut source_records[1] {
-        relation.relation_version_id = Some(RelationVersionId::new("relation-new-v1"));
+        relation.relation_version_id = Some(RelationVersionId::new("relation-version:relation-new-v1"));
     }
     let records = source_records
         .into_iter()
@@ -257,7 +257,7 @@ fn build_full_envelope_v3() -> ExportEnvelopeV3 {
     let support_sets = vec![SupportSetV1 {
         schema_version: SUPPORT_SET_V1_SCHEMA.into(),
         support_set_id: SupportSetId::new("support-set-7"),
-        claim_id: ClaimId::new("claim-new"),
+        claim_id: ClaimId::new("claim:claim-new"),
         semantics_profile_id: SemanticsProfileId::new("semantics-profile-v13"),
         support_tokens: vec![
             SupportTokenV1 {
@@ -288,16 +288,16 @@ fn build_full_envelope_v3() -> ExportEnvelopeV3 {
     let contradiction_witnesses = vec![ContradictionWitnessV1 {
         schema_version: CONTRADICTION_WITNESS_V1_SCHEMA.into(),
         contradiction_witness_id: ContradictionWitnessId::new("contradiction-witness-9"),
-        claim_id: ClaimId::new("claim-new"),
+        claim_id: ClaimId::new("claim:claim-new"),
         conflicting_token_ids: vec!["tok-a".into(), "tok-b".into()],
         summary: Some("one source supports while another refutes".into()),
     }];
     let retraction_records = vec![RetractionRecordV1 {
         schema_version: RETRACTION_RECORD_V1_SCHEMA.into(),
         retraction_record_id: RetractionRecordId::new("retraction-record-1"),
-        claim_id: ClaimId::new("claim-new"),
-        retracted_claim_version_id: ClaimVersionId::new("claim-version-5"),
-        superseded_by_claim_version_id: Some(ClaimVersionId::new("claim-version-6")),
+        claim_id: ClaimId::new("claim:claim-new"),
+        retracted_claim_version_id: ClaimVersionId::new("claim-version:claim-version-5"),
+        superseded_by_claim_version_id: Some(ClaimVersionId::new("claim-version:claim-version-6")),
         effective_recorded_at: "2026-03-14T12:05:00Z".into(),
         reason: "refuter collapsed the estimated effect to approximately zero".into(),
         cascade_required: true,
@@ -306,8 +306,8 @@ fn build_full_envelope_v3() -> ExportEnvelopeV3 {
     let claim_states_v13 = vec![ClaimStateV13 {
         schema_version: CLAIM_STATE_V13_SCHEMA.into(),
         claim_state_id: ClaimStateId::new("claim-state-123"),
-        claim_id: ClaimId::new("claim-new"),
-        claim_version_id: Some(ClaimVersionId::new("claim-version-6")),
+        claim_id: ClaimId::new("claim:claim-new"),
+        claim_version_id: Some(ClaimVersionId::new("claim-version:claim-version-6")),
         semantics_profile_id: SemanticsProfileId::new("semantics-profile-v13"),
         view: SemanticViewV1::Canonical,
         bilattice_truth: BilatticeTruthV1::Both,
@@ -513,8 +513,8 @@ fn canonical_v3_rejects_blank_claim_and_version_ids() {
     let ExportRecord::Claim(claim) = &mut envelope.records[0].record else {
         panic!("fixture must begin with a claim");
     };
-    claim.claim_id = Some(ClaimId::new("   "));
-    claim.claim_version_id = Some(ClaimVersionId::new("\t"));
+    claim.claim_id = None;
+    claim.claim_version_id = Some(ClaimVersionId::new("valid-version"));
     recompute_v3_digest(&mut envelope);
     let error = transform_envelope_v3(&envelope)
         .expect_err("canonical V3 must reject blank stable identity");
@@ -524,6 +524,7 @@ fn canonical_v3_rejects_blank_claim_and_version_ids() {
         unreachable!();
     };
     claim.claim_id = Some(ClaimId::new("claim-nonblank"));
+    claim.claim_version_id = None;
     recompute_v3_digest(&mut envelope);
     let error = transform_envelope_v3(&envelope)
         .expect_err("canonical V3 must reject blank version identity");
@@ -536,7 +537,7 @@ fn canonical_v3_rejects_blank_relation_version_id() {
     let ExportRecord::Relation(relation) = &mut envelope.records[1].record else {
         panic!("fixture second record must be a relation");
     };
-    relation.relation_version_id = Some(RelationVersionId::new(" \n "));
+    relation.relation_version_id = None;
     recompute_v3_digest(&mut envelope);
     let error = transform_envelope_v3(&envelope)
         .expect_err("canonical V3 must reject blank relation version identity");
@@ -579,7 +580,7 @@ fn compat_v2_transform_preserves_records_and_v2_provenance() {
             .episode_bundle
             .as_ref()
             .map(|bundle| bundle.episode_id.as_str()),
-        Some("ep-verification-42")
+        Some("episode:ep-verification-42")
     );
     assert!(batch.execution_context.is_some());
     assert!(matches!(
@@ -607,18 +608,18 @@ fn canonical_v3_transform_preserves_rich_semantics_without_invention() {
         .expect("first record should retain exported semantics");
     assert_eq!(
         semantics.claim_family_id.as_ref().map(|id| id.as_str()),
-        Some("claim-family-1")
+        Some("claim-family:claim-family-1")
     );
     assert_eq!(
         semantics.relation_group_id.as_ref().map(|id| id.as_str()),
-        Some("relation-group-1")
+        Some("relation-group:relation-group-1")
     );
     assert_eq!(
         semantics
             .contradiction_candidate_group_id
             .as_ref()
             .map(|id| id.as_str()),
-        Some("contradiction-group-1")
+        Some("contradiction-group:contradiction-group-1")
     );
 
     assert!(
@@ -638,7 +639,7 @@ fn canonical_v3_transform_preserves_rich_semantics_without_invention() {
             .episode_bundle
             .as_ref()
             .map(|bundle| bundle.episode_id.as_str()),
-        Some("ep-verification-42")
+        Some("episode:ep-verification-42")
     );
     assert!(batch.execution_context.is_some());
 }
@@ -728,10 +729,12 @@ fn canonical_v3_transform_rejects_missing_episode_id_for_bundle_lane() {
 
 #[test]
 fn canonical_v3_rejects_blank_episode_id() {
+    // Episode IDs now validated at construction — blank input panics.
+    // Test that None is rejected by the transform instead.
     let mut envelope = build_full_envelope_v3();
     for record in &mut envelope.records {
         if let ExportRecord::Episode(episode) = &mut record.record {
-            episode.episode_id = Some(EpisodeId::new(" \t "));
+            episode.episode_id = None;
         }
     }
     recompute_v3_digest(&mut envelope);
@@ -871,7 +874,7 @@ fn supersedes_relation_version_id_is_preserved() {
         ImportProjectionRecord::RelationVersion(rv) => {
             assert_eq!(
                 rv.supersedes_relation_version_id,
-                Some(RelationVersionId::new("rel-ver-old")),
+                Some(RelationVersionId::new("relation-version:rel-ver-old")),
                 "relation supersession lineage must be preserved verbatim"
             );
         }
@@ -997,7 +1000,7 @@ fn evidence_ref_preserves_claim_id_and_fetch_handle() {
         ImportProjectionRecord::EvidenceRef(er) => {
             assert_eq!(
                 er.claim_id,
-                ClaimId::new("claim-new"),
+                ClaimId::new("claim:claim-new"),
                 "evidence ref must preserve claim_id"
             );
             assert_eq!(
@@ -1071,7 +1074,7 @@ fn batch_serializes_and_deserializes_to_json() {
         ImportProjectionRecord::RelationVersion(rv) => {
             assert_eq!(
                 rv.supersedes_relation_version_id,
-                Some(RelationVersionId::new("rel-ver-old"))
+                Some(RelationVersionId::new("relation-version:rel-ver-old"))
             );
         }
         _ => panic!("expected RelationVersion after round-trip"),

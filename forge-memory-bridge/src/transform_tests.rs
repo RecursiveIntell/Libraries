@@ -75,7 +75,7 @@ fn transform_claim_envelope() {
 
     match &batch.records[0] {
         ImportProjectionRecord::ClaimVersion(cv) => {
-            assert_eq!(cv.claim_id.as_str(), "claim-1");
+            assert_eq!(cv.claim_id.as_str(), "claim:claim-1");
             assert!(!cv.claim_version_id.is_empty());
             assert_eq!(cv.claim_state, ClaimState::Active);
             assert_eq!(cv.predicate, "has_type");
@@ -628,11 +628,11 @@ fn brg003_entity_alias_bridge_defaults() {
             );
             assert_eq!(
                 alias.superseded_by_entity_id.as_ref().map(|id| id.as_str()),
-                Some("ent-old")
+                Some("entity:ent-old")
             );
             assert_eq!(
                 alias.split_from_entity_id.as_ref().map(|id| id.as_str()),
-                Some("ent-split")
+                Some("entity:ent-split")
             );
         }
         _ => panic!("expected EntityAlias"),

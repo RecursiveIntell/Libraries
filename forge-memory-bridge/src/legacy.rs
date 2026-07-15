@@ -118,7 +118,7 @@ pub fn upgrade_legacy_envelope_at(
                 } => ExportRecord::Claim(ExportClaim {
                     claim_id: None,
                     claim_version_id: None,
-                    subject_entity_id: stack_ids::EntityId::new("_legacy_unresolved"),
+                    subject_entity_id: stack_ids::EntityId::new("legacy-unresolved"),
                     predicate: "legacy_fact".into(),
                     object_anchor: serde_json::json!(content),
                     valid_from: None,
