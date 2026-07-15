@@ -440,7 +440,7 @@ fn relation_records_carry_supersedes_relation_version_id_when_hinted() {
 
     let verification_trial_relation = relations
         .iter()
-        .find(|relation| relation.object_anchor["trial_id"].as_str() == Some("trial-lineage"))
+        .find(|relation| relation.object_anchor["trial_id"].as_str() == Some("trial:trial-lineage"))
         .expect("verification trial relation");
     assert_eq!(
         verification_trial_relation.supersedes_relation_version_id,
@@ -761,7 +761,7 @@ async fn to_export_envelope_v3_survives_bridge_transform_and_memory_import() {
                     semantics
                         .derivation_seed_ids
                         .iter()
-                        .find(|seed| seed.as_str() == "supersedes_claim_version:c-old-v3")
+                        .find(|seed| seed.as_str() == "supersedes_claim_version:claim-version:c-old-v3")
                 })
                 .is_some();
         }
@@ -831,7 +831,7 @@ fn episode_export_builds_canonical_forge_envelope() {
     let export = EpisodeExport::from_bundle(&bundle, "canon-ns");
     let envelope = export.to_export_envelope_v1(&bundle).unwrap();
 
-    assert_eq!(envelope.envelope_id.as_str(), export.export_key);
+    assert_eq!(envelope.envelope_id.as_str(), format!("envelope:{}", export.export_key));
     assert_eq!(envelope.schema_version, EXPORT_ENVELOPE_V1_SCHEMA);
     assert_eq!(envelope.source_authority, "forge");
     assert_eq!(envelope.scope_key.namespace, "canon-ns");

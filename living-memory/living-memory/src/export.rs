@@ -247,7 +247,7 @@ impl EpisodeExport {
         let scope_key = ScopeKey::from_legacy_namespace(&self.namespace);
         let claim_id = forge_bundle_claim_id(&self.export_key);
         let claim_version_id = forge_bundle_claim_version_id(&self.export_key, bundle, &claim_id);
-        let episode_id = EpisodeId::new(format!("forge-bundle-episode:{}", self.export_key));
+        let episode_id = EpisodeId::new(&self.export_key);
         let trace_ctx = bundle
             .trace_id
             .as_ref()
@@ -371,7 +371,7 @@ impl EpisodeExport {
         canonical_bundle.claim_ids = vec![claim_id];
 
         Ok(CanonicalExportEnvelopeMaterial {
-            envelope_id: EnvelopeId::new(self.export_key.clone()),
+            envelope_id: EnvelopeId::new(self.export_key.as_str()),
             source_authority: ExportAuthority::Forge.as_str().into(),
             scope_key,
             trace_ctx,
@@ -400,13 +400,13 @@ fn relation_group_id_for_record(
 ) -> RelationGroupId {
     if let Some(claim_id) = relation.source_claim_id.as_ref() {
         RelationGroupId::new(format!(
-            "rel-bundle:{}:claim:{}:predicate:{}",
-            bundle.bundle_id, claim_id, relation.predicate
+            "rel-bundle-{}-claim-{}-predicate-{}",
+            bundle.bundle_id, claim_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(claim_id.as_str()), relation.predicate
         ))
     } else {
         RelationGroupId::new(format!(
-            "rel-bundle:{}:subject:{}:predicate:{}",
-            bundle.bundle_id, relation.subject_entity_id, relation.predicate
+            "rel-bundle-{}-subject-{}-predicate-{}",
+            bundle.bundle_id, relation.subject_entity_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(relation.subject_entity_id.as_str()), relation.predicate
         ))
     }
 }
@@ -445,10 +445,9 @@ fn record_semantics_v3(
             }
             let mut semantics = ExportRecordSemanticsV3 {
                 claim_family_id: Some(ClaimFamilyId::new(bundle.candidate_id.clone())),
-                assertion_group_id: Some(AssertionGroupId::new(format!(
-                    "claim:{}",
-                    claim.subject_entity_id
-                ))),
+                assertion_group_id: Some(AssertionGroupId::new(
+                    claim.subject_entity_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(claim.subject_entity_id.as_str())
+                )),
                 relation_group_id: None,
                 joint_evidence_group_id: None,
                 // Claims are grouped through claim/assertion identities. Constraint
@@ -563,11 +562,11 @@ fn bundle_claim_metadata(
 }
 
 fn canonical_subject_entity_id(bundle: &ExperimentEvidenceBundle) -> EntityId {
-    EntityId::new(format!("bundle:{}", bundle.candidate_id))
+    EntityId::new(bundle.candidate_id.clone())
 }
 
 fn forge_bundle_claim_id(export_key: &str) -> ClaimId {
-    ClaimId::new(format!("forge-bundle-claim:{export_key}"))
+    ClaimId::new(format!("{export_key}"))
 }
 
 fn forge_bundle_claim_version_id(
@@ -586,10 +585,7 @@ fn forge_bundle_claim_version_id(
         .update_str(&bundle.version_id)
         .separator()
         .update_str(&bundle.created_at);
-    ClaimVersionId::new(format!(
-        "forge-bundle-claim-version:{}",
-        builder.finalize().hex()
-    ))
+    ClaimVersionId::new(builder.finalize().hex())
 }
 
 fn deterministic_relation_version_id(
@@ -617,10 +613,7 @@ fn deterministic_relation_version_id(
     builder.update_str(&scope_json).separator();
     let object_json = serde_json::to_string(object_anchor).unwrap_or_else(|_| "null".into());
     builder.update_str(&object_json);
-    RelationVersionId::new(format!(
-        "forge-bundle-relation-version:{}",
-        builder.finalize().hex()
-    ))
+    RelationVersionId::new(builder.finalize().hex())
 }
 
 fn bundle_valid_from(bundle: &ExperimentEvidenceBundle) -> Option<String> {
