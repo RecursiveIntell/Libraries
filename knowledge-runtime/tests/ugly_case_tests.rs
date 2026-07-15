@@ -267,7 +267,7 @@ fn competing_canonical_ids_remain_explicit_conflict() {
     // The first entity is still present and resolvable.
     let result = reg.resolve("Alice", &scope);
     assert_eq!(result.quality, MatchQuality::ExactCanonical);
-    assert_eq!(result.entity.unwrap().id.as_str(), "id-1");
+    assert_eq!(result.entity.unwrap().id.as_str(), "entity:id-1");
     assert!(reg.get(&EntityId::new("id-1")).is_some());
 }
 

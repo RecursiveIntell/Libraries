@@ -63,7 +63,7 @@ fn tool_receipt_adapter_preserves_lineage() {
     assert_eq!(control.source_receipt_id.as_deref(), Some("tool-receipt-1"));
     assert_eq!(
         control.parent_receipt_id.as_ref().map(|id| id.as_str()),
-        Some("parent-1")
+        Some("control-receipt:parent-1")
     );
 }
 
@@ -109,7 +109,7 @@ fn forge_receipt_adapter_preserves_lineage() {
     assert_eq!(control.attempt_id, receipt.attempt_id);
     assert_eq!(
         control.family_receipt_id.as_ref().map(|id| id.as_str()),
-        Some("family-1")
+        Some("control-receipt:family-1")
     );
     assert_eq!(
         control.source_receipt_id.as_deref(),

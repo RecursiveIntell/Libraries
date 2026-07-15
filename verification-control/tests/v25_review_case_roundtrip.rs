@@ -43,7 +43,7 @@ fn v25_review_case_artifacts_roundtrip_from_examples() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "applicability-context-v25"
+        "applicability-context:applicability-context-v25"
     );
     assert_eq!(
         effect
@@ -52,7 +52,7 @@ fn v25_review_case_artifacts_roundtrip_from_examples() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "applicability-context-v25"
+        "applicability-context:applicability-context-v25"
     );
     assert_eq!(
         block
@@ -61,7 +61,7 @@ fn v25_review_case_artifacts_roundtrip_from_examples() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "applicability-context-v25"
+        "applicability-context:applicability-context-v25"
     );
     assert_eq!(
         delegation
@@ -70,7 +70,7 @@ fn v25_review_case_artifacts_roundtrip_from_examples() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "applicability-context-v25"
+        "applicability-context:applicability-context-v25"
     );
     assert_eq!(
         release
@@ -79,7 +79,7 @@ fn v25_review_case_artifacts_roundtrip_from_examples() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "applicability-context-v25"
+        "applicability-context:applicability-context-v25"
     );
     assert_eq!(
         continuity
@@ -88,7 +88,7 @@ fn v25_review_case_artifacts_roundtrip_from_examples() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "applicability-context-v25"
+        "applicability-context:applicability-context-v25"
     );
 
     let roundtrip =

@@ -19,11 +19,11 @@ fn review_case_citation_fields_are_present_in_fixture_shapes() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "applicability-context-v25"
+        "applicability-context:applicability-context-v25"
     );
     assert_eq!(
         effect.citation.profile_set_id.as_ref().unwrap().to_string(),
-        "profile-set-v25"
+        "profile-set:profile-set-v25"
     );
     assert_eq!(
         effect
@@ -32,7 +32,7 @@ fn review_case_citation_fields_are_present_in_fixture_shapes() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "composition-receipt-v25"
+        "composition-receipt:composition-receipt-v25"
     );
     assert_eq!(
         effect
@@ -41,7 +41,7 @@ fn review_case_citation_fields_are_present_in_fixture_shapes() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "compiled-obligation-set-v25"
+        "compiled-obligation-set:compiled-obligation-set-v25"
     );
     assert_eq!(
         effect.obligation_refs.required_obligation_refs,
@@ -73,7 +73,7 @@ fn review_case_citation_fields_are_present_in_fixture_shapes() {
 
     assert_eq!(
         block.citation.profile_set_id.as_ref().unwrap().to_string(),
-        "profile-set-v25"
+        "profile-set:profile-set-v25"
     );
     assert_eq!(
         block
@@ -82,7 +82,7 @@ fn review_case_citation_fields_are_present_in_fixture_shapes() {
             .as_ref()
             .unwrap()
             .to_string(),
-        "composition-receipt-v25"
+        "composition-receipt:composition-receipt-v25"
     );
 }
 
