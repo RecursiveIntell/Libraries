@@ -1,0 +1,27 @@
+{
+  "schema_version": "libraries.claims-manifest.v1",
+  "generated_at": "2026-07-15",
+  "claims": [
+    {
+      "id": "turbo-quant-recall",
+      "claim": "50x compression with 100% recall on fixture corpus",
+      "classification": "projected",
+      "evidence_receipt": null,
+      "notes": "Projected from architecture; no reproducible benchmark receipt bound to source"
+    },
+    {
+      "id": "fib-quant-recall",
+      "claim": "Lossy compression with bounded error",
+      "classification": "measured",
+      "evidence_receipt": "fib-quant/benches/",
+      "notes": "Measured on synthetic fixtures; no production-scale benchmark"
+    },
+    {
+      "id": "poly-kv-pool",
+      "claim": "Shared compressed KV-cache pool",
+      "classification": "projected",
+      "evidence_receipt": null,
+      "notes": "Architecture-level claim; no production deployment evidence"
+    }
+  ]
+}
