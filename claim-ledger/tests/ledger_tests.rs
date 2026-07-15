@@ -144,7 +144,7 @@ fn ledger_jsonl_parsing() {
     let jsonl = r#"{"sequence":1,"previous_entry_digest":null,"event":{"type":"claim_added","claim_id":"clm_1","source_id":"s1","span_id":"sp1","normalized_claim":"test"},"entry_digest":"abc123"}
 {"sequence":2,"previous_entry_digest":"abc123","event":{"type":"claim_added","claim_id":"clm_2","source_id":"s1","span_id":"sp2","normalized_claim":"test2"},"entry_digest":"def456"}"#;
 
-    let entries = claim_ledger::parse_ledger_entries(jsonl);
+    let entries = claim_ledger::parse_ledger_entries(jsonl).unwrap();
     assert_eq!(entries.len(), 2);
     assert_eq!(entries[0].sequence, 1);
     assert_eq!(entries[1].sequence, 2);

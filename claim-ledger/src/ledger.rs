@@ -313,17 +313,44 @@ pub fn verify_ledger(entries: &[LedgerEntry]) -> LedgerVerification {
 }
 
 /// Parse ledger entries from JSONL text.
-pub fn parse_ledger_entries(jsonl: &str) -> Vec<LedgerEntry> {
-    jsonl
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .filter_map(|line| serde_json::from_str(line).ok())
-        .collect()
+pub fn parse_ledger_entries(jsonl: &str) -> Result<Vec<LedgerEntry>, LedgerParseError> {
+    let mut offset = 0;
+    let mut out = Vec::new();
+    for (idx, line) in jsonl.lines().enumerate() {
+        if !line.trim().is_empty() {
+            out.push(
+                serde_json::from_str(line).map_err(|source| LedgerParseError {
+                    line: idx + 1,
+                    offset,
+                    source,
+                })?,
+            );
+        }
+        offset += line.len() + 1;
+    }
+    Ok(out)
 }
 
+#[derive(Debug)]
+pub struct LedgerParseError {
+    pub line: usize,
+    pub offset: usize,
+    pub source: serde_json::Error,
+}
+impl std::fmt::Display for LedgerParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "invalid ledger JSON at line {}, byte {}: {}",
+            self.line, self.offset, self.source
+        )
+    }
+}
+impl std::error::Error for LedgerParseError {}
+
 /// Serialize a ledger entry to a JSON line.
-pub fn serialize_entry(entry: &LedgerEntry) -> String {
-    serde_json::to_string(entry).unwrap_or_default()
+pub fn serialize_entry(entry: &LedgerEntry) -> Result<String, serde_json::Error> {
+    serde_json::to_string(entry)
 }
 
 #[cfg(test)]
@@ -390,7 +417,7 @@ mod tests {
         let jsonl = r#"{"sequence":1,"previous_entry_digest":null,"event":{"type":"claim_added","claim_id":"clm_1","source_id":"s1","span_id":"sp1","normalized_claim":"test"},"entry_digest":"abc"}
 {"sequence":2,"previous_entry_digest":"abc","event":{"type":"claim_added","claim_id":"clm_2","source_id":"s1","span_id":"sp2","normalized_claim":"test2"},"entry_digest":"def"}"#;
 
-        let entries = parse_ledger_entries(jsonl);
+        let entries = parse_ledger_entries(jsonl).unwrap();
         assert_eq!(entries.len(), 2);
         assert_eq!(entries[0].sequence, 1);
         assert_eq!(entries[1].sequence, 2);
@@ -401,7 +428,7 @@ mod tests {
         let entry =
             LedgerEntryBuilder::new(1, None).add_claim("clm_test", "src1", "sp1", "hello world");
 
-        let json = serialize_entry(&entry);
+        let json = serialize_entry(&entry).unwrap();
         let parsed: LedgerEntry = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.sequence, entry.sequence);
         assert_eq!(parsed.entry_digest, entry.entry_digest);

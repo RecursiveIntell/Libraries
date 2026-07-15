@@ -52,10 +52,14 @@ pub fn normalize_text(text: &str) -> String {
 /// assert!(id.starts_with("clm_"));
 /// ```
 pub fn stable_id(prefix: &str, parts: &[&str], length: usize) -> String {
-    let input = parts.join("\n");
-    let hash = Sha256::digest(input.as_bytes());
+    let mut input = Vec::new();
+    for part in parts {
+        input.extend_from_slice(&(part.len() as u64).to_be_bytes());
+        input.extend_from_slice(part.as_bytes());
+    }
+    let hash = Sha256::digest(&input);
     let hex = hex::encode(hash);
-    let truncated = &hex[..length.min(hex.len())];
+    let truncated = hex.chars().take(length).collect::<String>();
     format!("{}_{}", prefix, truncated)
 }
 
