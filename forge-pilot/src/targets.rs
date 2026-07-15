@@ -117,16 +117,17 @@ impl TargetKind {
             Self::ActiveSyndrome { signature } => format!("syndrome-{signature}"),
             Self::ThinExport { marker } => format!("thin-export-{marker}"),
             Self::UnverifiedClaimVersion { claim_version_id } => {
-                format!("unverified:{}", claim_version_id.as_str())
+                format!("unverified-{}", claim_version_id.as_str().split_once(':').map(|(_, p)| p).unwrap_or(claim_version_id.as_str()))
             }
             Self::RefutationGap {
                 target_node_id,
                 claim_version_id,
             } => format!(
-                "refutation-gap-{target_node_id}-{}",
+                "refutation-gap-{}-{}",
+                target_node_id.as_str().split_once(':').map(|(_, p)| p).unwrap_or(target_node_id.as_str()),
                 claim_version_id
                     .as_ref()
-                    .map(|id| id.as_str())
+                    .map(|id| id.as_str().split_once(':').map(|(_, p)| p).unwrap_or(id.as_str()))
                     .unwrap_or("none")
             ),
             Self::SupersessionVerification {
@@ -134,8 +135,8 @@ impl TargetKind {
                 supersedes_claim_version_id,
             } => format!(
                 "supersession-{}-{}",
-                claim_version_id.as_str(),
-                supersedes_claim_version_id.as_str()
+                claim_version_id.as_str().split_once(':').map(|(_, p)| p).unwrap_or(claim_version_id.as_str()),
+                supersedes_claim_version_id.as_str().split_once(':').map(|(_, p)| p).unwrap_or(supersedes_claim_version_id.as_str())
             ),
             Self::ComparabilityDrift { detail } => format!("comparability-{detail}"),
             Self::CalibrationCaveat { marker } => format!("calibration-{marker}"),
