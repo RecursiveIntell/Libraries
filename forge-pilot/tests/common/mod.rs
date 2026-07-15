@@ -60,7 +60,7 @@ pub fn sample_bundle(bundle_id: &str) -> ExperimentEvidenceBundle {
         candidate_id: format!("candidate:{bundle_id}"),
         eval_id: format!("eval:{bundle_id}"),
         version_id: "v0001".into(),
-        supersedes_claim_version_id: Some(ClaimVersionId::new(format!("previous:{bundle_id}"))),
+        supersedes_claim_version_id: Some(ClaimVersionId::new(format!("previous-{bundle_id}"))),
         relation_lineage_hints: Default::default(),
         scores: ScoreVector {
             correctness: 0.9,
