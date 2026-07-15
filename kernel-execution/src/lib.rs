@@ -849,7 +849,7 @@ fn emit_convergence_report(
     let digest = ContentDigest::compute(&convergence_payload);
 
     ConvergenceReport {
-        convergence_report_id: ConvergenceReportId::new(format!("convergence:{}", digest.hex())),
+        convergence_report_id: ConvergenceReportId::new(format!("convergence-report:{}", digest.hex())),
         governance: ConvergenceGovernance {
             damping_factor_micros: FULL_CONFIDENCE_MICROS,
             residual_tolerance_micros: DEFAULT_FIXED_POINT_TOLERANCE_MICROS,
@@ -951,7 +951,7 @@ mod tests {
             ],
             constraints: vec![
                 ConstraintUnit {
-                    constraint_id: ConstraintId::new("constraint:assertion_group:group-1"),
+                    constraint_id: ConstraintId::new("assertion-group:group-1"),
                     kind: "hyperedge".into(),
                     variable_ids: vec!["node-a".into(), "node-b".into()],
                     operator_id: OperatorId::new(CONSTRAINT_COMPILER_OPERATOR_ID),
@@ -978,8 +978,8 @@ mod tests {
                     "nuisance_edge:node-a:nuisance:comparability:v1".into(),
                 ],
                 constraint_ids: vec![
-                    ConstraintId::new("constraint:assertion_group:group-1"),
-                    ConstraintId::new("constraint:nuisance_edge:node-a:nuisance:comparability:v1"),
+                    ConstraintId::new("assertion-group:group-1"),
+                    ConstraintId::new("nuisance-edge:node-a-nuisance-comparability-v1"),
                 ],
                 bounded_default_unit_of_work: true,
             }],
@@ -993,7 +993,7 @@ mod tests {
             }],
             degradations: Vec::<ConstraintDegradation>::new(),
             oracle_candidates: vec![OracleSliceCandidate {
-                oracle_slice_id: OracleSliceId::new("oracle:fixture"),
+                oracle_slice_id: OracleSliceId::new("fixture"),
                 node_ids: vec!["node-a".into(), "node-b".into()],
             }],
         }
@@ -1028,13 +1028,13 @@ mod tests {
             }],
             constraints: vec![
                 ConstraintUnit {
-                    constraint_id: ConstraintId::new("constraint:edge:imbalance"),
+                    constraint_id: ConstraintId::new("edge:imbalance"),
                     kind: "hyperedge".into(),
                     variable_ids: vec!["node-a".into(), "node-b".into()],
                     operator_id: OperatorId::new(CONSTRAINT_COMPILER_OPERATOR_ID),
                 },
                 ConstraintUnit {
-                    constraint_id: ConstraintId::new("constraint:node-a-bias"),
+                    constraint_id: ConstraintId::new("node-a-bias"),
                     kind: "node_bias".into(),
                     variable_ids: vec!["node-a".into()],
                     operator_id: OperatorId::new(CONSTRAINT_COMPILER_OPERATOR_ID),
@@ -1046,8 +1046,8 @@ mod tests {
                 node_ids: vec!["node-a".into(), "node-b".into()],
                 hyperedge_ids: vec!["edge:imbalance".into()],
                 constraint_ids: vec![
-                    ConstraintId::new("constraint:edge:imbalance"),
-                    ConstraintId::new("constraint:node-a-bias"),
+                    ConstraintId::new("edge:imbalance"),
+                    ConstraintId::new("node-a-bias"),
                 ],
                 bounded_default_unit_of_work: true,
             }],

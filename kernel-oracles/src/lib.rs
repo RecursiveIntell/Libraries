@@ -123,7 +123,7 @@ pub fn evaluate_conservative(compiled: &CompileOutput) -> OracleAssessment {
         .oracle_candidates
         .first()
         .map(|slice| slice.oracle_slice_id.clone())
-        .unwrap_or_else(|| OracleSliceId::new("oracle:unsupported"));
+        .unwrap_or_else(|| OracleSliceId::new("unsupported"));
     OracleAssessment {
         slice_id,
         mode: OracleMode::ConservativeFallback,
@@ -176,7 +176,7 @@ pub fn evaluate_delta_parity(
                 .oracle_candidates
                 .first()
                 .map(|slice| slice.oracle_slice_id.clone())
-                .unwrap_or_else(|| OracleSliceId::new("oracle:unsupported")),
+                .unwrap_or_else(|| OracleSliceId::new("unsupported")),
             region_ids: recomputed_region_ids,
             parity_match: delta_focus == bounded_focus,
         },
