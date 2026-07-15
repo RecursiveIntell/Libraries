@@ -386,9 +386,9 @@ mod tests {
         let group_hyperedge = compiled
             .hyperedges
             .iter()
-            .find(|edge| edge.edge_id == "assertion_group:group-1")
+            .find(|edge| edge.edge_id == "assertion_group:assertion-group:group-1")
             .expect("thin export should keep only explicitly provided grouping");
-        assert_eq!(group_hyperedge.member_node_ids, vec!["claim-b".to_string()]);
+        assert_eq!(group_hyperedge.member_node_ids, vec!["claim-version:claim-b".to_string()]);
     }
 
     #[test]
@@ -423,7 +423,7 @@ mod tests {
         let hyperedge = compiled
             .hyperedges
             .iter()
-            .find(|edge| edge.edge_id == "assertion_group:group-1")
+            .find(|edge| edge.edge_id == "assertion_group:assertion-group:group-1")
             .expect("group hyperedge expected");
         assert_eq!(hyperedge.member_node_ids.len(), 2);
     }
@@ -541,9 +541,9 @@ mod tests {
     #[test]
     fn cf_o2_delta_parity_matches_bounded_recompute() {
         let compiled = compile_fixture("cf-o2", &["claim-a", "claim-b"], false, false);
-        let delta = execute_delta_propagation(&compiled, &["claim-a".into()], 3);
+        let delta = execute_delta_propagation(&compiled, &["claim-version:claim-a".into()], 3);
         let full = execute_message_passing_baseline(&compiled, 3);
-        let affected = affected_nodes_for_delta(&compiled.invalidation_cones, &["claim-a".into()]);
+        let affected = affected_nodes_for_delta(&compiled.invalidation_cones, &["claim-version:claim-a".into()]);
 
         for node_id in affected {
             let delta_belief = delta
@@ -619,7 +619,7 @@ mod tests {
     #[test]
     fn cf_o4_refuter_integration_emits_structured_result() {
         let compiled = compile_fixture("cf-o4", &["claim-a", "claim-b"], false, false);
-        let result = evaluate_causal_refuter(&compiled, "claim-a", 1);
+        let result = evaluate_causal_refuter(&compiled, "claim-version:claim-a", 1);
         assert!(matches!(
             result.outcome,
             OracleRefutationOutcome::FlipWitness { .. }
@@ -664,7 +664,7 @@ mod tests {
     #[test]
     fn cf_b1_minimal_perturbation_returns_structured_witness() {
         let compiled = compile_fixture("cf-b1", &["claim-a", "claim-b"], false, false);
-        let result = minimal_perturbation_witness(&compiled, "claim-a", 1);
+        let result = minimal_perturbation_witness(&compiled, "claim-version:claim-a", 1);
         assert!(matches!(
             result.outcome,
             OracleRefutationOutcome::FlipWitness { .. }
