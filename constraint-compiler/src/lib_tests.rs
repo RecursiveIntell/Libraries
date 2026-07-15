@@ -186,7 +186,10 @@ fn hyperedge_compilation_groups_records_by_assertion_group() {
         .expect("assertion hyperedge expected");
     assert_eq!(
         group.member_node_ids,
-        vec!["claim-version:claim-version-1".to_string(), "claim-version:claim-version-2".to_string()]
+        vec![
+            "claim-version:claim-version-1".to_string(),
+            "claim-version:claim-version-2".to_string()
+        ]
     );
 }
 
@@ -453,7 +456,9 @@ fn mixed_inferential_batch() -> ProjectionImportBatchV3 {
         },
         ExportRecordV3 {
             record: ExportRecord::Relation(ExportRelation {
-                relation_version_id: Some(RelationVersionId::new("relation-version:relation-version-mixed-2")),
+                relation_version_id: Some(RelationVersionId::new(
+                    "relation-version:relation-version-mixed-2",
+                )),
                 subject_entity_id: EntityId::new("entity-mixed-a"),
                 predicate: "causes".into(),
                 object_anchor: serde_json::json!("result"),

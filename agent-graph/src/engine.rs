@@ -9,6 +9,7 @@ use crate::error::{AgentGraphError, Result};
 use crate::event_sink::{EventSink, GraphEvent, NodeOutcomeKind};
 use crate::graph::{AgentGraph, CheckpointPolicy, END, START};
 use crate::interrupt::{ExecutionResult, InterruptCheckpoint};
+use crate::payload::PayloadContext;
 use crate::receipt::{
     digest_state, digest_value, ExecutionOutcome, GraphExecutionReceiptV1, ReplayError,
     ReplayVerification, RunBundleV1, StepExecutionReceiptV1, StepStateDeltaV1,
@@ -23,6 +24,45 @@ use std::future::Future;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
+
+#[derive(Clone)]
+struct ScheduledNode {
+    name: String,
+    state: Option<HashMap<String, Value>>,
+}
+
+impl ScheduledNode {
+    fn plain(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            state: None,
+        }
+    }
+}
+
+fn payload_context(
+    event_sink: Arc<dyn EventSink>,
+    run_id: String,
+    node_id: String,
+    legacy_trace_id: String,
+    trace_ctx: stack_ids::TraceCtx,
+) -> PayloadContext {
+    let token_run_id = run_id.clone();
+    let token_node_id = node_id.clone();
+    PayloadContext {
+        on_token: Some(Arc::new(move |token| {
+            event_sink.emit(GraphEvent::Token {
+                run_id: token_run_id.clone(),
+                trace_id: legacy_trace_id.clone(),
+                trace_ctx: Some(trace_ctx.clone()),
+                node_id: token_node_id.clone(),
+                token: token.to_string(),
+            });
+        })),
+        run_id,
+        node_id,
+    }
+}
 
 /// Execution-related methods on AgentGraph.
 impl AgentGraph {
@@ -59,6 +99,7 @@ impl AgentGraph {
             failed_attempts: 0,
             executed_nodes: HashSet::new(),
             recording: None,
+            receipt_recording: None,
         };
 
         executor.execute(start_node).await
@@ -75,31 +116,38 @@ impl AgentGraph {
         result
     }
 
-    /// Execute the graph and emit a `GraphExecutionReceiptV1` describing the run.
-    ///
-    /// Returns the final state, the run summary, and a structured receipt
-    /// suitable for audit persistence and replay. The receipt's
-    /// `GraphExecutionReceiptV1.steps` vector is empty in this initial
-    /// implementation — per-step receipts require instrumenting
-    /// `execute_single_node`, which is a follow-up. The top-level
-    /// graph-level receipt closes the P1-3 gap (V30 hostile audit) and
-    /// gives downstream consumers a stable, serializable handle on the
-    /// execution.
+    /// Execute the graph and emit one receipt per completed node transition.
     pub async fn execute_with_receipt(
         &self,
         start_node: &str,
         state: AgentState,
         config: GraphConfig,
     ) -> (Result<AgentState>, GraphExecutionReceiptV1) {
+        self.register_reducers_on_state(&state).await;
         let started_at = chrono::Utc::now();
-
-        // GRAPH-001 fix: snapshot input state before it's consumed by execution
-        let input_snapshot = state.export().await;
         let recovery_state = state.clone();
-        let input_bytes = serde_json::to_vec(&input_snapshot).unwrap_or_default();
-        let input_digest = format!("blake3:{}", blake3::hash(&input_bytes).to_hex());
-
-        let (result, summary) = self.execute_with_summary(start_node, state, config).await;
+        let recording = Arc::new(Mutex::new(Vec::new()));
+        let event_sink = self.resolve_event_sink(None);
+        let run_id = self.create_run_id(&event_sink).await;
+        let trace_ctx = config.resolve_trace_ctx();
+        let executor = GraphExecutor {
+            graph: self,
+            state,
+            config,
+            iteration: 0,
+            event_sink,
+            run_id,
+            trace_ctx,
+            cancel_flag: Arc::new(AtomicBool::new(false)),
+            started_at,
+            total_attempts: 0,
+            failed_attempts: 0,
+            executed_nodes: HashSet::new(),
+            recording: None,
+            receipt_recording: Some(recording.clone()),
+        };
+        let (result, summary) = executor.execute(start_node).await;
+        let deltas = recording.lock().await.clone();
         let finished_at = summary.finished_at.unwrap_or_else(chrono::Utc::now);
 
         let outcome = match (&result, &summary.status) {
@@ -130,39 +178,30 @@ impl AgentGraph {
             },
         };
 
-        // GRAPH-001 fix: compute canonical digests of actual input/output state
-        // instead of placeholder "graph-root" and node-count string.
-        // Input digest was computed from the state snapshot before execution.
-        let output_digest = match &result {
-            Ok(final_state) => {
-                let output_snapshot = final_state.export().await;
-                let output_bytes = serde_json::to_vec(&output_snapshot).unwrap_or_default();
-                format!("blake3:{}", blake3::hash(&output_bytes).to_hex())
-            }
-            Err(e) => format!("error:{}", blake3::hash(e.to_string().as_bytes()).to_hex()),
-        };
-
-        let step = StepExecutionReceiptV1 {
-            step_index: 0,
-            agent_id: summary.graph_name.clone(),
-            started_at,
-            finished_at,
-            input_digest,
-            output_digest,
-            tool_calls: vec![],
-            error: match (&result, &outcome) {
-                (Err(error), ExecutionOutcome::Partial { .. }) => Some(error.to_string()),
-                (_, ExecutionOutcome::InternalError { message }) => Some(message.clone()),
-                _ => None,
-            },
-        };
+        let terminal_error = result.as_ref().err().map(ToString::to_string);
+        let last_index = deltas.len().checked_sub(1);
+        let steps = deltas
+            .iter()
+            .map(|delta| StepExecutionReceiptV1 {
+                step_index: delta.step_index,
+                agent_id: delta.node_name.clone(),
+                started_at,
+                finished_at,
+                input_digest: delta.input_digest.clone(),
+                output_digest: delta.output_digest.clone(),
+                tool_calls: Vec::new(),
+                error: (Some(delta.step_index) == last_index)
+                    .then(|| terminal_error.clone())
+                    .flatten(),
+            })
+            .collect();
 
         let receipt = GraphExecutionReceiptV1 {
             graph_id: self.compute_graph_hash(),
             execution_id: summary.run_id.clone(),
             started_at,
             finished_at,
-            steps: vec![step],
+            steps,
             memory_generations: Vec::new(),
             recovery_state: if matches!(&result, Err(AgentGraphError::CheckpointError(_))) {
                 Some(recovery_state.export().await)
@@ -203,6 +242,7 @@ impl AgentGraph {
             failed_attempts: 0,
             executed_nodes: HashSet::new(),
             recording: None,
+            receipt_recording: None,
         };
 
         let (result, _summary) = executor.execute(start_node).await;
@@ -262,6 +302,7 @@ impl AgentGraph {
                 failed_attempts: 0,
                 executed_nodes: HashSet::new(),
                 recording: None,
+                receipt_recording: None,
             };
 
             let (result, _summary) = executor.execute(&start).await;
@@ -307,6 +348,7 @@ impl AgentGraph {
                 failed_attempts: 0,
                 executed_nodes: HashSet::new(),
                 recording: None,
+                receipt_recording: None,
             };
 
             let (result, _summary) = executor.execute(&start).await;
@@ -316,7 +358,7 @@ impl AgentGraph {
         (handle, rx)
     }
 
-    /// Execute once while recording a complete offline replay bundle.
+    /// Execute once while recording an offline state-transition integrity bundle.
     pub async fn record_run_bundle(
         &self,
         start_node: &str,
@@ -344,14 +386,15 @@ impl AgentGraph {
             failed_attempts: 0,
             executed_nodes: HashSet::new(),
             recording: Some(recording.clone()),
+            receipt_recording: None,
         };
         let (result, summary) = executor.execute(start_node).await;
         let deltas = recording.lock().await.clone();
         let finished_at = summary.finished_at.unwrap_or_else(chrono::Utc::now);
-                let steps = deltas
-                    .iter()
-                    .map(|delta| StepExecutionReceiptV1 {
-                        step_index: delta.step_index,
+        let steps = deltas
+            .iter()
+            .map(|delta| StepExecutionReceiptV1 {
+                step_index: delta.step_index,
                 agent_id: delta.node_name.clone(),
                 started_at,
                 finished_at,
@@ -370,18 +413,21 @@ impl AgentGraph {
                 message: error.to_string(),
             },
         };
-                let terminal_receipt = GraphExecutionReceiptV1 {
-                    graph_id: self.compute_graph_hash(),
-                    execution_id: summary.run_id,
-                    started_at,
-                    finished_at,
+        let terminal_receipt = GraphExecutionReceiptV1 {
+            graph_id: self.compute_graph_hash(),
+            execution_id: summary.run_id,
+            started_at,
+            finished_at,
             steps,
             memory_generations: Vec::new(),
             recovery_state: None,
-                    outcome,
-                };
-                result?;
-                let environment = std::env::vars().collect();
+            outcome,
+        };
+        result?;
+        // Replay bundles never enumerate the process environment. Callers
+        // may add explicitly constructed, non-secret descriptors after
+        // recording when their artifact policy permits it.
+        let environment = Default::default();
         Ok(RunBundleV1 {
             graph_spec: self.graph_spec_v1(),
             input_state,
@@ -394,7 +440,7 @@ impl AgentGraph {
         })
     }
 
-    /// Verify a recorded run without invoking nodes, tools, memory, or network.
+    /// Verify bundle integrity without re-executing nodes or external effects.
     pub fn verify_replay(
         &self,
         bundle: &RunBundleV1,
@@ -512,6 +558,7 @@ struct GraphExecutor<'a> {
     failed_attempts: usize,
     executed_nodes: HashSet<String>,
     recording: Option<Arc<Mutex<Vec<StepStateDeltaV1>>>>,
+    receipt_recording: Option<Arc<Mutex<Vec<StepStateDeltaV1>>>>,
 }
 
 impl<'a> GraphExecutor<'a> {
@@ -606,7 +653,7 @@ impl<'a> GraphExecutor<'a> {
         let mut current_superstep = if start_node == START {
             self.get_edge_targets(START).await?
         } else {
-            vec![start_node.to_string()]
+            vec![ScheduledNode::plain(start_node)]
         };
 
         let mut step_number: usize = 0;
@@ -616,7 +663,7 @@ impl<'a> GraphExecutor<'a> {
         let loop_legacy_tid = self.legacy_trace_id();
 
         loop {
-            current_superstep.retain(|n| n != END);
+            current_superstep.retain(|node| node.name != END);
 
             if current_superstep.is_empty() {
                 break;
@@ -638,7 +685,10 @@ impl<'a> GraphExecutor<'a> {
             // Cycle detection
             if self.graph.enable_cycle_detection && step_number > max_iter * 2 {
                 return Err(AgentGraphError::CycleDetected {
-                    path: current_superstep.clone(),
+                    path: current_superstep
+                        .iter()
+                        .map(|node| node.name.clone())
+                        .collect(),
                 });
             }
 
@@ -648,12 +698,16 @@ impl<'a> GraphExecutor<'a> {
                 trace_id: loop_legacy_tid.clone(),
                 trace_ctx: Some(self.trace_ctx.clone()),
                 step: step_number,
-                nodes: current_superstep.clone(),
+                nodes: current_superstep
+                    .iter()
+                    .map(|node| node.name.clone())
+                    .collect(),
             });
 
             // Check interrupt_before
             if let Some(ref interrupt_cfg) = self.graph.interrupt_config {
-                for node_name in &current_superstep {
+                for scheduled in &current_superstep {
+                    let node_name = &scheduled.name;
                     if interrupt_cfg.should_interrupt_before(node_name) {
                         self.event_sink.emit(GraphEvent::InterruptRaised {
                             run_id: self.run_id.clone(),
@@ -675,7 +729,10 @@ impl<'a> GraphExecutor<'a> {
                                         iteration: self.iteration,
                                         state: self.state.snapshot().await,
                                         step_number,
-                                        active_nodes: current_superstep.clone(),
+                                        active_nodes: current_superstep
+                                            .iter()
+                                            .map(|node| node.name.clone())
+                                            .collect(),
                                     };
                                     self.persist(
                                         "interrupt-before checkpoint",
@@ -710,7 +767,13 @@ impl<'a> GraphExecutor<'a> {
             let mut next_nodes = Vec::new();
 
             if current_superstep.len() == 1 {
-                let node_name = &current_superstep[0];
+                let scheduled = &current_superstep[0];
+                if let Some(branch_state) = &scheduled.state {
+                    for (key, value) in branch_state {
+                        self.state.set_raw(key, value.clone()).await?;
+                    }
+                }
+                let node_name = &scheduled.name;
                 let output = self.execute_single_node(node_name).await?;
                 let targets = self.resolve_output(node_name, output).await?;
                 next_nodes.extend(targets);
@@ -719,13 +782,14 @@ impl<'a> GraphExecutor<'a> {
                 let snapshot_data = self.state.export().await;
                 let mut join_set = tokio::task::JoinSet::new();
                 let max_parallelism = self.config.max_parallelism.max(1);
-                let mut pending = current_superstep.iter();
+                let mut pending = current_superstep.iter().enumerate();
 
                 for _ in 0..max_parallelism {
-                    let Some(node_name) = pending.next() else {
+                    let Some((invocation_index, scheduled)) = pending.next() else {
                         break;
                     };
-                    self.spawn_parallel_branch(&mut join_set, node_name).await?;
+                    self.spawn_parallel_branch(&mut join_set, invocation_index, scheduled)
+                        .await?;
                 }
 
                 let mut branch_results = Vec::new();
@@ -744,19 +808,33 @@ impl<'a> GraphExecutor<'a> {
                     };
                     branch_results.push(branch);
 
-                    if let Some(node_name) = pending.next() {
-                        self.spawn_parallel_branch(&mut join_set, node_name).await?;
+                    if let Some((invocation_index, scheduled)) = pending.next() {
+                        self.spawn_parallel_branch(&mut join_set, invocation_index, scheduled)
+                            .await?;
                     }
                 }
 
-                let order: HashMap<&str, usize> = current_superstep
-                    .iter()
-                    .enumerate()
-                    .map(|(index, node)| (node.as_str(), index))
-                    .collect();
-                branch_results.sort_by_key(|(name, _, _)| {
-                    order.get(name.as_str()).copied().unwrap_or(usize::MAX)
-                });
+                branch_results.sort_by_key(|(invocation_index, _, _, _)| *invocation_index);
+
+                if let Some(recording) = &self.receipt_recording {
+                    let mut recording = recording.lock().await;
+                    for (invocation_index, name, branch_state, _) in &branch_results {
+                        let mut before = snapshot_data.clone();
+                        if let Some(state) = &current_superstep[*invocation_index].state {
+                            before.extend(state.clone());
+                        }
+                        let after = branch_state.export().await;
+                        let step_index = recording.len();
+                        recording.push(StepStateDeltaV1 {
+                            step_index,
+                            node_name: name.clone(),
+                            input_digest: digest_state(&before),
+                            output_digest: digest_state(&after),
+                            state_before: before,
+                            state_after: after,
+                        });
+                    }
+                }
 
                 self.merge_parallel_states(&snapshot_data, &branch_results)
                     .await?;
@@ -766,7 +844,8 @@ impl<'a> GraphExecutor<'a> {
                     let mut replay_state = snapshot_data.clone();
                     let branch_count = branch_results.len();
                     let mut recording = recording.lock().await;
-                    for (branch_index, (name, branch_state, _)) in branch_results.iter().enumerate()
+                    for (branch_index, (_, name, branch_state, _)) in
+                        branch_results.iter().enumerate()
                     {
                         let before = replay_state.clone();
                         let branch_data = branch_state.export().await;
@@ -790,7 +869,7 @@ impl<'a> GraphExecutor<'a> {
                     }
                 }
 
-                for (name, _, output) in branch_results {
+                for (_, name, _, output) in branch_results {
                     let targets = self.resolve_output(&name, output).await?;
                     next_nodes.extend(targets);
                 }
@@ -798,7 +877,8 @@ impl<'a> GraphExecutor<'a> {
 
             // Check interrupt_after
             if let Some(ref interrupt_cfg) = self.graph.interrupt_config {
-                for node_name in &current_superstep {
+                for scheduled in &current_superstep {
+                    let node_name = &scheduled.name;
                     if interrupt_cfg.should_interrupt_after(node_name) {
                         if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
                             if let Some(ref checkpointer) = self.graph.checkpointer {
@@ -810,7 +890,10 @@ impl<'a> GraphExecutor<'a> {
                                         iteration: self.iteration,
                                         state: self.state.snapshot().await,
                                         step_number,
-                                        active_nodes: next_nodes.clone(),
+                                        active_nodes: next_nodes
+                                            .iter()
+                                            .map(|node| node.name.clone())
+                                            .collect(),
                                     };
                                     self.persist(
                                         "interrupt-after checkpoint",
@@ -844,7 +927,10 @@ impl<'a> GraphExecutor<'a> {
             if self.graph.checkpoint_policy != CheckpointPolicy::Disabled {
                 if let Some(ref checkpointer) = self.graph.checkpointer {
                     if let Some(ref thread_id) = self.config.thread_id {
-                        let current = current_superstep.first().cloned().unwrap_or_default();
+                        let current = current_superstep
+                            .first()
+                            .map(|node| node.name.clone())
+                            .unwrap_or_default();
                         let cp = Checkpoint {
                             execution_id: thread_id.clone(),
                             timestamp: chrono::Utc::now(),
@@ -852,7 +938,7 @@ impl<'a> GraphExecutor<'a> {
                             iteration: self.iteration,
                             state: self.state.snapshot().await,
                             step_number,
-                            active_nodes: next_nodes.clone(),
+                            active_nodes: next_nodes.iter().map(|node| node.name.clone()).collect(),
                         };
                         self.persist("superstep checkpoint", checkpointer.save(&cp).await)
                             .await?;
@@ -882,7 +968,7 @@ impl<'a> GraphExecutor<'a> {
 
             // Deduplicate next nodes
             let mut seen = std::collections::HashSet::new();
-            next_nodes.retain(|n| seen.insert(n.clone()));
+            next_nodes.retain(|node| node.state.is_some() || seen.insert(node.name.clone()));
 
             self.iteration += 1;
             step_number += 1;
@@ -943,12 +1029,20 @@ impl<'a> GraphExecutor<'a> {
         } else {
             let state = self.state.clone();
             let config = self.config.clone();
+            let context = payload_context(
+                self.event_sink.clone(),
+                self.run_id.clone(),
+                node_name.clone(),
+                legacy_tid.clone(),
+                self.trace_ctx.clone(),
+            );
             execute_node_attempt_family(
                 move || {
                     let node = node.clone();
                     let state = state.clone();
                     let config = config.clone();
-                    async move { node.execute(&state, &config).await }
+                    let context = context.clone();
+                    async move { node.execute_with_context(&state, &config, &context).await }
                 },
                 retry,
                 self.state.clone(),
@@ -969,7 +1063,10 @@ impl<'a> GraphExecutor<'a> {
             Ok(outcome) => {
                 // Track state updates for events
                 let after = self.state.export().await;
-                if let Some(recording) = &self.recording {
+                for recording in [self.recording.as_ref(), self.receipt_recording.as_ref()]
+                    .into_iter()
+                    .flatten()
+                {
                     let mut recording = recording.lock().await;
                     let step_index = recording.len();
                     recording.push(StepStateDeltaV1 {
@@ -1016,6 +1113,19 @@ impl<'a> GraphExecutor<'a> {
             }
             Err(failure) => {
                 self.failed_attempts += 1;
+                if let Some(recording) = &self.receipt_recording {
+                    let after = self.state.export().await;
+                    let mut recording = recording.lock().await;
+                    let step_index = recording.len();
+                    recording.push(StepStateDeltaV1 {
+                        step_index,
+                        node_name: name.to_string(),
+                        input_digest: digest_state(&before),
+                        output_digest: digest_state(&after),
+                        state_before: before,
+                        state_after: after,
+                    });
+                }
                 self.event_sink.emit(GraphEvent::NodeEnd {
                     run_id: self.run_id.clone(),
                     trace_id: legacy_tid,
@@ -1031,31 +1141,43 @@ impl<'a> GraphExecutor<'a> {
     }
 
     /// Resolve the output of a node to a list of next node names.
-    async fn resolve_output(&self, node_name: &str, output: NodeOutput) -> Result<Vec<String>> {
+    async fn resolve_output(
+        &self,
+        node_name: &str,
+        output: NodeOutput,
+    ) -> Result<Vec<ScheduledNode>> {
         match output {
             NodeOutput::Done => self.get_edge_targets(node_name).await,
             NodeOutput::Command(cmd) => match cmd.goto {
                 Navigation::Default => self.get_edge_targets(node_name).await,
-                Navigation::Node(n) => Ok(vec![n]),
-                Navigation::Nodes(ns) => Ok(ns),
-                Navigation::End => Ok(vec![END.to_string()]),
-                Navigation::Send(ops) => Ok(ops.into_iter().map(|op| op.node).collect()),
+                Navigation::Node(n) => Ok(vec![ScheduledNode::plain(n)]),
+                Navigation::Nodes(ns) => Ok(ns.into_iter().map(ScheduledNode::plain).collect()),
+                Navigation::End => Ok(vec![ScheduledNode::plain(END)]),
+                Navigation::Send(ops) => Ok(ops
+                    .into_iter()
+                    .map(|op| ScheduledNode {
+                        name: op.node,
+                        state: Some(op.state),
+                    })
+                    .collect()),
             },
         }
     }
 
     /// Get all edge targets from a node.
-    async fn get_edge_targets(&self, node_name: &str) -> Result<Vec<String>> {
+    async fn get_edge_targets(&self, node_name: &str) -> Result<Vec<ScheduledNode>> {
         let mut targets = Vec::new();
         if let Some(edge_list) = self.graph.edges.get(node_name) {
             for edge in edge_list {
                 match edge {
-                    EdgeType::Normal(to) => targets.push(to.clone()),
+                    EdgeType::Normal(to) => targets.push(ScheduledNode::plain(to)),
                     EdgeType::Conditional(router) => {
                         match router.route(&self.state, &self.config).await? {
-                            RouterOutput::Next(Some(n)) => targets.push(n),
+                            RouterOutput::Next(Some(n)) => targets.push(ScheduledNode::plain(n)),
                             RouterOutput::Next(None) => {}
-                            RouterOutput::FanOut(ns) => targets.extend(ns),
+                            RouterOutput::FanOut(ns) => {
+                                targets.extend(ns.into_iter().map(ScheduledNode::plain))
+                            }
                         }
                     }
                 }
@@ -1068,11 +1190,11 @@ impl<'a> GraphExecutor<'a> {
     async fn merge_parallel_states(
         &self,
         snapshot: &HashMap<String, Value>,
-        branches: &[(String, AgentState, NodeOutput)],
+        branches: &[(usize, String, AgentState, NodeOutput)],
     ) -> Result<()> {
         let mut changes: HashMap<String, Vec<Value>> = HashMap::new();
 
-        for (_, branch_state, _) in branches {
+        for (_, _, branch_state, _) in branches {
             let branch_data = branch_state.export().await;
             for (key, new_value) in &branch_data {
                 let changed = match snapshot.get(key) {
@@ -1102,13 +1224,20 @@ impl<'a> GraphExecutor<'a> {
 
     async fn spawn_parallel_branch(
         &mut self,
-        join_set: &mut tokio::task::JoinSet<Result<(String, AgentState, NodeOutput)>>,
-        node_name: &str,
+        join_set: &mut tokio::task::JoinSet<Result<(usize, String, AgentState, NodeOutput)>>,
+        invocation_index: usize,
+        scheduled: &ScheduledNode,
     ) -> Result<()> {
+        let node_name = &scheduled.name;
         self.total_attempts += 1;
         self.executed_nodes.insert(node_name.to_string());
 
         let forked_state = self.state.fork().await;
+        if let Some(branch_state) = &scheduled.state {
+            for (key, value) in branch_state {
+                forked_state.set_raw(key, value.clone()).await?;
+            }
+        }
         let node = self
             .graph
             .nodes
@@ -1191,7 +1320,12 @@ impl<'a> GraphExecutor<'a> {
                             trial_id: Some(outcome.trial_id),
                         });
 
-                        Ok::<_, AgentGraphError>((name, forked_state, outcome.output))
+                        Ok::<_, AgentGraphError>((
+                            invocation_index,
+                            name,
+                            forked_state,
+                            outcome.output,
+                        ))
                     }
                     Err(failure) => {
                         event_sink.emit(GraphEvent::NodeEnd {
@@ -1208,6 +1342,13 @@ impl<'a> GraphExecutor<'a> {
                 }
             });
         } else {
+            let context = payload_context(
+                event_sink.clone(),
+                run_id.clone(),
+                name.clone(),
+                trace_id.clone(),
+                self.trace_ctx.clone(),
+            );
             join_set.spawn(async move {
                 // AttemptId is stable across the retry family (I031).
                 let canonical_attempt_id = stack_ids::AttemptId::generate();
@@ -1219,7 +1360,11 @@ impl<'a> GraphExecutor<'a> {
                         let node = node.clone();
                         let forked_state = execution_state.clone();
                         let config = config.clone();
-                        async move { node.execute(&forked_state, &config).await }
+                        let context = context.clone();
+                        async move {
+                            node.execute_with_context(&forked_state, &config, &context)
+                                .await
+                        }
                     },
                     retry_policy,
                     forked_state.clone(),
@@ -1270,7 +1415,12 @@ impl<'a> GraphExecutor<'a> {
                             trial_id: Some(outcome.trial_id),
                         });
 
-                        Ok::<_, AgentGraphError>((name, forked_state, outcome.output))
+                        Ok::<_, AgentGraphError>((
+                            invocation_index,
+                            name,
+                            forked_state,
+                            outcome.output,
+                        ))
                     }
                     Err(failure) => {
                         event_sink.emit(GraphEvent::NodeEnd {

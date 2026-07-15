@@ -68,17 +68,19 @@ def test_compare_context_engines_live_records_core_and_unsupported_without_publi
 
     report = mod.evaluate(target_tokens=320, crate_dir=ROOT, include_external=True)
 
-    assert report["schema"] == "ContextGovernorSameTranscriptComparisonV1"
+    # The comparison intentionally reports the current local-policy contract;
+    # external engines are represented as explicit unsupported receipts.
+    assert report["schema"] == "ContextGovernorLocalPolicyComparisonV1"
     assert set(report["aggregate"]) >= {"full", "head_tail", "context_governor", "hermes_builtin_compressor", "squeez", "ogham", "headroom", "llmlingua"}
     assert report["aggregate"]["context_governor"]["runs"] >= 3
-    assert report["aggregate"]["context_governor"]["recoverable_anchor_rate"] >= 0.75
+    assert report["aggregate"]["context_governor"]["recoverable_or_visible_anchor_rate"] >= 0.75
     for engine in ["hermes_builtin_compressor", "squeez", "ogham", "headroom", "llmlingua"]:
         assert report["aggregate"][engine]["status"] in {"unsupported", "ok", "partial"}
         if report["aggregate"][engine]["status"] == "unsupported":
             assert report["aggregate"][engine]["reason"]
 
     markdown = mod.render_markdown(report)
-    assert "same-transcript comparison" in markdown
+    assert "local policy comparison" in markdown
     assert "error[E0425]" not in markdown
     assert "STORE_NEEDLE" not in markdown
     assert "do not say better than Squeez" not in markdown

@@ -1,6 +1,7 @@
 use crate::command::NodeOutput;
 use crate::config::GraphConfig;
 use crate::error::Result;
+use crate::payload::PayloadContext;
 use crate::state::AgentState;
 use async_trait::async_trait;
 use std::future::Future;
@@ -12,6 +13,21 @@ use std::pin::Pin;
 pub trait Node: Send + Sync {
     /// Execute this node
     async fn execute(&self, state: &AgentState, config: &GraphConfig) -> Result<NodeOutput>;
+
+    /// Execute with runtime context supplied by the in-process graph scheduler.
+    ///
+    /// Existing nodes remain source-compatible because the default delegates to
+    /// [`Node::execute`]. Nodes that need run identity or token streaming can
+    /// override this hook. Custom [`Executor`](crate::executor::Executor)
+    /// implementations use the legacy context-free execution contract.
+    async fn execute_with_context(
+        &self,
+        state: &AgentState,
+        config: &GraphConfig,
+        _context: &PayloadContext,
+    ) -> Result<NodeOutput> {
+        self.execute(state, config).await
+    }
 
     /// Optional: Get a name for this node (for debugging)
     fn name(&self) -> Option<&str> {

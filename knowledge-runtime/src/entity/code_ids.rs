@@ -92,7 +92,7 @@ pub fn code_entity_display_path(id: &EntityId) -> Option<String> {
     let after_scope = rest.find(".").map(|i| &rest[i + 1..])?;
     // Restore `::` from `__` and split kind from path with `:`.
     let restored = after_scope.replace("__", "::");
-    let colon = restored.find("::").map(|i| &restored[..i])?;
+    let _colon = restored.find("::").map(|i| &restored[..i])?;
     // The format is `kind.restored_path` — replace the first `.` with `:` for display.
     let dot = after_scope.find(".")?;
     let kind = &after_scope[..dot];

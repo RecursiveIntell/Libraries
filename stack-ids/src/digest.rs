@@ -3,8 +3,15 @@
 //! Canonical JSON delegates to boundary-compiler so the stack has one RFC
 //! 8785 implementation and one JSON digest law.
 
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use schemars::{
+    r#gen::SchemaGenerator,
+    schema::{
+        InstanceType, Metadata, ObjectValidation, Schema, SchemaObject, StringValidation,
+        SubschemaValidation,
+    },
+    JsonSchema, Map, Set,
+};
+use serde::{de, Deserialize, Deserializer, Serialize};
 
 /// Domain separator for non-JSON raw byte digests.
 pub const RAW_BYTES_DOMAIN: &str = "recursiveintell:raw-bytes:v1";
@@ -49,12 +56,82 @@ impl DigestMetadata {
 }
 
 /// A BLAKE3 content digest with explicit identity context.
-#[derive(
-    Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct ContentDigest {
     hex: String,
     metadata: DigestMetadata,
+}
+
+impl<'de> Deserialize<'de> for ContentDigest {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum ContentDigestWire {
+            Structured {
+                hex: String,
+                metadata: DigestMetadata,
+            },
+            LegacyHex(String),
+        }
+
+        match ContentDigestWire::deserialize(deserializer)? {
+            ContentDigestWire::Structured { hex, metadata } => {
+                let hex = validate_hex(hex).map_err(de::Error::custom)?;
+                Ok(Self { hex, metadata })
+            }
+            ContentDigestWire::LegacyHex(hex) => Self::from_hex(hex).map_err(de::Error::custom),
+        }
+    }
+}
+
+impl JsonSchema for ContentDigest {
+    fn schema_name() -> String {
+        "ContentDigest".to_owned()
+    }
+
+    fn json_schema(generator: &mut SchemaGenerator) -> Schema {
+        let structured = SchemaObject {
+            instance_type: Some(InstanceType::Object.into()),
+            object: Some(Box::new(ObjectValidation {
+                properties: Map::from([
+                    ("hex".to_owned(), generator.subschema_for::<String>()),
+                    (
+                        "metadata".to_owned(),
+                        generator.subschema_for::<DigestMetadata>(),
+                    ),
+                ]),
+                required: Set::from(["hex".to_owned(), "metadata".to_owned()]),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        let legacy = SchemaObject {
+            instance_type: Some(InstanceType::String.into()),
+            string: Some(Box::new(StringValidation {
+                min_length: Some(64),
+                max_length: Some(64),
+                pattern: Some("^[0-9A-Fa-f]{64}$".to_owned()),
+            })),
+            ..Default::default()
+        };
+
+        Schema::Object(SchemaObject {
+            metadata: Some(Box::new(Metadata {
+                description: Some(
+                    "A BLAKE3 content digest with explicit identity context.".to_owned(),
+                ),
+                ..Default::default()
+            })),
+            subschemas: Some(Box::new(SubschemaValidation {
+                any_of: Some(vec![Schema::Object(structured), Schema::Object(legacy)]),
+                ..Default::default()
+            })),
+            ..Default::default()
+        })
+    }
 }
 
 impl ContentDigest {
@@ -320,6 +397,25 @@ mod tests {
         let encoded = serde_json::to_string(&digest).unwrap();
         let decoded: ContentDigest = serde_json::from_str(&encoded).unwrap();
         assert_eq!(decoded, digest);
+    }
+
+    #[test]
+    fn deserializes_legacy_hex_string_as_raw_bytes() {
+        let hex = "a".repeat(64);
+        let encoded = serde_json::to_string(&hex).unwrap();
+
+        let digest: ContentDigest = serde_json::from_str(&encoded).unwrap();
+
+        assert_eq!(digest.hex(), hex);
+        assert_eq!(digest.metadata(), &DigestMetadata::raw_bytes());
+    }
+
+    #[test]
+    fn rejects_invalid_legacy_hex_strings() {
+        for hex in ["a".repeat(63), "g".repeat(64)] {
+            let encoded = serde_json::to_string(&hex).unwrap();
+            assert!(serde_json::from_str::<ContentDigest>(&encoded).is_err());
+        }
     }
 
     #[test]

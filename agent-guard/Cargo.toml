@@ -4,6 +4,12 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
 license = "Apache-2.0"
+description = "Linux control plane for AI agent security — trait surface and receipt types for BPF LSM, cgroup v2, Landlock, and seccomp sandboxing"
+readme = "README.md"
+keywords = ["security", "sandbox", "agent", "linux", "landlock"]
+categories = ["os::linux-apis", "api-bindings"]
+repository = "https://github.com/RecursiveIntell/Libraries"
+homepage = "https://github.com/RecursiveIntell/Libraries/agent-guard"
 
 [features]
 default = []

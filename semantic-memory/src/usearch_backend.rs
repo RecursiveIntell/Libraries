@@ -49,12 +49,12 @@
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::hash::Hasher;
-use std::path::{Path, PathBuf};
-use std::sync::RwLock;
 #[cfg(unix)]
 use std::os::unix::fs::symlink;
 #[cfg(windows)]
 use std::os::windows::fs::symlink_dir;
+use std::path::{Path, PathBuf};
+use std::sync::RwLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
@@ -138,7 +138,10 @@ fn parse_usearch_scalar_kind(kind: &str) -> Result<usearch::ScalarKind, MemoryEr
         "f64" => Ok(usearch::ScalarKind::F64),
         "f16" => Ok(usearch::ScalarKind::F16),
         "i8" | "f8" => Ok(usearch::ScalarKind::I8),
-        other => Err(MemoryError::InvalidConfig { field: "USEARCH_SCALAR_KIND", reason: format!("unknown scalar kind: {other}") }),
+        other => Err(MemoryError::InvalidConfig {
+            field: "USEARCH_SCALAR_KIND",
+            reason: format!("unknown scalar kind: {other}"),
+        }),
     }
 }
 
@@ -464,14 +467,13 @@ impl UsearchBackend {
                 manifest_path
             ))
         })?;
-        let manifest: UsearchSidecarManifestV1 = serde_json::from_slice(&manifest_bytes).map_err(
-            |e| {
+        let manifest: UsearchSidecarManifestV1 =
+            serde_json::from_slice(&manifest_bytes).map_err(|e| {
                 MemoryError::StorageError(format!(
                     "usearch sidecar manifest parse failed at {:?}: {e}",
                     manifest_path
                 ))
-            },
-        )?;
+            })?;
         verify_manifest_consistency_in_root(&active_root, &manifest)
     }
 
@@ -544,7 +546,13 @@ impl VectorBackend for UsearchBackend {
         };
 
         let mut new_id = hash_key_with_epoch(&key);
-        while old_id == Some(new_id) || self.id_to_key.read().unwrap_or_else(|e| e.into_inner()).contains_key(&new_id) {
+        while old_id == Some(new_id)
+            || self
+                .id_to_key
+                .read()
+                .unwrap_or_else(|e| e.into_inner())
+                .contains_key(&new_id)
+        {
             new_id = hash_key_with_epoch(&key);
         }
 
@@ -556,11 +564,9 @@ impl VectorBackend for UsearchBackend {
             .map_err(|e| MemoryError::HnswError(format!("usearch::Index::add failed: {e:?}")))?;
 
         if let Some(old_id) = old_id {
-            let removed = index
-                .remove(old_id)
-                .map_err(|e| {
-                    MemoryError::HnswError(format!("usearch::Index::remove failed: {e:?}"))
-                })?;
+            let removed = index.remove(old_id).map_err(|e| {
+                MemoryError::HnswError(format!("usearch::Index::remove failed: {e:?}"))
+            })?;
             if removed == 0 {
                 let _ = index.remove(new_id);
                 return Err(MemoryError::HnswError(
@@ -799,7 +805,10 @@ fn sync_directory(path: &Path) -> Result<(), MemoryError> {
         MemoryError::StorageError(format!("usearch directory sync failed at {:?}: {e}", path))
     })?;
     file.sync_all().map_err(|e| {
-        MemoryError::StorageError(format!("usearch directory sync_all failed at {:?}: {e}", path))
+        MemoryError::StorageError(format!(
+            "usearch directory sync_all failed at {:?}: {e}",
+            path
+        ))
     })
 }
 
@@ -1046,7 +1055,8 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let dir = tmp.path();
         let b = UsearchBackend::new(test_config()).unwrap();
-        b.insert("fact:a".to_string(), &[1.0, 0.0, 0.0, 0.0]).unwrap();
+        b.insert("fact:a".to_string(), &[1.0, 0.0, 0.0, 0.0])
+            .unwrap();
         b.save_to_disk(dir, "test").unwrap();
         let root = active_root_for_test(dir);
         fs::write(root.join("test.hnsw.keys"), "CORRUPTED\n").unwrap();
@@ -1064,15 +1074,20 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let dir = tmp.path();
         let b = UsearchBackend::new(test_config()).unwrap();
-        b.insert("fact:a".to_string(), &[1.0, 0.0, 0.0, 0.0]).unwrap();
-        b.insert("fact:b".to_string(), &[0.0, 1.0, 0.0, 0.0]).unwrap();
+        b.insert("fact:a".to_string(), &[1.0, 0.0, 0.0, 0.0])
+            .unwrap();
+        b.insert("fact:b".to_string(), &[0.0, 1.0, 0.0, 0.0])
+            .unwrap();
         b.save_to_disk(dir, "test").unwrap();
 
         let root = active_root_for_test(dir);
         fs::remove_file(root.join("test.hnsw.keys")).unwrap();
         assert!(!UsearchBackend::verify_persistence(dir).unwrap());
         let result = UsearchBackend::load(dir, "test", test_config());
-        assert!(result.is_err(), "load should fail after partial write simulation");
+        assert!(
+            result.is_err(),
+            "load should fail after partial write simulation"
+        );
     }
 
     #[test]
@@ -1149,5 +1164,4 @@ mod tests {
         );
         assert!(!b.key_to_id.read().unwrap().contains_key("fact:second"));
     }
-
 }

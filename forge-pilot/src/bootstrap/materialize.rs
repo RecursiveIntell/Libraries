@@ -241,7 +241,13 @@ fn chunk_claim(
         record: ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new(format!(
                 "{}-{}",
-                chunk.chunk_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(chunk.chunk_id.as_str()), manifest.manifest_id
+                chunk
+                    .chunk_id
+                    .as_str()
+                    .split_once(":")
+                    .map(|(_, p)| p)
+                    .unwrap_or(chunk.chunk_id.as_str()),
+                manifest.manifest_id
             ))),
             claim_version_id: Some(ClaimVersionId::new(format!(
                 "workspace-source-chunk-version-{version_seed}"
@@ -306,14 +312,25 @@ fn symbol_claim(
         record: ExportRecord::Claim(ExportClaim {
             claim_id: Some(ClaimId::new(format!(
                 "{}-{}",
-                symbol.symbol_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(symbol.symbol_id.as_str()), manifest.manifest_id
+                symbol
+                    .symbol_id
+                    .as_str()
+                    .split_once(":")
+                    .map(|(_, p)| p)
+                    .unwrap_or(symbol.symbol_id.as_str()),
+                manifest.manifest_id
             ))),
             claim_version_id: Some(ClaimVersionId::new(format!(
                 "workspace-source-symbol-version-{version_seed}"
             ))),
             subject_entity_id: EntityId::new(format!(
                 "workspace-source-symbol-entity-{}",
-                symbol.symbol_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(symbol.symbol_id.as_str())
+                symbol
+                    .symbol_id
+                    .as_str()
+                    .split_once(":")
+                    .map(|(_, p)| p)
+                    .unwrap_or(symbol.symbol_id.as_str())
             )),
             predicate: "describes_workspace_source_symbol".into(),
             object_anchor: serde_json::json!({

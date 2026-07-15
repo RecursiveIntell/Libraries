@@ -3054,10 +3054,7 @@ async fn projected_verification_summary_as_of_uses_recorded_time_cutoff() {
         .await
         .unwrap()
         .expect("current summary should exist");
-    assert_eq!(
-        current.claim_version_id,
-        "claim-version:claim-history-v2"
-    );
+    assert_eq!(current.claim_version_id, "claim-version:claim-history-v2");
     assert_eq!(
         current.lifecycle_state,
         ProjectedVerificationLifecycle::Verified

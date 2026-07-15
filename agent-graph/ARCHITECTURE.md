@@ -142,6 +142,21 @@ trait EventSink: Send + Sync {
 3. Payload calls `ctx.on_token("...")` during execution.
 4. Callback emits `GraphEvent::Token { run_id, node_id, token }` on EventSink.
 
+This context hook is live for the normal sequential and parallel in-process
+paths. A custom `Executor` still uses its backwards-compatible context-free
+trait method and must provide its own token/identity propagation.
+
+## Receipt and Replay Truth Boundary
+
+- `execute_with_receipt` records each completed node transition in deterministic
+  scheduler order with canonical input/output state digests.
+- Parallel receipt inputs describe each branch's real forked input, not a
+  fabricated sequential chain.
+- `record_run_bundle` never enumerates the process environment; its environment
+  map is empty unless a caller explicitly adds non-secret descriptors.
+- Bundle verification checks recorded state/envelope integrity offline. Core does
+  not populate model, tool, or memory envelopes and does not re-execute effects.
+
 ## Interrupt / Resume
 
 ### Interrupt Type

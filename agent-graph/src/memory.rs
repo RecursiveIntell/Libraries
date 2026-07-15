@@ -1,4 +1,6 @@
-//! Shared graph-state retrieval contracts backed by semantic-memory.
+//! Type-only graph-state retrieval contracts for external memory adapters.
+//!
+//! The core scheduler does not invoke this trait or record memory envelopes.
 
 use crate::{receipt::GraphMemoryGenerationRefV1, AgentGraphError};
 use async_trait::async_trait;
@@ -22,7 +24,7 @@ pub struct GraphMemoryRetrievalV1 {
     pub memory_generations: Vec<GraphMemoryGenerationRefV1>,
 }
 
-/// Interface for retrieving shared graph state through semantic-memory, not proveKV directly.
+/// Adapter interface not wired into core graph execution.
 #[async_trait]
 pub trait GraphMemoryRetriever: Send + Sync {
     async fn retrieve_graph_context(

@@ -201,7 +201,10 @@ fn graph_digest_ignores_condition_key_order() {
         .build()
         .unwrap();
 
-    assert_eq!(graph_one.compute_graph_hash(), graph_two.compute_graph_hash());
+    assert_eq!(
+        graph_one.compute_graph_hash(),
+        graph_two.compute_graph_hash()
+    );
 }
 
 #[test]
@@ -313,7 +316,7 @@ async fn recorded_run_replays_offline_and_localizes_mutation() {
 }
 
 #[tokio::test]
-async fn recorded_run_bundle_captures_environment_for_replay_contract() {
+async fn recorded_run_bundle_does_not_capture_process_environment() {
     let graph = AgentGraph::builder()
         .with_name("replay-bundle-environment")
         .add_node(
@@ -327,21 +330,26 @@ async fn recorded_run_bundle_captures_environment_for_replay_contract() {
         .build()
         .unwrap();
 
+    let secret_name = format!("AGENT_GRAPH_TEST_SECRET_{}", uuid::Uuid::new_v4());
+    let secret_value = format!("secret-value-{}", uuid::Uuid::new_v4());
+    std::env::set_var(&secret_name, &secret_value);
     let bundle = graph
         .record_run_bundle("one", AgentState::new(), GraphConfig::default())
         .await
         .expect("record run");
+    std::env::remove_var(&secret_name);
 
-    assert!(bundle.environment.len() > 0);
-    assert_eq!(
+    assert!(bundle.environment.is_empty());
+    let serialized = serde_json::to_string(&bundle).expect("serialize bundle");
+    assert!(!serialized.contains(&secret_name));
+    assert!(!serialized.contains(&secret_value));
+    assert!(
         bundle.tool_call_envelopes.is_empty(),
-        true,
-        "tool envelopes are optional and captured when no tool calls occur"
+        "core does not populate tool envelopes"
     );
-    assert_eq!(
+    assert!(
         bundle.model_call_envelopes.is_empty(),
-        true,
-        "model envelopes are optional and captured when no model calls occur"
+        "core does not populate model envelopes"
     );
 }
 
@@ -349,7 +357,13 @@ async fn recorded_run_bundle_captures_environment_for_replay_contract() {
 async fn verify_replay_detects_model_envelope_digest_mismatch() {
     let graph = AgentGraph::builder()
         .with_name("replay-model-mismatch")
-        .add_node("one", node!(|state| async move { state.set("value", 1).await?; Ok(()) }))
+        .add_node(
+            "one",
+            node!(|state| async move {
+                state.set("value", 1).await?;
+                Ok(())
+            }),
+        )
         .set_finish_point("one")
         .build()
         .unwrap();
@@ -357,16 +371,18 @@ async fn verify_replay_detects_model_envelope_digest_mismatch() {
         .record_run_bundle("one", AgentState::new(), GraphConfig::default())
         .await
         .unwrap();
-    bundle.model_call_envelopes.push(agent_graph::receipt::ModelCallEnvelopeV1 {
-        step_index: 0,
-        model_name: "lm".into(),
-        request: json!({"query": "hello"}),
-        response: json!({"answer": "world"}),
-        request_digest: "blake3:bad".into(),
-        response_digest: "blake3:also-bad".into(),
-    });
+    bundle
+        .model_call_envelopes
+        .push(agent_graph::receipt::ModelCallEnvelopeV1 {
+            step_index: 0,
+            model_name: "lm".into(),
+            request: json!({"query": "hello"}),
+            response: json!({"answer": "world"}),
+            request_digest: "blake3:bad".into(),
+            response_digest: "blake3:also-bad".into(),
+        });
 
-    let error = graph.verify_replay(&mut bundle).unwrap_err();
+    let error = graph.verify_replay(&bundle).unwrap_err();
     assert!(matches!(
         error,
         ReplayError::EnvelopeDivergence { .. } | ReplayError::TerminalDivergence { .. }

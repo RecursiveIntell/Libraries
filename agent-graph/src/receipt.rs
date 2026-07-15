@@ -1,7 +1,9 @@
 //! Receipt types for graph execution auditability.
 //!
-//! Receipts capture the full state of graph execution steps for replay,
-//! debugging, and compliance auditing.
+//! Receipts capture graph state transitions for integrity checking and debugging.
+//!
+//! Model, tool, and memory envelope types are caller-populated surfaces; the
+//! core scheduler does not claim complete external-effect capture or re-execution.
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -108,7 +110,11 @@ pub struct MemoryReadEnvelopeV1 {
     pub result_digest: String,
 }
 
-/// Complete offline replay artifact for one graph execution.
+/// Offline integrity bundle for one graph execution.
+///
+/// Core recording populates state deltas and the terminal receipt. External
+/// model/tool/memory envelopes are not populated by the scheduler. Environment
+/// descriptors are empty by default and must be explicitly caller supplied.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RunBundleV1 {
     pub graph_spec: crate::graph::GraphSpecV1,

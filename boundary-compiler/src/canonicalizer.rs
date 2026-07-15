@@ -360,7 +360,10 @@ mod tests {
         let c = Canonicalizer::new();
         let val: Value = serde_json::from_str("1e30").unwrap();
         let out = c.canonicalize(&val).unwrap();
-        assert!(out.starts_with("1e"), "expected exponential notation, got {out}");
+        assert!(
+            out.starts_with("1e"),
+            "expected exponential notation, got {out}"
+        );
     }
 
     #[test]

@@ -57,14 +57,96 @@ async fn execute_with_receipt_emits_completed_receipt_for_clean_run() {
     assert!(!receipt.execution_id.is_empty(), "execution_id must be set");
     assert!(!receipt.graph_id.is_empty(), "graph_id must be set");
     assert!(receipt.started_at <= receipt.finished_at);
-    // The step we emitted is a run-level placeholder until per-step
-    // instrumentation lands; verify it has the structural shape we
-    // promise in the docstring.
-    assert_eq!(receipt.steps.len(), 1, "one run-level step entry");
-    let step = &receipt.steps[0];
-    assert_eq!(step.step_index, 0);
-    assert!(step.tool_calls.is_empty(), "no tool calls at the run level");
-    assert!(step.error.is_none(), "clean run must not carry an error");
+    assert_eq!(receipt.steps.len(), 2, "one receipt per executed node");
+    assert_eq!(receipt.steps[0].agent_id, "step1");
+    assert_eq!(receipt.steps[1].agent_id, "step2");
+    for (index, step) in receipt.steps.iter().enumerate() {
+        assert_eq!(step.step_index, index);
+        assert!(step.tool_calls.is_empty());
+        assert!(step.error.is_none(), "clean run must not carry an error");
+    }
+    assert_eq!(
+        receipt.steps[0].output_digest,
+        receipt.steps[1].input_digest
+    );
+}
+
+#[tokio::test]
+async fn execute_with_receipt_records_parallel_nodes_in_scheduling_order() {
+    let graph = AgentGraph::builder()
+        .add_node("start", node!(|_state| async move { Ok(()) }))
+        .add_node(
+            "second",
+            node!(|state| async move {
+                state.set("second", true).await?;
+                Ok(())
+            }),
+        )
+        .add_node(
+            "first",
+            node!(|state| async move {
+                state.set("first", true).await?;
+                Ok(())
+            }),
+        )
+        .add_edge("start", "second")
+        .add_edge("start", "first")
+        .build()
+        .expect("graph must build");
+
+    let (result, receipt) = graph
+        .execute_with_receipt("start", AgentState::new(), GraphConfig::default())
+        .await;
+    result.expect("parallel run");
+
+    let names: Vec<_> = receipt
+        .steps
+        .iter()
+        .map(|step| step.agent_id.as_str())
+        .collect();
+    assert_eq!(names, ["start", "second", "first"]);
+    assert_eq!(
+        receipt.steps[1].input_digest, receipt.steps[2].input_digest,
+        "parallel branches receive the same superstep snapshot"
+    );
+    assert_ne!(
+        receipt.steps[1].output_digest,
+        receipt.steps[2].output_digest
+    );
+}
+
+#[tokio::test]
+async fn execute_with_receipt_records_failed_node_and_partial_state() {
+    let graph = AgentGraph::builder()
+        .add_node(
+            "fail",
+            node!(|state| async move {
+                state.set("written_before_error", true).await?;
+                Err::<(), _>(AgentGraphError::ExecutionError("expected failure".into()))
+            }),
+        )
+        .build()
+        .unwrap();
+
+    let (result, receipt) = graph
+        .execute_with_receipt("fail", AgentState::new(), GraphConfig::default())
+        .await;
+
+    assert!(result.is_err());
+    assert!(matches!(
+        receipt.outcome,
+        ExecutionOutcome::InternalError { .. }
+    ));
+    assert_eq!(receipt.steps.len(), 1);
+    assert_eq!(receipt.steps[0].agent_id, "fail");
+    assert!(receipt.steps[0]
+        .error
+        .as_deref()
+        .is_some_and(|error| error.contains("expected failure")));
+    assert_ne!(
+        receipt.steps[0].input_digest,
+        receipt.steps[0].output_digest
+    );
 }
 
 #[tokio::test]

@@ -219,20 +219,30 @@
       "type": "string"
     },
     "ContentDigest": {
-      "description": "A BLAKE3 content digest with explicit identity context.",
-      "properties": {
-        "hex": {
-          "type": "string"
+      "anyOf": [
+        {
+          "properties": {
+            "hex": {
+              "type": "string"
+            },
+            "metadata": {
+              "$ref": "#/definitions/DigestMetadata"
+            }
+          },
+          "required": [
+            "hex",
+            "metadata"
+          ],
+          "type": "object"
         },
-        "metadata": {
-          "$ref": "#/definitions/DigestMetadata"
+        {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[0-9A-Fa-f]{64}$",
+          "type": "string"
         }
-      },
-      "required": [
-        "hex",
-        "metadata"
       ],
-      "type": "object"
+      "description": "A BLAKE3 content digest with explicit identity context."
     },
     "ContradictionWitnessV1": {
       "properties": {

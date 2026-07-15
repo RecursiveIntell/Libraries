@@ -401,12 +401,25 @@ fn relation_group_id_for_record(
     if let Some(claim_id) = relation.source_claim_id.as_ref() {
         RelationGroupId::new(format!(
             "rel-bundle-{}-claim-{}-predicate-{}",
-            bundle.bundle_id, claim_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(claim_id.as_str()), relation.predicate
+            bundle.bundle_id,
+            claim_id
+                .as_str()
+                .split_once(":")
+                .map(|(_, p)| p)
+                .unwrap_or(claim_id.as_str()),
+            relation.predicate
         ))
     } else {
         RelationGroupId::new(format!(
             "rel-bundle-{}-subject-{}-predicate-{}",
-            bundle.bundle_id, relation.subject_entity_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(relation.subject_entity_id.as_str()), relation.predicate
+            bundle.bundle_id,
+            relation
+                .subject_entity_id
+                .as_str()
+                .split_once(":")
+                .map(|(_, p)| p)
+                .unwrap_or(relation.subject_entity_id.as_str()),
+            relation.predicate
         ))
     }
 }
@@ -446,7 +459,12 @@ fn record_semantics_v3(
             let mut semantics = ExportRecordSemanticsV3 {
                 claim_family_id: Some(ClaimFamilyId::new(bundle.candidate_id.clone())),
                 assertion_group_id: Some(AssertionGroupId::new(
-                    claim.subject_entity_id.as_str().split_once(":").map(|(_, p)| p).unwrap_or(claim.subject_entity_id.as_str())
+                    claim
+                        .subject_entity_id
+                        .as_str()
+                        .split_once(":")
+                        .map(|(_, p)| p)
+                        .unwrap_or(claim.subject_entity_id.as_str()),
                 )),
                 relation_group_id: None,
                 joint_evidence_group_id: None,

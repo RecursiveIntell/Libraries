@@ -248,7 +248,9 @@ pub async fn import_promoted_hyperedge_batch(
             }),
             semantics: Some(ExportRecordSemanticsV3 {
                 claim_family_id: Some(ClaimFamilyId::new(format!("claim-family:{batch_id}"))),
-                assertion_group_id: Some(AssertionGroupId::new(format!("assertion-group:{batch_id}"))),
+                assertion_group_id: Some(AssertionGroupId::new(format!(
+                    "assertion-group:{batch_id}"
+                ))),
                 relation_group_id: None,
                 joint_evidence_group_id: None,
                 constraint_seed_kind: Some(ConstraintSeedKind::Hyperedge),
@@ -285,7 +287,9 @@ pub async fn import_promoted_hyperedge_batch(
             }),
             semantics: Some(ExportRecordSemanticsV3 {
                 claim_family_id: Some(ClaimFamilyId::new(format!("claim-family:{batch_id}"))),
-                assertion_group_id: Some(AssertionGroupId::new(format!("assertion-group:{batch_id}"))),
+                assertion_group_id: Some(AssertionGroupId::new(format!(
+                    "assertion-group:{batch_id}"
+                ))),
                 relation_group_id: None,
                 joint_evidence_group_id: None,
                 constraint_seed_kind: Some(ConstraintSeedKind::Hyperedge),

@@ -849,7 +849,10 @@ fn emit_convergence_report(
     let digest = ContentDigest::compute(&convergence_payload);
 
     ConvergenceReport {
-        convergence_report_id: ConvergenceReportId::new(format!("convergence-report:{}", digest.hex())),
+        convergence_report_id: ConvergenceReportId::new(format!(
+            "convergence-report:{}",
+            digest.hex()
+        )),
         governance: ConvergenceGovernance {
             damping_factor_micros: FULL_CONFIDENCE_MICROS,
             residual_tolerance_micros: DEFAULT_FIXED_POINT_TOLERANCE_MICROS,

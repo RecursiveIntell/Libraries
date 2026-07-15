@@ -488,7 +488,9 @@ mod tests {
             ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
                     claim_id: Some(ClaimId::new(format!("claim-{claim_suffix}-1"))),
-                    claim_version_id: Some(ClaimVersionId::new(&format!("claim-version-{claim_suffix}-1"))),
+                    claim_version_id: Some(ClaimVersionId::new(&format!(
+                        "claim-version-{claim_suffix}-1"
+                    ))),
                     subject_entity_id: EntityId::new(format!("entity-{claim_suffix}-1")),
                     predicate: "supports".into(),
                     object_anchor: serde_json::json!("result"),
@@ -527,7 +529,9 @@ mod tests {
             ExportRecordV3 {
                 record: ExportRecord::Claim(ExportClaim {
                     claim_id: Some(ClaimId::new(format!("claim-{claim_suffix}-2"))),
-                    claim_version_id: Some(ClaimVersionId::new(&format!("claim-version-{claim_suffix}-2"))),
+                    claim_version_id: Some(ClaimVersionId::new(&format!(
+                        "claim-version-{claim_suffix}-2"
+                    ))),
                     subject_entity_id: EntityId::new(format!("entity-{claim_suffix}-2")),
                     predicate: "supports".into(),
                     object_anchor: serde_json::json!("result"),
@@ -924,7 +928,8 @@ mod tests {
     #[test]
     fn minimal_perturbation_search_defaults_to_one_step_budget() {
         let compiled = compiled_fixture();
-        let result = minimal_perturbation_witness(&compiled, "claim-version:claim-version-alpha-1", 0);
+        let result =
+            minimal_perturbation_witness(&compiled, "claim-version:claim-version-alpha-1", 0);
 
         assert!(matches!(
             result.outcome,
@@ -977,7 +982,8 @@ mod tests {
     #[test]
     fn minimal_perturbation_preserves_small_graph_flip_witness() {
         let compiled = compiled_fixture();
-        let result = minimal_perturbation_witness(&compiled, "claim-version:claim-version-alpha-1", 4);
+        let result =
+            minimal_perturbation_witness(&compiled, "claim-version:claim-version-alpha-1", 4);
 
         assert!(matches!(
             result.outcome,
@@ -989,7 +995,11 @@ mod tests {
     #[test]
     fn delta_parity_matches_full_recompute_on_recomputed_nodes() {
         let compiled = compiled_fixture();
-        let parity = evaluate_delta_parity(&compiled, &["claim-version:claim-version-alpha-2".into()], 4);
+        let parity = evaluate_delta_parity(
+            &compiled,
+            &["claim-version:claim-version-alpha-2".into()],
+            4,
+        );
 
         assert!(parity.parity_match);
         assert!(!parity.recomputed_node_ids.is_empty());

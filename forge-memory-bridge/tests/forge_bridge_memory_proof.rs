@@ -207,7 +207,8 @@ fn build_full_envelope_v3() -> ExportEnvelopeV3 {
         claim.claim_version_id = Some(ClaimVersionId::new("claim-version:claim-new-v1"));
     }
     if let ExportRecord::Relation(relation) = &mut source_records[1] {
-        relation.relation_version_id = Some(RelationVersionId::new("relation-version:relation-new-v1"));
+        relation.relation_version_id =
+            Some(RelationVersionId::new("relation-version:relation-new-v1"));
     }
     let records = source_records
         .into_iter()

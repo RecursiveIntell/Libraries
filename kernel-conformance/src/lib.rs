@@ -388,7 +388,10 @@ mod tests {
             .iter()
             .find(|edge| edge.edge_id == "assertion_group:assertion-group:group-1")
             .expect("thin export should keep only explicitly provided grouping");
-        assert_eq!(group_hyperedge.member_node_ids, vec!["claim-version:claim-b".to_string()]);
+        assert_eq!(
+            group_hyperedge.member_node_ids,
+            vec!["claim-version:claim-b".to_string()]
+        );
     }
 
     #[test]
@@ -543,7 +546,10 @@ mod tests {
         let compiled = compile_fixture("cf-o2", &["claim-a", "claim-b"], false, false);
         let delta = execute_delta_propagation(&compiled, &["claim-version:claim-a".into()], 3);
         let full = execute_message_passing_baseline(&compiled, 3);
-        let affected = affected_nodes_for_delta(&compiled.invalidation_cones, &["claim-version:claim-a".into()]);
+        let affected = affected_nodes_for_delta(
+            &compiled.invalidation_cones,
+            &["claim-version:claim-a".into()],
+        );
 
         for node_id in affected {
             let delta_belief = delta

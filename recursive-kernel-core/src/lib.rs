@@ -216,7 +216,7 @@ mod tests {
         let operator = constraint_compiler_operator();
         assert_eq!(
             operator.operator_id.as_str(),
-            CONSTRAINT_COMPILER_OPERATOR_ID
+            OperatorId::new(CONSTRAINT_COMPILER_OPERATOR_ID).as_str()
         );
         assert_eq!(operator.name, CONSTRAINT_COMPILER_OPERATOR_NAME);
         assert_eq!(operator.contract.inputs, vec!["projection_import_batch_v3"]);

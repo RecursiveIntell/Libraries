@@ -35,6 +35,9 @@ fn selector_prefers_better_information_value_per_review_slot() {
         "2026-03-14T00:00:00Z",
     );
 
-    assert_eq!(trace.decisions[0].campaign_id.as_str(), "experiment-campaign:campaign-v18-4");
+    assert_eq!(
+        trace.decisions[0].campaign_id.as_str(),
+        "experiment-campaign:campaign-v18-4"
+    );
     assert_eq!(trace.decisions[0].decision, CampaignDecision::Launch);
 }

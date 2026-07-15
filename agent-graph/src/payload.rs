@@ -41,6 +41,7 @@ pub struct PayloadOutput {
 /// Context passed to payloads during execution.
 ///
 /// Provides a token sink for streaming and metadata about the current execution.
+#[derive(Clone)]
 pub struct PayloadContext {
     /// Callback for streaming tokens. Called by the payload during execution.
     /// The runtime sets this up to forward tokens to the [`EventSink`](crate::event_sink::EventSink).
@@ -138,29 +139,48 @@ impl Node for PayloadNode {
         state: &AgentState,
         _config: &GraphConfig,
     ) -> crate::Result<NodeOutput> {
-        // Build state value
-        let state_data = state.export().await;
-        let state_value = serde_json::to_value(&state_data)
-            .map_err(|e| AgentGraphError::StateError(e.to_string()))?;
-
-        // Select input
-        let input = match &self.input_selector {
-            Some(selector) => selector(&state_value),
-            None => state_value.clone(),
-        };
-
-        // Build payload context (no token sink in basic execution path;
-        // the GraphExecutor sets this up when EventSink is configured)
         let ctx = PayloadContext {
             on_token: None,
             run_id: String::new(),
             node_id: self.name.clone().unwrap_or_default(),
         };
 
+        self.execute_payload(state, &ctx).await
+    }
+
+    async fn execute_with_context(
+        &self,
+        state: &AgentState,
+        _config: &GraphConfig,
+        context: &PayloadContext,
+    ) -> crate::Result<NodeOutput> {
+        self.execute_payload(state, context).await
+    }
+
+    fn name(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
+}
+
+impl PayloadNode {
+    async fn execute_payload(
+        &self,
+        state: &AgentState,
+        ctx: &PayloadContext,
+    ) -> crate::Result<NodeOutput> {
+        let state_data = state.export().await;
+        let state_value = serde_json::to_value(&state_data)
+            .map_err(|e| AgentGraphError::StateError(e.to_string()))?;
+
+        let input = match &self.input_selector {
+            Some(selector) => selector(&state_value),
+            None => state_value.clone(),
+        };
+
         // Invoke payload
         let output = self
             .payload
-            .invoke(input, &ctx)
+            .invoke(input, ctx)
             .await
             .map_err(|e| AgentGraphError::PayloadError(e.to_string()))?;
 
@@ -181,10 +201,6 @@ impl Node for PayloadNode {
         }
 
         Ok(NodeOutput::Done)
-    }
-
-    fn name(&self) -> Option<&str> {
-        self.name.as_deref()
     }
 }
 

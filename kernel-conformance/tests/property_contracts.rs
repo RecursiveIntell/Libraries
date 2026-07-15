@@ -17,7 +17,7 @@ use semantic_memory_forge::{
     ExportClaim, ExportEnvelopeV1, ExportEnvelopeV2, ExportEnvelopeV3, ExportRecord,
     EXPORT_ENVELOPE_V1_SCHEMA,
 };
-use stack_ids::{ClaimVersionId,ClaimId, EntityId, EnvelopeId, ScopeKey};
+use stack_ids::{ClaimId, ClaimVersionId, EntityId, EnvelopeId, ScopeKey};
 use tempfile::TempDir;
 
 fn open_store(base_dir: &std::path::Path) -> MemoryStore {
