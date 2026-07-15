@@ -11,7 +11,7 @@ use semantic_memory_forge::{
 };
 use stack_ids::{
     AssertionGroupId, ClaimFamilyId, ClaimId, ClaimVersionId, EntityId, EnvelopeId, EpisodeId,
-    ScopeKey,
+    RelationVersionId, ScopeKey,
 };
 
 fn rich_batch() -> ProjectionImportBatchV3 {
@@ -47,7 +47,7 @@ fn rich_batch() -> ProjectionImportBatchV3 {
         ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
                 claim_id: Some(ClaimId::new("claim-1")),
-                claim_version_id: Some("claim-version-1".into()),
+                claim_version_id: Some(ClaimVersionId::new("claim-version:claim-version-1")),
                 subject_entity_id: EntityId::new("entity-1"),
                 predicate: "supports".into(),
                 object_anchor: serde_json::json!("result"),
@@ -65,7 +65,7 @@ fn rich_batch() -> ProjectionImportBatchV3 {
         ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
                 claim_id: Some(ClaimId::new("claim-2")),
-                claim_version_id: Some("claim-version-2".into()),
+                claim_version_id: Some(ClaimVersionId::new("claim-version:claim-version-2")),
                 subject_entity_id: EntityId::new("entity-2"),
                 predicate: "supports".into(),
                 object_anchor: serde_json::json!("result"),
@@ -431,7 +431,7 @@ fn mixed_inferential_batch() -> ProjectionImportBatchV3 {
         ExportRecordV3 {
             record: ExportRecord::Claim(ExportClaim {
                 claim_id: Some(ClaimId::new("claim-mixed-1")),
-                claim_version_id: Some("claim-version-mixed-1".into()),
+                claim_version_id: Some(ClaimVersionId::new("claim-version:claim-version-mixed-1")),
                 subject_entity_id: EntityId::new("entity-mixed-1"),
                 predicate: "supports".into(),
                 object_anchor: serde_json::json!("result"),
@@ -453,7 +453,7 @@ fn mixed_inferential_batch() -> ProjectionImportBatchV3 {
         },
         ExportRecordV3 {
             record: ExportRecord::Relation(ExportRelation {
-                relation_version_id: Some("relation-version-mixed-2".into()),
+                relation_version_id: Some(RelationVersionId::new("relation-version:relation-version-mixed-2")),
                 subject_entity_id: EntityId::new("entity-mixed-a"),
                 predicate: "causes".into(),
                 object_anchor: serde_json::json!("result"),
