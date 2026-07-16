@@ -772,6 +772,20 @@ pub fn learn_run_command(mode: &str, source: Option<&str>, out: Option<&str>) ->
     Ok(serde_json::to_string_pretty(&report)?)
 }
 
+/// Returns the process exit code for a `learn run` report.
+///
+/// Missing, malformed, or non-verified terminal evidence fails closed.
+pub fn learning_run_exit_code(report: &str) -> i32 {
+    let state = serde_json::from_str::<Value>(report)
+        .ok()
+        .and_then(|value| value["terminal"]["state"].as_str().map(ToOwned::to_owned));
+    if state.as_deref() == Some("succeeded-verified") {
+        0
+    } else {
+        2
+    }
+}
+
 pub fn learn_promote_command(candidate: &str, permit: Option<&str>) -> Result<String> {
     let permit = permit.ok_or_else(|| anyhow::anyhow!("explicit lifecycle permit is required"))?;
     let permit_text =

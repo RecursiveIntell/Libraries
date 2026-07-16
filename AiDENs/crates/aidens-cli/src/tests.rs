@@ -28,6 +28,8 @@ fn learning_mock_run_cannot_render_verified_success() {
     let value: Value = serde_json::from_str(&report).unwrap();
     assert_eq!(value["terminal"]["state"], "mock-only");
     assert_ne!(value["terminal"]["state"], "succeeded-verified");
+    assert_eq!(learning_run_exit_code(&report), 2);
+    assert_eq!(learning_run_exit_code("not-json"), 2);
 }
 
 fn temp_root() -> PathBuf {
