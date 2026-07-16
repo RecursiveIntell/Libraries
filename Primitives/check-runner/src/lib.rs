@@ -55,6 +55,9 @@ pub enum RunnerError {
 
     #[error("{0}")]
     Other(String),
+
+    #[error("invalid sealed resource limit: {field}={value}")]
+    InvalidResourceLimit { field: String, value: String },
 }
 
 #[derive(Debug, Clone)]
@@ -423,6 +426,10 @@ impl ContainerBackend {
                 runtime: "sealed execution requires an image pinned by @sha256:<64 hex>".into(),
             });
         }
+        if sealed {
+            validate_limit("memory_limit", &config.memory_limit)?;
+            validate_limit("cpu_limit", &config.cpu_limit)?;
+        }
 
         Ok(Self {
             runtime,
@@ -507,7 +514,16 @@ impl ContainerBackend {
             && (command_args.is_empty()
                 || !matches!(command_args[0], "fmt" | "clippy" | "test")
                 || command_args.iter().any(|arg| {
-                    arg.contains(';') || arg.contains("&&") || arg.contains("||") || *arg == "-c"
+                    arg.contains(';')
+                        || arg.contains("&&")
+                        || arg.contains("||")
+                        || *arg == "-c"
+                        || *arg == "--config"
+                        || *arg == "--manifest-path"
+                        || *arg == "--target-dir"
+                        || arg == &"-Z"
+                        || arg.contains("../")
+                        || arg.contains("..\\")
                 }))
         {
             return Err(RunnerError::SealedModeUnsupported {
@@ -523,6 +539,24 @@ impl ContainerBackend {
         }
 
         let mut args = vec!["run".to_string(), "--rm".to_string()];
+        if self.sealed {
+            let name = format!(
+                "check-runner-{}",
+                blake3::hash(
+                    format!(
+                        "{}:{}",
+                        std::process::id(),
+                        Instant::now().elapsed().as_nanos()
+                    )
+                    .as_bytes()
+                )
+                .to_hex()
+                .chars()
+                .take(16)
+                .collect::<String>()
+            );
+            args.extend(["--name".to_string(), name]);
+        }
         if self.sealed {
             args.extend([
                 "--network=none".to_string(),
@@ -559,6 +593,33 @@ fn is_digest_pinned_image(image: &str) -> bool {
     !name.trim().is_empty()
         && digest.len() == 64
         && digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+fn validate_limit(field: &str, value: &str) -> Result<(), RunnerError> {
+    let v = value.trim();
+    if v.is_empty()
+        || v.starts_with('-')
+        || v.starts_with('0')
+        || v.contains(';')
+        || v.contains(' ')
+    {
+        return Err(RunnerError::InvalidResourceLimit {
+            field: field.into(),
+            value: value.into(),
+        });
+    }
+    let number = if field == "cpu_limit" {
+        v
+    } else {
+        v.strip_suffix(['k', 'K', 'm', 'M', 'g', 'G', 't', 'T', 'b', 'B'])
+            .unwrap_or(v)
+    };
+    if number.parse::<f64>().is_err() || number.parse::<f64>().unwrap_or(0.0) <= 0.0 {
+        return Err(RunnerError::InvalidResourceLimit {
+            field: field.into(),
+            value: value.into(),
+        });
+    }
+    Ok(())
 }
 
 #[cfg(feature = "container")]
