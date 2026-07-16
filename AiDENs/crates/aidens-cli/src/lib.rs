@@ -730,10 +730,12 @@ fn learning_manifest(source: Option<&str>) -> Result<Value> {
 }
 
 fn learning_projection(mode: &str) -> aidens_contracts::CodingLearningTerminalProjectionV1 {
-    let mut evidence = aidens_contracts::CodingLearningEvidenceV1::default();
-    evidence.execution_mode = mode.to_string();
-    evidence.mock_only = mode == "mock";
-    evidence.fixture_only = mode == "fixture";
+    let evidence = aidens_contracts::CodingLearningEvidenceV1 {
+        execution_mode: mode.to_string(),
+        mock_only: mode == "mock",
+        fixture_only: mode == "fixture",
+        ..Default::default()
+    };
     aidens_contracts::project_terminal_state(&evidence)
 }
 
