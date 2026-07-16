@@ -58,10 +58,9 @@ pub fn validate_required_coding_learning_backpointers(
             .collect::<Vec<_>>();
         if matching.is_empty() {
             reasons.push(format!("required-owner-reference-missing:{role}"));
-        } else if !matching
-            .iter()
-            .any(|backpointer| backpointer_has_durable_owner_identity(backpointer))
-        {
+        } else if matching.len() != 1 {
+            reasons.push(format!("required-owner-reference-role-not-unique:{role}"));
+        } else if !backpointer_has_durable_owner_identity(matching[0]) {
             reasons.push(format!("required-owner-reference-not-durable:{role}"));
         }
     }

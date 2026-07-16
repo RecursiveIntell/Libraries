@@ -93,10 +93,19 @@ pub fn extract_candidate(run: &SandboxRun) -> Result<Candidate, CandidateRejecti
         return Err(CandidateRejection { reasons });
     }
     let mut h = Hasher::new();
-    h.update(run.task.as_bytes());
-    h.update(run.lineage.as_bytes());
-    h.update(run.patch.as_bytes());
+    // Versioned, length-framed preimage: concatenation must not make
+    // ("ab", "c") collide with ("a", "bc").
+    h.update(b"candidate-identity-v1\0");
+    for value in [
+        run.task.as_bytes(),
+        run.lineage.as_bytes(),
+        run.patch.as_bytes(),
+    ] {
+        h.update(&(value.len() as u64).to_be_bytes());
+        h.update(value);
+    }
     for tool in &run.tools {
+        h.update(&(tool.len() as u64).to_be_bytes());
         h.update(tool.as_bytes());
     }
     Ok(Candidate {
@@ -199,20 +208,7 @@ impl Default for LifecycleInput {
         }
     }
 }
-impl LifecycleInput {
-    pub fn passing() -> Self {
-        Self {
-            permit: true,
-            paired_trials: 20,
-            families: 5,
-            verification_positive: true,
-            safety_violations: 0,
-            evaluator_suppression: false,
-            holdout_regression_points: 0,
-            replay_agreement_percent: 95,
-        }
-    }
-}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LifecycleRequest {
     pub decision: LifecycleDecision,
@@ -245,11 +241,9 @@ pub fn lifecycle_decision(i: LifecycleInput) -> LifecycleRequest {
         r.push("replay-agreement-below-minimum".into());
     }
     LifecycleRequest {
-        decision: if r.is_empty() {
-            LifecycleDecision::Promote
-        } else {
-            LifecycleDecision::Quarantine
-        },
+        // Runner-local thresholds are advisory only. Promotion requires the
+        // typed canonical owner decision and can never be inferred here.
+        decision: LifecycleDecision::Quarantine,
         reasons: r,
     }
 }
@@ -297,8 +291,8 @@ pub fn replay(_spec: TrialSpec, mode: ReplayMode) -> ReplayReport {
             environment_drift: false,
         },
         ReplayMode::ReplayEvaluation => ReplayReport {
-            result: ReplayResult::ReplayMismatch,
-            verifier_drift: true,
+            result: ReplayResult::NotAvailable,
+            verifier_drift: false,
             store_drift: false,
             environment_drift: false,
         },
@@ -360,7 +354,16 @@ pub fn run_fixture_vertical_slice() -> Result<FixtureVerticalSlice, CandidateRej
         ),
         5,
     );
-    let promoted = lifecycle_decision(LifecycleInput::passing());
+    let lifecycle = lifecycle_decision(LifecycleInput {
+        permit: true,
+        paired_trials: trials.denominator,
+        families: 5,
+        verification_positive: true,
+        safety_violations: 0,
+        evaluator_suppression: false,
+        holdout_regression_points: 0,
+        replay_agreement_percent: 95,
+    });
     let replay = replay_with_observed(
         TrialSpec::new(
             "task-digest",
@@ -382,11 +385,7 @@ pub fn run_fixture_vertical_slice() -> Result<FixtureVerticalSlice, CandidateRej
         fixture_evidence: evidence,
         candidate,
         paired_trials: trials,
-        lifecycle: if promoted.decision == LifecycleDecision::Promote {
-            LifecycleDecision::Revoke
-        } else {
-            promoted.decision
-        },
+        lifecycle: lifecycle.decision,
         replay,
     })
 }
@@ -432,9 +431,18 @@ mod tests {
             lifecycle_decision(LifecycleInput::default()).decision,
             LifecycleDecision::Quarantine
         );
+        let input = LifecycleInput {
+            permit: true,
+            paired_trials: 20,
+            families: 5,
+            verification_positive: true,
+            holdout_regression_points: 0,
+            replay_agreement_percent: 95,
+            ..LifecycleInput::default()
+        };
         assert_eq!(
-            lifecycle_decision(LifecycleInput::passing()).decision,
-            LifecycleDecision::Promote
+            lifecycle_decision(input).decision,
+            LifecycleDecision::Quarantine
         );
     }
     #[test]
@@ -450,7 +458,7 @@ mod tests {
         );
         assert_eq!(
             replay(s, ReplayMode::ReplayEvaluation).result,
-            ReplayResult::ReplayMismatch
+            ReplayResult::NotAvailable
         );
     }
 
@@ -459,7 +467,7 @@ mod tests {
         let first = run_fixture_vertical_slice().unwrap();
         let second = run_fixture_vertical_slice().unwrap();
         assert_eq!(first, second);
-        assert_eq!(first.lifecycle, LifecycleDecision::Revoke);
+        assert_eq!(first.lifecycle, LifecycleDecision::Quarantine);
         assert_eq!(first.replay.result, ReplayResult::ReplayMatch);
         assert!(!first.fixture_evidence.eligible_for_learning());
     }
