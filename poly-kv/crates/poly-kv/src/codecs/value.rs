@@ -82,7 +82,6 @@ impl VectorCodec for RawExactValueCodec {
     fn score_semantics(&self) -> quant_codec_core::ScoreSemantics {
         quant_codec_core::ScoreSemantics::CosineOnDecodedF32
     }
-
 }
 
 impl ValueCodec for RawExactValueCodec {

@@ -139,5 +139,4 @@ impl VectorCodec for Q8KeyCodec {
     fn score_semantics(&self) -> quant_codec_core::ScoreSemantics {
         quant_codec_core::ScoreSemantics::CosineOnDecodedF32
     }
-
 }

@@ -137,7 +137,6 @@ impl VectorCodec for RawExactCodec {
     fn score_semantics(&self) -> quant_codec_core::ScoreSemantics {
         quant_codec_core::ScoreSemantics::CosineOnDecodedF32
     }
-
 }
 
 pub(crate) fn sort_blocks(mut blocks: Vec<ExactKvBlock>) -> Vec<ExactKvBlock> {
