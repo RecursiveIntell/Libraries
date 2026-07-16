@@ -23,6 +23,25 @@ fn learning_lifecycle_requires_explicit_permit() {
 }
 
 #[test]
+fn learning_lifecycle_does_not_claim_owner_transition_without_owner_evidence() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let permit = root.join("permit.json");
+    std::fs::write(&permit, "{}").unwrap();
+
+    for action in ["promote", "revoke", "stop"] {
+        let report = learn_lifecycle_command(action, "candidate-x", permit.to_str()).unwrap();
+        let value: Value = serde_json::from_str(&report).unwrap();
+        assert_eq!(value["requested_action"], action);
+        assert_eq!(value["lifecycle_state"], "blocked");
+        assert_eq!(value["verified"], false);
+        assert_eq!(learning_run_exit_code(&report), 2);
+    }
+
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn learning_mock_run_cannot_render_verified_success() {
     let report = learn_run_command("mock", None, None).unwrap();
     let value: Value = serde_json::from_str(&report).unwrap();

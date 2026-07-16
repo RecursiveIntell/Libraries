@@ -4,15 +4,19 @@ use clap::Parser;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let is_learning_run = matches!(
+    let requires_verified_learning_outcome = matches!(
         &cli.command,
         Command::Learn {
             command: LearningCommand::Run { .. }
+                | LearningCommand::Promote { .. }
+                | LearningCommand::Revoke { .. }
+                | LearningCommand::Replay { .. }
+                | LearningCommand::Stop { .. }
         }
     );
     let output = run(cli)?;
     println!("{output}");
-    if is_learning_run {
+    if requires_verified_learning_outcome {
         std::process::exit(learning_run_exit_code(&output));
     }
     Ok(())

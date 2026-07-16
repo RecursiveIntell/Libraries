@@ -787,14 +787,27 @@ pub fn learning_run_exit_code(report: &str) -> i32 {
 }
 
 pub fn learn_promote_command(candidate: &str, permit: Option<&str>) -> Result<String> {
+    learn_lifecycle_command("promote", candidate, permit)
+}
+
+pub fn learn_lifecycle_command(
+    action: &str,
+    candidate: &str,
+    permit: Option<&str>,
+) -> Result<String> {
     let permit = permit.ok_or_else(|| anyhow::anyhow!("explicit lifecycle permit is required"))?;
     let permit_text =
         std::fs::read_to_string(permit).context("explicit lifecycle permit must be readable")?;
     let _: Value = serde_json::from_str(&permit_text)
         .context("explicit lifecycle permit must be valid JSON")?;
-    Ok(serde_json::to_string_pretty(
-        &serde_json::json!({"candidate": candidate, "lifecycle": "promoted", "verified": false}),
-    )?)
+    Ok(serde_json::to_string_pretty(&serde_json::json!({
+        "schema": "AiDENsLearningLifecycleRequestV1",
+        "candidate": candidate,
+        "requested_action": action,
+        "lifecycle_state": "blocked",
+        "verified": false,
+        "blocked_checks": ["canonical-lifecycle-owner-evidence-missing"],
+    }))?)
 }
 
 pub fn learning_command(command: LearningCommand) -> Result<String> {
@@ -806,11 +819,13 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
         LearningCommand::Compare { source } => learn_inspect_command(source.as_deref()),
         LearningCommand::Replay { source } => learn_inspect_command(source.as_deref()),
         LearningCommand::Promote { candidate, permit } => {
-            learn_promote_command(&candidate, permit.as_deref())
+            learn_lifecycle_command("promote", &candidate, permit.as_deref())
         }
-        LearningCommand::Revoke { candidate, permit }
-        | LearningCommand::Stop { candidate, permit } => {
-            learn_promote_command(&candidate, permit.as_deref())
+        LearningCommand::Revoke { candidate, permit } => {
+            learn_lifecycle_command("revoke", &candidate, permit.as_deref())
+        }
+        LearningCommand::Stop { candidate, permit } => {
+            learn_lifecycle_command("stop", &candidate, permit.as_deref())
         }
     }
 }
