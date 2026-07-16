@@ -341,10 +341,30 @@ impl SandboxCapabilityTruthReceiptV1 {
     }
 
     pub fn verify(&self) -> bool {
+        const REQUIRED: [&str; 10] = [
+            "cap_drop_all",
+            "controlled_workspace_mount",
+            "cpu_limit",
+            "memory_limit",
+            "network_none",
+            "no_new_privileges",
+            "pids_limit",
+            "read_only_rootfs",
+            "tmpfs_tmp",
+            "userns_keep_id",
+        ];
         self.schema == "SandboxCapabilityTruthReceiptV1"
             && self.execution_mode == "sealed_local"
             && self.runtime == "podman"
             && self.rootless_required
+            && self.rootless_observed
+            && is_digest_pinned_image(&self.image)
+            && !self.memory_limit.is_empty()
+            && !self.cpu_limit.is_empty()
+            && self.mechanisms.len() == REQUIRED.len()
+            && REQUIRED
+                .iter()
+                .all(|item| self.mechanisms.iter().any(|seen| seen == item))
             && self.content_digest == self.expected_digest()
     }
 }
@@ -483,6 +503,17 @@ impl ContainerBackend {
                 runtime: format!("program is outside the sealed check allowlist: {program}"),
             });
         }
+        if self.sealed
+            && (command_args.is_empty()
+                || !matches!(command_args[0], "fmt" | "clippy" | "test")
+                || command_args.iter().any(|arg| {
+                    arg.contains(';') || arg.contains("&&") || arg.contains("||") || *arg == "-c"
+                }))
+        {
+            return Err(RunnerError::SealedModeUnsupported {
+                runtime: "sealed execution accepts only direct cargo check argv".into(),
+            });
+        }
         if self.sealed {
             if let Some((key, _)) = env.iter().find(|(key, _)| !is_env_allowed(key)) {
                 return Err(RunnerError::SealedModeUnsupported {
@@ -521,7 +552,6 @@ impl ContainerBackend {
     }
 }
 
-#[cfg(feature = "container")]
 fn is_digest_pinned_image(image: &str) -> bool {
     let Some((name, digest)) = image.rsplit_once("@sha256:") else {
         return false;
@@ -964,6 +994,29 @@ mod tests {
             )
             .unwrap_err();
         assert!(matches!(error, RunnerError::SealedModeUnsupported { .. }));
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn sealed_direct_argv_rejects_shell_and_unapproved_commands() {
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.rust_image =
+            "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                .into();
+        let backend = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman).unwrap();
+        let workspace = tempfile::tempdir().unwrap();
+
+        for (program, args) in [
+            ("sh", vec!["-c", "cargo test"]),
+            ("cargo", vec!["run"]),
+            ("cargo", vec!["test", "&&", "id"]),
+        ] {
+            let error = backend
+                .build_run_args(workspace.path(), program, &args, &[])
+                .unwrap_err();
+            assert!(matches!(error, RunnerError::SealedModeUnsupported { .. }));
+        }
     }
 
     #[cfg(feature = "container")]
