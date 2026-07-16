@@ -1,9 +1,10 @@
 use context_governor::{
     audit_compression_boundary, audit_mcp_tool_surface, compact_context, context_diff,
-    evaluate_governed_memory, evaluate_leakage_free_rag, parse_summary_output,
-    render_summary_prompt, screen_knowledge_conflicts, select_retrieval_route, CompactRequest,
-    CompactResponse, ContextGovernorError, EvidenceClaim, FileContextStore, GovernanceCase,
-    GovernanceFailureMode, PromptConfigV1, RagEvalInput, SearchScope, ToolManifestEntry,
+    evaluate_governed_memory, evaluate_leakage_free_rag, finalize_compacted_response,
+    parse_summary_output, render_summary_prompt, screen_knowledge_conflicts,
+    select_retrieval_route, CompactRequest, CompactResponse, ContextGovernorError, EvidenceClaim,
+    FileContextStore, GovernanceCase, GovernanceFailureMode, PromptConfigV1, RagEvalInput,
+    SearchScope, ToolManifestEntry,
 };
 
 use serde::Serialize;
@@ -23,6 +24,11 @@ fn run() -> Result<(), ContextGovernorError> {
         "compact" => {
             let request: CompactRequest = read_json_stdin("CompactRequest")?;
             print_json(&compact_context(request)?)
+        }
+        "finalize" => {
+            let response: CompactResponse = read_json_stdin("CompactResponse")?;
+            let messages = response.compacted_messages.clone();
+            print_json(&finalize_compacted_response(response, messages)?)
         }
         "store" => {
             let dir = arg_value(&args, "--dir").unwrap_or_else(|| ".context-governor".to_string());
@@ -167,7 +173,7 @@ fn run() -> Result<(), ContextGovernorError> {
         }
         "help" | "--help" | "-h" => {
             println!(
-                "context-governor commands:\n  compact < request.json > response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  parse-summary < summary.txt    (parses LLM output into structured fields)"
+                "context-governor commands:\n  compact < request.json > response.json\n  finalize < response.json > finalized-response.json\n  store --dir DIR < response.json\n  expand --dir DIR --receipt RECEIPT --item ITEM [--max-chars N]\n  search --dir DIR --query TEXT [--scope all|exact|summary|receipt] [--top-k N]\n  status --dir DIR\n  prune --dir DIR [--keep-last N]\n  diff < response.json\n  boundary-audit < request.json\n  audit-tool-surface --tools-json JSON\n  eval-governed-memory --harness-id ID --cases-json JSON\n  eval-rag-leakage --query Q --retrieved R --model-answer A\n  screen-conflicts --claims-json JSON\n  select-route --query Q\n  render-prompt < response.json  (renders LLM summary prompt)\n  parse-summary < summary.txt    (parses LLM output into structured fields)"
             );
             Ok(())
         }

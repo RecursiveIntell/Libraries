@@ -1,6 +1,7 @@
 use context_governor::{
-    compact_context, filter_recall_candidate, hash_messages, BudgetMode, CompactRequest,
-    CompactionPolicy, ExactRecoveryStateV1, Message, RecallCandidate, RecallDecision,
+    compact_context, filter_recall_candidate, finalize_compacted_response, hash_messages,
+    hash_messages_sha256, hash_text_sha256, BudgetMode, CompactRequest, CompactionPolicy,
+    ExactRecoveryStateV1, Message, RecallCandidate, RecallDecision,
 };
 use serde_json::Value;
 
@@ -145,8 +146,71 @@ fn receipt_hash_matches_final_compacted_messages_after_receipt_id_injection() {
         hash_messages(&result.compacted_messages).unwrap()
     );
     assert_eq!(
+        result.receipt.compacted_transcript_sha256,
+        hash_messages_sha256(&result.compacted_messages).unwrap()
+    );
+    assert_eq!(
+        result.receipt.original_transcript_sha256,
+        hash_messages_sha256(&[
+            msg("system", "system"),
+            msg("tool", &format!("{} HASH_NEEDLE", "bulk ".repeat(1_000))),
+            msg("user", "latest active task"),
+        ])
+        .unwrap()
+    );
+    assert!(result.receipt.exact_fallback_refs.iter().all(|fallback| {
+        result
+            .exact_store
+            .iter()
+            .find(|stored| stored.item_id == fallback.item_id)
+            .is_some_and(|stored| fallback.content_sha256 == hash_text_sha256(&stored.content))
+    }));
+    assert_eq!(
         result.receipt.compacted_approx_tokens,
         context_governor::approx_tokens_messages(&result.compacted_messages)
+    );
+}
+
+#[test]
+fn finalize_compacted_response_rebinds_receipt_to_adapter_output() {
+    let response = compact_context(CompactRequest {
+        session_id: "adapter-finalize".into(),
+        messages: vec![
+            msg("system", "system"),
+            msg("assistant", &"historical detail ".repeat(500)),
+            msg("user", "latest active task"),
+        ],
+        policy: CompactionPolicy {
+            target_tokens: 120,
+            protect_first_n: 0,
+            protect_last_n: 1,
+            ..Default::default()
+        },
+        focus: None,
+    })
+    .unwrap();
+    let original_sha256 = response.receipt.original_transcript_sha256.clone();
+    let mut emitted = response.compacted_messages.clone();
+    emitted[0].content = "adapter-sanitized system".into();
+
+    let finalized = finalize_compacted_response(response, emitted.clone()).unwrap();
+
+    assert_eq!(finalized.compacted_messages, emitted);
+    assert_eq!(
+        finalized.receipt.compacted_message_count,
+        finalized.compacted_messages.len()
+    );
+    assert_eq!(
+        finalized.receipt.compacted_transcript_blake3,
+        hash_messages(&finalized.compacted_messages).unwrap()
+    );
+    assert_eq!(
+        finalized.receipt.compacted_transcript_sha256,
+        hash_messages_sha256(&finalized.compacted_messages).unwrap()
+    );
+    assert_eq!(
+        finalized.receipt.original_transcript_sha256,
+        original_sha256
     );
 }
 

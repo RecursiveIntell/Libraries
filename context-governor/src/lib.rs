@@ -9,7 +9,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
+use std::io::Write;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -21,6 +23,8 @@ pub use reducers::*;
 
 pub mod llm_summary;
 pub use llm_summary::*;
+
+mod receipt_index;
 
 #[cfg(feature = "sqlite-store")]
 pub mod sqlite_store;
@@ -42,12 +46,10 @@ pub enum ContextGovernorError {
     ReceiptNotFound(String),
     #[error("context budget exceeded: target {target} tokens, actual {actual} tokens")]
     BudgetExceeded { target: usize, actual: usize },
-    #[cfg(feature = "sqlite-store")]
     #[error("sqlite store failed: {0}")]
     Sqlite(String),
 }
 
-#[cfg(feature = "sqlite-store")]
 impl From<rusqlite::Error> for ContextGovernorError {
     fn from(err: rusqlite::Error) -> Self {
         ContextGovernorError::Sqlite(err.to_string())
@@ -587,6 +589,8 @@ pub struct ExactFallbackRefV1 {
     pub start_index: usize,
     pub end_index: usize,
     pub content_blake3: String,
+    #[serde(default)]
+    pub content_sha256: String,
     pub approx_tokens: usize,
 }
 
@@ -674,6 +678,10 @@ pub struct ContextCompactionReceiptV1 {
     pub token_counter: TokenCounterKind,
     pub original_transcript_blake3: String,
     pub compacted_transcript_blake3: String,
+    #[serde(default)]
+    pub original_transcript_sha256: String,
+    #[serde(default)]
+    pub compacted_transcript_sha256: String,
     pub allocation_plan_id: String,
     pub semantic_memory_fact_ids: Vec<String>,
     pub semantic_memory_document_ids: Vec<String>,
@@ -784,6 +792,7 @@ pub fn compact_context_with_memory_sink(
 
     let original_tokens = count_tokens_messages(&request.messages, &request.policy);
     let original_hash = hash_messages(&request.messages)?;
+    let original_sha256 = hash_messages_sha256(&request.messages)?;
     let mut items = classify_messages(&request.session_id, &request.messages, &request.policy);
     let allocator_mode = resolve_allocator(&request.policy);
     score_items(
@@ -919,6 +928,7 @@ pub fn compact_context_with_memory_sink(
                     start_index: item.start_index,
                     end_index: item.end_index,
                     content_blake3: item.content_blake3.clone(),
+                    content_sha256: hash_text_sha256(&stored.content),
                     approx_tokens: item.approx_tokens,
                 })
         })
@@ -948,6 +958,8 @@ pub fn compact_context_with_memory_sink(
         token_counter: request.policy.token_counter.clone(),
         original_transcript_blake3: original_hash,
         compacted_transcript_blake3: compacted_hash,
+        original_transcript_sha256: original_sha256,
+        compacted_transcript_sha256: hash_messages_sha256(&compacted_messages)?,
         allocation_plan_id: plan.plan_id.clone(),
         semantic_memory_fact_ids: Vec::new(),
         semantic_memory_document_ids: Vec::new(),
@@ -1173,8 +1185,38 @@ pub fn hash_messages(messages: &[Message]) -> Result<String, ContextGovernorErro
     Ok(hash_text(&rendered))
 }
 
+pub fn hash_messages_sha256(messages: &[Message]) -> Result<String, ContextGovernorError> {
+    let rendered = serde_json::to_string(messages)?;
+    Ok(hash_text_sha256(&rendered))
+}
+
 pub fn hash_text(text: &str) -> String {
     blake3::hash(text.as_bytes()).to_hex().to_string()
+}
+
+pub fn hash_text_sha256(text: &str) -> String {
+    format!("{:x}", Sha256::digest(text.as_bytes()))
+}
+
+/// Bind receipt hashes and token counts to the exact messages emitted by a
+/// host adapter after deterministic sanitation or an audited LLM checkpoint.
+pub fn finalize_compacted_response(
+    mut response: CompactResponse,
+    compacted_messages: Vec<Message>,
+) -> Result<CompactResponse, ContextGovernorError> {
+    let policy = CompactionPolicy {
+        token_counter: response.receipt.token_counter.clone(),
+        ..CompactionPolicy::default()
+    };
+    let compacted_tokens = count_tokens_messages(&compacted_messages, &policy);
+    response.receipt.compacted_message_count = compacted_messages.len();
+    response.receipt.compacted_approx_tokens = compacted_tokens;
+    response.receipt.token_savings_estimate =
+        response.receipt.original_approx_tokens as isize - compacted_tokens as isize;
+    response.receipt.compacted_transcript_blake3 = hash_messages(&compacted_messages)?;
+    response.receipt.compacted_transcript_sha256 = hash_messages_sha256(&compacted_messages)?;
+    response.compacted_messages = compacted_messages;
+    Ok(response)
 }
 
 fn classify_messages(
@@ -2575,7 +2617,20 @@ pub fn context_expand(
     response
         .exact_store
         .iter()
-        .find(|item| item.item_id == item_id)
+        .find(|item| {
+            item.item_id == item_id
+                && hash_text(&item.content) == item.content_blake3
+                && response
+                    .receipt
+                    .exact_fallback_refs
+                    .iter()
+                    .find(|fallback| fallback.item_id == item.item_id)
+                    .map_or(true, |fallback| {
+                        fallback.content_blake3 == item.content_blake3
+                            && (fallback.content_sha256.is_empty()
+                                || hash_text_sha256(&item.content) == fallback.content_sha256)
+                    })
+        })
         .map(|item| {
             let total_chars = item.content.chars().count();
             let truncated = total_chars > max_chars;
@@ -3266,13 +3321,6 @@ pub struct FileContextStoreSaveResultV1 {
     pub verified: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-struct PersistedReceiptIndexV1 {
-    schema: String,
-    receipt_ids: Vec<String>,
-    token_to_receipts: BTreeMap<String, Vec<String>>,
-}
-
 #[derive(Debug, Clone)]
 struct ReceiptFileInfo {
     receipt_id: String,
@@ -3283,18 +3331,12 @@ struct ReceiptFileInfo {
 #[derive(Debug, Clone)]
 pub struct FileContextStore {
     root: std::path::PathBuf,
-    // In-memory inverted index: token -> set of receipt_ids that contain it.
-    // Built lazily on first search() call and invalidated on save().
-    index: std::cell::RefCell<
-        Option<std::collections::HashMap<String, std::collections::HashSet<String>>>,
-    >,
 }
 
 impl FileContextStore {
     pub fn new(root: impl AsRef<std::path::Path>) -> Self {
         Self {
             root: root.as_ref().to_path_buf(),
-            index: std::cell::RefCell::new(None),
         }
     }
 
@@ -3310,8 +3352,13 @@ impl FileContextStore {
         response: &CompactResponse,
     ) -> Result<FileContextStoreSaveResultV1, ContextGovernorError> {
         std::fs::create_dir_all(&self.root)?;
-        let path = self.path_for_receipt(&response.receipt.receipt_id);
-        let tmp_path = path.with_extension("json.tmp");
+        let _lock = self.lock_store()?;
+        let path = self.path_for_receipt(&response.receipt.receipt_id)?;
+        let tmp_path = self.root.join(format!(
+            ".{}.{}.json.tmp",
+            response.receipt.receipt_id,
+            Uuid::new_v4()
+        ));
         let mut persisted = response.clone();
         let exact_recovered = !persisted.exact_store.is_empty();
         persisted.receipt.summary_loss_report.exact_recovery_state = if exact_recovered {
@@ -3324,12 +3371,32 @@ impl FileContextStore {
         } else {
             RecoveryDurabilityV1::Unavailable
         };
-        let json = serde_json::to_string_pretty(&persisted)?;
-        std::fs::write(&tmp_path, json)?;
-        std::fs::rename(&tmp_path, &path)?;
-        // Invalidate the in-memory index so the next search rebuilds it
-        *self.index.borrow_mut() = None;
-        self.rebuild_and_persist_index()?;
+        let json = serde_json::to_vec_pretty(&persisted)?;
+        let write_result = (|| -> Result<(), ContextGovernorError> {
+            let mut temporary = std::fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&tmp_path)?;
+            temporary.write_all(&json)?;
+            temporary.sync_all()?;
+            std::fs::rename(&tmp_path, &path)?;
+            Self::sync_directory(&self.root)?;
+            // The receipt is authoritative and is fsync'd before the derived
+            // index transaction. If the process crashes between these steps,
+            // the next search reconciles the fingerprint mismatch.
+            let fingerprint =
+                receipt_index::fingerprint_for_path(&persisted.receipt.receipt_id, &path)?;
+            if receipt_index::upsert_if_present(&self.root, &fingerprint, &persisted).is_err() {
+                // A derived-index failure must not roll back an already durable
+                // receipt. Remove the suspect cache and rebuild lazily.
+                let _ = self.invalidate_index();
+            }
+            Ok(())
+        })();
+        if write_result.is_err() {
+            let _ = std::fs::remove_file(&tmp_path);
+        }
+        write_result?;
         let verified = self.load(&response.receipt.receipt_id).map(|loaded| {
             loaded.receipt.summary_loss_report.exact_recovery_state
                 == persisted.receipt.summary_loss_report.exact_recovery_state
@@ -3345,7 +3412,7 @@ impl FileContextStore {
     }
 
     pub fn load(&self, receipt_id: &str) -> Result<CompactResponse, ContextGovernorError> {
-        let path = self.path_for_receipt(receipt_id);
+        let path = self.path_for_receipt(receipt_id)?;
         if !path.exists() {
             return Err(ContextGovernorError::ReceiptNotFound(
                 receipt_id.to_string(),
@@ -3356,6 +3423,8 @@ impl FileContextStore {
     }
 
     pub fn list_receipts(&self) -> Result<Vec<String>, ContextGovernorError> {
+        std::fs::create_dir_all(&self.root)?;
+        let _lock = self.lock_store()?;
         Ok(self
             .scan_receipts()?
             .0
@@ -3365,9 +3434,11 @@ impl FileContextStore {
     }
 
     pub fn status(&self) -> Result<FileContextStoreStatusV1, ContextGovernorError> {
+        std::fs::create_dir_all(&self.root)?;
+        let _lock = self.lock_store()?;
         let (receipts, total_bytes, stale_tmp_files_removed) = self.scan_receipts()?;
-        let index_built =
-            self.index.borrow().is_some() || self.persisted_index_matches(&receipts)?;
+        let fingerprints = receipt_index::scan_fingerprints(&self.root)?;
+        let index_built = receipt_index::index_is_valid(&self.root, &fingerprints)?;
         Ok(FileContextStoreStatusV1 {
             schema: "FileContextStoreStatusV1".to_string(),
             root: self.root.display().to_string(),
@@ -3375,7 +3446,9 @@ impl FileContextStore {
             total_bytes,
             stale_tmp_files_removed,
             index_built,
-            searchable: index_built || receipts.is_empty(),
+            // Search is available even before the lazy index exists: the first
+            // query builds it, with an exact full-scan fallback for substrings.
+            searchable: true,
             last_receipt: receipts.last().map(|info| info.receipt_id.clone()),
         })
     }
@@ -3384,21 +3457,36 @@ impl FileContextStore {
         &self,
         keep_last: usize,
     ) -> Result<FileContextStorePruneResultV1, ContextGovernorError> {
+        std::fs::create_dir_all(&self.root)?;
+        let _lock = self.lock_store()?;
         let (receipts, _, _) = self.scan_receipts()?;
         let remove_count = receipts.len().saturating_sub(keep_last);
+        let removed_receipt_ids = receipts
+            .iter()
+            .take(remove_count)
+            .map(|info| info.receipt_id.clone())
+            .collect::<Vec<_>>();
         for info in receipts.iter().take(remove_count) {
             std::fs::remove_file(&info.path)?;
         }
-        *self.index.borrow_mut() = None;
-        self.rebuild_and_persist_index()?;
-        let status = self.status()?;
+        if remove_count > 0 {
+            Self::sync_directory(&self.root)?;
+        }
+        let index_built = match receipt_index::remove_if_present(&self.root, &removed_receipt_ids) {
+            Ok(index_built) => index_built,
+            Err(_) => {
+                let _ = self.invalidate_index();
+                false
+            }
+        };
+        let (remaining, total_bytes, _) = self.scan_receipts()?;
         Ok(FileContextStorePruneResultV1 {
             schema: "FileContextStorePruneResultV1".to_string(),
-            kept_receipts: status.receipt_count,
+            kept_receipts: remaining.len(),
             removed_receipts: remove_count,
-            total_bytes: status.total_bytes,
-            index_built: status.index_built,
-            last_receipt: status.last_receipt,
+            total_bytes,
+            index_built,
+            last_receipt: remaining.last().map(|info| info.receipt_id.clone()),
         })
     }
 
@@ -3460,170 +3548,31 @@ impl FileContextStore {
             .ok_or_else(|| ContextGovernorError::ReceiptNotFound(item_id.to_string()))
     }
 
-    /// Build an in-memory inverted index from all stored receipts.
-    /// Tokenizes content on whitespace and stores receipt_id sets per token.
-    fn build_index(
-        &self,
-    ) -> Result<
-        std::collections::HashMap<String, std::collections::HashSet<String>>,
-        ContextGovernorError,
-    > {
-        let mut idx: std::collections::HashMap<String, std::collections::HashSet<String>> =
-            std::collections::HashMap::new();
-        for receipt_id in self.list_receipts()? {
-            let response = self.load(&receipt_id)?;
-            // Index exact_store content
-            for item in &response.exact_store {
-                for token in item.content.split_whitespace() {
-                    let token_l = token.to_lowercase();
-                    idx.entry(token_l).or_default().insert(receipt_id.clone());
-                }
-            }
-            // Index compacted_messages content
-            for msg in &response.compacted_messages {
-                for token in msg.content.split_whitespace() {
-                    let token_l = token.to_lowercase();
-                    idx.entry(token_l).or_default().insert(receipt_id.clone());
-                }
-            }
-        }
-        Ok(idx)
-    }
-
-    fn rebuild_and_persist_index(&self) -> Result<(), ContextGovernorError> {
-        let index = self.build_index()?;
-        self.persist_index(&index)?;
-        *self.index.borrow_mut() = Some(index);
-        Ok(())
-    }
-
-    fn persisted_index_matches(
-        &self,
-        receipts: &[ReceiptFileInfo],
-    ) -> Result<bool, ContextGovernorError> {
-        let Some(index) = self.load_persisted_index()? else {
-            return Ok(false);
-        };
-        let receipt_ids = receipts
-            .iter()
-            .map(|info| info.receipt_id.clone())
-            .collect::<Vec<_>>();
-        Ok(index.receipt_ids == receipt_ids)
-    }
-
-    fn load_persisted_index(
-        &self,
-    ) -> Result<Option<PersistedReceiptIndexV1>, ContextGovernorError> {
-        let path = self.index_path();
-        if !path.exists() {
-            return Ok(None);
-        }
-        let json = std::fs::read_to_string(path)?;
-        Ok(Some(serde_json::from_str(&json)?))
-    }
-
-    fn persist_index(
-        &self,
-        index: &std::collections::HashMap<String, std::collections::HashSet<String>>,
-    ) -> Result<(), ContextGovernorError> {
-        std::fs::create_dir_all(&self.root)?;
-        let receipt_ids = self.list_receipts()?;
-        let token_to_receipts = index
-            .iter()
-            .map(|(token, receipt_set)| {
-                let mut receipts = receipt_set.iter().cloned().collect::<Vec<_>>();
-                receipts.sort();
-                (token.clone(), receipts)
-            })
-            .collect::<BTreeMap<_, _>>();
-        let persisted = PersistedReceiptIndexV1 {
-            schema: "PersistedReceiptIndexV1".to_string(),
-            receipt_ids,
-            token_to_receipts,
-        };
-        let path = self.index_path();
-        let tmp_path = path.with_extension("json.tmp");
-        std::fs::write(&tmp_path, serde_json::to_string_pretty(&persisted)?)?;
-        std::fs::rename(tmp_path, path)?;
-        Ok(())
-    }
-
-    fn index_from_persisted(
-        persisted: PersistedReceiptIndexV1,
-    ) -> std::collections::HashMap<String, std::collections::HashSet<String>> {
-        persisted
-            .token_to_receipts
-            .into_iter()
-            .map(|(token, receipts)| (token, receipts.into_iter().collect()))
-            .collect()
-    }
-
-    /// Ensure the index is built and return a reference to it.
-    fn with_index<F, R>(&self, f: F) -> Result<R, ContextGovernorError>
-    where
-        F: FnOnce(&std::collections::HashMap<String, std::collections::HashSet<String>>) -> R,
-    {
-        let mut guard = self.index.borrow_mut();
-        if guard.is_none() {
-            let receipts = self.scan_receipts()?.0;
-            if let Some(persisted) = self.load_persisted_index()? {
-                let receipt_ids = receipts
-                    .iter()
-                    .map(|info| info.receipt_id.clone())
-                    .collect::<Vec<_>>();
-                if persisted.receipt_ids == receipt_ids {
-                    *guard = Some(Self::index_from_persisted(persisted));
-                }
-            }
-            if guard.is_none() {
-                let index = self.build_index()?;
-                self.persist_index(&index)?;
-                *guard = Some(index);
-            }
-        }
-        Ok(f(guard.as_ref().unwrap()))
-    }
-
     pub fn search(
         &self,
         query: &str,
         top_k: usize,
         scope: SearchScope,
     ) -> Result<Vec<StoredContextSearchHit>, ContextGovernorError> {
-        // Use the inverted index to find candidate receipts that contain
-        // any query token, then do full search only on those candidates.
-        // If the index returns no candidates (e.g. the query is a substring
-        // of a token, not a full token), fall back to searching all receipts.
-        let query_tokens: Vec<String> =
-            query.split_whitespace().map(|t| t.to_lowercase()).collect();
-        let candidate_ids: Vec<String> = if query_tokens.is_empty() {
-            self.list_receipts()?
-        } else {
-            let candidates = self.with_index(|idx| {
-                let mut candidates: std::collections::HashSet<String> =
-                    std::collections::HashSet::new();
-                for token in &query_tokens {
-                    if let Some(receipt_ids) = idx.get(token) {
-                        for rid in receipt_ids {
-                            candidates.insert(rid.clone());
-                        }
-                    }
-                }
-                let mut sorted: Vec<String> = candidates.into_iter().collect();
-                sorted.sort();
-                sorted
-            })?;
-            if candidates.is_empty() {
-                // No exact token matches — fall back to full scan so that
-                // substring queries (e.g. "NEEDLE" in "NEEDLE_PARSER") still work.
-                self.list_receipts()?
-            } else {
-                candidates
-            }
-        };
+        if top_k == 0 {
+            return Ok(Vec::new());
+        }
+        std::fs::create_dir_all(&self.root)?;
+        let _lock = self.lock_store()?;
+        let fingerprints = receipt_index::scan_fingerprints(&self.root)?;
+        receipt_index::ensure_index(&self.root, &fingerprints)?;
+        let receipt_ids = receipt_index::ordered_receipt_ids(&self.root)?;
+        let candidates = receipt_index::candidate_receipts(&self.root, &fingerprints, query)?;
+        let candidate_set = candidates.map(|ids| ids.into_iter().collect::<BTreeSet<_>>());
 
         let mut out = Vec::new();
-        for receipt_id in candidate_ids {
+        for receipt_id in receipt_ids {
+            if candidate_set
+                .as_ref()
+                .is_some_and(|candidates| !candidates.contains(&receipt_id))
+            {
+                continue;
+            }
             let response = self.load(&receipt_id)?;
             for hit in context_search(&response, query, top_k, scope) {
                 out.push(StoredContextSearchHit {
@@ -3638,21 +3587,39 @@ impl FileContextStore {
         Ok(out)
     }
 
-    fn path_for_receipt(&self, receipt_id: &str) -> std::path::PathBuf {
-        let safe = receipt_id
-            .chars()
-            .map(|ch| {
-                if ch.is_ascii_alphanumeric() || ch == '_' || ch == '-' {
-                    ch
-                } else {
-                    '_'
-                }
-            })
-            .collect::<String>();
-        self.root.join(format!("{safe}.json"))
+    fn path_for_receipt(
+        &self,
+        receipt_id: &str,
+    ) -> Result<std::path::PathBuf, ContextGovernorError> {
+        if receipt_id.is_empty()
+            || !receipt_id
+                .chars()
+                .all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '-')
+        {
+            return Err(ContextGovernorError::ReceiptNotFound(format!(
+                "unsafe receipt id: {receipt_id}"
+            )));
+        }
+        Ok(self.root.join(format!("{receipt_id}.json")))
     }
 
-    fn index_path(&self) -> std::path::PathBuf {
-        self.root.join(".receipt-index.json")
+    fn lock_store(&self) -> Result<rusqlite::Connection, ContextGovernorError> {
+        let lock = rusqlite::Connection::open(self.root.join(".receipt-store-lock.sqlite3"))?;
+        lock.busy_timeout(std::time::Duration::from_secs(30))?;
+        lock.execute_batch(
+            "PRAGMA journal_mode=DELETE;
+             PRAGMA synchronous=FULL;
+             BEGIN EXCLUSIVE;",
+        )?;
+        Ok(lock)
+    }
+
+    fn invalidate_index(&self) -> Result<(), ContextGovernorError> {
+        receipt_index::invalidate(&self.root)
+    }
+
+    fn sync_directory(path: &std::path::Path) -> Result<(), ContextGovernorError> {
+        std::fs::File::open(path)?.sync_all()?;
+        Ok(())
     }
 }

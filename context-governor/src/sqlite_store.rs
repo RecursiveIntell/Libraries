@@ -134,9 +134,10 @@ impl SqliteContextStore {
         Ok(store)
     }
 
-    fn init_schema(&self) -> Result<(), rusqlite::Error> {
+    fn init_schema(&self) -> Result<(), ContextGovernorError> {
         self.conn.execute_batch(
-            "BEGIN;
+            "PRAGMA foreign_keys=ON;
+            BEGIN;
             CREATE TABLE IF NOT EXISTS receipts (
                 receipt_id TEXT PRIMARY KEY,
                 stored_at TEXT NOT NULL,
@@ -146,15 +147,16 @@ impl SqliteContextStore {
                 summary_loss_json TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS exact_items (
-                content_blake3 TEXT PRIMARY KEY,
                 receipt_id TEXT NOT NULL,
                 ref_id TEXT NOT NULL,
+                content_blake3 TEXT NOT NULL,
                 source_index INTEGER NOT NULL,
                 item_type TEXT NOT NULL,
                 content TEXT NOT NULL,
                 content_kind TEXT NOT NULL,
                 sensitivity TEXT NOT NULL,
                 archived INTEGER NOT NULL,
+                PRIMARY KEY (receipt_id, ref_id),
                 FOREIGN KEY (receipt_id) REFERENCES receipts(receipt_id) ON DELETE CASCADE
             );
             CREATE TABLE IF NOT EXISTS search_index (
@@ -167,7 +169,82 @@ impl SqliteContextStore {
             CREATE INDEX IF NOT EXISTS idx_search_token ON search_index(token);
             CREATE INDEX IF NOT EXISTS idx_exact_receipt ON exact_items(receipt_id);
             COMMIT;",
-        )
+        )?;
+        self.migrate_exact_items_primary_key()?;
+        Ok(())
+    }
+
+    fn migrate_exact_items_primary_key(&self) -> Result<(), ContextGovernorError> {
+        let mut statement = self.conn.prepare("PRAGMA table_info(exact_items)")?;
+        let mut primary_key_columns = statement
+            .query_map([], |row| {
+                Ok((row.get::<_, usize>(5)?, row.get::<_, String>(1)?))
+            })?
+            .filter_map(Result::ok)
+            .filter(|(position, _)| *position > 0)
+            .collect::<Vec<_>>();
+        primary_key_columns.sort_by_key(|(position, _)| *position);
+        let scoped = primary_key_columns
+            .iter()
+            .map(|(_, name)| name.as_str())
+            .eq(["receipt_id", "ref_id"]);
+        drop(statement);
+        if scoped {
+            return Ok(());
+        }
+
+        let compacted_json = {
+            let mut statement = self
+                .conn
+                .prepare("SELECT compacted_json FROM receipts ORDER BY receipt_id")?;
+            let rows = statement.query_map([], |row| row.get::<_, String>(0))?;
+            rows.collect::<Result<Vec<_>, _>>()?
+        };
+        let transaction = self.conn.unchecked_transaction()?;
+        transaction.execute_batch(
+            "CREATE TABLE exact_items_v2 (
+                receipt_id TEXT NOT NULL,
+                ref_id TEXT NOT NULL,
+                content_blake3 TEXT NOT NULL,
+                source_index INTEGER NOT NULL,
+                item_type TEXT NOT NULL,
+                content TEXT NOT NULL,
+                content_kind TEXT NOT NULL,
+                sensitivity TEXT NOT NULL,
+                archived INTEGER NOT NULL,
+                PRIMARY KEY (receipt_id, ref_id),
+                FOREIGN KEY (receipt_id) REFERENCES receipts(receipt_id) ON DELETE CASCADE
+            );",
+        )?;
+        for json in compacted_json {
+            let response: CompactResponse = serde_json::from_str(&json)?;
+            for item in response.exact_store {
+                transaction.execute(
+                    "INSERT INTO exact_items_v2 (
+                        receipt_id, ref_id, content_blake3, source_index,
+                        item_type, content, content_kind, sensitivity, archived
+                     ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+                    params![
+                        &response.receipt.receipt_id,
+                        &item.item_id,
+                        &item.content_blake3,
+                        item.source_indices.first().copied().unwrap_or(0) as i64,
+                        "exact_stored",
+                        &item.content,
+                        "plain_text",
+                        "internal",
+                        0i32,
+                    ],
+                )?;
+            }
+        }
+        transaction.execute_batch(
+            "DROP TABLE exact_items;
+             ALTER TABLE exact_items_v2 RENAME TO exact_items;
+             CREATE INDEX idx_exact_receipt ON exact_items(receipt_id);",
+        )?;
+        transaction.commit()?;
+        Ok(())
     }
 
     fn tokenize(text: &str) -> Vec<String> {
@@ -219,7 +296,7 @@ impl ContextStore for SqliteContextStore {
         for item in &response.exact_store {
             let source_index = item.source_indices.first().copied().unwrap_or(0);
             tx.execute(
-                "INSERT OR REPLACE INTO exact_items (content_blake3, receipt_id, ref_id, source_index, item_type, content, content_kind, sensitivity, archived)
+                "INSERT INTO exact_items (content_blake3, receipt_id, ref_id, source_index, item_type, content, content_kind, sensitivity, archived)
                  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
                 params![
                     &item.content_blake3,
@@ -511,14 +588,18 @@ pub fn context_rehydrate(
     let mut merged_compacted_messages: Vec<Message> = Vec::new();
     let mut merged_receipt_ids: Vec<String> = Vec::new();
     let mut merged_fallback_refs: Vec<ExactFallbackRefV1> = Vec::new();
+    let mut derived_created_utc: Option<chrono::DateTime<chrono::Utc>> = None;
 
     for (_receipt_id, cands) in by_receipt {
         let mut loaded = store.load(&_receipt_id)?;
+        derived_created_utc = Some(
+            derived_created_utc.map_or(loaded.receipt.created_utc, |created| {
+                created.max(loaded.receipt.created_utc)
+            }),
+        );
         merged_receipt_ids.push(_receipt_id);
-        loaded
-            .compacted_messages
-            .append(&mut merged_compacted_messages);
-        for cand in cands {
+        merged_compacted_messages.append(&mut loaded.compacted_messages);
+        for cand in &cands {
             if let Some(item) = loaded
                 .exact_store
                 .iter()
@@ -527,19 +608,44 @@ pub fn context_rehydrate(
                 merged_exact_store.push(item.clone());
             }
         }
-        loaded
-            .receipt
-            .exact_fallback_refs
-            .append(&mut merged_fallback_refs);
+        merged_fallback_refs.extend(cands.iter().filter_map(|candidate| {
+            loaded
+                .receipt
+                .exact_fallback_refs
+                .iter()
+                .find(|reference| reference.item_id == candidate.exact_fallback_ref_id)
+                .cloned()
+        }));
     }
 
-    // Build a synthetic receipt; note this is a rehydrated derivative, not an original.
+    let merged_transcript_blake3 = crate::hash_messages(&merged_compacted_messages)?;
+    let merged_transcript_sha256 = crate::hash_messages_sha256(&merged_compacted_messages)?;
+    let derivation = serde_json::to_string(&serde_json::json!({
+        "schema": "ContextRehydrationDerivationV1",
+        "query": query,
+        "selected_candidate_ids": receipt.selected_candidate_ids,
+        "source_receipt_ids": merged_receipt_ids,
+        "compacted_transcript_blake3": merged_transcript_blake3,
+        "exact_items": merged_exact_store
+            .iter()
+            .map(|item| (&item.item_id, &item.content_blake3))
+            .collect::<Vec<_>>(),
+    }))?;
+    let derivation_blake3 = crate::hash_text(&derivation);
+    let derived_created_utc = derived_created_utc.ok_or_else(|| {
+        ContextGovernorError::ReceiptNotFound(
+            "selected rehydration candidates had no source receipt".to_string(),
+        )
+    })?;
+
+    // A rehydrated derivative is content-addressed: the same governed selection
+    // produces the same receipt/plan identity and source-derived timestamp.
     let merged_receipt = crate::ContextCompactionReceiptV1 {
         schema: "ContextCompactionReceiptV1".to_string(),
-        receipt_id: format!("rehydrated-{}", uuid::Uuid::new_v4()),
+        receipt_id: format!("rehydrated-{derivation_blake3}"),
         session_id: "rehydrated".to_string(),
         parent_session_id: None,
-        created_utc: chrono::Utc::now(),
+        created_utc: derived_created_utc,
         engine: "context-governor".to_string(),
         engine_version: env!("CARGO_PKG_VERSION").to_string(),
         original_message_count: merged_compacted_messages.len(),
@@ -548,8 +654,10 @@ pub fn context_rehydrate(
         compacted_approx_tokens: receipt.total_approx_tokens,
         token_savings_estimate: 0,
         token_counter: crate::TokenCounterKind::ApproxChars,
-        original_transcript_blake3: String::new(),
-        compacted_transcript_blake3: String::new(),
+        original_transcript_blake3: merged_transcript_blake3.clone(),
+        compacted_transcript_blake3: merged_transcript_blake3,
+        original_transcript_sha256: merged_transcript_sha256.clone(),
+        compacted_transcript_sha256: merged_transcript_sha256,
         allocation_plan_id: String::new(),
         semantic_memory_fact_ids: vec![],
         semantic_memory_document_ids: vec![],
@@ -568,9 +676,9 @@ pub fn context_rehydrate(
         receipt: merged_receipt,
         allocation_plan: crate::ContextAllocationPlanV1 {
             schema: "ContextAllocationPlanV1".to_string(),
-            plan_id: format!("rehydrated-plan-{}", uuid::Uuid::new_v4()),
+            plan_id: format!("rehydrated-plan-{derivation_blake3}"),
             session_id: "rehydrated".to_string(),
-            created_utc: chrono::Utc::now(),
+            created_utc: derived_created_utc,
             context_budget_tokens: receipt.total_approx_tokens,
             target_output_tokens: 0,
             allocator: "rehydrated".to_string(),
@@ -698,6 +806,7 @@ mod tests {
                 start_index: 2,
                 end_index: 3,
                 content_blake3: response.exact_store[0].content_blake3.clone(),
+                content_sha256: crate::hash_text_sha256(&response.exact_store[0].content),
                 approx_tokens: 6,
             });
         let receipt_id = response.receipt.receipt_id.clone();
@@ -739,6 +848,7 @@ mod tests {
                 start_index: 2,
                 end_index: 3,
                 content_blake3: response.exact_store[0].content_blake3.clone(),
+                content_sha256: crate::hash_text_sha256(&response.exact_store[0].content),
                 approx_tokens: 6,
             });
         let receipt_id = response.receipt.receipt_id.clone();
@@ -755,5 +865,118 @@ mod tests {
         let rehydrated = context_rehydrate(&store, &query).unwrap();
         assert!(rehydrated.receipt.receipt_id.starts_with("rehydrated-"));
         assert!(!rehydrated.exact_store.is_empty());
+        assert!(!rehydrated.compacted_messages.is_empty());
+        assert!(!rehydrated.receipt.exact_fallback_refs.is_empty());
+        assert_eq!(
+            rehydrated.receipt.compacted_transcript_blake3,
+            crate::hash_messages(&rehydrated.compacted_messages).unwrap()
+        );
+        assert_eq!(
+            rehydrated.receipt.compacted_transcript_sha256,
+            crate::hash_messages_sha256(&rehydrated.compacted_messages).unwrap()
+        );
+    }
+
+    #[test]
+    fn sqlite_store_preserves_identical_exact_content_for_distinct_receipts() {
+        let store = SqliteContextStore::open_in_memory().unwrap();
+        let shared_content = "shared exact evidence";
+        let mut receipt_ids = Vec::new();
+        for suffix in ["first", "second"] {
+            let mut request = make_request(60);
+            request.session_id = format!("duplicate-content-{suffix}");
+            let mut response = crate::compact_context(request).unwrap();
+            let item_id = format!("shared-{suffix}");
+            response.exact_store.push(crate::ExactStoredItemV1 {
+                item_id: item_id.clone(),
+                source_indices: vec![1],
+                content: shared_content.to_string(),
+                content_blake3: crate::hash_text(shared_content),
+            });
+            response
+                .receipt
+                .exact_fallback_refs
+                .push(crate::ExactFallbackRefV1 {
+                    item_id,
+                    start_index: 1,
+                    end_index: 2,
+                    content_blake3: crate::hash_text(shared_content),
+                    content_sha256: crate::hash_text_sha256(shared_content),
+                    approx_tokens: 5,
+                });
+            receipt_ids.push(response.receipt.receipt_id.clone());
+            store.save(&response).unwrap();
+        }
+
+        for receipt_id in receipt_ids {
+            let query = RehydrationQueryV1 {
+                schema: "RehydrationQueryV1".to_string(),
+                receipt_id: Some(receipt_id.clone()),
+                token_budget: 100,
+                authority_floor: None,
+                lineage: vec![],
+                keywords: vec!["shared".to_string()],
+                top_k: 10,
+            };
+            let retrieval = store.search(&query).unwrap();
+            assert!(
+                retrieval
+                    .candidates
+                    .iter()
+                    .any(|candidate| candidate.receipt_id == receipt_id),
+                "duplicate content must remain owned by every receipt"
+            );
+        }
+    }
+
+    #[test]
+    fn context_rehydrate_is_deterministic_for_the_same_selection() {
+        let store = SqliteContextStore::open_in_memory().unwrap();
+        let mut response = crate::compact_context(make_request(60)).unwrap();
+        response.exact_store.push(crate::ExactStoredItemV1 {
+            item_id: "deterministic-paris".to_string(),
+            source_indices: vec![2],
+            content: "Paris is deterministic evidence.".to_string(),
+            content_blake3: crate::hash_text("Paris is deterministic evidence."),
+        });
+        response
+            .receipt
+            .exact_fallback_refs
+            .push(crate::ExactFallbackRefV1 {
+                item_id: "deterministic-paris".to_string(),
+                start_index: 2,
+                end_index: 3,
+                content_blake3: crate::hash_text("Paris is deterministic evidence."),
+                content_sha256: crate::hash_text_sha256("Paris is deterministic evidence."),
+                approx_tokens: 8,
+            });
+        let receipt_id = response.receipt.receipt_id.clone();
+        store.save(&response).unwrap();
+        let query = RehydrationQueryV1 {
+            schema: "RehydrationQueryV1".to_string(),
+            receipt_id: Some(receipt_id),
+            token_budget: 100,
+            authority_floor: None,
+            lineage: vec![],
+            keywords: vec!["deterministic".to_string()],
+            top_k: 10,
+        };
+
+        let first = context_rehydrate(&store, &query).unwrap();
+        let second = context_rehydrate(&store, &query).unwrap();
+        assert_eq!(first.receipt.receipt_id, second.receipt.receipt_id);
+        assert_eq!(first.receipt.created_utc, second.receipt.created_utc);
+        assert_eq!(
+            first.allocation_plan.plan_id,
+            second.allocation_plan.plan_id
+        );
+        assert_eq!(
+            first.allocation_plan.created_utc,
+            second.allocation_plan.created_utc
+        );
+        assert_eq!(
+            first.receipt.exact_fallback_refs.len(),
+            first.exact_store.len()
+        );
     }
 }

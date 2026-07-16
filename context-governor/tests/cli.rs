@@ -1,4 +1,7 @@
-use context_governor::{CompactRequest, CompactionPolicy, Message};
+use context_governor::{
+    compact_context, hash_messages, hash_messages_sha256, CompactRequest, CompactResponse,
+    CompactionPolicy, Message,
+};
 use std::io::Write;
 use std::process::{Command, Stdio};
 
@@ -85,7 +88,7 @@ fn cli_compact_diff_store_search_and_expand_round_trip() {
 
     let status_json = run_cli(&["status", "--dir", dir.path().to_str().unwrap()], "");
     assert!(status_json.contains("\"receipt_count\": 1"));
-    assert!(status_json.contains("\"index_built\": true"));
+    assert!(status_json.contains("\"index_built\": false"));
     assert!(status_json.contains("\"searchable\": true"));
     assert!(status_json.contains(&receipt_id));
 
@@ -101,6 +104,8 @@ fn cli_compact_diff_store_search_and_expand_round_trip() {
     );
     assert!(search_json.contains(&receipt_id));
     assert!(search_json.contains("CLI_NEEDLE"));
+    let indexed_status = run_cli(&["status", "--dir", dir.path().to_str().unwrap()], "");
+    assert!(indexed_status.contains("\"index_built\": true"));
 
     let expand_json = run_cli(
         &[
@@ -141,4 +146,29 @@ fn no_args_cli_remains_backwards_compatible_compact() {
     };
     let out = run_cli(&[], &serde_json::to_string(&request).unwrap());
     assert!(out.contains("receipt_id"));
+}
+
+#[test]
+fn finalize_cli_binds_receipt_to_adapter_emitted_messages() {
+    let mut response = compact_context(CompactRequest {
+        session_id: "cli-finalize".into(),
+        messages: vec![msg("assistant", "old"), msg("user", "latest")],
+        policy: CompactionPolicy::default(),
+        focus: None,
+    })
+    .unwrap();
+    response.compacted_messages[0].content = "adapter-finalized".into();
+
+    let finalized_json = run_cli(&["finalize"], &serde_json::to_string(&response).unwrap());
+    let finalized: CompactResponse = serde_json::from_str(&finalized_json).unwrap();
+
+    assert_eq!(finalized.compacted_messages[0].content, "adapter-finalized");
+    assert_eq!(
+        finalized.receipt.compacted_transcript_blake3,
+        hash_messages(&finalized.compacted_messages).unwrap()
+    );
+    assert_eq!(
+        finalized.receipt.compacted_transcript_sha256,
+        hash_messages_sha256(&finalized.compacted_messages).unwrap()
+    );
 }

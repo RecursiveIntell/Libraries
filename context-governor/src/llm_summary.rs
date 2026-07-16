@@ -308,8 +308,13 @@ fn format_fallback_refs(receipt: &ContextCompactionReceiptV1) -> String {
             .iter()
             .map(|r| {
                 format!(
-                    "{} | source[{}-{}] | blake3:{} | ~{}tok",
-                    r.item_id, r.start_index, r.end_index, &r.content_blake3, r.approx_tokens
+                    "{} | source[{}-{}] | blake3:{} | sha256:{} | ~{}tok",
+                    r.item_id,
+                    r.start_index,
+                    r.end_index,
+                    &r.content_blake3,
+                    &r.content_sha256,
+                    r.approx_tokens
                 )
             })
             .collect();
