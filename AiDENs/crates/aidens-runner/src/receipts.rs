@@ -165,7 +165,7 @@ impl PlanActVerifyLoopV1Output {
         replay_instructions: Vec<String>,
         blocked_checks: Vec<String>,
     ) -> AiDENsRunBundleV3 {
-        let mut bundle = AiDENsRunBundleV3::new(
+        let mut bundle = AiDENsRunBundleV3::new_projection(
             run_id,
             profile,
             canonical_execution_context,

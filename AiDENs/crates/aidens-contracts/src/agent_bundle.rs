@@ -447,7 +447,7 @@ impl AiDENsRunBundleV3 {
         if identity_material.trim().is_empty() {
             return Err(vec!["bundle-identity-material-required".into()]);
         }
-        let mut bundle = Self::new(
+        let mut bundle = Self::new_projection(
             run_id,
             profile,
             canonical_execution_context,
@@ -558,7 +558,8 @@ impl AiDENsRunBundleV3 {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    /// Non-durable display projection. Use `new_material_bound` for persisted bundles.
+    pub fn new_projection(
         run_id: impl Into<String>,
         profile: impl Into<String>,
         canonical_execution_context: canonical_stack::ForgeExecutionContextV1,

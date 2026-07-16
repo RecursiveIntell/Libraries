@@ -206,20 +206,7 @@ impl Default for LifecycleInput {
         }
     }
 }
-impl LifecycleInput {
-    pub fn passing() -> Self {
-        Self {
-            permit: true,
-            paired_trials: 20,
-            families: 5,
-            verification_positive: true,
-            safety_violations: 0,
-            evaluator_suppression: false,
-            holdout_regression_points: 0,
-            replay_agreement_percent: 95,
-        }
-    }
-}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LifecycleRequest {
     pub decision: LifecycleDecision,
@@ -255,8 +242,8 @@ pub fn lifecycle_decision(i: LifecycleInput) -> LifecycleRequest {
         r.push("canonical-owner-promotion-required".into());
     }
     LifecycleRequest {
-        // This runner projection is advisory. Only the canonical
-        // semantic-memory procedure lifecycle may authorize promotion.
+        // Runner-local thresholds are advisory only. Promotion requires the
+        // typed canonical owner decision and can never be inferred here.
         decision: LifecycleDecision::Quarantine,
         reasons: r,
     }
@@ -368,7 +355,16 @@ pub fn run_fixture_vertical_slice() -> Result<FixtureVerticalSlice, CandidateRej
         ),
         5,
     );
-    let promoted = lifecycle_decision(LifecycleInput::passing());
+    let lifecycle = lifecycle_decision(LifecycleInput {
+        permit: true,
+        paired_trials: trials.denominator,
+        families: 5,
+        verification_positive: true,
+        safety_violations: 0,
+        evaluator_suppression: false,
+        holdout_regression_points: 0,
+        replay_agreement_percent: 95,
+    });
     let replay = replay_with_observed(
         TrialSpec::new(
             "task-digest",
@@ -390,11 +386,7 @@ pub fn run_fixture_vertical_slice() -> Result<FixtureVerticalSlice, CandidateRej
         fixture_evidence: evidence,
         candidate,
         paired_trials: trials,
-        lifecycle: if promoted.decision == LifecycleDecision::Promote {
-            LifecycleDecision::Revoke
-        } else {
-            promoted.decision
-        },
+        lifecycle: lifecycle.decision,
         replay,
     })
 }
@@ -450,11 +442,20 @@ mod tests {
             lifecycle_decision(LifecycleInput::default()).decision,
             LifecycleDecision::Quarantine
         );
+        let input = LifecycleInput {
+            permit: true,
+            paired_trials: 20,
+            families: 5,
+            verification_positive: true,
+            holdout_regression_points: 0,
+            replay_agreement_percent: 95,
+            ..LifecycleInput::default()
+        };
         assert_eq!(
-            lifecycle_decision(LifecycleInput::passing()).decision,
+            lifecycle_decision(input.clone()).decision,
             LifecycleDecision::Quarantine
         );
-        assert!(lifecycle_decision(LifecycleInput::passing())
+        assert!(lifecycle_decision(input)
             .reasons
             .contains(&"canonical-owner-promotion-required".into()));
     }
