@@ -14,6 +14,22 @@ use async_trait::async_trait;
 pub use effect_signature::{EffectSignature, LocatedEffect};
 pub use sandbox_workspace::{PatchedWorkspace, Workspace};
 
+const MAX_CAPTURED_OUTPUT_BYTES: usize = 2_000_000;
+const OUTPUT_TRUNCATION_MARKER: &str = "\n[check-runner output truncated]\n";
+
+fn bounded_output(bytes: &[u8]) -> String {
+    let text = String::from_utf8_lossy(bytes);
+    if text.len() <= MAX_CAPTURED_OUTPUT_BYTES {
+        return text.into_owned();
+    }
+
+    let mut end = MAX_CAPTURED_OUTPUT_BYTES.saturating_sub(OUTPUT_TRUNCATION_MARKER.len());
+    while end > 0 && !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!("{}{}", &text[..end], OUTPUT_TRUNCATION_MARKER)
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum RunnerError {
     #[error("io error: {0}")]
@@ -226,8 +242,8 @@ impl ExecutionBackend for HostBackend {
         let duration_ms = start.elapsed().as_millis() as u64;
         match output {
             Ok(Ok(output)) => Ok(CommandOutput {
-                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
-                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                stdout: bounded_output(&output.stdout),
+                stderr: bounded_output(&output.stderr),
                 exit_code: output.status.code().unwrap_or(-1),
                 duration_ms,
             }),
@@ -287,6 +303,52 @@ pub enum ContainerRuntime {
     Nerdctl,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct SandboxCapabilityTruthReceiptV1 {
+    pub schema: String,
+    pub execution_mode: String,
+    pub runtime: String,
+    pub image: String,
+    pub rootless_required: bool,
+    pub rootless_observed: bool,
+    pub mechanisms: Vec<String>,
+    pub memory_limit: String,
+    pub cpu_limit: String,
+    pub content_digest: String,
+}
+
+impl SandboxCapabilityTruthReceiptV1 {
+    fn digest_material(&self) -> String {
+        format!(
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            self.schema,
+            self.execution_mode,
+            self.runtime,
+            self.image,
+            self.rootless_required,
+            self.rootless_observed,
+            self.mechanisms.join("\n"),
+            self.memory_limit,
+            self.cpu_limit,
+        )
+    }
+
+    fn expected_digest(&self) -> String {
+        format!(
+            "blake3:{}",
+            blake3::hash(self.digest_material().as_bytes()).to_hex()
+        )
+    }
+
+    pub fn verify(&self) -> bool {
+        self.schema == "SandboxCapabilityTruthReceiptV1"
+            && self.execution_mode == "sealed_local"
+            && self.runtime == "podman"
+            && self.rootless_required
+            && self.content_digest == self.expected_digest()
+    }
+}
+
 #[cfg(feature = "container")]
 impl ContainerRuntime {
     fn command(&self) -> &str {
@@ -294,13 +356,6 @@ impl ContainerRuntime {
             Self::Docker => "docker",
             Self::Podman => "podman",
             Self::Nerdctl => "nerdctl",
-        }
-    }
-
-    fn network_flag(&self) -> &str {
-        match self {
-            Self::Docker | Self::Podman => "--network=none",
-            Self::Nerdctl => "--net=none",
         }
     }
 }
@@ -319,13 +374,41 @@ pub struct ContainerBackend {
 impl ContainerBackend {
     pub fn new(config: &BackendConfig) -> Result<Self, RunnerError> {
         let runtime = detect_runtime(&config.container_runtime_preference)?;
+        if config.mode == "sealed_local"
+            && runtime == ContainerRuntime::Podman
+            && !podman_is_rootless()
+        {
+            return Err(RunnerError::SealedModeUnsupported {
+                runtime: "sealed execution requires rootless Podman".into(),
+            });
+        }
         tracing::info!("container backend: detected runtime {:?}", runtime);
+
+        Self::new_for_runtime(config, runtime)
+    }
+
+    fn new_for_runtime(
+        config: &BackendConfig,
+        runtime: ContainerRuntime,
+    ) -> Result<Self, RunnerError> {
+        let sealed = config.mode == "sealed_local";
+        if sealed && runtime != ContainerRuntime::Podman {
+            return Err(RunnerError::SealedModeUnsupported {
+                runtime: "sealed execution requires Podman; Docker and Nerdctl are not certified"
+                    .into(),
+            });
+        }
+        if sealed && !is_digest_pinned_image(&config.rust_image) {
+            return Err(RunnerError::SealedModeUnsupported {
+                runtime: "sealed execution requires an image pinned by @sha256:<64 hex>".into(),
+            });
+        }
 
         Ok(Self {
             runtime,
             rust_image: config.rust_image.clone(),
             timeout_secs: config.command_timeout_secs,
-            sealed: config.mode == "sealed_local",
+            sealed,
             memory_limit: config.memory_limit.clone(),
             cpu_limit: config.cpu_limit.clone(),
         })
@@ -335,12 +418,56 @@ impl ContainerBackend {
         self.runtime
     }
 
+    pub fn capability_truth_receipt(&self) -> SandboxCapabilityTruthReceiptV1 {
+        let mut receipt = SandboxCapabilityTruthReceiptV1 {
+            schema: "SandboxCapabilityTruthReceiptV1".into(),
+            execution_mode: if self.sealed {
+                "sealed_local".into()
+            } else {
+                "container".into()
+            },
+            runtime: self.runtime.command().into(),
+            image: self.rust_image.clone(),
+            rootless_required: self.sealed,
+            rootless_observed: self.runtime == ContainerRuntime::Podman && podman_is_rootless(),
+            mechanisms: if self.sealed {
+                vec![
+                    "cap_drop_all".into(),
+                    "controlled_workspace_mount".into(),
+                    "cpu_limit".into(),
+                    "memory_limit".into(),
+                    "network_none".into(),
+                    "no_new_privileges".into(),
+                    "pids_limit".into(),
+                    "read_only_rootfs".into(),
+                    "tmpfs_tmp".into(),
+                    "userns_keep_id".into(),
+                ]
+            } else {
+                Vec::new()
+            },
+            memory_limit: self.memory_limit.clone(),
+            cpu_limit: self.cpu_limit.clone(),
+            content_digest: String::new(),
+        };
+        receipt.content_digest = receipt.expected_digest();
+        receipt
+    }
+
     fn build_run_args(
         &self,
         workspace: &Path,
-        command: &str,
+        program: &str,
+        command_args: &[&str],
         env: &[(&str, &str)],
     ) -> Result<Vec<String>, RunnerError> {
+        let metadata = std::fs::symlink_metadata(workspace)
+            .map_err(|error| RunnerError::Other(format!("cannot inspect workspace: {error}")))?;
+        if self.sealed && metadata.file_type().is_symlink() {
+            return Err(RunnerError::SealedModeUnsupported {
+                runtime: "sealed workspace mount must not traverse a symlink".into(),
+            });
+        }
         let canonical = workspace.canonicalize().map_err(|error| {
             RunnerError::Other(format!("cannot canonicalize workspace: {error}"))
         })?;
@@ -351,26 +478,67 @@ impl ContainerBackend {
             ));
         }
 
+        if self.sealed && program != "cargo" {
+            return Err(RunnerError::SealedModeUnsupported {
+                runtime: format!("program is outside the sealed check allowlist: {program}"),
+            });
+        }
+        if self.sealed {
+            if let Some((key, _)) = env.iter().find(|(key, _)| !is_env_allowed(key)) {
+                return Err(RunnerError::SealedModeUnsupported {
+                    runtime: format!("environment key is outside the sealed allowlist: {key}"),
+                });
+            }
+        }
+
         let mut args = vec!["run".to_string(), "--rm".to_string()];
+        if self.sealed {
+            args.extend([
+                "--network=none".to_string(),
+                "--read-only".to_string(),
+                "--cap-drop=ALL".to_string(),
+                "--security-opt=no-new-privileges".to_string(),
+                "--pids-limit=128".to_string(),
+                "--userns=keep-id".to_string(),
+                "--tmpfs".to_string(),
+                "type=tmpfs,destination=/tmp".to_string(),
+            ]);
+        }
         args.push("-v".to_string());
         args.push(format!("{}:/workspace:rw", canonical.display()));
         args.push("-w".to_string());
         args.push("/workspace".to_string());
         args.push(format!("--memory={}", self.memory_limit));
         args.push(format!("--cpus={}", self.cpu_limit));
-        if self.sealed {
-            args.push(self.runtime.network_flag().to_string());
-        }
         for (key, value) in env {
             args.push("-e".to_string());
             args.push(format!("{key}={value}"));
         }
         args.push(self.rust_image.clone());
-        args.push("sh".to_string());
-        args.push("-c".to_string());
-        args.push(command.to_string());
+        args.push(program.to_string());
+        args.extend(command_args.iter().map(|arg| (*arg).to_string()));
         Ok(args)
     }
+}
+
+#[cfg(feature = "container")]
+fn is_digest_pinned_image(image: &str) -> bool {
+    let Some((name, digest)) = image.rsplit_once("@sha256:") else {
+        return false;
+    };
+    !name.trim().is_empty()
+        && digest.len() == 64
+        && digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+#[cfg(feature = "container")]
+fn podman_is_rootless() -> bool {
+    std::process::Command::new("podman")
+        .args(["info", "--format", "{{.Host.Security.Rootless}}"])
+        .output()
+        .is_ok_and(|output| {
+            output.status.success() && String::from_utf8_lossy(&output.stdout).trim() == "true"
+        })
 }
 
 #[cfg(feature = "container")]
@@ -403,7 +571,7 @@ impl ExecutionBackend for ContainerBackend {
         } else {
             format!("{} {}", program, args.join(" "))
         };
-        let run_args = self.build_run_args(workspace, &full_command, env)?;
+        let run_args = self.build_run_args(workspace, program, args, env)?;
 
         let start = Instant::now();
         let child = tokio::process::Command::new(self.runtime.command())
@@ -425,8 +593,8 @@ impl ExecutionBackend for ContainerBackend {
 
         match output {
             Ok(Ok(output)) => Ok(CommandOutput {
-                stdout: String::from_utf8_lossy(&output.stdout).to_string(),
-                stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+                stdout: bounded_output(&output.stdout),
+                stderr: bounded_output(&output.stderr),
                 exit_code: output.status.code().unwrap_or(-1),
                 duration_ms,
             }),
@@ -499,13 +667,10 @@ pub fn select_backend(config: &BackendConfig) -> Result<Box<dyn ExecutionBackend
 
     match config.execution_backend_preference.as_str() {
         "host" => {
-            if sealed && !config.sealed_allow_host_backend {
+            if sealed {
                 return Err(RunnerError::SealedModeUnsupported {
                     runtime: "host backend requested in sealed_local mode".into(),
                 });
-            }
-            if sealed {
-                tracing::warn!("sealed_local mode with host backend — no network isolation");
             }
             Ok(Box::new(HostBackend::new(config)))
         }
@@ -528,16 +693,11 @@ pub fn select_backend(config: &BackendConfig) -> Result<Box<dyn ExecutionBackend
                 }
             }
 
-            if sealed && !config.sealed_allow_host_backend {
+            if sealed {
                 return Err(RunnerError::SealedModeUnsupported {
                     runtime: "container unavailable and host fallback not allowed in sealed mode"
                         .into(),
                 });
-            }
-            if sealed {
-                tracing::warn!(
-                    "sealed_local: container unavailable, falling back to host — isolation not guaranteed"
-                );
             }
             Ok(Box::new(HostBackend::new(config)))
         }
@@ -624,7 +784,6 @@ mod wave1_tests {
     }
 
     #[test]
-    #[ignore = "environment-dependent: fails when docker/podman is available because auto→container succeeds before host fallback"]
     fn select_backend_falls_back_to_host_when_allowed() {
         let mut cfg = config();
         cfg.mode = "sealed_local".into();
@@ -634,8 +793,8 @@ mod wave1_tests {
         // and we reliably exercise the host-fallback path (the thing this test verifies)
         cfg.container_runtime_preference = "nonexistent_runtime".into();
 
-        let backend = select_backend(&cfg).unwrap();
-        assert_eq!(backend.kind(), ExecutionBackendKind::Host);
+        let error = select_backend(&cfg).err().unwrap();
+        assert!(matches!(error, RunnerError::SealedModeUnsupported { .. }));
     }
 }
 
@@ -710,8 +869,129 @@ mod tests {
         config.mode = "sealed_local".into();
         config.sealed_allow_host_backend = true;
 
-        let backend = select_backend(&config).unwrap();
-        assert_eq!(backend.kind(), ExecutionBackendKind::Host);
+        let error = select_backend(&config).err().unwrap();
+        assert!(matches!(error, RunnerError::SealedModeUnsupported { .. }));
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn sealed_backend_rejects_non_podman_runtime_and_unpinned_image() {
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.execution_backend_preference = "container".into();
+        config.rust_image = "rust:1.75".into();
+
+        let image_error = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman)
+            .err()
+            .unwrap();
+        assert!(matches!(
+            image_error,
+            RunnerError::SealedModeUnsupported { .. }
+        ));
+
+        config.rust_image =
+            "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                .into();
+        let runtime_error = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Docker)
+            .err()
+            .unwrap();
+        assert!(matches!(
+            runtime_error,
+            RunnerError::SealedModeUnsupported { .. }
+        ));
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn sealed_podman_profile_is_fail_closed_and_bounded() {
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.execution_backend_preference = "container".into();
+        config.container_runtime_preference = "podman".into();
+        config.rust_image =
+            "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                .into();
+        let backend = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman).unwrap();
+        let workspace = tempfile::tempdir().unwrap();
+        let args = backend
+            .build_run_args(
+                workspace.path(),
+                "cargo",
+                &["test"],
+                &[("CARGO_TERM_COLOR", "never")],
+            )
+            .unwrap();
+
+        for required in [
+            "--network=none",
+            "--read-only",
+            "--cap-drop=ALL",
+            "--security-opt=no-new-privileges",
+            "--pids-limit=128",
+            "--userns=keep-id",
+        ] {
+            assert!(args.iter().any(|arg| arg == required), "missing {required}");
+        }
+        assert!(args.iter().any(|arg| arg == "type=tmpfs,destination=/tmp"));
+        assert!(!args.iter().any(|arg| arg == "--privileged"));
+
+        let receipt = backend.capability_truth_receipt();
+        assert!(receipt.verify());
+        assert_eq!(receipt.execution_mode, "sealed_local");
+        assert_eq!(receipt.runtime, "podman");
+        assert!(receipt.rootless_required);
+        assert!(receipt.mechanisms.iter().any(|item| item == "network_none"));
+        assert!(receipt.mechanisms.iter().any(|item| item == "cap_drop_all"));
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn sealed_podman_profile_rejects_disallowed_environment() {
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.rust_image =
+            "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                .into();
+        let backend = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman).unwrap();
+        let workspace = tempfile::tempdir().unwrap();
+
+        let error = backend
+            .build_run_args(
+                workspace.path(),
+                "cargo",
+                &["test"],
+                &[("AWS_SECRET_ACCESS_KEY", "forbidden")],
+            )
+            .unwrap_err();
+        assert!(matches!(error, RunnerError::SealedModeUnsupported { .. }));
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn sealed_mount_rejects_symlink_workspace_path() {
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.rust_image =
+            "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                .into();
+        let backend = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman).unwrap();
+        let real = tempfile::tempdir().unwrap();
+        let link = real.path().join("link");
+        std::os::unix::fs::symlink(real.path(), &link).unwrap();
+
+        let error = backend
+            .build_run_args(&link, "cargo", &["test"], &[])
+            .unwrap_err();
+        assert!(matches!(error, RunnerError::SealedModeUnsupported { .. }));
+    }
+
+    #[test]
+    fn captured_output_is_hard_capped_with_explicit_truncation_marker() {
+        let oversized = vec![b'x'; MAX_CAPTURED_OUTPUT_BYTES + 1];
+        let captured = bounded_output(&oversized);
+
+        assert!(captured.len() <= MAX_CAPTURED_OUTPUT_BYTES);
+        assert!(captured.ends_with("\n[check-runner output truncated]\n"));
     }
 
     #[test]
