@@ -1679,6 +1679,24 @@ fn generated_schema_documents_inner() -> Vec<GeneratedSchemaDocumentV1> {
             "operator-bundle-major-immutable"
         ),
         schema_document!(
+            "coding-learning-evidence",
+            1,
+            CodingLearningEvidenceV1,
+            "CodingLearningEvidenceV1",
+            "MEDUSA",
+            None,
+            "non-authoritative-evidence-projection-additive-compatible"
+        ),
+        schema_document!(
+            "coding-learning-terminal-projection",
+            1,
+            CodingLearningTerminalProjectionV1,
+            "CodingLearningTerminalProjectionV1",
+            "MEDUSA",
+            None,
+            "closed-terminal-state-major-immutable"
+        ),
+        schema_document!(
             "scaffold-surface-report",
             1,
             ScaffoldSurfaceReportV1,

@@ -427,6 +427,119 @@ impl AiDENsRunBundleV3 {
     pub const SCHEMA: &'static str = "AiDENsRunBundleV3";
 
     #[allow(clippy::too_many_arguments)]
+    pub fn new_material_bound(
+        identity_material: &str,
+        run_id: impl Into<String>,
+        profile: impl Into<String>,
+        canonical_execution_context: canonical_stack::ForgeExecutionContextV1,
+        event_log: AiDENsRunEventLogDigestV1,
+        budget: AiDENsRunBudgetDeadlineV1,
+        support: AiDENsRunSupportTierEvidenceV1,
+        support_labels: Vec<String>,
+        replay: AiDENsRunReplayNormalizationV1,
+        failure: AiDENsRunFailureTaxonomyV1,
+        attempt_family_id: ArtifactId,
+        attempt_id: StackAttemptId,
+        trial_id: StackTrialId,
+        agent_spec_digest: DisplayDigestV1,
+        required_owner_backpointers: Vec<CanonicalBackpointerV1>,
+    ) -> Result<Self, Vec<String>> {
+        if identity_material.trim().is_empty() {
+            return Err(vec!["bundle-identity-material-required".into()]);
+        }
+        let mut bundle = Self::new(
+            run_id,
+            profile,
+            canonical_execution_context,
+            event_log,
+            budget,
+            support,
+            support_labels,
+            replay,
+            failure,
+            attempt_family_id,
+            attempt_id,
+            trial_id,
+            agent_spec_digest,
+        );
+        bundle.bundle_id =
+            generated_artifact_id_from_material("aidens-run-bundle-v3", identity_material);
+        bundle
+            .canonical_backpointers
+            .extend(required_owner_backpointers);
+        bundle.validate_durable_identity()?;
+        Ok(bundle)
+    }
+
+    pub fn validate_durable_identity(&self) -> Result<(), Vec<String>> {
+        let mut reasons = Vec::new();
+        if let Err(reason) = validate_durable_v3_identity(&self.bundle_id) {
+            reasons.push(format!("bundle-id:{reason}"));
+        }
+        if let Err(reason) = validate_durable_v3_identity(&self.attempt_family_id) {
+            reasons.push(format!("attempt-family-id:{reason}"));
+        }
+        for (field, value) in [
+            ("run-id", self.run_id.clone()),
+            ("attempt-id", self.attempt_id.to_string()),
+            ("trial-id", self.trial_id.to_string()),
+        ] {
+            if value.trim().is_empty() {
+                reasons.push(format!("{field}:durable-identity-empty"));
+            } else if value.contains("local-process-seq") {
+                reasons.push(format!("{field}:display-only-identity-not-durable"));
+            }
+        }
+        for (field, values) in [
+            ("provider-receipts", &self.provider_receipts),
+            ("tool-receipts", &self.tool_receipts),
+            ("permit-receipts", &self.permit_receipts),
+            ("memory-grounding-receipts", &self.memory_grounding_receipts),
+            ("verification-receipts", &self.verification_receipts),
+            ("abstention-receipts", &self.abstention_receipts),
+            ("repair-plan-receipts", &self.repair_plan_receipts),
+        ] {
+            for value in values {
+                if value.contains("local-process-seq") {
+                    reasons.push(format!("{field}:display-only-identity-not-durable"));
+                }
+            }
+        }
+        for backpointer in &self.canonical_backpointers {
+            if let Some(artifact_id) = &backpointer.artifact_id {
+                if let Err(reason) = validate_durable_v3_identity(artifact_id) {
+                    reasons.push(format!(
+                        "canonical-backpointer:{}:{reason}",
+                        backpointer.role
+                    ));
+                }
+            }
+            if backpointer
+                .external_id
+                .as_deref()
+                .is_some_and(|external_id| external_id.contains("local-process-seq"))
+            {
+                reasons.push(format!(
+                    "canonical-backpointer:{}:display-only-identity-not-durable",
+                    backpointer.role
+                ));
+            }
+        }
+        if let Err(owner_reasons) =
+            validate_required_coding_learning_backpointers(&self.canonical_backpointers)
+        {
+            reasons.extend(owner_reasons);
+        }
+        reasons.sort();
+        reasons.dedup();
+        if reasons.is_empty() {
+            Ok(())
+        } else {
+            Err(reasons)
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         run_id: impl Into<String>,
         profile: impl Into<String>,

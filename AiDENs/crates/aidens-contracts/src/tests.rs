@@ -1,27 +1,107 @@
 use super::*;
 
+fn task2_owner_backpointers() -> Vec<CanonicalBackpointerV1> {
+    required_coding_learning_owner_roles()
+        .iter()
+        .map(|role| {
+            CanonicalBackpointerV1::external(
+                format!("owner-{role}"),
+                "OwnerNativeArtifactV1",
+                *role,
+                format!("{role}:sha256:0123456789abcdef"),
+            )
+        })
+        .collect()
+}
+
+fn task2_material_bundle(material: &str) -> AiDENsRunBundleV3 {
+    let fixture = include_str!("../../../tests/fixtures/p26/aidens_run_bundle_v3.json");
+    let fixture: AiDENsRunBundleV3 = serde_json::from_str(fixture).unwrap();
+    AiDENsRunBundleV3::new_material_bound(
+        material,
+        fixture.run_id,
+        fixture.profile,
+        fixture.canonical_execution_context,
+        fixture.event_log,
+        fixture.budget,
+        fixture.support,
+        fixture.support_labels,
+        fixture.replay,
+        fixture.failure,
+        fixture.attempt_family_id,
+        fixture.attempt_id,
+        fixture.trial_id,
+        fixture.agent_spec_digest,
+        task2_owner_backpointers(),
+    )
+    .unwrap()
+}
+
 #[test]
-fn task2_material_bound_bundle_ids_are_stable_and_not_display_ids() {
-    let a = CodingLearningBundleV3::new_material_bound("same canonical material");
-    let b = CodingLearningBundleV3::new_material_bound("same canonical material");
+fn task2_material_bound_bundle_ids_are_stable_and_bind_required_owner_references() {
+    let a = task2_material_bundle("same canonical run material");
+    let b = task2_material_bundle("same canonical run material");
     assert_eq!(a.bundle_id, b.bundle_id);
-    assert!(!a.bundle_id.as_str().contains("local-process-seq"));
+    assert!(a.validate_durable_identity().is_ok());
+    for role in required_coding_learning_owner_roles() {
+        assert!(a
+            .canonical_backpointers
+            .iter()
+            .any(|backpointer| backpointer.role == *role));
+    }
 }
 
 #[test]
-fn task2_display_ids_are_rejected_from_durable_identity_fields() {
-    let display = display_only_unstable_id("task2");
-    assert!(validate_durable_v3_identity(&display).is_err());
+fn task2_display_ids_are_rejected_from_all_durable_identity_surfaces() {
+    let mut bundle = task2_material_bundle("display-id-rejection");
+    bundle.bundle_id = display_only_unstable_id("task2");
+    assert!(bundle.validate_durable_identity().is_err());
+
+    let mut bundle = task2_material_bundle("display-owner-reference-rejection");
+    bundle
+        .canonical_backpointers
+        .push(CanonicalBackpointerV1::artifact(
+            "owner",
+            "OwnerReceiptV1",
+            "extra-owner",
+            display_only_unstable_id("task2-owner"),
+        ));
+    assert!(bundle.validate_durable_identity().is_err());
 }
 
 #[test]
-fn task2_success_projection_is_fail_closed_for_incomplete_evidence() {
+fn task2_success_projection_is_fail_closed_for_incomplete_or_degraded_evidence() {
     let evidence = CodingLearningEvidenceV1::default();
+    let projection = project_terminal_state(&evidence);
     assert_eq!(
-        project_terminal_state(&evidence),
+        projection.state,
         CodingLearningTerminalStateV1::BlockedEvidenceInsufficient
     );
     assert!(!succeeded_verified(&evidence));
+    assert!(!projection.reason_codes.is_empty());
+    assert!(!projection.canonical_backpointers.is_empty());
+
+    let mut evidence = CodingLearningEvidenceV1::verified_candidate(task2_owner_backpointers());
+    assert!(succeeded_verified(&evidence));
+    assert_eq!(
+        project_terminal_state(&evidence).state,
+        CodingLearningTerminalStateV1::SucceededVerified
+    );
+
+    evidence.verification_degraded = true;
+    assert!(!succeeded_verified(&evidence));
+    assert_eq!(
+        project_terminal_state(&evidence).state,
+        CodingLearningTerminalStateV1::SucceededDegraded
+    );
+
+    evidence.verification_degraded = false;
+    evidence.canonical_backpointers.pop();
+    assert!(!succeeded_verified(&evidence));
+    assert_eq!(
+        project_terminal_state(&evidence).state,
+        CodingLearningTerminalStateV1::BlockedEvidenceInsufficient
+    );
 }
 
 #[test]
