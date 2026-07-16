@@ -675,7 +675,7 @@ fn permit_commands_emit_typed_approval_and_permit_artifacts() {
     assert_eq!(request.sandbox_root, "/repo");
 
     let approval = permit_command(PermitCommand::Approve {
-        request_id: request.request_id.0.clone(),
+        request_id: request.request_id.as_str().to_string(),
         tool_id: "aidens:file-write:1".into(),
         risk: "file-write".into(),
         sandbox_root: "/repo".into(),
@@ -693,7 +693,7 @@ fn permit_commands_emit_typed_approval_and_permit_artifacts() {
     );
 
     let denial = permit_command(PermitCommand::Deny {
-        request_id: request.request_id.0,
+        request_id: request.request_id.as_str().to_string(),
         decided_by: "operator".into(),
         reason: "no".into(),
     })
@@ -750,7 +750,7 @@ fn p10_coding_commands_read_propose_apply_and_packetize() {
     .unwrap();
     let request: ApprovalRequestV1 = serde_json::from_str(&request).unwrap();
     let approval = permit_command(PermitCommand::Approve {
-        request_id: request.request_id.0,
+        request_id: request.request_id.as_str().to_string(),
         tool_id: "aidens:patch-apply:1".into(),
         risk: "file-write".into(),
         sandbox_root: root.canonicalize().unwrap().display().to_string(),
@@ -790,10 +790,7 @@ fn p10_coding_commands_read_propose_apply_and_packetize() {
     let packet: CodexPacketV1 = serde_json::from_str(&packet).unwrap();
     assert!(packet.has_resume_context());
     assert_eq!(packet.commands_run.len(), 1);
-    assert_eq!(
-        packet.receipt_ids,
-        vec![ArtifactId("receipt:fixture".into())]
-    );
+    assert_eq!(packet.receipt_ids, vec![ArtifactId::new("receipt:fixture")]);
     let _ = std::fs::remove_dir_all(&root);
 }
 

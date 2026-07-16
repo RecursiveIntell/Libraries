@@ -73,18 +73,20 @@ impl ExecutionContextEnvelopeV1 {
         let material = format!(
             "{}|{}|{}",
             operation_id,
-            attempt_family_id.0,
+            attempt_family_id.as_str(),
             started_at.to_rfc3339_opts(SecondsFormat::Nanos, true)
         );
         Self {
             execution_id: generated_artifact_id_from_material("execution-context", &material),
             trace_id: generated_artifact_id_from_material("trace", &material),
-            span_id: generated_artifact_id_from_material("span", &material).0,
+            span_id: generated_artifact_id_from_material("span", &material)
+                .as_str()
+                .to_string(),
             operation_id: operation_id.clone(),
             attempt_family_id: attempt_family_id.clone(),
             retry_family_id: generated_artifact_id_from_material(
                 "retry-family",
-                &format!("retry|{}|{}", operation_id, attempt_family_id.0),
+                &format!("retry|{}|{}", operation_id, attempt_family_id.as_str()),
             ),
             queue_lineage: Vec::new(),
             provider_route: provider_route.into(),
@@ -180,7 +182,7 @@ impl ToolCallReceiptV1 {
         let completed_at = Utc::now();
         let material = format!(
             "{}|{}|{}|{}|{}",
-            context.execution_id.0,
+            context.execution_id.as_str(),
             tool_id,
             input_digest.digest,
             output_digest.digest,
@@ -250,9 +252,9 @@ impl OperatorInvocationReceiptV1 {
         let material = format!(
             "{}|{}|{}|{}",
             operator_id,
-            context.execution_id.0,
-            input_manifest.manifest_id.0,
-            output_manifest.manifest_id.0
+            context.execution_id.as_str(),
+            input_manifest.manifest_id.as_str(),
+            output_manifest.manifest_id.as_str()
         );
         Ok(Self {
             receipt_id: generated_artifact_id_from_material("operator-invocation", &material),

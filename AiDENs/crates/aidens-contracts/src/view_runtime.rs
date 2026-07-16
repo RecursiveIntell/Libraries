@@ -473,8 +473,11 @@ impl ViewDisclosureReportV1 {
             && self
                 .query_widening_receipt_ids
                 .iter()
-                .all(|id| !id.0.is_empty())
-            && self.degradation_event_ids.iter().all(|id| !id.0.is_empty())
+                .all(|id| !id.as_str().is_empty())
+            && self
+                .degradation_event_ids
+                .iter()
+                .all(|id| !id.as_str().is_empty())
     }
 
     pub fn has_visible_widening_or_degradation(&self) -> bool {

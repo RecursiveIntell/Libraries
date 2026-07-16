@@ -74,8 +74,7 @@ fn proof_semantic_and_view_reference_cases_match_contract_runtime_dtos(
         ProofWaiverReceiptV1::new(obligation.obligation_id.clone(), "operator", "temporary");
     obligation.waived_by.push(waiver.receipt_id);
     let profile = aidens_contracts::LocalProofProfileV1::local_exact(vec![obligation]);
-    let mut debt =
-        ProofDebtLedgerV1::from_profile(ArtifactId("artifact:p09-proof".into()), &profile);
+    let mut debt = ProofDebtLedgerV1::from_profile(ArtifactId::new("artifact:p09-proof"), &profile);
     debt.items[0] = debt.items[0].clone().with_expiry(expires_at);
     assert_eq!(
         proof_expected["blocks_promotion"],
@@ -102,15 +101,15 @@ fn proof_semantic_and_view_reference_cases_match_contract_runtime_dtos(
     );
 
     let semantic_expected = interpret_case(&reference_semantic_state_contamination_case())?;
-    let artifact_ref = ArtifactId("artifact:p09-semantic".into());
+    let artifact_ref = ArtifactId::new("artifact:p09-semantic");
     let contradiction = SemanticContradictionRecordV1::new(
         artifact_ref.clone(),
-        vec![ArtifactId("witness:p09".into())],
+        vec![ArtifactId::new("witness:p09")],
         "refuted-by-hostile-fixture",
     );
     let contamination = ExecutionContaminationRecordV1::new(
         artifact_ref.clone(),
-        ArtifactId("execution-context:p09".into()),
+        ArtifactId::new("execution-context:p09"),
         "execution-output-used-as-domain-truth",
     );
     let state = SemanticStateV1::exact_supported(artifact_ref, "proof-profile:p09")
@@ -155,14 +154,14 @@ fn proof_semantic_and_view_reference_cases_match_contract_runtime_dtos(
         RuntimeViewModeV1::Temporal,
         policy.policy_id.clone(),
         Vec::new(),
-        vec![ArtifactId("claim:p09".into())],
+        vec![ArtifactId::new("claim:p09")],
         Vec::new(),
         json!({"claim_ids":["claim:p09"]}),
     );
     let disclosure = ViewDisclosureReportV1::new(
         &request,
         projection,
-        vec![ArtifactId("claim:p09".into())],
+        vec![ArtifactId::new("claim:p09")],
         vec![widening.receipt_id],
         vec![degradation.event_id],
     );

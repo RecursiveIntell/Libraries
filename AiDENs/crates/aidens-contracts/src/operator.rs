@@ -236,7 +236,7 @@ impl OperationConformanceReportV1 {
                 "operation-conformance-report",
                 &format!(
                     "{}|{}",
-                    registry.registry_id.0,
+                    registry.registry_id.as_str(),
                     required_operator_ids.join("|")
                 ),
             ),

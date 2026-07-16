@@ -229,7 +229,7 @@ pub(super) fn verification_checks_for_loop(
         let (passed, reason_codes) = match check {
             AgentVerificationCheckV1::Schema => {
                 let schema_receipt_ok = !output.receipt.receipt_id.to_string().is_empty()
-                    && !output.receipt.context.run_id.0.is_empty()
+                    && !output.receipt.context.run_id.as_str().is_empty()
                     && serde_json::to_string(&output.receipt).is_ok();
                 (schema_receipt_ok, Vec::new())
             }

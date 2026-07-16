@@ -161,12 +161,12 @@ impl PermitPolicyV1 {
                     context
                         .run_id
                         .as_ref()
-                        .map(|id| id.0.as_str())
+                        .map(|id| id.as_str())
                         .unwrap_or(UNKNOWN_PERMIT_SCOPE_TOKEN),
                     context
                         .attempt_id
                         .as_ref()
-                        .map(|id| id.0.as_str())
+                        .map(|id| id.as_str())
                         .unwrap_or(UNKNOWN_PERMIT_SCOPE_TOKEN)
                 );
             }
@@ -282,7 +282,7 @@ mod tests {
             CanonicalToolSideEffectClass::Write,
             "repo",
         )
-        .with_run_attempt(Some(ArtifactId("run-id:example".into())), None);
+        .with_run_attempt(Some(ArtifactId::new("run-id:example")), None);
 
         let request = policy
             .approval_request_for_context(&context)

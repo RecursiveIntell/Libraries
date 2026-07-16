@@ -382,7 +382,7 @@ impl ArtifactFamilyRegistryV1 {
                 .then(left.version.cmp(&right.version))
         });
         Self {
-            registry_id: ArtifactId("artifact-family-registry:v1".into()),
+            registry_id: ArtifactId::new("artifact-family-registry:v1"),
             registry_version: 1,
             families,
             canonical_truth_owner: "contract-schema-gen".into(),
@@ -514,7 +514,7 @@ impl GeneratedSchemaManifestV1 {
                 .then(left.version.cmp(&right.version))
         });
         Self {
-            manifest_id: ArtifactId("generated-schema-manifest:v1".into()),
+            manifest_id: ArtifactId::new("generated-schema-manifest:v1"),
             manifest_version: 1,
             registry_digest: non_authoritative_json_display_digest(
                 &serde_json::to_value(registry).unwrap_or(serde_json::Value::Null),
@@ -720,7 +720,7 @@ impl SchemaCompatibilityReportV1 {
             reason_codes.push("schema-path-case-fold-collision".into());
         }
         Self {
-            report_id: ArtifactId("schema-compatibility-report:v1".into()),
+            report_id: ArtifactId::new("schema-compatibility-report:v1"),
             registry_digest: non_authoritative_json_display_digest(
                 &serde_json::to_value(registry).unwrap_or(serde_json::Value::Null),
             ),
@@ -766,7 +766,7 @@ impl MigrationPlanV1 {
         requires_major_bump: bool,
     ) -> Self {
         Self {
-            plan_id: ArtifactId("migration-plan:v1".into()),
+            plan_id: ArtifactId::new("migration-plan:v1"),
             artifact_family: artifact_family.into(),
             from_version,
             to_version,
