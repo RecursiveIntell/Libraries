@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "cargo test --locked",
+    "cargo fmt --check"
+  ],
+  "family": "module-hygiene",
+  "forbidden_effects": [
+    "network",
+    "filesystem outside fixture",
+    "process spawning",
+    "secret access"
+  ],
+  "id": "module-hygiene-holdout",
+  "language": "rust",
+  "permitted_effects": [
+    "edit fixture source only"
+  ],
+  "prompt": "Apply the minimal safe fix for module-hygiene; preserve baseline behavior.",
+  "split": "holdout",
+  "toolchain": "1.86.0"
+}

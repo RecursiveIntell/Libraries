@@ -1,0 +1,5 @@
+{
+  "category": "duplicate_key_tool_call",
+  "expected": "reject",
+  "fixture_version": "v1"
+}
