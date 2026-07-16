@@ -259,11 +259,13 @@ pub enum ReplayMode {
     NoReplay,
     StoreInputs,
     ReplayEvaluation,
+    MetadataOnly,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ReplayResult {
     ReplayMatch,
     ReplayMismatch,
+    Drift,
     Inconclusive,
     NotAvailable,
 }
@@ -288,6 +290,12 @@ pub fn replay(_spec: TrialSpec, mode: ReplayMode) -> ReplayReport {
             store_drift: false,
             environment_drift: false,
         },
+        ReplayMode::MetadataOnly => ReplayReport {
+            result: ReplayResult::NotAvailable,
+            verifier_drift: false,
+            store_drift: false,
+            environment_drift: false,
+        },
         ReplayMode::ReplayEvaluation => ReplayReport {
             result: ReplayResult::ReplayMismatch,
             verifier_drift: true,
@@ -295,6 +303,92 @@ pub fn replay(_spec: TrialSpec, mode: ReplayMode) -> ReplayReport {
             environment_drift: false,
         },
     }
+}
+
+pub fn replay_with_observed(
+    expected: TrialSpec,
+    mode: ReplayMode,
+    observed: TrialSpec,
+) -> ReplayReport {
+    if mode == ReplayMode::MetadataOnly {
+        return replay(expected, mode);
+    }
+    if mode != ReplayMode::ReplayEvaluation {
+        return replay(expected, mode);
+    }
+    let verifier_drift = expected.verifier_digest != observed.verifier_digest;
+    let store_drift = expected.policy_digest != observed.policy_digest;
+    let environment_drift = expected.environment_digest != observed.environment_digest;
+    let task_drift = expected.task_digest != observed.task_digest || expected.seed != observed.seed;
+    ReplayReport {
+        result: if verifier_drift || store_drift || environment_drift || task_drift {
+            ReplayResult::Drift
+        } else {
+            ReplayResult::ReplayMatch
+        },
+        verifier_drift,
+        store_drift,
+        environment_drift,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FixtureVerticalSlice {
+    pub fixture_evidence: EvaluationEvidence,
+    pub candidate: Candidate,
+    pub paired_trials: PairedTrials,
+    pub lifecycle: LifecycleDecision,
+    pub replay: ReplayReport,
+}
+
+pub fn run_fixture_vertical_slice() -> Result<FixtureVerticalSlice, CandidateRejection> {
+    let evidence = EvaluationEvidence::fixture();
+    let run = SandboxRun::verified(
+        "medusa-task-12",
+        "fixture-lineage",
+        vec!["read_file".into()],
+    )
+    .with_patch("deterministic candidate");
+    let candidate = extract_candidate(&run)?;
+    let trials = compose_paired_trials(
+        TrialSpec::new(
+            "task-digest",
+            "verifier-digest",
+            "environment-digest",
+            "policy-digest",
+            12,
+        ),
+        5,
+    );
+    let promoted = lifecycle_decision(LifecycleInput::passing());
+    let replay = replay_with_observed(
+        TrialSpec::new(
+            "task-digest",
+            "verifier-digest",
+            "environment-digest",
+            "policy-digest",
+            12,
+        ),
+        ReplayMode::ReplayEvaluation,
+        TrialSpec::new(
+            "task-digest",
+            "verifier-digest",
+            "environment-digest",
+            "policy-digest",
+            12,
+        ),
+    );
+    Ok(FixtureVerticalSlice {
+        fixture_evidence: evidence,
+        candidate,
+        paired_trials: trials,
+        lifecycle: if promoted.decision == LifecycleDecision::Promote {
+            LifecycleDecision::Revoke
+        } else {
+            promoted.decision
+        },
+        replay,
+    })
 }
 
 #[cfg(test)]
@@ -357,6 +451,39 @@ mod tests {
         assert_eq!(
             replay(s, ReplayMode::ReplayEvaluation).result,
             ReplayResult::ReplayMismatch
+        );
+    }
+
+    #[test]
+    fn fixture_vertical_slice_is_deterministic_and_non_promoting() {
+        let first = run_fixture_vertical_slice().unwrap();
+        let second = run_fixture_vertical_slice().unwrap();
+        assert_eq!(first, second);
+        assert_eq!(first.lifecycle, LifecycleDecision::Revoke);
+        assert_eq!(first.replay.result, ReplayResult::ReplayMatch);
+        assert!(!first.fixture_evidence.eligible_for_learning());
+    }
+
+    #[test]
+    fn replay_classifies_drift_and_old_metadata_as_unavailable() {
+        let spec = TrialSpec::new("t", "v", "e", "p", 1);
+        assert_eq!(
+            replay_with_observed(spec.clone(), ReplayMode::ReplayEvaluation, spec.clone()).result,
+            ReplayResult::ReplayMatch
+        );
+        let drift = TrialSpec::new("t", "changed", "e", "p", 1);
+        assert_eq!(
+            replay_with_observed(spec, ReplayMode::ReplayEvaluation, drift).result,
+            ReplayResult::Drift
+        );
+        assert_eq!(
+            replay_with_observed(
+                TrialSpec::new("t", "v", "e", "p", 1),
+                ReplayMode::MetadataOnly,
+                TrialSpec::new("t", "v", "e", "p", 1)
+            )
+            .result,
+            ReplayResult::NotAvailable
         );
     }
 }
