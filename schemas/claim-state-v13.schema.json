@@ -10,6 +10,10 @@
       ],
       "type": "string"
     },
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    },
     "DegradationKindV1": {
       "enum": [
         "thin_export",
@@ -128,9 +132,13 @@
       "type": "string"
     },
     "support_set_digest": {
-      "type": [
-        "string",
-        "null"
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ContentDigest"
+        },
+        {
+          "type": "null"
+        }
       ]
     },
     "support_set_id": {

@@ -17,6 +17,10 @@
       ],
       "type": "object"
     },
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    },
     "DispatchOutcomeV1": {
       "enum": [
         "succeeded",
@@ -353,7 +357,7 @@
       "type": "array"
     },
     "content_digest": {
-      "type": "string"
+      "$ref": "#/definitions/ContentDigest"
     },
     "control_plane_refs": {
       "items": {

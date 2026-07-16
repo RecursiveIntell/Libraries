@@ -102,6 +102,10 @@
       ],
       "type": "object"
     },
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    },
     "GraphGeometryManifest": {
       "properties": {
         "compilation_boundaries": {
@@ -268,7 +272,7 @@
       "$ref": "#/definitions/GraphGeometryManifest"
     },
     "graph_hash": {
-      "type": "string"
+      "$ref": "#/definitions/ContentDigest"
     },
     "hyperedges": {
       "items": {

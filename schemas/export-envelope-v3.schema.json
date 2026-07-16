@@ -100,9 +100,13 @@
           "type": "string"
         },
         "support_set_digest": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ContentDigest"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "support_set_id": {
@@ -212,6 +216,10 @@
         "causal_refutation",
         "nuisance_disclosure"
       ],
+      "type": "string"
+    },
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
       "type": "string"
     },
     "ContradictionWitnessV1": {
@@ -1811,7 +1819,7 @@
           "type": "string"
         },
         "content_digest": {
-          "type": "string"
+          "$ref": "#/definitions/ContentDigest"
         },
         "schema_version": {
           "type": "string"
@@ -2072,8 +2080,12 @@
       "type": "array"
     },
     "content_digest": {
-      "description": "BLAKE3 content digest for idempotent deduplication.",
-      "type": "string"
+      "allOf": [
+        {
+          "$ref": "#/definitions/ContentDigest"
+        }
+      ],
+      "description": "BLAKE3 content digest for idempotent deduplication."
     },
     "contradiction_witnesses": {
       "description": "Additive v13 contradiction witnesses owned by Forge.",

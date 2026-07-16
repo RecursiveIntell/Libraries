@@ -1,5 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    }
+  },
   "properties": {
     "applicability_context_ref": {
       "type": "string"
@@ -44,7 +50,7 @@
       "type": "string"
     },
     "normalized_input_digest": {
-      "type": "string"
+      "$ref": "#/definitions/ContentDigest"
     },
     "profile_set_ref": {
       "type": "string"

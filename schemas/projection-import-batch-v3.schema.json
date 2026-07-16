@@ -147,9 +147,13 @@
           "type": "string"
         },
         "support_set_digest": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ContentDigest"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "support_set_id": {
@@ -259,6 +263,10 @@
         "causal_refutation",
         "nuisance_disclosure"
       ],
+      "type": "string"
+    },
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
       "type": "string"
     },
     "ContradictionStatus": {
@@ -436,7 +444,7 @@
           "type": "array"
         },
         "content_digest": {
-          "type": "string"
+          "$ref": "#/definitions/ContentDigest"
         },
         "control_plane_refs": {
           "items": {
@@ -2533,7 +2541,7 @@
           "type": "string"
         },
         "content_digest": {
-          "type": "string"
+          "$ref": "#/definitions/ContentDigest"
         },
         "schema_version": {
           "type": "string"
@@ -2799,8 +2807,12 @@
       "type": "array"
     },
     "content_digest": {
-      "description": "Content digest carried through from the source envelope.",
-      "type": "string"
+      "allOf": [
+        {
+          "$ref": "#/definitions/ContentDigest"
+        }
+      ],
+      "description": "Content digest carried through from the source envelope."
     },
     "contradiction_witnesses": {
       "description": "Additive v13 contradiction witnesses preserved verbatim from Forge.",
