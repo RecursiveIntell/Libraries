@@ -47,8 +47,15 @@ use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Parser, Subcommand};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
-use std::io::Write;
+use std::io::{Read, Write};
+#[cfg(unix)]
+use std::os::unix::process::CommandExt;
+#[cfg(unix)]
+use std::os::unix::process::ExitStatusExt;
+#[cfg(windows)]
+use std::os::windows::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
+use std::sync::mpsc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 mod agent;
@@ -1356,10 +1363,7 @@ pub fn coding_command(command: CodingCommand) -> Result<String> {
                 source_map,
                 changed_files,
                 commands_run,
-                receipt_ids: receipt_ids
-                    .into_iter()
-                    .map(|receipt_id| ArtifactId::new(receipt_id))
-                    .collect(),
+                receipt_ids: receipt_ids.into_iter().map(ArtifactId::new).collect(),
                 blockers,
                 notes,
             });
@@ -3619,32 +3623,74 @@ fn coding_agent_patch_diff(sandbox_root: &Path, read_path: &str) -> Result<Strin
 }
 
 fn repo_status_report(sandbox_root: &Path) -> Result<serde_json::Value> {
-    let output = std::process::Command::new("git")
-        .arg("-C")
-        .arg(sandbox_root)
-        .arg("status")
-        .arg("--short")
-        .output();
-    match output {
-        Ok(output) if output.status.success() => Ok(serde_json::json!({
-            "tool_id": "aidens:repo-status:1",
-            "status": "success",
-            "sandbox_root": sandbox_root,
-            "stdout": String::from_utf8_lossy(&output.stdout).to_string(),
-            "stderr": String::from_utf8_lossy(&output.stderr).to_string(),
-            "exit_code": output.status.code(),
-            "read_only": true,
-        })),
-        Ok(output) => Ok(serde_json::json!({
-            "tool_id": "aidens:repo-status:1",
-            "status": "degraded",
-            "sandbox_root": sandbox_root,
-            "stdout": String::from_utf8_lossy(&output.stdout).to_string(),
-            "stderr": String::from_utf8_lossy(&output.stderr).to_string(),
-            "exit_code": output.status.code(),
-            "read_only": true,
-            "reason_codes": ["git-status-unavailable-or-not-repo"],
-        })),
+    let sandbox_root = match canonicalize_sandbox_root(sandbox_root) {
+        Ok(root) => root,
+        Err(error) => {
+            return Ok(serde_json::json!({
+                "tool_id": "aidens:repo-status:1",
+                "status": "degraded",
+                "sandbox_root": sandbox_root,
+                "read_only": true,
+                "reason_codes": ["git-status-root-invalid"],
+                "error": error.to_string(),
+            }));
+        }
+    };
+    let timed_output = run_command_with_timeout(
+        &sandbox_root,
+        repo_status_command()?,
+        &[
+            "-C",
+            sandbox_root.to_str().unwrap_or("."),
+            "status",
+            "--short",
+        ],
+        std::time::Duration::from_secs(20),
+        false,
+    );
+    match timed_output {
+        Ok(timed_output)
+            if timed_output
+                .status
+                .as_ref()
+                .is_some_and(std::process::ExitStatus::success) =>
+        {
+            Ok(serde_json::json!({
+                "tool_id": "aidens:repo-status:1",
+                "status": "success",
+                "sandbox_root": sandbox_root,
+                "stdout": capped_utf8_lossy(&timed_output.stdout, MAX_COMMAND_OUTPUT_BYTES),
+                "stderr": capped_utf8_lossy(&timed_output.stderr, MAX_COMMAND_OUTPUT_BYTES),
+                "exit_code": timed_output.status.and_then(|status| status.code()),
+                "read_only": true,
+            }))
+        }
+        Ok(timed_output) => {
+            if timed_output.timed_out {
+                Ok(serde_json::json!({
+                    "tool_id": "aidens:repo-status:1",
+                    "status": "degraded",
+                    "sandbox_root": sandbox_root,
+                    "stdout": capped_utf8_lossy(&timed_output.stdout, MAX_COMMAND_OUTPUT_BYTES),
+                    "stderr": capped_utf8_lossy(&timed_output.stderr, MAX_COMMAND_OUTPUT_BYTES),
+                    "exit_code": timed_output.status.and_then(|status| status.code()),
+                    "read_only": true,
+                    "reason_codes": ["git-status-timeout"],
+                    "kill_failure": timed_output.kill_failed,
+                }))
+            } else {
+                Ok(serde_json::json!({
+                    "tool_id": "aidens:repo-status:1",
+                    "status": "degraded",
+                    "sandbox_root": sandbox_root,
+                    "stdout": capped_utf8_lossy(&timed_output.stdout, MAX_COMMAND_OUTPUT_BYTES),
+                    "stderr": capped_utf8_lossy(&timed_output.stderr, MAX_COMMAND_OUTPUT_BYTES),
+                    "exit_code": timed_output.status.and_then(|status| status.code()),
+                    "read_only": true,
+                    "reason_codes": ["git-status-unavailable-or-not-repo"],
+                }))
+            }
+        }
         Err(error) => Ok(serde_json::json!({
             "tool_id": "aidens:repo-status:1",
             "status": "degraded",
@@ -3654,6 +3700,294 @@ fn repo_status_report(sandbox_root: &Path) -> Result<serde_json::Value> {
             "error": error.to_string(),
         })),
     }
+}
+
+const MAX_COMMAND_OUTPUT_BYTES: usize = 65_536;
+
+fn capped_utf8_lossy(bytes: &[u8], cap: usize) -> String {
+    String::from_utf8_lossy(&bytes[..bytes.len().min(cap)]).to_string()
+}
+
+fn capture_stream_with_cap(
+    mut stream: impl Read + Send + 'static,
+    cap: usize,
+) -> std::io::Result<(Vec<u8>, bool)> {
+    let mut captured = Vec::new();
+    let mut buffer = [0_u8; 4096];
+    let mut total_read = 0_usize;
+    let mut truncated = false;
+    loop {
+        let read = match stream.read(&mut buffer) {
+            Ok(0) => break,
+            Ok(bytes) => bytes,
+            Err(error) => return Err(error),
+        };
+        if total_read < cap {
+            let keep = cap - total_read;
+            captured.extend_from_slice(&buffer[..read.min(keep)]);
+        } else {
+            truncated = true;
+        }
+        total_read += read;
+        if read > 0 && !truncated && total_read > cap {
+            truncated = true;
+        }
+    }
+    Ok((captured, truncated))
+}
+
+fn canonicalize_sandbox_root(path: &Path) -> Result<PathBuf> {
+    let canonical = path
+        .canonicalize()
+        .with_context(|| format!("sandbox root does not exist: {}", path.display()))?;
+    if !canonical.is_dir() {
+        bail!("sandbox root is not a directory: {}", canonical.display());
+    }
+    Ok(canonical)
+}
+
+fn repo_status_command() -> Result<String> {
+    let candidates: &[&str] = &["/usr/bin/git", "/bin/git", "/usr/local/bin/git"];
+    candidates
+        .iter()
+        .find(|command| Path::new(command).is_file())
+        .map(|command| (*command).to_string())
+        .ok_or_else(|| anyhow::anyhow!("git executable not available in fixed paths"))
+}
+
+struct TimedCommandOutput {
+    stdout: Vec<u8>,
+    stderr: Vec<u8>,
+    status: Option<std::process::ExitStatus>,
+    timed_out: bool,
+    kill_failed: bool,
+}
+
+fn run_command_with_timeout(
+    sandbox_root: &Path,
+    executable: String,
+    args: &[&str],
+    timeout: std::time::Duration,
+    kill_process_group: bool,
+) -> anyhow::Result<TimedCommandOutput> {
+    let mut command_proc = std::process::Command::new(&executable);
+    command_proc
+        .args(args)
+        .current_dir(sandbox_root)
+        .env_clear()
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
+    #[cfg(unix)]
+    if kill_process_group {
+        command_proc.process_group(0);
+    }
+    let mut child = command_proc.spawn()?;
+    let stdout = child
+        .stdout
+        .take()
+        .context("failed to capture child stdout")?;
+    let stderr = child
+        .stderr
+        .take()
+        .context("failed to capture child stderr")?;
+    let (stdout_tx, stdout_rx) = mpsc::channel::<Result<(Vec<u8>, bool), String>>();
+    let (stderr_tx, stderr_rx) = mpsc::channel::<Result<(Vec<u8>, bool), String>>();
+    let output_cap = MAX_COMMAND_OUTPUT_BYTES;
+    std::thread::spawn(move || {
+        let result = capture_stream_with_cap(stdout, output_cap).map_err(|error| error.to_string());
+        let _ = stdout_tx.send(result);
+    });
+    let output_cap = MAX_COMMAND_OUTPUT_BYTES;
+    std::thread::spawn(move || {
+        let result = capture_stream_with_cap(stderr, output_cap).map_err(|error| error.to_string());
+        let _ = stderr_tx.send(result);
+    });
+
+    let started = std::time::Instant::now();
+    let mut wait_interval = std::time::Duration::from_millis(5);
+    let mut status = None;
+    let mut timed_out = false;
+    let mut kill_failed = false;
+    loop {
+        if let Some(process_status) = child.try_wait()? {
+            status = Some(process_status);
+            break;
+        }
+        if started.elapsed() >= timeout {
+            timed_out = true;
+            kill_failed = terminate_timed_out_command(&mut child, executable.as_str());
+            let child_ended =
+                await_child_exit_with_timeout(&mut child, std::time::Duration::from_millis(250))?;
+            if !child_ended {
+                if child.kill().is_ok() {
+                    let child_ended = await_child_exit_with_timeout(
+                        &mut child,
+                        std::time::Duration::from_millis(250),
+                    )?;
+                    if !child_ended {
+                        kill_failed = true;
+                        return Ok(TimedCommandOutput {
+                            stdout: b"command did not exit after timeout and kill attempts"
+                                .to_vec(),
+                            stderr: Vec::new(),
+                            status: Some(timed_out_failure_exit_status()),
+                            timed_out: true,
+                            kill_failed,
+                        });
+                    }
+                } else {
+                    kill_failed = true;
+                    return Ok(TimedCommandOutput {
+                        stdout: b"command did not exit after timeout and direct kill failed"
+                            .to_vec(),
+                        stderr: Vec::new(),
+                        status: Some(timed_out_failure_exit_status()),
+                        timed_out: true,
+                        kill_failed,
+                    });
+                }
+            }
+            if status.is_none() {
+                status = child.try_wait()?;
+            }
+            break;
+        }
+        let elapsed = started.elapsed();
+        let remaining = timeout.saturating_sub(elapsed);
+        std::thread::sleep(
+            wait_interval
+                .min(remaining)
+                .min(std::time::Duration::from_millis(250)),
+        );
+        wait_interval = (wait_interval * 2).min(std::time::Duration::from_millis(250));
+    }
+
+    if status.is_none() {
+        status = child.try_wait()?;
+        if status.is_none() {
+            kill_failed = true;
+        }
+    }
+
+    let collect_stream = |receiver: mpsc::Receiver<Result<(Vec<u8>, bool), String>>,
+                          stream_name: &str|
+     -> anyhow::Result<(Vec<u8>, bool)> {
+        match receiver.recv_timeout(std::time::Duration::from_millis(250)) {
+            Ok(Ok(stream_output)) => Ok(stream_output),
+            Ok(Err(error)) => {
+                Err(anyhow::anyhow!(error).context(format!("{stream_name} capture failed")))
+            }
+            Err(mpsc::RecvTimeoutError::Timeout) => Ok((Vec::new(), true)),
+            Err(mpsc::RecvTimeoutError::Disconnected) => Ok((Vec::new(), true)),
+        }
+    };
+
+    let (stdout, stdout_truncated) = collect_stream(stdout_rx, "stdout")?;
+    let (stderr, stderr_truncated) = collect_stream(stderr_rx, "stderr")?;
+    let mut capped_stdout = capped_utf8_lossy(&stdout, MAX_COMMAND_OUTPUT_BYTES);
+    let mut capped_stderr = capped_utf8_lossy(&stderr, MAX_COMMAND_OUTPUT_BYTES);
+    if stdout_truncated {
+        capped_stdout.push_str("[output truncated]");
+    }
+    if stderr_truncated {
+        capped_stderr.push_str("[output truncated]");
+    }
+    Ok(TimedCommandOutput {
+        stdout: capped_stdout.into_bytes(),
+        stderr: capped_stderr.into_bytes(),
+        status,
+        timed_out,
+        kill_failed,
+    })
+}
+
+fn await_child_exit_with_timeout(
+    child: &mut std::process::Child,
+    timeout: std::time::Duration,
+) -> anyhow::Result<bool> {
+    let started = std::time::Instant::now();
+    let mut wait_interval = std::time::Duration::from_millis(5);
+    loop {
+        if child.try_wait()?.is_some() {
+            return Ok(true);
+        }
+        if started.elapsed() >= timeout {
+            return Ok(false);
+        }
+        let remaining = timeout.saturating_sub(started.elapsed());
+        std::thread::sleep(
+            wait_interval
+                .min(remaining)
+                .min(std::time::Duration::from_millis(50)),
+        );
+        wait_interval = (wait_interval * 2).min(std::time::Duration::from_millis(50));
+    }
+}
+
+fn timed_out_failure_exit_status() -> std::process::ExitStatus {
+    #[cfg(unix)]
+    {
+        std::process::ExitStatus::from_raw(1 << 8)
+    }
+    #[cfg(windows)]
+    {
+        std::process::ExitStatus::from_raw(1)
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        std::process::ExitStatus::default()
+    }
+}
+
+fn terminate_timed_out_command(child: &mut std::process::Child, command_label: &str) -> bool {
+    #[cfg(unix)]
+    {
+        if terminate_unix_process_group(child.id()).is_ok() {
+            return false;
+        }
+        if child.kill().is_err() {
+            eprintln!(
+                "WARNING: kill-failure for timed-out command {command_label}: direct kill after process-group failure failed"
+            );
+            return true;
+        }
+        if child.try_wait().is_ok_and(|s| s.is_some()) {
+            return false;
+        }
+        eprintln!(
+            "WARNING: kill-failure for timed-out command {command_label}: process-group termination unavailable or failed"
+        );
+        if child.kill().is_err() {
+            return true;
+        }
+        false
+    }
+    #[cfg(not(unix))]
+    {
+        if child.kill().is_ok() {
+            return false;
+        }
+        eprintln!("WARNING: kill-failure for timed-out command {command_label}: timed-out command could not be killed");
+        true
+    }
+}
+
+#[cfg(unix)]
+fn terminate_unix_process_group(child_pid: u32) -> anyhow::Result<()> {
+    let process_group = format!("-{child_pid}");
+    for kill_path in ["/bin/kill", "/usr/bin/kill"] {
+        if !Path::new(kill_path).exists() {
+            continue;
+        }
+        let status = std::process::Command::new(kill_path)
+            .arg("-KILL")
+            .arg(&process_group)
+            .status()?;
+        if status.success() {
+            return Ok(());
+        }
+    }
+    Err(anyhow::anyhow!("kill process-group failed"))
 }
 
 fn write_coding_agent_event_log(path: &Path, report: &serde_json::Value) -> Result<()> {

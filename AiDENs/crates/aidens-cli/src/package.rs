@@ -1,5 +1,15 @@
 use super::*;
 
+use std::io::Read;
+#[cfg(unix)]
+use std::os::unix::process::CommandExt;
+#[cfg(unix)]
+use std::os::unix::process::ExitStatusExt;
+#[cfg(windows)]
+use std::os::windows::process::ExitStatusExt;
+use std::sync::mpsc;
+use std::time::{Duration, Instant};
+
 pub fn package_command(command: PackageCommand) -> Result<String> {
     match command {
         PackageCommand::Examples { root } => {
@@ -270,8 +280,15 @@ fn collect_files_recursive(root: &Path, files: &mut Vec<PathBuf>) -> Result<()> 
     for entry in
         std::fs::read_dir(root).with_context(|| format!("failed to read {}", root.display()))?
     {
-        let path = entry?.path();
-        if path.is_dir() {
+        let entry = entry?;
+        let path = entry.path();
+        let file_type = entry
+            .file_type()
+            .with_context(|| format!("failed to inspect file type for {}", path.display()))?;
+        if file_type.is_symlink() {
+            continue;
+        }
+        if file_type.is_dir() {
             collect_files_recursive(&path, files)?;
         } else {
             files.push(path);
@@ -652,19 +669,335 @@ fn smoke_step(
     }
 }
 
-fn run_shell_command(root: &Path, program: &str, args: &[&str]) -> Result<String> {
-    let output = std::process::Command::new(program)
-        .args(args)
-        .current_dir(root)
-        .output()
-        .with_context(|| format!("failed to run {program} {}", args.join(" ")))?;
-    let mut combined = String::new();
-    combined.push_str(&String::from_utf8_lossy(&output.stdout));
-    combined.push_str(&String::from_utf8_lossy(&output.stderr));
-    if !output.status.success() {
+pub(crate) fn run_shell_command(root: &Path, program: &str, args: &[&str]) -> Result<String> {
+    let sandbox_root = canonicalize_sandbox_root(root)?;
+    let executable = resolve_allowed_command_executable(program)?;
+    let timed_output = run_command_with_timeout(
+        &sandbox_root,
+        executable.to_string_lossy().as_ref(),
+        args,
+        std::time::Duration::from_secs(RUN_COMMAND_TIMEOUT_SECONDS),
+        true,
+    )
+    .with_context(|| format!("failed to run {program} {}", args.join(" ")))?;
+    if timed_output.timed_out {
+        let combined = format!(
+            "{}{}",
+            capped_utf8_lossy(&timed_output.stdout, MAX_COMMAND_OUTPUT_BYTES),
+            capped_utf8_lossy(&timed_output.stderr, MAX_COMMAND_OUTPUT_BYTES),
+        );
+        if timed_output.kill_failed {
+            bail!(
+                "{program} {} failed: command timed out and process cleanup may be incomplete: {combined}",
+                args.join(" ")
+            );
+        }
+        bail!(
+            "{program} {} failed: command timed out: {combined}",
+            args.join(" ")
+        );
+    }
+    if !timed_output
+        .status
+        .as_ref()
+        .is_some_and(std::process::ExitStatus::success)
+    {
+        let combined = format!(
+            "{}{}",
+            capped_utf8_lossy(&timed_output.stdout, MAX_COMMAND_OUTPUT_BYTES),
+            capped_utf8_lossy(&timed_output.stderr, MAX_COMMAND_OUTPUT_BYTES),
+        );
         bail!("{program} {} failed: {combined}", args.join(" "));
     }
-    Ok(combined)
+    Ok(format!(
+        "{}{}",
+        capped_utf8_lossy(&timed_output.stdout, MAX_COMMAND_OUTPUT_BYTES),
+        capped_utf8_lossy(&timed_output.stderr, MAX_COMMAND_OUTPUT_BYTES),
+    ))
+}
+
+const MAX_COMMAND_OUTPUT_BYTES: usize = 65_536;
+const RUN_COMMAND_TIMEOUT_SECONDS: u64 = 120;
+const RUN_COMMAND_GRACEFUL_TERMINATE_SECONDS: u64 = 1;
+
+fn canonicalize_sandbox_root(path: &Path) -> Result<PathBuf> {
+    let canonical = path
+        .canonicalize()
+        .with_context(|| format!("sandbox root does not exist: {}", path.display()))?;
+    if !canonical.is_dir() {
+        bail!("sandbox root is not a directory: {}", canonical.display());
+    }
+    Ok(canonical)
+}
+
+struct TimedCommandOutput {
+    stdout: Vec<u8>,
+    stderr: Vec<u8>,
+    status: Option<std::process::ExitStatus>,
+    timed_out: bool,
+    kill_failed: bool,
+}
+
+fn run_command_with_timeout(
+    sandbox_root: &Path,
+    executable: &str,
+    args: &[&str],
+    timeout: std::time::Duration,
+    kill_process_group: bool,
+) -> anyhow::Result<TimedCommandOutput> {
+    let mut command_proc = std::process::Command::new(executable);
+    command_proc
+        .args(args)
+        .current_dir(sandbox_root)
+        .env_clear()
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
+    #[cfg(unix)]
+    if kill_process_group {
+        command_proc.process_group(0);
+    }
+    let mut child = command_proc.spawn()?;
+    let stdout = child
+        .stdout
+        .take()
+        .context("failed to capture child stdout")?;
+    let stderr = child
+        .stderr
+        .take()
+        .context("failed to capture child stderr")?;
+    let (stdout_tx, stdout_rx) = mpsc::channel::<Result<(Vec<u8>, bool), String>>();
+    let (stderr_tx, stderr_rx) = mpsc::channel::<Result<(Vec<u8>, bool), String>>();
+
+    let output_cap = MAX_COMMAND_OUTPUT_BYTES;
+    std::thread::spawn(move || {
+        let result = capture_stream_with_cap(stdout, output_cap).map_err(|error| error.to_string());
+        let _ = stdout_tx.send(result);
+    });
+    let output_cap = MAX_COMMAND_OUTPUT_BYTES;
+    std::thread::spawn(move || {
+        let result = capture_stream_with_cap(stderr, output_cap).map_err(|error| error.to_string());
+        let _ = stderr_tx.send(result);
+    });
+
+    let started = Instant::now();
+    let mut wait_interval = Duration::from_millis(5);
+    let mut status = None;
+    let mut timed_out = false;
+    let mut kill_failed = false;
+    loop {
+        if let Some(process_status) = child.try_wait()? {
+            status = Some(process_status);
+            break;
+        }
+
+        if started.elapsed() >= timeout {
+            timed_out = true;
+            let graceful_timeout = Duration::from_secs(RUN_COMMAND_GRACEFUL_TERMINATE_SECONDS);
+            kill_failed = terminate_timed_out_command(&mut child, executable);
+            let child_ended = await_child_exit_with_timeout(&mut child, graceful_timeout)?;
+            if !child_ended {
+                if child.kill().is_ok() {
+                    let child_ended = await_child_exit_with_timeout(&mut child, graceful_timeout)?;
+                    if !child_ended {
+                        kill_failed = true;
+                        return Ok(TimedCommandOutput {
+                            stdout: Vec::new(),
+                            stderr: b"command did not exit after timeout and kill attempts"
+                                .to_vec(),
+                            status: Some(timed_out_failure_exit_status()),
+                            timed_out: true,
+                            kill_failed,
+                        });
+                    }
+                } else {
+                    kill_failed = true;
+                    return Ok(TimedCommandOutput {
+                        stdout: Vec::new(),
+                        stderr: b"command did not exit after timeout and direct kill failed"
+                            .to_vec(),
+                        status: Some(timed_out_failure_exit_status()),
+                        timed_out: true,
+                        kill_failed,
+                    });
+                }
+            }
+            if status.is_none() {
+                status = child.try_wait()?;
+            }
+            break;
+        }
+
+        let elapsed = started.elapsed();
+        let remaining = timeout.saturating_sub(elapsed);
+        std::thread::sleep(wait_interval.min(remaining).min(Duration::from_millis(250)));
+        wait_interval = (wait_interval * 2).min(Duration::from_millis(250));
+    }
+
+    if status.is_none() {
+        status = child.try_wait()?;
+        if status.is_none() {
+            kill_failed = true;
+        }
+    }
+
+    let collect_stream = |receiver: mpsc::Receiver<Result<(Vec<u8>, bool), String>>,
+                          stream_name: &str|
+     -> anyhow::Result<(Vec<u8>, bool)> {
+        match receiver.recv_timeout(Duration::from_millis(250)) {
+            Ok(result) => {
+                result.map_err(|error| anyhow::anyhow!("{stream_name} capture failed: {error}"))
+            }
+            Err(mpsc::RecvTimeoutError::Timeout) => Ok((Vec::new(), true)),
+            Err(mpsc::RecvTimeoutError::Disconnected) => Ok((Vec::new(), true)),
+        }
+    };
+
+    let (stdout, stdout_truncated) = collect_stream(stdout_rx, "stdout")?;
+    let (stderr, stderr_truncated) = collect_stream(stderr_rx, "stderr")?;
+
+    let mut capped_stdout = capped_utf8_lossy(&stdout, MAX_COMMAND_OUTPUT_BYTES);
+    let mut capped_stderr = capped_utf8_lossy(&stderr, MAX_COMMAND_OUTPUT_BYTES);
+    if stdout_truncated {
+        capped_stdout.push_str("[output truncated]");
+    }
+    if stderr_truncated {
+        capped_stderr.push_str("[output truncated]");
+    }
+
+    Ok(TimedCommandOutput {
+        stdout: capped_stdout.into_bytes(),
+        stderr: capped_stderr.into_bytes(),
+        status,
+        timed_out,
+        kill_failed,
+    })
+}
+
+fn await_child_exit_with_timeout(
+    child: &mut std::process::Child,
+    timeout: Duration,
+) -> anyhow::Result<bool> {
+    let started = Instant::now();
+    let mut wait_interval = Duration::from_millis(5);
+    loop {
+        if child.try_wait()?.is_some() {
+            return Ok(true);
+        }
+        if started.elapsed() >= timeout {
+            return Ok(false);
+        }
+        let remaining = timeout.saturating_sub(started.elapsed());
+        std::thread::sleep(wait_interval.min(remaining).min(Duration::from_millis(50)));
+        wait_interval = (wait_interval * 2).min(Duration::from_millis(50));
+    }
+}
+
+fn timed_out_failure_exit_status() -> std::process::ExitStatus {
+    #[cfg(unix)]
+    {
+        std::process::ExitStatus::from_raw(1 << 8)
+    }
+    #[cfg(windows)]
+    {
+        std::process::ExitStatus::from_raw(1)
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        std::process::ExitStatus::default()
+    }
+}
+
+fn terminate_timed_out_command(child: &mut std::process::Child, command_label: &str) -> bool {
+    #[cfg(unix)]
+    {
+        if terminate_unix_process_group(child.id()).is_ok() {
+            return false;
+        }
+        eprintln!(
+            "WARNING: kill-failure for timed-out command {command_label}: process-group termination unavailable or failed"
+        );
+        if child.kill().is_err() {
+            return true;
+        }
+        false
+    }
+    #[cfg(not(unix))]
+    {
+        if child.kill().is_ok() {
+            return false;
+        }
+        eprintln!("WARNING: kill-failure for timed-out command {command_label}: timed-out command could not be killed");
+        true
+    }
+}
+
+#[cfg(unix)]
+fn terminate_unix_process_group(child_pid: u32) -> anyhow::Result<()> {
+    let process_group = format!("-{child_pid}");
+    for kill_path in ["/bin/kill", "/usr/bin/kill"] {
+        if !Path::new(kill_path).exists() {
+            continue;
+        }
+        let status = std::process::Command::new(kill_path)
+            .arg("-KILL")
+            .arg(&process_group)
+            .status()?;
+        if status.success() {
+            return Ok(());
+        }
+    }
+    Err(anyhow::anyhow!("kill process-group failed"))
+}
+
+fn resolve_allowed_command_executable(command: &str) -> anyhow::Result<PathBuf> {
+    let candidates: &[&str] = match command {
+        "cargo" => &[
+            "/usr/bin/cargo",
+            "/usr/local/bin/cargo",
+            "/root/.cargo/bin/cargo",
+        ],
+        "bash" => &["/usr/bin/bash", "/bin/bash"],
+        other => bail!("command executable is not in the fixed allowlist: {other}"),
+    };
+    candidates
+        .iter()
+        .map(PathBuf::from)
+        .find(|path| path.is_file())
+        .ok_or_else(|| {
+            anyhow::anyhow!("allowed command executable not found in fixed paths: {command}")
+        })
+}
+
+fn capped_utf8_lossy(bytes: &[u8], cap: usize) -> String {
+    String::from_utf8_lossy(&bytes[..bytes.len().min(cap)]).to_string()
+}
+
+fn capture_stream_with_cap(
+    mut stream: impl Read + Send + 'static,
+    cap: usize,
+) -> std::io::Result<(Vec<u8>, bool)> {
+    let mut captured = Vec::new();
+    let mut buffer = [0_u8; 4096];
+    let mut total_read = 0_usize;
+    let mut truncated = false;
+    loop {
+        let read = match stream.read(&mut buffer) {
+            Ok(0) => break,
+            Ok(bytes) => bytes,
+            Err(error) => return Err(error),
+        };
+        if total_read < cap {
+            let keep = cap - total_read;
+            captured.extend_from_slice(&buffer[..read.min(keep)]);
+        } else {
+            truncated = true;
+        }
+        total_read += read;
+        if read > 0 && !truncated && total_read > cap {
+            truncated = true;
+        }
+    }
+    Ok((captured, truncated))
 }
 
 fn example_config_paths(examples_root: &Path) -> Result<Vec<PathBuf>> {
@@ -826,10 +1159,19 @@ fn collect_markdown_paths(root: &Path, paths: &mut Vec<PathBuf>) -> Result<()> {
     for entry in std::fs::read_dir(root)
         .with_context(|| format!("failed to read docs directory {}", root.display()))?
     {
-        let path = entry?.path();
-        if path.is_dir() {
+        let entry = entry?;
+        let path = entry.path();
+        let file_type = entry
+            .file_type()
+            .with_context(|| format!("failed to inspect file type for {}", path.display()))?;
+        if file_type.is_symlink() {
+            continue;
+        }
+        if file_type.is_dir() {
             collect_markdown_paths(&path, paths)?;
-        } else if path.extension().and_then(|extension| extension.to_str()) == Some("md") {
+        } else if file_type.is_file()
+            && path.extension().and_then(|extension| extension.to_str()) == Some("md")
+        {
             paths.push(path);
         }
     }
@@ -866,4 +1208,67 @@ fn unique_smoke_segment() -> String {
         .map(|duration| duration.as_nanos())
         .unwrap_or_default();
     format!("{}-{nanos}", std::process::id())
+}
+
+#[cfg(test)]
+mod security_regression_tests {
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    use super::*;
+
+    fn temp_root() -> PathBuf {
+        std::env::temp_dir().join(format!(
+            "aidens-cli-package-test-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        ))
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn p30_cli_package_collect_markdown_paths_ignores_symlinked_directories() {
+        let root = temp_root();
+        let docs = root.join("docs");
+        let target = docs.join("notes");
+        std::fs::create_dir_all(&target).unwrap();
+        let _ = std::fs::write(docs.join("safe.md"), "Safe doc");
+        let _ = std::fs::write(target.join("deep.md"), "Nested doc");
+
+        std::os::unix::fs::symlink(&docs, docs.join("loop")).unwrap();
+
+        let mut paths = Vec::new();
+        collect_markdown_paths(&docs, &mut paths).unwrap();
+
+        assert!(paths.iter().any(|path| path.ends_with("safe.md")));
+        assert!(paths.iter().any(|path| path.ends_with("deep.md")));
+        assert!(!paths.iter().any(|path| path.ends_with("loop")));
+        assert!(paths.len() >= 2);
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn p30_cli_package_collect_files_recursive_ignores_symlinked_directories() {
+        let root = temp_root();
+        let safe_dir = root.join("safe");
+        std::fs::create_dir_all(&safe_dir).unwrap();
+        let _ = std::fs::write(safe_dir.join("ok.txt"), "ok");
+
+        std::os::unix::fs::symlink(&root, root.join("docs_link")).unwrap();
+
+        let mut files = Vec::new();
+        collect_files_recursive(&root, &mut files).unwrap();
+
+        assert!(files.iter().any(|path| path.ends_with("ok.txt")));
+        assert!(!files
+            .iter()
+            .any(|path| path.starts_with(root.join("docs_link"))));
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
 }

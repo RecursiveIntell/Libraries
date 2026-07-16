@@ -96,7 +96,9 @@ impl MemoryConfig {
 /// Embedding provider configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmbeddingConfig {
-    /// Ollama base URL.
+    /// Ollama base URL. Only required when using OllamaEmbedder.
+    /// When using CandleEmbedder (default with `candle-embedder` feature),
+    /// this field is ignored. Defaults to `http://localhost:11434`.
     pub ollama_url: String,
 
     /// Embedding model name.
@@ -138,19 +140,32 @@ impl EmbeddingConfig {
         if self.timeout_secs == 0 {
             self.timeout_secs = 1;
         }
-        let parsed =
-            reqwest::Url::parse(&self.ollama_url).map_err(|_| MemoryError::InvalidConfig {
-                field: "embedding.ollama_url",
-                reason: "must be an absolute http:// or https:// URL".to_string(),
-            })?;
-        match parsed.scheme() {
-            "http" | "https" if parsed.host_str().is_some() => {}
-            _ => {
-                return Err(MemoryError::InvalidConfig {
+        // Validate ollama_url only when it will be used. With the
+        // candle-embedder feature, the default embedder is CandleEmbedder
+        // which does not use Ollama, so a placeholder URL is fine.
+        #[cfg(not(feature = "candle-embedder"))]
+        {
+            let parsed =
+                reqwest::Url::parse(&self.ollama_url).map_err(|_| MemoryError::InvalidConfig {
                     field: "embedding.ollama_url",
                     reason: "must be an absolute http:// or https:// URL".to_string(),
-                })
+                })?;
+            match parsed.scheme() {
+                "http" | "https" if parsed.host_str().is_some() => {}
+                _ => {
+                    return Err(MemoryError::InvalidConfig {
+                        field: "embedding.ollama_url",
+                        reason: "must be an absolute http:// or https:// URL".to_string(),
+                    })
+                }
             }
+        }
+        // With candle-embedder, skip URL validation — the field is ignored
+        // by CandleEmbedder. If OllamaEmbedder is used explicitly via
+        // open_with_embedder, it does its own URL handling.
+        #[cfg(feature = "candle-embedder")]
+        {
+            let _ = &self.ollama_url; // suppress unused field warning
         }
         Ok(())
     }
@@ -164,6 +179,49 @@ pub struct SearchConfig {
 
     /// Weight for vector similarity in RRF fusion.
     pub vector_weight: f64,
+
+    /// Weight for sparse dot-product ranking in RRF fusion.
+    /// Defaults to 0.0 so existing BM25+dense behavior is unchanged.
+    #[serde(default = "default_zero")]
+    pub sparse_weight: f64,
+
+    /// Maximum sparse candidates admitted to fusion.
+    #[serde(default = "default_sparse_top_k")]
+    pub sparse_top_k: usize,
+
+    /// Minimum sparse dot-product score admitted to fusion.
+    #[serde(default = "default_zero")]
+    pub sparse_min_score: f64,
+
+    /// Explicitly allow dense-only embedders to derive generic sparse weights.
+    /// This is disabled by default and the result must not be described as SPLADE.
+    #[serde(default)]
+    pub derive_sparse_from_dense: bool,
+
+    /// Maximum dense dimensions retained by explicit generic sparse derivation.
+    #[serde(default = "default_sparse_derive_top_k")]
+    pub sparse_derive_top_k: usize,
+
+    /// Minimum absolute dense value retained by generic sparse derivation.
+    #[serde(default = "default_sparse_derive_min_weight")]
+    pub sparse_derive_min_weight: f32,
+
+    /// Weight for late interaction (ColBERT MaxSim) in RRF fusion.
+    /// Defaults to 0.0 (disabled). Set to 1.0 to enable as 3rd RRF signal.
+    #[serde(default = "default_zero")]
+    pub late_interaction_weight: f64,
+
+    /// BM25 k1 parameter. Controls term frequency saturation.
+    /// Default: 1.2 (FTS5 standard). Lower (0.8-1.0) helps with technical content.
+    pub bm25_k1: f64,
+
+    /// BM25 b parameter. Controls document length normalization.
+    /// Default: 0.75 (FTS5 standard).
+    pub bm25_b: f64,
+
+    /// Optional per-namespace weight multipliers.
+    /// Empty = no weighting (all namespaces scored equally).
+    pub namespace_weights: std::collections::HashMap<String, f64>,
 
     /// RRF constant (k). Controls rank importance decay.
     pub rrf_k: f64,
@@ -214,6 +272,20 @@ pub struct SearchConfig {
     /// Require exact f32 rerank for TurboQuant candidates. Defaults to true.
     #[serde(default = "default_true")]
     pub turbo_quant_require_exact_rerank: bool,
+
+    /// Matryoshka candidate-stage embedding dimensions for 2-stage search.
+    /// When set to Some(dim) and the `matryoshka` feature is enabled, the query
+    /// embedding is truncated to `dim` dimensions for candidate retrieval, then
+    /// reranked with the full embedding. Disabled by default because it requires
+    /// a compatible truncated-vector index; callers opt in explicitly.
+    #[serde(default = "default_candidate_dims")]
+    pub candidate_dims: Option<usize>,
+
+    /// When true, compress search result content using SimpleMem-style semantic
+    /// compression (first sentence + key terms, capped at 150 chars).
+    /// Defaults to false.
+    #[serde(default)]
+    pub compress_results: bool,
 }
 
 /// Candidate backend policy for rebuildable derived vector artifacts.
@@ -225,6 +297,12 @@ pub enum DerivedVectorBackendPolicy {
     Disabled,
     /// Use TurboQuant only to generate candidates, then exact rerank by default.
     TurboQuantCandidateOnly,
+    /// Use a generation-level proveKV/poly-kv shared pool only to generate candidates,
+    /// then exact-rerank against authoritative f32 embeddings.
+    ///
+    /// This is deliberately not a replacement for SQLite f32 storage or for prompt/KV
+    /// prefix reuse. It is a rebuildable derived artifact over an embedding snapshot.
+    ProveKvPoolCandidateOnly,
 }
 
 const fn default_turbo_quant_bits() -> u8 {
@@ -239,11 +317,46 @@ const fn default_true() -> bool {
     true
 }
 
+const fn default_zero() -> f64 {
+    0.0
+}
+
+const fn default_sparse_top_k() -> usize {
+    50
+}
+
+const fn default_sparse_derive_top_k() -> usize {
+    128
+}
+
+const MAX_SEARCH_CANDIDATE_POOL_SIZE: usize = 2_000;
+const MAX_SEARCH_DEFAULT_TOP_K: usize = 200;
+const MAX_SPARSE_TOP_K: usize = 1_000;
+const MAX_SPARSE_DERIVE_TOP_K: usize = 1_000;
+
+const fn default_sparse_derive_min_weight() -> f32 {
+    0.01
+}
+
+const fn default_candidate_dims() -> Option<usize> {
+    None
+}
+
 impl Default for SearchConfig {
     fn default() -> Self {
         Self {
             bm25_weight: 1.0,
             vector_weight: 1.0,
+            sparse_weight: 0.0,
+            sparse_top_k: default_sparse_top_k(),
+            sparse_min_score: 0.0,
+            derive_sparse_from_dense: false,
+            sparse_derive_top_k: default_sparse_derive_top_k(),
+            sparse_derive_min_weight: default_sparse_derive_min_weight(),
+            late_interaction_weight: 0.15,
+            bm25_k1: 1.2,
+            bm25_b: 0.75,
+            namespace_weights: std::collections::HashMap::new(),
             rrf_k: 60.0,
             candidate_pool_size: 50,
             default_top_k: 5,
@@ -256,6 +369,8 @@ impl Default for SearchConfig {
             turbo_quant_projections: default_turbo_quant_projections(),
             turbo_quant_seed: 0,
             turbo_quant_require_exact_rerank: true,
+            candidate_dims: default_candidate_dims(),
+            compress_results: false,
         }
     }
 }
@@ -265,16 +380,24 @@ impl SearchConfig {
         self.derived_vector_backend == DerivedVectorBackendPolicy::TurboQuantCandidateOnly
     }
 
+    pub(crate) fn uses_provekv_pool_backend(&self) -> bool {
+        self.derived_vector_backend == DerivedVectorBackendPolicy::ProveKvPoolCandidateOnly
+    }
+
+    pub(crate) fn uses_derived_vector_backend(&self) -> bool {
+        self.uses_turbo_quant_backend() || self.uses_provekv_pool_backend()
+    }
+
     fn normalize_and_validate(&mut self, embedding_dimensions: usize) -> Result<(), MemoryError> {
         #[cfg(not(feature = "turbo-quant-codec"))]
         let _ = embedding_dimensions;
-        if self.candidate_pool_size == 0 {
-            self.candidate_pool_size = 1;
-        }
-        if self.default_top_k == 0 {
-            self.default_top_k = 1;
-        }
+        self.candidate_pool_size = self.candidate_pool_size.max(1).min(MAX_SEARCH_CANDIDATE_POOL_SIZE);
+        self.default_top_k = self.default_top_k.max(1).min(MAX_SEARCH_DEFAULT_TOP_K);
         self.candidate_pool_size = self.candidate_pool_size.max(self.default_top_k);
+        self.sparse_top_k = self.sparse_top_k.max(1).min(MAX_SPARSE_TOP_K);
+        self.sparse_derive_top_k = self.sparse_derive_top_k
+            .max(1)
+            .min(MAX_SPARSE_DERIVE_TOP_K);
         if !self.rrf_k.is_finite() || self.rrf_k <= 0.0 {
             return Err(MemoryError::InvalidConfig {
                 field: "search.rrf_k",
@@ -291,6 +414,24 @@ impl SearchConfig {
             return Err(MemoryError::InvalidConfig {
                 field: "search.vector_weight",
                 reason: "vector_weight must be finite and >= 0".to_string(),
+            });
+        }
+        if !self.sparse_weight.is_finite() || self.sparse_weight < 0.0 {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.sparse_weight",
+                reason: "sparse_weight must be finite and >= 0".to_string(),
+            });
+        }
+        if !self.sparse_min_score.is_finite() {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.sparse_min_score",
+                reason: "sparse_min_score must be finite".to_string(),
+            });
+        }
+        if !self.sparse_derive_min_weight.is_finite() || self.sparse_derive_min_weight < 0.0 {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.sparse_derive_min_weight",
+                reason: "sparse_derive_min_weight must be finite and >= 0".to_string(),
             });
         }
         if !self.recency_weight.is_finite() || self.recency_weight < 0.0 {
@@ -346,17 +487,32 @@ impl SearchConfig {
                         reason: "TurboQuant bits must be within 2..=16".to_string(),
                     });
                 }
-                if !self.turbo_quant_require_exact_rerank {
-                    return Err(MemoryError::InvalidConfig {
-                        field: "search.turbo_quant_require_exact_rerank",
-                        reason: "TurboQuant candidate backend requires exact f32 rerank"
-                            .to_string(),
-                    });
-                }
             }
+        }
+        if self.uses_derived_vector_backend() && !self.turbo_quant_require_exact_rerank {
+            return Err(MemoryError::InvalidConfig {
+                field: "search.turbo_quant_require_exact_rerank",
+                reason: "derived vector candidate backends require exact f32 rerank".to_string(),
+            });
         }
         Ok(())
     }
+}
+
+/// Chunking strategy to use when splitting text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ChunkingStrategy {
+    /// Plain recursive splitting (current/default behavior).
+    #[default]
+    Plain,
+    /// Sentence-boundary-aware chunking with configurable overlap.
+    Sentence,
+    /// Code-aware chunking that avoids splitting inside function bodies.
+    /// Detects Rust, Python, and TypeScript blocks.
+    Code,
+    /// Markdown-header-based chunking that splits on header boundaries.
+    Markdown,
 }
 
 /// Text chunking parameters.
@@ -373,6 +529,11 @@ pub struct ChunkingConfig {
 
     /// Overlap between adjacent chunks in characters.
     pub overlap: usize,
+
+    /// Chunking strategy to use. Defaults to [`ChunkingStrategy::Plain`]
+    /// for backward compatibility.
+    #[serde(default)]
+    pub strategy: ChunkingStrategy,
 }
 
 impl Default for ChunkingConfig {
@@ -382,6 +543,7 @@ impl Default for ChunkingConfig {
             min_size: 100,
             max_size: 2000,
             overlap: 200,
+            strategy: ChunkingStrategy::default(),
         }
     }
 }

@@ -373,9 +373,7 @@ pub(crate) fn query_import_log(
             ))
         })?
         .collect::<Result<Vec<_>, _>>()?;
-
-    Ok(rows
-        .into_iter()
+    rows.into_iter()
         .map(
             |(
                 envelope_id,
@@ -408,7 +406,7 @@ pub(crate) fn query_import_log(
                 })
             },
         )
-        .collect::<Result<Vec<_>, _>>()?)
+        .collect::<Result<Vec<_>, _>>()
 }
 
 /// Get the most recent import timestamp for a namespace.

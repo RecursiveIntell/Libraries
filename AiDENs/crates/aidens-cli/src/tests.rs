@@ -1996,3 +1996,71 @@ fn p30_cli_source_does_not_reference_legacy_generated_artifact_id_api() {
     assert!(!lib_src.contains("generated_artifact_id("));
     assert!(!agent_src.contains("generated_artifact_id("));
 }
+
+#[test]
+fn p30_cli_install_smoke_run_shell_command_rejects_unallowed_executable() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let error = crate::package::run_shell_command(&root, "python3", &["-V"]).unwrap_err();
+    assert!(error
+        .to_string()
+        .contains("command executable is not in the fixed allowlist"));
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn p30_cli_install_smoke_run_shell_command_cleans_environment() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    std::env::set_var("AIDENS_HARDENING_CANARY", "CANARY");
+    let output = crate::package::run_shell_command(
+        &root,
+        "bash",
+        &["-c", "printf \"%s\" \"$AIDENS_HARDENING_CANARY\""],
+    )
+    .unwrap();
+    std::env::remove_var("AIDENS_HARDENING_CANARY");
+    assert_eq!(output, "");
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn p30_cli_install_smoke_run_shell_command_truncates_oversized_output() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let output =
+        crate::package::run_shell_command(&root, "bash", &["-c", "yes X | head -n 50000"]).unwrap();
+    assert!(output.len() < 90000);
+    assert!(output.len() > 60000);
+    assert!(output.starts_with("X"));
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn p30_cli_install_smoke_run_shell_command_rejects_non_directory_root() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let file = root.join("not-a-dir");
+    std::fs::write(&file, "nope").unwrap();
+    let error = crate::package::run_shell_command(&file, "bash", &["-c", "echo hi"]).unwrap_err();
+    assert!(error
+        .to_string()
+        .contains("sandbox root is not a directory"));
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn p30_cli_repo_status_report_handles_invalid_root_without_fatal_error() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let file = root.join("not-a-dir");
+    std::fs::write(&file, "nope").unwrap();
+    let status = repo_status_report(&file).unwrap();
+    assert_eq!(status["status"], "degraded");
+    assert!(status["reason_codes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|entry| entry == "git-status-root-invalid"));
+    let _ = std::fs::remove_dir_all(&root);
+}

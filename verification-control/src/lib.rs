@@ -1859,6 +1859,9 @@ fn build_exactness_budget(
 pub fn replay_case(entries: &[LedgerEntry]) -> Result<ReplayedCaseState, String> {
     let mut ordered = entries.to_vec();
     ordered.sort_by_key(|entry| entry.sequence_no);
+    if ordered.is_empty() {
+        return Err("ledger replay requires at least one event".into());
+    }
 
     let mut case = None;
     let mut plan_count = 0;
@@ -1866,6 +1869,9 @@ pub fn replay_case(entries: &[LedgerEntry]) -> Result<ReplayedCaseState, String>
     let mut receipt_count = 0;
     let mut terminal_disposition = None;
     let mut expected_case_id = None::<VerificationCaseId>;
+    let mut closed = false;
+    let mut saw_case_opened = false;
+    let mut previous_sequence = None::<u64>;
 
     for entry in ordered {
         if let Some(expected) = &expected_case_id {
@@ -1876,16 +1882,104 @@ pub fn replay_case(entries: &[LedgerEntry]) -> Result<ReplayedCaseState, String>
             expected_case_id = Some(entry.case_id.clone());
         }
 
+        if let Some(previous) = previous_sequence {
+            if entry.sequence_no <= previous {
+                return Err("ledger replay requires strictly increasing sequence numbers".into());
+            }
+        }
+        previous_sequence = Some(entry.sequence_no);
+        let expected_case_id = expected_case_id.as_ref().expect("case id initialized");
+
         match entry.event {
-            LedgerEvent::CaseOpened { case: opened_case } => case = Some(opened_case),
-            LedgerEvent::PlanAdopted { .. } => plan_count += 1,
-            LedgerEvent::AttemptRecorded { .. } => attempt_count += 1,
-            LedgerEvent::ReceiptAppended { .. } => receipt_count += 1,
-            LedgerEvent::CaseClosed { disposition, .. } => {
+            LedgerEvent::CaseOpened { case: opened_case } => {
+                if closed {
+                    return Err(
+                        "ledger replay encountered case opened after case was closed".into(),
+                    );
+                }
+                if saw_case_opened {
+                    return Err("ledger replay encountered duplicate case opened event".into());
+                }
+                if opened_case.case_id != *expected_case_id {
+                    return Err(
+                        "ledger replay encountered case_opened with mismatched case id".into(),
+                    );
+                }
+                if opened_case.lifecycle_state != VerificationCaseLifecycleState::Open {
+                    return Err(
+                        "ledger replay encountered case_opened with non-open lifecycle state"
+                            .into(),
+                    );
+                }
+                if opened_case.terminal_disposition.is_some() {
+                    return Err(
+                        "ledger replay encountered case_opened with terminal disposition set"
+                            .into(),
+                    );
+                }
+                saw_case_opened = true;
+                case = Some(opened_case);
+            }
+            LedgerEvent::PlanAdopted { plan } => {
+                if !saw_case_opened {
+                    return Err("ledger replay encountered plan adopted before case opened".into());
+                }
+                if closed {
+                    return Err("ledger replay encountered plan adopted after case closed".into());
+                }
+                if plan.case_id != *expected_case_id {
+                    return Err("ledger replay encountered plan for different case id".into());
+                }
+                plan_count += 1;
+            }
+            LedgerEvent::AttemptRecorded { attempt } => {
+                if !saw_case_opened {
+                    return Err("ledger replay encountered attempt before case opened".into());
+                }
+                if closed {
+                    return Err("ledger replay encountered attempt after case closed".into());
+                }
+                if attempt.case_id != *expected_case_id {
+                    return Err("ledger replay encountered attempt for different case id".into());
+                }
+                attempt_count += 1;
+            }
+            LedgerEvent::ReceiptAppended { receipt } => {
+                if !saw_case_opened {
+                    return Err("ledger replay encountered receipt before case opened".into());
+                }
+                if closed {
+                    return Err("ledger replay encountered receipt after case closed".into());
+                }
+                if let Some(receipt_case_id) = &receipt.case_id {
+                    if *receipt_case_id != *expected_case_id {
+                        return Err(
+                            "ledger replay encountered receipt for different case id".into()
+                        );
+                    }
+                }
+                receipt_count += 1;
+            }
+            LedgerEvent::CaseClosed {
+                case_id,
+                disposition,
+            } => {
+                if !saw_case_opened {
+                    return Err("ledger replay encountered case closed before case opened".into());
+                }
+                if closed {
+                    return Err("ledger replay encountered duplicate case closed event".into());
+                }
+                if case_id != *expected_case_id {
+                    return Err(
+                        "ledger replay encountered case_closed with mismatched case id".into(),
+                    );
+                }
                 terminal_disposition = Some(disposition.clone());
                 if let Some(open_case) = case.take() {
                     case = Some(open_case.close(disposition));
                 }
+                closed = true;
             }
         }
     }

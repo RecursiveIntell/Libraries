@@ -18,6 +18,10 @@ use std::fs::{File, OpenOptions};
 use std::io::Write;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
+#[cfg(unix)]
+use std::os::unix::process::ExitStatusExt;
+#[cfg(windows)]
+use std::os::windows::process::ExitStatusExt;
 use std::path::{Component, Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -1537,21 +1541,64 @@ fn run_command_with_timeout(
     {
         command_proc.process_group(0);
     }
-    let mut child = command_proc.spawn()?;
+    let mut command_process = command_proc.spawn()?;
     let started = Instant::now();
     let mut wait_interval = Duration::from_millis(5);
     loop {
-        if child.try_wait()?.is_some() {
+        if command_process.try_wait()?.is_some() {
             return Ok(TimedCommandOutput {
-                output: child.wait_with_output()?,
+                output: command_process.wait_with_output()?,
                 timed_out: false,
                 kill_failed: false,
             });
         }
         if started.elapsed() >= timeout {
-            let kill_failed = terminate_timed_out_command(&mut child, &command[0]);
+            let mut kill_failed = terminate_timed_out_command(&mut command_process, &command[0]);
+            let child_ended =
+                await_child_exit_with_timeout(&mut command_process, Duration::from_millis(250))?;
+            if !child_ended {
+                if terminate_timed_out_child_process(command_process.id()).is_ok() {
+                    let child_ended = await_child_exit_with_timeout(
+                        &mut command_process,
+                        Duration::from_millis(250),
+                    )?;
+                    if !child_ended {
+                        kill_failed = true;
+                        eprintln!(
+                            "WARNING: kill-failure for timed-out command {}: command did not exit after timeout and fixed direct kill",
+                            command[0]
+                        );
+                        return Ok(TimedCommandOutput {
+                            output: std::process::Output {
+                                status: timed_out_failure_exit_status(),
+                                stdout: Vec::new(),
+                                stderr: b"command did not exit after timeout and kill attempts"
+                                    .to_vec(),
+                            },
+                            timed_out: true,
+                            kill_failed,
+                        });
+                    }
+                } else {
+                    kill_failed = true;
+                    eprintln!(
+                        "WARNING: kill-failure for timed-out command {}: fixed direct kill failed",
+                        command[0]
+                    );
+                    return Ok(TimedCommandOutput {
+                        output: std::process::Output {
+                            status: timed_out_failure_exit_status(),
+                            stdout: Vec::new(),
+                            stderr: b"command did not exit after timeout and direct kill failed"
+                                .to_vec(),
+                        },
+                        timed_out: true,
+                        kill_failed,
+                    });
+                }
+            }
             return Ok(TimedCommandOutput {
-                output: child.wait_with_output()?,
+                output: command_process.wait_with_output()?,
                 timed_out: true,
                 kill_failed,
             });
@@ -1573,11 +1620,72 @@ fn terminate_timed_out_command(child: &mut Child, command_label: &str) -> bool {
         if terminate_unix_process_group(child.id()).is_ok() {
             return false;
         }
+        if terminate_timed_out_child_process(child.id()).is_err() {
+            eprintln!("WARNING: kill-failure for timed-out command {command_label}: fixed direct kill after process-group failure failed");
+            return true;
+        }
+        if child.try_wait().is_ok_and(|s| s.is_some()) {
+            return false;
+        }
     }
     // Process-group termination is unavailable or failed.
     // Emit kill-failure degradation and return true so the receipt records it.
     eprintln!("WARNING: kill-failure for timed-out command {command_label}: process-group termination unavailable or failed");
     true
+}
+
+#[cfg(unix)]
+fn terminate_timed_out_child_process(child_id: u32) -> anyhow::Result<()> {
+    for kill_path in ["/bin/kill", "/usr/bin/kill"] {
+        if !Path::new(kill_path).exists() {
+            continue;
+        }
+        let status = Command::new(kill_path)
+            .args(["-KILL", &child_id.to_string()])
+            .env_clear()
+            .status()
+            .with_context(|| format!("failed to invoke fixed kill executable {kill_path}"))?;
+        if status.success() {
+            return Ok(());
+        }
+    }
+    bail!("no fixed kill executable could terminate child process {child_id}")
+}
+
+#[cfg(not(unix))]
+fn terminate_timed_out_child_process(_child_id: u32) -> anyhow::Result<()> {
+    bail!("fixed kill executable path not available on this platform")
+}
+
+fn await_child_exit_with_timeout(child: &mut Child, timeout: Duration) -> anyhow::Result<bool> {
+    let started = Instant::now();
+    let mut wait_interval = Duration::from_millis(5);
+    loop {
+        if child.try_wait()?.is_some() {
+            return Ok(true);
+        }
+        if started.elapsed() >= timeout {
+            return Ok(false);
+        }
+        let remaining = timeout.saturating_sub(started.elapsed());
+        std::thread::sleep(wait_interval.min(remaining).min(Duration::from_millis(50)));
+        wait_interval = (wait_interval * 2).min(Duration::from_millis(50));
+    }
+}
+
+fn timed_out_failure_exit_status() -> std::process::ExitStatus {
+    #[cfg(unix)]
+    {
+        std::process::ExitStatus::from_raw(1 << 8)
+    }
+    #[cfg(windows)]
+    {
+        std::process::ExitStatus::from_raw(1)
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        std::process::ExitStatus::default()
+    }
 }
 
 #[cfg(unix)]

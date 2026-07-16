@@ -250,7 +250,7 @@ pub(crate) fn rebuild_hnsw_from_sqlite(
         artifact_manifest_digest: Some(artifact_manifest_digest),
         build_receipt_id: Some(build_receipt_id),
         skipped_row_count: skipped_invalid,
-        elapsed_ms: started.elapsed().as_millis() as u128,
+        elapsed_ms: started.elapsed().as_millis(),
         created_at: DateTime::<Utc>::from(std::time::SystemTime::now()),
         degradations: vec![],
     };

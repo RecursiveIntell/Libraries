@@ -43,7 +43,7 @@ pub struct SemanticStateV1 {
 impl SemanticStateV1 {
     pub fn exact_supported(artifact_ref: ArtifactId, proof_carrier: impl Into<String>) -> Self {
         Self {
-            state_id: generated_artifact_id_from_material("semantic-state", &artifact_ref.as_str()),
+            state_id: generated_artifact_id_from_material("semantic-state", artifact_ref.as_str()),
             artifact_ref,
             provenance_carrier: "declared-input-manifest".into(),
             truth_carrier: "canonical-owner-or-admitted-facade".into(),

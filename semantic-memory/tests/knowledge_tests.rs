@@ -1,21 +1,25 @@
 #![allow(deprecated)]
 #![allow(clippy::expect_used)]
 
+#[cfg(feature = "admin-ops")]
 use forge_memory_bridge::PROJECTION_IMPORT_BATCH_V1_SCHEMA;
-use semantic_memory::{
-    EpisodeMeta, EpisodeOutcome, MemoryConfig, MemoryStore, MockEmbedder, ProjectionQuery, Role,
-    VerificationStatus,
-};
+#[cfg(feature = "admin-ops")]
+use semantic_memory::{EpisodeMeta, EpisodeOutcome, ProjectionQuery, Role, VerificationStatus};
+use semantic_memory::{MemoryConfig, MemoryStore, MockEmbedder};
+#[cfg(feature = "admin-ops")]
 use stack_ids::ScopeKey;
 use tempfile::TempDir;
 
+#[cfg(feature = "admin-ops")]
 fn projection_batch_json(namespace: &str) -> String {
     let namespace = namespace.to_string();
     serde_json::json!({
         "source_envelope_id": "env-delete-ns",
         "schema_version": PROJECTION_IMPORT_BATCH_V1_SCHEMA,
         "export_schema_version": "export_envelope_v1",
-        "content_digest": format!("digest-{namespace}"),
+        // Use a canonical computed digest so this fixture reaches the
+        // namespace-deletion behavior rather than import validation.
+        "content_digest": stack_ids::ContentDigest::compute_str("digest-delete-ns"),
         "source_authority": "test",
         "scope_key": { "namespace": namespace },
         "source_exported_at": "2026-03-07T00:00:00Z",
@@ -82,6 +86,7 @@ fn projection_batch_json(namespace: &str) -> String {
     .to_string()
 }
 
+#[cfg(feature = "admin-ops")]
 fn episode_meta_for_delete_namespace() -> EpisodeMeta {
     EpisodeMeta {
         cause_ids: vec!["chunk-deleteme-doc".into()],
@@ -98,6 +103,7 @@ fn episode_meta_for_delete_namespace() -> EpisodeMeta {
     }
 }
 
+#[cfg(feature = "admin-ops")]
 fn namespaced_session_metadata(namespace: &str) -> serde_json::Value {
     serde_json::json!({
         "namespace": namespace,
@@ -183,6 +189,7 @@ async fn fts_finds_inserted_fact() {
 }
 
 #[tokio::test]
+#[cfg(feature = "admin-ops")]
 async fn update_fact_fts_reflects_new_content() {
     let (store, _tmp) = test_store();
     let fact_id = store
@@ -222,6 +229,7 @@ async fn update_fact_fts_reflects_new_content() {
 }
 
 #[tokio::test]
+#[cfg(feature = "admin-ops")]
 async fn delete_fact_removes_from_fts() {
     let (store, _tmp) = test_store();
     let fact_id = store
@@ -245,6 +253,7 @@ async fn delete_fact_removes_from_fts() {
 }
 
 #[tokio::test]
+#[cfg(feature = "admin-ops")]
 async fn bulk_insert_delete_fts_consistency() {
     let (store, _tmp) = test_store();
 
@@ -294,6 +303,7 @@ async fn namespace_filtering_on_list_facts() {
     assert_eq!(facts_b.len(), 1);
 }
 
+#[cfg(feature = "admin-ops")]
 #[tokio::test]
 async fn delete_namespace() {
     let (store, _tmp) = test_store();
@@ -579,6 +589,7 @@ async fn get_nonexistent_fact_returns_none() {
 }
 
 #[tokio::test]
+#[cfg(feature = "admin-ops")]
 async fn delete_nonexistent_fact_returns_error() {
     let (store, _tmp) = test_store();
     let result = store.delete_fact("nonexistent-uuid").await;

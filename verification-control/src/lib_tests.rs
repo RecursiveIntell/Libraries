@@ -309,6 +309,286 @@ fn ledger_replay_rebuilds_closed_case_state() {
 }
 
 #[test]
+fn replay_case_requires_initial_open_event() {
+    let error = replay_case(&[LedgerEntry::new(
+        VerificationCaseId::generate(),
+        1,
+        LedgerEvent::PlanAdopted {
+            plan: CheckPlan::new(
+                VerificationCaseId::generate(),
+                CheckMethod::ExactBoundedOracle,
+                vec!["oracle".into()],
+                PromotionClass::P1,
+                ReversibilityClass::ReversibleScoped,
+                true,
+                false,
+                false,
+                "open-only test",
+                json!({}),
+            ),
+        },
+    )])
+    .expect_err("plan before open must fail");
+    assert_eq!(
+        error,
+        "ledger replay encountered plan adopted before case opened"
+    );
+}
+
+#[test]
+fn replay_case_rejects_mixed_case_ids_and_duplicate_close() {
+    let case = VerificationCase::new(
+        VerificationCaseClass::ThinExport,
+        CaseRegion {
+            namespace: "demo".into(),
+            scope_key: Some(ScopeKey::namespace_only("demo")),
+            target_key: "thin-export".into(),
+            region_id: None,
+            region_digest_id: None,
+            claim_version_id: None,
+            as_of_recorded_at: None,
+        },
+        TraceCtx::generate(),
+        AttemptId::new("attempt-2"),
+        "2026-07-16T00:00:00Z",
+        false,
+        false,
+    );
+    let other_case = VerificationCaseId::generate();
+    let events = [
+        LedgerEntry::new(
+            case.case_id.clone(),
+            1,
+            LedgerEvent::CaseOpened { case: case.clone() },
+        ),
+        LedgerEntry::new(
+            case.case_id.clone(),
+            2,
+            LedgerEvent::CaseClosed {
+                case_id: case.case_id.clone(),
+                disposition: TerminalDisposition::Blocked,
+            },
+        ),
+        LedgerEntry::new(
+            other_case.clone(),
+            3,
+            LedgerEvent::CaseClosed {
+                case_id: other_case,
+                disposition: TerminalDisposition::Blocked,
+            },
+        ),
+    ];
+
+    let mixed = replay_case(&events).expect_err("mixed case ids must fail");
+    assert_eq!(mixed, "ledger replay encountered mixed case ids");
+    assert_eq!(
+        replay_case(&[
+            LedgerEntry::new(
+                case.case_id.clone(),
+                4,
+                LedgerEvent::CaseOpened { case: case.clone() }
+            ),
+            LedgerEntry::new(
+                case.case_id.clone(),
+                5,
+                LedgerEvent::CaseClosed {
+                    case_id: case.case_id.clone(),
+                    disposition: TerminalDisposition::Blocked,
+                },
+            ),
+            LedgerEntry::new(
+                case.case_id.clone(),
+                6,
+                LedgerEvent::CaseOpened { case: case.clone() },
+            ),
+        ])
+        .expect_err("case opened after close must fail"),
+        "ledger replay encountered case opened after case was closed",
+    );
+    assert_eq!(
+        replay_case(&[
+            LedgerEntry::new(
+                case.case_id.clone(),
+                4,
+                LedgerEvent::CaseOpened { case: case.clone() }
+            ),
+            LedgerEntry::new(
+                case.case_id.clone(),
+                5,
+                LedgerEvent::CaseClosed {
+                    case_id: case.case_id.clone(),
+                    disposition: TerminalDisposition::Blocked,
+                },
+            ),
+            LedgerEntry::new(
+                case.case_id.clone(),
+                6,
+                LedgerEvent::CaseClosed {
+                    case_id: case.case_id.clone(),
+                    disposition: TerminalDisposition::Blocked,
+                },
+            ),
+        ])
+        .expect_err("duplicate case_closed must fail"),
+        "ledger replay encountered duplicate case closed event",
+    );
+}
+
+#[test]
+fn replay_case_rejects_empty_ledger() {
+    assert_eq!(
+        replay_case(&[]).expect_err("empty ledger should fail closed"),
+        "ledger replay requires at least one event"
+    );
+}
+
+#[test]
+fn ledger_replay_rejects_events_after_case_closed() {
+    let case = VerificationCase::new(
+        VerificationCaseClass::UnverifiedClaimVersion,
+        CaseRegion {
+            namespace: "demo".into(),
+            scope_key: Some(ScopeKey::namespace_only("demo")),
+            target_key: "claim-version".into(),
+            region_id: None,
+            region_digest_id: None,
+            claim_version_id: Some(ClaimVersionId::new("claim-v1")),
+            as_of_recorded_at: None,
+        },
+        TraceCtx::generate(),
+        AttemptId::new("attempt-3"),
+        "2026-07-16T00:00:00Z",
+        false,
+        false,
+    );
+    let plan = CheckPlan::new(
+        case.case_id.clone(),
+        CheckMethod::ConservativeOracle,
+        vec!["kernel_oracle".into()],
+        PromotionClass::P2,
+        ReversibilityClass::ReversibleScoped,
+        true,
+        false,
+        false,
+        "close then attempt test",
+        json!({}),
+    );
+    let attempt = VerificationAttempt::completed(
+        case.case_id.clone(),
+        plan.plan_id.clone(),
+        case.attempt_id.clone(),
+        Some(TrialId::new("trial-1")),
+        VerificationAttemptState::Succeeded,
+        false,
+        false,
+        "2026-07-16T00:00:00Z",
+        "2026-07-16T00:00:01Z",
+        Some("supported".into()),
+    );
+    let ledger = vec![
+        LedgerEntry::new(
+            case.case_id.clone(),
+            1,
+            LedgerEvent::CaseOpened { case: case.clone() },
+        ),
+        LedgerEntry::new(case.case_id.clone(), 2, LedgerEvent::PlanAdopted { plan }),
+        LedgerEntry::new(
+            case.case_id.clone(),
+            3,
+            LedgerEvent::AttemptRecorded {
+                attempt: attempt.clone(),
+            },
+        ),
+        LedgerEntry::new(
+            case.case_id.clone(),
+            4,
+            LedgerEvent::CaseClosed {
+                case_id: case.case_id.clone(),
+                disposition: TerminalDisposition::Refuted,
+            },
+        ),
+    ];
+    let error = replay_case(&ledger);
+    assert_eq!(
+        error.as_ref().unwrap().terminal_disposition,
+        Some(TerminalDisposition::Refuted)
+    );
+    assert!(error.as_ref().is_ok_and(|state| state
+        .case
+        .as_ref()
+        .is_some_and(|c| c.lifecycle_state == VerificationCaseLifecycleState::Closed)));
+
+    let invalid = replay_case(&[
+        LedgerEntry::new(
+            case.case_id.clone(),
+            1,
+            LedgerEvent::CaseOpened { case: case.clone() },
+        ),
+        LedgerEntry::new(
+            case.case_id.clone(),
+            4,
+            LedgerEvent::CaseClosed {
+                case_id: case.case_id.clone(),
+                disposition: TerminalDisposition::Refuted,
+            },
+        ),
+        LedgerEntry::new(
+            case.case_id.clone(),
+            5,
+            LedgerEvent::AttemptRecorded { attempt },
+        ),
+    ]);
+    assert_eq!(
+        invalid.expect_err("post-close events must fail"),
+        "ledger replay encountered attempt after case closed"
+    );
+}
+
+#[test]
+fn ledger_replay_rejects_out_of_order_sequence_numbers() {
+    let case = VerificationCase::new(
+        VerificationCaseClass::UnverifiedClaimVersion,
+        CaseRegion {
+            namespace: "demo".into(),
+            scope_key: Some(ScopeKey::namespace_only("demo")),
+            target_key: "unverified:claim-v2".into(),
+            region_id: None,
+            region_digest_id: None,
+            claim_version_id: Some(ClaimVersionId::new("claim-v2")),
+            as_of_recorded_at: None,
+        },
+        TraceCtx::generate(),
+        AttemptId::new("attempt-2"),
+        "2026-03-12T00:00:00Z",
+        false,
+        false,
+    );
+    let plan = CheckPlan::new(
+        case.case_id.clone(),
+        CheckMethod::ExactBoundedOracle,
+        vec!["kernel_oracle".into()],
+        PromotionClass::P2,
+        ReversibilityClass::ReversibleScoped,
+        true,
+        false,
+        false,
+        "test plan",
+        json!({"oracle_slice_id": "slice-2"}),
+    );
+
+    let ledger = vec![
+        LedgerEntry::new(
+            case.case_id.clone(),
+            2,
+            LedgerEvent::CaseOpened { case: case.clone() },
+        ),
+        LedgerEntry::new(case.case_id.clone(), 1, LedgerEvent::PlanAdopted { plan }),
+    ];
+
+    assert!(replay_case(&ledger).is_err());
+}
+
+#[test]
 fn scheduler_blocks_promotion_on_degraded_or_exhausted_paths() {
     let case = VerificationCase::new(
         VerificationCaseClass::ThinExport,
