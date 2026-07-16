@@ -15,6 +15,13 @@ fn task2_owner_backpointers() -> Vec<CanonicalBackpointerV1> {
 }
 
 fn task2_material_bundle(material: &str) -> AiDENsRunBundleV3 {
+    task2_material_bundle_with_backpointers(material, task2_owner_backpointers())
+}
+
+fn task2_material_bundle_with_backpointers(
+    material: &str,
+    owner_backpointers: Vec<CanonicalBackpointerV1>,
+) -> AiDENsRunBundleV3 {
     let fixture = include_str!("../../../tests/fixtures/p26/aidens_run_bundle_v3.json");
     let fixture: AiDENsRunBundleV3 = serde_json::from_str(fixture).unwrap();
     AiDENsRunBundleV3::new_material_bound(
@@ -32,7 +39,7 @@ fn task2_material_bundle(material: &str) -> AiDENsRunBundleV3 {
         fixture.attempt_id,
         fixture.trial_id,
         fixture.agent_spec_digest,
-        task2_owner_backpointers(),
+        owner_backpointers,
     )
     .unwrap()
 }
@@ -49,6 +56,17 @@ fn task2_material_bound_bundle_ids_are_stable_and_bind_required_owner_references
             .iter()
             .any(|backpointer| backpointer.role == *role));
     }
+}
+
+#[test]
+fn task2_material_bound_bundle_id_changes_when_owner_lineage_changes() {
+    let baseline = task2_material_bundle("same caller material");
+    let mut changed_backpointers = task2_owner_backpointers();
+    changed_backpointers[0].external_id = Some("task:sha256:changed".into());
+    let changed =
+        task2_material_bundle_with_backpointers("same caller material", changed_backpointers);
+
+    assert_ne!(baseline.bundle_id, changed.bundle_id);
 }
 
 #[test]
