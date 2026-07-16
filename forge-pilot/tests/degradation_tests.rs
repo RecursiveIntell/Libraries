@@ -98,6 +98,31 @@ async fn loop_runner_bounds_repeated_degraded_thin_export_cycles() {
     )
     .await;
 
+    // GOV-001 made governance absence fail closed. This fixture exercises
+    // repeated thin-export degradation, so provide an observed, non-blocking
+    // governance claim rather than implicitly relying on a missing state.
+    memory_store
+        .raw_execute(
+            "INSERT INTO claim_versions (
+                claim_version_id, claim_id, claim_state, projection_family,
+                subject_entity_id, predicate, object_anchor,
+                scope_namespace, scope_domain, scope_workspace_id, scope_repo_id,
+                recorded_at, preferred_open,
+                source_envelope_id, source_authority,
+                freshness, contradiction_status, content, confidence
+            ) VALUES (
+                'gov-thin-loop-claim', 'gov-thin-loop', 'active', 'governance',
+                'governance-entity', 'mechanism_fit_disposition', '\"fit\"',
+                'governance', NULL, NULL, NULL,
+                datetime('now'), 0,
+                'gov-thin-loop-envelope', 'governance',
+                'current', 'none', 'fit', 1.0
+            )",
+            vec![],
+        )
+        .await
+        .unwrap();
+
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);
     let report = runner.run().await.unwrap();

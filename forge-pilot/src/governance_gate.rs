@@ -113,12 +113,13 @@ pub struct GovernanceDegradation {
 
 /// GOV-001: Typed observation quality — distinguishes between observed,
 /// missing, malformed, unavailable, and contradictory governance state.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ObservationQuality {
     /// Governance state was successfully observed.
     Observed,
     /// No governance claims found in the store.
+    #[default]
     Missing,
     /// Governance claims were found but could not be parsed.
     Malformed { reason: String },
@@ -126,12 +127,6 @@ pub enum ObservationQuality {
     Unavailable { reason: String },
     /// Governance claims contradict each other.
     Contradictory { reason: String },
-}
-
-impl Default for ObservationQuality {
-    fn default() -> Self {
-        Self::Missing
-    }
 }
 
 /// Result of the governance gate evaluation.

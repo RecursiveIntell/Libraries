@@ -1,46 +1,14 @@
 mod common;
 
 use common::{
-    base_loop_config, import_v3_bundle, open_forge_store, open_memory_store, point_config_at_dir,
-    resources, sample_bundle, tempdir, write_source_file,
+    base_loop_config, import_v3_bundle, install_permissive_governance, open_forge_store,
+    open_memory_store, point_config_at_dir, resources, sample_bundle, tempdir, write_source_file,
 };
 use forge_pilot::{
-    governance_predicates, observe_scope, score_targets, CanonicalCaseClass, LawfulStepKind,
-    LoopRunner, PilotHistory, TargetKind,
+    observe_scope, score_targets, CanonicalCaseClass, LawfulStepKind, LoopRunner, PilotHistory,
+    TargetKind,
 };
 use knowledge_runtime::Scope;
-
-async fn install_permissive_governance(memory_store: &semantic_memory::MemoryStore) {
-    for (predicate, content) in [
-        (governance_predicates::EFFECT_PREFLIGHT, "commit_eligible"),
-        (governance_predicates::ASSURANCE_READY, "true"),
-        (governance_predicates::AUTHORITY_DELEGATION_VALID, "true"),
-        (governance_predicates::CONTINUITY_INCIDENT_ACTIVE, "false"),
-    ] {
-        let id = uuid::Uuid::new_v4().to_string();
-        let sql = format!(
-            "INSERT INTO claim_versions (
-                claim_version_id, claim_id, claim_state, projection_family,
-                subject_entity_id, predicate, object_anchor,
-                scope_namespace, scope_domain, scope_workspace_id, scope_repo_id,
-                recorded_at, preferred_open,
-                source_envelope_id, source_authority,
-                freshness, contradiction_status, content, confidence
-            ) VALUES (
-                '{id}', 'gov-claim-{predicate}', 'active', 'governance',
-                'governance-entity', '{predicate}', '\"{content}\"',
-                'governance', NULL, NULL, NULL,
-                datetime('now'), 0,
-                'gov-envelope-{predicate}', 'governance',
-                'current', 'none', '{content}', 1.0
-            )"
-        );
-        memory_store
-            .raw_execute(&sql, vec![])
-            .await
-            .expect("install permissive governance claim");
-    }
-}
 
 #[tokio::test]
 async fn target_taxonomy_normalizes_to_canonical_case_classes() {

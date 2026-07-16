@@ -79,6 +79,32 @@ async fn source_files_without_imports_surface_import_required() {
         .contains("No completed canonical import or exportable Forge evidence bundle exists yet"));
     assert_eq!(observation.status.available_forge_bundle_count, 0);
 
+    // GOV-001 requires observed governance before the loop can reach the
+    // ImportRequired advisory path. This fixture validates that later path,
+    // not the already-covered missing-governance block.
+    resources
+        .memory_store
+        .raw_execute(
+            "INSERT INTO claim_versions (
+                claim_version_id, claim_id, claim_state, projection_family,
+                subject_entity_id, predicate, object_anchor,
+                scope_namespace, scope_domain, scope_workspace_id, scope_repo_id,
+                recorded_at, preferred_open,
+                source_envelope_id, source_authority,
+                freshness, contradiction_status, content, confidence
+            ) VALUES (
+                'gov-import-required-claim', 'gov-import-required', 'active', 'governance',
+                'governance-entity', 'mechanism_fit_disposition', '\"fit\"',
+                'governance', NULL, NULL, NULL,
+                datetime('now'), 0,
+                'gov-import-required-envelope', 'governance',
+                'current', 'none', 'fit', 1.0
+            )",
+            vec![],
+        )
+        .await
+        .unwrap();
+
     let mut runner = LoopRunner::new(config, resources);
     let report = runner.run().await.unwrap();
     assert_eq!(report.halt_reason, HaltReason::AdvisoryOnlyFallback);

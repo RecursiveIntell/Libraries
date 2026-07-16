@@ -1,8 +1,9 @@
 mod common;
 
 use common::{
-    base_loop_config, import_promoted_hyperedge_batch, import_v3_bundle, open_forge_store,
-    open_memory_store, point_config_at_dir, resources, sample_bundle, tempdir, write_source_file,
+    base_loop_config, import_promoted_hyperedge_batch, import_v3_bundle,
+    install_permissive_governance, open_forge_store, open_memory_store, point_config_at_dir,
+    resources, sample_bundle, tempdir, write_source_file,
 };
 use forge_pilot::{
     observe_scope, parse_loop_report_boundary, score_targets, LoopRunner, PilotHistory, PlanKind,
@@ -88,6 +89,7 @@ async fn preview_first_candidate() -> (
         &sample_bundle("pilot-v8-control"),
     )
     .await;
+    install_permissive_governance(&memory_store).await;
 
     let resources = resources(memory_store, forge_store, &config);
     let observation = observe_scope(&resources.runtime, &resources.memory_store, &config)
@@ -133,6 +135,7 @@ async fn full_loop_policy_deny_blocks_execution_before_action() {
         &sample_bundle("pilot-v8-control"),
     )
     .await;
+    install_permissive_governance(&memory_store).await;
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);
     let report = runner.run().await.unwrap();
@@ -202,6 +205,7 @@ async fn full_loop_requires_approval_when_policy_demands_it() {
         &sample_bundle("pilot-v8-control"),
     )
     .await;
+    install_permissive_governance(&memory_store).await;
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);
     let report = runner.run().await.unwrap();
@@ -277,6 +281,7 @@ async fn full_loop_accepts_scoped_approval_record() {
         &sample_bundle("pilot-v8-control"),
     )
     .await;
+    install_permissive_governance(&memory_store).await;
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);
     let report = runner.run().await.unwrap();
@@ -317,6 +322,7 @@ async fn full_loop_uncalibrated_path_forces_advisory_only() {
         &sample_bundle("pilot-v8-uncalibrated"),
     )
     .await;
+    install_permissive_governance(&memory_store).await;
 
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);
@@ -361,6 +367,7 @@ async fn full_loop_emits_v9_plan_and_consumer_only_proof_artifacts() {
         &sample_bundle("pilot-v8-control"),
     )
     .await;
+    install_permissive_governance(&memory_store).await;
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);
     let report = runner.run().await.unwrap();
@@ -398,6 +405,7 @@ async fn loop_report_boundary_parser_repairs_missing_approval_records() {
         &sample_bundle("pilot-v8-boundary"),
     )
     .await;
+    install_permissive_governance(&memory_store).await;
 
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);
@@ -432,6 +440,7 @@ async fn full_loop_refuted_promoted_state_triggers_rollback_invalidation() {
     );
 
     import_promoted_hyperedge_batch(&memory_store, &scope.namespace, "pilot-v8-rollback").await;
+    install_permissive_governance(&memory_store).await;
 
     let resources = resources(memory_store, forge_store, &config);
     let observation = observe_scope(&resources.runtime, &resources.memory_store, &config)

@@ -1,8 +1,9 @@
 mod common;
 
 use common::{
-    base_loop_config, import_v3_bundle, open_forge_store, open_memory_store, point_config_at_dir,
-    resources, sample_bundle, tempdir, write_patch_fixture, write_source_file,
+    base_loop_config, import_v3_bundle, install_permissive_governance, open_forge_store,
+    open_memory_store, point_config_at_dir, resources, sample_bundle, tempdir, write_patch_fixture,
+    write_source_file,
 };
 use forge_pilot::{
     canonical_roundtrip, observe_scope, score_targets, ActionFamily, LoopRunner, PilotError,
@@ -31,6 +32,7 @@ async fn loop_runner_executes_oracle_and_patch_families_with_real_roundtrips() {
         &sample_bundle("loop-oracle"),
     )
     .await;
+    install_permissive_governance(&oracle_memory).await;
 
     let oracle_resources = resources(oracle_memory, oracle_forge, &oracle_config);
     let mut oracle_runner = LoopRunner::new(oracle_config, oracle_resources);
@@ -60,6 +62,7 @@ async fn loop_runner_executes_oracle_and_patch_families_with_real_roundtrips() {
         &sample_bundle("loop-patch"),
     )
     .await;
+    install_permissive_governance(&patch_memory).await;
 
     let preview_resources = resources(patch_memory.clone(), patch_forge, &patch_config);
     let preview_observation = observe_scope(
