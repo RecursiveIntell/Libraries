@@ -1,0 +1,25 @@
+{
+  "families": [
+    {
+      "family": "borrow-check",
+      "oracle": "operator-authored acceptance for borrow-check; holdout content is not runner-facing"
+    },
+    {
+      "family": "error-propagation",
+      "oracle": "operator-authored acceptance for error-propagation; holdout content is not runner-facing"
+    },
+    {
+      "family": "serde-schema",
+      "oracle": "operator-authored acceptance for serde-schema; holdout content is not runner-facing"
+    },
+    {
+      "family": "iterator-safety",
+      "oracle": "operator-authored acceptance for iterator-safety; holdout content is not runner-facing"
+    },
+    {
+      "family": "module-hygiene",
+      "oracle": "operator-authored acceptance for module-hygiene; holdout content is not runner-facing"
+    }
+  ],
+  "schema": "operator-oracles-v1"
+}

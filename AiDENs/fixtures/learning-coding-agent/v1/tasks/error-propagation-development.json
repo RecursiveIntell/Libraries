@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "cargo test --locked",
+    "cargo fmt --check"
+  ],
+  "family": "error-propagation",
+  "forbidden_effects": [
+    "network",
+    "filesystem outside fixture",
+    "process spawning",
+    "secret access"
+  ],
+  "id": "error-propagation-development",
+  "language": "rust",
+  "permitted_effects": [
+    "edit fixture source only"
+  ],
+  "prompt": "Apply the minimal safe fix for error-propagation; preserve baseline behavior.",
+  "split": "development",
+  "toolchain": "1.86.0"
+}
