@@ -214,6 +214,13 @@ impl RunBundleStore {
         let content_digest = ContentDigest::compute_json(bundle)
             .map_err(|source| RunBundleStoreError::Digest { source })?;
         let bundle_path = self.bundle_path_for_run_id_and_digest(run_id, &content_digest);
+        let _publication_lock =
+            acquire_exclusive_lock(&self.config.index_path).map_err(|source| {
+                RunBundleStoreError::Io {
+                    path: lock_path_for(&self.config.index_path),
+                    source,
+                }
+            })?;
         if bundle_path.exists() {
             return Err(RunBundleStoreError::AlreadyExists(
                 bundle_path.display().to_string(),
@@ -267,7 +274,7 @@ impl RunBundleStore {
                 "Stores AiDENsRunBundleV3 operator evidence only; it is not a canonical memory or verification truth store.".into(),
             ],
         };
-        self.append_record(&mut record)?;
+        self.append_record_locked(&mut record)?;
         Ok(record)
     }
 
@@ -474,13 +481,10 @@ impl RunBundleStore {
         }
     }
 
-    fn append_record(&self, record: &mut RunBundleStoreRecord) -> Result<(), RunBundleStoreError> {
-        let _lock = acquire_exclusive_lock(&self.config.index_path).map_err(|source| {
-            RunBundleStoreError::Io {
-                path: lock_path_for(&self.config.index_path),
-                source,
-            }
-        })?;
+    fn append_record_locked(
+        &self,
+        record: &mut RunBundleStoreRecord,
+    ) -> Result<(), RunBundleStoreError> {
         let records = read_run_bundle_records(&self.config.index_path)?;
         let mut expected_previous = None;
         for (sequence, existing) in records.iter().enumerate() {
@@ -1816,6 +1820,49 @@ mod tests {
             store.inspect("rewritten-run"),
             Err(RunBundleStoreError::IntegrityFailed(_))
         ));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn concurrent_same_bundle_publication_has_one_winner_and_one_index_record() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-run-bundle-concurrent-publication-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = std::sync::Arc::new(
+            RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap(),
+        );
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(16));
+        let mut handles = Vec::new();
+        for _ in 0..16 {
+            let store = store.clone();
+            let barrier = barrier.clone();
+            handles.push(std::thread::spawn(move || {
+                let bundle = serde_json::json!({
+                    "schema":"AiDENsRunBundleV3",
+                    "run_id":"same-run",
+                });
+                barrier.wait();
+                store.write_bundle_value(&bundle)
+            }));
+        }
+        let results = handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(results.iter().filter(|result| result.is_ok()).count(), 1);
+        assert!(
+            results
+                .iter()
+                .filter(|result| matches!(result, Err(RunBundleStoreError::AlreadyExists(_))))
+                .count()
+                >= 15
+        );
+        assert_eq!(store.list_records().unwrap().len(), 1);
+        assert_eq!(
+            store.reconcile().unwrap().entries[0].state,
+            RunBundleRecoveryState::Published
+        );
         let _ = std::fs::remove_dir_all(root);
     }
 }
