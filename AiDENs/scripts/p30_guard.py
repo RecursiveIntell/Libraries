@@ -98,7 +98,39 @@ def _fixture(pattern):
 def build_receipt(repo, fail_broad=False):
     hard, missing = check_hard(repo)
     roots = discover_roots(repo)
-    return {"repo": str(repo), "discovered_roots": ["." if root == repo else root.relative_to(repo).as_posix() for root in roots], "target_count": len(HARD_PATTERNS) * len(roots), "missing_targets": missing, "rule_coverage": {name: self_test_hard_rules()[name] for name, _, _ in HARD_PATTERNS}, "findings": hard + check_broad(repo, fail_broad)}
+    coverage = self_test_hard_rules()
+    findings = hard + check_broad(repo, fail_broad)
+    summary = {
+        "hard_findings": sum(finding["level"] == "hard" for finding in findings),
+        "broad_findings": sum(finding["level"] == "broad" for finding in findings),
+        "warning_findings": sum(finding["level"] == "warn" for finding in findings),
+    }
+    blockers = []
+    if missing:
+        blockers.append("missing-configured-targets")
+    if not all(coverage.values()):
+        blockers.append("hard-rule-self-test-coverage-incomplete")
+    if summary["hard_findings"]:
+        blockers.append("hard-findings-present")
+    if summary["broad_findings"]:
+        blockers.append("broad-findings-promoted-by-fail-broad")
+    return {
+        "repo": str(repo),
+        "discovered_roots": [
+            "." if root == repo else root.relative_to(repo).as_posix() for root in roots
+        ],
+        "target_count": len(HARD_PATTERNS) * len(roots),
+        "missing_targets": missing,
+        "rule_coverage": coverage,
+        "summary": summary,
+        "release_gate": {
+            "status": "blocked" if blockers else "pass",
+            "blockers": blockers,
+            "warning_policy": "advisory-inventory-not-release-blocking",
+            "claim_scope": "mechanical-hostile-pattern-coverage-not-containment-certification",
+        },
+        "findings": findings,
+    }
 
 
 def main():

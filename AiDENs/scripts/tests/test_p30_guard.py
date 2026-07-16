@@ -44,3 +44,16 @@ def test_every_hard_rule_has_a_known_bad_self_test():
     coverage = module.self_test_hard_rules()
 
     assert all(coverage.values())
+
+
+def test_release_gate_distinguishes_advisory_inventory_from_hard_findings(tmp_path):
+    source = tmp_path / "sample.rs"
+    source.write_text("fn advisory_only() { let _ = serde_json::json!({}); }\n")
+
+    receipt = module.build_receipt(tmp_path)
+
+    assert receipt["summary"]["warning_findings"] > 0
+    assert receipt["summary"]["hard_findings"] == 0
+    assert receipt["release_gate"]["status"] == "blocked"
+    assert "missing-configured-targets" in receipt["release_gate"]["blockers"]
+    assert receipt["release_gate"]["warning_policy"] == "advisory-inventory-not-release-blocking"
