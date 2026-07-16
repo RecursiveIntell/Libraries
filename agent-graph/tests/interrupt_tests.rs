@@ -95,6 +95,9 @@ async fn test_execute_with_interrupt_complete() {
         ExecutionResult::Interrupted { .. } => {
             panic!("Should have completed, not interrupted");
         }
+        ExecutionResult::Failed { error, .. } => {
+            panic!("Should have completed, but failed: {error}");
+        }
     }
 }
 
@@ -138,6 +141,9 @@ async fn test_execute_with_interrupt_interrupted() {
         }
         ExecutionResult::Complete(_) => {
             panic!("Should have been interrupted, not completed");
+        }
+        ExecutionResult::Failed { error, .. } => {
+            panic!("Should have been interrupted, but failed: {error}");
         }
     }
 }

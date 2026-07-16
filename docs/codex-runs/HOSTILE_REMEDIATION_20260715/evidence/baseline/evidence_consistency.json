@@ -1,0 +1,9 @@
+{
+  "schema_version": "libraries.evidence-consistency-report.v1",
+  "findings": [
+    "snapshot mismatch: '2026-05-13-hardening-closeout' vs '2026-03-30-hardening-closeout'",
+    "captured_at mismatch: '2026-05-13' vs '2026-03-30'",
+    "gate result mismatch",
+    "missing source_binding fields: cargo_lock_sha256, command_receipts, commit_sha, platform, toolchain, tree_sha, workspace_inventory_sha256"
+  ]
+}

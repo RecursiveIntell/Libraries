@@ -1,0 +1,17 @@
+{
+  "schema_version": "libraries.id-authority-allowlist.v1",
+  "exceptions": [],
+  "contract": {
+    "required": [
+      "id",
+      "path",
+      "pattern",
+      "owner",
+      "reason",
+      "issue",
+      "removal_condition",
+      "expires_on"
+    ],
+    "wildcard_repository_exceptions_forbidden": true
+  }
+}

@@ -54,12 +54,33 @@ impl VectorCodec for RawExactValueCodec {
     type EncodedBlock = Vec<f32>;
     type Error = PolyKvError;
 
+    fn profile(&self) -> &dyn quant_codec_core::CodecProfile {
+        unreachable!("poly-kv codecs do not implement CodecProfile")
+    }
+
+    fn capabilities(&self) -> quant_codec_core::CodecCapabilities {
+        quant_codec_core::CodecCapabilities {
+            can_encode: true,
+            can_decode: true,
+            can_score_inner_product: false,
+            can_score_l2: false,
+            is_lossless: false,
+        }
+    }
+
+    fn resource_limits(&self) -> quant_codec_core::CodecResourceLimits {
+        quant_codec_core::CodecResourceLimits::default()
+    }
+
     fn encode_block(&self, input: &[f32]) -> Result<Self::EncodedBlock, Self::Error> {
         self.encode_values(input)
     }
 
     fn decode_block(&self, block: &Self::EncodedBlock, out: &mut [f32]) -> Result<(), Self::Error> {
         self.decode_values(block, out)
+    }
+    fn score_semantics(&self) -> quant_codec_core::ScoreSemantics {
+        quant_codec_core::ScoreSemantics::CosineOnDecodedF32
     }
 }
 

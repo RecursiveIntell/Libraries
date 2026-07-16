@@ -232,9 +232,9 @@ impl JobContext {
     /// This creates a lightweight context backed by an in-memory SQLite database
     /// and a no-op event emitter. Useful for CLI tools that execute jobs directly
     /// without going through the queue infrastructure.
-    pub fn new_direct(job_id: &str) -> Self {
-        let conn = Connection::open_in_memory().expect("in-memory DB");
-        let _ = conn.execute_batch(
+    pub fn new_direct(job_id: &str) -> Result<Self, QueueError> {
+        let conn = Connection::open_in_memory()?;
+        conn.execute_batch(
             "CREATE TABLE IF NOT EXISTS queue_jobs (
                 id TEXT PRIMARY KEY,
                 priority INTEGER DEFAULT 2,
@@ -245,8 +245,8 @@ impl JobContext {
                 completed_at DATETIME,
                 error_message TEXT
             )",
-        );
-        Self {
+        )?;
+        Ok(Self {
             job_id: job_id.to_string(),
             trace_id: None,
             trace_ctx: None,
@@ -256,7 +256,7 @@ impl JobContext {
             attempt_count: 1,
             event_emitter: Arc::new(NoopEventEmitter),
             db: Arc::new(Mutex::new(conn)),
-        }
+        })
     }
 
     /// Emit a progress event.
@@ -290,11 +290,12 @@ impl JobContext {
     /// Call this periodically during long-running jobs to support
     /// cooperative cancellation. If it returns `true`, your handler
     /// should return `Err(QueueError::Cancelled)`.
-    pub fn is_cancelled(&self) -> bool {
-        match self.db.lock() {
-            Ok(conn) => db::is_cancelled(&conn, &self.job_id).unwrap_or(false),
-            Err(_) => false,
-        }
+    pub fn is_cancelled(&self) -> anyhow::Result<bool> {
+        let conn = self
+            .db
+            .lock()
+            .map_err(|_| anyhow::anyhow!("database mutex poisoned"))?;
+        db::is_cancelled(&conn, &self.job_id)
     }
 }
 

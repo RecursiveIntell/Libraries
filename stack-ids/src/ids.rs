@@ -8,6 +8,38 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
+/// Typed validation failures for canonical IDs.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IdError {
+    Empty,
+    InvalidCharacter(char),
+    TooLong,
+}
+
+impl std::fmt::Display for IdError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Empty => f.write_str("ID must not be empty or whitespace"),
+            Self::InvalidCharacter(c) => write!(f, "ID contains invalid control character {c:?}"),
+            Self::TooLong => f.write_str("ID exceeds the 512 byte limit"),
+        }
+    }
+}
+impl std::error::Error for IdError {}
+
+fn validate_id(value: &str) -> Result<(), IdError> {
+    if value.trim().is_empty() {
+        return Err(IdError::Empty);
+    }
+    if value.len() > 512 {
+        return Err(IdError::TooLong);
+    }
+    if let Some(c) = value.chars().find(|c| c.is_control()) {
+        return Err(IdError::InvalidCharacter(c));
+    }
+    Ok(())
+}
+
 /// Macro to generate an opaque string-wrapper ID type with standard impls.
 macro_rules! define_id {
     (
@@ -15,61 +47,37 @@ macro_rules! define_id {
         $name:ident
     ) => {
         $(#[$meta])*
-        #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+        #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
         #[serde(transparent)]
-        pub struct $name(pub String);
+        pub struct $name(String);
 
         impl $name {
-            /// Create from any string-like value.
+            /// Legacy constructor retained for source compatibility; validates input.
             pub fn new(value: impl Into<String>) -> Self {
-                Self(value.into())
+                Self::try_new(value).expect("invalid ID; use a lifecycle constructor")
             }
-
-            /// Generate a new random UUID v4 ID.
-            pub fn generate() -> Self {
-                Self(uuid::Uuid::new_v4().to_string())
+            pub fn try_new(value: impl Into<String>) -> Result<Self, IdError> {
+                let value = value.into(); validate_id(&value)?; Ok(Self(value))
             }
-
-            /// Borrow as a string slice.
-            pub fn as_str(&self) -> &str {
-                &self.0
-            }
-
-            /// Returns true if the inner string is empty.
-            pub fn is_empty(&self) -> bool {
-                self.0.is_empty()
-            }
+            pub fn random(domain: &str) -> Self { Self::new(format!("v1:{domain}:{}", uuid::Uuid::new_v4())) }
+            pub fn deterministic(domain: &str, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:det:{}", value.as_ref())) }
+            pub fn version(domain: &str, version: impl AsRef<str>, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:{}:{}", version.as_ref(), value.as_ref())) }
+            pub fn imported(domain: &str, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:import:{}", value.as_ref())) }
+            pub fn receipt(domain: &str, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:receipt:{}", value.as_ref())) }
+            pub fn local(domain: &str, value: impl AsRef<str>) -> Result<Self, IdError> { Self::try_new(format!("v1:{domain}:local:{}", value.as_ref())) }
+            pub fn as_str(&self) -> &str { &self.0 }
+            pub fn is_empty(&self) -> bool { self.0.is_empty() }
+            /// Named adapter for unvalidated historical wire values.
+            pub fn from_legacy(value: impl Into<String>) -> Result<Self, IdError> { Self::try_new(value) }
         }
-
-        impl std::fmt::Display for $name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str(&self.0)
-            }
-        }
-
-        impl From<String> for $name {
-            fn from(value: String) -> Self {
-                Self(value)
-            }
-        }
-
-        impl From<&str> for $name {
-            fn from(value: &str) -> Self {
-                Self(value.to_string())
-            }
-        }
-
-        impl AsRef<str> for $name {
-            fn as_ref(&self) -> &str {
-                &self.0
-            }
-        }
-
-        impl FromStr for $name {
-            type Err = std::convert::Infallible;
-
-            fn from_str(value: &str) -> Result<Self, Self::Err> {
-                Ok(Self::new(value))
+        impl std::fmt::Display for $name { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str(&self.0) } }
+        impl From<&str> for $name { fn from(value: &str) -> Self { Self::new(value) } }
+        impl From<String> for $name { fn from(value: String) -> Self { Self::new(value) } }
+        impl AsRef<str> for $name { fn as_ref(&self) -> &str { &self.0 } }
+        impl FromStr for $name { type Err = IdError; fn from_str(value: &str) -> Result<Self, Self::Err> { Self::try_new(value) } }
+        impl<'de> Deserialize<'de> for $name {
+            fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                let value = String::deserialize(d)?; Self::try_new(value).map_err(serde::de::Error::custom)
             }
         }
     };
@@ -1230,6 +1238,82 @@ define_id!(
     /// Opaque identifier for a policy impact diff artifact.
     PolicyImpactDiffId
 );
+
+impl AttemptId {
+    pub fn generate() -> Self {
+        Self::random("attempt")
+    }
+}
+impl TrialId {
+    pub fn generate() -> Self {
+        Self::random("trial")
+    }
+}
+
+/// Backward-compatible generate() for all ID types that had it before ID-001.
+/// These delegate to random() with a sensible domain prefix.
+macro_rules! impl_generate {
+    ($name:ident, $domain:literal) => {
+        impl $name {
+            pub fn generate() -> Self {
+                Self::random($domain)
+            }
+        }
+    };
+}
+
+impl_generate!(ClaimId, "claim");
+impl_generate!(ClaimVersionId, "claim_version");
+impl_generate!(EpisodeId, "episode");
+impl_generate!(RelationVersionId, "relation_version");
+impl_generate!(FitRunId, "fit_run");
+impl_generate!(CampaignDecisionTraceId, "campaign_decision");
+impl_generate!(AmendmentDecisionId, "amendment_decision");
+impl_generate!(ApprovalGrantId, "approval_grant");
+impl_generate!(ArchiveManifestId, "archive_manifest");
+impl_generate!(HistoricalQueryGuaranteeId, "historical_query");
+impl_generate!(CompactionReceiptId, "compaction_receipt");
+impl_generate!(ProofEvaluationReceiptId, "proof_eval_receipt");
+impl_generate!(SelfHostingBuildReceiptId, "self_hosting_build");
+impl_generate!(SettlementReceiptId, "settlement_receipt");
+impl_generate!(SharedDivergenceReportId, "shared_divergence");
+impl_generate!(SharedReplaySliceId, "shared_replay_slice");
+impl_generate!(SharedViewDowngradeId, "shared_view_downgrade");
+impl_generate!(TreatySuspensionId, "treaty_suspension");
+impl_generate!(GeneratedConformanceCorpusId, "gen_conformance_corpus");
+impl_generate!(GeneratedInterpreterBundleId, "gen_interpreter_bundle");
+impl_generate!(GeneratedMigrationPlanId, "gen_migration_plan");
+impl_generate!(GeneratedSchemaBundleId, "gen_schema_bundle");
+impl_generate!(VerificationCaseId, "verification_case");
+impl_generate!(ExecutionPermitId, "execution_permit");
+impl_generate!(PolicyDecisionId, "policy_decision");
+impl_generate!(CheckPlanId, "check_plan");
+impl_generate!(ControlReceiptId, "control_receipt");
+impl_generate!(LedgerEntryId, "ledger_entry");
+impl_generate!(RepairCandidateId, "repair_candidate");
+impl_generate!(RepairRouteId, "repair_route");
+impl_generate!(EffectBlockReceiptId, "effect_block_receipt");
+impl_generate!(EffectReviewCaseId, "effect_review_case");
+impl_generate!(ContinuityReviewCaseId, "continuity_review_case");
+impl_generate!(DelegationReviewCaseId, "delegation_review_case");
+impl_generate!(ReleaseGateCaseId, "release_gate_case");
+impl_generate!(ExactnessBudgetId, "exactness_budget");
+impl_generate!(ArtifactTransportId, "artifact_transport");
+impl_generate!(BoundaryRepairRecordId, "boundary_repair_record");
+impl_generate!(CalibrationSnapshotId, "calibration_snapshot");
+impl_generate!(NuisanceStateId, "nuisance_state");
+impl_generate!(ApprovalRecordId, "approval_record");
+impl_generate!(ApplicabilityContextId, "applicability_context");
+impl_generate!(CompiledObligationSetId, "compiled_obligation_set");
+impl_generate!(CompositionConflictSetId, "composition_conflict_set");
+impl_generate!(CompositionReceiptId, "composition_receipt");
+impl_generate!(CompositionRuleSetId, "composition_rule_set");
+impl_generate!(EffectiveConstitutionId, "effective_constitution");
+impl_generate!(PolicyImpactDiffId, "policy_impact_diff");
+impl_generate!(ProfileSetId, "profile_set");
+impl_generate!(PromotionDecisionId, "promotion_decision");
+impl_generate!(RefutationDecisionId, "refutation_decision");
+impl_generate!(RollbackPlanId, "rollback_plan");
 
 #[cfg(test)]
 #[path = "ids_tests.rs"]

@@ -56,8 +56,8 @@ pub use governance_gate::{
     build_governance_receipt, gate_execution, gate_execution_with_mode, observe_governance,
     observe_governance_with_mode, predicates as governance_predicates, GovernanceDegradation,
     GovernanceGateError, GovernanceGateResult, GovernanceMode, GovernanceObservation,
-    GovernanceObservationSummary, GovernanceReceiptV1, GOVERNANCE_PROJECTION_FAMILY,
-    GOVERNANCE_RECEIPT_V1_SCHEMA, GOVERNANCE_SCOPE_NAMESPACE,
+    GovernanceObservationSummary, GovernanceReceiptV1, ObservationQuality,
+    GOVERNANCE_PROJECTION_FAMILY, GOVERNANCE_RECEIPT_V1_SCHEMA, GOVERNANCE_SCOPE_NAMESPACE,
 };
 pub use history::{PilotHistory, TargetAttemptRecord, TargetHistoryEntry};
 pub use loop_runner::{

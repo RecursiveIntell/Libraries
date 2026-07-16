@@ -257,7 +257,9 @@ impl PermitGrantV1 {
         self.attempt_id = Some(context.attempt_id.clone());
         self.scope = format!(
             "{};run={};attempt={}",
-            self.scope, context.run_id.0, context.attempt_id.0
+            self.scope,
+            context.run_id.as_str(),
+            context.attempt_id.as_str()
         );
         self
     }
@@ -365,7 +367,9 @@ impl ApprovalRequestV1 {
         self.attempt_id = Some(context.attempt_id.clone());
         self.scope = format!(
             "{};run={};attempt={}",
-            self.scope, context.run_id.0, context.attempt_id.0
+            self.scope,
+            context.run_id.as_str(),
+            context.attempt_id.as_str()
         );
         self
     }

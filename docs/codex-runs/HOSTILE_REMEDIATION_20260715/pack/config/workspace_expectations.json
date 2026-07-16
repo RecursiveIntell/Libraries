@@ -1,0 +1,26 @@
+{
+  "schema_version": "libraries.workspace-expectations.v1",
+  "workspaces": [
+    {
+      "path": ".",
+      "name": "root",
+      "required": true
+    },
+    {
+      "path": "AiDENs",
+      "name": "AiDENs",
+      "required": true
+    },
+    {
+      "path": "Primitives",
+      "name": "Primitives",
+      "required": true
+    },
+    {
+      "path": "poly-kv",
+      "name": "poly-kv",
+      "required": true
+    }
+  ],
+  "rule": "Missing required workspace or failed metadata blocks release; member counts are captured, not permanently hard-coded."
+}

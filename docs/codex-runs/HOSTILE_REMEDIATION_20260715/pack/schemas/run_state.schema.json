@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "libraries.run-state.v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "repository",
+    "baseline",
+    "integration_branch",
+    "current_phase",
+    "status",
+    "issues",
+    "agents",
+    "path_locks"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "libraries.run-state.v1"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "path",
+        "remote"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "remote": {
+          "type": "string"
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "branch",
+        "commit",
+        "tree",
+        "dirty"
+      ],
+      "properties": {
+        "branch": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "tree": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "dirty": {
+          "type": "boolean"
+        },
+        "cargo_lock_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "toolchain": {
+          "type": "object"
+        },
+        "workspace_inventory": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "integration_branch": {
+      "type": "string"
+    },
+    "current_phase": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "initializing",
+        "active",
+        "blocked",
+        "review",
+        "complete",
+        "abandoned"
+      ]
+    },
+    "issues": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "pending",
+              "assigned",
+              "in_progress",
+              "awaiting_review",
+              "changes_requested",
+              "validated",
+              "merged",
+              "post_merge_validated",
+              "closed",
+              "blocked"
+            ]
+          },
+          "task_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blocker": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "path_locks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "paths"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

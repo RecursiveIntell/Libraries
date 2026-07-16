@@ -1,10 +1,11 @@
-name: hardening-and-v25
+name: hardening-and-release
 
 on:
   push:
     branches:
       - main
       - master
+      - feat/full-integration
   pull_request:
 
 jobs:
@@ -18,9 +19,82 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: make gate
 
+  # CI-001: Certify every required workspace independently.
+  workspace-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - root
+          - AiDENs
+          - Primitives
+          - poly-kv
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Workspace ${{ matrix.workspace }}
+        run: |
+          if [ "${{ matrix.workspace }}" = "root" ]; then
+            cargo fmt --all -- --check
+            cargo clippy --workspace --all-targets --all-features -- -D warnings
+            cargo test --workspace --all-targets --all-features
+            cargo doc --workspace --no-deps
+          else
+            cd ${{ matrix.workspace }}
+            cargo fmt --all -- --check
+            cargo clippy --workspace --all-targets --all-features -- -D warnings
+            cargo test --workspace --all-targets --all-features
+            cargo doc --workspace --no-deps
+          fi
+
+  # CI-001: Alternative feature lanes for semantic-memory.
+  feature-lanes:
+    strategy:
+      fail-fast: false
+      matrix:
+        features:
+          - "--no-default-features --features brute-force"
+          - "--no-default-features --features hnsw"
+          - "--no-default-features --features brute-force,turbo-quant-codec"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: semantic-memory ${{ matrix.features }}
+        run: |
+          cargo test -p semantic-memory ${{ matrix.features }}
+          cargo clippy -p semantic-memory ${{ matrix.features }} --all-targets -- -D warnings
+
+  # CI-001: scr-runtime-compression feature lanes.
+  codec-feature-lanes:
+    strategy:
+      fail-fast: false
+      matrix:
+        features:
+          - "--no-default-features"
+          - "--no-default-features --features turbo"
+          - "--no-default-features --features fib"
+          - "--all-features"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: scr-runtime-compression ${{ matrix.features }}
+        run: cargo test -p scr-runtime-compression ${{ matrix.features }}
+
   v25-production-closure:
     runs-on: ubuntu-latest
-    needs: hardening-gate
+    needs: [hardening-gate, workspace-matrix, feature-lanes, codec-feature-lanes]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable

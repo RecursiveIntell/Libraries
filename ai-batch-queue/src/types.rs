@@ -215,6 +215,25 @@ where
     pub reordered: bool,
     /// Human-readable note explaining the reorder.
     pub reorder_note: Option<String>,
+    /// Monotonic claim generation, used to prevent stale workers finalizing work.
+    #[serde(default)]
+    pub claim_generation: u64,
+    /// Worker currently owning this claim.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub claimed_by: Option<String>,
+}
+
+/// Fail-closed queue state transition failures.
+#[derive(Debug, thiserror::Error)]
+pub enum QueueTransitionError {
+    #[error("queue state lock is poisoned")]
+    Poisoned,
+    #[error("job '{0}' was not found")]
+    Missing(String),
+    #[error("invalid transition for job '{job}': {reason}")]
+    Invalid { job: String, reason: String },
+    #[error("claim for job '{job}' is stale or owned by another worker")]
+    StaleClaim { job: String },
 }
 
 /// Summary of a completed batch job.

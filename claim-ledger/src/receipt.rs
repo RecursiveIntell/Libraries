@@ -29,7 +29,7 @@ pub struct ExportReceipt {
     /// Paths/IDs of input artifacts.
     pub input_refs: Vec<String>,
     /// Digest for each input (ref -> digest).
-    pub input_digests: std::collections::HashMap<String, String>,
+    pub input_digests: std::collections::BTreeMap<String, String>,
     /// Path/ID of the output artifact.
     pub output_ref: Option<String>,
     /// Digest of the output artifact (computed after writing).
@@ -49,6 +49,16 @@ pub struct ExportReceipt {
 impl ExportReceipt {
     /// Create a new export receipt.
     pub fn new(operation: &str, input_refs: Vec<String>, attempt_id: String) -> Self {
+        Self::new_at(operation, input_refs, attempt_id, Utc::now())
+    }
+
+    /// Create a receipt with an explicit recorded time for reproducible artifacts.
+    pub fn new_at(
+        operation: &str,
+        input_refs: Vec<String>,
+        attempt_id: String,
+        recorded_time: DateTime<Utc>,
+    ) -> Self {
         let input_refs_str: Vec<&str> = input_refs.iter().map(|s| s.as_str()).collect();
         let export_receipt_id = ids::export_receipt_id(operation, &input_refs_str);
         Self {
@@ -56,10 +66,10 @@ impl ExportReceipt {
             export_receipt_id,
             operation: operation.to_string(),
             input_refs,
-            input_digests: std::collections::HashMap::new(),
+            input_digests: std::collections::BTreeMap::new(),
             output_ref: None,
             output_digest: None,
-            recorded_time: Utc::now(),
+            recorded_time,
             attempt_id,
             status: "pending".to_string(),
             degradation: Vec::new(),
@@ -129,6 +139,28 @@ impl SupportAdmissionReceipt {
         admitted_state: SupportState,
         rationale: &str,
     ) -> Self {
+        Self::new_at(
+            claim_id,
+            previous_ref,
+            new_ref,
+            method,
+            admitted_state,
+            rationale,
+            Utc::now(),
+        )
+    }
+
+    /// Create a receipt with an explicit recorded time for reproducible artifacts.
+    #[allow(clippy::too_many_arguments)]
+    pub fn new_at(
+        claim_id: &str,
+        previous_ref: &str,
+        new_ref: &str,
+        method: SupportAdmissionMethod,
+        admitted_state: SupportState,
+        rationale: &str,
+        recorded_time: DateTime<Utc>,
+    ) -> Self {
         Self {
             receipt_version: "SupportAdmissionReceiptV1".to_string(),
             support_admission_receipt_id: ids::support_admission_receipt_id(
@@ -145,7 +177,7 @@ impl SupportAdmissionReceipt {
             operator_ref: None,
             proof_payload: None,
             proof_debt_waiver: None,
-            recorded_time: Utc::now(),
+            recorded_time,
         }
     }
 }
@@ -177,6 +209,23 @@ impl LedgerAppendReceipt {
         previous_entry_digest: Option<String>,
         entry_digest: String,
     ) -> Self {
+        Self::new_at(
+            ledger_ref,
+            sequence,
+            previous_entry_digest,
+            entry_digest,
+            Utc::now(),
+        )
+    }
+
+    /// Create a receipt with an explicit recorded time for reproducible artifacts.
+    pub fn new_at(
+        ledger_ref: &str,
+        sequence: u64,
+        previous_entry_digest: Option<String>,
+        entry_digest: String,
+        recorded_time: DateTime<Utc>,
+    ) -> Self {
         Self {
             receipt_version: "LedgerAppendReceiptV1".to_string(),
             ledger_append_receipt_id: ids::ledger_append_receipt_id(
@@ -188,7 +237,7 @@ impl LedgerAppendReceipt {
             sequence,
             previous_entry_digest,
             entry_digest,
-            recorded_time: Utc::now(),
+            recorded_time,
         }
     }
 }
@@ -226,6 +275,23 @@ impl ContradictionResolutionReceipt {
         resolution: ContradictionResolution,
         rationale: &str,
     ) -> Self {
+        Self::new_at(
+            contradiction_id,
+            previous_status,
+            resolution,
+            rationale,
+            Utc::now(),
+        )
+    }
+
+    /// Create a receipt with an explicit recorded time for reproducible artifacts.
+    pub fn new_at(
+        contradiction_id: &str,
+        previous_status: &str,
+        resolution: ContradictionResolution,
+        rationale: &str,
+        recorded_time: DateTime<Utc>,
+    ) -> Self {
         Self {
             receipt_version: "ContradictionResolutionReceiptV1".to_string(),
             contradiction_resolution_receipt_id: ids::contradiction_resolution_receipt_id(
@@ -240,7 +306,7 @@ impl ContradictionResolutionReceipt {
             affected_support_judgment_refs: Vec::new(),
             supersession_receipt_refs: Vec::new(),
             review_queue_refs: Vec::new(),
-            recorded_time: Utc::now(),
+            recorded_time,
         }
     }
 }
@@ -265,13 +331,23 @@ pub struct SupersessionReceipt {
 impl SupersessionReceipt {
     /// Create a new supersession receipt.
     pub fn new(superseded_ref: &str, superseding_ref: &str, rationale: &str) -> Self {
+        Self::new_at(superseded_ref, superseding_ref, rationale, Utc::now())
+    }
+
+    /// Create a receipt with an explicit recorded time for reproducible artifacts.
+    pub fn new_at(
+        superseded_ref: &str,
+        superseding_ref: &str,
+        rationale: &str,
+        recorded_time: DateTime<Utc>,
+    ) -> Self {
         Self {
             receipt_version: "SupersessionReceiptV1".to_string(),
             supersession_receipt_id: ids::supersession_receipt_id(superseded_ref, superseding_ref),
             superseded_ref: superseded_ref.to_string(),
             superseding_ref: superseding_ref.to_string(),
             rationale: rationale.to_string(),
-            recorded_time: Utc::now(),
+            recorded_time,
         }
     }
 }

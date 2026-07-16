@@ -14,11 +14,11 @@ use aidens_repair_kit::{
 fn minimal_v11b_region_seed_blocks_wrong_graphs_and_discloses_boundary_outcomes() {
     for graph_kind in [RegionGraphKindV1::Retrieval, RegionGraphKindV1::Control] {
         let node = RegionNodeV1::new(RegionNodeKindV1::Claim, format!("{graph_kind}:node"), None);
-        let graph_id = ArtifactId(format!("graph:phase10-{graph_kind}"));
+        let graph_id = ArtifactId::new(format!("graph:phase10-{graph_kind}"));
         let region = RegionContractV1::new(
             graph_id.clone(),
             graph_kind,
-            ArtifactId(format!("region:phase10-{graph_kind}")),
+            ArtifactId::new(format!("region:phase10-{graph_kind}")),
             vec![node.node_id.clone()],
             Vec::new(),
             Vec::new(),
@@ -48,10 +48,10 @@ fn minimal_v11b_region_seed_blocks_wrong_graphs_and_discloses_boundary_outcomes(
     }
 
     let message = RegionBoundaryMessageV1::seed(
-        ArtifactId("region:phase10-source".into()),
-        ArtifactId("region:phase10-destination".into()),
+        ArtifactId::new("region:phase10-source"),
+        ArtifactId::new("region:phase10-destination"),
         "residual",
-        ArtifactId("residual:phase10".into()),
+        ArtifactId::new("residual:phase10"),
         DisplayDigestV1::for_json_value(&serde_json::json!({"residual": 0.2})),
     );
     let accepted = RegionBoundaryReceiptV1::seed(&message, true);
@@ -92,9 +92,9 @@ fn minimal_v11b_region_seed_blocks_wrong_graphs_and_discloses_boundary_outcomes(
 
 #[test]
 fn minimal_v11b_region_failure_slice_is_degraded_and_non_promotable() {
-    let graph_id = ArtifactId("graph:phase10-minimal".into());
-    let region_id = ArtifactId("region:phase10-minimal".into());
-    let accepted_claim = ArtifactId("claim:phase10-accepted".into());
+    let graph_id = ArtifactId::new("graph:phase10-minimal");
+    let region_id = ArtifactId::new("region:phase10-minimal");
+    let accepted_claim = ArtifactId::new("claim:phase10-accepted");
     let node = RegionNodeV1::new(
         RegionNodeKindV1::Claim,
         "accepted claim",
@@ -128,7 +128,7 @@ fn minimal_v11b_region_failure_slice_is_degraded_and_non_promotable() {
         CanonicalKernelStopReason::BudgetExhausted,
         1,
         1,
-        0.01,
+        0.1,
         0.5,
         0.2,
     );
@@ -138,7 +138,7 @@ fn minimal_v11b_region_failure_slice_is_degraded_and_non_promotable() {
         1,
         0.3,
         0.2,
-        0.01,
+        0.1,
         stop.clone(),
     );
     let convergence = ConvergenceReportV1::new(
@@ -147,7 +147,7 @@ fn minimal_v11b_region_failure_slice_is_degraded_and_non_promotable() {
         CanonicalKernelStopReason::BudgetExhausted,
         1,
         1,
-        0.01,
+        0.1,
         0.5,
         residual.current_value,
         vec![residual.residual_id.clone()],
@@ -157,7 +157,7 @@ fn minimal_v11b_region_failure_slice_is_degraded_and_non_promotable() {
     let syndrome = KernelSyndromeReportV1::contradiction(
         graph_id.clone(),
         region_id.clone(),
-        ArtifactId("witness:phase10".into()),
+        ArtifactId::new("witness:phase10"),
         vec![accepted_claim.clone()],
     );
     let oracle = OracleSliceRequestV1::new(

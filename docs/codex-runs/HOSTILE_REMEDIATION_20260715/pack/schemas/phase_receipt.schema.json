@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "libraries.phase-receipt.v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "phase",
+    "input_commit",
+    "output_commit",
+    "output_tree",
+    "tasks",
+    "issue_states",
+    "command_receipts",
+    "open_blockers",
+    "rollback_ref",
+    "verdict"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "libraries.phase-receipt.v1"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "input_commit": {
+      "type": "string"
+    },
+    "output_commit": {
+      "type": "string"
+    },
+    "output_tree": {
+      "type": "string"
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "issue_states": {
+      "type": "object"
+    },
+    "command_receipts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "open_blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rollback_ref": {
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fail",
+        "blocked"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

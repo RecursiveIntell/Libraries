@@ -7,6 +7,10 @@
         "replayable_with_ticket"
       ],
       "type": "string"
+    },
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
     }
   },
   "properties": {
@@ -26,7 +30,7 @@
       "type": "string"
     },
     "content_digest": {
-      "type": "string"
+      "$ref": "#/definitions/ContentDigest"
     },
     "disclosure_policy_id": {
       "type": "string"

@@ -1,0 +1,560 @@
+{
+  "schema_version": "libraries.validation-matrix.v1",
+  "commands": [
+    {
+      "id": "root-metadata",
+      "stage": [
+        "baseline",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1",
+        "--no-deps"
+      ],
+      "required": true
+    },
+    {
+      "id": "root-fmt",
+      "stage": [
+        "baseline",
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "required": true
+    },
+    {
+      "id": "root-check",
+      "stage": [
+        "baseline",
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "root-clippy",
+      "stage": [
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "required": true
+    },
+    {
+      "id": "root-test",
+      "stage": [
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "root-doc",
+      "stage": [
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "doc",
+        "--workspace",
+        "--all-features",
+        "--no-deps"
+      ],
+      "required": true
+    },
+    {
+      "id": "aidens-metadata",
+      "stage": [
+        "baseline",
+        "final"
+      ],
+      "cwd": "AiDENs",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1",
+        "--no-deps"
+      ],
+      "required": true
+    },
+    {
+      "id": "aidens-check",
+      "stage": [
+        "baseline",
+        "final"
+      ],
+      "cwd": "AiDENs",
+      "argv": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "aidens-clippy",
+      "stage": [
+        "final"
+      ],
+      "cwd": "AiDENs",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "required": true
+    },
+    {
+      "id": "aidens-test",
+      "stage": [
+        "final"
+      ],
+      "cwd": "AiDENs",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "primitives-check",
+      "stage": [
+        "baseline",
+        "final"
+      ],
+      "cwd": "Primitives",
+      "argv": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "primitives-clippy",
+      "stage": [
+        "final"
+      ],
+      "cwd": "Primitives",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "required": true
+    },
+    {
+      "id": "primitives-test",
+      "stage": [
+        "final"
+      ],
+      "cwd": "Primitives",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "poly-kv-check",
+      "stage": [
+        "baseline",
+        "final"
+      ],
+      "cwd": "poly-kv",
+      "argv": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "poly-kv-clippy",
+      "stage": [
+        "final"
+      ],
+      "cwd": "poly-kv",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--all-features",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "required": true
+    },
+    {
+      "id": "poly-kv-test",
+      "stage": [
+        "final"
+      ],
+      "cwd": "poly-kv",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--all-targets",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "semantic-bruteforce",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "semantic-memory",
+        "--no-default-features",
+        "--features",
+        "brute-force"
+      ],
+      "required": true
+    },
+    {
+      "id": "semantic-hnsw",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "semantic-memory",
+        "--no-default-features",
+        "--features",
+        "hnsw"
+      ],
+      "required": true
+    },
+    {
+      "id": "semantic-turbo-bruteforce",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "semantic-memory",
+        "--no-default-features",
+        "--features",
+        "brute-force,turbo-quant-codec"
+      ],
+      "required": true
+    },
+    {
+      "id": "compression-none",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "scr-runtime-compression",
+        "--no-default-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "compression-turbo",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "scr-runtime-compression",
+        "--no-default-features",
+        "--features",
+        "turbo"
+      ],
+      "required": true
+    },
+    {
+      "id": "compression-fib",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "scr-runtime-compression",
+        "--no-default-features",
+        "--features",
+        "fib"
+      ],
+      "required": true
+    },
+    {
+      "id": "compression-all",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "scr-runtime-compression",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "stack-ids",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "stack-ids",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "claim-ledger",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "claim-ledger",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "agent-graph",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "agent-graph",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "ai-batch-queue",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "ai-batch-queue",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "job-queue",
+      "stage": [
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "job-queue",
+        "--all-features"
+      ],
+      "required": true
+    },
+    {
+      "id": "id-authority",
+      "stage": [
+        "baseline",
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "python3",
+        "{pack_dir}/tools/check_id_authority.py",
+        "--repo",
+        ".",
+        "--allowlist",
+        "{pack_dir}/config/id_authority_allowlist.json"
+      ],
+      "required": true
+    },
+    {
+      "id": "placeholder-codecs",
+      "stage": [
+        "baseline",
+        "phase",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "python3",
+        "{pack_dir}/tools/check_placeholder_codecs.py",
+        "--repo",
+        "."
+      ],
+      "required": true
+    },
+    {
+      "id": "evidence-consistency",
+      "stage": [
+        "baseline",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "python3",
+        "{pack_dir}/tools/check_evidence_consistency.py",
+        "--repo",
+        ".",
+        "--strict"
+      ],
+      "required": true
+    },
+    {
+      "id": "lint-inheritance",
+      "stage": [
+        "baseline",
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "python3",
+        "{pack_dir}/tools/check_lint_inheritance.py",
+        "--repo",
+        "."
+      ],
+      "required": true
+    },
+    {
+      "id": "claims-manifest",
+      "stage": [
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "python3",
+        "{pack_dir}/tools/check_claims_manifest.py",
+        "--repo",
+        "."
+      ],
+      "required": true
+    },
+    {
+      "id": "clean-tree",
+      "stage": [
+        "final"
+      ],
+      "cwd": ".",
+      "argv": [
+        "git",
+        "diff",
+        "--exit-code"
+      ],
+      "required": true
+    }
+  ]
+}

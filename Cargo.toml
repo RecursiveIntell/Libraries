@@ -29,8 +29,6 @@ members = [
     "living-memory/living-memory",
     "llm-output-parser",
     "llm-pipeline",
-    "poly-kv/crates/quant-codec-core",
-    "poly-kv/crates/poly-kv",
     "llm-tool-runtime",
     "mechanism-runtime",
     "ollama-vision",
@@ -64,6 +62,8 @@ members = [
     "verification-policy",
 ]
 exclude = [
+    # Nested workspace consumed only through path dependencies.
+    "poly-kv",
     # TypeScript package — not a Rust crate
     "tauri-react-hooks",
     # Demo subcrate that does not exist on disk

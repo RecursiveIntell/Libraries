@@ -368,10 +368,10 @@ impl RegionBoundaryMessageV1 {
         let artifact_family = artifact_family.into();
         let material = format!(
             "{}|{}|{}|{}|{}",
-            source_region_id.0,
-            destination_region_id.0,
+            source_region_id.as_str(),
+            destination_region_id.as_str(),
             artifact_family,
-            payload_ref.0,
+            payload_ref.as_str(),
             payload_digest.digest
         );
         Self {
@@ -441,7 +441,7 @@ fn region_boundary_receipt_disposition_accepted() -> RegionBoundaryReceiptDispos
 
 impl RegionBoundaryReceiptV1 {
     pub fn seed(message: &RegionBoundaryMessageV1, accepted: bool) -> Self {
-        let material = format!("{}|accepted={accepted}", message.message_id.0);
+        let material = format!("{}|accepted={accepted}", message.message_id.as_str());
         Self {
             receipt_id: generated_artifact_id_from_material("boundary-receipt", &material),
             kind: ArtifactKindV1::BoundaryReceipt,
@@ -479,7 +479,7 @@ impl RegionBoundaryReceiptV1 {
 
     pub fn quarantined(message: &RegionBoundaryMessageV1, reason: impl Into<String>) -> Self {
         let reason = reason.into();
-        let material = format!("{}|quarantined|{reason}", message.message_id.0);
+        let material = format!("{}|quarantined|{reason}", message.message_id.as_str());
         Self {
             receipt_id: generated_artifact_id_from_material("boundary-receipt", &material),
             kind: ArtifactKindV1::BoundaryReceipt,

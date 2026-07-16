@@ -70,6 +70,7 @@ where
         let mut jobs = self.jobs.lock().map_err(|e| anyhow::anyhow!("{}", e))?;
 
         if job.id.is_empty() {
+            // TODO(ID-002): migrate this queue-local generator to stack-ids::random.
             job.id = uuid::Uuid::new_v4().to_string();
         }
         job.status = BatchJobStatus::Queued;
@@ -166,6 +167,55 @@ where
         }
 
         queued.first().cloned().cloned()
+    }
+
+    /// Atomically claim the next queued job for `worker`.
+    /// The generation is required for safe completion by the claiming worker.
+    pub fn claim_next(
+        &self,
+        worker: impl Into<String>,
+    ) -> anyhow::Result<Option<(BatchJob<D>, u64)>> {
+        let worker = worker.into();
+        let mut jobs = self
+            .jobs
+            .lock()
+            .map_err(|_| QueueTransitionError::Poisoned)?;
+        let Some(job) = jobs.iter_mut().find(|j| j.status == BatchJobStatus::Queued) else {
+            return Ok(None);
+        };
+        job.status = BatchJobStatus::Running;
+        job.started_at = Some(chrono::Utc::now().to_rfc3339());
+        job.claim_generation = job.claim_generation.saturating_add(1);
+        job.claimed_by = Some(worker);
+        Ok(Some((job.clone(), job.claim_generation)))
+    }
+
+    /// Complete a job only when the worker still owns the exact claim.
+    pub fn mark_completed_claimed(
+        &self,
+        job_id: &str,
+        worker: &str,
+        generation: u64,
+    ) -> anyhow::Result<Option<BatchCompletionSummary>> {
+        let jobs = self
+            .jobs
+            .lock()
+            .map_err(|_| QueueTransitionError::Poisoned)?;
+        let job = jobs
+            .iter()
+            .find(|j| j.id == job_id)
+            .ok_or_else(|| QueueTransitionError::Missing(job_id.to_string()))?;
+        if job.status != BatchJobStatus::Running
+            || job.claimed_by.as_deref() != Some(worker)
+            || job.claim_generation != generation
+        {
+            return Err(QueueTransitionError::StaleClaim {
+                job: job_id.to_string(),
+            }
+            .into());
+        }
+        drop(jobs);
+        self.mark_completed(job_id)
     }
 
     /// Mark a job as running and set its started_at timestamp.
@@ -562,6 +612,8 @@ mod tests {
             completed_at: None,
             reordered: false,
             reorder_note: None,
+            claim_generation: 0,
+            claimed_by: None,
         }
     }
 

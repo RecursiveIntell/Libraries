@@ -1,0 +1,2240 @@
+{
+  "schema_version": "libraries.workspace-inventory.v1",
+  "captured_at": "2026-07-15T21:45:38Z",
+  "source": {
+    "branch": "p32-schema-compat",
+    "commit": "c65972dbdf0ee5a7b472019b12c905a9de77c5c9",
+    "tree": "f6d73811cd6b5209f971c86452af1efd7202642c",
+    "dirty": true,
+    "status_sha256": "f739c578f0452672bc1ee2b8d68106dc5b56b9efa7c18ed49a0d14dbb5e69205",
+    "cargo_lock_sha256": "c9a1f7c2383141e67e95f1196ea625127a2f6d32630e1a25d71da229a6fd8b8e"
+  },
+  "workspaces": [
+    {
+      "path": "AiDENs",
+      "manifest": "AiDENs/Cargo.toml",
+      "members_declared": [
+        "crates/aidens",
+        "crates/aidens-contracts",
+        "crates/aidens-boundary-kit",
+        "crates/aidens-config",
+        "crates/aidens-receipts",
+        "crates/aidens-capability-kit",
+        "crates/aidens-provider-kit",
+        "crates/aidens-tool-kit",
+        "crates/aidens-security-kit",
+        "crates/aidens-permit-kit",
+        "crates/aidens-arbiter-kit",
+        "crates/aidens-budget-kit",
+        "crates/aidens-agency-kit",
+        "crates/aidens-governance-kit",
+        "crates/aidens-schedule-kit",
+        "crates/aidens-queue-kit",
+        "crates/aidens-wake-kit",
+        "crates/aidens-daemon-kit",
+        "crates/aidens-memory-kit",
+        "crates/aidens-kernel-kit",
+        "crates/aidens-delegation-kit",
+        "crates/aidens-plan-kit",
+        "crates/aidens-repair-kit",
+        "crates/aidens-runner",
+        "crates/aidens-app-kit",
+        "crates/aidens-cli",
+        "crates/aidens-testkit",
+        "crates/aidens-integration-tests",
+        "crates/aidens-profile-coding",
+        "crates/aidens-profile-research",
+        "crates/aidens-profile-desktop",
+        "crates/aidens-profile-daemon",
+        "crates/aidens-profile-memory",
+        "crates/boundary-compiler-core"
+      ],
+      "default_members": [],
+      "missing_declared_members": [],
+      "metadata": {
+        "exit_code": 0,
+        "stderr": "",
+        "workspace_root": "/home/sikmindz/Coding/Libraries/AiDENs",
+        "workspace_members": [
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-agency-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-testkit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-plan-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-receipts#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/boundary-compiler-core#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-budget-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-governance-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-memory-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-security-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-kernel-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-coding#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-capability-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-arbiter-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-schedule-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-queue-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-wake-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-daemon-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-repair-kit#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-cli#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-integration-tests#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-research#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-desktop#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-daemon#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-memory#0.1.0"
+        ],
+        "packages": [
+          {
+            "name": "aidens",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens#0.1.0"
+          },
+          {
+            "name": "aidens-agency-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-agency-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-agency-kit#0.1.0"
+          },
+          {
+            "name": "aidens-app-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-app-kit#0.1.0"
+          },
+          {
+            "name": "aidens-config",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-config#0.1.0"
+          },
+          {
+            "name": "aidens-contracts",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-contracts#0.1.0"
+          },
+          {
+            "name": "aidens-testkit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-testkit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-testkit#0.1.0"
+          },
+          {
+            "name": "aidens-plan-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-plan-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-plan-kit#0.1.0"
+          },
+          {
+            "name": "aidens-provider-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-provider-kit#0.1.0"
+          },
+          {
+            "name": "aidens-receipts",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-receipts/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-receipts#0.1.0"
+          },
+          {
+            "name": "aidens-runner",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-runner#0.1.0"
+          },
+          {
+            "name": "aidens-boundary-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-boundary-kit#0.1.0"
+          },
+          {
+            "name": "boundary-compiler-core",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/boundary-compiler-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/boundary-compiler-core#0.1.0"
+          },
+          {
+            "name": "aidens-budget-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-budget-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-budget-kit#0.1.0"
+          },
+          {
+            "name": "aidens-governance-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-governance-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-governance-kit#0.1.0"
+          },
+          {
+            "name": "aidens-memory-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-memory-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-memory-kit#0.1.0"
+          },
+          {
+            "name": "aidens-permit-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-permit-kit#0.1.0"
+          },
+          {
+            "name": "aidens-tool-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-tool-kit#0.1.0"
+          },
+          {
+            "name": "aidens-security-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-security-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-security-kit#0.1.0"
+          },
+          {
+            "name": "aidens-kernel-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-kernel-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-kernel-kit#0.1.0"
+          },
+          {
+            "name": "aidens-profile-coding",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-coding/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-coding#0.1.0"
+          },
+          {
+            "name": "aidens-capability-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-capability-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-capability-kit#0.1.0"
+          },
+          {
+            "name": "aidens-arbiter-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-arbiter-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-arbiter-kit#0.1.0"
+          },
+          {
+            "name": "aidens-schedule-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-schedule-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-schedule-kit#0.1.0"
+          },
+          {
+            "name": "aidens-queue-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-queue-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-queue-kit#0.1.0"
+          },
+          {
+            "name": "aidens-wake-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-wake-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-wake-kit#0.1.0"
+          },
+          {
+            "name": "aidens-daemon-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-daemon-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-daemon-kit#0.1.0"
+          },
+          {
+            "name": "aidens-delegation-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-delegation-kit#0.1.0"
+          },
+          {
+            "name": "aidens-repair-kit",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-repair-kit/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-repair-kit#0.1.0"
+          },
+          {
+            "name": "aidens-cli",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-cli/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-cli#0.1.0"
+          },
+          {
+            "name": "aidens-integration-tests",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-integration-tests/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-integration-tests#0.1.0"
+          },
+          {
+            "name": "aidens-profile-research",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-research/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-research#0.1.0"
+          },
+          {
+            "name": "aidens-profile-desktop",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-desktop/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-desktop#0.1.0"
+          },
+          {
+            "name": "aidens-profile-daemon",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-daemon/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-daemon#0.1.0"
+          },
+          {
+            "name": "aidens-profile-memory",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-memory/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/AiDENs/crates/aidens-profile-memory#0.1.0"
+          }
+        ]
+      },
+      "manifest_sha256": "e48bdef53042aa3830843d3a03fdd4ee56a8b3d1e0c22277e85ff9e63cd75e56",
+      "lock_sha256": "915b69974e9338067ee90bdbc0a1797dd4ed0908432e869acbaaeb93967ec453"
+    },
+    {
+      "path": ".",
+      "manifest": "Cargo.toml",
+      "members_declared": [
+        "agent-graph",
+        "agent-guard",
+        "ai-batch-queue",
+        "assurance-runtime",
+        "attestation-exchange",
+        "authority-delegation",
+        "bitemporal-runtime",
+        "boundary-compiler",
+        "claim-ledger",
+        "comfyui-rs",
+        "constraint-compiler",
+        "constitutional-memory",
+        "continuity-runtime",
+        "contract-schema-gen",
+        "discovery-portfolio",
+        "effect-runtime",
+        "fib-quant",
+        "federated-settlement",
+        "forge-memory-bridge",
+        "forge-pilot",
+        "job-queue",
+        "kernel-conformance",
+        "kernel-execution",
+        "kernel-oracles",
+        "knowledge-runtime",
+        "living-memory/living-memory",
+        "llm-output-parser",
+        "llm-pipeline",
+        "poly-kv/crates/quant-codec-core",
+        "poly-kv/crates/poly-kv",
+        "llm-tool-runtime",
+        "mechanism-runtime",
+        "ollama-vision",
+        "Primitives/cea-core",
+        "Primitives/cea-sqlite",
+        "Primitives/cea-store",
+        "Primitives/check-runner",
+        "Primitives/check-runner-sys",
+        "Primitives/effect-signature",
+        "Primitives/forge-policy",
+        "Primitives/mindstate-core",
+        "Primitives/sandbox-workspace",
+        "Primitives/stabilizer-core",
+        "Primitives/typed-patch",
+        "quant-governor",
+        "quant-eval",
+        "receipt-bench",
+        "profile-runtime",
+        "recursive-kernel-core",
+        "remote-oracle-admission",
+        "semantic-memory",
+        "semantic-memory-forge",
+        "scr-runtime-compression",
+        "spec-execution",
+        "stack-ids",
+        "tauri-queue",
+        "turbo-quant",
+        "verification-adjudication",
+        "verification-calibration",
+        "verification-control",
+        "verification-policy"
+      ],
+      "default_members": [
+        "agent-graph",
+        "ai-batch-queue",
+        "assurance-runtime",
+        "attestation-exchange",
+        "authority-delegation",
+        "bitemporal-runtime",
+        "boundary-compiler",
+        "claim-ledger",
+        "comfyui-rs",
+        "constraint-compiler",
+        "constitutional-memory",
+        "continuity-runtime",
+        "contract-schema-gen",
+        "discovery-portfolio",
+        "effect-runtime",
+        "federated-settlement",
+        "forge-memory-bridge",
+        "forge-pilot",
+        "job-queue",
+        "kernel-conformance",
+        "kernel-execution",
+        "kernel-oracles",
+        "knowledge-runtime",
+        "living-memory/living-memory",
+        "llm-output-parser",
+        "claim-ledger",
+        "llm-pipeline",
+        "llm-tool-runtime",
+        "mechanism-runtime",
+        "ollama-vision",
+        "Primitives/cea-core",
+        "Primitives/cea-sqlite",
+        "Primitives/cea-store",
+        "Primitives/check-runner",
+        "Primitives/check-runner-sys",
+        "Primitives/effect-signature",
+        "Primitives/forge-policy",
+        "Primitives/mindstate-core",
+        "Primitives/sandbox-workspace",
+        "Primitives/stabilizer-core",
+        "Primitives/typed-patch",
+        "quant-governor",
+        "quant-eval",
+        "receipt-bench",
+        "profile-runtime",
+        "recursive-kernel-core",
+        "remote-oracle-admission",
+        "semantic-memory",
+        "semantic-memory-forge",
+        "scr-runtime-compression",
+        "spec-execution",
+        "stack-ids",
+        "tauri-queue",
+        "turbo-quant",
+        "verification-adjudication",
+        "verification-calibration",
+        "verification-control",
+        "verification-policy"
+      ],
+      "missing_declared_members": [],
+      "metadata": {
+        "exit_code": 0,
+        "stderr": "warning: profiles for the non root package will be ignored, specify profiles at the workspace root:\npackage:   /home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml\nworkspace: /home/sikmindz/Coding/Libraries/Cargo.toml\n",
+        "workspace_root": "/home/sikmindz/Coding/Libraries",
+        "workspace_members": [
+          "path+file:///home/sikmindz/Coding/Libraries/agent-graph#0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/stack-ids#0.1.1",
+          "path+file:///home/sikmindz/Coding/Libraries/agent-guard#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/ai-batch-queue#0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/assurance-runtime#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/attestation-exchange#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/authority-delegation#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/bitemporal-runtime#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/boundary-compiler#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/claim-ledger#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/comfyui-rs#0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/constraint-compiler#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/forge-memory-bridge#0.1.1",
+          "path+file:///home/sikmindz/Coding/Libraries/semantic-memory-forge#0.1.1",
+          "path+file:///home/sikmindz/Coding/Libraries/recursive-kernel-core#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/constitutional-memory#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/continuity-runtime#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/contract-schema-gen#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/discovery-portfolio#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/effect-runtime#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/federated-settlement#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/forge-pilot#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/living-memory/living-memory#forge-engine@0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-core#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/check-runner#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/check-runner-sys#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/effect-signature#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/forge-policy#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/typed-patch#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-sqlite#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-store#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/llm-tool-runtime#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/mindstate-core#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/semantic-memory#0.5.0",
+          "path+file:///home/sikmindz/Coding/Libraries/quant-governor#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/scr-runtime-compression#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/fib-quant#0.1.0-alpha.1",
+          "path+file:///home/sikmindz/Coding/Libraries/turbo-quant#0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/stabilizer-core#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/kernel-execution#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/kernel-oracles#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/knowledge-runtime#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/mechanism-runtime#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/verification-adjudication#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/verification-calibration#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/verification-control#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/verification-policy#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/profile-runtime#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/remote-oracle-admission#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/spec-execution#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/job-queue#0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/kernel-conformance#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/llm-output-parser#0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/llm-pipeline#0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core#0.1.0-alpha.1",
+          "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv#0.1.0-alpha.1",
+          "path+file:///home/sikmindz/Coding/Libraries/ollama-vision#0.2.0",
+          "path+file:///home/sikmindz/Coding/Libraries/quant-eval#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/receipt-bench#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/tauri-queue#0.3.0"
+        ],
+        "packages": [
+          {
+            "name": "agent-graph",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/agent-graph/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/agent-graph#0.2.0"
+          },
+          {
+            "name": "stack-ids",
+            "version": "0.1.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/stack-ids/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/stack-ids#0.1.1"
+          },
+          {
+            "name": "agent-guard",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/agent-guard/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/agent-guard#0.1.0"
+          },
+          {
+            "name": "ai-batch-queue",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/ai-batch-queue/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/ai-batch-queue#0.2.0"
+          },
+          {
+            "name": "assurance-runtime",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/assurance-runtime/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/assurance-runtime#0.1.0"
+          },
+          {
+            "name": "attestation-exchange",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/attestation-exchange/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/attestation-exchange#0.1.0"
+          },
+          {
+            "name": "authority-delegation",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/authority-delegation/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/authority-delegation#0.1.0"
+          },
+          {
+            "name": "bitemporal-runtime",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/bitemporal-runtime/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/bitemporal-runtime#0.1.0"
+          },
+          {
+            "name": "boundary-compiler",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/boundary-compiler/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/boundary-compiler#0.1.0"
+          },
+          {
+            "name": "claim-ledger",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/claim-ledger/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/claim-ledger#0.1.0"
+          },
+          {
+            "name": "comfyui-rs",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/comfyui-rs/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/comfyui-rs#0.2.0"
+          },
+          {
+            "name": "constraint-compiler",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/constraint-compiler/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/constraint-compiler#0.1.0"
+          },
+          {
+            "name": "forge-memory-bridge",
+            "version": "0.1.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/forge-memory-bridge/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/forge-memory-bridge#0.1.1"
+          },
+          {
+            "name": "semantic-memory-forge",
+            "version": "0.1.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/semantic-memory-forge/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/semantic-memory-forge#0.1.1"
+          },
+          {
+            "name": "recursive-kernel-core",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/recursive-kernel-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/recursive-kernel-core#0.1.0"
+          },
+          {
+            "name": "constitutional-memory",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/constitutional-memory/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/constitutional-memory#0.1.0"
+          },
+          {
+            "name": "continuity-runtime",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/continuity-runtime/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/continuity-runtime#0.1.0"
+          },
+          {
+            "name": "contract-schema-gen",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/contract-schema-gen/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/contract-schema-gen#0.1.0"
+          },
+          {
+            "name": "discovery-portfolio",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/discovery-portfolio/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/discovery-portfolio#0.1.0"
+          },
+          {
+            "name": "effect-runtime",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/effect-runtime/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/effect-runtime#0.1.0"
+          },
+          {
+            "name": "federated-settlement",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/federated-settlement/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/federated-settlement#0.1.0"
+          },
+          {
+            "name": "forge-pilot",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/forge-pilot/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/forge-pilot#0.1.0"
+          },
+          {
+            "name": "forge-engine",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/living-memory/living-memory/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/living-memory/living-memory#forge-engine@0.2.0"
+          },
+          {
+            "name": "cea-core",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/cea-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-core#0.1.0"
+          },
+          {
+            "name": "check-runner",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/check-runner/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/check-runner#0.1.0"
+          },
+          {
+            "name": "check-runner-sys",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/check-runner-sys/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/check-runner-sys#0.1.0"
+          },
+          {
+            "name": "effect-signature",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/effect-signature/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/effect-signature#0.1.0"
+          },
+          {
+            "name": "forge-policy",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/forge-policy/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/forge-policy#0.1.0"
+          },
+          {
+            "name": "sandbox-workspace",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace#0.1.0"
+          },
+          {
+            "name": "typed-patch",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/typed-patch/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/typed-patch#0.1.0"
+          },
+          {
+            "name": "cea-sqlite",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/cea-sqlite/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-sqlite#0.1.0"
+          },
+          {
+            "name": "cea-store",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/cea-store/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-store#0.1.0"
+          },
+          {
+            "name": "llm-tool-runtime",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/llm-tool-runtime/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/llm-tool-runtime#0.1.0"
+          },
+          {
+            "name": "mindstate-core",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/mindstate-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/mindstate-core#0.1.0"
+          },
+          {
+            "name": "semantic-memory",
+            "version": "0.5.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/semantic-memory/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/semantic-memory#0.5.0"
+          },
+          {
+            "name": "quant-governor",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/quant-governor/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/quant-governor#0.1.0"
+          },
+          {
+            "name": "scr-runtime-compression",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/scr-runtime-compression/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/scr-runtime-compression#0.1.0"
+          },
+          {
+            "name": "fib-quant",
+            "version": "0.1.0-alpha.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/fib-quant/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/fib-quant#0.1.0-alpha.1"
+          },
+          {
+            "name": "turbo-quant",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/turbo-quant/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/turbo-quant#0.2.0"
+          },
+          {
+            "name": "stabilizer-core",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/stabilizer-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/stabilizer-core#0.1.0"
+          },
+          {
+            "name": "kernel-execution",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/kernel-execution/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/kernel-execution#0.1.0"
+          },
+          {
+            "name": "kernel-oracles",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/kernel-oracles/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/kernel-oracles#0.1.0"
+          },
+          {
+            "name": "knowledge-runtime",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/knowledge-runtime/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/knowledge-runtime#0.1.0"
+          },
+          {
+            "name": "mechanism-runtime",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/mechanism-runtime/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/mechanism-runtime#0.1.0"
+          },
+          {
+            "name": "verification-adjudication",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/verification-adjudication/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/verification-adjudication#0.1.0"
+          },
+          {
+            "name": "verification-calibration",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/verification-calibration/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/verification-calibration#0.1.0"
+          },
+          {
+            "name": "verification-control",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/verification-control/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/verification-control#0.1.0"
+          },
+          {
+            "name": "verification-policy",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/verification-policy/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/verification-policy#0.1.0"
+          },
+          {
+            "name": "profile-runtime",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/profile-runtime/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/profile-runtime#0.1.0"
+          },
+          {
+            "name": "remote-oracle-admission",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/remote-oracle-admission/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/remote-oracle-admission#0.1.0"
+          },
+          {
+            "name": "spec-execution",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/spec-execution/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/spec-execution#0.1.0"
+          },
+          {
+            "name": "job-queue",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/job-queue/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/job-queue#0.2.0"
+          },
+          {
+            "name": "kernel-conformance",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/kernel-conformance/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/kernel-conformance#0.1.0"
+          },
+          {
+            "name": "llm-output-parser",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/llm-output-parser/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/llm-output-parser#0.2.0"
+          },
+          {
+            "name": "llm-pipeline",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/llm-pipeline/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/llm-pipeline#0.2.0"
+          },
+          {
+            "name": "quant-codec-core",
+            "version": "0.1.0-alpha.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core#0.1.0-alpha.1"
+          },
+          {
+            "name": "poly-kv",
+            "version": "0.1.0-alpha.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv#0.1.0-alpha.1"
+          },
+          {
+            "name": "ollama-vision",
+            "version": "0.2.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/ollama-vision/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/ollama-vision#0.2.0"
+          },
+          {
+            "name": "quant-eval",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/quant-eval/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/quant-eval#0.1.0"
+          },
+          {
+            "name": "receipt-bench",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/receipt-bench/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/receipt-bench#0.1.0"
+          },
+          {
+            "name": "tauri-queue",
+            "version": "0.3.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/tauri-queue/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/tauri-queue#0.3.0"
+          }
+        ]
+      },
+      "manifest_sha256": "665e1922bd19c85e5fcb0eabb37bd3aa1734fb68d342a3d3287834c43d561960",
+      "lock_sha256": "c9a1f7c2383141e67e95f1196ea625127a2f6d32630e1a25d71da229a6fd8b8e"
+    },
+    {
+      "path": "Primitives",
+      "manifest": "Primitives/Cargo.toml",
+      "members_declared": [
+        "cea-core",
+        "cea-sqlite",
+        "cea-store",
+        "check-runner",
+        "effect-signature",
+        "forge-policy",
+        "mindstate-core",
+        "sandbox-workspace",
+        "stabilizer-core",
+        "typed-patch"
+      ],
+      "default_members": [],
+      "missing_declared_members": [],
+      "metadata": {
+        "exit_code": 0,
+        "stderr": "",
+        "workspace_root": "/home/sikmindz/Coding/Libraries/Primitives",
+        "workspace_members": [
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-core#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/check-runner#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/check-runner-sys#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/effect-signature#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/forge-policy#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/typed-patch#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-sqlite#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-store#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/mindstate-core#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/Primitives/stabilizer-core#0.1.0"
+        ],
+        "packages": [
+          {
+            "name": "cea-core",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/cea-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-core#0.1.0"
+          },
+          {
+            "name": "check-runner",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/check-runner/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/check-runner#0.1.0"
+          },
+          {
+            "name": "check-runner-sys",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/check-runner-sys/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/check-runner-sys#0.1.0"
+          },
+          {
+            "name": "effect-signature",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/effect-signature/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/effect-signature#0.1.0"
+          },
+          {
+            "name": "forge-policy",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/forge-policy/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/forge-policy#0.1.0"
+          },
+          {
+            "name": "sandbox-workspace",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/sandbox-workspace#0.1.0"
+          },
+          {
+            "name": "typed-patch",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/typed-patch/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/typed-patch#0.1.0"
+          },
+          {
+            "name": "cea-sqlite",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/cea-sqlite/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-sqlite#0.1.0"
+          },
+          {
+            "name": "cea-store",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/cea-store/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/cea-store#0.1.0"
+          },
+          {
+            "name": "mindstate-core",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/mindstate-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/mindstate-core#0.1.0"
+          },
+          {
+            "name": "stabilizer-core",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/Primitives/stabilizer-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/Primitives/stabilizer-core#0.1.0"
+          }
+        ]
+      },
+      "manifest_sha256": "1381d9e433cf9e484a31eb505aec07dbb2e3ffe84da6328419e21fa5779374cb",
+      "lock_sha256": "76c0a9bf971fab2e5afba154c9572a2c41c3a2cad896f9da7d9c0c94c62174c1"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2",
+      "manifest": "_salvage_from_libraries2/Libraries2/Cargo.toml",
+      "members_declared": [
+        "stack-ids",
+        "job-queue",
+        "agent-graph",
+        "ComfyUI-RS",
+        "Ollama-Vision-RS",
+        "discovery-portfolio",
+        "spec-execution",
+        "federated-settlement",
+        "attestation-exchange",
+        "remote-oracle-admission"
+      ],
+      "default_members": [],
+      "missing_declared_members": [
+        "stack-ids"
+      ],
+      "metadata": {
+        "exit_code": 101,
+        "stderr": "error: failed to load manifest for workspace member `/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids`\nreferenced by workspace at `/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/Cargo.toml`\n\nCaused by:\n  failed to read `/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/stack-ids/Cargo.toml`\n\nCaused by:\n  No such file or directory (os error 2)\n"
+      },
+      "manifest_sha256": "277793a607dfb0197e61fe40049c14229ed50b6c72f4b2cd24beb333a6acde52",
+      "lock_sha256": "10ff7106c03d069747bee7f281742a5a15c59a44f983125ffac8cd131c8ade48"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri",
+      "manifest": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "members_declared": [],
+      "default_members": [],
+      "missing_declared_members": [],
+      "metadata": {
+        "exit_code": 101,
+        "stderr": "error: failed to load manifest for dependency `forge-memory-bridge`\n\nCaused by:\n  failed to read `/home/sikmindz/Coding/Libraries/_salvage_from_libraries2/Libraries2/forge-memory-bridge/Cargo.toml`\n\nCaused by:\n  No such file or directory (os error 2)\n"
+      },
+      "manifest_sha256": "d796db17d975cb61030fb6b7c6ed4d83ccfc17ee04ededbaed101d7147f69f7b",
+      "lock_sha256": "ab3389281207a9d3e49a8ce6344b484623863523a6be139a88f09635efb90248"
+    },
+    {
+      "path": "cea-bridge",
+      "manifest": "cea-bridge/Cargo.toml",
+      "members_declared": [],
+      "default_members": [],
+      "missing_declared_members": [],
+      "metadata": {
+        "exit_code": 0,
+        "stderr": "",
+        "workspace_root": "/home/sikmindz/Coding/Libraries/cea-bridge",
+        "workspace_members": [
+          "path+file:///home/sikmindz/Coding/Libraries/cea-bridge#0.1.0"
+        ],
+        "packages": [
+          {
+            "name": "cea-bridge",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/cea-bridge/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/cea-bridge#0.1.0"
+          }
+        ]
+      },
+      "manifest_sha256": "15bc06c9f452f6d606f022856e2929eda4400c7eb06f6c51d8da7de349227ae4",
+      "lock_sha256": "e4eb6f8de014556138f6213a6dc2f09a472c46d735496c3603fe88329cfc597a"
+    },
+    {
+      "path": "poly-kv",
+      "manifest": "poly-kv/Cargo.toml",
+      "members_declared": [
+        "crates/quant-codec-core",
+        "crates/poly-kv",
+        "crates/poly-kv-python"
+      ],
+      "default_members": [],
+      "missing_declared_members": [],
+      "metadata": {
+        "exit_code": 0,
+        "stderr": "",
+        "workspace_root": "/home/sikmindz/Coding/Libraries/poly-kv",
+        "workspace_members": [
+          "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core#0.1.0-alpha.1",
+          "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv#0.1.0-alpha.1",
+          "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv-python#0.1.0-alpha.1"
+        ],
+        "packages": [
+          {
+            "name": "quant-codec-core",
+            "version": "0.1.0-alpha.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/quant-codec-core#0.1.0-alpha.1"
+          },
+          {
+            "name": "poly-kv",
+            "version": "0.1.0-alpha.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv#0.1.0-alpha.1"
+          },
+          {
+            "name": "poly-kv-python",
+            "version": "0.1.0-alpha.1",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv-python/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/poly-kv/crates/poly-kv-python#0.1.0-alpha.1"
+          }
+        ]
+      },
+      "manifest_sha256": "db2a0061635cce362dc88d5e887e19c2b758b77b0bc8664939fb11e9bd480f1f",
+      "lock_sha256": "cb8b753190bf3e22abce626e3a3d3ea8b5d8531405f7fcab824a1d67fa95ec37"
+    },
+    {
+      "path": "scr-runtime",
+      "manifest": "scr-runtime/Cargo.toml",
+      "members_declared": [
+        "crates/scr-audit-adapter",
+        "crates/scr-cli",
+        "crates/scr-kernel",
+        "crates/scr-reference"
+      ],
+      "default_members": [],
+      "missing_declared_members": [],
+      "metadata": {
+        "exit_code": 0,
+        "stderr": "",
+        "workspace_root": "/home/sikmindz/Coding/Libraries/scr-runtime",
+        "workspace_members": [
+          "path+file:///home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-audit-adapter#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-kernel#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-cli#0.1.0",
+          "path+file:///home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-reference#0.1.0"
+        ],
+        "packages": [
+          {
+            "name": "scr-audit-adapter",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-audit-adapter/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-audit-adapter#0.1.0"
+          },
+          {
+            "name": "scr-kernel",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-kernel/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-kernel#0.1.0"
+          },
+          {
+            "name": "scr-cli",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-cli/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-cli#0.1.0"
+          },
+          {
+            "name": "scr-reference",
+            "version": "0.1.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-reference/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/scr-runtime/crates/scr-reference#0.1.0"
+          }
+        ]
+      },
+      "manifest_sha256": "3b03f52196b5f6b17cdea8e1dc60a1a0b717fadcf8cb64b0679494fc210a5878",
+      "lock_sha256": "33fde5f321a4808407b8931e8fa55a8cbbd7624040efaecd0a6edb9185a30596"
+    },
+    {
+      "path": "turbo-quant/tools/semantic_memory_harness",
+      "manifest": "turbo-quant/tools/semantic_memory_harness/Cargo.toml",
+      "members_declared": [],
+      "default_members": [],
+      "missing_declared_members": [],
+      "metadata": {
+        "exit_code": 0,
+        "stderr": "",
+        "workspace_root": "/home/sikmindz/Coding/Libraries/turbo-quant/tools/semantic_memory_harness",
+        "workspace_members": [
+          "path+file:///home/sikmindz/Coding/Libraries/turbo-quant/tools/semantic_memory_harness#turbo-quant-semantic-memory-harness@0.0.0"
+        ],
+        "packages": [
+          {
+            "name": "turbo-quant-semantic-memory-harness",
+            "version": "0.0.0",
+            "manifest_path": "/home/sikmindz/Coding/Libraries/turbo-quant/tools/semantic_memory_harness/Cargo.toml",
+            "id": "path+file:///home/sikmindz/Coding/Libraries/turbo-quant/tools/semantic_memory_harness#turbo-quant-semantic-memory-harness@0.0.0"
+          }
+        ]
+      },
+      "manifest_sha256": "48053f278c9aace2a3552de6bcc1e9602d34652c43bdfed26bea12763ff71a6e",
+      "lock_sha256": "b5ba764968a545fbb7467e556df3c20619e8d717b158f569abd5fc01fd25d055"
+    }
+  ],
+  "packages": [
+    {
+      "path": "AiDENs/crates/aidens/Cargo.toml",
+      "name": "aidens",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "b172a3a1e601da49ec76c27b48d4cfa51843dd3daf0cb3434b1702f7420200fd"
+    },
+    {
+      "path": "AiDENs/crates/aidens-agency-kit/Cargo.toml",
+      "name": "aidens-agency-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "36ce4cb22a882099f594671fd093ae7c278561fad8393d7b78bffc2e7297767a"
+    },
+    {
+      "path": "AiDENs/crates/aidens-app-kit/Cargo.toml",
+      "name": "aidens-app-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "5a1d3d283f98a58ca7f69a7997df57ab8fcba1cb5bcd42e89116c2d5b5d99b51"
+    },
+    {
+      "path": "AiDENs/crates/aidens-arbiter-kit/Cargo.toml",
+      "name": "aidens-arbiter-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "87730c57495bc77d0f41dc368aac7b2eefb2c1d0a58b0af08a98b5a15eb1c17e"
+    },
+    {
+      "path": "AiDENs/crates/aidens-boundary-kit/Cargo.toml",
+      "name": "aidens-boundary-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "ee58187beb5581996a1563481762c6305a892ebb532d7308b3c4141008923b6b"
+    },
+    {
+      "path": "AiDENs/crates/aidens-budget-kit/Cargo.toml",
+      "name": "aidens-budget-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "6ee0b53b5a3bc3405998ccd18b11df47c0d65234be22fdf88a07e14cdb335f03"
+    },
+    {
+      "path": "AiDENs/crates/aidens-capability-kit/Cargo.toml",
+      "name": "aidens-capability-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "94179a876f9a39d7546c39970e15a3e1e0cb42c5b6ea12b03f484f6ed75fa8d2"
+    },
+    {
+      "path": "AiDENs/crates/aidens-cli/Cargo.toml",
+      "name": "aidens-cli",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "57ab6e1d9f51301bd0436a51c469ffda4c9d0a6fea307fc9eb535546ab192bc0"
+    },
+    {
+      "path": "AiDENs/crates/aidens-config/Cargo.toml",
+      "name": "aidens-config",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "9a7234ad4285d6b20bbcfac13cf520ba72c3d25460a54faa0f2116fcfbdcd385"
+    },
+    {
+      "path": "AiDENs/crates/aidens-contracts/Cargo.toml",
+      "name": "aidens-contracts",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "9b9b557ddcc6967c37cf0046ba4c5dc18d2310a201fc9e2cae266870f2b9a29b"
+    },
+    {
+      "path": "AiDENs/crates/aidens-daemon-kit/Cargo.toml",
+      "name": "aidens-daemon-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "f9f2f6b2461d76a174cd58ebe4efb50d4d47c6f453c57bae6fdda41ed5d01e97"
+    },
+    {
+      "path": "AiDENs/crates/aidens-delegation-kit/Cargo.toml",
+      "name": "aidens-delegation-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "48cd32f09cb7a0de8464f82e5a16f3d20250a5fbcb94895be80467064955538a"
+    },
+    {
+      "path": "AiDENs/crates/aidens-governance-kit/Cargo.toml",
+      "name": "aidens-governance-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "a18c5d480313322008bb29f682e5672c7686d769898996643b04d4eff88a010d"
+    },
+    {
+      "path": "AiDENs/crates/aidens-integration-tests/Cargo.toml",
+      "name": "aidens-integration-tests",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "14394b0b5c7189bd0380cca7785f182e8b387c58115f3bba50c5ffde60d7e7c1"
+    },
+    {
+      "path": "AiDENs/crates/aidens-kernel-kit/Cargo.toml",
+      "name": "aidens-kernel-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "931a1d86a14dfdc39a3e2220c19113ba8278972e1aded59f939b2726c404a47c"
+    },
+    {
+      "path": "AiDENs/crates/aidens-memory-kit/Cargo.toml",
+      "name": "aidens-memory-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "252257fdb25126e94fc3767c9eee851135b41681c3289ef89e2c99a61bf620a7"
+    },
+    {
+      "path": "AiDENs/crates/aidens-permit-kit/Cargo.toml",
+      "name": "aidens-permit-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "aab39bb1db43034b3ed6e1686770cb9d41b18018640fe1a0c026226930823646"
+    },
+    {
+      "path": "AiDENs/crates/aidens-plan-kit/Cargo.toml",
+      "name": "aidens-plan-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "9d97ce979de77ca2b662585cc0425f559edbd86f48854608eb7aea35f76d666c"
+    },
+    {
+      "path": "AiDENs/crates/aidens-profile-coding/Cargo.toml",
+      "name": "aidens-profile-coding",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "0b3fb87b22ab02625d6aaec376cb3c9d166a6b8ebdba9cf7cf2f468cd9c38c63"
+    },
+    {
+      "path": "AiDENs/crates/aidens-profile-daemon/Cargo.toml",
+      "name": "aidens-profile-daemon",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "7e9ec432371347a26dbaf82f7b57497a3e940b06466c59278e8651b2e132c496"
+    },
+    {
+      "path": "AiDENs/crates/aidens-profile-desktop/Cargo.toml",
+      "name": "aidens-profile-desktop",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "e0e19178f0c51b6d0c6040595d03e8c58c49fba470ff46fe50e88520fda2a0c4"
+    },
+    {
+      "path": "AiDENs/crates/aidens-profile-memory/Cargo.toml",
+      "name": "aidens-profile-memory",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "258136f1ba82903be832ad7a467ad4aaf5e79f40aaf7cb803ae97590d276decd"
+    },
+    {
+      "path": "AiDENs/crates/aidens-profile-research/Cargo.toml",
+      "name": "aidens-profile-research",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "caf2e6ce331276ae3e1a3c1ed3332d9433682e145ed42e57d2ba537e07dc3ab7"
+    },
+    {
+      "path": "AiDENs/crates/aidens-provider-kit/Cargo.toml",
+      "name": "aidens-provider-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "fcad5bedf16caa7253c996db2be05523527a344f74b7f4954c0866d4a540375c"
+    },
+    {
+      "path": "AiDENs/crates/aidens-queue-kit/Cargo.toml",
+      "name": "aidens-queue-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "9a6785631c2dbb276105fa0c98ae6971cb71bb604fc1858894e9d97a841e4dd7"
+    },
+    {
+      "path": "AiDENs/crates/aidens-receipts/Cargo.toml",
+      "name": "aidens-receipts",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "fce8d041fd80e56b4bd0b247cf536c5ce141ce8166b2d28a35ad1ebdcff1a7a3"
+    },
+    {
+      "path": "AiDENs/crates/aidens-repair-kit/Cargo.toml",
+      "name": "aidens-repair-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "1baabb4c34f957c4b3075584d476be910a2c51d6b090eda3549c5c1ee1457b9f"
+    },
+    {
+      "path": "AiDENs/crates/aidens-runner/Cargo.toml",
+      "name": "aidens-runner",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "205a89e069c9ab07fe4de1882b9c2f86fed33428f1e149be9a37bd79700ddb0a"
+    },
+    {
+      "path": "AiDENs/crates/aidens-schedule-kit/Cargo.toml",
+      "name": "aidens-schedule-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "8fcdb8a944c9a24eea0152eed6b97f6d76caf7d4ecd501f6e9965262aec6d73b"
+    },
+    {
+      "path": "AiDENs/crates/aidens-security-kit/Cargo.toml",
+      "name": "aidens-security-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "e4379f094840b12e431797d7b509158de7c487ade11f95878d615cbde1bf99cd"
+    },
+    {
+      "path": "AiDENs/crates/aidens-testkit/Cargo.toml",
+      "name": "aidens-testkit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "758ee1acbaf94a4c39265856439ce258f9958825c7e9ade0a69370551ee654ad"
+    },
+    {
+      "path": "AiDENs/crates/aidens-tool-kit/Cargo.toml",
+      "name": "aidens-tool-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "8795c4a7c60c2dc7ea8ac2585b17e74368a43e881e7e45e3b7e338dc52d0a189"
+    },
+    {
+      "path": "AiDENs/crates/aidens-wake-kit/Cargo.toml",
+      "name": "aidens-wake-kit",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "e0a9befe23daee67487dea3baf9f9276678312eb9b7306463eba10f93aa4e274"
+    },
+    {
+      "path": "AiDENs/crates/boundary-compiler-core/Cargo.toml",
+      "name": "boundary-compiler-core",
+      "version": "0.1.0",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": true,
+      "sha256": "fbfe996399b50f4b0b3276f573c6a61fb8f715e0c9e4cd7a6337349332655235"
+    },
+    {
+      "path": "AiDENs/docs/codex-runs/archive/P25/files/fixtures/p25/coding-agent-repo/Cargo.toml",
+      "name": "coding-agent-repo-fixture",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "8d693aea9d873739f1590ea1f9aef7043213fd7115e5d1a296cf3396141d842b"
+    },
+    {
+      "path": "Primitives/cea-core/Cargo.toml",
+      "name": "cea-core",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "369c080fe8405013af1cdebb17627e0e30b04996a0a5484301cf5130d97e2036"
+    },
+    {
+      "path": "Primitives/cea-sqlite/Cargo.toml",
+      "name": "cea-sqlite",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "066736e51e0dac5b52537d9ff5dcc899aa19d86023e37a83ee30478a024b7a9d"
+    },
+    {
+      "path": "Primitives/cea-store/Cargo.toml",
+      "name": "cea-store",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "683b0a176cacb37989ebf245a623ce7d52b1726bd1944b6261df1e76d0bba935"
+    },
+    {
+      "path": "Primitives/check-runner/Cargo.toml",
+      "name": "check-runner",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "a0157be2864ca741cd1e4dd02c689e867723e054f4291b63fc19a9b0d53bdda2"
+    },
+    {
+      "path": "Primitives/check-runner-sys/Cargo.toml",
+      "name": "check-runner-sys",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "447a424d67e6e0bd91050fba0118562258e7198e1da4e98bff949e5382cbeea3"
+    },
+    {
+      "path": "Primitives/effect-signature/Cargo.toml",
+      "name": "effect-signature",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "932f81abd24aa35d966be43f1372aea303be3c68c1d1ea2240acbf9a1536d19e"
+    },
+    {
+      "path": "Primitives/forge-policy/Cargo.toml",
+      "name": "forge-policy",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "ca456b10e044cf7730664367283f542601c56d628277d097bc9af4f2a5eaed10"
+    },
+    {
+      "path": "Primitives/forge-policy/fuzz/Cargo.toml",
+      "name": "forge-policy-fuzz",
+      "version": "0.0.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "a10600f0feff91e1f287e0a0ac9091507c3b77f8ccd6fd1befb5abcea257ca77"
+    },
+    {
+      "path": "Primitives/mindstate-core/Cargo.toml",
+      "name": "mindstate-core",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "2ba94f26cef10ef3772e8fd566063b7f585f17e6552e67b8133b75b7d6fc61c4"
+    },
+    {
+      "path": "Primitives/sandbox-workspace/Cargo.toml",
+      "name": "sandbox-workspace",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "cb9a69982e2d3f11a2655967b5e0050bcebf84fa35112ede67027cd64c9b083b"
+    },
+    {
+      "path": "Primitives/sandbox-workspace/fuzz/Cargo.toml",
+      "name": "sandbox-workspace-fuzz",
+      "version": "0.0.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "8ccec87e2e9e4eeebaa29df124fd45e4d9ce2ef88eb5f96709e060b93a148e70"
+    },
+    {
+      "path": "Primitives/stabilizer-core/Cargo.toml",
+      "name": "stabilizer-core",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "992bc1be54a9cdd88341e2d64b110ad67c2692323bd13f8f95fc1ed6148b4aa7"
+    },
+    {
+      "path": "Primitives/typed-patch/Cargo.toml",
+      "name": "typed-patch",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "8ea36d63c9717b1e21271c070778161c59f8210a780fc2f86cf9bbf45400b29c"
+    },
+    {
+      "path": "Primitives/typed-patch/fuzz/Cargo.toml",
+      "name": "typed-patch-fuzz",
+      "version": "0.0.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "4ff7a275050cad01bafda90a0d2edf40b3d32c8dbecc351ef7776b238a8fb46d"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/AI-Batch-Queue/Cargo.toml",
+      "name": "ai-batch-queue",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "0fab3effb693ed265ea61c1c6dc1fcfdec5a7b9759d965d1f6f3dfa86b5b4847"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/ComfyUI-RS/Cargo.toml",
+      "name": "comfyui-rs",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "e207d224f98c5d3178eed3adec1fbdae0f32da85c17293cc3b5a879e6ff21f42"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/LLM-Pipeline/Cargo.toml",
+      "name": "llm-pipeline",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "695d41a3dc5dd09f7b57209c624a9a26c0e04d2181d1d7aae74f4307b25960c3"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/Ollama-Vision-RS/Cargo.toml",
+      "name": "ollama-vision",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "c15ddc6e9629e4ffc5dc8ee3a55ac0e023dcdefd77ec64ccbc3c0442e987e5cd"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/Tauri-Queue/Cargo.toml",
+      "name": "tauri-queue",
+      "version": "0.3.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "4349d84f6a261d2c51e706c2a7372a7691abfe856aff8990f5067c0ef63d5246"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/agent-graph/Cargo.toml",
+      "name": "agent-graph",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "26a12a557df27b5642bdffc7213d99d97063c6f1574a7cde03a1de736073c09e"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/attestation-exchange/Cargo.toml",
+      "name": "attestation-exchange",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "78be4ab47f0e0895f843e6e31519a572959232bfc3dbece1857f4c7eb11c3787"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/constraint-compiler/Cargo.toml",
+      "name": "constraint-compiler",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "37e4accf969be785ca4d5a6a585316a692eea8fc3db5b2ced6c118626b8ae2b9"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/demo-tauri-libraries/src-tauri/Cargo.toml",
+      "name": "demo-tauri-libraries",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "d796db17d975cb61030fb6b7c6ed4d83ccfc17ee04ededbaed101d7147f69f7b"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/discovery-portfolio/Cargo.toml",
+      "name": "discovery-portfolio",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "55d8732f3aba7c28fcaf0d1311b133e191054a9c42051c4dded9108b36f67192"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/federated-settlement/Cargo.toml",
+      "name": "federated-settlement",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "65b75fdfb001096836865867ac9746ace4ed75def01a8064ae085ab37cfa4ac3"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/job-queue/Cargo.toml",
+      "name": "job-queue",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "4cb1688727d0ebb483384b19f41001d0daeec9514c6a389a1851e610fee287c7"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/llm-output-parser/Cargo.toml",
+      "name": "llm-output-parser",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "ae31d66c773c704e8e069c67e1e822a35c4218eff28666ad26ca7db04064c886"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/profile-runtime/Cargo.toml",
+      "name": "profile-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "5032fccaf9f082d669623b9820ac3630024703048bf75e631141e833ac394547"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/remote-oracle-admission/Cargo.toml",
+      "name": "remote-oracle-admission",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "3fe78ece45ff2ef21a3967dbbf4940dd6cac957bbd8734f7bccb6f08d56ee865"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/repo_overlay/attestation-exchange/Cargo.toml",
+      "name": "attestation-exchange",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "78be4ab47f0e0895f843e6e31519a572959232bfc3dbece1857f4c7eb11c3787"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/scaffolds/attestation-exchange/Cargo.toml",
+      "name": "attestation-exchange",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "4783a1f95680b51e660257623751b6133eb6b60489cf4f69aa2bf0f8d8db020e"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/scaffolds/remote-oracle-admission/Cargo.toml",
+      "name": "remote-oracle-admission",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "8c0341cc9a3db5226985b7053524b9a5a2dace6ca588745c3f5e4a5199073388"
+    },
+    {
+      "path": "_salvage_from_libraries2/Libraries2/spec-execution/Cargo.toml",
+      "name": "spec-execution",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "02b5a07dd7133640cbc49292db8e8ddf959800ea4028a43e9cbb806622f2f963"
+    },
+    {
+      "path": "agent-graph/Cargo.toml",
+      "name": "agent-graph",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "26a12a557df27b5642bdffc7213d99d97063c6f1574a7cde03a1de736073c09e"
+    },
+    {
+      "path": "agent-guard/Cargo.toml",
+      "name": "agent-guard",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "8f7ba5381c5a5a5c4fe21469d754401eb7489df168f842fbd80f6b5acb6285ab"
+    },
+    {
+      "path": "ai-batch-queue/Cargo.toml",
+      "name": "ai-batch-queue",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "0fab3effb693ed265ea61c1c6dc1fcfdec5a7b9759d965d1f6f3dfa86b5b4847"
+    },
+    {
+      "path": "assurance-runtime/Cargo.toml",
+      "name": "assurance-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "983ff0dd03363c180dc6560b0f5dfb0103bc5cb943ce835d29b0965fe08e48c2"
+    },
+    {
+      "path": "attestation-exchange/Cargo.toml",
+      "name": "attestation-exchange",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "f7ba91b9f2981d1cb1dc50159502587eb6c48b8f646ebf70ab09e7a56b360f04"
+    },
+    {
+      "path": "authority-delegation/Cargo.toml",
+      "name": "authority-delegation",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "a52ac252e93613fcdf13c6534761af26f184fe0e2697b0048d0187378d1b0aba"
+    },
+    {
+      "path": "bitemporal-runtime/Cargo.toml",
+      "name": "bitemporal-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "1023bc537414bbae5f7ddf72bb182d2482d8a06a1ee2d3e73f7b412593504772"
+    },
+    {
+      "path": "boundary-compiler/Cargo.toml",
+      "name": "boundary-compiler",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": true,
+      "sha256": "a974f7da168d372f4651652b9402f23eb22114848e8b85126af1a5648d43fe85"
+    },
+    {
+      "path": "cea-bridge/Cargo.toml",
+      "name": "cea-bridge",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "15bc06c9f452f6d606f022856e2929eda4400c7eb06f6c51d8da7de349227ae4"
+    },
+    {
+      "path": "claim-ledger/Cargo.toml",
+      "name": "claim-ledger",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "96805de8d590ed950fc9f76592932256ed9d6bcb39f8c4c01c96420921d72bdb"
+    },
+    {
+      "path": "comfyui-rs/Cargo.toml",
+      "name": "comfyui-rs",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "e207d224f98c5d3178eed3adec1fbdae0f32da85c17293cc3b5a879e6ff21f42"
+    },
+    {
+      "path": "constitutional-memory/Cargo.toml",
+      "name": "constitutional-memory",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "bf1d06867ee85694da3be8255e00feadfe6cc022bc3f00606fc9d1e73e9e1a42"
+    },
+    {
+      "path": "constraint-compiler/Cargo.toml",
+      "name": "constraint-compiler",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "ac97f39425030afda22cad25160ea59ee2ddf91e02e93f57741cd6991e02154c"
+    },
+    {
+      "path": "continuity-runtime/Cargo.toml",
+      "name": "continuity-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "5cb27cb69416fb2bd2d8ea4e61533742b0d28f356e4a2ea1cbd035c0bdfe0c38"
+    },
+    {
+      "path": "contract-schema-gen/Cargo.toml",
+      "name": "contract-schema-gen",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "1f8e2dabd1a4f7a179ec242d243a303a4ba8adf0aad15f8e1b2257e388c662a2"
+    },
+    {
+      "path": "discovery-portfolio/Cargo.toml",
+      "name": "discovery-portfolio",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "2155b260c732ececba1463a7a2719a1933b1122dd7d5742ceed96ae83d05187a"
+    },
+    {
+      "path": "effect-runtime/Cargo.toml",
+      "name": "effect-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "de0007b29d320da26f86e85b1409afb1e09dd9ebd708920df3c2663b750d06bb"
+    },
+    {
+      "path": "federated-settlement/Cargo.toml",
+      "name": "federated-settlement",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "f28b6732792711fdf776eeabc5034d8d932cd44cc83f15a49b1c6b2303adbd15"
+    },
+    {
+      "path": "fib-quant/Cargo.toml",
+      "name": "fib-quant",
+      "version": "0.1.0-alpha.1",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "4f1db9555890cf2f2a5f2c3feb0a059a2b064e87038663abd2ad33f15a249009"
+    },
+    {
+      "path": "forge-memory-bridge/Cargo.toml",
+      "name": "forge-memory-bridge",
+      "version": "0.1.1",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "e7901bd1b307ad1e4938d28647ea557109b34a4e9e3cb88284ec3115af5df44b"
+    },
+    {
+      "path": "forge-pilot/Cargo.toml",
+      "name": "forge-pilot",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": true,
+      "sha256": "e3e6556b8718d7c0b0f15c2bcbaa25ecb422e5c4b7f7ac91dd12cda8f8adbf25"
+    },
+    {
+      "path": "job-queue/Cargo.toml",
+      "name": "job-queue",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "4cb1688727d0ebb483384b19f41001d0daeec9514c6a389a1851e610fee287c7"
+    },
+    {
+      "path": "kernel-conformance/Cargo.toml",
+      "name": "kernel-conformance",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "1d417b1408ee226611561cf2ff085a4817ec59386cd5fa2ad27422938a8ca81d"
+    },
+    {
+      "path": "kernel-execution/Cargo.toml",
+      "name": "kernel-execution",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "3d294e3343ce9493c991c7555fe71f3907005fe6ac7dc4c7d54afad7a0097ffe"
+    },
+    {
+      "path": "kernel-oracles/Cargo.toml",
+      "name": "kernel-oracles",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "430747607d22e33b11bd4d16c98d5b66303586041ada30866acf45adee519b4a"
+    },
+    {
+      "path": "knowledge-runtime/Cargo.toml",
+      "name": "knowledge-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": true,
+      "sha256": "95cc7855cd876c5b302b15f35c4f70ccb92d712e66cc8a68105bd3cd13c8be42"
+    },
+    {
+      "path": "living-memory/living-memory/Cargo.toml",
+      "name": "forge-engine",
+      "version": "0.2.0",
+      "rust_version": "1.75",
+      "lints_workspace": true,
+      "sha256": "e008629056c96273dfc719806df511820106b13e568a287514db2142a44e9fa9"
+    },
+    {
+      "path": "llm-output-parser/Cargo.toml",
+      "name": "llm-output-parser",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "ae31d66c773c704e8e069c67e1e822a35c4218eff28666ad26ca7db04064c886"
+    },
+    {
+      "path": "llm-pipeline/Cargo.toml",
+      "name": "llm-pipeline",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "695d41a3dc5dd09f7b57209c624a9a26c0e04d2181d1d7aae74f4307b25960c3"
+    },
+    {
+      "path": "llm-tool-runtime/Cargo.toml",
+      "name": "llm-tool-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": true,
+      "sha256": "a2f3f6d7751e0b0848eda509485e5d61a31aacd0b280a2f0da0639d00da25166"
+    },
+    {
+      "path": "mechanism-runtime/Cargo.toml",
+      "name": "mechanism-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "432c6e6b8b6acde463e16a24d6bceabe38b9962fdf268d8f453fb991606852c4"
+    },
+    {
+      "path": "ollama-vision/Cargo.toml",
+      "name": "ollama-vision",
+      "version": "0.2.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "8d6e7277af25f2dec4d3fbbf2f14eee83d2c29fa37522c20976902855a4bc1b9"
+    },
+    {
+      "path": "poly-kv/crates/poly-kv/Cargo.toml",
+      "name": "poly-kv",
+      "version": "0.1.0-alpha.1",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "8d67f9b8799afb2cdf0cca1de6a516ed2336d6ab6ad304fa7e8d03419aa43dbf"
+    },
+    {
+      "path": "poly-kv/crates/poly-kv-python/Cargo.toml",
+      "name": "poly-kv-python",
+      "version": "0.1.0-alpha.1",
+      "rust_version": {
+        "workspace": true
+      },
+      "lints_workspace": false,
+      "sha256": "44333b565e2683928988140199bbcea9e249bea3ded9ee70dc11ed64eb2f64c3"
+    },
+    {
+      "path": "poly-kv/crates/quant-codec-core/Cargo.toml",
+      "name": "quant-codec-core",
+      "version": "0.1.0-alpha.1",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "de1ecacbad2f40be64541efa52003c84d7b25410562e60615ad09736bb746401"
+    },
+    {
+      "path": "profile-runtime/Cargo.toml",
+      "name": "profile-runtime",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "5f64d32e92ec5481f85a48d1ab57c7f6900adcc0e36f9edd60633c7c0100d99c"
+    },
+    {
+      "path": "quant-eval/Cargo.toml",
+      "name": "quant-eval",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "01881bce721a966d456758d8cd5a7140e462921ce1a97f9c3bd6ecb74e2c64e8"
+    },
+    {
+      "path": "quant-governor/Cargo.toml",
+      "name": "quant-governor",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": false,
+      "sha256": "357314039d8cbc4d42e065b051390024448cd9dd5507e444bc90411e71a0764d"
+    },
+    {
+      "path": "receipt-bench/Cargo.toml",
+      "name": "receipt-bench",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "31c59f12a3f105bcfbe7d7d89e88ae41d74e9f4d1a6da5fe701cbd9f276bdcf4"
+    },
+    {
+      "path": "recursive-kernel-core/Cargo.toml",
+      "name": "recursive-kernel-core",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "5a1dbb8b5ee23bbc4ab15b652cf5c23b2106ba0cbaadcccf3502ebbae9f80c88"
+    },
+    {
+      "path": "remote-oracle-admission/Cargo.toml",
+      "name": "remote-oracle-admission",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "744eca2984e65d6625b4d06e41fa524d5f72d0dbb73ed314e8c6795e5581065e"
+    },
+    {
+      "path": "scr-runtime/crates/scr-audit-adapter/Cargo.toml",
+      "name": "scr-audit-adapter",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": true,
+      "sha256": "a598b9b6ec456cb3ff1db56fd67d47c0dba6851d4931f5f23f9545bb914e08f9"
+    },
+    {
+      "path": "scr-runtime/crates/scr-cli/Cargo.toml",
+      "name": "scr-cli",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": true,
+      "sha256": "e998ad26b045358001a043b46e8f72b632398799c2aeb7cdf2f0dbf922b16f1a"
+    },
+    {
+      "path": "scr-runtime/crates/scr-kernel/Cargo.toml",
+      "name": "scr-kernel",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": true,
+      "sha256": "0e26b8d6fafb00645ba53e74b95ec8e538a17d620f318c8f84e6dcf1553cbd56"
+    },
+    {
+      "path": "scr-runtime/crates/scr-reference/Cargo.toml",
+      "name": "scr-reference",
+      "version": "0.1.0",
+      "rust_version": null,
+      "lints_workspace": true,
+      "sha256": "96ec8c4c6711109727560d97acde9e6855581a344f773246ad4b6dc33e0e9dec"
+    },
+    {
+      "path": "scr-runtime-compression/Cargo.toml",
+      "name": "scr-runtime-compression",
+      "version": "0.1.0",
+      "rust_version": "1.75",
+      "lints_workspace": true,
+      "sha256": "a4ccdc5906e383b3626d329b80b43e83b978acac543b5512418aed014a9b9073"
+    },
+    {
+      "path": "semantic-memory/Cargo.toml",
+      "name": "semantic-memory",
+      "version": "0.5.0",
+      "rust_version": "1.75",
+      "lints_workspace": true,
+      "sha256": "ecc02bf23635341554ebe2660de8025152aef3cff444af4b34663b80690e25ad"
+    },
+    {
+      "path": "semantic-memory-forge/Cargo.toml",
+      "name": "semantic-memory-forge",
+      "version": "0.1.1",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "aa3734c12787df1a2253c10706e63e39c6bb319485ddeb671830667cdf003ea8"
+    },
+    {
+      "path": "spec-execution/Cargo.toml",
+      "name": "spec-execution",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "c8881da929a9d3b3eac0f4647d43dc2833bd4388d10e177591e63f9eb1175a0b"
+    },
+    {
+      "path": "stack-ids/Cargo.toml",
+      "name": "stack-ids",
+      "version": "0.1.1",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "9c4dbd6646320f738f6b973d877469f602b104433aa11318c77310fbe75f23a9"
+    },
+    {
+      "path": "tauri-queue/Cargo.toml",
+      "name": "tauri-queue",
+      "version": "0.3.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "4349d84f6a261d2c51e706c2a7372a7691abfe856aff8990f5067c0ef63d5246"
+    },
+    {
+      "path": "turbo-quant/Cargo.toml",
+      "name": "turbo-quant",
+      "version": "0.2.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": false,
+      "sha256": "9d2db7df49fd5283598c95637cb51e50a7a2edcc90e260d10f6494460fa59e9d"
+    },
+    {
+      "path": "turbo-quant/tools/semantic_memory_harness/Cargo.toml",
+      "name": "turbo-quant-semantic-memory-harness",
+      "version": "0.0.0",
+      "rust_version": null,
+      "lints_workspace": false,
+      "sha256": "48053f278c9aace2a3552de6bcc1e9602d34652c43bdfed26bea12763ff71a6e"
+    },
+    {
+      "path": "turbo-semantic/Cargo.toml",
+      "name": "semantic-memory",
+      "version": "0.5.0",
+      "rust_version": "1.75",
+      "lints_workspace": true,
+      "sha256": "32e77a03035160e7aae8f232337e7c27ac30ca40712fc156b185750328efafa9"
+    },
+    {
+      "path": "verification-adjudication/Cargo.toml",
+      "name": "verification-adjudication",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "a9cd42aecb4f7dceee96ef76519875e964cfd2fddbe159c4665d248cd7198318"
+    },
+    {
+      "path": "verification-calibration/Cargo.toml",
+      "name": "verification-calibration",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "6a34989f41f7cc0264b38cb387cae2f9276c280216d874de7b1f3b358fb0612e"
+    },
+    {
+      "path": "verification-control/Cargo.toml",
+      "name": "verification-control",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "b7b15b96b1321b0a5ade08d85a205f8346dbdb079022239111642d53e57cac35"
+    },
+    {
+      "path": "verification-policy/Cargo.toml",
+      "name": "verification-policy",
+      "version": "0.1.0",
+      "rust_version": "1.75.0",
+      "lints_workspace": true,
+      "sha256": "da4629af670039cdd19213c5f483c1892b018c5ef0a571bb632e9018c93efb41"
+    }
+  ]
+}

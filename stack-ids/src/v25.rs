@@ -45,12 +45,15 @@ impl V25ConstitutionCitation {
 
 impl Default for V25ConstitutionCitation {
     fn default() -> Self {
+        // Defaults must remain structurally valid after ID-001. These are
+        // explicit deterministic sentinel IDs for an unbound citation, not
+        // empty IDs that bypass the validated-ID contract.
         Self {
-            applicability_context_id: ApplicabilityContextId::new(""),
-            profile_set_id: ProfileSetId::new(""),
-            composition_receipt_id: CompositionReceiptId::new(""),
-            effective_constitution_id: EffectiveConstitutionId::new(""),
-            compiled_obligation_set_id: CompiledObligationSetId::new(""),
+            applicability_context_id: ApplicabilityContextId::new("default-unbound"),
+            profile_set_id: ProfileSetId::new("default-unbound"),
+            composition_receipt_id: CompositionReceiptId::new("default-unbound"),
+            effective_constitution_id: EffectiveConstitutionId::new("default-unbound"),
+            compiled_obligation_set_id: CompiledObligationSetId::new("default-unbound"),
             composition_conflict_set_id: None,
             profile_exception_bundle_ids: Vec::new(),
         }

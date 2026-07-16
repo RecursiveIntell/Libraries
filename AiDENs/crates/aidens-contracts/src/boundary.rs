@@ -129,7 +129,9 @@ impl BoundaryRepairReceiptV1 {
         let accepted = !treatment.hard_failed;
         let material = format!(
             "{}|{}|{}",
-            profile.profile_id.0, repair_kind, treatment.receipt_id.0
+            profile.profile_id.as_str(),
+            repair_kind,
+            treatment.receipt_id.as_str()
         );
         Self {
             receipt_id: generated_artifact_id_from_material("boundary-repair", &material),
@@ -181,7 +183,9 @@ impl BoundaryCompileReceiptV1 {
         let output_digest = DisplayDigestV1::for_json_value(output);
         let material = format!(
             "{}|{}|{}",
-            profile.profile_id.0, input_digest.digest, output_digest.digest
+            profile.profile_id.as_str(),
+            input_digest.digest,
+            output_digest.digest
         );
         Self {
             receipt_id: generated_artifact_id_from_material("boundary-compile", &material),
@@ -206,7 +210,8 @@ impl BoundaryCompileReceiptV1 {
         let input_digest = DisplayDigestV1::for_json_value(input);
         let material = format!(
             "{}|{}|duplicate-key",
-            profile.profile_id.0, input_digest.digest
+            profile.profile_id.as_str(),
+            input_digest.digest
         );
         Self {
             receipt_id: generated_artifact_id_from_material("boundary-compile", &material),
@@ -278,7 +283,7 @@ impl ConformanceRunReceiptV1 {
         let fixture_count = fixture_results.len() as u32;
         let material = format!(
             "{}|{}|{}|{}",
-            profile_id.0,
+            profile_id.as_str(),
             fixture_count,
             passed_count,
             fixture_results

@@ -244,7 +244,7 @@ impl MissingOrOpaqueRefRecordV1 {
         Self {
             record_id: generated_artifact_id_from_material(
                 "missing-opaque-ref",
-                &format!("{ref_id}|{reason}|{}", degradation_record_id.0),
+                &format!("{ref_id}|{reason}|{}", degradation_record_id.as_str()),
             ),
             ref_id,
             reason,
@@ -304,7 +304,7 @@ impl ArtifactTransitionReceiptV1 {
         let actor = actor.into();
         let material = format!(
             "{}|{}|{}|{}|{}",
-            artifact_ref.0,
+            artifact_ref.as_str(),
             previous_state.as_str(),
             new_state.as_str(),
             triggering_operator,

@@ -75,6 +75,8 @@ pub(crate) mod knowledge;
 mod pool;
 mod projection_batch;
 mod projection_derivation;
+#[cfg(feature = "poly-kv-codec")]
+pub mod poly_kv_bridge;
 /// Compatibility-only legacy import surface.
 ///
 /// This module exists only for migration compatibility with pre-V11 import paths.

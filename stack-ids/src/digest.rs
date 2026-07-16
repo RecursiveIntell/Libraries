@@ -27,17 +27,26 @@
 //! ```
 
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
 /// A BLAKE3 content digest for idempotent deduplication.
 ///
 /// The inner value is a 64-character hex string representing the BLAKE3 hash.
-#[derive(
-    Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(transparent)]
-pub struct ContentDigest(pub String);
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, JsonSchema)]
+pub struct ContentDigest(String);
+
+impl Serialize for ContentDigest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.hex())
+    }
+}
+impl<'de> Deserialize<'de> for ContentDigest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = String::deserialize(deserializer)?;
+        Self::from_hex(value).map_err(serde::de::Error::custom)
+    }
+}
 
 impl ContentDigest {
     /// Compute a BLAKE3 digest from raw bytes.
@@ -127,6 +136,7 @@ impl DigestBuilder {
 
     /// Feed raw bytes into the digest.
     pub fn update(&mut self, data: &[u8]) -> &mut Self {
+        self.hasher.update(&(data.len() as u64).to_be_bytes());
         self.hasher.update(data);
         self
     }
@@ -139,7 +149,7 @@ impl DigestBuilder {
 
     /// Feed a field separator. Use between fields to prevent ambiguity.
     pub fn separator(&mut self) -> &mut Self {
-        self.hasher.update(b"\x00");
+        self.update(&[]);
         self
     }
 
@@ -157,7 +167,7 @@ impl DigestBuilder {
             serde_json::to_string(&canonical).map_err(|e| DigestError::SerializationFailed {
                 reason: e.to_string(),
             })?;
-        self.hasher.update(canonical.as_bytes());
+        self.update(canonical.as_bytes());
         Ok(self)
     }
 

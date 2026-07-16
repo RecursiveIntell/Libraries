@@ -16,3 +16,5 @@ chrono = { version = "0.4", features = ["serde"] }
 
 [target.'cfg(not(target_os = "linux"))'.dependencies]
 tokio = { version = "1.0", optional = true, features = ["sync"] }
+[lints]
+workspace = true

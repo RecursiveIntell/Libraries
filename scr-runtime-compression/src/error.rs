@@ -18,11 +18,14 @@ pub enum CompressionError {
     PolicyRejected(String),
 }
 
-/// Errors that can occur during decompression operations.
+/// CMP-001: Errors that can occur during decompression operations.
 #[derive(Debug, Error)]
 pub enum DecompressError {
     #[error("codec `{0}` is not available in this build")]
     CodecNotAvailable(String),
+
+    #[error("codec `{0}` is not supported — no real decoder implemented")]
+    UnsupportedCodec(String),
 
     #[error("decode failed: {0}")]
     DecodeFailed(String),
@@ -35,4 +38,8 @@ pub enum DecompressError {
 
     #[error("exact fallback required but no fallback decoder provided")]
     NoFallbackProvided,
+
+    /// CMP-001: Strict mode rejects passthrough for compressed codecs.
+    #[error("strict mode rejects passthrough for codec `{0}` — no real decoder available")]
+    StrictModeRejected(String),
 }

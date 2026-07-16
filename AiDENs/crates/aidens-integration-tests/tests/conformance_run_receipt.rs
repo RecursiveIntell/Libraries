@@ -51,7 +51,7 @@ fn conformance_run_receipt_records_all_fixture_results() {
         ("bc-fixture-003-unknown-field", br#"{"id":"evt-1","kind":"measurement","amount":42,"treatment":{"id":"trt-1"},"unknown":true}"#),
         ("bc-fixture-004-duplicate-key", br#"{"id":"evt-1","kind":"measurement","amount":42,"amount":99,"treatment":{"id":"trt-1"}}"#),
         ("bc-fixture-005-type-mismatch", br#"{"id":"evt-1","kind":"measurement","amount":"not-a-number","treatment":{"id":"trt-1"}}"#),
-        ("bc-fixture-008-nested-treatment", br#"{"id":"evt-1","kind":"measurement","amount":42,"treatment":{"id":"trt-1","dose":5.0}}"#),
+        ("bc-fixture-008-nested-treatment", br#"{"id":"evt-1","kind":"measurement","amount":42,"treatment":{"id":"trt-1","dose":5.as_str()}}"#),
     ];
 
     let mut results = Vec::new();
@@ -90,7 +90,7 @@ fn conformance_run_receipt_records_all_fixture_results() {
         receipt.passed_count >= 1,
         "at least valid_minimal should pass"
     );
-    assert!(receipt.receipt_id.0.starts_with("conformance-run:"));
+    assert!(receipt.receipt_id.as_str().starts_with("conformance-run:"));
 }
 
 #[test]
@@ -141,7 +141,7 @@ fn conformance_run_receipt_serializes_round_trip() {
         profile_id,
         vec![fixture_result],
         Some(ConformanceEnvironmentV1 {
-            rustc_version: "1.85.0".to_string(),
+            rustc_version: "1.85.as_str()".to_string(),
             target_triple: "x86_64-unknown-linux-gnu".to_string(),
             ci_run_id: Some("test-ci-001".to_string()),
         }),

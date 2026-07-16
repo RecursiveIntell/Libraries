@@ -80,8 +80,12 @@ impl JobV1 {
     ) -> Self {
         let idempotency_key = idempotency_key.into();
         let payload_digest = non_authoritative_json_display_digest(&payload);
-        let identity_material =
-            format!("{}|{}|{}", namespace_id.0, idempotency_key, payload_digest);
+        let identity_material = format!(
+            "{}|{}|{}",
+            namespace_id.as_str(),
+            idempotency_key,
+            payload_digest
+        );
         let now = Utc::now();
         Self {
             job_id: local_artifact_id_from_stack_digest("job", &identity_material),
@@ -156,7 +160,10 @@ impl QueueLeaseV1 {
         let acquired_at_material = acquired_at.to_rfc3339_opts(SecondsFormat::Nanos, true);
         let material = format!(
             "{}|{}|{}|{}",
-            job.namespace_id.0, job.job_id.0, owner, acquired_at_material
+            job.namespace_id.as_str(),
+            job.job_id.as_str(),
+            owner,
+            acquired_at_material
         );
         Self {
             lease_id: local_artifact_id_from_stack_digest("queue-lease", &material),
@@ -207,7 +214,10 @@ impl ScheduleOccurrenceV1 {
         let payload_digest = non_authoritative_json_display_digest(&payload);
         let idempotency_key = format!(
             "schedule:{}:{}:{}:{}",
-            namespace_id.0, schedule_id, occurrence_key, payload_digest
+            namespace_id.as_str(),
+            schedule_id,
+            occurrence_key,
+            payload_digest
         );
         Self {
             occurrence_id: local_artifact_id_from_stack_digest(
@@ -263,7 +273,10 @@ impl WakeSignalV1 {
         let payload_digest = non_authoritative_json_display_digest(&payload);
         let idempotency_key = format!(
             "wake:{}:{}:{}:{}",
-            namespace_id.0, source, signal_key, payload_digest
+            namespace_id.as_str(),
+            source,
+            signal_key,
+            payload_digest
         );
         Self {
             signal_id: local_artifact_id_from_stack_digest("wake-signal", &idempotency_key),

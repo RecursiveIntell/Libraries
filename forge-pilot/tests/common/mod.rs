@@ -30,6 +30,48 @@ pub fn open_forge_store(base_dir: &Path) -> ForgeStore {
     ForgeStore::open(&base_dir.join("forge.db")).unwrap()
 }
 
+/// Install explicit non-blocking governance evidence for loop tests that need
+/// to exercise an action path beyond GOV-001's default fail-closed boundary.
+pub async fn install_permissive_governance(memory_store: &MemoryStore) {
+    for (predicate, content) in [
+        (
+            forge_pilot::governance_predicates::EFFECT_PREFLIGHT,
+            "commit_eligible",
+        ),
+        (forge_pilot::governance_predicates::ASSURANCE_READY, "true"),
+        (
+            forge_pilot::governance_predicates::AUTHORITY_DELEGATION_VALID,
+            "true",
+        ),
+        (
+            forge_pilot::governance_predicates::CONTINUITY_INCIDENT_ACTIVE,
+            "false",
+        ),
+    ] {
+        let id = uuid::Uuid::new_v4().to_string();
+        let sql = format!(
+            "INSERT INTO claim_versions (
+                claim_version_id, claim_id, claim_state, projection_family,
+                subject_entity_id, predicate, object_anchor,
+                scope_namespace, scope_domain, scope_workspace_id, scope_repo_id,
+                recorded_at, preferred_open,
+                source_envelope_id, source_authority,
+                freshness, contradiction_status, content, confidence
+            ) VALUES (
+                '{id}', 'gov-claim-{predicate}', 'active', 'governance',
+                'governance-entity', '{predicate}', '\"{content}\"',
+                'governance', NULL, NULL, NULL,
+                datetime('now'), 0,
+                'gov-envelope-{predicate}', 'governance',
+                'current', 'none', '{content}', 1.0
+            )"
+        );
+        if let Err(error) = memory_store.raw_execute(&sql, vec![]).await {
+            panic!("install permissive governance claim failed: {error}");
+        }
+    }
+}
+
 pub async fn latest_import_batch(
     memory_store: &MemoryStore,
     namespace: &str,

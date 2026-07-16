@@ -4,7 +4,7 @@ use quant_governor::{
     evaluate, AdmissibilityClass, ContentType, GovernancePolicy, GovernanceRequest,
 };
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== Quant Governor Basic Policy Example ===\n");
 
     // Create default policy
@@ -20,7 +20,7 @@ fn main() {
         admissibility: AdmissibilityClass::Critical,
     };
 
-    let decision1 = evaluate(request1.clone(), &policy).expect("evaluation failed");
+    let decision1 = evaluate(request1.clone(), &policy)?;
     println!("\n1. Critical Model Content:");
     println!("   Content type: {:?}", request1.content_type);
     println!("   Size: {} bytes", request1.size_bytes);
@@ -37,7 +37,7 @@ fn main() {
         admissibility: AdmissibilityClass::Standard,
     };
 
-    let decision2 = evaluate(request2.clone(), &policy).expect("evaluation failed");
+    let decision2 = evaluate(request2.clone(), &policy)?;
     println!("\n2. Large Image (Moderate Accuracy):");
     println!("   Content type: {:?}", request2.content_type);
     println!("   Size: {} bytes", request2.size_bytes);
@@ -54,7 +54,7 @@ fn main() {
         admissibility: AdmissibilityClass::HighPriority,
     };
 
-    let decision3 = evaluate(request3.clone(), &policy).expect("evaluation failed");
+    let decision3 = evaluate(request3.clone(), &policy)?;
     println!("\n3. Low Latency Audio:");
     println!("   Content type: {:?}", request3.content_type);
     println!("   Latency tolerance: {}ms", request3.latency_tolerance_ms);
@@ -70,7 +70,7 @@ fn main() {
         admissibility: AdmissibilityClass::Standard,
     };
 
-    let decision4 = evaluate(request4.clone(), &policy).expect("evaluation failed");
+    let decision4 = evaluate(request4.clone(), &policy)?;
     println!("\n4. Small Text Content:");
     println!("   Content type: {:?}", request4.content_type);
     println!("   Size: {} bytes (below threshold)", request4.size_bytes);
@@ -93,4 +93,5 @@ fn main() {
     }
 
     println!("\nDone!");
+    Ok(())
 }

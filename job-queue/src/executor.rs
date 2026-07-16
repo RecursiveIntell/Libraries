@@ -158,16 +158,27 @@ impl QueueExecutor {
                 tracing::debug!(
                     "No tokio runtime on current thread, spawning queue executor on a new thread"
                 );
-                std::thread::Builder::new()
+                match std::thread::Builder::new()
                     .name("queue-executor".into())
                     .spawn(move || {
-                        let rt = tokio::runtime::Builder::new_current_thread()
+                        let runtime = match tokio::runtime::Builder::new_current_thread()
                             .enable_all()
                             .build()
-                            .expect("queue executor: failed to create tokio runtime");
-                        rt.block_on(self.run_loop::<H>(event_emitter));
+                        {
+                            Ok(runtime) => runtime,
+                            Err(error) => {
+                                tracing::error!(%error, "queue executor: failed to create tokio runtime");
+                                return;
+                            }
+                        };
+                        runtime.block_on(self.run_loop::<H>(event_emitter));
                     })
-                    .expect("queue executor: failed to spawn thread");
+                {
+                    Ok(_) => {}
+                    Err(error) => {
+                        tracing::error!(%error, "queue executor: failed to spawn thread");
+                    }
+                }
             }
         }
     }
@@ -804,9 +815,11 @@ mod tests {
         );
 
         let conn = db.lock().unwrap();
-        let details = db::get_job_details(&conn, "job-lineage-fail")
-            .unwrap()
-            .expect("job details");
+        let details = match db::get_job_details(&conn, "job-lineage-fail") {
+            Ok(Some(details)) => details,
+            Ok(None) => panic!("job details must exist after queue processing"),
+            Err(error) => panic!("job details query failed: {error}"),
+        };
         assert_eq!(details.status.as_str(), "failed");
         assert!(
             details

@@ -55,6 +55,17 @@ pub enum ExecutionResult {
         /// Data needed to resume execution
         checkpoint_data: Option<InterruptCheckpoint>,
     },
+    /// Execution failed with a typed error.
+    ///
+    /// AG-001: Ordinary (non-interrupt) errors are preserved as `Failed`
+    /// instead of being silently mapped to `Complete`. The original error
+    /// is carried so callers can inspect and handle it.
+    Failed {
+        /// The error that caused execution to fail.
+        error: crate::error::AgentGraphError,
+        /// State at the point of failure (may be partially mutated).
+        state: AgentState,
+    },
 }
 
 /// Data needed to resume from an interrupt.

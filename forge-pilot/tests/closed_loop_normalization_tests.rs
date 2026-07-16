@@ -1,8 +1,8 @@
 mod common;
 
 use common::{
-    base_loop_config, import_v3_bundle, open_forge_store, open_memory_store, point_config_at_dir,
-    resources, sample_bundle, tempdir, write_source_file,
+    base_loop_config, import_v3_bundle, install_permissive_governance, open_forge_store,
+    open_memory_store, point_config_at_dir, resources, sample_bundle, tempdir, write_source_file,
 };
 use forge_pilot::{
     observe_scope, score_targets, CanonicalCaseClass, LawfulStepKind, LoopRunner, PilotHistory,
@@ -97,6 +97,10 @@ async fn loop_iteration_report_carries_normalization_and_lineage_receipts() {
         &sample_bundle("loop-normalized"),
     )
     .await;
+    // GOV-001 defaults to strict/fail-closed. This loop test exercises a
+    // permitted action, so install explicit governance projections rather
+    // than bypassing the gate or weakening the production default.
+    install_permissive_governance(&memory_store).await;
 
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);

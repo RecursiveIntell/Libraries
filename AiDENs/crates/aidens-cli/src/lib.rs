@@ -928,7 +928,8 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
         } => {
             let risk = parse_risk_class(&risk)?;
             let grant = PermitGrantV1::scoped(risk, tool_id, sandbox_root, decided_by.clone());
-            let decision = ApprovalDecisionV1::approved(ArtifactId(request_id), grant, decided_by);
+            let decision =
+                ApprovalDecisionV1::approved(ArtifactId::new(request_id), grant, decided_by);
             Ok(serde_json::to_string_pretty(&decision)?)
         }
         PermitCommand::Deny {
@@ -936,7 +937,8 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
             decided_by,
             reason,
         } => {
-            let decision = ApprovalDecisionV1::denied(ArtifactId(request_id), decided_by, reason);
+            let decision =
+                ApprovalDecisionV1::denied(ArtifactId::new(request_id), decided_by, reason);
             Ok(serde_json::to_string_pretty(&decision)?)
         }
         PermitCommand::Revoke {
@@ -947,7 +949,7 @@ pub fn permit_command(command: PermitCommand) -> Result<String> {
             reason,
         } => {
             let receipt = PermitUseReportV1::denied(
-                ArtifactId(permit_id),
+                ArtifactId::new(permit_id),
                 tool_id,
                 parse_risk_class(&risk)?,
                 sandbox_root,
@@ -1354,7 +1356,10 @@ pub fn coding_command(command: CodingCommand) -> Result<String> {
                 source_map,
                 changed_files,
                 commands_run,
-                receipt_ids: receipt_ids.into_iter().map(ArtifactId).collect(),
+                receipt_ids: receipt_ids
+                    .into_iter()
+                    .map(|receipt_id| ArtifactId::new(receipt_id))
+                    .collect(),
                 blockers,
                 notes,
             });
@@ -1449,7 +1454,7 @@ pub fn daemon_command(command: DaemonCommand) -> Result<String> {
         } => {
             let daemon = daemon_controller(&root, &name, &owner)?;
             Ok(serde_json::to_string_pretty(
-                &daemon.cancel(&ArtifactId(job_id), reason)?,
+                &daemon.cancel(&ArtifactId::new(job_id), reason)?,
             )?)
         }
         DaemonCommand::SafeMode {
@@ -3879,7 +3884,7 @@ fn coding_agent_v11a_evidence(
     };
     let mut semantic_state = aidens_contracts::SemanticStateV1::exact_supported(
         output_artifact.artifact_ref.clone(),
-        proof_profile.profile_id.0.clone(),
+        proof_profile.profile_id.as_str().to_string(),
     )
     .with_view_disclosure(&view_disclosure);
     for degradation in &degradation_records {
@@ -4512,20 +4517,20 @@ fn write_test_agent_run_bundle(path: &Path, input: &TestAgentRunBundleInput<'_>)
                 .display()
                 .to_string(),
         ],
-        provider_receipts: vec![input.output.receipt.receipt_id.0.clone()],
+        provider_receipts: vec![input.output.receipt.receipt_id.as_str().to_string()],
         tool_receipts: input
             .output
             .receipt
             .tool_invocation_receipts
             .iter()
-            .map(|receipt| receipt.receipt_id.0.clone())
+            .map(|receipt| receipt.receipt_id.as_str().to_string())
             .collect(),
         permit_receipts: input
             .output
             .receipt
             .permit_use_receipts
             .iter()
-            .map(|receipt| receipt.receipt_id.0.clone())
+            .map(|receipt| receipt.receipt_id.as_str().to_string())
             .collect(),
     })?;
     write_json_file(path, &bundle)

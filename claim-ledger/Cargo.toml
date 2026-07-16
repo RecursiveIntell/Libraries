@@ -1,11 +1,16 @@
 [package]
 name = "claim-ledger"
-version = "0.1.0"
+version = "0.2.1"
 edition = "2021"
 description = "Deterministic, local-first claim/evidence/provenance ledger. Creates receipts for all material operations."
 license = "MIT"
+authors = ["Josh Stevenson <j.stevenson.cs@gmail.com>"]
 keywords = ["claims", "provenance", "evidence", "ledger"]
-categories = ["data-structures", "verification"]
+categories = ["data-structures"]
+repository = "https://github.com/RecursiveIntell/Libraries"
+homepage = "https://github.com/RecursiveIntell/Libraries"
+documentation = "https://docs.rs/claim-ledger"
+readme = "README.md"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -13,10 +18,9 @@ serde_json = "1"
 thiserror = "2"
 chrono = { version = "0.4", features = ["serde"] }
 sha2 = "0.10"
-blake3 = "1.8"
 ulid = "1.1"
 hex = "0.4"
-digest = "0.10"
+ring = "0.17"
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }

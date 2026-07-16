@@ -258,11 +258,11 @@ impl AidensRunContextV1 {
     }
 
     pub fn stack_trace_ctx(&self) -> StackTraceCtx {
-        StackTraceCtx::from_trace_id(self.trace_id.0.clone())
+        StackTraceCtx::from_trace_id(self.trace_id.as_str().to_string())
     }
 
     pub fn stack_attempt_id(&self) -> StackAttemptId {
-        StackAttemptId::new(self.attempt_id.0.clone())
+        StackAttemptId::new(self.attempt_id.as_str().to_string())
     }
 }
 

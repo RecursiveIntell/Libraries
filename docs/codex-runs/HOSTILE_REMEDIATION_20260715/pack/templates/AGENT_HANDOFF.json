@@ -1,0 +1,19 @@
+{
+  "schema_version": "libraries.agent-handoff.v1",
+  "task_id": "",
+  "issue_ids": [],
+  "branch": "",
+  "base_commit": "",
+  "head_commit": "",
+  "changed_files": [],
+  "commands": [],
+  "acceptance_gates": [],
+  "residual_risks": [],
+  "rollback": {
+    "strategy": "",
+    "commands": [],
+    "preserved_data": [],
+    "known_limits": []
+  },
+  "verdict": "incomplete"
+}

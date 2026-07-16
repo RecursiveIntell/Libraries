@@ -47,3 +47,6 @@ checkpointing = ["rusqlite"]
 [[bench]]
 name = "graph_bench"
 harness = false
+
+[lints]
+workspace = true

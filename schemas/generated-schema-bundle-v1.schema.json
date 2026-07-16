@@ -1,6 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "ContentDigest": {
+      "description": "A BLAKE3 content digest for idempotent deduplication.\n\nThe inner value is a 64-character hex string representing the BLAKE3 hash.",
+      "type": "string"
+    },
     "GeneratedAdmissionState": {
       "enum": [
         "advisory_only",
@@ -12,7 +16,7 @@
     "GeneratedSchemaFileV1": {
       "properties": {
         "digest": {
-          "type": "string"
+          "$ref": "#/definitions/ContentDigest"
         },
         "path": {
           "type": "string"

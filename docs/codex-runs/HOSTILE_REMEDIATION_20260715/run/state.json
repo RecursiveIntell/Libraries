@@ -1,0 +1,132 @@
+{
+  "schema_version": "libraries.run-state.v1",
+  "run_id": "libraries-hostile-remediation-20260715",
+  "repository": {
+    "path": "~/Coding/Libraries",
+    "remote": "RecursiveIntell/Libraries"
+  },
+  "baseline": {
+    "branch": "",
+    "commit": "0000000000000000000000000000000000000000",
+    "tree": "0000000000000000000000000000000000000000",
+    "dirty": true,
+    "cargo_lock_sha256": null,
+    "toolchain": {},
+    "workspace_inventory": null
+  },
+  "integration_branch": "remediation/hostile-audit-20260715",
+  "current_phase": "-1",
+  "status": "initializing",
+  "issues": {
+    "CTRL-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "AG-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "GOV-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "CMP-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "ID-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "ID-002": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "DIG-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "SCP-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "LED-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "INT-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "QUE-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "QUE-002": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "SEM-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "CI-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "LINT-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "EVD-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "DOC-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    },
+    "PERF-001": {
+      "status": "pending",
+      "task_ids": [],
+      "evidence": [],
+      "blocker": null
+    }
+  },
+  "agents": [],
+  "path_locks": []
+}

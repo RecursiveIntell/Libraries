@@ -44,20 +44,23 @@ use semantic_memory::{MemoryStore, ProjectionClaimVersion, ProjectionQuery};
 use serde::{Deserialize, Serialize};
 use stack_ids::ScopeKey;
 
-/// LIB-001: Governance enforcement mode.
+/// LIB-001 / GOV-001: Governance enforcement mode.
 ///
-/// `FailOpen` preserves existing behavior — missing or broken governance
-/// artifacts produce a default observation and execution proceeds.
-/// `Strict` fails closed — observation errors and missing governance
-/// artifacts produce a `GovernanceGateError` and the caller must handle it.
+/// `Strict` is the default — missing, malformed, contradictory, or unavailable
+/// governance artifacts produce a `GovernanceGateError` and execution is blocked.
+/// `FailOpen` preserves the legacy fail-open behavior for explicit compatibility
+/// opt-in only, and must not be the default.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum GovernanceMode {
-    /// Existing default: return empty observation on errors (fail-open).
-    #[default]
-    FailOpen,
     /// Constitutional mode: return error on missing/broken governance (fail-closed).
+    /// GOV-001: This is the default. Missing/malformed/unavailable governance
+    /// blocks execution rather than silently allowing.
+    #[default]
     Strict,
+    /// Legacy fail-open: return empty observation on errors. Only for explicit
+    /// compatibility opt-in with receipts. Must not be used as default.
+    FailOpen,
 }
 
 /// LIB-001: Error returned when strict governance mode detects a problem.
@@ -95,6 +98,9 @@ pub struct GovernanceObservation {
     /// Any governance degradations detected.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub governance_degradations: Vec<GovernanceDegradation>,
+    /// GOV-001: Typed observation quality state.
+    #[serde(default)]
+    pub quality: ObservationQuality,
 }
 
 /// A degradation in a governance surface.
@@ -103,6 +109,24 @@ pub struct GovernanceDegradation {
     pub surface: String,
     pub reason: String,
     pub blocks_promotion: bool,
+}
+
+/// GOV-001: Typed observation quality — distinguishes between observed,
+/// missing, malformed, unavailable, and contradictory governance state.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ObservationQuality {
+    /// Governance state was successfully observed.
+    Observed,
+    /// No governance claims found in the store.
+    #[default]
+    Missing,
+    /// Governance claims were found but could not be parsed.
+    Malformed { reason: String },
+    /// The store was unavailable or returned an error.
+    Unavailable { reason: String },
+    /// Governance claims contradict each other.
+    Contradictory { reason: String },
 }
 
 /// Result of the governance gate evaluation.
@@ -162,35 +186,18 @@ pub mod predicates {
     pub const MECHANISM_FIT: &str = "mechanism_fit_disposition";
 }
 
-/// Observes governance artifact state from semantic-memory projections.
+/// GOV-001: Observes governance artifact state from semantic-memory projections.
 ///
-/// Queries the `claim_versions` table in the governance scope namespace for
-/// claim projections that represent governance artifact state. Each governance
-/// surface is identified by its predicate value:
+/// Defaults to `GovernanceMode::Strict` (fail-closed). Missing, malformed,
+/// or unavailable governance artifacts produce an error, not a default
+/// observation that silently allows execution.
 ///
-/// - `effect_preflight_status` — effect-runtime preflight disposition
-/// - `assurance_ready` — assurance-runtime case readiness
-/// - `authority_chain_validity` — authority-delegation chain state
-/// - `continuity_incident_active` — continuity-runtime incident state
-/// - `constitutional_amendment_pending` — constitutional-memory amendment state
-/// - `mechanism_fit_disposition` — mechanism-runtime fit run disposition
-///
-/// Returns a default (empty) observation on any error — fail-open by design.
-/// This function is read-only and never writes governance artifacts.
-///
-/// For strict (fail-closed) behavior, use [`observe_governance_with_mode`]
-/// with [`GovernanceMode::Strict`].
-pub async fn observe_governance(store: &MemoryStore) -> GovernanceObservation {
-    match observe_governance_inner(store).await {
-        Ok(obs) => obs,
-        Err(err) => {
-            tracing::warn!(
-                error = %err,
-                "governance observation failed, returning default (fail-open)"
-            );
-            GovernanceObservation::default()
-        }
-    }
+/// For explicit fail-open compatibility, use [`observe_governance_with_mode`]
+/// with [`GovernanceMode::FailOpen`].
+pub async fn observe_governance(
+    store: &MemoryStore,
+) -> Result<GovernanceObservation, GovernanceGateError> {
+    observe_governance_with_mode(store, GovernanceMode::Strict).await
 }
 
 /// LIB-001: Observe governance with explicit mode selection.
@@ -271,8 +278,11 @@ async fn observe_governance_inner(
 
     let claims = store.query_claim_versions(query).await?;
     if claims.is_empty() {
-        tracing::debug!("no governance claims found in scope, returning default observation");
-        return Ok(GovernanceObservation::default());
+        tracing::debug!("no governance claims found in scope, returning missing observation");
+        return Ok(GovernanceObservation {
+            quality: ObservationQuality::Missing,
+            ..Default::default()
+        });
     }
 
     // Filter to governance projection family claims.
@@ -286,28 +296,69 @@ async fn observe_governance_inner(
             total_claims = claims.len(),
             "claims found but none in governance projection family"
         );
-        return Ok(GovernanceObservation::default());
+        return Ok(GovernanceObservation {
+            quality: ObservationQuality::Missing,
+            ..Default::default()
+        });
     }
 
-    let mut observation = GovernanceObservation::default();
+    let mut observation = GovernanceObservation {
+        quality: ObservationQuality::Observed,
+        ..Default::default()
+    };
     let mut degradations = Vec::new();
+    let mut malformed_count = 0u32;
 
     for claim in &gov_claims {
         match claim.predicate.as_str() {
             predicates::EFFECT_PREFLIGHT => {
                 observation.effect_preflight_status = Some(claim.content.clone());
             }
-            predicates::ASSURANCE_READY => {
-                observation.assurance_ready = parse_bool_claim(&claim.content);
-            }
-            predicates::AUTHORITY_DELEGATION_VALID => {
-                observation.authority_delegation_valid = parse_bool_claim(&claim.content);
-            }
-            predicates::CONTINUITY_INCIDENT_ACTIVE => {
-                observation.continuity_incident_active = parse_bool_claim(&claim.content);
-            }
+            predicates::ASSURANCE_READY => match parse_bool_claim(&claim.content) {
+                Some(v) => observation.assurance_ready = v,
+                None => {
+                    malformed_count += 1;
+                    degradations.push(GovernanceDegradation {
+                        surface: claim.predicate.clone(),
+                        reason: format!("malformed boolean value: '{}'", claim.content),
+                        blocks_promotion: true,
+                    });
+                }
+            },
+            predicates::AUTHORITY_DELEGATION_VALID => match parse_bool_claim(&claim.content) {
+                Some(v) => observation.authority_delegation_valid = v,
+                None => {
+                    malformed_count += 1;
+                    degradations.push(GovernanceDegradation {
+                        surface: claim.predicate.clone(),
+                        reason: format!("malformed boolean value: '{}'", claim.content),
+                        blocks_promotion: true,
+                    });
+                }
+            },
+            predicates::CONTINUITY_INCIDENT_ACTIVE => match parse_bool_claim(&claim.content) {
+                Some(v) => observation.continuity_incident_active = v,
+                None => {
+                    malformed_count += 1;
+                    degradations.push(GovernanceDegradation {
+                        surface: claim.predicate.clone(),
+                        reason: format!("malformed boolean value: '{}'", claim.content),
+                        blocks_promotion: true,
+                    });
+                }
+            },
             predicates::CONSTITUTIONAL_AMENDMENT_PENDING => {
-                observation.constitutional_amendment_pending = parse_bool_claim(&claim.content);
+                match parse_bool_claim(&claim.content) {
+                    Some(v) => observation.constitutional_amendment_pending = v,
+                    None => {
+                        malformed_count += 1;
+                        degradations.push(GovernanceDegradation {
+                            surface: claim.predicate.clone(),
+                            reason: format!("malformed boolean value: '{}'", claim.content),
+                            blocks_promotion: true,
+                        });
+                    }
+                }
             }
             predicates::MECHANISM_FIT => {
                 observation.mechanism_fit_disposition = Some(claim.content.clone());
@@ -334,6 +385,13 @@ async fn observe_governance_inner(
         }
     }
 
+    // GOV-001: If any malformed values were found, mark quality as Malformed.
+    if malformed_count > 0 {
+        observation.quality = ObservationQuality::Malformed {
+            reason: format!("{malformed_count} malformed boolean claim(s)"),
+        };
+    }
+
     observation.governance_degradations = degradations;
 
     tracing::debug!(
@@ -351,17 +409,49 @@ async fn observe_governance_inner(
     Ok(observation)
 }
 
-/// Parse a claim content string as a boolean. Supports "true"/"false"
-/// and "1"/"0". Returns false for unrecognized values (fail-safe).
-fn parse_bool_claim(content: &str) -> bool {
-    matches!(content.trim().to_lowercase().as_str(), "true" | "1" | "yes")
+/// GOV-001: Parse a claim content string as a boolean.
+///
+/// Supports "true"/"false" and "1"/"0" and "yes"/"no".
+/// Returns `None` for unrecognized values — the caller must treat
+/// `None` as malformed and fail closed rather than defaulting to `false`.
+fn parse_bool_claim(content: &str) -> Option<bool> {
+    match content.trim().to_lowercase().as_str() {
+        "true" | "1" | "yes" => Some(true),
+        "false" | "0" | "no" => Some(false),
+        _ => None,
+    }
 }
 
-/// Evaluates whether governance state permits execution to proceed.
+/// GOV-001: Evaluates whether governance state permits execution to proceed.
 ///
-/// For strict-mode gating that returns an error on governance failures,
-/// use [`gate_execution_with_mode`].
+/// Missing, malformed, or unavailable governance observations block execution
+/// by default. Only a valid continuity exception can override a block.
 pub fn gate_execution(observation: &GovernanceObservation) -> GovernanceGateResult {
+    // GOV-001: Missing or malformed governance blocks execution.
+    match &observation.quality {
+        ObservationQuality::Missing => {
+            return GovernanceGateResult::Blocked {
+                reason: "governance observation is missing — no governance claims found".into(),
+            };
+        }
+        ObservationQuality::Malformed { reason } => {
+            return GovernanceGateResult::Blocked {
+                reason: format!("governance observation is malformed: {reason}"),
+            };
+        }
+        ObservationQuality::Unavailable { reason } => {
+            return GovernanceGateResult::Blocked {
+                reason: format!("governance observation unavailable: {reason}"),
+            };
+        }
+        ObservationQuality::Contradictory { reason } => {
+            return GovernanceGateResult::Blocked {
+                reason: format!("governance observation contradictory: {reason}"),
+            };
+        }
+        ObservationQuality::Observed => {}
+    }
+
     // Active continuity incident blocks execution.
     if observation.continuity_incident_active {
         return GovernanceGateResult::Blocked {
@@ -438,8 +528,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn default_observation_allows_execution() {
+    fn default_observation_blocks_execution() {
+        // GOV-001: Default observation has quality=Missing, which blocks.
         let obs = GovernanceObservation::default();
+        let result = gate_execution(&obs);
+        assert!(
+            matches!(result, GovernanceGateResult::Blocked { .. }),
+            "missing governance should block, got: {result:?}"
+        );
+    }
+
+    #[test]
+    fn observed_empty_observation_allows_execution() {
+        // GOV-001: An observed (but empty) observation allows execution.
+        let obs = GovernanceObservation {
+            quality: ObservationQuality::Observed,
+            ..Default::default()
+        };
         let result = gate_execution(&obs);
         assert_eq!(result, GovernanceGateResult::Allow);
     }
@@ -448,6 +553,7 @@ mod tests {
     fn active_incident_blocks_execution() {
         let obs = GovernanceObservation {
             continuity_incident_active: true,
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution(&obs);
@@ -458,6 +564,7 @@ mod tests {
     fn pending_amendment_downgrades_to_advisory() {
         let obs = GovernanceObservation {
             constitutional_amendment_pending: true,
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution(&obs);
@@ -477,17 +584,17 @@ mod tests {
 
     #[test]
     fn parse_bool_claim_values() {
-        assert!(parse_bool_claim("true"));
-        assert!(parse_bool_claim("True"));
-        assert!(parse_bool_claim("TRUE"));
-        assert!(parse_bool_claim("1"));
-        assert!(parse_bool_claim("yes"));
-        assert!(parse_bool_claim("  true  "));
-        assert!(!parse_bool_claim("false"));
-        assert!(!parse_bool_claim("0"));
-        assert!(!parse_bool_claim("no"));
-        assert!(!parse_bool_claim(""));
-        assert!(!parse_bool_claim("unknown"));
+        assert_eq!(parse_bool_claim("true"), Some(true));
+        assert_eq!(parse_bool_claim("True"), Some(true));
+        assert_eq!(parse_bool_claim("TRUE"), Some(true));
+        assert_eq!(parse_bool_claim("1"), Some(true));
+        assert_eq!(parse_bool_claim("yes"), Some(true));
+        assert_eq!(parse_bool_claim("  true  "), Some(true));
+        assert_eq!(parse_bool_claim("false"), Some(false));
+        assert_eq!(parse_bool_claim("0"), Some(false));
+        assert_eq!(parse_bool_claim("no"), Some(false));
+        assert_eq!(parse_bool_claim(""), None);
+        assert_eq!(parse_bool_claim("unknown"), None);
     }
 
     #[test]
@@ -498,6 +605,7 @@ mod tests {
                 reason: "freshness=superseded, contradiction=none".into(),
                 blocks_promotion: true,
             }],
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution(&obs);
@@ -512,6 +620,7 @@ mod tests {
                 reason: "freshness=stale, contradiction=none".into(),
                 blocks_promotion: false,
             }],
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution(&obs);
@@ -524,6 +633,7 @@ mod tests {
         // so execution is not blocked
         let obs = GovernanceObservation {
             authority_delegation_valid: false,
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution(&obs);
@@ -535,32 +645,33 @@ mod tests {
         let obs = GovernanceObservation {
             effect_preflight_status: Some("commit_eligible".into()),
             authority_delegation_valid: false,
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution(&obs);
         assert!(matches!(result, GovernanceGateResult::Blocked { .. }));
     }
 
-    /// Verifies that observe_governance returns default when the store has no
-    /// governance claims (empty store, fail-open).
+    /// Verifies that observe_governance returns error when the store has no
+    /// governance claims (empty store, fail-closed by default).
     #[tokio::test]
-    async fn observe_governance_empty_store_returns_default() {
+    async fn observe_governance_empty_store_returns_error() {
         let dir = tempfile::tempdir().expect("create temp dir");
         let config = semantic_memory::MemoryConfig {
             base_dir: dir.path().to_path_buf(),
             ..Default::default()
         };
         let store = MemoryStore::open(config).expect("open store");
-        let obs = observe_governance(&store).await;
-        assert_eq!(obs.effect_preflight_status, None);
-        assert!(!obs.assurance_ready);
-        assert!(!obs.authority_delegation_valid);
-        assert!(!obs.continuity_incident_active);
-        assert!(!obs.constitutional_amendment_pending);
-        assert_eq!(obs.mechanism_fit_disposition, None);
-        assert!(obs.governance_degradations.is_empty());
-        // Default observation allows execution.
-        assert_eq!(gate_execution(&obs), GovernanceGateResult::Allow);
+        let result = observe_governance(&store).await;
+        // GOV-001: Default mode is Strict, so missing governance fails closed.
+        assert!(
+            result.is_err(),
+            "empty store should fail closed in strict mode"
+        );
+        assert!(matches!(
+            result.unwrap_err(),
+            GovernanceGateError::NoGovernanceClaims
+        ));
     }
 
     /// Verifies that observe_governance populates observation fields from
@@ -587,7 +698,7 @@ mod tests {
         )
         .await;
 
-        let obs = observe_governance(&store).await;
+        let obs = observe_governance(&store).await.unwrap();
 
         // Verify non-default observation was populated.
         assert_eq!(
@@ -634,7 +745,7 @@ mod tests {
 
         insert_governance_claim(&store, predicates::CONTINUITY_INCIDENT_ACTIVE, "true").await;
 
-        let obs = observe_governance(&store).await;
+        let obs = observe_governance(&store).await.unwrap();
         assert!(obs.continuity_incident_active);
 
         let gate = gate_execution(&obs);
@@ -652,6 +763,7 @@ mod tests {
         // LIB-001: In strict mode, a Blocked gate result becomes an error.
         let obs = GovernanceObservation {
             continuity_incident_active: true,
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution_with_mode(&obs, GovernanceMode::Strict);
@@ -664,6 +776,7 @@ mod tests {
         let obs = GovernanceObservation {
             assurance_ready: true,
             authority_delegation_valid: true,
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution_with_mode(&obs, GovernanceMode::Strict);
@@ -676,6 +789,7 @@ mod tests {
         // LIB-001: In strict mode, AdvisoryOnly passes through (not an error).
         let obs = GovernanceObservation {
             constitutional_amendment_pending: true,
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution_with_mode(&obs, GovernanceMode::Strict);
@@ -691,6 +805,7 @@ mod tests {
         // LIB-001: In fail-open mode, Blocked is returned as-is (not an error).
         let obs = GovernanceObservation {
             continuity_incident_active: true,
+            quality: ObservationQuality::Observed,
             ..Default::default()
         };
         let result = gate_execution_with_mode(&obs, GovernanceMode::FailOpen);
@@ -743,7 +858,9 @@ mod tests {
 
     #[tokio::test]
     async fn fail_open_mode_returns_default_on_empty_store() {
-        // LIB-001: Fail-open mode returns default (not error) when store is empty.
+        // GOV-001: Fail-open mode returns Ok with a default observation when
+        // store is empty. The observation quality is Missing, but the caller
+        // in fail-open mode is expected to treat it as non-blocking.
         let dir = tempfile::tempdir().expect("create temp dir");
         let config = semantic_memory::MemoryConfig {
             base_dir: dir.path().to_path_buf(),
@@ -752,10 +869,17 @@ mod tests {
         let store = MemoryStore::open(config).expect("open store");
         let result = observe_governance_with_mode(&store, GovernanceMode::FailOpen).await;
         assert!(result.is_ok(), "fail-open mode should not error");
-        assert_eq!(
-            gate_execution(&result.unwrap()),
-            GovernanceGateResult::Allow
-        );
+        let obs = result.unwrap();
+        // Quality is Missing, but in fail-open the caller handles it.
+        assert_eq!(obs.quality, ObservationQuality::Missing);
+        // Gate execution on Missing blocks, but fail-open callers can
+        // use gate_execution_with_mode which does not error on Blocked in FailOpen.
+        let gate_result = gate_execution_with_mode(&obs, GovernanceMode::FailOpen);
+        assert!(gate_result.is_ok(), "fail-open should not error on blocked");
+        assert!(matches!(
+            gate_result.unwrap(),
+            GovernanceGateResult::Blocked { .. }
+        ));
     }
 
     /// Helper: insert a governance claim into the store using raw SQL.

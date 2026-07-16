@@ -8,7 +8,9 @@ pub mod eval;
 pub mod ids;
 pub mod shape;
 
-pub use codec::{CodecProfile, KvCacheCodec, VectorCodec};
+pub use codec::{
+    CodecCapabilities, CodecProfile, CodecResourceLimits, KvCacheCodec, ScoreSemantics, VectorCodec,
+};
 pub use digest::{ArtifactDigest, CodecProfileDigest};
 pub use dtype::DType;
 pub use error::QuantCodecError;

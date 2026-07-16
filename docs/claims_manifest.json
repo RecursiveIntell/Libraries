@@ -1,0 +1,329 @@
+{
+  "schema_version": "libraries.claims-manifest.v1",
+  "authority_note": "This is the authoritative, path-bound manifest consumed by check_claims_manifest.py. Root CLAIMS_MANIFEST.json is a high-level summary only.",
+  "claims": [
+    {
+      "path": "fib-quant/README.md",
+      "claim": "**The cold tier. 50\u00d7 compression. 100% recall.**",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "\u2502    50\u00d7 compression, cos 0.863    \u2502",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "| Recall@1 (8 queries, compressed) | **1.000** |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "| Recall@1 (10 agents, shared pool) | **1.000** |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "| Rank drift vs exact scan | 0.33 |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "| JSON compression (single 768d vector) | 3.6\u00d7 (3,072b \u2192 860b) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "| Projected binary compression | ~48\u00d7 (3,072b \u2192 ~64b) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "| Batch compression (160 docs, cold tier) | 480 KB \u2192 133 KB (3.6\u00d7 JSON) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "**Key insight:** 100% recall even at 0.863 fidelity. The target document stays at rank 1 while secondary rankings shift. For a cold tier that's accessed occasionally, this is the right tradeoff.",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "| JSON | 860 bytes (3.6\u00d7) | 86 KB (3.6\u00d7) | 8.6 MB (3.6\u00d7) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "fib-quant/README.md",
+      "claim": "| Binary | ~64 bytes (48\u00d7) | ~6 KB (48\u00d7) | ~640 KB (48\u00d7) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "turbo-quant compresses vectors via polar-coordinate quantization with an optional QJL residual sketch. It's not the highest compression in the stack \u2014 that's fib-quant at 50\u00d7. What turbo-quant gives you is reconstruction so close to the original that rankings barely shift (rank drift 0.03).",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "\u2502  SHARED POOL \u2014 fib-quant (50\u00d7)   \u2502",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "| Recall@1 (8 queries) | **1.000** |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "| Recall@1 (10 agents, shells) | **1.000** \u2014 all 10 |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "| Rank drift vs exact scan | **0.03** |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "| JSON compression (single 768d vector) | 0.6\u00d7 (JSON overhead > raw f32) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "| Projected binary compression | ~7\u00d7 |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "**Key insight:** 0.9996 cosine fidelity with 0.03 rank drift. For all practical purposes, the compressed representation preserves the exact ranking. When your hot tier needs to be trustworthy, this is what you use.",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "| Hot tier (agent shells) | 8 | 32 | ~8\u00d7 binary | cos 0.9996 |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "| Semantic search | 8 | dim/4 | ~8\u00d7 binary | workload-dependent |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "turbo-quant/README.md",
+      "claim": "| Maximum compression | 3-4 | dim/16 | ~15-20\u00d7 binary | expect quality loss |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "You have 10 agents. They all share the same 200-token system prompt. Without compression, you're storing that prompt 10 times in VRAM. With poly-kv: store it once, compress it 50\u00d7, and give each agent a 17ms shell for its unique tokens.",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "| Shared pool (cold) | System prompts, shared context | fib-quant k=4, N=32 | ~50\u00d7 theoretical | cos 0.863 | 1,557ms (once) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "| Agent shell (hot) | Per-agent conversation, tool results | turbo-quant 8-bit, 32proj | ~8\u00d7 theoretical | cos 0.9996 | 17ms (per agent) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "| Route | Recall@1 | Recall@10 | nDCG@10 | Rank drift |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "| Agents with recall@1 = 1.0 | **10/10** |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "| fib-quant cold compression batch | 480 KB \u2192 133 KB (3.6\u00d7 JSON, ~48\u00d7 binary projected) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "Current compression ratios are JSON-serialized. That means turbo-quant's 8\u00d7 theoretical drops to 0.6\u00d7 for single vectors \u2014 the JSON wrapper is literally bigger than the raw f32 bytes. fib-quant fares better at 3.6\u00d7 even in JSON, but its theoretical ceiling is ~50\u00d7.",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "| Shared pool (80 docs) | 240 KB \u2192 66 KB (3.6\u00d7) | 240 KB \u2192 ~5 KB (48\u00d7) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "| Agent shell (12 docs) | 36 KB \u2192 63 KB (0.6\u00d7) | 36 KB \u2192 ~5 KB (7\u00d7) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "| System total (200 docs) | 600 KB \u2192 695 KB (0.9\u00d7) | 600 KB \u2192 ~95 KB (6.3\u00d7) |",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "println!(\"Shell built in {}ms\", mat_receipt.materialize_ms);",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {
+      "path": "poly-kv/README.md",
+      "claim": "- [`fib-quant`](https://crates.io/crates/fib-quant) \u2014 cold-tier codec, 50\u00d7 compression",
+      "classification": "unverified",
+      "receipt": null,
+      "limitations": [
+        "Unverified README claim; no reproducible benchmark receipt bound by this remediation."
+      ]
+    },
+    {"path":"turbo-quant/README.md","claim":"| **Top-k overlap (cand vs exact top-10, Jaccard)** | 0.049 | ≥ 0.30 | **FAIL** (6.1× too low) |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| **Exact-rerank recovery @1 (top-1 gt in candidate top-40)** | 0.307 | ≥ 0.80 | **FAIL** (2.6× too low) |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| Recall@1 (post-rerank) | 0.777 | — | misleading — see audit |","classification":"paper-reported","receipt":null,"limitations":["README flags this as misleading; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| Recall@5 (post-rerank) | 0.433 | — | |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| Recall@10 (post-rerank) | 0.787 | — | |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| Rank drift mean / p95 / max | 10.46 / 29 / 39 | — | wrong docs consistently ranked higher |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| Candidate-search latency p50 / p95 | 35 ms / 250 ms | — | full scan of 5,181 codes |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| Raw fp32 | 7,958,016 | 1.00× |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| Sidecar only | 4,870,140 | 1.63× compression |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| **Sidecar + raw** (for exact rerank) | **12,828,156** | **0.62× (1.6× LARGER than raw)** |","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"The corpus binary (8.4 MB) and full build/bench logs are in","classification":"unverified","receipt":null,"limitations":["README reference only; no receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"(1,000×384 random unit vectors, 50 queries) and shows `recall@10 = 1.0`","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"candidates missing the top-1 70% of the time) on BEIR scifact. The","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| FWHT | `c-kernels/fwht.c` | Fast Walsh-Hadamard Transform | 2.75× |","classification":"unverified","receipt":null,"limitations":["README figure; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| Polar encode/decode | `c-kernels/polar.c` | `atan2` + angle quantize, dequantize | 1.8× |","classification":"unverified","receipt":null,"limitations":["README figure; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"| QJL sketch/project/IP | `c-kernels/qjl.c` | Sign projection, query projection, inner-product estimate | 1.5× |","classification":"unverified","receipt":null,"limitations":["README figure; no reproducible receipt bound here."]},
+    {"path":"turbo-quant/README.md","claim":"P27 number (0.307 top-1 recovery at 4× oversample) is the falsified","classification":"paper-reported","receipt":null,"limitations":["README-reported; no reproducible receipt bound here."]}
+  ]
+}

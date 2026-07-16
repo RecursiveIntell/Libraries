@@ -181,7 +181,7 @@ impl AttestationEnvelopeV1 {
         )?;
         require_non_empty(&self.artifact_family, "artifact_family")?;
         require_non_empty(&self.artifact_version, "artifact_version")?;
-        require_non_empty(&self.content_digest.0, "content_digest")?;
+        require_non_empty(self.content_digest.hex(), "content_digest")?;
         require_non_empty(&self.schema_identity, "schema_identity")?;
         require_non_empty(&self.signer_identity, "signer_identity")?;
         require_non_empty(&self.signing_time, "signing_time")?;

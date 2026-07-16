@@ -27,10 +27,10 @@ fn stack_digest_is_exposed_as_non_authoritative_display_digest() {
 fn p28_generated_artifact_ids_are_not_random_uuids_and_stable_material_ids_are_replayable() {
     let first = display_only_unstable_id("receipt");
     let second = display_only_unstable_id("receipt");
-    assert!(first.0.starts_with("receipt:local-process-seq-"));
-    assert!(second.0.starts_with("receipt:local-process-seq-"));
+    assert!(first.as_str().starts_with("receipt:local-process-seq-"));
+    assert!(second.as_str().starts_with("receipt:local-process-seq-"));
     assert_ne!(first, second);
-    assert!(!first.0.contains('-') || !first.0.contains("0000-"));
+    assert!(!first.as_str().contains('-') || !first.as_str().contains("0000-"));
 
     let stable_a = generated_artifact_id_from_material("receipt", "operator|input|output");
     let stable_b = generated_artifact_id_from_material("receipt", "operator|input|output");
@@ -50,8 +50,14 @@ fn p30_legacy_process_local_generated_artifact_id_api_is_absent() {
 #[test]
 fn execution_context_exposes_stack_trace_and_attempt() {
     let context = AidensRunContextV1::new("stack-contracts-smoke");
-    assert_eq!(context.stack_trace_ctx().trace_id, context.trace_id.0);
-    assert_eq!(context.stack_attempt_id().as_str(), context.attempt_id.0);
+    assert_eq!(
+        context.stack_trace_ctx().trace_id,
+        context.trace_id.as_str()
+    );
+    assert_eq!(
+        context.stack_attempt_id().as_str(),
+        context.attempt_id.as_str()
+    );
 }
 
 #[test]
@@ -875,7 +881,10 @@ fn p07_golden_fixtures_deserialize() {
 
     let manifest = include_str!("../../../tests/fixtures/p07/generated_schema_manifest_v1.json");
     let manifest: GeneratedSchemaManifestV1 = serde_json::from_str(manifest).unwrap();
-    assert_eq!(manifest.manifest_id.0, "generated-schema-manifest:v1");
+    assert_eq!(
+        manifest.manifest_id.as_str(),
+        "generated-schema-manifest:v1"
+    );
 
     let report = include_str!("../../../tests/fixtures/p07/schema_compatibility_report_v1.json");
     let report: SchemaCompatibilityReportV1 = serde_json::from_str(report).unwrap();
@@ -1202,7 +1211,7 @@ fn p08_reference_artifact_constructors_are_typed() {
     );
 
     assert_eq!(
-        report.report_id.0.split(':').next(),
+        report.report_id.as_str().split(':').next(),
         Some("reference-interpreter-report")
     );
     assert!(!report.passed);
@@ -1268,14 +1277,14 @@ fn p10_coding_artifact_constructors_are_receipt_bearing_and_sandboxed() {
         vec!["README.md".into()],
         BTreeMap::new(),
         BTreeMap::new(),
-        Some(ArtifactId("permit:fixture".into())),
-        Some(ArtifactId("permit-use:fixture".into())),
+        Some(ArtifactId::new("permit:fixture")),
+        Some(ArtifactId::new("permit-use:fixture")),
     );
     let command = CommandRunReportV1::completed(
         "/repo",
         vec!["cargo".into(), "check".into(), "--workspace".into()],
-        Some(ArtifactId("permit:fixture".into())),
-        Some(ArtifactId("permit-use:fixture".into())),
+        Some(ArtifactId::new("permit:fixture")),
+        Some(ArtifactId::new("permit-use:fixture")),
         Some(0),
         "ok",
         "",
@@ -1394,12 +1403,15 @@ fn p11_queue_daemon_artifact_constructors_preserve_idempotency_and_safe_mode() {
     assert!(occurrence.identity_is_not_timestamp_only());
     assert!(signal.idempotency_key.contains("filesystem"));
     assert_eq!(job.kind, ArtifactKindV1::Job);
-    assert!(job.attempt_family_id.0.starts_with("attempt-family:"));
+    assert!(job
+        .attempt_family_id
+        .as_str()
+        .starts_with("attempt-family:"));
     assert_eq!(lease.kind, ArtifactKindV1::QueueLease);
     let expected_lease_material = format!(
         "{}|{}|{}|{}",
-        job.namespace_id.0,
-        job.job_id.0,
+        job.namespace_id.as_str(),
+        job.job_id.as_str(),
         "daemon-a",
         lease
             .acquired_at
@@ -1409,7 +1421,12 @@ fn p11_queue_daemon_artifact_constructors_preserve_idempotency_and_safe_mode() {
         lease.lease_id,
         local_artifact_id_from_stack_digest("queue-lease", &expected_lease_material)
     );
-    let fallback_material = format!("{}|{}|{}|0", job.namespace_id.0, job.job_id.0, "daemon-a");
+    let fallback_material = format!(
+        "{}|{}|{}|0",
+        job.namespace_id.as_str(),
+        job.job_id.as_str(),
+        "daemon-a"
+    );
     assert_ne!(
         lease.lease_id,
         local_artifact_id_from_stack_digest("queue-lease", &fallback_material)
@@ -1481,9 +1498,9 @@ fn p13_view_artifact_constructors_disclose_policy_events() {
     let projection = ProjectionDigestV1::new(
         RuntimeViewModeV1::Temporal,
         policy.policy_id.clone(),
-        vec![ArtifactId("episode:p13".into())],
-        vec![ArtifactId("claim:p13".into())],
-        vec![ArtifactId("evidence:p13".into())],
+        vec![ArtifactId::new("episode:p13")],
+        vec![ArtifactId::new("claim:p13")],
+        vec![ArtifactId::new("evidence:p13")],
         serde_json::json!({
             "policy_id": policy.policy_id,
             "claims": ["claim:p13"],
@@ -1493,7 +1510,7 @@ fn p13_view_artifact_constructors_disclose_policy_events() {
     let disclosure = ViewDisclosureReportV1::new(
         &request,
         projection.clone(),
-        vec![ArtifactId("claim:p13".into())],
+        vec![ArtifactId::new("claim:p13")],
         vec![widening.receipt_id.clone()],
         vec![degradation.event_id.clone()],
     );
@@ -1653,9 +1670,9 @@ fn p14_golden_fixtures_deserialize() {
 
 #[test]
 fn p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules() {
-    let graph_id = ArtifactId("compiled-region-graph:test".into());
-    let claim_a = ArtifactId("claim:a".into());
-    let claim_b = ArtifactId("claim:b".into());
+    let graph_id = ArtifactId::new("compiled-region-graph:test");
+    let claim_a = ArtifactId::new("claim:a");
+    let claim_b = ArtifactId::new("claim:b");
     let node_a = RegionNodeV1::new(
         RegionNodeKindV1::Claim,
         "repo/status/a",
@@ -1676,7 +1693,7 @@ fn p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules() {
         "claim-consistency",
         1.0,
     );
-    let region_id = ArtifactId("region:test".into());
+    let region_id = ArtifactId::new("region:test");
     let contract = RegionContractV1::new(
         graph_id.clone(),
         RegionGraphKindV1::Inference,
@@ -1702,14 +1719,14 @@ fn p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules() {
         Vec::new(),
     );
     let stop =
-        KernelStopRuleReportV1::new(CanonicalKernelStopReason::FixedPoint, 3, 8, 0.05, 0.5, 0.01);
+        KernelStopRuleReportV1::new(CanonicalKernelStopReason::FixedPoint, 3, 8, 0.5, 0.5, 0.1);
     let residual = KernelResidualReportV1::new(
         graph_id.clone(),
         region_id.clone(),
         3,
-        0.07,
-        0.01,
-        0.05,
+        0.7,
+        0.1,
+        0.5,
         stop.clone(),
     );
     let report = ConvergenceReportV1::new(
@@ -1718,9 +1735,9 @@ fn p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules() {
         CanonicalKernelStopReason::FixedPoint,
         3,
         8,
-        0.05,
         0.5,
-        0.01,
+        0.5,
+        0.1,
         vec![residual.residual_id.clone()],
         stop,
         false,
@@ -1728,7 +1745,7 @@ fn p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules() {
     let syndrome = KernelSyndromeReportV1::contradiction(
         graph_id.clone(),
         region_id.clone(),
-        ArtifactId("contradiction-witness:test".into()),
+        ArtifactId::new("contradiction-witness:test"),
         vec![claim_a, claim_b],
     );
     let digest = DisplayDigestV1::for_json_value(&serde_json::json!({
@@ -1769,18 +1786,18 @@ fn p15_kernel_artifact_constructors_preserve_right_graph_and_stop_rules() {
 
 #[test]
 fn p28_convergence_degrades_when_residual_or_oscillation_breaks_exactness() {
-    let graph_id = ArtifactId("region-graph:p28".into());
+    let graph_id = ArtifactId::new("region-graph:p28");
     let stop =
-        KernelStopRuleReportV1::new(CanonicalKernelStopReason::FixedPoint, 3, 8, 0.05, 0.5, 0.09);
+        KernelStopRuleReportV1::new(CanonicalKernelStopReason::FixedPoint, 3, 8, 0.5, 0.5, 0.9);
     let residual_degraded = ConvergenceReportV1::new(
         graph_id.clone(),
         RegionGraphKindV1::Inference,
         CanonicalKernelStopReason::FixedPoint,
         3,
         8,
-        0.05,
         0.5,
-        0.09,
+        0.5,
+        0.9,
         Vec::new(),
         stop.clone(),
         false,
@@ -1797,9 +1814,9 @@ fn p28_convergence_degrades_when_residual_or_oscillation_breaks_exactness() {
         CanonicalKernelStopReason::FixedPoint,
         3,
         8,
-        0.05,
         0.5,
-        0.01,
+        0.5,
+        0.1,
         Vec::new(),
         stop,
         true,
@@ -1849,8 +1866,8 @@ fn p15_golden_fixtures_deserialize() {
 
 #[test]
 fn p16_subtraction_artifacts_block_support_loss_and_record_compaction() {
-    let accepted_claim = ArtifactId("claim:accepted".into());
-    let evidence = ArtifactId("evidence:accepted".into());
+    let accepted_claim = ArtifactId::new("claim:accepted");
+    let evidence = ArtifactId::new("evidence:accepted");
     let budget = InvariantBudgetV1::full_history().with_removal_limits(1, 1, 0);
     let support = SupportCoreV1::new(
         vec![accepted_claim.clone()],
@@ -1916,7 +1933,7 @@ fn p16_subtraction_artifacts_block_support_loss_and_record_compaction() {
 
 #[test]
 fn p28_history_preservation_uses_invariant_evidence_not_digest_equality() {
-    let accepted_claim = ArtifactId("claim:p28".into());
+    let accepted_claim = ArtifactId::new("claim:p28");
     let support = SupportCoreV1::new(
         vec![accepted_claim],
         Vec::new(),
@@ -1936,7 +1953,7 @@ fn p28_history_preservation_uses_invariant_evidence_not_digest_equality() {
         &budget,
         before,
         after,
-        vec![ArtifactId("query-receipt:p28".into())],
+        vec![ArtifactId::new("query-receipt:p28")],
     );
 
     assert_ne!(report.before_digest, report.after_digest);
@@ -2279,7 +2296,7 @@ fn p28_artifact_lifecycle_requires_receipted_transitions_and_blocks_early_promot
             ArtifactLifecycleStateV1::Validated,
             "aidens.agent.validate",
             "test",
-            Some(ArtifactId("execution-context:p28".into())),
+            Some(ArtifactId::new("execution-context:p28")),
         )
         .unwrap();
     assert_eq!(validate.previous_state, ArtifactLifecycleStateV1::Created);
@@ -2388,13 +2405,13 @@ fn p28_artifact_manifest_records_inputs_outputs_and_missing_refs() {
     let degraded = manifest.clone().with_missing_or_opaque_ref(
         "opaque:external-input",
         "external input was not available for replay",
-        ArtifactId("degradation:p12-missing-ref".into()),
+        ArtifactId::new("degradation:p12-missing-ref"),
     );
     assert!(!degraded.complete());
     assert_eq!(degraded.missing_or_opaque_ref_records.len(), 1);
     assert_eq!(
         degraded.missing_or_opaque_ref_records[0].degradation_record_id,
-        ArtifactId("degradation:p12-missing-ref".into())
+        ArtifactId::new("degradation:p12-missing-ref")
     );
 }
 
@@ -2402,7 +2419,7 @@ fn p28_artifact_manifest_records_inputs_outputs_and_missing_refs() {
 fn p28_material_done_requires_execution_context_manifests_and_receipts() {
     let context = ExecutionContextEnvelopeV1::local_started(
         "aidens.tool.repo_read",
-        ArtifactId("attempt-family:p28".into()),
+        ArtifactId::new("attempt-family:p28"),
         "mock",
         "aidens:repo-read:1",
     )
@@ -2448,14 +2465,14 @@ fn p28_material_done_requires_execution_context_manifests_and_receipts() {
     let incomplete_input_manifest = input_manifest.clone().with_missing_or_opaque_ref(
         "opaque:repo-root",
         "repo root digest unavailable",
-        ArtifactId("degradation:p12-repo-root".into()),
+        ArtifactId::new("degradation:p12-repo-root"),
     );
     let rejected_incomplete = OperatorInvocationReceiptV1::material_done(
         "aidens.tool.repo_read",
         &context,
         incomplete_input_manifest,
         output_manifest.clone(),
-        vec![ArtifactId("tool-call:p12".into())],
+        vec![ArtifactId::new("tool-call:p12")],
     );
     assert!(rejected_incomplete.is_err());
 
@@ -2487,7 +2504,7 @@ fn p28_material_done_requires_execution_context_manifests_and_receipts() {
 fn p28_timeout_tool_receipt_marks_partial_output() {
     let context = ExecutionContextEnvelopeV1::local_started(
         "aidens.tool.run_checks",
-        ArtifactId("attempt-family:p28-timeout".into()),
+        ArtifactId::new("attempt-family:p28-timeout"),
         "local",
         "aidens:run-checks:1",
     )
@@ -2511,7 +2528,7 @@ fn p28_timeout_tool_receipt_marks_partial_output() {
 fn p29_execution_context_fingerprint_is_environment_scoped() {
     let context = ExecutionContextEnvelopeV1::local_started(
         "aidens.tool.repo_read",
-        ArtifactId("attempt-family:p29-fingerprint".into()),
+        ArtifactId::new("attempt-family:p29-fingerprint"),
         "local",
         "aidens:repo-read:1",
     );
@@ -2532,7 +2549,7 @@ fn p29_execution_context_fingerprint_is_environment_scoped() {
 fn p29_repeated_identical_tool_calls_get_distinct_receipts() {
     let context = ExecutionContextEnvelopeV1::local_started(
         "aidens.tool.repo_read",
-        ArtifactId("attempt-family:p29-tool-receipt".into()),
+        ArtifactId::new("attempt-family:p29-tool-receipt"),
         "local",
         "aidens:repo-read:1",
     );
@@ -2663,7 +2680,7 @@ fn p12_operator_invocation_authorization_requires_effects_manifests_receipts_and
             &execution_context,
             &input_manifest,
             &output_manifest,
-            &[ArtifactId("tool-call:p12".into())],
+            &[ArtifactId::new("tool-call:p12")],
         )
         .is_ok());
 
@@ -2694,14 +2711,14 @@ fn p12_operator_invocation_authorization_requires_effects_manifests_receipts_and
         &over_budget_success,
         &input_manifest,
         &output_manifest,
-        &[ArtifactId("tool-call:p12".into())],
+        &[ArtifactId::new("tool-call:p12")],
     );
     assert!(budget_violation.unwrap_err().contains("budget enforcement"));
 
     let opaque_input = input_manifest.with_missing_or_opaque_ref(
         "opaque:repo-root",
         "repo root digest unavailable",
-        ArtifactId("degradation:p12-operator".into()),
+        ArtifactId::new("degradation:p12-operator"),
     );
     let incomplete = registry.authorize_material_invocation(
         "aidens.tool.repo_read",
@@ -2709,7 +2726,7 @@ fn p12_operator_invocation_authorization_requires_effects_manifests_receipts_and
         &execution_context,
         &opaque_input,
         &output_manifest,
-        &[ArtifactId("tool-call:p12".into())],
+        &[ArtifactId::new("tool-call:p12")],
     );
     assert!(incomplete.unwrap_err().contains("manifests incomplete"));
 
@@ -2719,7 +2736,7 @@ fn p12_operator_invocation_authorization_requires_effects_manifests_receipts_and
         &execution_context,
         &opaque_input,
         &output_manifest,
-        &[ArtifactId("tool-call:p12".into())],
+        &[ArtifactId::new("tool-call:p12")],
     );
     assert!(denied.unwrap_err().contains("forbidden"));
 }
@@ -2734,7 +2751,7 @@ fn p28_proof_waiver_is_not_proof_and_debt_blocks_promotion() {
     );
     obligation.waived_by.push(waiver.receipt_id.clone());
     let profile = LocalProofProfileV1::local_exact(vec![obligation]);
-    let artifact_ref = ArtifactId("artifact:p28-proof".into());
+    let artifact_ref = ArtifactId::new("artifact:p28-proof");
     let debt = ProofDebtLedgerV1::from_profile(artifact_ref.clone(), &profile);
     let eligibility = PromotionEligibilityReportV1::new(artifact_ref, &profile, &debt);
 
@@ -2763,9 +2780,9 @@ fn p09_proof_debt_is_queryable_and_expired_waiver_escalates() {
     let mut obligation = ProofObligationV1::new("phase 09 proof", "hostile-fixture");
     obligation
         .waived_by
-        .push(ArtifactId("proof-waiver:phase09".into()));
+        .push(ArtifactId::new("proof-waiver:phase09"));
     let profile = LocalProofProfileV1::local_exact(vec![obligation]);
-    let artifact_ref = ArtifactId("artifact:p09-proof-debt".into());
+    let artifact_ref = ArtifactId::new("artifact:p09-proof-debt");
     let mut debt = ProofDebtLedgerV1::from_profile(artifact_ref, &profile);
 
     debt.items[0] = debt.items[0].clone().with_expiry(active_until);
@@ -2784,9 +2801,9 @@ fn p28_proof_evidence_satisfies_profile_and_allows_promotion() {
     let mut obligation = ProofObligationV1::new("cargo test passes", "test-log");
     obligation
         .satisfied_by
-        .push(ArtifactId("test-log:p28".into()));
+        .push(ArtifactId::new("test-log:p28"));
     let profile = LocalProofProfileV1::local_exact(vec![obligation]);
-    let artifact_ref = ArtifactId("artifact:p28-proof-pass".into());
+    let artifact_ref = ArtifactId::new("artifact:p28-proof-pass");
     let debt = ProofDebtLedgerV1::from_profile(artifact_ref.clone(), &profile);
     let eligibility = PromotionEligibilityReportV1::new(artifact_ref, &profile, &debt);
 
@@ -2829,7 +2846,7 @@ fn p28_degraded_release_surface_blocks_readiness() {
 
 #[test]
 fn p28_semantic_state_degradation_cannot_answer_as_exact() {
-    let artifact_ref = ArtifactId("artifact:p28-semantic".into());
+    let artifact_ref = ArtifactId::new("artifact:p28-semantic");
     let degradation = LocalDegradationRecordV1::new(
         artifact_ref.clone(),
         "skip-cargo-replay",
@@ -2838,7 +2855,7 @@ fn p28_semantic_state_degradation_cannot_answer_as_exact() {
     let disclosure = ViewDisclosureV1::widening(
         "package-self-replay",
         "supported-local",
-        Some(ArtifactId("view-report:p28".into())),
+        Some(ArtifactId::new("view-report:p28")),
     );
     let state = SemanticStateV1::exact_supported(artifact_ref, "proof-profile:p28")
         .with_degradation(&degradation)
@@ -2853,15 +2870,15 @@ fn p28_semantic_state_degradation_cannot_answer_as_exact() {
 
 #[test]
 fn p09_semantic_state_blocks_exactness_for_contradiction_and_execution_contamination() {
-    let artifact_ref = ArtifactId("artifact:p09-semantic".into());
+    let artifact_ref = ArtifactId::new("artifact:p09-semantic");
     let contradiction = SemanticContradictionRecordV1::new(
         artifact_ref.clone(),
-        vec![ArtifactId("witness:p09".into())],
+        vec![ArtifactId::new("witness:p09")],
         "refuted-by-hostile-fixture",
     );
     let contamination = ExecutionContaminationRecordV1::new(
         artifact_ref.clone(),
-        ArtifactId("execution-context:p09".into()),
+        ArtifactId::new("execution-context:p09"),
         "execution-output-used-as-domain-truth",
     );
     let state = SemanticStateV1::exact_supported(artifact_ref, "proof-profile:p09")
@@ -2881,8 +2898,8 @@ fn p09_semantic_state_blocks_exactness_for_contradiction_and_execution_contamina
 #[test]
 fn p28_v11b_region_and_subtraction_surfaces_remain_reserved_or_advisory() {
     let node = RegionNodeV1::new(RegionNodeKindV1::Claim, "claim", None);
-    let graph_id = ArtifactId("graph:p28-reserved".into());
-    let region_id = ArtifactId("region:p28-reserved".into());
+    let graph_id = ArtifactId::new("graph:p28-reserved");
+    let region_id = ArtifactId::new("region:p28-reserved");
     let contract = RegionContractV1::new(
         graph_id.clone(),
         RegionGraphKindV1::Inference,
@@ -2916,7 +2933,7 @@ fn p28_v11b_region_and_subtraction_surfaces_remain_reserved_or_advisory() {
     assert!(graph.advisory_only);
     assert!(!graph.can_claim_active_v11b_runtime());
 
-    let accepted_claim = ArtifactId("claim:p28-accepted".into());
+    let accepted_claim = ArtifactId::new("claim:p28-accepted");
     let support = SupportCoreV1::new(
         vec![accepted_claim.clone()],
         Vec::new(),
@@ -2949,11 +2966,11 @@ fn p28_v11b_region_and_subtraction_surfaces_remain_reserved_or_advisory() {
 fn p29_right_graph_misuse_is_blocked_for_storage_or_unbounded_regions() {
     let node_a = RegionNodeV1::new(RegionNodeKindV1::Claim, "a", None);
     let node_b = RegionNodeV1::new(RegionNodeKindV1::Evidence, "b", None);
-    let graph_id = ArtifactId("graph:p29-right-graph".into());
+    let graph_id = ArtifactId::new("graph:p29-right-graph");
     let region = RegionContractV1::new(
         graph_id.clone(),
         RegionGraphKindV1::Storage,
-        ArtifactId("region:p29-right-graph".into()),
+        ArtifactId::new("region:p29-right-graph"),
         vec![node_a.node_id.clone(), node_b.node_id.clone()],
         Vec::new(),
         Vec::new(),
@@ -2987,11 +3004,11 @@ fn p29_right_graph_misuse_is_blocked_for_storage_or_unbounded_regions() {
 fn p10_right_graph_misuse_blocks_retrieval_and_control_kernel_execution() {
     for graph_kind in [RegionGraphKindV1::Retrieval, RegionGraphKindV1::Control] {
         let node = RegionNodeV1::new(RegionNodeKindV1::Claim, format!("{graph_kind}:node"), None);
-        let graph_id = ArtifactId(format!("graph:p10-{graph_kind}"));
+        let graph_id = ArtifactId::new(format!("graph:p10-{graph_kind}"));
         let region = RegionContractV1::new(
             graph_id.clone(),
             graph_kind,
-            ArtifactId(format!("region:p10-{graph_kind}")),
+            ArtifactId::new(format!("region:p10-{graph_kind}")),
             vec![node.node_id.clone()],
             Vec::new(),
             Vec::new(),
@@ -3028,10 +3045,10 @@ fn p29_region_boundary_message_and_receipt_are_executable_seed_only() {
         "claim": "bounded handoff"
     }));
     let message = RegionBoundaryMessageV1::seed(
-        ArtifactId("region:p29-source".into()),
-        ArtifactId("region:p29-destination".into()),
+        ArtifactId::new("region:p29-source"),
+        ArtifactId::new("region:p29-destination"),
         "claim-projection",
-        ArtifactId("artifact:p29-payload".into()),
+        ArtifactId::new("artifact:p29-payload"),
         digest,
     );
     let receipt = RegionBoundaryReceiptV1::seed(&message, true);
@@ -3078,9 +3095,9 @@ fn p29_region_boundary_message_and_receipt_are_executable_seed_only() {
 
 #[test]
 fn p10_minimal_v11b_region_seed_covers_failure_repair_support_and_oracle_diff() {
-    let graph_id = ArtifactId("graph:p10-minimal-region".into());
-    let region_id = ArtifactId("region:p10-minimal-region".into());
-    let accepted_claim = ArtifactId("claim:p10-accepted".into());
+    let graph_id = ArtifactId::new("graph:p10-minimal-region");
+    let region_id = ArtifactId::new("region:p10-minimal-region");
+    let accepted_claim = ArtifactId::new("claim:p10-accepted");
     let node = RegionNodeV1::new(
         RegionNodeKindV1::Claim,
         "accepted claim",
@@ -3117,7 +3134,7 @@ fn p10_minimal_v11b_region_seed_covers_failure_repair_support_and_oracle_diff() 
         CanonicalKernelStopReason::MaxIterations,
         2,
         2,
-        0.01,
+        0.1,
         0.5,
         0.2,
     );
@@ -3127,7 +3144,7 @@ fn p10_minimal_v11b_region_seed_covers_failure_repair_support_and_oracle_diff() 
         2,
         0.3,
         0.2,
-        0.01,
+        0.1,
         stop.clone(),
     );
     let convergence = ConvergenceReportV1::new(
@@ -3136,7 +3153,7 @@ fn p10_minimal_v11b_region_seed_covers_failure_repair_support_and_oracle_diff() 
         CanonicalKernelStopReason::MaxIterations,
         2,
         2,
-        0.01,
+        0.1,
         0.5,
         residual.current_value,
         vec![residual.residual_id.clone()],
@@ -3146,7 +3163,7 @@ fn p10_minimal_v11b_region_seed_covers_failure_repair_support_and_oracle_diff() 
     let syndrome = KernelSyndromeReportV1::contradiction(
         graph_id.clone(),
         region_id.clone(),
-        ArtifactId("witness:p10-contradiction".into()),
+        ArtifactId::new("witness:p10-contradiction"),
         vec![accepted_claim.clone()],
     );
     let approximate = DisplayDigestV1::for_json_value(&serde_json::json!({"value": "approx"}));
@@ -3197,24 +3214,24 @@ fn p10_minimal_v11b_region_seed_covers_failure_repair_support_and_oracle_diff() 
 
 #[test]
 fn p29_residual_syndrome_convergence_seed_stays_receipt_bearing() {
-    let graph_id = ArtifactId("graph:p29-kernel".into());
-    let region_id = ArtifactId("region:p29-kernel".into());
+    let graph_id = ArtifactId::new("graph:p29-kernel");
+    let region_id = ArtifactId::new("region:p29-kernel");
     let stop =
-        KernelStopRuleReportV1::new(CanonicalKernelStopReason::FixedPoint, 4, 8, 0.05, 0.5, 0.02);
+        KernelStopRuleReportV1::new(CanonicalKernelStopReason::FixedPoint, 4, 8, 0.5, 0.5, 0.2);
     let residual = KernelResidualReportV1::new(
         graph_id.clone(),
         region_id.clone(),
         4,
         0.2,
-        0.02,
-        0.05,
+        0.2,
+        0.5,
         stop.clone(),
     );
     let syndrome = KernelSyndromeReportV1::contradiction(
         graph_id.clone(),
         region_id,
-        ArtifactId("witness:p29-contradiction".into()),
-        vec![ArtifactId("claim:p29-affected".into())],
+        ArtifactId::new("witness:p29-contradiction"),
+        vec![ArtifactId::new("claim:p29-affected")],
     );
     let convergence = ConvergenceReportV1::new(
         graph_id,
@@ -3222,7 +3239,7 @@ fn p29_residual_syndrome_convergence_seed_stays_receipt_bearing() {
         CanonicalKernelStopReason::FixedPoint,
         4,
         8,
-        0.05,
+        0.5,
         0.5,
         residual.current_value,
         vec![residual.residual_id.clone()],
@@ -3239,8 +3256,8 @@ fn p29_residual_syndrome_convergence_seed_stays_receipt_bearing() {
 
 #[test]
 fn p29_lawful_subtraction_seed_blocks_support_loss_and_allows_safe_dry_run() {
-    let accepted_claim = ArtifactId("claim:p29-accepted".into());
-    let evidence = ArtifactId("evidence:p29-accepted".into());
+    let accepted_claim = ArtifactId::new("claim:p29-accepted");
+    let evidence = ArtifactId::new("evidence:p29-accepted");
     let support = SupportCoreV1::new(
         vec![accepted_claim.clone()],
         Vec::new(),
@@ -3295,7 +3312,7 @@ fn p29_lawful_subtraction_seed_blocks_support_loss_and_allows_safe_dry_run() {
 
 #[test]
 fn p28_v11c_external_admission_defaults_to_quarantine() {
-    let source = ArtifactId("external-artifact:p28".into());
+    let source = ArtifactId::new("external-artifact:p28");
     let decision = ExternalArtifactAdmissionDecisionV1::default_quarantine(source.clone());
 
     assert_eq!(decision.kind, ArtifactKindV1::AdmissionDecision);

@@ -798,6 +798,7 @@ async fn test_interrupt_resume_roundtrip() {
             (state, checkpoint_data.unwrap())
         }
         ExecutionResult::Complete(_) => panic!("Expected interrupt"),
+        ExecutionResult::Failed { error, .. } => panic!("Expected interrupt, got failure: {error}"),
     };
 
     // Verify partial execution: step1 and step2 should have run

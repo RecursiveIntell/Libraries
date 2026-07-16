@@ -19,4 +19,12 @@ pub enum QuantCodecError {
 
     #[error("integer overflow while computing {context}")]
     IntegerOverflow { context: &'static str },
+
+    /// INT-001: Codec capability not supported.
+    #[error("codec capability not supported: {capability}")]
+    UnsupportedCapability { capability: String },
+
+    /// INT-001: Resource limit exceeded.
+    #[error("resource limit exceeded: {limit} (value={value}, max={max})")]
+    ResourceLimitExceeded { limit: String, value: u64, max: u64 },
 }

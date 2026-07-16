@@ -54,11 +54,17 @@ pub mod governed {
 
         let decision = policy.evaluate(request).map_err(|e| e.to_string())?;
 
-        // Build adapter from the governance decision's selected codec.
+        // CMP-001: Build adapter from the governance decision's selected codec.
+        // Q8/Q4 are not real codecs and will error during decode.
         let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(match decision.codec {
             CodecProfile::Raw => scr_runtime_compression::CodecId::Uncompressed,
-            CodecProfile::Q8 => scr_runtime_compression::CodecId::Uncompressed,
-            CodecProfile::Q4 => scr_runtime_compression::CodecId::Uncompressed,
+            CodecProfile::Q8 | CodecProfile::Q4 => {
+                // CMP-001: Q8/Q4 have no real decoder. Return error.
+                return Err(format!(
+                    "codec profile {:?} is not implemented - no real decoder available",
+                    decision.codec
+                ));
+            }
             CodecProfile::Turbo => scr_runtime_compression::CodecId::TurboQuant,
             CodecProfile::Fib => scr_runtime_compression::CodecId::FibQuant,
         }));
@@ -69,7 +75,8 @@ pub mod governed {
                 match decision.codec {
                     CodecProfile::Raw => scr_runtime_compression::CodecId::Uncompressed,
                     CodecProfile::Q8 | CodecProfile::Q4 => {
-                        scr_runtime_compression::CodecId::Uncompressed
+                        // Already handled above — this is unreachable.
+                        return Err("unreachable: Q8/Q4 handled above".to_string());
                     }
                     CodecProfile::Turbo => scr_runtime_compression::CodecId::TurboQuant,
                     CodecProfile::Fib => scr_runtime_compression::CodecId::FibQuant,
