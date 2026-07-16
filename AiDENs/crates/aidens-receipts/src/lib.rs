@@ -63,6 +63,27 @@ pub struct RunBundleStoreInspection {
     pub digest_verified: bool,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum RunBundleRecoveryState {
+    Published,
+    PendingIndex,
+    Indeterminate,
+    Quarantined,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RunBundleRecoveryEntry {
+    pub run_id: String,
+    pub bundle_path: Option<PathBuf>,
+    pub state: RunBundleRecoveryState,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct RunBundleRecoveryReport {
+    pub entries: Vec<RunBundleRecoveryEntry>,
+}
+
 #[derive(Debug, Error)]
 pub enum RunBundleStoreError {
     #[error("run bundle store io error at {path}: {source}")]
@@ -110,7 +131,9 @@ impl RunBundleStore {
             }
         })?;
         ensure_run_bundle_file(&config.index_path)?;
-        Ok(Self { config })
+        let store = Self { config };
+        let _ = store.reconcile()?;
+        Ok(store)
     }
 
     pub fn config(&self) -> &RunBundleStoreConfig {
@@ -204,11 +227,38 @@ impl RunBundleStore {
                 "Stores AiDENsRunBundleV3 operator evidence only; it is not a canonical memory or verification truth store.".into(),
             ],
         };
-        if let Err(error) = self.append_record(&record) {
-            let _ = std::fs::remove_file(&bundle_path);
-            return Err(error);
-        }
+        self.append_record(&record)?;
         Ok(record)
+    }
+
+    pub fn reconcile(&self) -> Result<RunBundleRecoveryReport, RunBundleStoreError> {
+        let records = read_run_bundle_records(&self.config.index_path)?;
+        let mut report = RunBundleRecoveryReport::default();
+        for record in records {
+            let state = if !record.bundle_path.is_file() {
+                RunBundleRecoveryState::Indeterminate
+            } else {
+                match std::fs::read_to_string(&record.bundle_path)
+                    .ok()
+                    .and_then(|text| serde_json::from_str::<Value>(&text).ok())
+                {
+                    Some(bundle)
+                        if ContentDigest::compute_json(&bundle).ok()
+                            == Some(record.content_digest.clone()) =>
+                    {
+                        RunBundleRecoveryState::Published
+                    }
+                    _ => RunBundleRecoveryState::Indeterminate,
+                }
+            };
+            report.entries.push(RunBundleRecoveryEntry {
+                run_id: record.run_id,
+                bundle_path: Some(record.bundle_path),
+                state,
+                reason: "existing_index_reconciled".into(),
+            });
+        }
+        Ok(report)
     }
 
     pub fn write_bundle<T: Serialize>(
