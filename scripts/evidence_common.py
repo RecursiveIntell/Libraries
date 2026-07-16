@@ -108,14 +108,43 @@ def source_binding(repo: Path, command_receipts: list[dict[str, Any]]) -> dict[s
     }
 
 
+def evidence_only_descendant(repo: Path, recorded_commit: str, head_commit: str) -> bool:
+    """Return whether HEAD only adds/modifies derived evidence after recording.
+
+    A receipt cannot name the commit which contains itself: adding its content
+    necessarily changes the commit object.  Recording therefore binds the
+    pre-evidence source commit, and verification permits a descendant only when
+    every intervening changed path is a declared derived-evidence artifact.
+    """
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", recorded_commit, head_commit],
+        cwd=repo,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if ancestor.returncode != 0:
+        return False
+    changed = run(repo, ["git", "diff", "--name-only", f"{recorded_commit}..{head_commit}"])
+    return all(
+        path in EVIDENCE_PATHS or path.startswith("release/evidence/")
+        for path in changed.splitlines()
+        if path
+    )
+
+
 def verify_binding(repo: Path, binding: dict[str, Any]) -> list[str]:
     findings: list[str] = []
     missing = sorted(REQUIRED_BINDING_FIELDS - set(binding))
     if missing:
         findings.append("missing source_binding fields: " + ", ".join(missing))
         return findings
-    if binding["commit_sha"] != run(repo, ["git", "rev-parse", "HEAD"]):
-        findings.append("commit SHA mismatch")
+    recorded_commit = binding["commit_sha"]
+    head_commit = run(repo, ["git", "rev-parse", "HEAD"])
+    if recorded_commit != head_commit and not evidence_only_descendant(
+        repo, recorded_commit, head_commit
+    ):
+        findings.append("commit SHA mismatch (HEAD is not an evidence-only descendant)")
     if binding["tree_sha"] != source_tree_sha(repo):
         findings.append("source tree hash mismatch")
     lock = repo / "Cargo.lock"
