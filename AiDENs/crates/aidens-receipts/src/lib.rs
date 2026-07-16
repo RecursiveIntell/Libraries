@@ -234,7 +234,9 @@ impl RunBundleStore {
     pub fn reconcile(&self) -> Result<RunBundleRecoveryReport, RunBundleStoreError> {
         let records = read_run_bundle_records(&self.config.index_path)?;
         let mut report = RunBundleRecoveryReport::default();
+        let mut indexed = std::collections::BTreeSet::new();
         for record in records {
+            indexed.insert(record.bundle_path.clone());
             let state = if !record.bundle_path.is_file() {
                 RunBundleRecoveryState::Indeterminate
             } else {
@@ -244,7 +246,8 @@ impl RunBundleStore {
                 {
                     Some(bundle)
                         if ContentDigest::compute_json(&bundle).ok()
-                            == Some(record.content_digest.clone()) =>
+                            == Some(record.content_digest.clone())
+                            && verify_child_references(&bundle) =>
                     {
                         RunBundleRecoveryState::Published
                     }
@@ -255,7 +258,54 @@ impl RunBundleStore {
                 run_id: record.run_id,
                 bundle_path: Some(record.bundle_path),
                 state,
-                reason: "existing_index_reconciled".into(),
+                reason: "index_record_reconciled".into(),
+            });
+        }
+        for path in scan_bundle_paths(&self.config.bundles_path)? {
+            if indexed.contains(&path) {
+                continue;
+            }
+            let (state, reason, run_id) = match std::fs::read_to_string(&path)
+                .ok()
+                .and_then(|text| serde_json::from_str::<Value>(&text).ok())
+            {
+                Some(bundle) => {
+                    let run_id = bundle
+                        .get("run_id")
+                        .and_then(Value::as_str)
+                        .unwrap_or("unknown")
+                        .to_string();
+                    if bundle.get("schema").and_then(Value::as_str) != Some("AiDENsRunBundleV3") {
+                        (
+                            RunBundleRecoveryState::Quarantined,
+                            "unsupported_bundle_schema",
+                            run_id,
+                        )
+                    } else if !verify_child_references(&bundle) {
+                        (
+                            RunBundleRecoveryState::Quarantined,
+                            "child_reference_unverified",
+                            run_id,
+                        )
+                    } else {
+                        (
+                            RunBundleRecoveryState::PendingIndex,
+                            "bundle_without_index",
+                            run_id,
+                        )
+                    }
+                }
+                None => (
+                    RunBundleRecoveryState::Quarantined,
+                    "malformed_bundle",
+                    "unknown".into(),
+                ),
+            };
+            report.entries.push(RunBundleRecoveryEntry {
+                run_id,
+                bundle_path: Some(path),
+                state,
+                reason: reason.into(),
             });
         }
         Ok(report)
@@ -831,6 +881,70 @@ fn sync_directory(path: &Path) -> std::io::Result<()> {
     File::open(path)?.sync_all()
 }
 
+fn scan_bundle_paths(root: &Path) -> Result<Vec<PathBuf>, RunBundleStoreError> {
+    let mut paths = Vec::new();
+    if !root.is_dir() {
+        return Ok(paths);
+    }
+    for entry in std::fs::read_dir(root).map_err(|source| RunBundleStoreError::Io {
+        path: root.into(),
+        source,
+    })? {
+        let entry = entry.map_err(|source| RunBundleStoreError::Io {
+            path: root.into(),
+            source,
+        })?;
+        let path = entry.path();
+        if path.is_dir() {
+            paths.extend(scan_bundle_paths(&path)?);
+        } else if path.file_name().and_then(|n| n.to_str()) == Some("run-bundle.json") {
+            paths.push(path);
+        }
+    }
+    Ok(paths)
+}
+
+/// Verify only references whose owner receipt is embedded in the V3 bundle.
+/// A reference without a closed, digest-valid owner is never promoted.
+fn verify_child_references(bundle: &Value) -> bool {
+    for key in ["child_receipts", "children", "child_references"] {
+        let Some(children) = bundle.get(key) else {
+            continue;
+        };
+        let Some(children) = children.as_array() else {
+            return false;
+        };
+        for child in children {
+            let Some(object) = child.as_object() else {
+                return false;
+            };
+            let Some(receipt) = object
+                .get("receipt")
+                .or_else(|| object.get("owner_receipt"))
+            else {
+                return false;
+            };
+            let Some(digest) = object
+                .get("digest")
+                .or_else(|| object.get("content_digest"))
+            else {
+                return false;
+            };
+            let Some(digest) = digest.as_str() else {
+                return false;
+            };
+            let Ok(actual) = ContentDigest::compute_json(receipt) else {
+                return false;
+            };
+            if actual.hex() != digest || object.get("closed").and_then(Value::as_bool) != Some(true)
+            {
+                return false;
+            }
+        }
+    }
+    true
+}
+
 fn acquire_exclusive_lock(path: &Path) -> std::io::Result<ExclusiveFileLock> {
     let lock_path = lock_path_for(path);
     if let Some(parent) = lock_path.parent() {
@@ -1186,6 +1300,44 @@ mod tests {
         assert!(inspection.digest_verified);
         assert_eq!(inspection.bundle["schema"], "AiDENsRunBundleV3");
         assert_eq!(reopened.single_bundle_path().unwrap(), record.bundle_path);
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn recovery_scans_orphan_bundle_and_quarantines_unverified_child() {
+        let root =
+            std::env::temp_dir().join(format!("aidens-recovery-matrix-{}", uuid::Uuid::new_v4()));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let bundle = serde_json::json!({"schema":"AiDENsRunBundleV3","run_id":"orphan","child_receipts":[{"closed":false,"receipt":{"id":"child"},"digest":"00"}]});
+        let digest = ContentDigest::compute_json(&bundle).unwrap();
+        let path = store.bundle_path_for_run_id_and_digest("orphan", &digest);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, serde_json::to_string(&bundle).unwrap()).unwrap();
+        let report = store.reconcile().unwrap();
+        assert!(report
+            .entries
+            .iter()
+            .any(|entry| entry.state == RunBundleRecoveryState::Quarantined
+                && entry.reason == "child_reference_unverified"));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn recovery_classifies_valid_orphan_as_pending_index() {
+        let root =
+            std::env::temp_dir().join(format!("aidens-recovery-pending-{}", uuid::Uuid::new_v4()));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let bundle = serde_json::json!({"schema":"AiDENsRunBundleV3","run_id":"orphan-valid"});
+        let digest = ContentDigest::compute_json(&bundle).unwrap();
+        let path = store.bundle_path_for_run_id_and_digest("orphan-valid", &digest);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, serde_json::to_string(&bundle).unwrap()).unwrap();
+        let report = store.reconcile().unwrap();
+        assert!(report
+            .entries
+            .iter()
+            .any(|entry| entry.state == RunBundleRecoveryState::PendingIndex
+                && entry.reason == "bundle_without_index"));
         let _ = std::fs::remove_dir_all(root);
     }
 }
