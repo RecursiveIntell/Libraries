@@ -20,6 +20,7 @@ effect-signature = { version = "0.1.0", path = "../effect-signature" }
 forge-policy = { version = "0.1.0", path = "../forge-policy" }
 sandbox-workspace = { version = "0.1.0", path = "../sandbox-workspace" }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 thiserror = "2"
 tokio = { version = "1", features = ["process", "rt", "time"] }
 tracing = "0.1"

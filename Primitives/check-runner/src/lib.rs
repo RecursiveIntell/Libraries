@@ -7,6 +7,10 @@
 //! attribution. It is execution infrastructure, not a policy owner.
 
 use std::path::Path;
+#[cfg(feature = "container")]
+use std::sync::atomic::{AtomicU64, Ordering};
+#[cfg(feature = "container")]
+use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
@@ -308,7 +312,10 @@ pub struct SandboxCapabilityTruthReceiptV1 {
     pub schema: String,
     pub execution_mode: String,
     pub runtime: String,
-    pub image: String,
+    pub requested_image: String,
+    pub resolved_image_digest: String,
+    pub container_id: String,
+    pub runtime_observation_digest: String,
     pub rootless_required: bool,
     pub rootless_observed: bool,
     pub mechanisms: Vec<String>,
@@ -320,11 +327,14 @@ pub struct SandboxCapabilityTruthReceiptV1 {
 impl SandboxCapabilityTruthReceiptV1 {
     fn digest_material(&self) -> String {
         format!(
-            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             self.schema,
             self.execution_mode,
             self.runtime,
-            self.image,
+            self.requested_image,
+            self.resolved_image_digest,
+            self.container_id,
+            self.runtime_observation_digest,
             self.rootless_required,
             self.rootless_observed,
             self.mechanisms.join("\n"),
@@ -358,7 +368,13 @@ impl SandboxCapabilityTruthReceiptV1 {
             && self.runtime == "podman"
             && self.rootless_required
             && self.rootless_observed
-            && is_digest_pinned_image(&self.image)
+            && is_digest_pinned_image(&self.requested_image)
+            && self
+                .requested_image
+                .rsplit_once('@')
+                .is_some_and(|(_, digest)| digest == self.resolved_image_digest)
+            && !self.container_id.is_empty()
+            && self.runtime_observation_digest.starts_with("blake3:")
             && !self.memory_limit.is_empty()
             && !self.cpu_limit.is_empty()
             && self.mechanisms.len() == REQUIRED.len()
@@ -388,6 +404,7 @@ pub struct ContainerBackend {
     sealed: bool,
     memory_limit: String,
     cpu_limit: String,
+    last_capability_receipt: Mutex<Option<SandboxCapabilityTruthReceiptV1>>,
 }
 
 #[cfg(feature = "container")]
@@ -423,6 +440,10 @@ impl ContainerBackend {
                 runtime: "sealed execution requires an image pinned by @sha256:<64 hex>".into(),
             });
         }
+        if sealed {
+            validate_cpu_limit(&config.cpu_limit)?;
+            validate_memory_limit(&config.memory_limit)?;
+        }
 
         Ok(Self {
             runtime,
@@ -431,6 +452,7 @@ impl ContainerBackend {
             sealed,
             memory_limit: config.memory_limit.clone(),
             cpu_limit: config.cpu_limit.clone(),
+            last_capability_receipt: Mutex::new(None),
         })
     }
 
@@ -438,40 +460,13 @@ impl ContainerBackend {
         self.runtime
     }
 
-    pub fn capability_truth_receipt(&self) -> SandboxCapabilityTruthReceiptV1 {
-        let mut receipt = SandboxCapabilityTruthReceiptV1 {
-            schema: "SandboxCapabilityTruthReceiptV1".into(),
-            execution_mode: if self.sealed {
-                "sealed_local".into()
-            } else {
-                "container".into()
-            },
-            runtime: self.runtime.command().into(),
-            image: self.rust_image.clone(),
-            rootless_required: self.sealed,
-            rootless_observed: self.runtime == ContainerRuntime::Podman && podman_is_rootless(),
-            mechanisms: if self.sealed {
-                vec![
-                    "cap_drop_all".into(),
-                    "controlled_workspace_mount".into(),
-                    "cpu_limit".into(),
-                    "memory_limit".into(),
-                    "network_none".into(),
-                    "no_new_privileges".into(),
-                    "pids_limit".into(),
-                    "read_only_rootfs".into(),
-                    "tmpfs_tmp".into(),
-                    "userns_keep_id".into(),
-                ]
-            } else {
-                Vec::new()
-            },
-            memory_limit: self.memory_limit.clone(),
-            cpu_limit: self.cpu_limit.clone(),
-            content_digest: String::new(),
-        };
-        receipt.content_digest = receipt.expected_digest();
-        receipt
+    /// Return only the most recent post-execution, runtime-inspected receipt.
+    /// Configuration alone is never represented as observed capability truth.
+    pub fn capability_truth_receipt(&self) -> Option<SandboxCapabilityTruthReceiptV1> {
+        self.last_capability_receipt
+            .lock()
+            .ok()
+            .and_then(|receipt| receipt.clone())
     }
 
     fn build_run_args(
@@ -507,7 +502,16 @@ impl ContainerBackend {
             && (command_args.is_empty()
                 || !matches!(command_args[0], "fmt" | "clippy" | "test")
                 || command_args.iter().any(|arg| {
-                    arg.contains(';') || arg.contains("&&") || arg.contains("||") || *arg == "-c"
+                    arg.contains(';')
+                        || arg.contains("&&")
+                        || arg.contains("||")
+                        || *arg == "-c"
+                        || *arg == "--config"
+                        || *arg == "--manifest-path"
+                        || *arg == "--target-dir"
+                        || *arg == "-Z"
+                        || arg.contains("../")
+                        || arg.contains("..\\")
                 }))
         {
             return Err(RunnerError::SealedModeUnsupported {
@@ -522,7 +526,12 @@ impl ContainerBackend {
             }
         }
 
-        let mut args = vec!["run".to_string(), "--rm".to_string()];
+        let mut args = vec!["run".to_string()];
+        if self.sealed {
+            args.extend(["--name".to_string(), next_container_name()]);
+        } else {
+            args.push("--rm".to_string());
+        }
         if self.sealed {
             args.extend([
                 "--network=none".to_string(),
@@ -532,7 +541,7 @@ impl ContainerBackend {
                 "--pids-limit=128".to_string(),
                 "--userns=keep-id".to_string(),
                 "--tmpfs".to_string(),
-                "type=tmpfs,destination=/tmp".to_string(),
+                "/tmp:rw,noexec,nosuid,nodev".to_string(),
             ]);
         }
         args.push("-v".to_string());
@@ -550,6 +559,84 @@ impl ContainerBackend {
         args.extend(command_args.iter().map(|arg| (*arg).to_string()));
         Ok(args)
     }
+
+    async fn inspect_capability_receipt(
+        &self,
+        container_name: &str,
+    ) -> Result<SandboxCapabilityTruthReceiptV1, RunnerError> {
+        let output = tokio::process::Command::new(self.runtime.command())
+            .args(["inspect", container_name, "--format", "json"])
+            .output()
+            .await
+            .map_err(|error| {
+                RunnerError::Other(format!("failed to inspect sealed container: {error}"))
+            })?;
+        if !output.status.success() {
+            return Err(RunnerError::Other(format!(
+                "sealed container inspection failed: {}",
+                bounded_output(&output.stderr)
+            )));
+        }
+        let observation = serde_json::from_slice(&output.stdout).map_err(|error| {
+            RunnerError::Other(format!(
+                "sealed container inspection was not valid JSON: {error}"
+            ))
+        })?;
+        capability_receipt_from_inspect(
+            &self.rust_image,
+            &self.memory_limit,
+            &self.cpu_limit,
+            podman_is_rootless(),
+            &observation,
+        )
+    }
+
+    async fn runtime_maintenance(&self, operation: &str, args: &[&str]) -> Result<(), RunnerError> {
+        let output = tokio::process::Command::new(self.runtime.command())
+            .args(args)
+            .output()
+            .await
+            .map_err(|error| {
+                RunnerError::Other(format!("failed to {operation} sealed container: {error}"))
+            })?;
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(RunnerError::Other(format!(
+                "failed to {operation} sealed container: {}",
+                bounded_output(&output.stderr)
+            )))
+        }
+    }
+
+    async fn finalize_sealed_container(
+        &self,
+        container_name: &str,
+        timed_out: bool,
+    ) -> Result<(), RunnerError> {
+        if timed_out {
+            self.runtime_maintenance("kill timed-out", &["kill", "--ignore", container_name])
+                .await?;
+        }
+        let receipt = self.inspect_capability_receipt(container_name).await;
+        self.runtime_maintenance(
+            "remove finalized",
+            &["rm", "--force", "--ignore", container_name],
+        )
+        .await?;
+
+        match receipt {
+            Ok(receipt) => {
+                let mut slot = self.last_capability_receipt.lock().map_err(|_| {
+                    RunnerError::Other("capability receipt lock is poisoned".into())
+                })?;
+                *slot = Some(receipt);
+                Ok(())
+            }
+            Err(_) if timed_out => Ok(()),
+            Err(error) => Err(error),
+        }
+    }
 }
 
 fn is_digest_pinned_image(image: &str) -> bool {
@@ -559,6 +646,234 @@ fn is_digest_pinned_image(image: &str) -> bool {
     !name.trim().is_empty()
         && digest.len() == 64
         && digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+#[cfg(feature = "container")]
+fn validate_cpu_limit(value: &str) -> Result<(), RunnerError> {
+    let valid = value == value.trim()
+        && !value.is_empty()
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || byte == b'.')
+        && value
+            .parse::<f64>()
+            .is_ok_and(|parsed| parsed.is_finite() && parsed > 0.0);
+    if valid {
+        Ok(())
+    } else {
+        Err(RunnerError::SealedModeUnsupported {
+            runtime: format!("invalid sealed cpu limit: {value:?}"),
+        })
+    }
+}
+
+#[cfg(feature = "container")]
+fn validate_memory_limit(value: &str) -> Result<(), RunnerError> {
+    let valid = value == value.trim()
+        && !value.is_empty()
+        && value
+            .strip_suffix(['b', 'k', 'm', 'g', 'B', 'K', 'M', 'G'])
+            .is_some_and(|digits| {
+                !digits.is_empty()
+                    && digits.bytes().all(|byte| byte.is_ascii_digit())
+                    && digits.parse::<u64>().is_ok_and(|parsed| parsed > 0)
+            });
+    if valid {
+        Ok(())
+    } else {
+        Err(RunnerError::SealedModeUnsupported {
+            runtime: format!("invalid sealed memory limit: {value:?}"),
+        })
+    }
+}
+
+#[cfg(feature = "container")]
+fn next_container_name() -> String {
+    static NEXT_ID: AtomicU64 = AtomicU64::new(1);
+    format!(
+        "check-runner-{}-{}",
+        std::process::id(),
+        NEXT_ID.fetch_add(1, Ordering::Relaxed)
+    )
+}
+
+#[cfg(feature = "container")]
+fn container_name_from_run_args(args: &[String]) -> Option<&str> {
+    args.windows(2)
+        .find(|pair| pair[0] == "--name")
+        .map(|pair| pair[1].as_str())
+}
+
+#[cfg(feature = "container")]
+fn capability_receipt_from_inspect(
+    requested_image: &str,
+    memory_limit: &str,
+    cpu_limit: &str,
+    rootless_observed: bool,
+    observation: &serde_json::Value,
+) -> Result<SandboxCapabilityTruthReceiptV1, RunnerError> {
+    let invalid = |reason: &str| RunnerError::SealedModeUnsupported {
+        runtime: format!("sealed runtime observation failed: {reason}"),
+    };
+    let observed = observation
+        .as_array()
+        .and_then(|items| items.first())
+        .ok_or_else(|| invalid("podman inspect returned no container"))?;
+    let container_id = observed
+        .get("Id")
+        .and_then(serde_json::Value::as_str)
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| invalid("container id missing"))?;
+    let resolved_image_digest = observed
+        .get("ImageDigest")
+        .and_then(serde_json::Value::as_str)
+        .ok_or_else(|| invalid("resolved image digest missing"))?;
+    let requested_digest = requested_image
+        .rsplit_once('@')
+        .map(|(_, digest)| digest)
+        .ok_or_else(|| invalid("requested image is not digest pinned"))?;
+    if requested_digest != resolved_image_digest {
+        return Err(invalid(
+            "resolved image digest differs from requested digest",
+        ));
+    }
+
+    let create_command = observed
+        .pointer("/Config/CreateCommand")
+        .and_then(serde_json::Value::as_array)
+        .ok_or_else(|| invalid("create command missing"))?
+        .iter()
+        .map(|item| {
+            item.as_str()
+                .ok_or_else(|| invalid("non-string create argument"))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let has_arg = |expected: &str| create_command.contains(&expected);
+    let has_pair = |flag: &str, value: &str| {
+        create_command
+            .windows(2)
+            .any(|pair| pair[0] == flag && pair[1] == value)
+    };
+    let host = observed
+        .get("HostConfig")
+        .ok_or_else(|| invalid("host configuration missing"))?;
+    let tmpfs = host
+        .pointer("/Tmpfs/~1tmp")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default();
+    let workspace_mount = create_command
+        .windows(2)
+        .any(|pair| pair[0] == "-v" && pair[1].ends_with(":/workspace:rw"))
+        && has_pair("-w", "/workspace");
+
+    let checks = [
+        (
+            "cap_drop_all",
+            has_arg("--cap-drop=ALL")
+                && host
+                    .pointer("/Privileged")
+                    .and_then(serde_json::Value::as_bool)
+                    == Some(false),
+        ),
+        ("controlled_workspace_mount", workspace_mount),
+        (
+            "cpu_limit",
+            has_arg(&format!("--cpus={cpu_limit}"))
+                && host
+                    .pointer("/NanoCpus")
+                    .and_then(serde_json::Value::as_u64)
+                    .is_some_and(|value| value > 0),
+        ),
+        (
+            "memory_limit",
+            has_arg(&format!("--memory={memory_limit}"))
+                && host
+                    .pointer("/Memory")
+                    .and_then(serde_json::Value::as_u64)
+                    .is_some_and(|value| value > 0),
+        ),
+        (
+            "network_none",
+            has_arg("--network=none")
+                && host
+                    .pointer("/NetworkMode")
+                    .and_then(serde_json::Value::as_str)
+                    == Some("none"),
+        ),
+        (
+            "no_new_privileges",
+            has_arg("--security-opt=no-new-privileges")
+                && host
+                    .pointer("/SecurityOpt")
+                    .and_then(serde_json::Value::as_array)
+                    .is_some_and(|items| {
+                        items
+                            .iter()
+                            .any(|item| item.as_str() == Some("no-new-privileges"))
+                    }),
+        ),
+        (
+            "pids_limit",
+            has_arg("--pids-limit=128")
+                && host
+                    .pointer("/PidsLimit")
+                    .and_then(serde_json::Value::as_u64)
+                    == Some(128),
+        ),
+        (
+            "read_only_rootfs",
+            has_arg("--read-only")
+                && host
+                    .pointer("/ReadonlyRootfs")
+                    .and_then(serde_json::Value::as_bool)
+                    == Some(true),
+        ),
+        (
+            "tmpfs_tmp",
+            has_pair("--tmpfs", "/tmp:rw,noexec,nosuid,nodev")
+                && ["rw", "noexec", "nosuid", "nodev"]
+                    .iter()
+                    .all(|option| tmpfs.split(',').any(|seen| seen == *option)),
+        ),
+        (
+            "userns_keep_id",
+            has_arg("--userns=keep-id") && rootless_observed,
+        ),
+    ];
+    let failed = checks
+        .iter()
+        .filter_map(|(name, passed)| (!passed).then_some(*name))
+        .collect::<Vec<_>>();
+    if !failed.is_empty() {
+        return Err(invalid(&format!(
+            "required mechanisms not observed: {}",
+            failed.join(",")
+        )));
+    }
+
+    let observation_bytes = serde_json::to_vec(observed)
+        .map_err(|error| invalid(&format!("cannot serialize observation: {error}")))?;
+    let mut receipt = SandboxCapabilityTruthReceiptV1 {
+        schema: "SandboxCapabilityTruthReceiptV1".into(),
+        execution_mode: "sealed_local".into(),
+        runtime: "podman".into(),
+        requested_image: requested_image.into(),
+        resolved_image_digest: resolved_image_digest.into(),
+        container_id: container_id.into(),
+        runtime_observation_digest: format!("blake3:{}", blake3::hash(&observation_bytes).to_hex()),
+        rootless_required: true,
+        rootless_observed,
+        mechanisms: checks.iter().map(|(name, _)| (*name).into()).collect(),
+        memory_limit: memory_limit.into(),
+        cpu_limit: cpu_limit.into(),
+        content_digest: String::new(),
+    };
+    receipt.content_digest = receipt.expected_digest();
+    if receipt.verify() {
+        Ok(receipt)
+    } else {
+        Err(invalid("constructed capability receipt did not verify"))
+    }
 }
 
 #[cfg(feature = "container")]
@@ -602,6 +917,15 @@ impl ExecutionBackend for ContainerBackend {
             format!("{} {}", program, args.join(" "))
         };
         let run_args = self.build_run_args(workspace, program, args, env)?;
+        let container_name = if self.sealed {
+            Some(
+                container_name_from_run_args(&run_args)
+                    .ok_or_else(|| RunnerError::Other("sealed container name missing".into()))?
+                    .to_string(),
+            )
+        } else {
+            None
+        };
 
         let start = Instant::now();
         let child = tokio::process::Command::new(self.runtime.command())
@@ -620,6 +944,11 @@ impl ExecutionBackend for ContainerBackend {
         let output =
             tokio::time::timeout(Duration::from_secs(timeout), child.wait_with_output()).await;
         let duration_ms = start.elapsed().as_millis() as u64;
+
+        if let Some(container_name) = container_name.as_deref() {
+            self.finalize_sealed_container(container_name, output.is_err())
+                .await?;
+        }
 
         match output {
             Ok(Ok(output)) => Ok(CommandOutput {
@@ -962,16 +1291,121 @@ mod tests {
         ] {
             assert!(args.iter().any(|arg| arg == required), "missing {required}");
         }
-        assert!(args.iter().any(|arg| arg == "type=tmpfs,destination=/tmp"));
+        assert!(args.iter().any(|arg| arg == "/tmp:rw,noexec,nosuid,nodev"));
         assert!(!args.iter().any(|arg| arg == "--privileged"));
 
-        let receipt = backend.capability_truth_receipt();
+        assert!(backend.capability_truth_receipt().is_none());
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn runtime_inspection_produces_verifiable_capability_truth() {
+        let requested_image = "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        let observation = serde_json::json!([{
+            "Id": "container-1",
+            "ImageDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "Config": {"CreateCommand": [
+                "podman", "run", "--network=none", "--read-only", "--cap-drop=ALL",
+                "--security-opt=no-new-privileges", "--pids-limit=128", "--userns=keep-id",
+                "--tmpfs", "/tmp:rw,noexec,nosuid,nodev", "-v", "/host:/workspace:rw",
+                "-w", "/workspace", "--memory=1g", "--cpus=1.0", requested_image,
+                "cargo", "test"
+            ]},
+            "HostConfig": {
+                "NetworkMode": "none", "ReadonlyRootfs": true, "Privileged": false,
+                "SecurityOpt": ["no-new-privileges"], "PidsLimit": 128,
+                "Memory": 1073741824, "NanoCpus": 1000000000,
+                "Tmpfs": {"/tmp": "rw,noexec,nosuid,nodev,rprivate,tmpcopyup"}
+            }
+        }]);
+
+        let receipt =
+            capability_receipt_from_inspect(requested_image, "1g", "1.0", true, &observation)
+                .unwrap();
+
         assert!(receipt.verify());
-        assert_eq!(receipt.execution_mode, "sealed_local");
-        assert_eq!(receipt.runtime, "podman");
-        assert!(receipt.rootless_required);
-        assert!(receipt.mechanisms.iter().any(|item| item == "network_none"));
-        assert!(receipt.mechanisms.iter().any(|item| item == "cap_drop_all"));
+        assert_eq!(receipt.container_id, "container-1");
+        assert_eq!(receipt.mechanisms.len(), 10);
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn runtime_inspection_missing_mechanism_fails_closed() {
+        let requested_image = "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        let observation = serde_json::json!([{
+            "Id": "container-1",
+            "ImageDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "Config": {"CreateCommand": ["podman", "run", requested_image, "cargo", "test"]},
+            "HostConfig": {"NetworkMode": "bridge", "ReadonlyRootfs": false}
+        }]);
+
+        assert!(
+            capability_receipt_from_inspect(requested_image, "1g", "1.0", true, &observation,)
+                .is_err()
+        );
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn rootless_podman_execution_emits_observed_receipt_and_cleans_container() {
+        const IMAGE: &str = "docker.io/library/alpine@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc";
+        if !podman_is_rootless()
+            || !std::process::Command::new("podman")
+                .args(["image", "exists", IMAGE])
+                .status()
+                .is_ok_and(|status| status.success())
+        {
+            return;
+        }
+
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.rust_image = IMAGE.into();
+        let backend = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman).unwrap();
+        let workspace = tempfile::tempdir().unwrap();
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_io()
+            .enable_time()
+            .build()
+            .unwrap();
+
+        let output = runtime
+            .block_on(backend.run_command(workspace.path(), "cargo", &["test"], &[], 5))
+            .unwrap();
+        assert_ne!(output.exit_code, 0, "alpine should not contain cargo");
+        let receipt = backend.capability_truth_receipt().unwrap();
+        assert!(receipt.verify());
+        assert!(!std::process::Command::new("podman")
+            .args(["container", "exists", &receipt.container_id])
+            .status()
+            .is_ok_and(|status| status.success()));
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn sealed_backend_rejects_invalid_resource_limits_before_spawn() {
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.rust_image =
+            "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                .into();
+
+        for invalid in ["", "0", "-1", "nope"] {
+            config.cpu_limit = invalid.into();
+            config.memory_limit = "1g".into();
+            assert!(matches!(
+                ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman),
+                Err(RunnerError::SealedModeUnsupported { .. })
+            ));
+        }
+        config.cpu_limit = "1.5".into();
+        for invalid in ["", "0", "-1g", "nope", "1t"] {
+            config.memory_limit = invalid.into();
+            assert!(matches!(
+                ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman),
+                Err(RunnerError::SealedModeUnsupported { .. })
+            ));
+        }
     }
 
     #[cfg(feature = "container")]
@@ -1011,6 +1445,11 @@ mod tests {
             ("sh", vec!["-c", "cargo test"]),
             ("cargo", vec!["run"]),
             ("cargo", vec!["test", "&&", "id"]),
+            (
+                "cargo",
+                vec!["test", "--manifest-path", "../evil/Cargo.toml"],
+            ),
+            ("cargo", vec!["test", "-Z", "unstable-options"]),
         ] {
             let error = backend
                 .build_run_args(workspace.path(), program, &args, &[])
