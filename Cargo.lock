@@ -790,6 +790,7 @@ name = "check-runner"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "blake3",
  "check-runner-sys",
  "effect-signature",
  "forge-policy",
@@ -7454,9 +7455,8 @@ dependencies = [
 
 [[package]]
 name = "turbo-quant"
-version = "0.2.3"
+version = "0.2.0"
 dependencies = [
- "cc",
  "criterion 0.5.1",
  "nalgebra 0.33.3",
  "rand 0.8.6",

@@ -122,7 +122,7 @@ bitemporal-runtime = { version = "0.1.0", path = "../bitemporal-runtime" }
 # tested precedence (`hnsw` before `usearch-backend`) when both are enabled.
 hnsw_rs = { version = "0.3", optional = true }
 usearch = { version = "2.25", default-features = false, optional = true }
-turbo-quant = { version = "0.2.1", path = "../turbo-quant", optional = true }
+turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
 quant-governor = { version = "0.1.0", path = "../quant-governor", optional = true }
 scr-runtime-compression = { version = "0.1.0", path = "../scr-runtime-compression", optional = true }
 # `poly-kv` is a nested workspace; depend on its package manifest, not its
