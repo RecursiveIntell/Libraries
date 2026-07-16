@@ -201,18 +201,13 @@ async fn test_retry_events_share_trial_ids_per_concrete_attempt() {
                 attempt_id,
                 trial_id,
                 ..
-            } if node_id == "flaky" => Some((
-                attempt_id
-                    .as_ref()
-                    .expect("retry start must carry canonical attempt_id")
-                    .as_str()
-                    .to_string(),
-                trial_id
-                    .as_ref()
-                    .expect("retry start must carry canonical trial_id")
-                    .as_str()
-                    .to_string(),
-            )),
+            } if node_id == "flaky" => match (attempt_id.as_ref(), trial_id.as_ref()) {
+                (Some(attempt_id), Some(trial_id)) => Some((
+                    attempt_id.as_str().to_string(),
+                    trial_id.as_str().to_string(),
+                )),
+                _ => None,
+            },
             _ => None,
         })
         .collect();
@@ -225,23 +220,18 @@ async fn test_retry_events_share_trial_ids_per_concrete_attempt() {
                 attempt_id,
                 trial_id,
                 ..
-            } if node_id == "flaky" => Some((
-                attempt_id
-                    .as_ref()
-                    .expect("retry end must carry canonical attempt_id")
-                    .as_str()
-                    .to_string(),
-                trial_id
-                    .as_ref()
-                    .expect("retry end must carry canonical trial_id")
-                    .as_str()
-                    .to_string(),
-                match outcome {
-                    NodeOutcomeKind::Success => "success",
-                    NodeOutcomeKind::Failed => "failed",
-                    NodeOutcomeKind::Interrupted => "interrupted",
-                },
-            )),
+            } if node_id == "flaky" => match (attempt_id.as_ref(), trial_id.as_ref()) {
+                (Some(attempt_id), Some(trial_id)) => Some((
+                    attempt_id.as_str().to_string(),
+                    trial_id.as_str().to_string(),
+                    match outcome {
+                        NodeOutcomeKind::Success => "success",
+                        NodeOutcomeKind::Failed => "failed",
+                        NodeOutcomeKind::Interrupted => "interrupted",
+                    },
+                )),
+                _ => None,
+            },
             _ => None,
         })
         .collect();

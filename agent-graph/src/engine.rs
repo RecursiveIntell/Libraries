@@ -9,7 +9,6 @@ use crate::error::{AgentGraphError, Result};
 use crate::event_sink::{EventSink, GraphEvent, NodeOutcomeKind};
 use crate::graph::{AgentGraph, END, START};
 use crate::interrupt::{ExecutionResult, InterruptCheckpoint};
-use crate::receipt::{ExecutionOutcome, GraphExecutionReceiptV1, StepExecutionReceiptV1};
 use crate::retry::RetryPolicy;
 use crate::router::RouterOutput;
 use crate::state::AgentState;
@@ -1043,10 +1042,14 @@ where
                         attempt_id: Some(canonical_attempt_id.clone()),
                         trial_id: Some(trial_id.clone()),
                     });
-                    let delay = retry
-                        .as_ref()
-                        .expect("retry policy must exist when retrying")
-                        .delay_for_attempt(attempt_index);
+                    let Some(policy) = retry.as_ref() else {
+                        return Err(AttemptFamilyFailure {
+                            error,
+                            outcome,
+                            trial_id,
+                        });
+                    };
+                    let delay = policy.delay_for_attempt(attempt_index);
                     tokio::time::sleep(delay).await;
                 } else {
                     return Err(AttemptFamilyFailure {

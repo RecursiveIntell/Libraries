@@ -18,7 +18,8 @@
 //!         latency_tolerance_ms: 50,
 //!         ..Default::default()
 //!     },
-//! });
+//! })
+//! .expect("governance must select an implemented runtime codec");
 //! ```
 
 use crate::{CodecId, DecompressError, ExactFallbackAdapter};
@@ -40,80 +41,63 @@ pub enum CodecDispatch<'a> {
     Force(CodecId),
 }
 
-/// CMP-001: Build an adapter with real codec implementations.
+/// Build an exact-fallback adapter for one selected codec.
 ///
-/// The dispatch parameter is now used to select the codec strategy.
-/// Until real turbo-quant and fib-quant decoders are implemented,
-/// compressed codecs return `UnsupportedCodec` errors rather than
-/// silently passing through encoded bytes as decoded output.
+/// The selected dispatch is enforced at decode time: a caller cannot ask a
+/// Turbo/Fib-selected adapter to reinterpret bytes as raw uncompressed data.
+/// No TurboQuant or FibQuant decoder is currently registered, so strict mode
+/// rejects those selections and non-strict callers receive `UnsupportedCodec`.
 ///
 /// # Errors
 ///
-/// Returns an adapter that:
-/// - For `Uncompressed`: passes data through as-is (identity, no decompression needed)
-/// - For `TurboQuant`/`FibQuant`: returns `UnsupportedCodec` (no real decoder yet)
-///
-/// # Panics
-///
-/// No longer panics — all codec paths are handled with typed errors.
-#[allow(unused_variables)]
+/// Returns a typed error when governed selection fails or selects Q8/Q4, which
+/// have no `CodecId` or real decoder. It never substitutes `Uncompressed`.
 type FallbackDecoder<T> = Box<dyn Fn(CodecId, &[u8]) -> Result<T, DecompressError> + Send + Sync>;
-pub fn build_adapter<T>(dispatch: CodecDispatch) -> ExactFallbackAdapter<T>
+pub fn build_adapter<T>(dispatch: CodecDispatch) -> Result<ExactFallbackAdapter<T>, DecompressError>
 where
     T: From<Vec<u8>> + Send + Sync + 'static,
 {
-    // CMP-001: Dispatch is now effective — it determines which codec
-    // the adapter will use, and is captured in the closure.
-    let _selected_codec = match &dispatch {
-        CodecDispatch::Force(codec) => *codec,
+    let selected_codec = match dispatch {
+        CodecDispatch::Force(codec) => codec,
         CodecDispatch::Governed { policy, request } => {
-            match evaluate(request.clone(), policy) {
-                Ok(decision) => map_profile_to_codec(&decision.codec),
-                Err(_) => CodecId::Uncompressed, // fail safe to uncompressed
-            }
+            let decision = evaluate(request, policy).map_err(|error| {
+                DecompressError::DecodeFailed(format!("governance selection failed: {error}"))
+            })?;
+            map_profile_to_codec(&decision.codec)?
         }
     };
 
     let fallback_decoder: FallbackDecoder<T> = Box::new(move |codec_id, data| {
-        match codec_id {
+        if codec_id != selected_codec {
+            return Err(DecompressError::CodecNotAvailable(format!(
+                "dispatch selected `{selected_codec}`, requested `{codec_id}`"
+            )));
+        }
+        match selected_codec {
             CodecId::Uncompressed => Ok(T::from(data.to_vec())),
             CodecId::TurboQuant => {
-                // CMP-001: No real turbo-quant decoder exists.
-                // Return UnsupportedCodec instead of passthrough.
                 Err(DecompressError::UnsupportedCodec("turbo_quant".to_string()))
             }
-            CodecId::FibQuant => {
-                // CMP-001: No real fib-quant decoder exists.
-                // Return UnsupportedCodec instead of passthrough.
-                Err(DecompressError::UnsupportedCodec("fib_quant".to_string()))
-            }
+            CodecId::FibQuant => Err(DecompressError::UnsupportedCodec("fib_quant".to_string())),
         }
     });
 
-    ExactFallbackAdapter::new(fallback_decoder)
+    Ok(ExactFallbackAdapter::new(fallback_decoder))
 }
 
-/// CMP-001: Map a quant-governor CodecProfile to a CodecId.
-///
-/// Q8 and Q4 are not implemented codecs. They map to `UnsupportedCodec`
-/// errors via the codec_id they produce. We do NOT silently substitute
-/// `Uncompressed` for Q8/Q4 — that would be fake compatibility.
-fn map_profile_to_codec(profile: &quant_governor::CodecProfile) -> CodecId {
+/// Map a governance profile into a runtime codec without substitution.
+fn map_profile_to_codec(
+    profile: &quant_governor::CodecProfile,
+) -> Result<CodecId, DecompressError> {
     match profile {
-        quant_governor::CodecProfile::Raw => CodecId::Uncompressed,
-        quant_governor::CodecProfile::Turbo => CodecId::TurboQuant,
-        quant_governor::CodecProfile::Fib => CodecId::FibQuant,
-        // CMP-001: Q8/Q4 have no real decoder. We still map them to their
-        // conceptual CodecId variants, which will return UnsupportedCodec
-        // on decode. This is truthful — the codec is selected but unavailable.
-        // Since CodecId doesn't have Q8/Q4 variants, we return TurboQuant
-        // as the closest conceptual match, which will correctly error.
-        quant_governor::CodecProfile::Q8 | quant_governor::CodecProfile::Q4 => {
-            // These profiles have no CodecId variant. The adapter will
-            // return UnsupportedCodec because no real decoder exists.
-            // We use Uncompressed to avoid inventing a new CodecId variant,
-            // but the adapter's strict_mode will catch this.
-            CodecId::Uncompressed
+        quant_governor::CodecProfile::Raw => Ok(CodecId::Uncompressed),
+        quant_governor::CodecProfile::Turbo => Ok(CodecId::TurboQuant),
+        quant_governor::CodecProfile::Fib => Ok(CodecId::FibQuant),
+        quant_governor::CodecProfile::Q8 => {
+            Err(DecompressError::UnsupportedCodec("q8".to_string()))
+        }
+        quant_governor::CodecProfile::Q4 => {
+            Err(DecompressError::UnsupportedCodec("q4".to_string()))
         }
     }
 }
@@ -149,6 +133,13 @@ pub fn select_codec(
 mod tests {
     use super::*;
 
+    fn forced_adapter(codec: CodecId) -> ExactFallbackAdapter<Vec<u8>> {
+        match build_adapter::<Vec<u8>>(CodecDispatch::Force(codec)) {
+            Ok(adapter) => adapter,
+            Err(error) => panic!("forced codec selection should construct an adapter: {error}"),
+        }
+    }
+
     #[test]
     fn select_codec_raw() {
         let policy = GovernancePolicy::default();
@@ -174,11 +165,11 @@ mod tests {
         assert_eq!(codec, CodecId::TurboQuant);
     }
 
-    /// CMP-001: Verify that turbo_quant decode returns UnsupportedCodec,
-    /// not passthrough of encoded bytes as decoded output.
+    /// CMP-001: Verify that TurboQuant is rejected in strict mode when no
+    /// real decoder has been registered; encoded bytes never pass through.
     #[test]
-    fn turbo_quant_decode_returns_unsupported() {
-        let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(CodecId::TurboQuant));
+    fn turbo_quant_decode_is_rejected_without_decoder() {
+        let adapter = forced_adapter(CodecId::TurboQuant);
         let data = b"compressed_payload";
         let result = adapter.decode_exact(CodecId::TurboQuant, data);
         assert!(
@@ -187,15 +178,15 @@ mod tests {
         );
         let err = result.unwrap_err();
         assert!(
-            matches!(err, DecompressError::UnsupportedCodec(_)),
-            "expected UnsupportedCodec, got: {err}"
+            matches!(err, DecompressError::StrictModeRejected(_)),
+            "expected StrictModeRejected, got: {err}"
         );
     }
 
-    /// CMP-001: Verify that fib_quant decode returns UnsupportedCodec.
+    /// CMP-001: Verify that FibQuant is rejected in strict mode without a real decoder.
     #[test]
     fn fib_quant_decode_returns_unsupported() {
-        let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(CodecId::FibQuant));
+        let adapter = forced_adapter(CodecId::FibQuant);
         let data = b"compressed_payload";
         let result = adapter.decode_exact(CodecId::FibQuant, data);
         assert!(
@@ -204,15 +195,15 @@ mod tests {
         );
         let err = result.unwrap_err();
         assert!(
-            matches!(err, DecompressError::UnsupportedCodec(_)),
-            "expected UnsupportedCodec, got: {err}"
+            matches!(err, DecompressError::StrictModeRejected(_)),
+            "expected StrictModeRejected, got: {err}"
         );
     }
 
     /// CMP-001: Verify that uncompressed still passes through correctly.
     #[test]
     fn uncompressed_decode_still_works() {
-        let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(CodecId::Uncompressed));
+        let adapter = forced_adapter(CodecId::Uncompressed);
         let data = b"raw_data";
         let result = adapter.decode_exact(CodecId::Uncompressed, data).unwrap();
         assert_eq!(result, data);
@@ -221,7 +212,7 @@ mod tests {
     /// CMP-001: Verify that compressed bytes cannot pass as exact output.
     #[test]
     fn compressed_bytes_cannot_pass_as_exact() {
-        let adapter = build_adapter::<Vec<u8>>(CodecDispatch::Force(CodecId::TurboQuant));
+        let adapter = forced_adapter(CodecId::TurboQuant);
         let compressed = b"fake_compressed_data";
         let result = adapter.decode_exact(CodecId::TurboQuant, compressed);
         // The result must NOT equal the input — that would be passthrough.

@@ -6,7 +6,6 @@
 use crate::command::NodeOutput;
 use crate::config::GraphConfig;
 use crate::node::Node;
-use crate::receipt::{ExecutionOutcome, GraphExecutionReceiptV1};
 use crate::state::AgentState;
 use crate::Result;
 use std::future::Future;

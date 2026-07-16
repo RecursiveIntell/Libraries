@@ -68,7 +68,7 @@ pub type FallbackDecoderFn<T> = Box<dyn Fn(CodecId, &[u8]) -> DecodeResult<T> + 
 ///     match codec_id {
 ///         CodecId::TurboQuant => turbo_quant::decode(data).map_err(|e| DecompressError::DecodeFailed(e.to_string())),
 ///         CodecId::FibQuant    => fib_quant::decode(data).map_err(|e| DecompressError::DecodeFailed(e.to_string())),
-///         CodecId::Uncompressed => Ok(data.to_vec()),
+///         CodecId::Uncompressed => Ok(Vec::from(data)),
 ///     }
 /// });
 /// ```
@@ -82,19 +82,35 @@ pub type FallbackDecoderFn<T> = Box<dyn Fn(CodecId, &[u8]) -> DecodeResult<T> + 
 pub struct ExactFallbackAdapter<T = Vec<u8>> {
     fallback_decoder: FallbackDecoderFn<T>,
     strict_mode: bool,
+    supported_codecs: Vec<CodecId>,
 }
 
 impl<T> ExactFallbackAdapter<T> {
-    /// Construct a new adapter with the given fallback decoder.
+    /// Construct a fail-closed adapter with the given fallback decoder.
     ///
-    /// `strict_mode = true` causes the adapter to return an error when asked to
-    /// decode a `CodecId` that has no registered decoder. When `false`, unknown
-    /// codec IDs cause a best-effort pass-through (only valid for `CodecId::Uncompressed`).
+    /// Only `Uncompressed` is registered by default. Call
+    /// [`Self::with_supported_codecs`] to attest that the closure implements a
+    /// real decoder for a compressed codec. This prevents an arbitrary identity
+    /// closure from being treated as an exact decompressor in strict mode.
     pub fn new(fallback_decoder: FallbackDecoderFn<T>) -> Self {
         Self {
             fallback_decoder,
             strict_mode: true,
+            supported_codecs: vec![CodecId::Uncompressed],
         }
+    }
+
+    /// Register the codecs with real decoder implementations in the fallback.
+    ///
+    /// This is explicit because strict-mode exactness cannot be inferred from a
+    /// type-erased closure. Registering a codec is an assertion by the runtime
+    /// integration that the closure decodes it rather than passing bytes through.
+    pub fn with_supported_codecs(mut self, codecs: impl IntoIterator<Item = CodecId>) -> Self {
+        self.supported_codecs = codecs.into_iter().collect();
+        if !self.supported_codecs.contains(&CodecId::Uncompressed) {
+            self.supported_codecs.push(CodecId::Uncompressed);
+        }
+        self
     }
 
     /// Enable or disable strict mode.
@@ -117,14 +133,8 @@ impl<T> ExactFallbackAdapter<T> {
             return (self.fallback_decoder)(codec_id, compressed_data);
         }
 
-        // CMP-001: In strict mode, compressed codecs must not pass through
-        // encoded bytes as exact decoded output. The fallback decoder will
-        // return UnsupportedCodec for codecs without real decoders.
-        // Strict mode is the default and must be enforced.
-        if self.strict_mode && codec_id.requires_exact_fallback() {
-            // The fallback decoder handles the typed error return.
-            // If it returns UnsupportedCodec, that propagates correctly.
-            // If it returns Ok (real decoder exists), that also propagates.
+        if self.strict_mode && !self.supported_codecs.contains(&codec_id) {
+            return Err(DecompressError::StrictModeRejected(codec_id.to_string()));
         }
 
         (self.fallback_decoder)(codec_id, compressed_data)
@@ -189,7 +199,7 @@ mod tests {
     fn test_adapter() -> ExactFallbackAdapter<Vec<u8>> {
         ExactFallbackAdapter::new(Box::new(|codec_id, data| {
             match codec_id {
-                CodecId::Uncompressed => Ok(data.to_vec()),
+                CodecId::Uncompressed => Ok(Vec::from(data)),
                 CodecId::TurboQuant => {
                     // Simulate turbo-quant decode by reversing the data (fake codec for tests)
                     Ok(data.iter().rev().cloned().collect())
@@ -202,6 +212,7 @@ mod tests {
                 }
             }
         }))
+        .with_supported_codecs([CodecId::TurboQuant, CodecId::FibQuant])
     }
 
     #[test]
@@ -255,8 +266,17 @@ mod tests {
     }
 
     #[test]
+    fn strict_mode_rejects_unregistered_compressed_codec() {
+        let adapter = ExactFallbackAdapter::new(Box::new(|_codec_id, data| Ok(Vec::from(data))));
+        assert!(matches!(
+            adapter.decode_exact(CodecId::TurboQuant, b"encoded"),
+            Err(DecompressError::StrictModeRejected(_))
+        ));
+    }
+
+    #[test]
     fn non_strict_mode_still_decodes() {
-        let adapter = ExactFallbackAdapter::new(Box::new(|_codec_id, data| Ok(data.to_vec())))
+        let adapter = ExactFallbackAdapter::new(Box::new(|_codec_id, data| Ok(Vec::from(data))))
             .with_strict_mode(false);
 
         let result = adapter.decode_exact(CodecId::TurboQuant, b"hello");

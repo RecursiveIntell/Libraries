@@ -226,8 +226,10 @@ fn id_generate_is_unique() {
 
 #[test]
 fn id_empty_check() {
-    let id = EntityId::new("");
-    assert!(id.is_empty());
+    // ID-001: Empty IDs are now rejected by validation.
+    // new() panics on empty; try_new() returns Err.
+    let result = EntityId::try_new("");
+    assert!(result.is_err(), "empty ID should fail validation");
 
     let id = EntityId::new("e-1");
     assert!(!id.is_empty());
