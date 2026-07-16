@@ -114,6 +114,8 @@ def verify_binding(repo: Path, binding: dict[str, Any]) -> list[str]:
     if missing:
         findings.append("missing source_binding fields: " + ", ".join(missing))
         return findings
+    if binding["commit_sha"] != run(repo, ["git", "rev-parse", "HEAD"]):
+        findings.append("commit SHA mismatch")
     if binding["tree_sha"] != source_tree_sha(repo):
         findings.append("source tree hash mismatch")
     lock = repo / "Cargo.lock"
