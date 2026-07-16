@@ -462,11 +462,29 @@ impl AiDENsRunBundleV3 {
             trial_id,
             agent_spec_digest,
         );
-        bundle.bundle_id =
-            generated_artifact_id_from_material("aidens-run-bundle-v3", identity_material);
         bundle
             .canonical_backpointers
             .extend(required_owner_backpointers);
+        let bound_material = serde_json::to_string(&serde_json::json!({
+            "caller_material": identity_material,
+            "run_id": &bundle.run_id,
+            "profile": &bundle.profile,
+            "canonical_execution_context": &bundle.canonical_execution_context,
+            "event_log": &bundle.event_log,
+            "budget": &bundle.budget,
+            "support": &bundle.support,
+            "support_labels": &bundle.support_labels,
+            "replay": &bundle.replay,
+            "failure": &bundle.failure,
+            "attempt_family_id": &bundle.attempt_family_id,
+            "attempt_id": &bundle.attempt_id,
+            "trial_id": &bundle.trial_id,
+            "agent_spec_digest": &bundle.agent_spec_digest,
+            "canonical_backpointers": &bundle.canonical_backpointers,
+        }))
+        .map_err(|error| vec![format!("bundle-identity-material-serialization:{error}")])?;
+        bundle.bundle_id =
+            generated_artifact_id_from_material("aidens-run-bundle-v3", &bound_material);
         bundle.validate_durable_identity()?;
         Ok(bundle)
     }
