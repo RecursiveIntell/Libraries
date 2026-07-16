@@ -383,6 +383,7 @@ dependencies = [
  "aidens-receipts",
  "aidens-tool-kit",
  "anyhow",
+ "blake3",
  "boundary-compiler-core",
  "serde",
  "serde_json",
