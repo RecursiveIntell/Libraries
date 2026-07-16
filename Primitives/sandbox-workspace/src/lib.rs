@@ -155,6 +155,9 @@ fn copy_dir_recursive(src: &Path, dst: &Path) -> WorkspaceResult<()> {
             .path()
             .strip_prefix(src)
             .map_err(|error| std::io::Error::other(error.to_string()))?;
+        if is_execution_private_metadata(relative) {
+            continue;
+        }
         let target = dst.join(relative);
 
         if entry.file_type().is_dir() {
@@ -168,6 +171,18 @@ fn copy_dir_recursive(src: &Path, dst: &Path) -> WorkspaceResult<()> {
     }
 
     Ok(())
+}
+
+fn is_execution_private_metadata(relative: &Path) -> bool {
+    relative
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            matches!(
+                name.to_ascii_lowercase().as_str(),
+                "oracles.json" | "holdout-oracles.json" | "holdout_oracles.json"
+            )
+        })
 }
 
 #[cfg(test)]
@@ -270,6 +285,25 @@ mod tests {
             std::fs::read_to_string(copied).unwrap(),
             "pub fn demo() {}\n"
         );
+    }
+
+    #[test]
+    fn prepare_workspace_never_materializes_oracle_metadata() {
+        let fixture = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(fixture.path().join("tasks")).unwrap();
+        std::fs::write(fixture.path().join("manifest.json"), "{}\n").unwrap();
+        std::fs::write(
+            fixture.path().join("oracles.json"),
+            "{\"holdout\":\"secret acceptance\"}\n",
+        )
+        .unwrap();
+        std::fs::write(fixture.path().join("tasks/task.json"), "{}\n").unwrap();
+
+        let workspace = prepare_workspace(fixture.path()).unwrap();
+
+        assert!(workspace.host_path.join("manifest.json").is_file());
+        assert!(workspace.host_path.join("tasks/task.json").is_file());
+        assert!(!workspace.host_path.join("oracles.json").exists());
     }
 
     #[cfg(unix)]
