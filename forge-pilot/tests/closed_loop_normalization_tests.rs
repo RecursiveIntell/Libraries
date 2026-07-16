@@ -5,10 +5,42 @@ use common::{
     resources, sample_bundle, tempdir, write_source_file,
 };
 use forge_pilot::{
-    observe_scope, score_targets, CanonicalCaseClass, LawfulStepKind, LoopRunner, PilotHistory,
-    TargetKind,
+    governance_predicates, observe_scope, score_targets, CanonicalCaseClass, LawfulStepKind,
+    LoopRunner, PilotHistory, TargetKind,
 };
 use knowledge_runtime::Scope;
+
+async fn install_permissive_governance(memory_store: &semantic_memory::MemoryStore) {
+    for (predicate, content) in [
+        (governance_predicates::EFFECT_PREFLIGHT, "commit_eligible"),
+        (governance_predicates::ASSURANCE_READY, "true"),
+        (governance_predicates::AUTHORITY_DELEGATION_VALID, "true"),
+        (governance_predicates::CONTINUITY_INCIDENT_ACTIVE, "false"),
+    ] {
+        let id = uuid::Uuid::new_v4().to_string();
+        let sql = format!(
+            "INSERT INTO claim_versions (
+                claim_version_id, claim_id, claim_state, projection_family,
+                subject_entity_id, predicate, object_anchor,
+                scope_namespace, scope_domain, scope_workspace_id, scope_repo_id,
+                recorded_at, preferred_open,
+                source_envelope_id, source_authority,
+                freshness, contradiction_status, content, confidence
+            ) VALUES (
+                '{id}', 'gov-claim-{predicate}', 'active', 'governance',
+                'governance-entity', '{predicate}', '\"{content}\"',
+                'governance', NULL, NULL, NULL,
+                datetime('now'), 0,
+                'gov-envelope-{predicate}', 'governance',
+                'current', 'none', '{content}', 1.0
+            )"
+        );
+        memory_store
+            .raw_execute(&sql, vec![])
+            .await
+            .expect("install permissive governance claim");
+    }
+}
 
 #[tokio::test]
 async fn target_taxonomy_normalizes_to_canonical_case_classes() {
@@ -97,6 +129,10 @@ async fn loop_iteration_report_carries_normalization_and_lineage_receipts() {
         &sample_bundle("loop-normalized"),
     )
     .await;
+    // GOV-001 defaults to strict/fail-closed. This loop test exercises a
+    // permitted action, so install explicit governance projections rather
+    // than bypassing the gate or weakening the production default.
+    install_permissive_governance(&memory_store).await;
 
     let resources = resources(memory_store, forge_store, &config);
     let mut runner = LoopRunner::new(config, resources);

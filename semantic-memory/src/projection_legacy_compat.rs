@@ -50,7 +50,9 @@ pub(crate) async fn import_envelope(
 
     let mut prepared = Vec::new();
     for (i, record) in envelope.records.iter().enumerate() {
-        let embedding = store.embed_text_internal(record.content_text()).await?;
+        let embedding = store
+            .embed_text_internal(record.content_text(), crate::EmbeddingPurpose::Document)
+            .await?;
         store.validate_embedding_dimensions(&embedding)?;
         let embedding_bytes = db::embedding_to_bytes(&embedding);
         let q8_bytes = quantize::Quantizer::new(store.inner.config.embedding.dimensions)
@@ -234,7 +236,7 @@ pub(crate) async fn import_status(
     store: &MemoryStore,
     envelope_id: &projection_import::EnvelopeId,
 ) -> Result<Vec<projection_import::ImportReceipt>, MemoryError> {
-    let eid = envelope_id.as_str().to_string();
+    let eid = envelope_id.as_str().to_owned();
     store
         .with_read_conn(move |conn| {
             let mut stmt = conn.prepare(
@@ -258,16 +260,23 @@ pub(crate) async fn import_status(
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
 
-            Ok(rows
-                .into_iter()
+            rows.into_iter()
                 .map(|(eid, sv, cd, status, rc, ts, tid)| {
                     let status_parsed = projection_import::ImportStatus::from_str_value(&status);
                     let was_dup = matches!(
                         status_parsed,
                         projection_import::ImportStatus::AlreadyImported
                     );
-                    projection_import::ImportReceipt {
-                        envelope_id: projection_import::EnvelopeId::new(eid),
+                    Ok(projection_import::ImportReceipt {
+                        envelope_id: projection_import::EnvelopeId::from_legacy(eid).map_err(
+                            |error| {
+                                rusqlite::Error::FromSqlConversionFailure(
+                                    0,
+                                    rusqlite::types::Type::Text,
+                                    Box::new(error),
+                                )
+                            },
+                        )?,
                         schema_version: sv,
                         content_digest: cd,
                         status: status_parsed,
@@ -275,9 +284,10 @@ pub(crate) async fn import_status(
                         imported_at: ts,
                         was_duplicate: was_dup,
                         trace_id: tid.map(crate::types::TraceId::new),
-                    }
+                    })
                 })
-                .collect())
+                .collect::<Result<Vec<_>, rusqlite::Error>>()
+                .map_err(MemoryError::Database)
         })
         .await
 }

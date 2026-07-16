@@ -161,6 +161,10 @@ def build_receipt() -> dict[str, object]:
             "source": str(SUPPORT_PROFILE.relative_to(ROOT)),
         },
         "gate_results": gate_results,
+        # EVD-001: the receipt is a derivative of source-bound, content-addressed
+        # command receipts. Verification compares this exact binding without
+        # regenerating or overwriting evidence.
+        "source_binding": evidence.get("source_binding", {}),
         "schema_publication": {
             "canonical_dir": "schemas/",
             "manifest_count": len(schema_manifests),

@@ -1,6 +1,7 @@
 {
   "schema_version": "libraries.claims-manifest.v1",
   "generated_at": "2026-07-15",
+  "authority_note": "High-level summary only. The authoritative path-bound manifest consumed by the validator is docs/claims_manifest.json, which preserves quantitative README lines verbatim.",
   "claims": [
     {
       "id": "turbo-quant-recall",

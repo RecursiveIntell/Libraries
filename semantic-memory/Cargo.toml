@@ -17,6 +17,7 @@ hnsw = ["dep:hnsw_rs"]
 brute-force = []
 testing = []
 turbo-quant-codec = ["dep:turbo-quant", "dep:quant-governor", "dep:scr-runtime-compression"]
+poly-kv-codec = ["dep:poly-kv"]
 
 [dependencies]
 bytemuck = { version = "1", features = ["derive"] }
@@ -40,6 +41,7 @@ hnsw_rs = { version = "0.3", optional = true }
 turbo-quant = { version = "0.2.0", path = "../turbo-quant", optional = true }
 quant-governor = { path = "../quant-governor", optional = true }
 scr-runtime-compression = { path = "../scr-runtime-compression", optional = true }
+poly-kv = { version = "0.1.0-alpha.1", path = "../poly-kv/crates/poly-kv", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
