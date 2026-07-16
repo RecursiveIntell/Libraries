@@ -103,7 +103,7 @@ impl AgentGraph {
     ///
     /// Validates that the graph topology hasn't changed since the checkpoint
     /// was taken. Returns `CheckpointMismatch` if the graph hash differs.
-    /// Use [`resume_force`] to skip this check.
+    /// Use [`Self::resume_force`] to skip this check.
     pub async fn resume(
         &self,
         state: AgentState,
