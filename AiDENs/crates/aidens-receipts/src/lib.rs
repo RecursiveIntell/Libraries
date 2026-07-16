@@ -43,6 +43,12 @@ impl RunBundleStoreConfig {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RunBundleStoreRecord {
+    #[serde(default)]
+    pub sequence_number: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub previous_record_digest: Option<ContentDigest>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub record_digest: Option<ContentDigest>,
     pub artifact_kind: String,
     pub ownership: String,
     pub support_tier: String,
@@ -54,6 +60,35 @@ pub struct RunBundleStoreRecord {
     pub content_digest: ContentDigest,
     pub canonical_event_log_path: PathBuf,
     pub known_limits: Vec<String>,
+}
+
+impl RunBundleStoreRecord {
+    pub fn compute_record_digest(&self) -> Result<ContentDigest, RunBundleStoreError> {
+        let payload = serde_json::json!({
+            "sequence_number": self.sequence_number,
+            "previous_record_digest": self.previous_record_digest,
+            "artifact_kind": self.artifact_kind,
+            "ownership": self.ownership,
+            "support_tier": self.support_tier,
+            "semantic_status": self.semantic_status,
+            "run_id": self.run_id,
+            "bundle_schema": self.bundle_schema,
+            "recorded_at": self.recorded_at,
+            "bundle_path": self.bundle_path,
+            "content_digest": self.content_digest,
+            "canonical_event_log_path": self.canonical_event_log_path,
+            "known_limits": self.known_limits,
+        });
+        ContentDigest::compute_json(&payload)
+            .map_err(|source| RunBundleStoreError::Digest { source })
+    }
+
+    pub fn verify_record_digest(&self) -> bool {
+        self.record_digest.as_ref().is_some_and(|expected| {
+            self.compute_record_digest()
+                .is_ok_and(|actual| actual == *expected)
+        })
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -115,6 +150,8 @@ pub enum RunBundleStoreError {
     AlreadyExists(String),
     #[error("run bundle index chain verification failed at sequence {0}")]
     ChainVerificationFailed(u64),
+    #[error("run bundle integrity verification failed: {0}")]
+    IntegrityFailed(String),
 }
 
 #[derive(Debug, Clone)]
@@ -199,7 +236,10 @@ impl RunBundleStore {
                 source,
             }
         })?;
-        let record = RunBundleStoreRecord {
+        let mut record = RunBundleStoreRecord {
+            sequence_number: 0,
+            previous_record_digest: None,
+            record_digest: None,
             artifact_kind: "local_operator_run_bundle_store_record".into(),
             ownership:
                 "AiDENs-local operator evidence; canonical receipt and trace semantics remain in owner crates.".into(),
@@ -227,7 +267,7 @@ impl RunBundleStore {
                 "Stores AiDENsRunBundleV3 operator evidence only; it is not a canonical memory or verification truth store.".into(),
             ],
         };
-        self.append_record(&record)?;
+        self.append_record(&mut record)?;
         Ok(record)
     }
 
@@ -236,18 +276,33 @@ impl RunBundleStore {
         let mut report = RunBundleRecoveryReport::default();
         let mut indexed = std::collections::BTreeSet::new();
         let mut seen_records = std::collections::BTreeSet::new();
+        let mut chain_unbroken = true;
+        let mut expected_sequence = 0u64;
+        let mut expected_previous = None;
         for record in records {
             let duplicate = !seen_records.insert(record.bundle_path.clone());
             indexed.insert(record.bundle_path.clone());
-            if duplicate {
-                report.entries.push(RunBundleRecoveryEntry {
-                    run_id: record.run_id.clone(),
-                    bundle_path: Some(record.bundle_path.clone()),
-                    state: RunBundleRecoveryState::Quarantined,
-                    reason: "duplicate_index_record".into(),
-                });
+            let record_integrity = chain_unbroken
+                && record.sequence_number == expected_sequence
+                && record.previous_record_digest == expected_previous
+                && record.verify_record_digest();
+            if record_integrity {
+                expected_sequence += 1;
+                expected_previous = record.record_digest.clone();
+            } else {
+                chain_unbroken = false;
             }
-            let (state, reason) = if !record.bundle_path.is_file() {
+            let (state, reason) = if duplicate {
+                (
+                    RunBundleRecoveryState::Quarantined,
+                    "duplicate_index_record",
+                )
+            } else if !record_integrity {
+                (
+                    RunBundleRecoveryState::Quarantined,
+                    "index_record_integrity_failed",
+                )
+            } else if !record.bundle_path.is_file() {
                 (RunBundleRecoveryState::Indeterminate, "missing_bundle")
             } else {
                 match std::fs::read_to_string(&record.bundle_path) {
@@ -272,6 +327,10 @@ impl RunBundleStore {
                                 "bundle_digest_mismatch",
                             )
                         }
+                        Ok(bundle) if !bundle_matches_record(self, &record, &bundle) => (
+                            RunBundleRecoveryState::Quarantined,
+                            "bundle_identity_mismatch",
+                        ),
                         Ok(bundle) if !verify_child_references(&bundle) => (
                             RunBundleRecoveryState::Quarantined,
                             "child_reference_unverified",
@@ -359,6 +418,16 @@ impl RunBundleStore {
             .rev()
             .find(|record| record.run_id == run_id)
             .ok_or_else(|| RunBundleStoreError::NotFound(run_id.into()))?;
+        let published = self.reconcile()?.entries.into_iter().any(|entry| {
+            entry.run_id == record.run_id
+                && entry.bundle_path.as_ref() == Some(&record.bundle_path)
+                && entry.state == RunBundleRecoveryState::Published
+        });
+        if !published {
+            return Err(RunBundleStoreError::IntegrityFailed(format!(
+                "run bundle is not in a verified published state: {run_id}"
+            )));
+        }
         let bundle_text = std::fs::read_to_string(&record.bundle_path).map_err(|source| {
             RunBundleStoreError::Io {
                 path: record.bundle_path.clone(),
@@ -373,6 +442,14 @@ impl RunBundleStore {
         let digest_verified = ContentDigest::compute_json(&bundle)
             .map(|digest| digest == record.content_digest)
             .unwrap_or(false);
+        if !digest_verified
+            || !bundle_matches_record(self, &record, &bundle)
+            || !verify_child_references(&bundle)
+        {
+            return Err(RunBundleStoreError::IntegrityFailed(format!(
+                "run bundle content failed identity, digest, or child closure checks: {run_id}"
+            )));
+        }
         Ok(RunBundleStoreInspection {
             record,
             bundle,
@@ -397,13 +474,29 @@ impl RunBundleStore {
         }
     }
 
-    fn append_record(&self, record: &RunBundleStoreRecord) -> Result<(), RunBundleStoreError> {
+    fn append_record(&self, record: &mut RunBundleStoreRecord) -> Result<(), RunBundleStoreError> {
         let _lock = acquire_exclusive_lock(&self.config.index_path).map_err(|source| {
             RunBundleStoreError::Io {
                 path: lock_path_for(&self.config.index_path),
                 source,
             }
         })?;
+        let records = read_run_bundle_records(&self.config.index_path)?;
+        let mut expected_previous = None;
+        for (sequence, existing) in records.iter().enumerate() {
+            if existing.sequence_number != sequence as u64
+                || existing.previous_record_digest != expected_previous
+                || !existing.verify_record_digest()
+            {
+                return Err(RunBundleStoreError::ChainVerificationFailed(
+                    existing.sequence_number,
+                ));
+            }
+            expected_previous = existing.record_digest.clone();
+        }
+        record.sequence_number = records.len() as u64;
+        record.previous_record_digest = expected_previous;
+        record.record_digest = Some(record.compute_record_digest()?);
         let mut file = OpenOptions::new()
             .create(true)
             .append(true)
@@ -431,6 +524,40 @@ impl RunBundleStore {
         })?;
         Ok(())
     }
+}
+
+fn bundle_matches_record(
+    store: &RunBundleStore,
+    record: &RunBundleStoreRecord,
+    bundle: &Value,
+) -> bool {
+    let Some(run_id) = bundle.get("run_id").and_then(Value::as_str) else {
+        return false;
+    };
+    let Some(schema) = bundle.get("schema").and_then(Value::as_str) else {
+        return false;
+    };
+    let support_tier = bundle
+        .pointer("/support/support_tier")
+        .and_then(Value::as_str)
+        .unwrap_or("partial");
+    let semantic_status = if bundle
+        .pointer("/failure/degraded")
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
+    {
+        "degraded_exact_check"
+    } else {
+        "exact_check"
+    };
+    record.run_id == run_id
+        && record.bundle_schema == schema
+        && record.support_tier == support_tier
+        && record.semantic_status == semantic_status
+        && record.bundle_path
+            == store.bundle_path_for_run_id_and_digest(run_id, &record.content_digest)
+        && record.canonical_event_log_path
+            == store.config.root_path.join("canonical-receipts.ndjson")
 }
 
 pub fn forge_tool_receipt_from_runtime(
@@ -1420,7 +1547,10 @@ mod tests {
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::fs::write(&path, serde_json::to_string(&valid).unwrap()).unwrap();
         let missing = store.bundle_path_for_run_id_and_digest("missing", &digest);
-        let record = RunBundleStoreRecord {
+        let mut record = RunBundleStoreRecord {
+            sequence_number: 0,
+            previous_record_digest: None,
+            record_digest: None,
             artifact_kind: "local_operator_run_bundle_store_record".into(),
             ownership: "x".into(),
             support_tier: "partial".into(),
@@ -1433,6 +1563,7 @@ mod tests {
             canonical_event_log_path: root.join("canonical-receipts.ndjson"),
             known_limits: vec![],
         };
+        record.record_digest = Some(record.compute_record_digest().unwrap());
         std::fs::write(
             &store.config().index_path,
             format!(
@@ -1608,5 +1739,83 @@ mod tests {
 
         let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_dir_all(child_root);
+    }
+
+    #[test]
+    fn run_bundle_index_chain_and_identity_tampering_fail_closed() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-run-bundle-index-integrity-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let bundle = serde_json::json!({
+            "schema":"AiDENsRunBundleV3",
+            "run_id":"bound-run",
+            "support":{"support_tier":"supported-local"},
+            "failure":{"degraded":false},
+        });
+        let record = store.write_bundle_value(&bundle).unwrap();
+        assert_eq!(record.sequence_number, 0);
+        assert!(record.previous_record_digest.is_none());
+        assert!(record.verify_record_digest());
+
+        let mut stored: Value = serde_json::from_str(
+            std::fs::read_to_string(&store.config().index_path)
+                .unwrap()
+                .trim(),
+        )
+        .unwrap();
+        stored["run_id"] = Value::String("attacker-selected-run".into());
+        std::fs::write(
+            &store.config().index_path,
+            serde_json::to_string(&stored).unwrap() + "\n",
+        )
+        .unwrap();
+
+        let report = store.reconcile().unwrap();
+        assert!(report.entries.iter().any(|entry| {
+            entry.run_id == "attacker-selected-run"
+                && entry.state == RunBundleRecoveryState::Quarantined
+                && entry.reason == "index_record_integrity_failed"
+        }));
+        assert!(matches!(
+            store.inspect("attacker-selected-run"),
+            Err(RunBundleStoreError::IntegrityFailed(_))
+        ));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn inspection_rejects_bundle_identity_mismatch_even_with_rehashed_index_record() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-run-bundle-identity-binding-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let bundle = serde_json::json!({
+            "schema":"AiDENsRunBundleV3",
+            "run_id":"original-run",
+        });
+        let record = store.write_bundle_value(&bundle).unwrap();
+        let mut rewritten = record.clone();
+        rewritten.run_id = "rewritten-run".into();
+        rewritten.record_digest = Some(rewritten.compute_record_digest().unwrap());
+        std::fs::write(
+            &store.config().index_path,
+            serde_json::to_string(&rewritten).unwrap() + "\n",
+        )
+        .unwrap();
+
+        let report = store.reconcile().unwrap();
+        assert!(report.entries.iter().any(|entry| {
+            entry.run_id == "rewritten-run"
+                && entry.state == RunBundleRecoveryState::Quarantined
+                && entry.reason == "bundle_identity_mismatch"
+        }));
+        assert!(matches!(
+            store.inspect("rewritten-run"),
+            Err(RunBundleStoreError::IntegrityFailed(_))
+        ));
+        let _ = std::fs::remove_dir_all(root);
     }
 }
