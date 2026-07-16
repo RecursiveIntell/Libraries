@@ -1,6 +1,30 @@
 use super::*;
 
 #[test]
+fn task2_material_bound_bundle_ids_are_stable_and_not_display_ids() {
+    let a = CodingLearningBundleV3::new_material_bound("same canonical material");
+    let b = CodingLearningBundleV3::new_material_bound("same canonical material");
+    assert_eq!(a.bundle_id, b.bundle_id);
+    assert!(!a.bundle_id.as_str().contains("local-process-seq"));
+}
+
+#[test]
+fn task2_display_ids_are_rejected_from_durable_identity_fields() {
+    let display = display_only_unstable_id("task2");
+    assert!(validate_durable_v3_identity(&display).is_err());
+}
+
+#[test]
+fn task2_success_projection_is_fail_closed_for_incomplete_evidence() {
+    let evidence = CodingLearningEvidenceV1::default();
+    assert_eq!(
+        project_terminal_state(&evidence),
+        CodingLearningTerminalStateV1::BlockedEvidenceInsufficient
+    );
+    assert!(!succeeded_verified(&evidence));
+}
+
+#[test]
 fn artifact_id_roundtrips_through_canonical_stack_id() {
     let contracts_id = ArtifactId::new("artifact:contracts-smoke");
     let stack_id: stack_ids::ArtifactId = contracts_id.clone();
