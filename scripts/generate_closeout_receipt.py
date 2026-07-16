@@ -31,6 +31,15 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def artifact_status(path: Path) -> dict[str, object]:
+    """Describe a referenced artifact without inventing a hash when it is absent."""
+    return {
+        "path": str(path.relative_to(ROOT)),
+        "present": path.is_file(),
+        "sha256": sha256_file(path) if path.is_file() else None,
+    }
+
+
 def sha256_json(data: object) -> str:
     encoded = json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
@@ -180,10 +189,7 @@ def build_receipt() -> dict[str, object]:
             "path": str(EVIDENCE_MANIFEST.relative_to(ROOT)),
             "sha256": sha256_file(EVIDENCE_MANIFEST),
         },
-        "risk_register": {
-            "path": str(RISK_REGISTER.relative_to(ROOT)),
-            "sha256": sha256_file(RISK_REGISTER),
-        },
+        "risk_register": artifact_status(RISK_REGISTER),
         "archive_manifest": {
             "path": str(ARCHIVE_MANIFEST.relative_to(ROOT)),
             "sha256": sha256_file(ARCHIVE_MANIFEST),
