@@ -247,34 +247,44 @@ impl RunBundleStore {
                     reason: "duplicate_index_record".into(),
                 });
             }
-            let state = if !record.bundle_path.is_file() {
-                RunBundleRecoveryState::Indeterminate
+            let (state, reason) = if !record.bundle_path.is_file() {
+                (RunBundleRecoveryState::Indeterminate, "missing_bundle")
             } else {
-                match std::fs::read_to_string(&record.bundle_path)
-                    .ok()
-                    .and_then(|text| serde_json::from_str::<Value>(&text).ok())
-                {
-                    Some(bundle)
-                        if ContentDigest::compute_json(&bundle).ok()
-                            == Some(record.content_digest.clone())
-                            && verify_child_references(&bundle) =>
-                    {
-                        RunBundleRecoveryState::Published
-                    }
-                    _ => RunBundleRecoveryState::Indeterminate,
+                match std::fs::read_to_string(&record.bundle_path) {
+                    Err(_) => (RunBundleRecoveryState::Indeterminate, "bundle_read_failed"),
+                    Ok(text) => match serde_json::from_str::<Value>(&text) {
+                        Err(_) => (RunBundleRecoveryState::Quarantined, "malformed_bundle"),
+                        Ok(bundle)
+                            if bundle.get("schema").and_then(Value::as_str)
+                                != Some("AiDENsRunBundleV3") =>
+                        {
+                            (
+                                RunBundleRecoveryState::Quarantined,
+                                "unsupported_bundle_schema",
+                            )
+                        }
+                        Ok(bundle)
+                            if ContentDigest::compute_json(&bundle).ok()
+                                != Some(record.content_digest.clone()) =>
+                        {
+                            (
+                                RunBundleRecoveryState::Indeterminate,
+                                "bundle_digest_mismatch",
+                            )
+                        }
+                        Ok(bundle) if !verify_child_references(&bundle) => (
+                            RunBundleRecoveryState::Quarantined,
+                            "child_reference_unverified",
+                        ),
+                        Ok(_) => (RunBundleRecoveryState::Published, "index_record_published"),
+                    },
                 }
             };
-            let missing_bundle = !record.bundle_path.is_file();
             report.entries.push(RunBundleRecoveryEntry {
                 run_id: record.run_id,
                 bundle_path: Some(record.bundle_path),
                 state,
-                reason: if missing_bundle {
-                    "missing_bundle"
-                } else {
-                    "index_record_reconciled"
-                }
-                .into(),
+                reason: reason.into(),
             });
         }
         for path in scan_bundle_paths(&self.config.bundles_path)? {
@@ -923,7 +933,7 @@ fn scan_bundle_paths(root: &Path) -> Result<Vec<PathBuf>, RunBundleStoreError> {
 /// Verify only references whose owner receipt is embedded in the V3 bundle.
 /// A reference without a closed, digest-valid owner is never promoted.
 fn verify_child_references(bundle: &Value) -> bool {
-    let mut observed_owners = std::collections::BTreeSet::new();
+    let mut observed_children = std::collections::BTreeSet::new();
     for key in ["child_receipts", "children", "child_references"] {
         let Some(children) = bundle.get(key) else {
             continue;
@@ -944,7 +954,7 @@ fn verify_child_references(bundle: &Value) -> bool {
             let Some(owner_id) = object.get("owner_id").and_then(Value::as_str) else {
                 return false;
             };
-            if owner_id.is_empty() || !observed_owners.insert(owner_id.to_string()) {
+            if owner_id.is_empty() {
                 return false;
             }
             let Some(digest) = object
@@ -963,13 +973,38 @@ fn verify_child_references(bundle: &Value) -> bool {
             {
                 return false;
             }
+            if !observed_children.insert((owner_id.to_string(), digest.to_string())) {
+                return false;
+            }
         }
     }
     if let Some(required) = bundle.get("required_children") {
         let Some(required) = required.as_array() else {
             return false;
         };
-        if !required.is_empty() && observed_owners.is_empty() {
+        let mut required_children = std::collections::BTreeSet::new();
+        for child in required {
+            let Some(object) = child.as_object() else {
+                return false;
+            };
+            let Some(owner_id) = object.get("owner_id").and_then(Value::as_str) else {
+                return false;
+            };
+            let Some(digest) = object
+                .get("digest")
+                .or_else(|| object.get("content_digest"))
+                .and_then(Value::as_str)
+            else {
+                return false;
+            };
+            if owner_id.is_empty()
+                || digest.is_empty()
+                || !required_children.insert((owner_id.to_string(), digest.to_string()))
+            {
+                return false;
+            }
+        }
+        if required_children != observed_children {
             return false;
         }
     }
@@ -1430,5 +1465,148 @@ mod tests {
     fn required_child_set_requires_owner_id_digest_and_closed_child() {
         let bundle = serde_json::json!({"schema":"AiDENsRunBundleV3","run_id":"child","required_children":[{"owner_id":"owner","digest":"00"}],"child_receipts":[]});
         assert!(!verify_child_references(&bundle));
+    }
+
+    #[test]
+    fn required_child_set_must_exactly_match_observed_owner_digest_pairs() {
+        let receipt_a = serde_json::json!({"receipt_id":"owner:a","status":"closed"});
+        let receipt_b = serde_json::json!({"receipt_id":"owner:b","status":"closed"});
+        let digest_a = ContentDigest::compute_json(&receipt_a).unwrap();
+        let digest_b = ContentDigest::compute_json(&receipt_b).unwrap();
+        let child_a = serde_json::json!({
+            "owner_id":"owner:a",
+            "digest":digest_a.hex(),
+            "closed":true,
+            "receipt":receipt_a,
+        });
+        let child_b = serde_json::json!({
+            "owner_id":"owner:b",
+            "digest":digest_b.hex(),
+            "closed":true,
+            "receipt":receipt_b,
+        });
+
+        let exact = serde_json::json!({
+            "schema":"AiDENsRunBundleV3",
+            "run_id":"child-exact",
+            "required_children":[
+                {"owner_id":"owner:a","digest":digest_a.hex()},
+                {"owner_id":"owner:b","digest":digest_b.hex()},
+            ],
+            "child_receipts":[child_a.clone(), child_b.clone()],
+        });
+        assert!(verify_child_references(&exact));
+
+        let missing_required = serde_json::json!({
+            "schema":"AiDENsRunBundleV3",
+            "run_id":"child-missing",
+            "required_children":[
+                {"owner_id":"owner:a","digest":digest_a.hex()},
+                {"owner_id":"owner:b","digest":digest_b.hex()},
+            ],
+            "child_receipts":[child_a.clone()],
+        });
+        assert!(!verify_child_references(&missing_required));
+
+        let unexpected_observed = serde_json::json!({
+            "schema":"AiDENsRunBundleV3",
+            "run_id":"child-unexpected",
+            "required_children":[{"owner_id":"owner:a","digest":digest_a.hex()}],
+            "child_receipts":[child_a, child_b],
+        });
+        assert!(!verify_child_references(&unexpected_observed));
+    }
+
+    #[test]
+    fn failed_index_append_retains_bundle_for_reconciliation() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-index-append-failure-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let bundle = serde_json::json!({
+            "schema":"AiDENsRunBundleV3",
+            "run_id":"append-failed",
+        });
+        let digest = ContentDigest::compute_json(&bundle).unwrap();
+        let expected_path = store.bundle_path_for_run_id_and_digest("append-failed", &digest);
+
+        std::fs::remove_file(&store.config().index_path).unwrap();
+        std::fs::create_dir(&store.config().index_path).unwrap();
+        assert!(matches!(
+            store.write_bundle_value(&bundle),
+            Err(RunBundleStoreError::Io { .. })
+        ));
+        assert!(expected_path.is_file());
+
+        std::fs::remove_dir(&store.config().index_path).unwrap();
+        let reopened = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let report = reopened.reconcile().unwrap();
+        assert!(report.entries.iter().any(|entry| {
+            entry.bundle_path.as_ref() == Some(&expected_path)
+                && entry.state == RunBundleRecoveryState::PendingIndex
+                && entry.reason == "bundle_without_index"
+        }));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn indexed_bundle_recovery_uses_fail_closed_reason_codes() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-indexed-bundle-reasons-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let original = serde_json::json!({
+            "schema":"AiDENsRunBundleV3",
+            "run_id":"tampered",
+        });
+        let record = store.write_bundle_value(&original).unwrap();
+        std::fs::write(
+            &record.bundle_path,
+            serde_json::to_string(&serde_json::json!({
+                "schema":"AiDENsRunBundleV3",
+                "run_id":"tampered",
+                "unexpected":true,
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let report = store.reconcile().unwrap();
+        assert!(report.entries.iter().any(|entry| {
+            entry.run_id == "tampered"
+                && entry.state == RunBundleRecoveryState::Indeterminate
+                && entry.reason == "bundle_digest_mismatch"
+        }));
+
+        let child_root = std::env::temp_dir().join(format!(
+            "aidens-indexed-child-reasons-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let child_store =
+            RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&child_root)).unwrap();
+        let child_receipt = serde_json::json!({"receipt_id":"effect:1"});
+        let child_digest = ContentDigest::compute_json(&child_receipt).unwrap();
+        let unclosed = serde_json::json!({
+            "schema":"AiDENsRunBundleV3",
+            "run_id":"effect-without-outcome",
+            "required_children":[{"owner_id":"effect:1","digest":child_digest.hex()}],
+            "child_receipts":[{
+                "owner_id":"effect:1",
+                "digest":child_digest.hex(),
+                "closed":false,
+                "receipt":child_receipt,
+            }],
+        });
+        child_store.write_bundle_value(&unclosed).unwrap();
+        let report = child_store.reconcile().unwrap();
+        assert!(report.entries.iter().any(|entry| {
+            entry.run_id == "effect-without-outcome"
+                && entry.state == RunBundleRecoveryState::Quarantined
+                && entry.reason == "child_reference_unverified"
+        }));
+
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_dir_all(child_root);
     }
 }
