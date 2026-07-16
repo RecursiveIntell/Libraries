@@ -4,6 +4,32 @@ use aidens_contracts::{MemoryModeV1, ReportLevelV1};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+#[test]
+fn learning_inspect_consumes_manifest_without_holdout_oracles() {
+    let report = learn_inspect_command(None).unwrap();
+    let value: Value = serde_json::from_str(&report).unwrap();
+    assert_eq!(value["corpus_version"], "v1");
+    assert!(value["task_count"].as_u64().unwrap() > 0);
+    assert!(value.get("holdout_oracles").is_none());
+    assert_eq!(value["terminal"]["state"], "blocked-evidence-insufficient");
+}
+
+#[test]
+fn learning_lifecycle_requires_explicit_permit() {
+    let err = learn_promote_command("candidate-x", None)
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("explicit lifecycle permit"));
+}
+
+#[test]
+fn learning_mock_run_cannot_render_verified_success() {
+    let report = learn_run_command("mock", None, None).unwrap();
+    let value: Value = serde_json::from_str(&report).unwrap();
+    assert_eq!(value["terminal"]["state"], "mock-only");
+    assert_ne!(value["terminal"]["state"], "succeeded-verified");
+}
+
 fn temp_root() -> PathBuf {
     std::env::temp_dir().join(format!(
         "aidens-cli-test-{}-{}",
