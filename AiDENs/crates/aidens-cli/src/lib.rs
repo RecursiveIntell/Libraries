@@ -205,6 +205,49 @@ pub enum Command {
         profile: String,
         destination: String,
     },
+    Learn {
+        #[command(subcommand)]
+        command: LearningCommand,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum LearningCommand {
+    Run {
+        #[arg(long, default_value = "fixture")]
+        mode: String,
+        #[arg(long)]
+        source: Option<String>,
+        #[arg(long)]
+        out: Option<String>,
+    },
+    Inspect {
+        #[arg(long)]
+        source: Option<String>,
+    },
+    Compare {
+        #[arg(long)]
+        source: Option<String>,
+    },
+    Promote {
+        candidate: String,
+        #[arg(long)]
+        permit: Option<String>,
+    },
+    Revoke {
+        candidate: String,
+        #[arg(long)]
+        permit: Option<String>,
+    },
+    Replay {
+        #[arg(long)]
+        source: Option<String>,
+    },
+    Stop {
+        candidate: String,
+        #[arg(long)]
+        permit: Option<String>,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -663,6 +706,96 @@ pub fn run(cli: Cli) -> Result<String> {
             profile,
             destination,
         } => new_app(&profile, &destination),
+        Command::Learn { command } => learning_command(command),
+    }
+}
+
+fn learning_manifest_path(source: Option<&str>) -> PathBuf {
+    source.map(PathBuf::from).unwrap_or_else(|| {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .ancestors()
+            .nth(2)
+            .unwrap()
+            .join("fixtures/learning-coding-agent/v1/manifest.json")
+    })
+}
+
+fn learning_manifest(source: Option<&str>) -> Result<Value> {
+    let path = learning_manifest_path(source);
+    let value: Value = serde_json::from_str(&std::fs::read_to_string(&path)?)?;
+    if value["corpus_version"] != "v1" || !value["tasks"].is_array() {
+        bail!("invalid learning corpus manifest: {}", path.display());
+    }
+    Ok(value)
+}
+
+fn learning_projection(mode: &str) -> aidens_contracts::CodingLearningTerminalProjectionV1 {
+    let mut evidence = aidens_contracts::CodingLearningEvidenceV1::default();
+    evidence.execution_mode = mode.to_string();
+    evidence.mock_only = mode == "mock";
+    evidence.fixture_only = mode == "fixture";
+    aidens_contracts::project_terminal_state(&evidence)
+}
+
+pub fn learn_inspect_command(source: Option<&str>) -> Result<String> {
+    let manifest = learning_manifest(source)?;
+    let tasks = manifest["tasks"].as_array().unwrap();
+    let mut splits = BTreeMap::new();
+    for task in tasks {
+        *splits
+            .entry(task["split"].as_str().unwrap_or("unknown"))
+            .or_insert(0u64) += 1;
+    }
+    Ok(serde_json::to_string_pretty(&serde_json::json!({
+        "schema": "AiDENsLearningCorpusInspectionV1", "corpus_version": "v1",
+        "source": learning_manifest_path(source), "task_count": tasks.len(),
+        "splits": splits, "scope": "fixture-only; holdout-oracles-redacted",
+        "terminal": learning_projection("unknown"),
+    }))?)
+}
+
+pub fn learn_run_command(mode: &str, source: Option<&str>, out: Option<&str>) -> Result<String> {
+    let manifest = learning_manifest(source)?;
+    let report = serde_json::json!({
+        "schema": "AiDENsLearningRunReportV1", "mode": mode,
+        "source": learning_manifest_path(source), "scope": "development-and-calibration-only",
+        "task_count": manifest["tasks"].as_array().map_or(0, Vec::len),
+        "terminal": learning_projection(mode), "candidate_state": "unpromoted",
+        "confidence": "unverified", "evidence": [], "blocked_checks": ["canonical-runner-evidence-missing"],
+        "receipt_ids": [], "replay": {"available": false},
+    });
+    if let Some(path) = out {
+        write_json_file(Path::new(path), &report)?;
+    }
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
+pub fn learn_promote_command(candidate: &str, permit: Option<&str>) -> Result<String> {
+    let permit = permit.ok_or_else(|| anyhow::anyhow!("explicit lifecycle permit is required"))?;
+    let permit_text =
+        std::fs::read_to_string(permit).context("explicit lifecycle permit must be readable")?;
+    let _: Value = serde_json::from_str(&permit_text)
+        .context("explicit lifecycle permit must be valid JSON")?;
+    Ok(serde_json::to_string_pretty(
+        &serde_json::json!({"candidate": candidate, "lifecycle": "promoted", "verified": false}),
+    )?)
+}
+
+pub fn learning_command(command: LearningCommand) -> Result<String> {
+    match command {
+        LearningCommand::Run { mode, source, out } => {
+            learn_run_command(&mode, source.as_deref(), out.as_deref())
+        }
+        LearningCommand::Inspect { source } => learn_inspect_command(source.as_deref()),
+        LearningCommand::Compare { source } => learn_inspect_command(source.as_deref()),
+        LearningCommand::Replay { source } => learn_inspect_command(source.as_deref()),
+        LearningCommand::Promote { candidate, permit } => {
+            learn_promote_command(&candidate, permit.as_deref())
+        }
+        LearningCommand::Revoke { candidate, permit }
+        | LearningCommand::Stop { candidate, permit } => {
+            learn_promote_command(&candidate, permit.as_deref())
+        }
     }
 }
 
