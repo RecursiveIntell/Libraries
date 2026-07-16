@@ -1,0 +1,5 @@
+{
+  "category": "real_to_mock_fallback",
+  "expected": "reject",
+  "fixture_version": "v1"
+}

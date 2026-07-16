@@ -1,0 +1,5 @@
+{
+  "category": "descendant_process",
+  "expected": "reject",
+  "fixture_version": "v1"
+}

@@ -1,0 +1,5 @@
+{
+  "category": "rollback_failure",
+  "expected": "reject",
+  "fixture_version": "v1"
+}

@@ -1,0 +1,5 @@
+{
+  "category": "path_escape",
+  "expected": "reject",
+  "fixture_version": "v1"
+}
