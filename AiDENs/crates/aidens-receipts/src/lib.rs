@@ -235,8 +235,18 @@ impl RunBundleStore {
         let records = read_run_bundle_records(&self.config.index_path)?;
         let mut report = RunBundleRecoveryReport::default();
         let mut indexed = std::collections::BTreeSet::new();
+        let mut seen_records = std::collections::BTreeSet::new();
         for record in records {
+            let duplicate = !seen_records.insert(record.bundle_path.clone());
             indexed.insert(record.bundle_path.clone());
+            if duplicate {
+                report.entries.push(RunBundleRecoveryEntry {
+                    run_id: record.run_id.clone(),
+                    bundle_path: Some(record.bundle_path.clone()),
+                    state: RunBundleRecoveryState::Quarantined,
+                    reason: "duplicate_index_record".into(),
+                });
+            }
             let state = if !record.bundle_path.is_file() {
                 RunBundleRecoveryState::Indeterminate
             } else {
@@ -254,11 +264,17 @@ impl RunBundleStore {
                     _ => RunBundleRecoveryState::Indeterminate,
                 }
             };
+            let missing_bundle = !record.bundle_path.is_file();
             report.entries.push(RunBundleRecoveryEntry {
                 run_id: record.run_id,
                 bundle_path: Some(record.bundle_path),
                 state,
-                reason: "index_record_reconciled".into(),
+                reason: if missing_bundle {
+                    "missing_bundle"
+                } else {
+                    "index_record_reconciled"
+                }
+                .into(),
             });
         }
         for path in scan_bundle_paths(&self.config.bundles_path)? {
@@ -907,6 +923,7 @@ fn scan_bundle_paths(root: &Path) -> Result<Vec<PathBuf>, RunBundleStoreError> {
 /// Verify only references whose owner receipt is embedded in the V3 bundle.
 /// A reference without a closed, digest-valid owner is never promoted.
 fn verify_child_references(bundle: &Value) -> bool {
+    let mut observed_owners = std::collections::BTreeSet::new();
     for key in ["child_receipts", "children", "child_references"] {
         let Some(children) = bundle.get(key) else {
             continue;
@@ -924,6 +941,12 @@ fn verify_child_references(bundle: &Value) -> bool {
             else {
                 return false;
             };
+            let Some(owner_id) = object.get("owner_id").and_then(Value::as_str) else {
+                return false;
+            };
+            if owner_id.is_empty() || !observed_owners.insert(owner_id.to_string()) {
+                return false;
+            }
             let Some(digest) = object
                 .get("digest")
                 .or_else(|| object.get("content_digest"))
@@ -940,6 +963,14 @@ fn verify_child_references(bundle: &Value) -> bool {
             {
                 return false;
             }
+        }
+    }
+    if let Some(required) = bundle.get("required_children") {
+        let Some(required) = required.as_array() else {
+            return false;
+        };
+        if !required.is_empty() && observed_owners.is_empty() {
+            return false;
         }
     }
     true
@@ -1339,5 +1370,65 @@ mod tests {
             .any(|entry| entry.state == RunBundleRecoveryState::PendingIndex
                 && entry.reason == "bundle_without_index"));
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn recovery_matrix_classifies_index_and_child_failures_with_reason_codes() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-recovery-matrix-cases-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let valid = serde_json::json!({"schema":"AiDENsRunBundleV3","run_id":"valid"});
+        let digest = ContentDigest::compute_json(&valid).unwrap();
+        let path = store.bundle_path_for_run_id_and_digest("valid", &digest);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, serde_json::to_string(&valid).unwrap()).unwrap();
+        let missing = store.bundle_path_for_run_id_and_digest("missing", &digest);
+        let record = RunBundleStoreRecord {
+            artifact_kind: "local_operator_run_bundle_store_record".into(),
+            ownership: "x".into(),
+            support_tier: "partial".into(),
+            semantic_status: "exact_check".into(),
+            run_id: "missing".into(),
+            bundle_schema: "AiDENsRunBundleV3".into(),
+            recorded_at: Utc::now().to_rfc3339(),
+            bundle_path: missing.clone(),
+            content_digest: digest.clone(),
+            canonical_event_log_path: root.join("canonical-receipts.ndjson"),
+            known_limits: vec![],
+        };
+        std::fs::write(
+            &store.config().index_path,
+            format!(
+                "{}\n{}\n",
+                serde_json::to_string(&record).unwrap(),
+                serde_json::to_string(&record).unwrap()
+            ),
+        )
+        .unwrap();
+        let report = store.reconcile().unwrap();
+        assert!(report
+            .entries
+            .iter()
+            .any(|e| e.reason == "duplicate_index_record"
+                && e.state == RunBundleRecoveryState::Quarantined));
+        assert!(report
+            .entries
+            .iter()
+            .any(|e| e.reason == "missing_bundle"
+                && e.state == RunBundleRecoveryState::Indeterminate));
+        assert!(report
+            .entries
+            .iter()
+            .any(|e| e.reason == "bundle_without_index"
+                && e.state == RunBundleRecoveryState::PendingIndex));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn required_child_set_requires_owner_id_digest_and_closed_child() {
+        let bundle = serde_json::json!({"schema":"AiDENsRunBundleV3","run_id":"child","required_children":[{"owner_id":"owner","digest":"00"}],"child_receipts":[]});
+        assert!(!verify_child_references(&bundle));
     }
 }
