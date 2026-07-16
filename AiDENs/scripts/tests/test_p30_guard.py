@@ -38,6 +38,8 @@ def test_receipt_reports_root_and_rule_coverage(tmp_path):
     assert receipt["discovered_roots"] == ["."]
     assert receipt["target_count"] == len(module.HARD_PATTERNS)
     assert set(receipt["rule_coverage"]) == {name for name, _, _ in module.HARD_PATTERNS}
+    assert not all(receipt["rule_coverage"].values())
+    assert all(receipt["rule_self_test_coverage"].values())
 
 
 def test_every_hard_rule_has_a_known_bad_self_test():

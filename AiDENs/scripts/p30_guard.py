@@ -50,18 +50,26 @@ def target_path(repo, root, target):
 
 def check_hard(repo):
     findings, missing = [], []
+    scanned = {name: 0 for name, _, _ in HARD_PATTERNS}
+    configured = {name: 0 for name, _, _ in HARD_PATTERNS}
     for root in discover_roots(repo):
         for name, pat, files in HARD_PATTERNS:
             for file in files:
+                configured[name] += 1
                 path = target_path(repo, root, file)
                 normalized = path.relative_to(repo).as_posix() if path else ((root / file).relative_to(repo).as_posix())
                 if path is None:
                     missing.append(normalized)
                     continue
+                scanned[name] += 1
                 text = path.read_text(errors="replace")
                 for match in re.finditer(pat, text):
                     findings.append({"level": "hard", "name": name, "path": normalized, "line": text.count("\n", 0, match.start()) + 1, "match": match.group(0)[:160]})
-    return findings, sorted(set(missing))
+    coverage = {
+        name: configured[name] > 0 and scanned[name] == configured[name]
+        for name in configured
+    }
+    return findings, sorted(set(missing)), coverage
 
 
 def iter_rs(repo):
@@ -96,9 +104,9 @@ def _fixture(pattern):
 
 
 def build_receipt(repo, fail_broad=False):
-    hard, missing = check_hard(repo)
+    hard, missing, scan_coverage = check_hard(repo)
     roots = discover_roots(repo)
-    coverage = self_test_hard_rules()
+    self_test_coverage = self_test_hard_rules()
     findings = hard + check_broad(repo, fail_broad)
     summary = {
         "hard_findings": sum(finding["level"] == "hard" for finding in findings),
@@ -108,7 +116,9 @@ def build_receipt(repo, fail_broad=False):
     blockers = []
     if missing:
         blockers.append("missing-configured-targets")
-    if not all(coverage.values()):
+    if not all(scan_coverage.values()):
+        blockers.append("hard-rule-target-scan-coverage-incomplete")
+    if not all(self_test_coverage.values()):
         blockers.append("hard-rule-self-test-coverage-incomplete")
     if summary["hard_findings"]:
         blockers.append("hard-findings-present")
@@ -121,13 +131,14 @@ def build_receipt(repo, fail_broad=False):
         ],
         "target_count": len(HARD_PATTERNS) * len(roots),
         "missing_targets": missing,
-        "rule_coverage": coverage,
+        "rule_coverage": scan_coverage,
+        "rule_self_test_coverage": self_test_coverage,
         "summary": summary,
         "release_gate": {
             "status": "blocked" if blockers else "pass",
             "blockers": blockers,
             "warning_policy": "advisory-inventory-not-release-blocking",
-            "claim_scope": "mechanical-hostile-pattern-coverage-not-containment-certification",
+            "claim_scope": "target-scan-plus-known-bad-detector-self-tests-not-containment-certification",
         },
         "findings": findings,
     }
