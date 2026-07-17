@@ -78,8 +78,10 @@ pub struct TrialRecord {
     pub network_available: bool,
     /// Whether timing data is admissible.
     pub timing_admissible: bool,
+    /// Zero-based pair number; defaults preserve legacy records.
     #[serde(default)]
     pub pair_index: u32,
+    /// Position within the pair (0 or 1); defaults preserve legacy records.
     #[serde(default)]
     pub order_index: u32,
 }
@@ -295,6 +297,38 @@ fn diff_effects(
     }
 }
 
+/// Digest fixture contents and relative names, excluding volatile metadata.
+fn fixture_tree_digest(root: &Path) -> ForgeResult<String> {
+    fn walk(root: &Path, dir: &Path, out: &mut Vec<(String, Vec<u8>)>) -> std::io::Result<()> {
+        for entry in std::fs::read_dir(dir)? {
+            let path = entry?.path();
+            if path.is_dir() {
+                walk(root, &path, out)?;
+            } else if path.is_file() {
+                out.push((
+                    path.strip_prefix(root)
+                        .unwrap_or(&path)
+                        .to_string_lossy()
+                        .into_owned(),
+                    std::fs::read(&path)?,
+                ));
+            }
+        }
+        Ok(())
+    }
+    let mut files = Vec::new();
+    walk(root, root, &mut files)?;
+    files.sort_by(|a, b| a.0.cmp(&b.0));
+    let mut material = Vec::new();
+    for (name, bytes) in files {
+        material.extend_from_slice(name.as_bytes());
+        material.push(0);
+        material.extend_from_slice(&bytes);
+        material.push(0xff);
+    }
+    Ok(blake3::hash(&material).to_hex().to_string())
+}
+
 // ── Statistics policy ──
 
 /// Policy controlling statistical validity claims.
@@ -381,7 +415,7 @@ pub struct ExperimentExportRecord {
 // ── Experiment execution ──
 
 /// Configuration for a single experiment.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExperimentConfig {
     pub mode: ExperimentMode,
     pub trial_count: u32,
@@ -456,6 +490,11 @@ impl<'a> PairedExperimentRunner<'a> {
         patch: &crate::runtime::patch::types::StructuredPatch,
         experiment_config: &ExperimentConfig,
     ) -> ForgeResult<ExperimentResult> {
+        if experiment_config.mode == ExperimentMode::VerificationFollowup {
+            return Err(ForgeError::Config(
+                "verification_followup is unsupported by the paired runner".into(),
+            ));
+        }
         let pair_count = match experiment_config.mode {
             ExperimentMode::RepeatedPaired => experiment_config.trial_count,
             ExperimentMode::Paired | ExperimentMode::VerificationFollowup => 1,
@@ -472,10 +511,19 @@ impl<'a> PairedExperimentRunner<'a> {
             )));
         }
         let patch_bytes = serde_json::to_vec(patch)?;
-        let mut id_material = fixture_path.to_string_lossy().into_owned().into_bytes();
+        let fixture_digest = fixture_tree_digest(fixture_path)?;
+        let config_bytes = serde_json::to_vec(experiment_config)?;
+        let mut id_material = fixture_digest.into_bytes();
         id_material.extend_from_slice(&patch_bytes);
-        id_material.extend_from_slice(&experiment_config.trial_order_seed.to_le_bytes());
-        id_material.extend_from_slice(&pair_count.to_le_bytes());
+        id_material.extend_from_slice(&config_bytes);
+        id_material.extend_from_slice(
+            format!(
+                "backend={:?};timeout={}",
+                self.backend.kind(),
+                self.config.container.command_timeout_secs
+            )
+            .as_bytes(),
+        );
         let run_id = blake3::hash(&id_material).to_hex().to_string();
         let _started_at = chrono::Utc::now().to_rfc3339();
 
@@ -515,6 +563,7 @@ impl<'a> PairedExperimentRunner<'a> {
                         pair_index,
                         order_index,
                         &mut all_trials,
+                        experiment_config.trial_order_seed,
                     )
                     .await?;
                 match side {
@@ -523,9 +572,15 @@ impl<'a> PairedExperimentRunner<'a> {
                 }
             }
         }
-        let baseline_result = baseline_result.expect("paired run produces baseline");
-        let patched_result = patched_result.expect("paired run produces patched");
-        let baseline_descriptor = baseline_descriptor.expect("paired run captures provenance");
+        let baseline_result = baseline_result.ok_or_else(|| {
+            ForgeError::ExperimentFailed("paired run produced no baseline result".into())
+        })?;
+        let patched_result = patched_result.ok_or_else(|| {
+            ForgeError::ExperimentFailed("paired run produced no patched result".into())
+        })?;
+        let baseline_descriptor = baseline_descriptor.ok_or_else(|| {
+            ForgeError::ExperimentFailed("paired run produced no baseline provenance".into())
+        })?;
 
         // Compute typed diff
         let diff = ExperimentDiff::from_paired(&baseline_result, &patched_result);
@@ -559,6 +614,7 @@ impl<'a> PairedExperimentRunner<'a> {
         pair_index: u32,
         order_index: u32,
         trials: &mut Vec<TrialRecord>,
+        trial_order_seed: u64,
     ) -> ForgeResult<CheckResult> {
         let commands = self.adapter.check_commands(self.config);
         let start = std::time::Instant::now();
@@ -633,7 +689,7 @@ impl<'a> PairedExperimentRunner<'a> {
             test_pass: check_result.test_pass,
             backend_kind: self.backend.kind(),
             duration_ms,
-            seed: 0,
+            seed: trial_order_seed,
             cache_mode: CacheMode::Unknown,
             network_available: true,
             timing_admissible: false,
