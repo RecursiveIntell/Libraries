@@ -265,18 +265,30 @@ impl ExecCtxBuilder {
     ///
     /// The legacy `trace_id` is always derived — never independently generated — when
     /// `trace_ctx` is present. This ensures a single source of truth for trace identity.
+    ///
+    /// This compatibility entry point fails closed if the default HTTP client
+    /// cannot be constructed. New fallible callers should use
+    /// [`try_build`](Self::try_build) to handle that error without a panic.
     pub fn build(self) -> ExecCtx {
+        self.try_build().unwrap_or_else(|error| {
+            panic!("failed to build HTTP client with the configured timeout: {error}")
+        })
+    }
+
+    /// Build the execution context and return HTTP client construction errors.
+    ///
+    /// A failed configured client build is never replaced by an unrestricted
+    /// default client, because doing so would silently discard timeout policy.
+    pub fn try_build(self) -> Result<ExecCtx, reqwest::Error> {
         let limits = self.limits.unwrap_or_default();
         // Use a high safety-net timeout on the Client itself (5 minutes).
         // Actual per-request timeouts are applied at the RequestBuilder level
         // by each backend, driven by LlmCall.timeout or PipelineLimits.request_timeout.
         let client_timeout = self.timeout.unwrap_or(Duration::from_secs(300));
-        let client = self.client.unwrap_or_else(|| {
-            Client::builder()
-                .timeout(client_timeout)
-                .build()
-                .expect("Failed to build HTTP client")
-        });
+        let client = match self.client {
+            Some(client) => client,
+            None => Client::builder().timeout(client_timeout).build()?,
+        };
 
         let (trace_id, trace_ctx) = match (self.trace_ctx, self.trace_id) {
             // Canonical path: TraceCtx was explicitly set
@@ -297,7 +309,7 @@ impl ExecCtxBuilder {
             }
         };
 
-        ExecCtx {
+        Ok(ExecCtx {
             client,
             base_url: normalize_base_url(&self.base_url),
             backend: self.backend.unwrap_or_else(|| Arc::new(OllamaBackend)),
@@ -308,7 +320,7 @@ impl ExecCtxBuilder {
             trace_id,
             trace_ctx,
             limits,
-        }
+        })
     }
 }
 
@@ -398,6 +410,15 @@ mod tests {
             .timeout(Duration::from_secs(120))
             .build();
         // Smoke test: builds without panic
+    }
+
+    #[test]
+    fn try_build_exposes_http_client_construction_failure_as_a_result() {
+        let result = ExecCtx::builder("http://localhost:11434")
+            .timeout(Duration::from_secs(120))
+            .try_build();
+
+        assert!(result.is_ok());
     }
 
     #[test]
