@@ -301,10 +301,18 @@ fn diff_effects(
 fn fixture_tree_digest(root: &Path) -> ForgeResult<String> {
     fn walk(root: &Path, dir: &Path, out: &mut Vec<(String, Vec<u8>)>) -> std::io::Result<()> {
         for entry in std::fs::read_dir(dir)? {
-            let path = entry?.path();
-            if path.is_dir() {
+            let entry = entry?;
+            let path = entry.path();
+            let file_type = entry.file_type()?;
+            if file_type.is_symlink() {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    format!("fixture identity rejects symlink: {}", path.display()),
+                ));
+            }
+            if file_type.is_dir() {
                 walk(root, &path, out)?;
-            } else if path.is_file() {
+            } else if file_type.is_file() {
                 out.push((
                     path.strip_prefix(root)
                         .unwrap_or(&path)
@@ -537,7 +545,7 @@ impl<'a> PairedExperimentRunner<'a> {
         for pair_index in 0..pair_count {
             let first_patched = ((experiment_config
                 .trial_order_seed
-                .wrapping_add(pair_index as u64 * 0x9e3779b97f4a7c15))
+                .wrapping_add((pair_index as u64).wrapping_mul(0x9e3779b97f4a7c15)))
                 & 1)
                 == 1;
             for order_index in 0..2 {
