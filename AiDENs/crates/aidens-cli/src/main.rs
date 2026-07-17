@@ -10,6 +10,7 @@ fn main() -> Result<()> {
             command: LearningCommand::Run { .. }
                 | LearningCommand::Promote { .. }
                 | LearningCommand::Revoke { .. }
+                | LearningCommand::Compare { .. }
                 | LearningCommand::Replay { .. }
                 | LearningCommand::Stop { .. }
         }
