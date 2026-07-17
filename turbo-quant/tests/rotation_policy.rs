@@ -16,9 +16,11 @@ fn auto_uses_stored_qr_for_non_power_of_two_dimensions() {
 
 #[test]
 fn explicit_fast_hadamard_rejects_unsupported_dimension() {
-    let err = PolarQuantizer::new_with_rotation(384, 8, 42, RotationKind::FastHadamard)
-        .expect_err("384 is not a power-of-two dimension");
-    assert!(err.to_string().contains("power-of-two"));
+    let result = PolarQuantizer::new_with_rotation(384, 8, 42, RotationKind::FastHadamard);
+    assert!(
+        matches!(result, Err(ref err) if err.to_string().contains("power-of-two")),
+        "384 must be rejected as a non-power-of-two dimension"
+    );
 }
 
 #[test]

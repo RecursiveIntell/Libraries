@@ -391,13 +391,13 @@ impl SearchConfig {
     fn normalize_and_validate(&mut self, embedding_dimensions: usize) -> Result<(), MemoryError> {
         #[cfg(not(feature = "turbo-quant-codec"))]
         let _ = embedding_dimensions;
-        self.candidate_pool_size = self.candidate_pool_size.max(1).min(MAX_SEARCH_CANDIDATE_POOL_SIZE);
-        self.default_top_k = self.default_top_k.max(1).min(MAX_SEARCH_DEFAULT_TOP_K);
+        self.candidate_pool_size = self
+            .candidate_pool_size
+            .clamp(1, MAX_SEARCH_CANDIDATE_POOL_SIZE);
+        self.default_top_k = self.default_top_k.clamp(1, MAX_SEARCH_DEFAULT_TOP_K);
         self.candidate_pool_size = self.candidate_pool_size.max(self.default_top_k);
-        self.sparse_top_k = self.sparse_top_k.max(1).min(MAX_SPARSE_TOP_K);
-        self.sparse_derive_top_k = self.sparse_derive_top_k
-            .max(1)
-            .min(MAX_SPARSE_DERIVE_TOP_K);
+        self.sparse_top_k = self.sparse_top_k.clamp(1, MAX_SPARSE_TOP_K);
+        self.sparse_derive_top_k = self.sparse_derive_top_k.clamp(1, MAX_SPARSE_DERIVE_TOP_K);
         if !self.rrf_k.is_finite() || self.rrf_k <= 0.0 {
             return Err(MemoryError::InvalidConfig {
                 field: "search.rrf_k",

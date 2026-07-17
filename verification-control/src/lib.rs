@@ -1888,7 +1888,9 @@ pub fn replay_case(entries: &[LedgerEntry]) -> Result<ReplayedCaseState, String>
             }
         }
         previous_sequence = Some(entry.sequence_no);
-        let expected_case_id = expected_case_id.as_ref().expect("case id initialized");
+        let expected_case_id = expected_case_id
+            .as_ref()
+            .ok_or_else(|| "ledger replay failed to initialize case id".to_string())?;
 
         match entry.event {
             LedgerEvent::CaseOpened { case: opened_case } => {

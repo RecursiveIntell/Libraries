@@ -888,6 +888,7 @@ fn tool_error_to_pipeline(error: ToolError) -> PipelineError {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::*;
     use async_trait::async_trait;
