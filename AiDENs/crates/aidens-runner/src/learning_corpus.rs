@@ -107,7 +107,7 @@ pub fn validate_and_consume(root: impl AsRef<Path>) -> Result<ValidatedCorpus, C
     let mut split_counts = BTreeMap::<String, usize>::new();
     let mut ids = BTreeSet::new();
     let mut fixtures = BTreeSet::new();
-    let mut family_splits = BTreeSet::new();
+    let mut family_splits = BTreeMap::<String, String>::new();
     let canonical = manifest
         .get("canonical_fixture_digests")
         .and_then(Value::as_object)
@@ -134,10 +134,14 @@ pub fn validate_and_consume(root: impl AsRef<Path>) -> Result<ValidatedCorpus, C
         if !SPLITS.contains(&split.as_str()) {
             return Err(CorpusError::Invalid("invalid split".into()));
         }
-        if !family_splits.insert((family.clone(), split.clone())) {
-            return Err(CorpusError::Invalid(format!(
-                "duplicate family split: ({family}, {split})"
-            )));
+        if let Some(previous_split) = family_splits.get(&family) {
+            if previous_split != &split {
+                return Err(CorpusError::Invalid(format!(
+                    "family leakage across splits: {family}"
+                )));
+            }
+        } else {
+            family_splits.insert(family.clone(), split.clone());
         }
         if !fixtures.insert(fixture.clone()) {
             return Err(CorpusError::Invalid(format!(
@@ -189,16 +193,12 @@ pub fn validate_and_consume(root: impl AsRef<Path>) -> Result<ValidatedCorpus, C
     {
         return Err(CorpusError::Invalid("empty split denominator".into()));
     }
-    // v1 was frozen with one development, calibration, and holdout case per
-    // family. Validate that immutable layout exactly; a 60/20/20 treatment
-    // corpus must be introduced as a superseding version rather than rewriting
-    // already-observed v1 bytes.
-    if SPLITS
-        .iter()
-        .any(|split| split_counts.get(*split).copied() != Some(families.len()))
-    {
+    let total = tasks.len();
+    let expected = [total * 3 / 5, total / 5, total / 5];
+    let observed = SPLITS.map(|split| split_counts.get(split).copied().unwrap_or(0));
+    if observed != expected {
         return Err(CorpusError::Invalid(format!(
-            "v1 family/split coverage mismatch: observed {split_counts:?}"
+            "split counts must satisfy immutable 60/20/20 ratio: observed {split_counts:?}"
         )));
     }
     if canonical
