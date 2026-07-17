@@ -4,9 +4,11 @@
 //! execution, verification, and causal attribution remain owner-crate truth.
 
 use aidens_contracts::{
-    ArtifactId, CanonicalToolSideEffectClass, PermitGrantV1, PermitUseReportV1,
+    ArtifactId, CanonicalBackpointerV1, CanonicalToolSideEffectClass, PermitGrantV1,
+    PermitUseReportV1,
 };
 use cea_core::{attribute_effects, AttributedRunResult};
+use cea_store::{CeaStore, UpdateResult};
 use check_runner::{
     CheckKind, CheckResult, ExecutionBackend, ExecutionBackendKind, ParsedCheckOutput,
     SandboxCapabilityTruthReceiptV1,
@@ -61,6 +63,9 @@ pub struct EffectfulEvaluationReportV1 {
     pub verification: AdjudicationResult,
     pub cea_run_hash: String,
     pub causal_triple_count: usize,
+    pub cea_persisted: bool,
+    pub cea_update_disposition: String,
+    pub cea_backpointer: CanonicalBackpointerV1,
     pub verified: bool,
     pub reason_codes: Vec<String>,
 }
@@ -84,6 +89,61 @@ pub async fn evaluate_effectful<B, F>(
     backend: &B,
     capability_receipt: F,
 ) -> Result<EffectfulEvaluationReportV1, EffectfulEvaluationError>
+where
+    B: ExecutionBackend,
+    F: Fn() -> Option<SandboxCapabilityTruthReceiptV1>,
+{
+    evaluate_effectful_core(request, backend, capability_receipt)
+        .await
+        .map(|(report, _, _)| report)
+}
+
+/// Execute the canonical effectful path and durably apply its attribution to
+/// the canonical CEA store. Repeated evaluation of the same material run is
+/// owner-idempotent and remains publication-complete.
+pub async fn evaluate_effectful_persisted<B, F, S>(
+    request: EffectfulEvaluationRequest,
+    backend: &B,
+    capability_receipt: F,
+    cea_store: &S,
+) -> Result<EffectfulEvaluationReportV1, EffectfulEvaluationError>
+where
+    B: ExecutionBackend,
+    F: Fn() -> Option<SandboxCapabilityTruthReceiptV1>,
+    S: CeaStore,
+{
+    let eval_id = request.trial_id.clone();
+    let version_id = request.patch.patch_id.to_string();
+    let (mut report, attributed, execution_verified) =
+        evaluate_effectful_core(request, backend, capability_receipt).await?;
+    let update = cea_store::update_graph(cea_store, &attributed, &eval_id, &version_id, 0.85)
+        .map_err(owner_error)?;
+    report.cea_persisted = true;
+    report.cea_update_disposition = match update {
+        UpdateResult::Applied { .. } => "applied",
+        UpdateResult::AlreadyProcessed => "already_processed",
+    }
+    .into();
+    report.cea_backpointer = CanonicalBackpointerV1::external(
+        "cea-store",
+        "AttributedRunResult",
+        "causal-attribution-record",
+        report.cea_run_hash.clone(),
+    );
+    report.verified = execution_verified;
+    report.reason_codes = if execution_verified {
+        Vec::new()
+    } else {
+        vec!["independent-verification-not-positive".into()]
+    };
+    Ok(report)
+}
+
+async fn evaluate_effectful_core<B, F>(
+    request: EffectfulEvaluationRequest,
+    backend: &B,
+    capability_receipt: F,
+) -> Result<(EffectfulEvaluationReportV1, AttributedRunResult, bool), EffectfulEvaluationError>
 where
     B: ExecutionBackend,
     F: Fn() -> Option<SandboxCapabilityTruthReceiptV1>,
@@ -182,10 +242,10 @@ where
             .as_bytes(),
         ),
     };
-    let verified = backend.has_live_execution_evidence()
+    let execution_verified = backend.has_live_execution_evidence()
         && checks.all_pass()
         && verification.disposition == VerificationDisposition::EligibleForPromotion;
-    Ok(EffectfulEvaluationReportV1 {
+    let report = EffectfulEvaluationReportV1 {
         schema: "AiDENsEffectfulEvaluationReportV1".into(),
         execution_mode: "real_sandbox".into(),
         before_tree_digest,
@@ -195,15 +255,20 @@ where
         sandbox_capability: capability,
         checks: check_evidence,
         verification,
-        cea_run_hash: attributed.run_hash,
+        cea_run_hash: attributed.run_hash.clone(),
         causal_triple_count: attributed.triples.len(),
-        verified,
-        reason_codes: if verified {
-            Vec::new()
-        } else {
-            vec!["independent-verification-not-positive".into()]
-        },
-    })
+        cea_persisted: false,
+        cea_update_disposition: "not_persisted".into(),
+        cea_backpointer: CanonicalBackpointerV1::external(
+            "cea-core",
+            "AttributedRunResult",
+            "causal-attribution-unpersisted",
+            attributed.run_hash.clone(),
+        ),
+        verified: false,
+        reason_codes: vec!["causal-attribution-not-persisted".into()],
+    };
+    Ok((report, attributed, execution_verified))
 }
 
 fn validate_effect_permit(
@@ -640,6 +705,102 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn effectful_evaluation_persists_cea_idempotently_through_owner_store() {
+        let fixture = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(fixture.path().join("src")).unwrap();
+        std::fs::write(
+            fixture.path().join("Cargo.toml"),
+            "[package]\nname='fixture'\nversion='0.1.0'\nedition='2021'\n",
+        )
+        .unwrap();
+        std::fs::write(
+            fixture.path().join("src/lib.rs"),
+            "pub fn answer() -> u32 { 0 }\n",
+        )
+        .unwrap();
+        let build_request = || {
+            let patch: StructuredPatch = serde_json::from_value(serde_json::json!({
+                "patch_id": "00000000-0000-4000-8000-000000000004",
+                "summary": "bounded fixture patch",
+                "edits": [{
+                    "path": "src/lib.rs",
+                    "ops": [{"Replace": {"range": {"start": 1, "end_exclusive": 2}, "lines": ["pub fn answer() -> u32 { 42 }"]}}],
+                    "mode": "Modify"
+                }],
+                "notes": []
+            }))
+            .unwrap();
+            let root = fixture.path().to_string_lossy().to_string();
+            let run_id = ArtifactId::new("run:persisted-material");
+            let attempt_id = ArtifactId::new("attempt:persisted-material");
+            let mut grant = PermitGrantV1::scoped(
+                CanonicalToolSideEffectClass::Write,
+                "aidens:patch-apply:1",
+                root.clone(),
+                "operator",
+            );
+            grant.permit_id = ArtifactId::new("permit:persisted-material");
+            grant.run_id = Some(run_id.clone());
+            grant.attempt_id = Some(attempt_id.clone());
+            let mut permit_use = PermitUseReportV1::allowed(
+                &grant,
+                "aidens:patch-apply:1",
+                root,
+                Some(run_id),
+                Some(attempt_id),
+            );
+            permit_use.receipt_id = ArtifactId::new("permit-use:persisted-material");
+            EffectfulEvaluationRequest {
+                fixture: fixture.path().to_path_buf(),
+                patch,
+                patch_policy: PatchPolicy {
+                    forbidden_paths: vec![".git".into()],
+                    allow_test_modifications: false,
+                    max_files_changed: 2,
+                    max_total_lines_changed: 20,
+                    max_lines_changed_per_file: 20,
+                },
+                permit_grant: grant,
+                permit_use,
+                preflight_persisted: true,
+                run_id: "run:persisted-material".into(),
+                attempt_id: "attempt:persisted-material".into(),
+                trial_id: "trial:persisted-material".into(),
+                trace_id: "0af7651916cd43dd8448eb211c80319c".into(),
+                recorded_at: "2026-07-16T00:00:00Z".into(),
+            }
+        };
+        let store_dir = tempfile::tempdir().unwrap();
+        let store = cea_sqlite::SqliteCeaStore::open(&store_dir.path().join("cea.sqlite")).unwrap();
+        let capability = valid_capability_receipt();
+
+        let first = evaluate_effectful_persisted(
+            build_request(),
+            &FakeSealedBackend,
+            || Some(capability.clone()),
+            &store,
+        )
+        .await
+        .unwrap();
+        let second = evaluate_effectful_persisted(
+            build_request(),
+            &FakeSealedBackend,
+            || Some(capability.clone()),
+            &store,
+        )
+        .await
+        .unwrap();
+
+        assert!(first.cea_persisted);
+        assert_eq!(first.cea_update_disposition, "applied");
+        assert_eq!(second.cea_update_disposition, "already_processed");
+        assert_eq!(
+            first.cea_backpointer.external_id.as_deref(),
+            Some(first.cea_run_hash.as_str())
+        );
+    }
+
+    #[tokio::test]
     #[ignore = "requires an explicitly supplied digest-pinned Rust image and live rootless Podman"]
     async fn live_rootless_podman_executes_the_effectful_vertical_slice() {
         let image = std::env::var("AIDENS_LIVE_RUST_IMAGE")
@@ -721,10 +882,18 @@ mod tests {
             cpu_limit: "2".into(),
         })
         .unwrap();
-        let report = evaluate_effectful(request, &backend, || backend.capability_truth_receipt())
-            .await
-            .unwrap();
+        let store_dir = tempfile::tempdir().unwrap();
+        let store = cea_sqlite::SqliteCeaStore::open(&store_dir.path().join("cea.sqlite")).unwrap();
+        let report = evaluate_effectful_persisted(
+            request,
+            &backend,
+            || backend.capability_truth_receipt(),
+            &store,
+        )
+        .await
+        .unwrap();
         assert!(report.verified, "live report was not verified: {report:#?}");
+        assert!(report.cea_persisted);
         assert!(report.sandbox_capability.verify());
         assert!(report.checks.fmt_executed);
         assert!(report.checks.clippy_executed);

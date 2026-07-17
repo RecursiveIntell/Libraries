@@ -22,6 +22,7 @@ aidens-boundary-kit = { path = "../aidens-boundary-kit" }
 boundary-compiler-core = { path = "../boundary-compiler-core" }
 check-runner.workspace = true
 cea-core.workspace = true
+cea-store.workspace = true
 sandbox-workspace.workspace = true
 semantic-memory.workspace = true
 stack-ids.workspace = true
@@ -39,5 +40,6 @@ blake3 = "1.8.2"
 
 [dev-dependencies]
 async-trait.workspace = true
+cea-sqlite.workspace = true
 tokio.workspace = true
 tempfile = "3"

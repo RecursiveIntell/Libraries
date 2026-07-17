@@ -78,6 +78,8 @@ semantic-memory-forge = { version = "0.1.0", path = "../semantic-memory-forge" }
 stack-ids = { version = "0.1.0", path = "../stack-ids" }
 check-runner = { version = "0.1.0", path = "../Primitives/check-runner", features = ["container"] }
 cea-core = { version = "0.1.0", path = "../Primitives/cea-core" }
+cea-store = { version = "0.1.0", path = "../Primitives/cea-store" }
+cea-sqlite = { version = "0.1.0", path = "../Primitives/cea-sqlite" }
 sandbox-workspace = { version = "0.1.0", path = "../Primitives/sandbox-workspace" }
 typed-patch = { version = "0.1.0", path = "../Primitives/typed-patch" }
 verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }

@@ -388,6 +388,8 @@ dependencies = [
  "blake3",
  "boundary-compiler-core",
  "cea-core",
+ "cea-sqlite",
+ "cea-store",
  "check-runner",
  "sandbox-workspace",
  "semantic-memory",
