@@ -299,7 +299,7 @@ where
     Ok((report, attributed, execution_verified))
 }
 
-fn validate_effect_permit(
+pub(crate) fn validate_effect_permit(
     request: &EffectfulEvaluationRequest,
 ) -> Result<(), EffectfulEvaluationError> {
     let logical_root = request.fixture.to_string_lossy();
