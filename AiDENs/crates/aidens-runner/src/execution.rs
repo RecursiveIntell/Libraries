@@ -261,13 +261,13 @@ pub(super) fn verification_checks_for_loop(
         if !passed && reason_codes.is_empty() {
             reason_codes.push("check-failed".into());
         }
-        checks.push(VerificationReceiptV1 {
-            receipt_id: display_only_unstable_id("agent-verification"),
-            step: 1,
-            check: format!("{check:?}"),
+        checks.push(VerificationReceiptV1::material_bound(
+            output.receipt.context.run_id.as_str(),
+            1,
+            format!("{check:?}"),
             passed,
             reason_codes,
-        });
+        ));
     }
     checks
 }
