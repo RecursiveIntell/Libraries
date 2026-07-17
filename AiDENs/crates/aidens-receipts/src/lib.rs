@@ -381,7 +381,7 @@ impl RunBundleStore {
                             .and_then(|name| name.to_str());
                         let digest_matches = actual_digest
                             .as_ref()
-                            .is_some_and(|digest| path_digest == Some(&digest.hex()[..]));
+                            .is_some_and(|digest| path_digest == Some(digest.hex()));
                         if !digest_matches {
                             (
                                 RunBundleRecoveryState::Indeterminate,
@@ -1543,7 +1543,8 @@ mod tests {
         ));
         let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
         let bundle = serde_json::json!({"schema":"AiDENsRunBundleV3","run_id":"orphan-digest"});
-        let wrong_digest = ContentDigest::compute_json(&serde_json::json!({"different":true})).unwrap();
+        let wrong_digest =
+            ContentDigest::compute_json(&serde_json::json!({"different":true})).unwrap();
         let path = store.bundle_path_for_run_id_and_digest("orphan-digest", &wrong_digest);
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::fs::write(&path, serde_json::to_string(&bundle).unwrap()).unwrap();
