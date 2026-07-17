@@ -46,6 +46,7 @@ use anyhow::{bail, Context, Result};
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Parser, Subcommand};
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::{Read, Write};
 #[cfg(unix)]
@@ -723,10 +724,126 @@ fn learning_manifest_path(source: Option<&str>) -> PathBuf {
 fn learning_manifest(source: Option<&str>) -> Result<Value> {
     let path = learning_manifest_path(source);
     let value: Value = serde_json::from_str(&std::fs::read_to_string(&path)?)?;
-    if value["corpus_version"] != "v1" || !value["tasks"].is_array() {
-        bail!("invalid learning corpus manifest: {}", path.display());
-    }
+    validate_learning_corpus(&path, &value)?;
     Ok(value)
+}
+
+fn validate_learning_corpus(manifest_path: &Path, manifest: &Value) -> Result<()> {
+    let root = manifest_path.parent().unwrap_or_else(|| Path::new("."));
+    if manifest["corpus_version"] != "v1"
+        || manifest["frozen_baseline_policy"] != "immutable-after-treatment"
+        || manifest["toolchain"] != "rust-toolchain.toml@1.86.0"
+        || manifest["verifier_manifest"] != "verifier-v1@sha256:medusa-local-v1"
+    {
+        bail!("invalid learning corpus pins: {}", manifest_path.display());
+    }
+    let tasks = manifest["tasks"]
+        .as_array()
+        .ok_or_else(|| anyhow::anyhow!("invalid learning corpus tasks"))?;
+    if tasks.len() < 5 {
+        bail!("too few learning corpus tasks");
+    }
+    if tasks
+        .iter()
+        .filter_map(|t| t["family"].as_str())
+        .collect::<BTreeSet<_>>()
+        .len()
+        < 5
+    {
+        bail!("too few learning corpus families");
+    }
+    let mut seen = BTreeSet::new();
+    for task in tasks {
+        for field in [
+            "id",
+            "family",
+            "split",
+            "fixture",
+            "required_checks",
+            "permitted_effects",
+            "forbidden_effects",
+        ] {
+            if task.get(field).is_none() {
+                bail!("missing task field {field}");
+            }
+        }
+        let split = task["split"].as_str().unwrap_or_default();
+        if !matches!(split, "development" | "calibration" | "holdout") {
+            bail!("invalid split");
+        }
+        if !seen.insert((task["family"].as_str().unwrap_or_default(), split)) {
+            bail!("duplicate family split");
+        }
+        if split == "holdout"
+            && ["oracle", "oracle_content", "expected_output"]
+                .iter()
+                .any(|k| task.get(*k).is_some())
+        {
+            bail!("holdout oracle leak");
+        }
+        let checks = task["required_checks"].as_array().map_or(0, Vec::len);
+        let forbidden = task["forbidden_effects"].as_array().map_or(0, Vec::len);
+        if checks == 0 || forbidden == 0 {
+            bail!("empty required checks/effects denominator");
+        }
+        let fixture = task["fixture"].as_str().unwrap_or_default();
+        let bytes = std::fs::read(root.join(fixture))
+            .with_context(|| format!("missing fixture {fixture}"))?;
+        let actual = format!("{:x}", Sha256::digest(bytes));
+        if manifest["canonical_fixture_digests"][fixture].as_str() != Some(actual.as_str()) {
+            bail!("fixture digest mismatch: {fixture}");
+        }
+    }
+    let oracles: Value =
+        serde_json::from_str(&std::fs::read_to_string(root.join("oracles.json"))?)?;
+    if !oracles["families"].as_array().is_some_and(|xs| {
+        xs.iter()
+            .all(|x| x.get("family").is_some() && x.get("oracle").is_some())
+    }) {
+        bail!("invalid oracle schema");
+    }
+    let required = [
+        "path_escape",
+        "symlink_escape",
+        "descendant_process",
+        "network",
+        "secret_env",
+        "malformed_tool_call",
+        "duplicate_key_tool_call",
+        "schema_invalid_tool_call",
+        "evaluator_tamper",
+        "stale_dependency_memory",
+        "failing_baseline",
+        "malformed_fixture",
+        "rollback_failure",
+        "reward_hacking",
+        "real_to_mock_fallback",
+    ];
+    let negative = std::fs::read_dir(root.join("negative"))?
+        .filter_map(|e| e.ok())
+        .filter_map(|e| {
+            e.path()
+                .file_stem()
+                .map(|s| s.to_string_lossy().into_owned())
+        })
+        .collect::<BTreeSet<_>>();
+    if required.iter().any(|name| !negative.contains(*name)) {
+        bail!("missing required negative category");
+    }
+    if manifest.get("holdout_oracles").is_some() {
+        bail!("holdout oracle leak");
+    }
+    let digest = format!("{:x}", Sha256::digest(std::fs::read(manifest_path)?));
+    if source_is_default(manifest_path)
+        && digest != "b6465f16021b681bc0f30b3655b9724e0ef0d2a809a3b6fd852300d4d09663ee"
+    {
+        bail!("canonical corpus digest mismatch");
+    }
+    Ok(())
+}
+
+fn source_is_default(path: &Path) -> bool {
+    path == learning_manifest_path(None)
 }
 
 fn learning_projection(mode: &str) -> aidens_contracts::CodingLearningTerminalProjectionV1 {
@@ -753,6 +870,17 @@ pub fn learn_inspect_command(source: Option<&str>) -> Result<String> {
         "source": learning_manifest_path(source), "task_count": tasks.len(),
         "splits": splits, "scope": "fixture-only; holdout-oracles-redacted",
         "terminal": learning_projection("unknown"),
+    }))?)
+}
+
+fn learn_compare_replay_command(action: &str, source: Option<&str>) -> Result<String> {
+    let _ = learning_manifest(source)?;
+    Ok(serde_json::to_string_pretty(&serde_json::json!({
+        "schema": if action == "compare" { "AiDENsLearningCompareReportV1" } else { "AiDENsLearningReplayReportV1" },
+        "operation": action,
+        "availability": "unavailable",
+        "terminal": learning_projection("unknown"),
+        "reason_codes": [format!("{action}-unsupported-without-canonical-runner")],
     }))?)
 }
 
@@ -816,8 +944,12 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
             learn_run_command(&mode, source.as_deref(), out.as_deref())
         }
         LearningCommand::Inspect { source } => learn_inspect_command(source.as_deref()),
-        LearningCommand::Compare { source } => learn_inspect_command(source.as_deref()),
-        LearningCommand::Replay { source } => learn_inspect_command(source.as_deref()),
+        LearningCommand::Compare { source } => {
+            learn_compare_replay_command("compare", source.as_deref())
+        }
+        LearningCommand::Replay { source } => {
+            learn_compare_replay_command("replay", source.as_deref())
+        }
         LearningCommand::Promote { candidate, permit } => {
             learn_lifecycle_command("promote", &candidate, permit.as_deref())
         }
@@ -4258,12 +4390,32 @@ fn coding_agent_v11a_evidence(
         "ToolReceipt",
         "canonical-tool-receipt-owner",
     ));
-    for state in [
-        aidens_contracts::ArtifactLifecycleStateV1::Validated,
-        aidens_contracts::ArtifactLifecycleStateV1::Admitted,
-        aidens_contracts::ArtifactLifecycleStateV1::Projected,
-        aidens_contracts::ArtifactLifecycleStateV1::Verified,
-    ] {
+    let blocked = steps
+        .iter()
+        .any(|step| step.get("status").and_then(Value::as_str) == Some("blocked_or_failed"));
+    let has_permits = steps
+        .iter()
+        .filter(|step| step.get("status").and_then(Value::as_str) == Some("succeeded"))
+        .all(|step| {
+            step.pointer("/permit_use_receipt/receipt_id")
+                .and_then(Value::as_str)
+                .is_some()
+        });
+    let lifecycle = if blocked || !has_permits {
+        vec![
+            aidens_contracts::ArtifactLifecycleStateV1::Validated,
+            aidens_contracts::ArtifactLifecycleStateV1::Admitted,
+            aidens_contracts::ArtifactLifecycleStateV1::Projected,
+        ]
+    } else {
+        vec![
+            aidens_contracts::ArtifactLifecycleStateV1::Validated,
+            aidens_contracts::ArtifactLifecycleStateV1::Admitted,
+            aidens_contracts::ArtifactLifecycleStateV1::Projected,
+            aidens_contracts::ArtifactLifecycleStateV1::Verified,
+        ]
+    };
+    for state in lifecycle {
         output_artifact
             .apply_transition(state, "aidens.runner.turn", "aidens-cli", None)
             .map_err(anyhow::Error::msg)?;
@@ -4299,8 +4451,12 @@ fn coding_agent_v11a_evidence(
         aidens_contracts::generated_artifact_id_from_material("attempt-family", run_id),
         "local-tools-only",
         "aidens:safe-coding-tools",
-    )
-    .complete(aidens_contracts::ExecutionCompletionStateV1::Succeeded, 0);
+    );
+    let execution_context = if blocked || !has_permits {
+        execution_context.complete(aidens_contracts::ExecutionCompletionStateV1::Partial, 1)
+    } else {
+        execution_context.complete(aidens_contracts::ExecutionCompletionStateV1::Succeeded, 0)
+    };
     let operator_contract = aidens_contracts::p28_declared_material_operation_registry()
         .contract("aidens.runner.turn")
         .cloned()
@@ -4538,7 +4694,9 @@ fn coding_agent_failure_taxonomy(report: &serde_json::Value) -> AiDENsRunFailure
     AiDENsRunFailureTaxonomyV1 {
         class: if failed_check {
             AiDENsRunFailureClassV1::ToolFailed
-        } else if side_effect_blocked || applied_patch {
+        } else if side_effect_blocked {
+            AiDENsRunFailureClassV1::OperatorAbstained
+        } else if applied_patch {
             AiDENsRunFailureClassV1::None
         } else {
             AiDENsRunFailureClassV1::OperatorAbstained
@@ -4553,7 +4711,7 @@ fn coding_agent_failure_taxonomy(report: &serde_json::Value) -> AiDENsRunFailure
             vec!["no-side-effect-tool-executed".into()]
         },
         degraded: failed_check,
-        blocked: false,
+        blocked: side_effect_blocked,
     }
 }
 

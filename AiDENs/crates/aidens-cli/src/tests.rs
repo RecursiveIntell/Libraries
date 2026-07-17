@@ -42,6 +42,50 @@ fn learning_lifecycle_does_not_claim_owner_transition_without_owner_evidence() {
 }
 
 #[test]
+fn learning_corpus_rejects_tampered_fixture() {
+    let root = temp_root();
+    std::fs::create_dir_all(root.join("tasks")).unwrap();
+    let source_root = workspace_root().join("fixtures/learning-coding-agent/v1");
+    for entry in std::fs::read_dir(&source_root).unwrap() {
+        let entry = entry.unwrap();
+        if entry.file_type().unwrap().is_file() {
+            std::fs::copy(entry.path(), root.join(entry.file_name())).unwrap();
+        }
+    }
+    for entry in std::fs::read_dir(source_root.join("tasks")).unwrap() {
+        let entry = entry.unwrap();
+        std::fs::copy(entry.path(), root.join("tasks").join(entry.file_name())).unwrap();
+    }
+    let fixture = root.join("tasks/borrow-check-development.json");
+    std::fs::write(&fixture, "tampered").unwrap();
+    let error = learn_inspect_command(root.join("manifest.json").to_str())
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("fixture digest mismatch"), "{error}");
+    let _ = std::fs::remove_dir_all(root);
+}
+
+#[test]
+fn learning_compare_and_replay_are_explicitly_unavailable() {
+    let source = workspace_root().join("fixtures/learning-coding-agent/v1/manifest.json");
+    for action in ["compare", "replay"] {
+        let command = match action {
+            "compare" => LearningCommand::Compare {
+                source: Some(source.to_str().unwrap().into()),
+            },
+            _ => LearningCommand::Replay {
+                source: Some(source.to_str().unwrap().into()),
+            },
+        };
+        let report = learning_command(command).unwrap();
+        let value: Value = serde_json::from_str(&report).unwrap();
+        assert_eq!(value["terminal"]["state"], "blocked-evidence-insufficient");
+        assert_eq!(value["availability"], "unavailable");
+        assert_ne!(learning_run_exit_code(&report), 0);
+    }
+}
+
+#[test]
 fn learning_mock_run_cannot_render_verified_success() {
     let report = learn_run_command("mock", None, None).unwrap();
     let value: Value = serde_json::from_str(&report).unwrap();
@@ -1358,7 +1402,7 @@ sandbox_root = "{}"
     );
     assert_eq!(
         report["v11a_evidence"]["artifact_envelope"]["lifecycle_state"],
-        "verified"
+        "projected"
     );
     assert_eq!(
         report["v11a_evidence"]["execution_context"]["provider_route"],
@@ -1399,7 +1443,8 @@ sandbox_root = "{}"
             .unwrap();
     assert_eq!(bundle["schema"], "AiDENsRunBundleV2");
     assert_eq!(bundle["support"]["support_tier"], "supported-local");
-    assert_eq!(bundle["failure"]["class"], "none");
+    assert_eq!(bundle["failure"]["class"], "operator-abstained");
+    assert_eq!(bundle["failure"]["blocked"], true);
     assert!(bundle["tool_receipts"].as_array().unwrap().len() >= 7);
 
     let inspected =
