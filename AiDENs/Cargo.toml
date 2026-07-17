@@ -76,10 +76,15 @@ remote-oracle-admission = { version = "0.1.0", path = "../remote-oracle-admissio
 semantic-memory = { version = "0.5.0", path = "../semantic-memory", default-features = false, features = ["brute-force"] }
 semantic-memory-forge = { version = "0.1.0", path = "../semantic-memory-forge" }
 stack-ids = { version = "0.1.0", path = "../stack-ids" }
+check-runner = { version = "0.1.0", path = "../Primitives/check-runner", features = ["container"] }
+cea-core = { version = "0.1.0", path = "../Primitives/cea-core" }
+sandbox-workspace = { version = "0.1.0", path = "../Primitives/sandbox-workspace" }
+typed-patch = { version = "0.1.0", path = "../Primitives/typed-patch" }
 verification-adjudication = { version = "0.1.0", path = "../verification-adjudication" }
 verification-calibration = { version = "0.1.0", path = "../verification-calibration" }
 verification-control = { version = "0.1.0", path = "../verification-control" }
 verification-policy = { version = "0.1.0", path = "../verification-policy" }
+walkdir = "2"
 
 [workspace.lints.rust]
 unsafe_code = "deny"

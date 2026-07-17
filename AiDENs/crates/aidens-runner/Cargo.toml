@@ -20,6 +20,17 @@ aidens-permit-kit = { path = "../aidens-permit-kit" }
 aidens-budget-kit = { path = "../aidens-budget-kit" }
 aidens-boundary-kit = { path = "../aidens-boundary-kit" }
 boundary-compiler-core = { path = "../boundary-compiler-core" }
+check-runner.workspace = true
+cea-core.workspace = true
+sandbox-workspace.workspace = true
+semantic-memory.workspace = true
+stack-ids.workspace = true
+typed-patch.workspace = true
+verification-adjudication.workspace = true
+verification-calibration.workspace = true
+verification-control.workspace = true
+verification-policy.workspace = true
+walkdir.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -27,4 +38,6 @@ anyhow.workspace = true
 blake3 = "1.8.2"
 
 [dev-dependencies]
+async-trait.workspace = true
 tokio.workspace = true
+tempfile = "3"

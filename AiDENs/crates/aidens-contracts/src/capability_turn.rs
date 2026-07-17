@@ -447,19 +447,32 @@ impl PermitUseReportV1 {
         run_id: Option<ArtifactId>,
         attempt_id: Option<ArtifactId>,
     ) -> Self {
-        Self {
-            receipt_id: display_only_unstable_id("permit-use"),
+        let tool_id = tool_id.into();
+        let sandbox_root = sandbox_root.into();
+        let material = serde_json::json!({
+            "permit_id": grant.permit_id,
+            "tool_id": tool_id,
+            "risk_class": grant.risk_class,
+            "sandbox_root": sandbox_root,
+            "run_id": run_id,
+            "attempt_id": attempt_id,
+        });
+        let mut report = Self {
+            receipt_id: ArtifactId::new("pending-material-bound-permit-use"),
             kind: ArtifactKindV1::PermitUse,
             permit_id: grant.permit_id.clone(),
-            tool_id: tool_id.into(),
+            tool_id,
             risk_class: grant.risk_class.clone(),
-            sandbox_root: sandbox_root.into(),
+            sandbox_root,
             run_id,
             attempt_id,
             allowed: true,
             reason_codes: vec!["permit-scope-matched".into()],
             used_at: Utc::now(),
-        }
+        };
+        report.receipt_id =
+            generated_artifact_id_from_material("permit-use", &material.to_string());
+        report
     }
 
     pub fn denied(

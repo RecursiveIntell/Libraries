@@ -56,6 +56,7 @@ impl PermitCheckContextV1 {
 pub struct PermitPolicyV1 {
     granted_risks: BTreeSet<CanonicalToolSideEffectClass>,
     grants: Vec<PermitGrantV1>,
+    consumed_permit_ids: BTreeSet<String>,
 }
 
 impl PermitPolicyV1 {
@@ -98,14 +99,35 @@ impl PermitPolicyV1 {
 
     pub fn grant_for_context(&self, context: &PermitCheckContextV1) -> Option<&PermitGrantV1> {
         self.grants.iter().find(|grant| {
-            grant.matches_scope(
-                &context.risk_class,
-                &context.tool_id,
-                &context.sandbox_root,
-                context.run_id.as_ref(),
-                context.attempt_id.as_ref(),
-            )
+            !self.consumed_permit_ids.contains(grant.permit_id.as_str())
+                && grant.matches_scope(
+                    &context.risk_class,
+                    &context.tool_id,
+                    &context.sandbox_root,
+                    context.run_id.as_ref(),
+                    context.attempt_id.as_ref(),
+                )
         })
+    }
+
+    /// Atomically consumes a matching side-effect grant in this policy instance.
+    ///
+    /// Read-only actions do not produce permit-use receipts. A consumed grant is
+    /// excluded from all later context decisions, preventing in-process replay.
+    pub fn consume_permit_for_context(
+        &mut self,
+        context: &PermitCheckContextV1,
+    ) -> Option<PermitUseReportV1> {
+        let grant = self.grant_for_context(context)?.clone();
+        self.consumed_permit_ids
+            .insert(grant.permit_id.as_str().to_string());
+        Some(PermitUseReportV1::allowed(
+            &grant,
+            context.tool_id.clone(),
+            context.sandbox_root.clone(),
+            context.run_id.clone(),
+            context.attempt_id.clone(),
+        ))
     }
 
     pub fn permit_use_receipt_for_context(
@@ -272,6 +294,36 @@ mod tests {
             .expect("matching grant emits use receipt");
         assert!(receipt.allowed);
         assert_eq!(receipt.permit_id, permit.permit_id);
+    }
+
+    #[test]
+    fn scoped_effect_permit_is_one_shot_and_use_receipt_is_durable() {
+        let mut permit = PermitV1::scoped(
+            CanonicalToolSideEffectClass::Write,
+            "aidens:patch-apply:1",
+            "/repo",
+            "operator",
+        );
+        permit.permit_id = ArtifactId::new("permit:material-bound");
+        permit.run_id = Some(ArtifactId::new("run:material-bound"));
+        permit.attempt_id = Some(ArtifactId::new("attempt:material-bound"));
+        let mut policy = PermitPolicyV1::default().with_permit(&permit);
+        let context = PermitCheckContextV1::new(
+            "aidens:patch-apply:1",
+            CanonicalToolSideEffectClass::Write,
+            "/repo",
+        )
+        .with_run_attempt(permit.run_id.clone(), permit.attempt_id.clone());
+
+        let first = policy
+            .consume_permit_for_context(&context)
+            .expect("first matching use consumes the permit");
+        assert!(!first.receipt_id.as_str().contains("local-process-seq"));
+        assert!(policy.consume_permit_for_context(&context).is_none());
+        assert_eq!(
+            policy.decision_for_context(&context),
+            PermitDecisionV1::RequiresApproval
+        );
     }
 
     #[test]
