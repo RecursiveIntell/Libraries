@@ -151,6 +151,13 @@ pub struct CommandOutput {
 pub trait ExecutionBackend: Send + Sync {
     fn kind(&self) -> ExecutionBackendKind;
 
+    /// True only when this backend has owner-backed runtime evidence from the
+    /// current execution. Backend kind and a structurally valid receipt are
+    /// configuration/shape signals, not proof of live execution.
+    fn has_live_execution_evidence(&self) -> bool {
+        false
+    }
+
     async fn prepare_workspace(&self, fixture: &Path) -> Result<Workspace, RunnerError>;
 
     async fn run_command(
@@ -891,6 +898,11 @@ fn podman_is_rootless() -> bool {
 impl ExecutionBackend for ContainerBackend {
     fn kind(&self) -> ExecutionBackendKind {
         ExecutionBackendKind::Container
+    }
+
+    fn has_live_execution_evidence(&self) -> bool {
+        self.capability_truth_receipt()
+            .is_some_and(|receipt| receipt.verify())
     }
 
     async fn prepare_workspace(&self, fixture: &Path) -> Result<Workspace, RunnerError> {
