@@ -101,6 +101,51 @@ fn task2_material_bound_bundle_rejects_duplicate_required_owner_roles() {
 }
 
 #[test]
+fn generic_v3_durable_identity_does_not_require_coding_learning_owner_roles() {
+    let mut bundle = task2_material_bundle("generic-agent-run");
+    bundle.canonical_backpointers.retain(|backpointer| {
+        !required_coding_learning_owner_roles().contains(&backpointer.role.as_str())
+    });
+
+    assert!(bundle.validate_durable_identity().is_ok());
+    let lineage_error = bundle
+        .validate_coding_learning_lineage()
+        .expect_err("generic agent run must not fabricate learning lineage");
+    assert!(lineage_error
+        .iter()
+        .any(|reason| reason == "required-owner-reference-missing:task"));
+}
+
+#[test]
+fn material_bound_learning_bundle_still_requires_coding_learning_owner_roles() {
+    let fixture = include_str!("../../../tests/fixtures/p26/aidens_run_bundle_v3.json");
+    let fixture: AiDENsRunBundleV3 = serde_json::from_str(fixture).unwrap();
+
+    let error = AiDENsRunBundleV3::new_material_bound(
+        "learning-bundle-without-owner-lineage",
+        fixture.run_id,
+        fixture.profile,
+        fixture.canonical_execution_context,
+        fixture.event_log,
+        fixture.budget,
+        fixture.support,
+        fixture.support_labels,
+        fixture.replay,
+        fixture.failure,
+        fixture.attempt_family_id,
+        fixture.attempt_id,
+        fixture.trial_id,
+        fixture.agent_spec_digest,
+        Vec::new(),
+    )
+    .expect_err("learning constructor must remain strict");
+
+    assert!(error
+        .iter()
+        .any(|reason| reason == "required-owner-reference-missing:task"));
+}
+
+#[test]
 fn task2_display_ids_are_rejected_from_all_durable_identity_surfaces() {
     let mut bundle = task2_material_bundle("display-id-rejection");
     bundle.bundle_id = display_only_unstable_id("task2");

@@ -7,12 +7,13 @@ use aidens_agency_kit::{
 use aidens_boundary_kit::{parse_json_boundary, BoundaryRepairPolicyV1};
 use aidens_budget_kit::BudgetV1;
 use aidens_contracts::{
-    display_only_unstable_id, AgentMemoryModeV1, AgentProviderModeV1, AgentSpecSupportLabelV1,
-    AgentSpecV1, AgentVerificationCheckV1, AiDENsRunBudgetDeadlineV1, AiDENsRunBundleV3,
-    AiDENsRunEventLogDigestV1, AiDENsRunFailureTaxonomyV1, AiDENsRunReplayNormalizationV1,
-    AiDENsRunSupportTierEvidenceV1, AidensRunContextV1, ArtifactId, BoundaryRepairReportV1,
+    display_only_unstable_id, generated_artifact_id_from_material, AgentMemoryModeV1,
+    AgentProviderModeV1, AgentSpecSupportLabelV1, AgentSpecV1, AgentVerificationCheckV1,
+    AiDENsRunBudgetDeadlineV1, AiDENsRunBundleV3, AiDENsRunEventLogDigestV1,
+    AiDENsRunFailureTaxonomyV1, AiDENsRunReplayNormalizationV1, AiDENsRunSupportTierEvidenceV1,
+    AidensRunContextV1, ApprovalRequestV1, ArtifactId, BoundaryRepairReportV1,
     BudgetExhaustionReportDraftV1, BudgetExhaustionReportV1, DegradationEventV1, DisplayDigestV1,
-    JsonBoundaryRepairDisplayReportV1, ProjectionDigestV1, ProviderRouteKindV1,
+    JsonBoundaryRepairDisplayReportV1, PermitUseReportV1, ProjectionDigestV1, ProviderRouteKindV1,
     ProviderRouteReportV1, QueryWideningReportV1, ReportLevelV1, RunReportV1, RuntimeViewRequestV1,
     StackAttemptId, StackTrialId, StopRuleReportV1, StopRuleV1, ToolCallRequestV1,
     ToolCallResultV1, ToolCallSourceV1, ToolExposureSetV1, ToolInvocationReportV1,
@@ -152,13 +153,15 @@ impl PlanActVerifyLoopV1 {
                 1,
                 "agent-spec-validation-failed",
             );
-            output.verification_receipts.push(VerificationReceiptV1 {
-                receipt_id: display_only_unstable_id("agent-verification"),
-                step: 1,
-                check: "agent-spec".into(),
-                passed: false,
-                reason_codes,
-            });
+            output
+                .verification_receipts
+                .push(VerificationReceiptV1::material_bound(
+                    &self.spec.agent_id,
+                    1,
+                    "agent-spec",
+                    false,
+                    reason_codes,
+                ));
             return Ok(output);
         }
 
@@ -177,16 +180,16 @@ impl PlanActVerifyLoopV1 {
                         "memory-grounding-failed",
                     );
                     output.memory_grounding_receipts = vec![error.to_string()];
-                    output.abstention_receipt = Some(AbstentionReceiptV1 {
-                        receipt_id: display_only_unstable_id("agent-abstention"),
-                        step: 1,
-                        reason_code: "memory-grounding-failed".into(),
-                        blocked_action: "memory-grounding-query".into(),
-                        evidence: vec![error.to_string()],
-                        required_permits: Vec::new(),
-                        can_resume: true,
-                        support_impact: "degraded".into(),
-                    });
+                    output.abstention_receipt = Some(AbstentionReceiptV1::material_bound(
+                        &self.spec.agent_id,
+                        1,
+                        "memory-grounding-failed",
+                        "memory-grounding-query",
+                        vec![error.to_string()],
+                        Vec::new(),
+                        true,
+                        "degraded",
+                    ));
                     output.finalization = Some(FinalizationReceiptV1 {
                         receipt_id: display_only_unstable_id("agent-finalization"),
                         step: 1,
@@ -196,19 +199,19 @@ impl PlanActVerifyLoopV1 {
                         support_label: self.spec.support_label.to_string(),
                         reason_codes: vec!["memory-grounding-failed".into()],
                     });
-                    output.repair_plan = Some(RepairPlanDisplayReceiptV1 {
-                        repair_id: display_only_unstable_id("agent-repair"),
-                        source_run_id: None,
-                        failure_kind: "memory-grounding".into(),
-                        candidate_repair_actions: vec![
+                    output.repair_plan = Some(RepairPlanDisplayReceiptV1::material_bound(
+                        &self.spec.agent_id,
+                        None,
+                        "memory-grounding",
+                        vec![
                             "re-check memory seam fixture availability".into(),
                             "adjust query for grounded scope".into(),
                         ],
-                        required_verification: vec!["memory-grounding".into()],
-                        required_permits: Vec::new(),
-                        risk_level: "moderate".into(),
-                        canonical_owner: Some("knowledge-runtime".into()),
-                    });
+                        vec!["memory-grounding".into()],
+                        Vec::new(),
+                        "moderate",
+                        Some("knowledge-runtime".into()),
+                    ));
                     return Ok(output);
                 }
             }
@@ -222,30 +225,32 @@ impl PlanActVerifyLoopV1 {
                 "tool-policy-contains-unsupported-alias",
             );
             output.memory_grounding_receipts = memory_grounding_receipts;
-            output.verification_receipts.push(VerificationReceiptV1 {
-                receipt_id: display_only_unstable_id("agent-verification"),
-                step: 1,
-                check: "tool-policy".into(),
-                passed: false,
-                reason_codes: mapped_tools
-                    .unsupported
-                    .iter()
-                    .map(|alias| format!("unsupported-tool-alias:{alias}"))
-                    .collect(),
-            });
-            output.repair_plan = Some(RepairPlanDisplayReceiptV1 {
-                repair_id: display_only_unstable_id("agent-repair"),
-                source_run_id: None,
-                failure_kind: "unsupported-tool-alias".into(),
-                candidate_repair_actions: vec![
+            output
+                .verification_receipts
+                .push(VerificationReceiptV1::material_bound(
+                    &self.spec.agent_id,
+                    1,
+                    "tool-policy",
+                    false,
+                    mapped_tools
+                        .unsupported
+                        .iter()
+                        .map(|alias| format!("unsupported-tool-alias:{alias}"))
+                        .collect(),
+                ));
+            output.repair_plan = Some(RepairPlanDisplayReceiptV1::material_bound(
+                &self.spec.agent_id,
+                None,
+                "unsupported-tool-alias",
+                vec![
                     "remove unsupported tool aliases from allowed tool list".into(),
                     "replace run.replay requests with a supported alias".into(),
                 ],
-                required_verification: vec!["tool-policy".into()],
-                required_permits: Vec::new(),
-                risk_level: "low".into(),
-                canonical_owner: Some("aidens-tool-kit".into()),
-            });
+                vec!["tool-policy".into()],
+                Vec::new(),
+                "low",
+                Some("aidens-tool-kit".into()),
+            ));
             output.finalization = Some(FinalizationReceiptV1 {
                 receipt_id: display_only_unstable_id("agent-finalization"),
                 step: 1,
@@ -258,27 +263,26 @@ impl PlanActVerifyLoopV1 {
             return Ok(output);
         }
 
-        let plan = PlanReceiptV1 {
-            receipt_id: display_only_unstable_id("agent-plan"),
-            plan_id: display_only_unstable_id("agent-plan"),
-            step: 1,
-            action: "bounded plan-act-verify".into(),
-            reason_codes: vec!["agent-spec-valid".into(), "tool-policy-authorized".into()],
-        };
+        let plan = PlanReceiptV1::material_bound(
+            &self.spec.agent_id,
+            &prompt,
+            1,
+            "bounded plan-act-verify",
+            vec!["agent-spec-valid".into(), "tool-policy-authorized".into()],
+        );
         let local_policy_uses_mock_fixture =
             self.spec.provider_policy.provider == AgentProviderModeV1::Local;
-        let route_receipt = ToolRouteReceiptV1 {
-            receipt_id: display_only_unstable_id("tool-route"),
-            plan_id: plan.plan_id.clone(),
-            step: 1,
-            requested_tool_ids: mapped_tools.canonical.clone(),
-            exposed_tool_ids: mapped_tools.canonical.clone(),
-            reason_codes: if local_policy_uses_mock_fixture {
+        let route_receipt = ToolRouteReceiptV1::material_bound(
+            plan.plan_id.clone(),
+            1,
+            mapped_tools.canonical.clone(),
+            mapped_tools.canonical.clone(),
+            if local_policy_uses_mock_fixture {
                 vec!["provider-policy-local-routed-to-explicit-mock-fixture".into()]
             } else {
                 Vec::new()
             },
-        };
+        );
 
         let provider_spec = ProviderSpecV1 {
             kind: match self.spec.provider_policy.provider {
@@ -296,19 +300,19 @@ impl PlanActVerifyLoopV1 {
                 "provider-mock-response-missing",
             );
             output.memory_grounding_receipts = memory_grounding_receipts;
-            output.repair_plan = Some(RepairPlanDisplayReceiptV1 {
-                repair_id: display_only_unstable_id("agent-repair"),
-                source_run_id: None,
-                failure_kind: "provider-config".into(),
-                candidate_repair_actions: vec![
+            output.repair_plan = Some(RepairPlanDisplayReceiptV1::material_bound(
+                &self.spec.agent_id,
+                None,
+                "provider-config",
+                vec![
                     "configure a local provider mock response before execution".into(),
                     "validate local provider route and retry".into(),
                 ],
-                required_verification: vec!["provider-routing".into()],
-                required_permits: Vec::new(),
-                risk_level: "high".into(),
-                canonical_owner: Some("aidens-provider-kit".into()),
-            });
+                vec!["provider-routing".into()],
+                Vec::new(),
+                "high",
+                Some("aidens-provider-kit".into()),
+            ));
             output.finalization = Some(FinalizationReceiptV1 {
                 receipt_id: display_only_unstable_id("agent-finalization"),
                 step: 1,
@@ -380,29 +384,29 @@ impl PlanActVerifyLoopV1 {
                 Ok(run_output) => run_output,
                 Err(error) => {
                     output.outcome = PlanActVerifyOutcomeV1::Abstained;
-                    output.abstention_receipt = Some(AbstentionReceiptV1 {
-                        receipt_id: display_only_unstable_id("agent-abstention"),
+                    output.abstention_receipt = Some(AbstentionReceiptV1::material_bound(
+                        &self.spec.agent_id,
                         step,
-                        reason_code: format!("runner-execution-error:{error}"),
-                        blocked_action: "provider/completion".into(),
-                        evidence: vec![error.to_string()],
-                        required_permits: Vec::new(),
-                        can_resume: false,
-                        support_impact: "degraded".into(),
-                    });
-                    output.repair_plan = Some(RepairPlanDisplayReceiptV1 {
-                        repair_id: display_only_unstable_id("agent-repair"),
-                        source_run_id: None,
-                        failure_kind: "runner-execution".into(),
-                        candidate_repair_actions: vec![
+                        format!("runner-execution-error:{error}"),
+                        "provider/completion",
+                        vec![error.to_string()],
+                        Vec::new(),
+                        false,
+                        "degraded",
+                    ));
+                    output.repair_plan = Some(RepairPlanDisplayReceiptV1::material_bound(
+                        &self.spec.agent_id,
+                        None,
+                        "runner-execution",
+                        vec![
                             "collect provider and tool-chain evidence for the error".into(),
                             "retry with corrected local provider configuration".into(),
                         ],
-                        required_verification: vec!["runner".into()],
-                        required_permits: Vec::new(),
-                        risk_level: "high".into(),
-                        canonical_owner: Some("aidens-provider-kit".into()),
-                    });
+                        vec!["runner".into()],
+                        Vec::new(),
+                        "high",
+                        Some("aidens-provider-kit".into()),
+                    ));
                     output.finalization = Some(FinalizationReceiptV1 {
                         receipt_id: display_only_unstable_id("agent-finalization"),
                         step,
@@ -419,34 +423,45 @@ impl PlanActVerifyLoopV1 {
                 .plan_receipts
                 .first()
                 .map(|p| p.plan_id.clone())
-                .unwrap_or_else(|| display_only_unstable_id("agent-plan"));
+                .unwrap_or_else(|| {
+                    generated_artifact_id_from_material(
+                        "agent-plan",
+                        &serde_json::json!({
+                            "agent_id": &self.spec.agent_id,
+                            "prompt": &prompt,
+                            "step": step,
+                        })
+                        .to_string(),
+                    )
+                });
             output.run_output = Some(turn_output.clone());
-            output.tool_call_receipts.push(ToolCallReceiptV1 {
-                receipt_id: display_only_unstable_id("agent-tool-call"),
-                plan_id,
-                step,
-                run_id: turn_output.receipt.context.run_id.to_string(),
-                permitted_tool_calls: turn_output.receipt.permit_use_receipts.len(),
-                blocked_tool_calls: turn_output.receipt.approval_requests.len(),
-                succeeded_tool_calls: turn_output
-                    .receipt
-                    .tool_invocation_receipts
-                    .iter()
-                    .filter(|receipt| receipt.succeeded)
-                    .count(),
-                failed_tool_calls: turn_output
-                    .receipt
-                    .tool_invocation_receipts
-                    .iter()
-                    .filter(|receipt| !receipt.succeeded)
-                    .count(),
-                reason_codes: turn_output
-                    .receipt
-                    .tool_invocation_receipts
-                    .iter()
-                    .flat_map(|receipt| receipt.reason_codes.iter().cloned())
-                    .collect(),
-            });
+            output
+                .tool_call_receipts
+                .push(ToolCallReceiptV1::material_bound(
+                    plan_id,
+                    step,
+                    turn_output.receipt.context.run_id.to_string(),
+                    turn_output.receipt.permit_use_receipts.len(),
+                    turn_output.receipt.approval_requests.len(),
+                    turn_output
+                        .receipt
+                        .tool_invocation_receipts
+                        .iter()
+                        .filter(|receipt| receipt.succeeded)
+                        .count(),
+                    turn_output
+                        .receipt
+                        .tool_invocation_receipts
+                        .iter()
+                        .filter(|receipt| !receipt.succeeded)
+                        .count(),
+                    turn_output
+                        .receipt
+                        .tool_invocation_receipts
+                        .iter()
+                        .flat_map(|receipt| receipt.reason_codes.iter().cloned())
+                        .collect(),
+                ));
 
             output
                 .verification_receipts
@@ -463,29 +478,29 @@ impl PlanActVerifyLoopV1 {
             if failed_checks && self.spec.verification_policy.fail_closed {
                 output.outcome = PlanActVerifyOutcomeV1::Abstained;
                 let failed_checks = failed_verification_checks(&output.verification_receipts);
-                output.abstention_receipt = Some(AbstentionReceiptV1 {
-                    receipt_id: display_only_unstable_id("agent-abstention"),
+                output.abstention_receipt = Some(AbstentionReceiptV1::material_bound(
+                    turn_output.receipt.context.run_id.as_str(),
                     step,
-                    reason_code: "verification-failed".into(),
-                    blocked_action: "execution".into(),
-                    evidence: vec![turn_output.receipt.receipt_id.to_string()],
-                    required_permits: Vec::new(),
-                    can_resume: false,
-                    support_impact: "degraded".into(),
-                });
-                output.repair_plan = Some(RepairPlanDisplayReceiptV1 {
-                    repair_id: display_only_unstable_id("agent-repair"),
-                    source_run_id: Some(turn_output.receipt.context.run_id.to_string()),
-                    failure_kind: "verification-failed".into(),
-                    candidate_repair_actions: vec![
+                    "verification-failed",
+                    "execution",
+                    vec![turn_output.receipt.receipt_id.to_string()],
+                    Vec::new(),
+                    false,
+                    "degraded",
+                ));
+                output.repair_plan = Some(RepairPlanDisplayReceiptV1::material_bound(
+                    turn_output.receipt.context.run_id.as_str(),
+                    Some(turn_output.receipt.context.run_id.to_string()),
+                    "verification-failed",
+                    vec![
                         "re-run with fixed verification-policy inputs".into(),
                         "remove or correct unsupported tool-call evidence".into(),
                     ],
-                    required_verification: failed_checks,
-                    required_permits: Vec::new(),
-                    risk_level: "moderate".into(),
-                    canonical_owner: Some("aidens-verification-kit".into()),
-                });
+                    failed_checks,
+                    Vec::new(),
+                    "moderate",
+                    Some("aidens-verification-kit".into()),
+                ));
                 output.finalization = Some(FinalizationReceiptV1 {
                     receipt_id: display_only_unstable_id("agent-finalization"),
                     step,
@@ -520,49 +535,49 @@ impl PlanActVerifyLoopV1 {
                 output.outcome = PlanActVerifyOutcomeV1::Abstained;
                 let stop_reasons = turn_output_block_reason_codes(&turn_output);
                 let blocked_action = blocked_turn_action(turn_output.turn_receipt.final_state);
-                output.abstention_receipt = Some(AbstentionReceiptV1 {
-                    receipt_id: display_only_unstable_id("agent-abstention"),
+                output.abstention_receipt = Some(AbstentionReceiptV1::material_bound(
+                    turn_output.receipt.context.run_id.as_str(),
                     step,
-                    reason_code: format!("turn-blocked:{}", stop_reasons.join("|")),
-                    blocked_action: blocked_action.into(),
-                    evidence: {
+                    format!("turn-blocked:{}", stop_reasons.join("|")),
+                    blocked_action,
+                    {
                         let mut evidence = vec![turn_output.receipt.receipt_id.to_string()];
                         evidence.extend(stop_reasons);
                         evidence
                     },
-                    required_permits: turn_output
+                    turn_output
                         .receipt
                         .approval_requests
                         .iter()
                         .map(|request| request.tool_id.clone())
                         .collect(),
-                    can_resume: !turn_output.receipt.approval_requests.is_empty(),
-                    support_impact: "deferred".into(),
-                });
-                output.repair_plan = Some(RepairPlanDisplayReceiptV1 {
-                    repair_id: display_only_unstable_id("agent-repair"),
-                    source_run_id: Some(turn_output.receipt.context.run_id.to_string()),
-                    failure_kind: "blocked".into(),
-                    candidate_repair_actions: vec![
+                    !turn_output.receipt.approval_requests.is_empty(),
+                    "deferred",
+                ));
+                output.repair_plan = Some(RepairPlanDisplayReceiptV1::material_bound(
+                    turn_output.receipt.context.run_id.as_str(),
+                    Some(turn_output.receipt.context.run_id.to_string()),
+                    "blocked",
+                    vec![
                         "request permits for blocked tools".into(),
                         "inspect stop rule codes and adjust tool authority".into(),
                         "tighten tool policy to explicit writable tools".into(),
                     ],
-                    required_verification: turn_output
+                    turn_output
                         .receipt
                         .stop_rule_receipts
                         .iter()
                         .flat_map(|receipt| receipt.reason_codes.iter().cloned())
                         .collect(),
-                    required_permits: turn_output
+                    turn_output
                         .receipt
                         .approval_requests
                         .iter()
                         .map(|request| request.tool_id.clone())
                         .collect(),
-                    risk_level: "moderate".into(),
-                    canonical_owner: Some("aidens-tool-kit".into()),
-                });
+                    "moderate",
+                    Some("aidens-tool-kit".into()),
+                ));
                 output.finalization = Some(FinalizationReceiptV1 {
                     receipt_id: display_only_unstable_id("agent-finalization"),
                     step,
@@ -577,16 +592,16 @@ impl PlanActVerifyLoopV1 {
 
             if step >= max_turns {
                 output.outcome = PlanActVerifyOutcomeV1::Abstained;
-                output.abstention_receipt = Some(AbstentionReceiptV1 {
-                    receipt_id: display_only_unstable_id("agent-abstention"),
+                output.abstention_receipt = Some(AbstentionReceiptV1::material_bound(
+                    turn_output.receipt.context.run_id.as_str(),
                     step,
-                    reason_code: "max-turns-exhausted".into(),
-                    blocked_action: "repeat".into(),
-                    evidence: vec![turn_output.receipt.receipt_id.to_string()],
-                    required_permits: Vec::new(),
-                    can_resume: true,
-                    support_impact: "degraded".into(),
-                });
+                    "max-turns-exhausted",
+                    "repeat",
+                    vec![turn_output.receipt.receipt_id.to_string()],
+                    Vec::new(),
+                    true,
+                    "degraded",
+                ));
                 output.finalization = Some(FinalizationReceiptV1 {
                     receipt_id: display_only_unstable_id("agent-finalization"),
                     step,
@@ -851,7 +866,6 @@ impl TurnExecutorV1 {
         input: AiDENsRunInput,
         mut tool_policy: ToolExposurePolicyV1,
     ) -> anyhow::Result<AiDENsRunOutput> {
-        let ctx = AidensRunContextV1::new(&self.app_id);
         let provider_route = route_receipt(
             self.provider.provider_kind(),
             self.provider.model().map(str::to_string),
@@ -860,7 +874,15 @@ impl TurnExecutorV1 {
         tool_policy = tool_policy
             .with_permit_policy(self.permit_policy.clone())
             .for_provider_route(&provider_route);
-        let tool_exposure = self.tools.plan_exposure(&tool_policy);
+        let mut tool_exposure = self.tools.plan_exposure(&tool_policy);
+        let ctx = material_bound_run_context(
+            &self.app_id,
+            &input.prompt,
+            &provider_route,
+            &tool_exposure,
+            &self.budget,
+        );
+        material_bind_tool_exposure(&mut tool_exposure, &ctx);
         let mode = turn_mode_for(&provider_route, &tool_exposure);
         let plan = TurnExecutionPlanV1::new(
             mode,
@@ -1213,13 +1235,19 @@ impl TurnExecutorV1 {
                 .budget
                 .allows_tool_call(tool_calls_so_far, requested_tool_calls)
             {
-                for tool_call in tool_calls {
-                    let invocation = ToolInvocationReportV1::started(
+                for (batch_index, tool_call) in tool_calls.into_iter().enumerate() {
+                    let mut invocation = ToolInvocationReportV1::started(
                         tool_call.tool_id.clone(),
                         tool_call.input.clone(),
                     )
                     .with_execution_context(&ctx)
                     .complete_failure("budget-exhausted-before-dispatch");
+                    material_bind_tool_invocation_receipt(
+                        &mut invocation,
+                        &tool_call,
+                        &ctx,
+                        tool_calls_so_far as usize + batch_index,
+                    );
                     let result = ToolCallResultV1::from_invocation(&tool_call, &invocation);
                     turn_receipt.record_tool_call(&tool_call, &invocation);
                     run_receipt.tool_call_requests.push(tool_call);
@@ -1242,12 +1270,18 @@ impl TurnExecutorV1 {
             for tool_call in tool_calls {
                 let call_signature = format!("{}:{}", tool_call.tool_id, tool_call.input_digest);
                 if !seen_tool_calls.insert(call_signature) {
-                    let invocation = ToolInvocationReportV1::started(
+                    let mut invocation = ToolInvocationReportV1::started(
                         tool_call.tool_id.clone(),
                         tool_call.input.clone(),
                     )
                     .with_execution_context(&ctx)
                     .complete_failure("recursive-tool-call");
+                    material_bind_tool_invocation_receipt(
+                        &mut invocation,
+                        &tool_call,
+                        &ctx,
+                        tool_calls_so_far as usize,
+                    );
                     let result = ToolCallResultV1::from_invocation(&tool_call, &invocation);
                     turn_receipt.record_tool_call(&tool_call, &invocation);
                     let stop = StopRuleReportV1::triggered(
@@ -1271,12 +1305,18 @@ impl TurnExecutorV1 {
                 }
 
                 if !exposed_tool_ids.contains(&tool_call.tool_id) {
-                    let invocation = ToolInvocationReportV1::started(
+                    let mut invocation = ToolInvocationReportV1::started(
                         tool_call.tool_id.clone(),
                         tool_call.input.clone(),
                     )
                     .with_execution_context(&ctx)
                     .complete_failure("tool-not-exposed-this-turn");
+                    material_bind_tool_invocation_receipt(
+                        &mut invocation,
+                        &tool_call,
+                        &ctx,
+                        tool_calls_so_far as usize,
+                    );
                     let result = ToolCallResultV1::from_invocation(&tool_call, &invocation);
                     turn_receipt.record_tool_call(&tool_call, &invocation);
                     let stop = StopRuleReportV1::triggered(
@@ -1302,23 +1342,38 @@ impl TurnExecutorV1 {
 
                 let dispatcher = ToolDispatcher::new(self.tools.clone())
                     .with_permit_policy(self.permit_policy.clone());
-                let invocation = match dispatcher
+                let call_index = tool_calls_so_far as usize;
+                let mut invocation = match dispatcher
                     .invoke(&tool_call.tool_id, tool_call.input.clone())
                     .await
                 {
                     Ok(outcome) => {
+                        let mut invocation = outcome.receipt.with_execution_context(&ctx);
                         if let Some(mut permit_use_receipt) = outcome.permit_use_receipt {
-                            permit_use_receipt.run_id = Some(ctx.run_id.clone());
-                            permit_use_receipt.attempt_id = Some(ctx.attempt_id.clone());
+                            material_bind_permit_use_receipt(
+                                &mut permit_use_receipt,
+                                &ctx,
+                                call_index,
+                            );
+                            invocation.permit_use_receipt_id =
+                                Some(permit_use_receipt.receipt_id.clone());
                             run_receipt.permit_use_receipts.push(permit_use_receipt);
                         }
-                        outcome.receipt.with_execution_context(&ctx)
+                        invocation
                     }
                     Err(error) => {
+                        let mut approval_request_id = None;
                         if let Some(invocation_error) = error.downcast_ref::<ToolInvocationError>()
                         {
                             if let Some(approval_request) = invocation_error.approval_request() {
-                                run_receipt.approval_requests.push(approval_request.clone());
+                                let mut approval_request = approval_request.clone();
+                                material_bind_approval_request(
+                                    &mut approval_request,
+                                    &ctx,
+                                    call_index,
+                                );
+                                approval_request_id = Some(approval_request.request_id.clone());
+                                run_receipt.approval_requests.push(approval_request);
                             }
                             if let Some(schema_validation) =
                                 invocation_error.schema_validation_receipt()
@@ -1328,14 +1383,24 @@ impl TurnExecutorV1 {
                                     .push(schema_validation.clone().with_execution_context(&ctx));
                             }
                         }
-                        tool_invocation_receipt_from_error(
+                        let mut invocation = tool_invocation_receipt_from_error(
                             &tool_call.tool_id,
                             tool_call.input.clone(),
                             &error,
                             &ctx,
-                        )
+                        );
+                        if approval_request_id.is_some() {
+                            invocation.approval_request_id = approval_request_id;
+                        }
+                        invocation
                     }
                 };
+                material_bind_tool_invocation_receipt(
+                    &mut invocation,
+                    &tool_call,
+                    &ctx,
+                    call_index,
+                );
                 let result = ToolCallResultV1::from_invocation(&tool_call, &invocation);
                 turn_receipt.record_tool_call(&tool_call, &invocation);
                 run_receipt.tool_call_requests.push(tool_call.clone());
@@ -1502,10 +1567,11 @@ impl TurnExecutorV1 {
 
     fn persist_completed_with_records(
         &self,
-        completed: RunReportV1,
+        mut completed: RunReportV1,
         tool_exposure: &ToolExposureSetV1,
         mut durable_receipt_records: Vec<CanonicalEventLogEntry>,
     ) -> anyhow::Result<(RunReportV1, Vec<CanonicalEventLogEntry>)> {
+        material_bind_run_report_receipt(&mut completed);
         self.run_reports.append(completed.clone());
         if let Some(store) = &self.canonical_receipts {
             let tool_exposure_record_id =

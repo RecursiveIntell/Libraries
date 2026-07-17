@@ -1707,10 +1707,56 @@ fn agent_run_persists_v3_bundle_in_receipt_store_and_inspects_after_restart() {
         .join("run-bundles")
         .join("index.ndjson")
         .exists());
+    let bundle: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(out.join("run-bundle.json")).unwrap())
+            .unwrap();
+    assert!(!serde_json::to_string(&bundle)
+        .unwrap()
+        .contains("local-process-seq"));
     let loop_output: serde_json::Value = serde_json::from_str(
         &std::fs::read_to_string(out.join("plan-act-verify-output.json")).unwrap(),
     )
     .unwrap();
+    let run_report: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(out.join("run-report.json")).unwrap())
+            .unwrap();
+    let ids = |value: &serde_json::Value, pointer: &str, field: &str| {
+        value
+            .pointer(pointer)
+            .and_then(serde_json::Value::as_array)
+            .map(|entries| {
+                entries
+                    .iter()
+                    .filter_map(|entry| entry.get(field).and_then(serde_json::Value::as_str))
+                    .map(str::to_string)
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default()
+    };
+    assert_eq!(
+        bundle["provider_receipts"],
+        serde_json::json!([run_report["receipt_id"].as_str().unwrap()])
+    );
+    assert_eq!(
+        bundle["tool_receipts"],
+        serde_json::json!(ids(&run_report, "/tool_invocation_receipts", "receipt_id"))
+    );
+    let permit_owner_ids = if run_report["permit_use_receipts"]
+        .as_array()
+        .is_none_or(Vec::is_empty)
+    {
+        ids(&run_report, "/approval_requests", "request_id")
+    } else {
+        ids(&run_report, "/permit_use_receipts", "receipt_id")
+    };
+    assert_eq!(
+        bundle["permit_receipts"],
+        serde_json::json!(permit_owner_ids)
+    );
+    assert_eq!(
+        bundle["verification_receipts"],
+        serde_json::json!(ids(&loop_output, "/verification_receipts", "receipt_id"))
+    );
     assert!(matches!(
         loop_output["semantic_disclosure"]["semantic_status"].as_str(),
         Some("exact_check" | "degraded_exact_check")
