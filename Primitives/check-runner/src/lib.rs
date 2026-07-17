@@ -609,14 +609,43 @@ impl ContainerBackend {
         }
     }
 
+    async fn sealed_container_exists(&self, container_name: &str) -> Result<bool, RunnerError> {
+        let status = tokio::process::Command::new(self.runtime.command())
+            .args(["container", "exists", container_name])
+            .status()
+            .await
+            .map_err(|error| {
+                RunnerError::Other(format!(
+                    "failed to check sealed container existence: {error}"
+                ))
+            })?;
+        match status.code() {
+            Some(0) => Ok(true),
+            Some(1) => Ok(false),
+            code => Err(RunnerError::Other(format!(
+                "sealed container existence check failed with exit code {code:?}"
+            ))),
+        }
+    }
+
     async fn finalize_sealed_container(
         &self,
         container_name: &str,
         timed_out: bool,
     ) -> Result<(), RunnerError> {
         if timed_out {
-            self.runtime_maintenance("kill timed-out", &["kill", "--ignore", container_name])
-                .await?;
+            if let Err(error) = self
+                .runtime_maintenance("kill timed-out", &["kill", container_name])
+                .await
+            {
+                // `podman kill` has no portable `--ignore` flag. A command can
+                // finish between timeout observation and this cleanup; only
+                // suppress the kill error when the runtime confirms the named
+                // container no longer exists.
+                if self.sealed_container_exists(container_name).await? {
+                    return Err(error);
+                }
+            }
         }
         let receipt = self.inspect_capability_receipt(container_name).await;
         self.runtime_maintenance(
@@ -1390,7 +1419,7 @@ mod tests {
             "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                 .into();
 
-        for invalid in ["", "0", "-1", "nope"] {
+        for invalid in ["", "0", "-1", "nope", "NaN", "inf", "1e3"] {
             config.cpu_limit = invalid.into();
             config.memory_limit = "1g".into();
             assert!(matches!(
@@ -1399,7 +1428,7 @@ mod tests {
             ));
         }
         config.cpu_limit = "1.5".into();
-        for invalid in ["", "0", "-1g", "nope", "1t"] {
+        for invalid in ["", "0", "-1g", "nope", "1t", "1e3g"] {
             config.memory_limit = invalid.into();
             assert!(matches!(
                 ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman),
