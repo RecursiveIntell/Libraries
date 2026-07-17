@@ -4,12 +4,13 @@
 use crate::learning_effectful::{
     evaluate_effectful_persisted, EffectfulEvaluationReportV1, EffectfulEvaluationRequest,
 };
-use aidens_contracts::{PermitGrantV1, PermitUseReportV1};
+use aidens_contracts::{LearningPreflightReceiptV1, PermitGrantV1, PermitUseReportV1};
 use aidens_receipts::{CanonicalEventLog, CanonicalEventLogConfig};
 use cea_sqlite::SqliteCeaStore;
 use check_runner::{BackendConfig, ContainerBackend};
+use serde::Serialize;
 use std::path::PathBuf;
-use typed_patch::{PatchPolicy, StructuredPatch};
+use typed_patch::{validate_patch, PatchPolicy, StructuredPatch};
 
 #[derive(Debug, Clone)]
 pub struct RealSandboxLearningConfig {
@@ -42,22 +43,57 @@ pub async fn run_real_sandbox(
     config: RealSandboxLearningConfig,
 ) -> Result<EffectfulEvaluationReportV1, RealSandboxLearningError> {
     validate(&config)?;
+    let patch_validation = validate_patch(&config.patch, &config.patch_policy);
+    if !patch_validation.ok {
+        return Err(RealSandboxLearningError::Invalid(
+            "patch rejected before persistence".into(),
+        ));
+    }
     let log = CanonicalEventLog::open(CanonicalEventLogConfig::for_root(
         config.receipt_root.clone(),
     ))
     .map_err(|e| RealSandboxLearningError::Receipt(e.to_string()))?;
-    let preflight_id = format!("aidens-learning:preflight:{}", config.trial_id);
+    let material_id = digest_bytes(
+        &serde_json::to_vec(&(
+            fixture_digest(&config.fixture)?,
+            &config.patch,
+            format!("{:?}", &config.patch_policy),
+            &config.permit_grant,
+            &config.permit_use,
+            &config.image,
+            &config.run_id,
+            &config.attempt_id,
+            &config.trial_id,
+            &config.trace_id,
+        ))
+        .map_err(|e| RealSandboxLearningError::Invalid(e.to_string()))?,
+    );
+    let preflight_id = format!("aidens-learning:preflight:{material_id}");
+    let receipt = LearningPreflightReceiptV1 {
+        schema: "AiDENsLearningPreflightReceiptV1".into(),
+        material_id,
+        fixture_tree_digest: fixture_digest(&config.fixture)?,
+        patch_digest: digest_value(&config.patch)?,
+        patch_policy_digest: digest_bytes(format!("{:?}", &config.patch_policy).as_bytes()),
+        permit_grant_id: config.permit_grant.permit_id.as_str().into(),
+        permit_use_id: config.permit_use.receipt_id.as_str().into(),
+        permit_scope_digest: digest_value(&config.permit_grant)?,
+        image: config.image.clone(),
+        backend_limits_digest: digest_bytes(b"sealed_local:podman:900:2g:2"),
+        run_id: config.run_id.clone(),
+        attempt_id: config.attempt_id.clone(),
+        trial_id: config.trial_id.clone(),
+        trace_id: config.trace_id.clone(),
+        cea_store_identity: config.cea_db.to_string_lossy().into(),
+        receipt_root_owner: config.receipt_root.to_string_lossy().into(),
+    };
     let preflight = log
         .append_json(
             "aidens-runner",
             "learning-preflight-v1",
             preflight_id,
-            serde_json::json!({
-                "schema": "AiDENsLearningPreflightV1", "run_id": config.run_id,
-                "attempt_id": config.attempt_id, "trial_id": config.trial_id,
-                "fixture": config.fixture, "patch_id": config.patch.patch_id.to_string(),
-                "image": config.image, "receipt_root": config.receipt_root,
-            }),
+            serde_json::to_value(&receipt)
+                .map_err(|e| RealSandboxLearningError::Receipt(e.to_string()))?,
         )
         .map_err(|e| RealSandboxLearningError::Receipt(e.to_string()))?;
     if !preflight.verify_record_digest() {
@@ -134,4 +170,33 @@ fn validate(c: &RealSandboxLearningConfig) -> Result<(), RealSandboxLearningErro
         }
     }
     Ok(())
+}
+
+fn digest_bytes(bytes: &[u8]) -> String {
+    blake3::hash(bytes).to_hex().to_string()
+}
+fn digest_value<T: Serialize>(value: &T) -> Result<String, RealSandboxLearningError> {
+    serde_json::to_vec(value)
+        .map(|v| digest_bytes(&v))
+        .map_err(|e| RealSandboxLearningError::Invalid(e.to_string()))
+}
+fn fixture_digest(path: &std::path::Path) -> Result<String, RealSandboxLearningError> {
+    let mut entries = Vec::new();
+    for entry in walkdir::WalkDir::new(path).follow_links(false) {
+        let entry = entry.map_err(|e| RealSandboxLearningError::Invalid(e.to_string()))?;
+        if entry.file_type().is_file() {
+            entries.push((
+                entry
+                    .path()
+                    .strip_prefix(path)
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string(),
+                std::fs::read(entry.path())
+                    .map_err(|e| RealSandboxLearningError::Invalid(e.to_string()))?,
+            ));
+        }
+    }
+    entries.sort_by(|a, b| a.0.cmp(&b.0));
+    digest_value(&entries)
 }
