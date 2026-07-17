@@ -34,7 +34,7 @@ def test_validator_rejects_changed_fixture_digest(tmp_path):
         raise AssertionError("changed fixture must be rejected")
 
 
-def test_validator_rejects_duplicate_family_split(tmp_path):
+def test_validator_allows_multiple_tasks_in_one_family_split(tmp_path):
     source = ROOT / "fixtures" / "learning-coding-agent" / "v1"
     import shutil
     dest = tmp_path / "v1"
@@ -43,12 +43,7 @@ def test_validator_rejects_duplicate_family_split(tmp_path):
     manifest["tasks"][1]["family"] = manifest["tasks"][0]["family"]
     manifest["tasks"][1]["split"] = manifest["tasks"][0]["split"]
     (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    try:
-        module.validate(dest)
-    except module.ValidationError as exc:
-        assert "family" in str(exc)
-    else:
-        raise AssertionError("duplicate family split must be rejected")
+    assert len(module.validate(dest)) == 64
 
 
 def test_validator_rejects_holdout_oracle_leak(tmp_path):
@@ -102,5 +97,38 @@ def test_validator_rejects_manifest_negative_category_drift(tmp_path):
 
 def test_validator_reports_family_aware_split_summary():
     summary = module.split_summary(ROOT / "fixtures" / "learning-coding-agent" / "v1")
-    assert summary == {"development": 5, "calibration": 5, "holdout": 5}
+    assert summary == {"development": 9, "calibration": 3, "holdout": 3}
     assert module.family_aware(summary)
+
+
+def test_validator_rejects_non_60_20_20_split(tmp_path):
+    source = ROOT / "fixtures" / "learning-coding-agent" / "v1"
+    import shutil
+    dest = tmp_path / "v1"
+    shutil.copytree(source, dest)
+    manifest = json.loads((dest / "manifest.json").read_text())
+    for task in manifest["tasks"][:1]:
+        task["split"] = "calibration"
+    (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    try:
+        module.validate(dest)
+    except module.ValidationError as exc:
+        assert "60/20/20" in str(exc)
+    else:
+        raise AssertionError("non-60/20/20 split must be rejected")
+
+
+def test_validator_rejects_family_leakage_across_splits(tmp_path):
+    source = ROOT / "fixtures" / "learning-coding-agent" / "v1"
+    import shutil
+    dest = tmp_path / "v1"
+    shutil.copytree(source, dest)
+    manifest = json.loads((dest / "manifest.json").read_text())
+    manifest["tasks"][0]["family"] = "module-hygiene"
+    (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    try:
+        module.validate(dest)
+    except module.ValidationError as exc:
+        assert "leak" in str(exc)
+    else:
+        raise AssertionError("family leakage must be rejected")

@@ -86,7 +86,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "calibration",
+      "split": "development",
       "toolchain": "1.86.0"
     },
     {
@@ -107,7 +107,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "holdout",
+      "split": "development",
       "toolchain": "1.86.0"
     },
     {
@@ -149,7 +149,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "calibration",
+      "split": "development",
       "toolchain": "1.86.0"
     },
     {
@@ -170,7 +170,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "holdout",
+      "split": "development",
       "toolchain": "1.86.0"
     },
     {
@@ -212,7 +212,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "calibration",
+      "split": "development",
       "toolchain": "1.86.0"
     },
     {
@@ -233,7 +233,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "holdout",
+      "split": "development",
       "toolchain": "1.86.0"
     },
     {
@@ -254,7 +254,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "development",
+      "split": "calibration",
       "toolchain": "1.86.0"
     },
     {
@@ -296,7 +296,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "holdout",
+      "split": "calibration",
       "toolchain": "1.86.0"
     },
     {
@@ -317,7 +317,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "development",
+      "split": "holdout",
       "toolchain": "1.86.0"
     },
     {
@@ -338,7 +338,7 @@
         "cargo test --locked",
         "cargo fmt --check"
       ],
-      "split": "calibration",
+      "split": "holdout",
       "toolchain": "1.86.0"
     },
     {

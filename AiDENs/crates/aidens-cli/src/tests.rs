@@ -15,6 +15,14 @@ fn learning_inspect_consumes_manifest_without_holdout_oracles() {
 }
 
 #[test]
+fn learning_corpus_enforces_immutable_family_aware_ratio() {
+    let report: Value = serde_json::from_str(&learn_inspect_command(None).unwrap()).unwrap();
+    assert_eq!(report["splits"]["development"], 9);
+    assert_eq!(report["splits"]["calibration"], 3);
+    assert_eq!(report["splits"]["holdout"], 3);
+}
+
+#[test]
 fn learning_lifecycle_requires_explicit_permit() {
     let err = learn_promote_command("candidate-x", None)
         .unwrap_err()
