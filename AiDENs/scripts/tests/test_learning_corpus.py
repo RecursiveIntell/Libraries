@@ -66,3 +66,41 @@ def test_validator_rejects_holdout_oracle_leak(tmp_path):
         assert "oracle" in str(exc)
     else:
         raise AssertionError("holdout oracle leak must be rejected")
+
+
+def test_validator_rejects_duplicate_fixture_content(tmp_path):
+    source = ROOT / "fixtures" / "learning-coding-agent" / "v1"
+    import shutil
+    dest = tmp_path / "v1"
+    shutil.copytree(source, dest)
+    manifest = json.loads((dest / "manifest.json").read_text())
+    manifest["tasks"][1]["fixture"] = manifest["tasks"][0]["fixture"]
+    (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    try:
+        module.validate(dest)
+    except module.ValidationError as exc:
+        assert "duplicate fixture" in str(exc)
+    else:
+        raise AssertionError("duplicate fixture content must be rejected")
+
+
+def test_validator_rejects_manifest_negative_category_drift(tmp_path):
+    source = ROOT / "fixtures" / "learning-coding-agent" / "v1"
+    import shutil
+    dest = tmp_path / "v1"
+    shutil.copytree(source, dest)
+    manifest = json.loads((dest / "manifest.json").read_text())
+    manifest["required_negative_categories"].remove("network")
+    (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    try:
+        module.validate(dest)
+    except module.ValidationError as exc:
+        assert "negative" in str(exc)
+    else:
+        raise AssertionError("negative category drift must be rejected")
+
+
+def test_validator_reports_family_aware_split_summary():
+    summary = module.split_summary(ROOT / "fixtures" / "learning-coding-agent" / "v1")
+    assert summary == {"development": 5, "calibration": 5, "holdout": 5}
+    assert module.family_aware(summary)

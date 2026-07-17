@@ -1,50 +1,131 @@
-"""Validate the immutable Medusa learning-agent corpus v1."""
-from __future__ import annotations
-import hashlib, json, re
-from pathlib import Path
+"""Validate the immutable Medusa learning-agent corpus v1.
 
-class ValidationError(ValueError): pass
-REQUIRED_NEGATIVE = {"path_escape","symlink_escape","descendant_process","network","secret_env","malformed_tool_call","duplicate_key_tool_call","schema_invalid_tool_call","evaluator_tamper","stale_dependency_memory","failing_baseline","malformed_fixture","rollback_failure","reward_hacking","real_to_mock_fallback"}
+The validator is deliberately independent of the learner: it only reads the
+manifest, fixtures, and negative controls and never rewrites them.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Any
+
+
+class ValidationError(ValueError):
+    pass
+
+
+REQUIRED_NEGATIVE = {
+    "path_escape", "symlink_escape", "descendant_process", "network", "secret_env",
+    "malformed_tool_call", "duplicate_key_tool_call", "schema_invalid_tool_call",
+    "evaluator_tamper", "stale_dependency_memory", "failing_baseline", "malformed_fixture",
+    "rollback_failure", "reward_hacking", "real_to_mock_fallback",
+}
+SPLITS = ("development", "calibration", "holdout")
+TASK_FIELDS = ("id", "family", "split", "fixture", "required_checks", "permitted_effects", "forbidden_effects")
+
 
 def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
+
+def _metadata(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    try:
+        return (json.loads((root / "manifest.json").read_text(encoding="utf-8")),
+                json.loads((root / "oracles.json").read_text(encoding="utf-8")))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValidationError(f"schema-invalid corpus metadata: {exc}") from exc
+
+
+def split_summary(root: Path) -> dict[str, int]:
+    manifest, _ = _metadata(Path(root))
+    return dict(Counter(task.get("split") for task in manifest.get("tasks", [])))
+
+
+def family_aware(summary: dict[str, int]) -> bool:
+    """Return whether all declared split buckets are nonempty.
+
+    Family-aware assignment is checked in ``validate`` (one family per split
+    and no duplicate family/split); this helper exposes the denominator gate
+    for receipt/test consumers without inventing a ratio for the observed 15
+    fixture corpus.
+    """
+    return all(summary.get(split, 0) > 0 for split in SPLITS)
+
+
 def validate(root: Path) -> str:
     root = Path(root)
-    try:
-        manifest = json.loads((root/"manifest.json").read_text())
-        oracles = json.loads((root/"oracles.json").read_text())
-    except Exception as exc: raise ValidationError(f"schema-invalid corpus metadata: {exc}") from exc
+    manifest, oracles = _metadata(root)
     if manifest.get("corpus_version") != "v1" or manifest.get("frozen_baseline_policy") != "immutable-after-treatment":
         raise ValidationError("unpinned corpus version or baseline policy")
     if manifest.get("toolchain") != "rust-toolchain.toml@1.86.0" or manifest.get("verifier_manifest") != "verifier-v1@sha256:medusa-local-v1":
         raise ValidationError("unpinned verifier/toolchain")
-    tasks = manifest.get("tasks", [])
-    if len(tasks) < 5: raise ValidationError("too few tasks")
-    families = {x.get("family") for x in tasks}
-    if len(families) < 5: raise ValidationError("too few families")
-    seen = set(); file_digests = manifest.get("canonical_fixture_digests", {})
+
+    tasks = manifest.get("tasks")
+    if not isinstance(tasks, list) or len(tasks) < 5:
+        raise ValidationError("too few tasks")
+    families = {task.get("family") for task in tasks}
+    if len(families) < 5 or None in families:
+        raise ValidationError("too few families")
+    summary = split_summary(root)
+    if not family_aware(summary):
+        raise ValidationError("empty split denominator")
+
+    canonical = manifest.get("canonical_fixture_digests")
+    if not isinstance(canonical, dict):
+        raise ValidationError("missing canonical fixture digests")
+    seen_ids: set[str] = set()
+    seen_fixtures: set[str] = set()
+    seen_family_splits: set[tuple[str, str]] = set()
+    actual_fixtures: set[str] = set()
     for item in tasks:
-        for key in ("id","family","split","fixture","required_checks","permitted_effects","forbidden_effects"): 
-            if key not in item: raise ValidationError(f"missing task field {key}")
-        if item["split"] not in {"development","calibration","holdout"}: raise ValidationError("invalid split")
-        key = (item["family"], item["split"])
-        if key in seen: raise ValidationError(f"duplicate family split: {key}")
-        seen.add(key)
-        if item["split"] == "holdout" and any(k in item for k in ("oracle","oracle_content","expected_output")): raise ValidationError("holdout oracle leak")
-        p = root / item["fixture"]
-        if not p.is_file(): raise ValidationError(f"missing fixture {item['fixture']}")
-        actual = digest(p)
-        if file_digests.get(item["fixture"]) != actual: raise ValidationError(f"fixture digest mismatch: {item['fixture']}")
-        if not item["required_checks"] or not item["forbidden_effects"]: raise ValidationError("empty required checks/effects denominator")
-    if len(seen) != len(tasks): raise ValidationError("duplicate family/split assignment")
-    if not isinstance(oracles.get("families"), list) or not all("family" in x and "oracle" in x for x in oracles["families"]): raise ValidationError("invalid oracle schema")
-    negative = {p.stem for p in (root/"negative").glob("*.json")}
-    missing = REQUIRED_NEGATIVE - negative
-    if missing: raise ValidationError("missing required negative category: " + ",".join(sorted(missing)))
-    if manifest.get("holdout_oracles") is not None: raise ValidationError("holdout oracle leak")
-    return hashlib.sha256(b"".join((root/"manifest.json").read_bytes() for _ in [0])).hexdigest()
+        missing = [key for key in TASK_FIELDS if key not in item]
+        if missing:
+            raise ValidationError(f"missing task field {missing[0]}")
+        if item["id"] in seen_ids:
+            raise ValidationError(f"duplicate task id: {item['id']}")
+        seen_ids.add(item["id"])
+        if item["split"] not in SPLITS:
+            raise ValidationError("invalid split")
+        pair = (item["family"], item["split"])
+        if pair in seen_family_splits:
+            raise ValidationError(f"duplicate family split: {pair}")
+        seen_family_splits.add(pair)
+        fixture = item["fixture"]
+        if fixture in seen_fixtures:
+            raise ValidationError(f"duplicate fixture: {fixture}")
+        seen_fixtures.add(fixture)
+        if Path(fixture).is_absolute() or ".." in Path(fixture).parts:
+            raise ValidationError(f"fixture path escapes corpus: {fixture}")
+        path = root / fixture
+        if not path.is_file():
+            raise ValidationError(f"missing fixture {fixture}")
+        actual_fixtures.add(fixture)
+        if canonical.get(fixture) != digest(path):
+            raise ValidationError(f"fixture digest mismatch: {fixture}")
+        if not item["required_checks"] or not item["forbidden_effects"] or not item["permitted_effects"]:
+            raise ValidationError("empty required checks/effects denominator")
+        if item["split"] == "holdout" and any(key in item for key in ("oracle", "oracle_content", "expected_output")):
+            raise ValidationError("holdout oracle leak")
+    if set(canonical) != actual_fixtures:
+        raise ValidationError("canonical fixture digest inventory mismatch")
+
+    oracle_families = {entry.get("family") for entry in oracles.get("families", [])}
+    if oracle_families != families or not all(isinstance(entry.get("oracle"), str) and entry["oracle"] for entry in oracles.get("families", [])):
+        raise ValidationError("invalid oracle schema")
+    negative = {path.stem for path in (root / "negative").glob("*.json")}
+    required = set(manifest.get("required_negative_categories", []))
+    if required != REQUIRED_NEGATIVE or not REQUIRED_NEGATIVE <= negative:
+        raise ValidationError("negative category inventory drift")
+    if manifest.get("holdout_oracles") is not None:
+        raise ValidationError("holdout oracle leak")
+    return digest(root / "manifest.json")
+
 
 if __name__ == "__main__":
     import argparse
-    p=argparse.ArgumentParser(); p.add_argument("root", type=Path); a=p.parse_args(); print(validate(a.root))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("root", type=Path)
+    args = parser.parse_args()
+    print(validate(args.root))
