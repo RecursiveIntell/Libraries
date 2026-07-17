@@ -44,14 +44,9 @@ def split_summary(root: Path) -> dict[str, int]:
 
 
 def family_aware(summary: dict[str, int]) -> bool:
-    """Return whether all declared split buckets are nonempty.
-
-    Family-aware assignment is checked in ``validate`` (one family per split
-    and no duplicate family/split); this helper exposes the denominator gate
-    for receipt/test consumers without inventing a ratio for the observed 15
-    fixture corpus.
-    """
-    return all(summary.get(split, 0) > 0 for split in SPLITS)
+    """Return whether the corpus has the immutable 60/20/20 denominators."""
+    total = sum(summary.get(split, 0) for split in SPLITS)
+    return total > 0 and [summary.get(split, 0) for split in SPLITS] == [total * 3 // 5, total // 5, total // 5]
 
 
 def validate(root: Path) -> str:
@@ -70,14 +65,14 @@ def validate(root: Path) -> str:
         raise ValidationError("too few families")
     summary = split_summary(root)
     if not family_aware(summary):
-        raise ValidationError("empty split denominator")
+        raise ValidationError("split counts must satisfy immutable 60/20/20 ratio with nonempty denominators")
 
     canonical = manifest.get("canonical_fixture_digests")
     if not isinstance(canonical, dict):
         raise ValidationError("missing canonical fixture digests")
     seen_ids: set[str] = set()
     seen_fixtures: set[str] = set()
-    seen_family_splits: set[tuple[str, str]] = set()
+    family_splits: dict[str, str] = {}
     actual_fixtures: set[str] = set()
     for item in tasks:
         missing = [key for key in TASK_FIELDS if key not in item]
@@ -88,10 +83,10 @@ def validate(root: Path) -> str:
         seen_ids.add(item["id"])
         if item["split"] not in SPLITS:
             raise ValidationError("invalid split")
-        pair = (item["family"], item["split"])
-        if pair in seen_family_splits:
-            raise ValidationError(f"duplicate family split: {pair}")
-        seen_family_splits.add(pair)
+        family = item["family"]
+        previous_split = family_splits.setdefault(family, item["split"])
+        if previous_split != item["split"]:
+            raise ValidationError(f"family leakage across splits: {family}")
         fixture = item["fixture"]
         if fixture in seen_fixtures:
             raise ValidationError(f"duplicate fixture: {fixture}")

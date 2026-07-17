@@ -752,7 +752,21 @@ fn validate_learning_corpus(manifest_path: &Path, manifest: &Value) -> Result<()
     {
         bail!("too few learning corpus families");
     }
-    let mut seen = BTreeSet::new();
+    let mut split_counts = BTreeMap::new();
+    for task in tasks {
+        *split_counts
+            .entry(task["split"].as_str().unwrap_or_default())
+            .or_insert(0usize) += 1;
+    }
+    let total = tasks.len();
+    if split_counts.get("development") != Some(&(total * 3 / 5))
+        || split_counts.get("calibration") != Some(&(total / 5))
+        || split_counts.get("holdout") != Some(&(total / 5))
+        || split_counts.values().any(|count| *count == 0)
+    {
+        bail!("split counts must satisfy immutable 60/20/20 ratio with nonempty denominators");
+    }
+    let mut family_splits = BTreeMap::new();
     for task in tasks {
         for field in [
             "id",
@@ -771,8 +785,11 @@ fn validate_learning_corpus(manifest_path: &Path, manifest: &Value) -> Result<()
         if !matches!(split, "development" | "calibration" | "holdout") {
             bail!("invalid split");
         }
-        if !seen.insert((task["family"].as_str().unwrap_or_default(), split)) {
-            bail!("duplicate family split");
+        let family = task["family"].as_str().unwrap_or_default();
+        if let Some(previous) = family_splits.insert(family, split) {
+            if previous != split {
+                bail!("family leakage across splits");
+            }
         }
         if split == "holdout"
             && ["oracle", "oracle_content", "expected_output"]
@@ -835,7 +852,7 @@ fn validate_learning_corpus(manifest_path: &Path, manifest: &Value) -> Result<()
     }
     let digest = format!("{:x}", Sha256::digest(std::fs::read(manifest_path)?));
     if source_is_default(manifest_path)
-        && digest != "b6465f16021b681bc0f30b3655b9724e0ef0d2a809a3b6fd852300d4d09663ee"
+        && digest != "854bb17fcc18d1a576bf004ce042ef4bfe82db004bcfa19f4fdf048a01b3e83b"
     {
         bail!("canonical corpus digest mismatch");
     }
