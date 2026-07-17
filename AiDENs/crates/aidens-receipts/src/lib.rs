@@ -373,18 +373,34 @@ impl RunBundleStore {
                             "unsupported_bundle_schema",
                             run_id,
                         )
-                    } else if !verify_child_references(&bundle) {
-                        (
-                            RunBundleRecoveryState::Quarantined,
-                            "child_reference_unverified",
-                            run_id,
-                        )
                     } else {
-                        (
-                            RunBundleRecoveryState::PendingIndex,
-                            "bundle_without_index",
-                            run_id,
-                        )
+                        let actual_digest = ContentDigest::compute_json(&bundle).ok();
+                        let path_digest = path
+                            .parent()
+                            .and_then(Path::file_name)
+                            .and_then(|name| name.to_str());
+                        let digest_matches = actual_digest
+                            .as_ref()
+                            .is_some_and(|digest| path_digest == Some(&digest.hex()[..]));
+                        if !digest_matches {
+                            (
+                                RunBundleRecoveryState::Indeterminate,
+                                "bundle_digest_mismatch",
+                                run_id,
+                            )
+                        } else if !verify_child_references(&bundle) {
+                            (
+                                RunBundleRecoveryState::Quarantined,
+                                "child_reference_unverified",
+                                run_id,
+                            )
+                        } else {
+                            (
+                                RunBundleRecoveryState::PendingIndex,
+                                "bundle_without_index",
+                                run_id,
+                            )
+                        }
                     }
                 }
                 None => (
@@ -1516,6 +1532,28 @@ mod tests {
             .iter()
             .any(|entry| entry.state == RunBundleRecoveryState::Quarantined
                 && entry.reason == "child_reference_unverified"));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn recovery_quarantines_orphan_whose_path_digest_does_not_match_contents() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-recovery-orphan-digest-mismatch-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let bundle = serde_json::json!({"schema":"AiDENsRunBundleV3","run_id":"orphan-digest"});
+        let wrong_digest = ContentDigest::compute_json(&serde_json::json!({"different":true})).unwrap();
+        let path = store.bundle_path_for_run_id_and_digest("orphan-digest", &wrong_digest);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, serde_json::to_string(&bundle).unwrap()).unwrap();
+
+        let report = store.reconcile().unwrap();
+        assert!(report.entries.iter().any(|entry| {
+            entry.run_id == "orphan-digest"
+                && entry.state == RunBundleRecoveryState::Indeterminate
+                && entry.reason == "bundle_digest_mismatch"
+        }));
         let _ = std::fs::remove_dir_all(root);
     }
 
