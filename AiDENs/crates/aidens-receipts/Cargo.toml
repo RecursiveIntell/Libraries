@@ -9,6 +9,7 @@ license.workspace = true
 workspace = true
 
 [dependencies]
+aidens-contracts = { path = "../aidens-contracts" }
 async-trait.workspace = true
 chrono.workspace = true
 llm-tool-runtime.workspace = true

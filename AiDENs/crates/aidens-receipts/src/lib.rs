@@ -5,6 +5,7 @@
 //! canonical libraries, plus orchestration reports that are explicitly labeled
 //! as AiDENs-owned reports rather than stack receipts.
 
+use aidens_contracts::AiDENsRunBundleV3;
 use async_trait::async_trait;
 use chrono::Utc;
 pub use llm_tool_runtime::{
@@ -140,6 +141,8 @@ pub enum RunBundleStoreError {
     },
     #[error("run bundle store requires AiDENsRunBundleV3, got {0}")]
     UnsupportedSchema(String),
+    #[error("run bundle durable identity validation failed: {0:?}")]
+    InvalidDurableIdentity(Vec<String>),
     #[error("run bundle missing string run_id")]
     MissingRunId,
     #[error("run bundle not found: {0}")]
@@ -206,6 +209,15 @@ impl RunBundleStore {
             .unwrap_or_default();
         if schema != "AiDENsRunBundleV3" {
             return Err(RunBundleStoreError::UnsupportedSchema(schema.into()));
+        }
+        if let Ok(typed_bundle) = serde_json::from_value::<AiDENsRunBundleV3>(bundle.clone()) {
+            if !typed_bundle.canonical_backpointers.is_empty()
+                || bundle.to_string().contains("local-process-seq")
+            {
+                typed_bundle
+                    .validate_durable_identity()
+                    .map_err(RunBundleStoreError::InvalidDurableIdentity)?;
+            }
         }
         let run_id = bundle
             .get("run_id")
@@ -1513,6 +1525,31 @@ mod tests {
         assert!(inspection.digest_verified);
         assert_eq!(inspection.bundle["schema"], "AiDENsRunBundleV3");
         assert_eq!(reopened.single_bundle_path().unwrap(), record.bundle_path);
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn run_bundle_store_rejects_display_only_identity_before_writing() {
+        let root = std::env::temp_dir().join(format!(
+            "aidens-run-bundle-store-display-only-{}",
+            uuid::Uuid::new_v4()
+        ));
+        let store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&root)).unwrap();
+        let mut bundle: aidens_contracts::AiDENsRunBundleV3 = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/p26/aidens_run_bundle_v3.json"
+        ))
+        .unwrap();
+        bundle.bundle_id = aidens_contracts::display_only_unstable_id("p1");
+        let value = serde_json::to_value(bundle).unwrap();
+
+        let error = store.write_bundle_value(&value).unwrap_err();
+
+        assert!(error.to_string().contains("durable identity"));
+        assert!(!store.bundle_path_for_run_id("fixture-run").exists());
+        assert_eq!(
+            std::fs::read_to_string(&store.config().index_path).unwrap(),
+            ""
+        );
         let _ = std::fs::remove_dir_all(root);
     }
 

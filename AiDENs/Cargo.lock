@@ -347,6 +347,7 @@ dependencies = [
 name = "aidens-receipts"
 version = "0.1.0"
 dependencies = [
+ "aidens-contracts",
  "aidens-testkit",
  "async-trait",
  "chrono",
