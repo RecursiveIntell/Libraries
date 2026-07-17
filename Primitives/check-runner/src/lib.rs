@@ -1667,3 +1667,144 @@ mod tests {
         assert_eq!(output.stdout, "missing");
     }
 }
+
+#[cfg(all(test, feature = "container"))]
+mod hostile_rootless_podman_acceptance {
+    use super::*;
+    use std::fs;
+    use std::path::Path;
+
+    const IMAGE: &str = "localhost/aidens-rust-checks@sha256:96f6610f945d10b523a303848610bd6fbef241762c59c0e44d47af9089cb6d6b";
+
+    fn live_backend() -> Option<(ContainerBackend, tempfile::TempDir)> {
+        let rootless = podman_is_rootless();
+        let image = std::process::Command::new("podman")
+            .args(["image", "exists", IMAGE])
+            .status()
+            .is_ok_and(|s| s.success());
+        if !rootless || !image {
+            eprintln!("SKIP hostile live test: preflight rootless_podman={rootless}, digest_pinned_image={image}, image={IMAGE}");
+            return None;
+        }
+        eprintln!("LIVE hostile test: rootless_podman=true, digest_pinned_image=true, image={IMAGE}, backend=existing sealed Podman");
+        let config = BackendConfig {
+            mode: "sealed_local".into(),
+            execution_backend_preference: "container".into(),
+            container_runtime_preference: "podman".into(),
+            sealed_allow_host_backend: false,
+            rust_image: IMAGE.into(),
+            command_timeout_secs: 5,
+            memory_limit: "1g".into(),
+            cpu_limit: "1.0".into(),
+        };
+        Some((
+            ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman).unwrap(),
+            tempfile::tempdir().unwrap(),
+        ))
+    }
+
+    fn fixture(root: &Path, body: &str) {
+        fs::create_dir_all(root.join("src")).unwrap();
+        fs::write(
+            root.join("Cargo.toml"),
+            "[package]\nname='hostile-fixture'\nversion='0.1.0'\nedition='2021'\n",
+        )
+        .unwrap();
+        fs::write(root.join("src/lib.rs"), body).unwrap();
+    }
+
+    fn run(root: &Path, body: &str, timeout: u64) -> Result<CommandOutput, RunnerError> {
+        fixture(root, body);
+        let config = BackendConfig {
+            mode: "sealed_local".into(),
+            execution_backend_preference: "container".into(),
+            container_runtime_preference: "podman".into(),
+            sealed_allow_host_backend: false,
+            rust_image: IMAGE.into(),
+            command_timeout_secs: timeout,
+            memory_limit: "1g".into(),
+            cpu_limit: "1.0".into(),
+        };
+        let backend = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman).unwrap();
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(backend.run_command(
+                root,
+                "cargo",
+                &["test", "--", "--nocapture"],
+                &[],
+                timeout,
+            ))
+    }
+
+    #[test]
+    fn live_network_and_ambient_credential_denial() {
+        let Some((_, root)) = live_backend() else {
+            return;
+        };
+        let body = r##"#[test] fn hostile() { assert!(std::net::TcpStream::connect_timeout(&"1.1.1.1:80".parse().unwrap(), std::time::Duration::from_secs(1)).is_err()); assert!(std::env::var("AWS_SECRET_ACCESS_KEY").is_err()); }"##;
+        let output = run(root.path(), body, 5).unwrap();
+        assert_eq!(
+            output.exit_code, 0,
+            "network/env denial fixture failed: {}{}",
+            output.stdout, output.stderr
+        );
+    }
+
+    #[test]
+    fn live_outside_root_mutation_and_tree_integrity() {
+        let Some((_, root)) = live_backend() else {
+            return;
+        };
+        let output = run(root.path(), r##"#[test] fn hostile() { assert!(std::fs::write("/etc/check-runner-hostile", "x").is_err()); }"##, 5).unwrap();
+        assert_eq!(
+            output.exit_code, 0,
+            "outside-root mutation was possible: {}{}",
+            output.stdout, output.stderr
+        );
+        assert_eq!(
+            fs::read_to_string(root.path().join("src/lib.rs")).unwrap(),
+            r##"#[test] fn hostile() { assert!(std::fs::write("/etc/check-runner-hostile", "x").is_err()); }"##
+        );
+        assert!(
+            root.path().join("Cargo.toml").is_file(),
+            "fixture tree lost Cargo.toml"
+        );
+    }
+
+    #[test]
+    fn live_descendant_timeout_cleanup() {
+        let Some((backend, root)) = live_backend() else {
+            return;
+        };
+        fixture(
+            root.path(),
+            r##"#[test] fn hostile() { std::process::Command::new("sh").arg("-c").arg("sleep 30").spawn().unwrap(); std::thread::sleep(std::time::Duration::from_secs(30)); }"##,
+        );
+        let result = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(backend.run_command(root.path(), "cargo", &["test"], &[], 1));
+        assert!(
+            result.is_err(),
+            "descendant fixture unexpectedly completed: {result:?}"
+        );
+    }
+
+    #[test]
+    fn live_output_cap_and_pid_pressure() {
+        let Some((_, root)) = live_backend() else {
+            return;
+        };
+        let output = run(root.path(), r##"#[test] fn hostile() { for _ in 0..256 { let _ = std::process::Command::new("true").spawn(); } println!("{}", "x".repeat(2_100_000)); }"##, 5).unwrap();
+        assert!(output.stdout.len() <= MAX_CAPTURED_OUTPUT_BYTES);
+        assert!(
+            output.stdout.contains(OUTPUT_TRUNCATION_MARKER)
+                || output.stderr.contains("Resource temporarily unavailable")
+                || output.exit_code != 0
+        );
+    }
+}
