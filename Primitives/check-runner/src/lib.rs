@@ -613,7 +613,13 @@ fn validate_limit(field: &str, value: &str) -> Result<(), RunnerError> {
         v.strip_suffix(['k', 'K', 'm', 'M', 'g', 'G', 't', 'T', 'b', 'B'])
             .unwrap_or(v)
     };
-    if number.parse::<f64>().is_err() || number.parse::<f64>().unwrap_or(0.0) <= 0.0 {
+    let valid_number = !number.is_empty()
+        && number
+            .chars()
+            .all(|character| character.is_ascii_digit() || character == '.')
+        && number.matches('.').count() <= 1;
+    let parsed = number.parse::<f64>().ok();
+    if !valid_number || !parsed.is_some_and(|number| number.is_finite() && number > 0.0) {
         return Err(RunnerError::InvalidResourceLimit {
             field: field.into(),
             value: value.into(),
@@ -962,6 +968,36 @@ mod tests {
 
         let error = select_backend(&config).err().unwrap();
         assert!(matches!(error, RunnerError::SealedModeUnsupported { .. }));
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
+    fn sealed_backend_rejects_non_finite_or_exponent_resource_limits() {
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.rust_image =
+            "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                .into();
+
+        for (field, value) in [
+            ("cpu_limit", "NaN"),
+            ("cpu_limit", "inf"),
+            ("cpu_limit", "1e3"),
+            ("memory_limit", "1e3g"),
+        ] {
+            if field == "cpu_limit" {
+                config.cpu_limit = value.into();
+            } else {
+                config.memory_limit = value.into();
+            }
+            let error = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman)
+                .err()
+                .unwrap();
+            assert!(
+                matches!(error, RunnerError::InvalidResourceLimit { .. }),
+                "{field}={value}"
+            );
+        }
     }
 
     #[cfg(feature = "container")]
