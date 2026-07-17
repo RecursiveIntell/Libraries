@@ -36,6 +36,7 @@ use aidens_provider_kit::{
 use aidens_receipts::{
     CanonicalEventLog, CanonicalEventLogConfig, RunBundleStore, RunBundleStoreConfig,
 };
+use aidens_runner::learning_controller::{run_real_sandbox, RealSandboxLearningConfig};
 use aidens_runner::learning_lifecycle::{project_lifecycle_receipt, ProcedureLifecycleAdapter};
 use aidens_runner::{PlanActVerifyLoopV1, PlanActVerifyLoopV1Output, PlanActVerifyOutcomeV1};
 use aidens_tool_kit::{
@@ -47,6 +48,7 @@ use anyhow::{bail, Context, Result};
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Parser, Subcommand};
 use semantic_memory::{MemoryConfig, MemoryStore, ProcedureLifecyclePermitV1};
+use serde::Deserialize;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
@@ -60,6 +62,7 @@ use std::os::windows::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use typed_patch::{PatchPolicy, StructuredPatch};
 
 mod agent;
 mod package;
@@ -223,6 +226,9 @@ pub enum LearningCommand {
         source: Option<String>,
         #[arg(long)]
         out: Option<String>,
+        /// Typed real-sandbox request envelope. Required when mode=real-sandbox.
+        #[arg(long)]
+        request: Option<String>,
     },
     Inspect {
         #[arg(long)]
@@ -257,6 +263,29 @@ pub enum LearningCommand {
         #[arg(long)]
         store: Option<String>,
     },
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RealSandboxRunRequestV1 {
+    schema: String,
+    fixture: PathBuf,
+    patch: PathBuf,
+    permit_grant: PathBuf,
+    permit_use: PathBuf,
+    forbidden_paths: Vec<String>,
+    allow_test_modifications: bool,
+    max_files_changed: usize,
+    max_total_lines_changed: usize,
+    max_lines_changed_per_file: usize,
+    image: String,
+    cea_db: PathBuf,
+    receipt_root: PathBuf,
+    run_id: String,
+    attempt_id: String,
+    trial_id: String,
+    trace_id: String,
+    recorded_at: String,
 }
 
 #[derive(Debug, Subcommand)]
@@ -909,6 +938,67 @@ fn learn_compare_replay_command(action: &str, source: Option<&str>) -> Result<St
     }))?)
 }
 
+fn read_typed_json<T>(path: &Path, label: &str) -> Result<T>
+where
+    T: for<'de> Deserialize<'de>,
+{
+    let text = std::fs::read_to_string(path)
+        .with_context(|| format!("read typed {label}: {}", path.display()))?;
+    serde_json::from_str(&text).with_context(|| format!("parse typed {label}: {}", path.display()))
+}
+
+fn learn_real_sandbox_command(request: &str, out: Option<&str>) -> Result<String> {
+    let request_path = Path::new(request);
+    let envelope: RealSandboxRunRequestV1 = read_typed_json(request_path, "real-sandbox request")?;
+    if envelope.schema != "AiDENsRealSandboxRunRequestV1" {
+        bail!("real-sandbox request schema must be AiDENsRealSandboxRunRequestV1");
+    }
+    let patch: StructuredPatch = read_typed_json(&envelope.patch, "structured patch")?;
+    let permit_grant: PermitGrantV1 = read_typed_json(&envelope.permit_grant, "permit grant")?;
+    let permit_use: PermitUseReportV1 =
+        read_typed_json(&envelope.permit_use, "permit use receipt")?;
+    let config = RealSandboxLearningConfig {
+        fixture: envelope.fixture,
+        patch,
+        patch_policy: PatchPolicy {
+            forbidden_paths: envelope.forbidden_paths,
+            allow_test_modifications: envelope.allow_test_modifications,
+            max_files_changed: envelope.max_files_changed,
+            max_total_lines_changed: envelope.max_total_lines_changed,
+            max_lines_changed_per_file: envelope.max_lines_changed_per_file,
+        },
+        permit_grant,
+        permit_use,
+        image: envelope.image,
+        cea_db: envelope.cea_db,
+        receipt_root: envelope.receipt_root,
+        run_id: envelope.run_id,
+        attempt_id: envelope.attempt_id,
+        trial_id: envelope.trial_id,
+        trace_id: envelope.trace_id,
+        recorded_at: envelope.recorded_at,
+    };
+    let runtime = tokio::runtime::Runtime::new().context("create real-sandbox runtime")?;
+    let outcome = runtime
+        .block_on(run_real_sandbox(config))
+        .context("canonical real-sandbox controller rejected run")?;
+    let report = serde_json::json!({
+        "schema": "AiDENsLearningRunReportV2",
+        "mode": "real-sandbox",
+        "terminal": {
+            "state": "blocked-evidence-insufficient",
+            "reason_codes": outcome.reason_codes,
+        },
+        "verified_execution": outcome.report.verified,
+        "terminal_publication": outcome.terminal_publication,
+        "controller_outcome": outcome,
+    });
+    if let Some(path) = out {
+        write_json_file(Path::new(path), &report)?;
+    }
+    Ok(serde_json::to_string_pretty(&report)?)
+}
+
 pub fn learn_run_command(mode: &str, source: Option<&str>, out: Option<&str>) -> Result<String> {
     let manifest = learning_manifest(source)?;
     let report = serde_json::json!({
@@ -1012,8 +1102,23 @@ pub fn learn_lifecycle_command_with_store(
 
 pub fn learning_command(command: LearningCommand) -> Result<String> {
     match command {
-        LearningCommand::Run { mode, source, out } => {
-            learn_run_command(&mode, source.as_deref(), out.as_deref())
+        LearningCommand::Run {
+            mode,
+            source,
+            out,
+            request,
+        } => {
+            if mode == "real-sandbox" {
+                let request = request.as_deref().ok_or_else(|| {
+                    anyhow::anyhow!("--request is required when --mode real-sandbox")
+                })?;
+                learn_real_sandbox_command(request, out.as_deref())
+            } else {
+                if request.is_some() {
+                    bail!("--request is only valid when --mode real-sandbox");
+                }
+                learn_run_command(&mode, source.as_deref(), out.as_deref())
+            }
         }
         LearningCommand::Inspect { source } => learn_inspect_command(source.as_deref()),
         LearningCommand::Compare { source } => {

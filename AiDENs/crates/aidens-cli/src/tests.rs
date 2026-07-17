@@ -130,6 +130,173 @@ fn learning_mock_run_cannot_render_verified_success() {
     assert_eq!(learning_run_exit_code("not-json"), 2);
 }
 
+#[test]
+fn real_sandbox_requires_typed_request_and_rejects_wrong_schema() {
+    let error = learning_command(LearningCommand::Run {
+        mode: "real-sandbox".into(),
+        source: None,
+        out: None,
+        request: None,
+    })
+    .unwrap_err()
+    .to_string();
+    assert!(error.contains("--request"));
+
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let request = root.join("request.json");
+    std::fs::write(
+        &request,
+        serde_json::to_vec(&serde_json::json!({
+            "schema": "WrongSchema",
+            "fixture": "fixture",
+            "patch": "patch.json",
+            "permit_grant": "grant.json",
+            "permit_use": "use.json",
+            "forbidden_paths": [".git"],
+            "allow_test_modifications": false,
+            "max_files_changed": 1,
+            "max_total_lines_changed": 10,
+            "max_lines_changed_per_file": 10,
+            "image": format!("localhost/image@sha256:{}", "0".repeat(64)),
+            "cea_db": "cea.sqlite",
+            "receipt_root": "receipts",
+            "run_id": "run:material",
+            "attempt_id": "attempt:material",
+            "trial_id": "trial:material",
+            "trace_id": "0af7651916cd43dd8448eb211c80319c",
+            "recorded_at": "2026-07-17T00:00:00Z"
+        }))
+        .unwrap(),
+    )
+    .unwrap();
+    let error = learning_command(LearningCommand::Run {
+        mode: "real-sandbox".into(),
+        source: None,
+        out: None,
+        request: Some(request.to_string_lossy().into()),
+    })
+    .unwrap_err()
+    .to_string();
+    assert!(error.contains("AiDENsRealSandboxRunRequestV1"));
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn clap_exposes_real_sandbox_request_surface() {
+    let cli = Cli::try_parse_from([
+        "aidens",
+        "learn",
+        "run",
+        "--mode",
+        "real-sandbox",
+        "--request",
+        "request.json",
+    ])
+    .unwrap();
+    assert!(matches!(
+        cli.command,
+        Command::Learn {
+            command: LearningCommand::Run {
+                mode,
+                request: Some(request),
+                ..
+            }
+        } if mode == "real-sandbox" && request == "request.json"
+    ));
+}
+
+#[test]
+#[ignore = "requires live rootless Podman and the digest-pinned AiDENs image"]
+fn real_sandbox_cli_runs_typed_controller_and_stays_terminally_blocked() {
+    let root = temp_root();
+    let fixture = root.join("fixture");
+    std::fs::create_dir_all(fixture.join("src")).unwrap();
+    std::fs::write(
+        fixture.join("Cargo.toml"),
+        "[package]\nname='cli-live-fixture'\nversion='0.1.0'\nedition='2021'\n",
+    )
+    .unwrap();
+    std::fs::write(fixture.join("src/lib.rs"), "pub fn answer() -> u32 { 1 }\n").unwrap();
+    let patch_path = root.join("patch.json");
+    std::fs::write(
+        &patch_path,
+        serde_json::to_vec(&serde_json::json!({
+            "patch_id": "00000000-0000-4000-8000-000000000040",
+            "summary": "bounded CLI live patch",
+            "edits": [{
+                "path": "src/lib.rs",
+                "ops": [{"Replace": {
+                    "range": {"start": 1, "end_exclusive": 2},
+                    "lines": ["pub fn answer() -> u32 {", "    42", "}"]
+                }}],
+                "mode": "Modify"
+            }],
+            "notes": []
+        }))
+        .unwrap(),
+    )
+    .unwrap();
+    let run_id = ArtifactId::new("run:cli-live-material");
+    let attempt_id = ArtifactId::new("attempt:cli-live-material");
+    let fixture_root = fixture.to_string_lossy().to_string();
+    let mut grant = PermitGrantV1::scoped(
+        CanonicalToolSideEffectClass::Write,
+        "aidens:patch-apply:1",
+        fixture_root.clone(),
+        "operator:cli-live-test",
+    );
+    grant.permit_id = ArtifactId::new("permit:cli-live-material");
+    grant.run_id = Some(run_id.clone());
+    grant.attempt_id = Some(attempt_id.clone());
+    let mut permit_use = PermitUseReportV1::allowed(
+        &grant,
+        "aidens:patch-apply:1",
+        fixture_root,
+        Some(run_id),
+        Some(attempt_id),
+    );
+    permit_use.receipt_id = ArtifactId::new("permit-use:cli-live-material");
+    let grant_path = root.join("grant.json");
+    let use_path = root.join("permit-use.json");
+    std::fs::write(&grant_path, serde_json::to_vec(&grant).unwrap()).unwrap();
+    std::fs::write(&use_path, serde_json::to_vec(&permit_use).unwrap()).unwrap();
+    let request_path = root.join("request.json");
+    std::fs::write(
+        &request_path,
+        serde_json::to_vec(&serde_json::json!({
+            "schema": "AiDENsRealSandboxRunRequestV1",
+            "fixture": fixture,
+            "patch": patch_path,
+            "permit_grant": grant_path,
+            "permit_use": use_path,
+            "forbidden_paths": [".git"],
+            "allow_test_modifications": false,
+            "max_files_changed": 2,
+            "max_total_lines_changed": 20,
+            "max_lines_changed_per_file": 20,
+            "image": std::env::var("AIDENS_LIVE_RUST_IMAGE").unwrap_or_else(|_| "localhost/aidens-rust-checks@sha256:96f6610f945d10b523a303848610bd6fbef241762c59c0e44d47af9089cb6d6b".into()),
+            "cea_db": root.join("cea.sqlite"),
+            "receipt_root": root.join("receipts"),
+            "run_id": "run:cli-live-material",
+            "attempt_id": "attempt:cli-live-material",
+            "trial_id": "trial:cli-live-material",
+            "trace_id": "0af7651916cd43dd8448eb211c80319c",
+            "recorded_at": "2026-07-17T00:00:00Z"
+        }))
+        .unwrap(),
+    )
+    .unwrap();
+
+    let report = learn_real_sandbox_command(request_path.to_str().unwrap(), None).unwrap();
+    let value: Value = serde_json::from_str(&report).unwrap();
+    assert_eq!(value["verified_execution"], true);
+    assert_eq!(value["terminal_publication"], "pending");
+    assert_eq!(value["terminal"]["state"], "blocked-evidence-insufficient");
+    assert_eq!(learning_run_exit_code(&report), 2);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 fn temp_root() -> PathBuf {
     std::env::temp_dir().join(format!(
         "aidens-cli-test-{}-{}",
