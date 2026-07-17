@@ -6,8 +6,41 @@
 //! This module only compares caller-supplied canonical digests/results; it does
 //! not persist inputs, replay results, or reinterpret the owner report.
 
-#[cfg(not(test))]
+use aidens_contracts::CanonicalBackpointerV1;
 use semantic_memory::{types::SearchReplayReportV1, MemoryStore};
+
+pub fn classify_owner_report(report: &SearchReplayReportV1) -> ReplayOutcome {
+    if !report.query_embedding_digest_matches
+        || !report.result_ids_match
+        || !report.missing_result_ids.is_empty()
+        || !report.added_result_ids.is_empty()
+    {
+        ReplayOutcome::Mismatch
+    } else {
+        ReplayOutcome::ExactMatch
+    }
+}
+
+pub async fn replay_inputs_available(
+    store: &MemoryStore,
+    receipt_id: &str,
+) -> Result<bool, semantic_memory::MemoryError> {
+    store.search_replay_inputs_available(receipt_id).await
+}
+
+pub fn replay_receipt_backpointer(
+    receipt_id: &str,
+) -> Result<CanonicalBackpointerV1, &'static str> {
+    if receipt_id.trim().is_empty() {
+        return Err("replay receipt ID is not durable");
+    }
+    Ok(CanonicalBackpointerV1::external(
+        "semantic-memory",
+        "SearchReplayReportV1",
+        "replay-receipt",
+        receipt_id,
+    ))
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ReplayMode {
@@ -115,7 +148,6 @@ pub fn compare(original: &CanonicalReplay, replay: &CanonicalReplay) -> ReplayCo
 }
 
 /// Owner-API adapter: no local replay logic or report copy is introduced.
-#[cfg(not(test))]
 pub async fn replay_from_stored_inputs(
     store: &MemoryStore,
     receipt_id: &str,
@@ -124,7 +156,6 @@ pub async fn replay_from_stored_inputs(
 }
 
 /// Owner-API adapter for caller-supplied retained inputs.
-#[cfg(not(test))]
 pub async fn replay_evaluation(
     store: &MemoryStore,
     receipt_id: &str,
