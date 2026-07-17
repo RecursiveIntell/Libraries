@@ -40,9 +40,11 @@ async fn trained_policy_persists_and_routes_identically_after_restart() {
     for _ in 0..11 {
         record_routing_outcome(&mut policy, &profile, &heuristic, RoutingOutcome::Bad);
     }
-    assert!(is_trained(&policy));
+    assert!(!is_trained(&policy));
     assert!(policy.last_updated.is_some());
 
+    // Caller-scored training can produce a shadow prediction, but it never
+    // authorizes the executed routing path in the shadow-only MVP.
     let before_restart = route_with_policy(&policy, &profile);
     assert!(
         !same_stages(&before_restart, &heuristic),
