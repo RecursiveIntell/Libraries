@@ -217,15 +217,44 @@ pub fn agent_run_command(
         "{}-agent-local",
         receipt_store_segment(&agent_spec.agent_id)
     );
+    let agent_spec_digest = DisplayDigestV1::for_json_value(&spec_value);
+    let run_identity_material = serde_json::json!({
+        "schema": "aidens-agent-run-v3-identity-material-v1",
+        "run_id": &run_id,
+        "agent_id": &agent_spec.agent_id,
+        "profile": &agent_spec.profile,
+        "agent_spec_digest": &agent_spec_digest,
+        "task_digest": StackContentDigest::compute_str(&task_text),
+        "outcome": format!("{:?}", loop_output.outcome),
+        "turns_used": loop_output.turns_used,
+    })
+    .to_string();
     let elapsed_ms = (Utc::now() - started_at).num_milliseconds().max(0);
     let run_output = loop_output.run_output.as_ref();
     let trace_ctx = run_output
         .map(|output| output.receipt.context.stack_trace_ctx())
-        .unwrap_or_else(aidens_contracts::StackTraceCtx::generate);
-    let attempt_id = run_output
-        .map(|output| output.receipt.context.stack_attempt_id())
-        .unwrap_or_else(StackAttemptId::generate);
-    let trial_id = StackTrialId::generate();
+        .unwrap_or_else(|| {
+            aidens_contracts::StackTraceCtx::from_trace_id(
+                generated_artifact_id_from_material("trace", &run_identity_material).to_string(),
+            )
+        });
+    let attempt_id = if let Some(output) = run_output {
+        output.receipt.context.stack_attempt_id()
+    } else {
+        StackAttemptId::deterministic(
+            "aidens-agent-run",
+            StackContentDigest::compute_str(&run_identity_material).hex(),
+        )?
+    };
+    let trial_material = serde_json::json!({
+        "run_material": &run_identity_material,
+        "attempt_id": &attempt_id,
+        "verification_receipts": loop_output.verification_receipts.iter().map(|receipt| &receipt.receipt_id).collect::<Vec<_>>(),
+        "abstention_receipt": loop_output.abstention_receipt.as_ref().map(|receipt| &receipt.receipt_id),
+        "repair_plan_receipt": loop_output.repair_plan.as_ref().map(|receipt| &receipt.repair_id),
+    });
+    let trial_digest = StackContentDigest::compute_json(&trial_material)?;
+    let trial_id = StackTrialId::deterministic("aidens-agent-run", trial_digest.hex())?;
     let attempt_family_id = run_output
         .map(|output| output.receipt.context.attempt_family_id.clone())
         .unwrap_or_else(|| generated_artifact_id_from_material("attempt-family", &run_id));
@@ -347,47 +376,20 @@ pub fn agent_run_command(
         .filter(|receipt| !receipt.passed)
         .map(|receipt| receipt.check.clone())
         .collect::<Vec<_>>();
-    let mut bundle = loop_output.assemble_v3_bundle(
-        run_id.clone(),
-        agent_spec.profile.clone(),
-        execution_context,
-        event_log,
-        budget,
-        support,
-        vec![
-            agent_spec.support_label.to_string(),
-            "supported-local".into(),
-        ],
-        replay,
-        failure,
-        attempt_family_id,
-        attempt_id,
-        trial_id,
-        DisplayDigestV1::for_json_value(&spec_value),
-        memory_grounding,
-        outputs,
-        vec![
-            "re-run agent run with the same AgentSpecV1, task, sandbox root, and permit JSON"
-                .into(),
-            "inspect run-bundle.json and canonical receipt log before claiming replay success"
-                .into(),
-        ],
-        blocked_checks,
-    );
-    if let Some(output) = run_output {
-        bundle.provider_receipts = vec![output.receipt.receipt_id.to_string()];
-        bundle.tool_receipts = output
+    let (provider_receipts, tool_receipts, permit_receipts) = if let Some(output) = run_output {
+        let provider_receipts = vec![output.receipt.receipt_id.to_string()];
+        let tool_receipts = output
             .receipt
             .tool_invocation_receipts
             .iter()
             .map(|receipt| receipt.receipt_id.to_string())
             .collect();
-        let mut permit_receipts: Vec<String> = output
+        let mut permit_receipts = output
             .receipt
             .permit_use_receipts
             .iter()
             .map(|receipt| receipt.receipt_id.to_string())
-            .collect();
+            .collect::<Vec<_>>();
         if permit_receipts.is_empty() {
             permit_receipts = output
                 .receipt
@@ -396,10 +398,60 @@ pub fn agent_run_command(
                 .map(|request| request.request_id.to_string())
                 .collect();
         }
-        bundle.permit_receipts = permit_receipts;
-    }
-    bundle.support_labels.sort();
-    bundle.support_labels.dedup();
+        (provider_receipts, tool_receipts, permit_receipts)
+    } else {
+        (
+            loop_output
+                .tool_route_receipts
+                .iter()
+                .map(|receipt| receipt.receipt_id.to_string())
+                .collect(),
+            loop_output
+                .tool_call_receipts
+                .iter()
+                .map(|receipt| receipt.receipt_id.to_string())
+                .collect(),
+            Vec::new(),
+        )
+    };
+    let bundle = loop_output
+        .assemble_v3_bundle(
+            &run_identity_material,
+            run_id.clone(),
+            agent_spec.profile.clone(),
+            execution_context,
+            event_log,
+            budget,
+            support,
+            vec![
+                agent_spec.support_label.to_string(),
+                "supported-local".into(),
+            ],
+            replay,
+            failure,
+            attempt_family_id,
+            attempt_id,
+            trial_id,
+            agent_spec_digest,
+            provider_receipts,
+            tool_receipts,
+            permit_receipts,
+            memory_grounding,
+            outputs,
+            vec![
+                "re-run agent run with the same AgentSpecV1, task, sandbox root, and permit JSON"
+                    .into(),
+                "inspect run-bundle.json and canonical receipt log before claiming replay success"
+                    .into(),
+            ],
+            blocked_checks,
+        )
+        .map_err(|reasons| {
+            anyhow::anyhow!(
+                "failed to assemble durable agent run bundle: {}",
+                reasons.join(", ")
+            )
+        })?;
     let bundle_store = RunBundleStore::open(RunBundleStoreConfig::for_receipt_root(&receipt_root))?;
     let bundle_store_record = bundle_store.write_bundle(&bundle)?;
     write_json_file(&out_dir.join("run-bundle.json"), &bundle)?;

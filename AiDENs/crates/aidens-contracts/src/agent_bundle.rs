@@ -486,6 +486,7 @@ impl AiDENsRunBundleV3 {
         bundle.bundle_id =
             generated_artifact_id_from_material("aidens-run-bundle-v3", &bound_material);
         bundle.validate_durable_identity()?;
+        bundle.validate_coding_learning_lineage()?;
         Ok(bundle)
     }
 
@@ -543,11 +544,6 @@ impl AiDENsRunBundleV3 {
                 ));
             }
         }
-        if let Err(owner_reasons) =
-            validate_required_coding_learning_backpointers(&self.canonical_backpointers)
-        {
-            reasons.extend(owner_reasons);
-        }
         reasons.sort();
         reasons.dedup();
         if reasons.is_empty() {
@@ -555,6 +551,15 @@ impl AiDENsRunBundleV3 {
         } else {
             Err(reasons)
         }
+    }
+
+    /// Validate the stricter owner-role lineage required by coding-learning bundles.
+    ///
+    /// Generic durable V3 runs intentionally do not fabricate these backpointers.
+    /// `new_material_bound` invokes this validator in addition to durable identity
+    /// validation so the learning constructor remains fail-closed.
+    pub fn validate_coding_learning_lineage(&self) -> Result<(), Vec<String>> {
+        validate_required_coding_learning_backpointers(&self.canonical_backpointers)
     }
 
     #[allow(clippy::too_many_arguments)]
