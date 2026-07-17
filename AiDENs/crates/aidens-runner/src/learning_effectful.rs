@@ -182,7 +182,8 @@ where
             .as_bytes(),
         ),
     };
-    let verified = checks.all_pass()
+    let verified = backend.has_live_execution_evidence()
+        && checks.all_pass()
         && verification.disposition == VerificationDisposition::EligibleForPromotion;
     Ok(EffectfulEvaluationReportV1 {
         schema: "AiDENsEffectfulEvaluationReportV1".into(),
@@ -625,7 +626,10 @@ mod tests {
         let report = evaluate_effectful(request, &FakeSealedBackend, || Some(capability.clone()))
             .await
             .unwrap();
-        assert!(report.verified);
+        assert!(
+            !report.verified,
+            "synthetic backend evidence must not be publication-complete"
+        );
         assert_eq!(report.execution_mode, "real_sandbox");
         assert_ne!(report.before_tree_digest, report.after_tree_digest);
         assert_eq!(
