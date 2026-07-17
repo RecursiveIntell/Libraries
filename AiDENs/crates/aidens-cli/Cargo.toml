@@ -22,6 +22,7 @@ aidens-plan-kit = { path = "../aidens-plan-kit" }
 aidens-provider-kit = { path = "../aidens-provider-kit" }
 aidens-receipts = { path = "../aidens-receipts" }
 aidens-runner = { path = "../aidens-runner" }
+semantic-memory.workspace = true
 aidens-tool-kit = { path = "../aidens-tool-kit" }
 anyhow.workspace = true
 chrono.workspace = true
