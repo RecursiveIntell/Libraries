@@ -1275,6 +1275,36 @@ mod tests {
 
     #[cfg(feature = "container")]
     #[test]
+    fn sealed_backend_rejects_non_finite_or_exponent_resource_limits() {
+        let mut config = sample_config();
+        config.mode = "sealed_local".into();
+        config.rust_image =
+            "docker.io/library/rust@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                .into();
+
+        for (field, value) in [
+            ("cpu_limit", "NaN"),
+            ("cpu_limit", "inf"),
+            ("cpu_limit", "1e3"),
+            ("memory_limit", "1e3g"),
+        ] {
+            if field == "cpu_limit" {
+                config.cpu_limit = value.into();
+            } else {
+                config.memory_limit = value.into();
+            }
+            let error = ContainerBackend::new_for_runtime(&config, ContainerRuntime::Podman)
+                .err()
+                .unwrap();
+            assert!(
+                matches!(error, RunnerError::SealedModeUnsupported { .. }),
+                "{field}={value}"
+            );
+        }
+    }
+
+    #[cfg(feature = "container")]
+    #[test]
     fn sealed_backend_rejects_non_podman_runtime_and_unpinned_image() {
         let mut config = sample_config();
         config.mode = "sealed_local".into();
