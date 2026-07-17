@@ -120,6 +120,7 @@ dependencies = [
  "chrono",
  "clap",
  "contract-schema-gen",
+ "semantic-memory",
  "serde",
  "serde_json",
  "sha2",

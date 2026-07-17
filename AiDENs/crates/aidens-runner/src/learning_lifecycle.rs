@@ -9,9 +9,10 @@ use semantic_memory::{
     MemoryError, MemoryStore, ProceduralMemoryArtifactV1, ProcedureEffectfulEvaluationReceiptV1,
     ProcedureLifecyclePermitV1, ProcedureLifecycleReceiptV1,
 };
+use serde::Serialize;
 use verification_adjudication::VerificationDisposition;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProcedureLifecycleProjectionV1 {
     pub receipt_id: String,
     pub artifact_id: String,

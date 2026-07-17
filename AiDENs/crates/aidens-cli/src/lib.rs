@@ -36,6 +36,7 @@ use aidens_provider_kit::{
 use aidens_receipts::{
     CanonicalEventLog, CanonicalEventLogConfig, RunBundleStore, RunBundleStoreConfig,
 };
+use aidens_runner::learning_lifecycle::{project_lifecycle_receipt, ProcedureLifecycleAdapter};
 use aidens_runner::{PlanActVerifyLoopV1, PlanActVerifyLoopV1Output, PlanActVerifyOutcomeV1};
 use aidens_tool_kit::{
     registry_from_enabled_bundles, safe_coding_registry_for_current_dir,
@@ -45,6 +46,7 @@ use aidens_tool_kit::{
 use anyhow::{bail, Context, Result};
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Parser, Subcommand};
+use semantic_memory::{MemoryConfig, MemoryStore, ProcedureLifecyclePermitV1};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
@@ -234,11 +236,15 @@ pub enum LearningCommand {
         candidate: String,
         #[arg(long)]
         permit: Option<String>,
+        #[arg(long)]
+        store: Option<String>,
     },
     Revoke {
         candidate: String,
         #[arg(long)]
         permit: Option<String>,
+        #[arg(long)]
+        store: Option<String>,
     },
     Replay {
         #[arg(long)]
@@ -248,6 +254,8 @@ pub enum LearningCommand {
         candidate: String,
         #[arg(long)]
         permit: Option<String>,
+        #[arg(long)]
+        store: Option<String>,
     },
 }
 
@@ -940,18 +948,65 @@ pub fn learn_lifecycle_command(
     candidate: &str,
     permit: Option<&str>,
 ) -> Result<String> {
-    let permit = permit.ok_or_else(|| anyhow::anyhow!("explicit lifecycle permit is required"))?;
-    let permit_text =
-        std::fs::read_to_string(permit).context("explicit lifecycle permit must be readable")?;
-    let _: Value = serde_json::from_str(&permit_text)
-        .context("explicit lifecycle permit must be valid JSON")?;
+    learn_lifecycle_command_with_store(action, candidate, permit, None)
+}
+
+pub fn learn_lifecycle_command_with_store(
+    action: &str,
+    candidate: &str,
+    permit: Option<&str>,
+    store: Option<&str>,
+) -> Result<String> {
+    if !matches!(action, "promote" | "revoke") {
+        bail!("unsupported lifecycle operation: {action}");
+    }
+    let permit_path =
+        permit.ok_or_else(|| anyhow::anyhow!("explicit lifecycle permit is required"))?;
+    let permit_text = std::fs::read_to_string(permit_path)
+        .context("explicit lifecycle permit must be readable")?;
+    let permit: ProcedureLifecyclePermitV1 = serde_json::from_str(&permit_text)
+        .context("explicit lifecycle permit must be typed canonical JSON")?;
+    let store_path = store
+        .ok_or_else(|| anyhow::anyhow!("explicit semantic memory store directory is required"))?;
+    let memory = MemoryStore::open(MemoryConfig {
+        base_dir: PathBuf::from(store_path),
+        ..MemoryConfig::default()
+    })
+    .context("open canonical semantic memory store")?;
+    let runtime = tokio::runtime::Runtime::new().context("create lifecycle runtime")?;
+    let receipt = runtime
+        .block_on(async {
+            let adapter = ProcedureLifecycleAdapter::new(&memory);
+            if action == "promote" {
+                adapter
+                    .promote(
+                        permit,
+                        candidate,
+                        format!("aidens-cli:{action}:{candidate}"),
+                    )
+                    .await
+            } else {
+                adapter
+                    .revoke(
+                        permit,
+                        candidate,
+                        format!("aidens-cli:{action}:{candidate}"),
+                        "operator requested revoke",
+                    )
+                    .await
+            }
+        })
+        .map_err(|error| anyhow::anyhow!("canonical lifecycle owner rejected request: {error}"))?;
+    let projection = project_lifecycle_receipt(&receipt).map_err(|error| {
+        anyhow::anyhow!("canonical lifecycle receipt projection failed: {error}")
+    })?;
     Ok(serde_json::to_string_pretty(&serde_json::json!({
-        "schema": "AiDENsLearningLifecycleRequestV1",
-        "candidate": candidate,
+        "schema": "AiDENsLearningLifecycleReportV2",
         "requested_action": action,
-        "lifecycle_state": "blocked",
-        "verified": false,
-        "blocked_checks": ["canonical-lifecycle-owner-evidence-missing"],
+        "lifecycle_state": receipt.disposition,
+        "verified": true,
+        "receipt": receipt,
+        "durable_backpointer": projection,
     }))?)
 }
 
@@ -967,15 +1022,36 @@ pub fn learning_command(command: LearningCommand) -> Result<String> {
         LearningCommand::Replay { source } => {
             learn_compare_replay_command("replay", source.as_deref())
         }
-        LearningCommand::Promote { candidate, permit } => {
-            learn_lifecycle_command("promote", &candidate, permit.as_deref())
-        }
-        LearningCommand::Revoke { candidate, permit } => {
-            learn_lifecycle_command("revoke", &candidate, permit.as_deref())
-        }
-        LearningCommand::Stop { candidate, permit } => {
-            learn_lifecycle_command("stop", &candidate, permit.as_deref())
-        }
+        LearningCommand::Promote {
+            candidate,
+            permit,
+            store,
+        } => learn_lifecycle_command_with_store(
+            "promote",
+            &candidate,
+            permit.as_deref(),
+            store.as_deref(),
+        ),
+        LearningCommand::Revoke {
+            candidate,
+            permit,
+            store,
+        } => learn_lifecycle_command_with_store(
+            "revoke",
+            &candidate,
+            permit.as_deref(),
+            store.as_deref(),
+        ),
+        LearningCommand::Stop {
+            candidate,
+            permit,
+            store,
+        } => learn_lifecycle_command_with_store(
+            "stop",
+            &candidate,
+            permit.as_deref(),
+            store.as_deref(),
+        ),
     }
 }
 

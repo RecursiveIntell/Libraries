@@ -37,16 +37,43 @@ fn learning_lifecycle_does_not_claim_owner_transition_without_owner_evidence() {
     let permit = root.join("permit.json");
     std::fs::write(&permit, "{}").unwrap();
 
-    for action in ["promote", "revoke", "stop"] {
-        let report = learn_lifecycle_command(action, "candidate-x", permit.to_str()).unwrap();
-        let value: Value = serde_json::from_str(&report).unwrap();
-        assert_eq!(value["requested_action"], action);
-        assert_eq!(value["lifecycle_state"], "blocked");
-        assert_eq!(value["verified"], false);
-        assert_eq!(learning_run_exit_code(&report), 2);
-    }
+    let err = learn_lifecycle_command("promote", "candidate-x", permit.to_str()).unwrap_err();
+    assert!(err.to_string().contains("typed") || err.to_string().contains("store"));
 
     std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn learning_lifecycle_rejects_arbitrary_readable_json_and_missing_store() {
+    let root = temp_root();
+    std::fs::create_dir_all(&root).unwrap();
+    let permit = root.join("permit.json");
+    std::fs::write(&permit, "{}").unwrap();
+    let err = learn_lifecycle_command_with_store("promote", "candidate-x", permit.to_str(), None)
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("typed") || err.contains("permit"));
+    let typed_permit = ProcedureLifecyclePermitV1::elevated_for(
+        "principal:test",
+        "operator:aidens-cli-test",
+        "promote",
+        "candidate-x",
+        "2999-01-01T00:00:00Z",
+    );
+    std::fs::write(&permit, serde_json::to_vec(&typed_permit).unwrap()).unwrap();
+    let err = learn_lifecycle_command_with_store("promote", "candidate-x", permit.to_str(), None)
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("memory store"));
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn learning_stop_remains_explicitly_unsupported() {
+    let err = learn_lifecycle_command_with_store("stop", "candidate-x", None, None)
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("unsupported"));
 }
 
 #[test]
