@@ -392,6 +392,7 @@ dependencies = [
  "cea-sqlite",
  "cea-store",
  "check-runner",
+ "forge-engine",
  "sandbox-workspace",
  "semantic-memory",
  "serde",

@@ -31,6 +31,7 @@ verification-adjudication.workspace = true
 verification-calibration.workspace = true
 verification-control.workspace = true
 verification-policy.workspace = true
+forge-engine = { path = "../../../living-memory/living-memory" }
 walkdir.workspace = true
 serde.workspace = true
 serde_json.workspace = true

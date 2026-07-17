@@ -44,6 +44,7 @@ mod finalization;
 pub mod learning;
 pub mod learning_corpus;
 pub mod learning_effectful;
+pub mod learning_experiment;
 pub mod learning_lifecycle;
 pub mod learning_replay;
 mod provider_tool;
