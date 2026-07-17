@@ -78,6 +78,10 @@ pub struct TrialRecord {
     pub network_available: bool,
     /// Whether timing data is admissible.
     pub timing_admissible: bool,
+    #[serde(default)]
+    pub pair_index: u32,
+    #[serde(default)]
+    pub order_index: u32,
 }
 
 /// Which side of a paired experiment a trial belongs to.
@@ -384,6 +388,8 @@ pub struct ExperimentConfig {
     pub statistics_policy: StatisticsPolicy,
     pub comparability: ComparabilityPolicy,
     pub workspace_policy: WorkspacePolicy,
+    /// Stable seed controlling deterministic side order in repeated runs.
+    pub trial_order_seed: u64,
 }
 
 impl Default for ExperimentConfig {
@@ -394,6 +400,7 @@ impl Default for ExperimentConfig {
             statistics_policy: StatisticsPolicy::default(),
             comparability: ComparabilityPolicy::default(),
             workspace_policy: WorkspacePolicy::default(),
+            trial_order_seed: 0,
         }
     }
 }
@@ -449,36 +456,76 @@ impl<'a> PairedExperimentRunner<'a> {
         patch: &crate::runtime::patch::types::StructuredPatch,
         experiment_config: &ExperimentConfig,
     ) -> ForgeResult<ExperimentResult> {
-        let run_id = uuid::Uuid::new_v4().to_string();
+        let pair_count = match experiment_config.mode {
+            ExperimentMode::RepeatedPaired => experiment_config.trial_count,
+            ExperimentMode::Paired | ExperimentMode::VerificationFollowup => 1,
+        };
+        if pair_count == 0 {
+            return Err(ForgeError::Config("trial_count must be nonzero".into()));
+        }
+        if experiment_config.mode == ExperimentMode::RepeatedPaired
+            && pair_count < experiment_config.statistics_policy.min_paired_trials
+        {
+            return Err(ForgeError::Config(format!(
+                "trial_count {pair_count} is below minimum paired trials {}",
+                experiment_config.statistics_policy.min_paired_trials
+            )));
+        }
+        let patch_bytes = serde_json::to_vec(patch)?;
+        let mut id_material = fixture_path.to_string_lossy().into_owned().into_bytes();
+        id_material.extend_from_slice(&patch_bytes);
+        id_material.extend_from_slice(&experiment_config.trial_order_seed.to_le_bytes());
+        id_material.extend_from_slice(&pair_count.to_le_bytes());
+        let run_id = blake3::hash(&id_material).to_hex().to_string();
         let _started_at = chrono::Utc::now().to_rfc3339();
 
         tracing::info!(run_id = %run_id, mode = ?experiment_config.mode, "starting experiment");
 
-        // Prepare workspace
-        let workspace = self.backend.prepare_workspace(fixture_path).await?;
-        let ws_path = &workspace.host_path;
-
-        // Capture baseline provenance
-        let baseline_descriptor = crate::baseline::capture_baseline_provenance(ws_path).await?;
-
         let timeout = self.config.container.command_timeout_secs;
         let mut all_trials = Vec::new();
-
-        // Run baseline checks
-        tracing::info!(run_id = %run_id, "running baseline checks");
-        let baseline_result = self
-            .run_checks(ws_path, timeout, TrialSide::Baseline, &mut all_trials)
-            .await?;
-
-        // Apply patch to workspace
-        tracing::info!(run_id = %run_id, "applying patch");
-        let _line_map = crate::runtime::patch::apply::apply_patch(patch, ws_path)?;
-
-        // Run patched checks
-        tracing::info!(run_id = %run_id, "running patched checks");
-        let patched_result = self
-            .run_checks(ws_path, timeout, TrialSide::Patched, &mut all_trials)
-            .await?;
+        let mut baseline_result = None;
+        let mut patched_result = None;
+        let mut baseline_descriptor = None;
+        for pair_index in 0..pair_count {
+            let first_patched = ((experiment_config
+                .trial_order_seed
+                .wrapping_add(pair_index as u64 * 0x9e3779b97f4a7c15))
+                & 1)
+                == 1;
+            for order_index in 0..2 {
+                let side = if (order_index == 0) == first_patched {
+                    TrialSide::Patched
+                } else {
+                    TrialSide::Baseline
+                };
+                let workspace = self.backend.prepare_workspace(fixture_path).await?;
+                let ws_path = &workspace.host_path;
+                if baseline_descriptor.is_none() {
+                    baseline_descriptor =
+                        Some(crate::baseline::capture_baseline_provenance(ws_path).await?);
+                }
+                if side == TrialSide::Patched {
+                    crate::runtime::patch::apply::apply_patch(patch, ws_path)?;
+                }
+                let result = self
+                    .run_checks(
+                        ws_path,
+                        timeout,
+                        side,
+                        pair_index,
+                        order_index,
+                        &mut all_trials,
+                    )
+                    .await?;
+                match side {
+                    TrialSide::Baseline => baseline_result = Some(result),
+                    TrialSide::Patched => patched_result = Some(result),
+                }
+            }
+        }
+        let baseline_result = baseline_result.expect("paired run produces baseline");
+        let patched_result = patched_result.expect("paired run produces patched");
+        let baseline_descriptor = baseline_descriptor.expect("paired run captures provenance");
 
         // Compute typed diff
         let diff = ExperimentDiff::from_paired(&baseline_result, &patched_result);
@@ -509,6 +556,8 @@ impl<'a> PairedExperimentRunner<'a> {
         workspace: &Path,
         timeout: u64,
         side: TrialSide,
+        pair_index: u32,
+        order_index: u32,
         trials: &mut Vec<TrialRecord>,
     ) -> ForgeResult<CheckResult> {
         let commands = self.adapter.check_commands(self.config);
@@ -588,6 +637,8 @@ impl<'a> PairedExperimentRunner<'a> {
             cache_mode: CacheMode::Unknown,
             network_available: true,
             timing_admissible: false,
+            pair_index,
+            order_index,
         });
 
         Ok(check_result)
