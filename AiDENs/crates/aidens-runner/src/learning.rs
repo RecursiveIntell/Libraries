@@ -93,17 +93,24 @@ pub fn extract_candidate(run: &SandboxRun) -> Result<Candidate, CandidateRejecti
         return Err(CandidateRejection { reasons });
     }
     let mut h = Hasher::new();
-    h.update(run.task.as_bytes());
-    h.update(run.lineage.as_bytes());
-    h.update(run.patch.as_bytes());
+    h.update(b"aidens-candidate-id-v1\0");
+    hash_framed(&mut h, run.task.as_bytes());
+    hash_framed(&mut h, run.lineage.as_bytes());
+    hash_framed(&mut h, run.patch.as_bytes());
+    h.update(&(run.tools.len() as u64).to_le_bytes());
     for tool in &run.tools {
-        h.update(tool.as_bytes());
+        hash_framed(&mut h, tool.as_bytes());
     }
     Ok(Candidate {
         id: h.finalize().to_hex().to_string(),
         status: CandidateStatus::Quarantined,
         reasons: vec!["quarantine-first".into()],
     })
+}
+
+fn hash_framed(hasher: &mut Hasher, value: &[u8]) {
+    hasher.update(&(value.len() as u64).to_le_bytes());
+    hasher.update(value);
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -244,12 +251,13 @@ pub fn lifecycle_decision(i: LifecycleInput) -> LifecycleRequest {
     if i.replay_agreement_percent < 95 {
         r.push("replay-agreement-below-minimum".into());
     }
+    if r.is_empty() {
+        r.push("canonical-owner-promotion-required".into());
+    }
     LifecycleRequest {
-        decision: if r.is_empty() {
-            LifecycleDecision::Promote
-        } else {
-            LifecycleDecision::Quarantine
-        },
+        // This runner projection is advisory. Only the canonical
+        // semantic-memory procedure lifecycle may authorize promotion.
+        decision: LifecycleDecision::Quarantine,
         reasons: r,
     }
 }
@@ -297,8 +305,8 @@ pub fn replay(_spec: TrialSpec, mode: ReplayMode) -> ReplayReport {
             environment_drift: false,
         },
         ReplayMode::ReplayEvaluation => ReplayReport {
-            result: ReplayResult::ReplayMismatch,
-            verifier_drift: true,
+            result: ReplayResult::NotAvailable,
+            verifier_drift: false,
             store_drift: false,
             environment_drift: false,
         },
@@ -406,6 +414,16 @@ mod tests {
         assert_eq!(a.status, CandidateStatus::Quarantined);
     }
     #[test]
+    fn candidate_identity_frames_material_fields() {
+        let left = SandboxRun::verified("ab", "c", vec!["read_file".into()]);
+        let right = SandboxRun::verified("a", "bc", vec!["read_file".into()]);
+
+        assert_ne!(
+            extract_candidate(&left).unwrap().id,
+            extract_candidate(&right).unwrap().id
+        );
+    }
+    #[test]
     fn candidate_rejects_secret_and_unknown_tool() {
         let r = SandboxRun::verified("task", "lineage", vec!["unknown".into()])
             .with_patch("token=secret");
@@ -427,15 +445,18 @@ mod tests {
             .all(|x| x.task_digest == "task" && x.seed == 7));
     }
     #[test]
-    fn lifecycle_requires_permit_and_all_hard_gates() {
+    fn runner_lifecycle_projection_never_grants_promotion_authority() {
         assert_eq!(
             lifecycle_decision(LifecycleInput::default()).decision,
             LifecycleDecision::Quarantine
         );
         assert_eq!(
             lifecycle_decision(LifecycleInput::passing()).decision,
-            LifecycleDecision::Promote
+            LifecycleDecision::Quarantine
         );
+        assert!(lifecycle_decision(LifecycleInput::passing())
+            .reasons
+            .contains(&"canonical-owner-promotion-required".into()));
     }
     #[test]
     fn replay_modes_report_drift_and_exact_match() {
@@ -448,10 +469,9 @@ mod tests {
             replay(s.clone(), ReplayMode::StoreInputs).result,
             ReplayResult::Inconclusive
         );
-        assert_eq!(
-            replay(s, ReplayMode::ReplayEvaluation).result,
-            ReplayResult::ReplayMismatch
-        );
+        let unavailable = replay(s, ReplayMode::ReplayEvaluation);
+        assert_eq!(unavailable.result, ReplayResult::NotAvailable);
+        assert!(!unavailable.verifier_drift);
     }
 
     #[test]
@@ -459,7 +479,7 @@ mod tests {
         let first = run_fixture_vertical_slice().unwrap();
         let second = run_fixture_vertical_slice().unwrap();
         assert_eq!(first, second);
-        assert_eq!(first.lifecycle, LifecycleDecision::Revoke);
+        assert_eq!(first.lifecycle, LifecycleDecision::Quarantine);
         assert_eq!(first.replay.result, ReplayResult::ReplayMatch);
         assert!(!first.fixture_evidence.eligible_for_learning());
     }

@@ -4226,6 +4226,7 @@ fn coding_agent_v11a_evidence(
     receipt_chain: &[serde_json::Value],
     git_status: &serde_json::Value,
 ) -> Result<serde_json::Value> {
+    let required_steps_verified = coding_agent_required_steps_verified(steps);
     let input_payload = serde_json::json!({
         "config_path": config_path,
         "sandbox_root": sandbox_root,
@@ -4262,12 +4263,23 @@ fn coding_agent_v11a_evidence(
         aidens_contracts::ArtifactLifecycleStateV1::Validated,
         aidens_contracts::ArtifactLifecycleStateV1::Admitted,
         aidens_contracts::ArtifactLifecycleStateV1::Projected,
-        aidens_contracts::ArtifactLifecycleStateV1::Verified,
     ] {
         output_artifact
             .apply_transition(state, "aidens.runner.turn", "aidens-cli", None)
             .map_err(anyhow::Error::msg)?;
     }
+    output_artifact
+        .apply_transition(
+            if required_steps_verified {
+                aidens_contracts::ArtifactLifecycleStateV1::Verified
+            } else {
+                aidens_contracts::ArtifactLifecycleStateV1::Quarantined
+            },
+            "aidens.runner.turn",
+            "aidens-cli",
+            None,
+        )
+        .map_err(anyhow::Error::msg)?;
 
     let mut schema_identities = BTreeMap::new();
     schema_identities.insert(
@@ -4300,7 +4312,14 @@ fn coding_agent_v11a_evidence(
         "local-tools-only",
         "aidens:safe-coding-tools",
     )
-    .complete(aidens_contracts::ExecutionCompletionStateV1::Succeeded, 0);
+    .complete(
+        if required_steps_verified {
+            aidens_contracts::ExecutionCompletionStateV1::Succeeded
+        } else {
+            aidens_contracts::ExecutionCompletionStateV1::Partial
+        },
+        0,
+    );
     let operator_contract = aidens_contracts::p28_declared_material_operation_registry()
         .contract("aidens.runner.turn")
         .cloned()
@@ -4315,7 +4334,7 @@ fn coding_agent_v11a_evidence(
         })
         .collect::<Vec<_>>();
     let missing_receipts = tool_receipt_refs.is_empty();
-    let invocation_receipt = if missing_receipts {
+    let invocation_receipt = if missing_receipts || !required_steps_verified {
         None
     } else {
         Some(
@@ -4354,6 +4373,13 @@ fn coding_agent_v11a_evidence(
             output_artifact.artifact_ref.clone(),
             "missing-tool-receipts",
             "material completion cannot be proven",
+        ));
+    }
+    if !required_steps_verified {
+        degradation_records.push(aidens_contracts::LocalDegradationRecordV1::new(
+            output_artifact.artifact_ref.clone(),
+            "required-side-effect-steps-not-verified",
+            "permit-blocked or failed patch/check steps cannot produce verified evidence",
         ));
     }
     if proof_debt.blocks_promotion() {
@@ -4449,6 +4475,32 @@ fn coding_agent_receipt_chain(steps: &[serde_json::Value]) -> Vec<serde_json::Va
         .collect()
 }
 
+fn coding_agent_required_steps_verified(steps: &[serde_json::Value]) -> bool {
+    let patch = steps.iter().find(|step| {
+        step.get("label").and_then(serde_json::Value::as_str) == Some("patch_apply_permit_gate")
+    });
+    let checks = steps.iter().find(|step| {
+        step.get("label").and_then(serde_json::Value::as_str) == Some("run_checks_permit_gate")
+    });
+    patch.is_some_and(|step| {
+        matches!(
+            step.get("status").and_then(serde_json::Value::as_str),
+            Some("success" | "checked")
+        ) && step
+            .get("permit_use_receipt")
+            .is_some_and(|receipt| !receipt.is_null())
+    }) && checks.is_some_and(|step| {
+        step.get("status").and_then(serde_json::Value::as_str) == Some("success")
+            && step
+                .pointer("/output/succeeded")
+                .and_then(serde_json::Value::as_bool)
+                == Some(true)
+            && step
+                .get("permit_use_receipt")
+                .is_some_and(|receipt| !receipt.is_null())
+    })
+}
+
 fn coding_agent_loop_summary(steps: &[serde_json::Value]) -> serde_json::Value {
     let mut blocked_steps = Vec::new();
     let mut failed_checks = Vec::new();
@@ -4505,7 +4557,14 @@ fn coding_agent_loop_summary(steps: &[serde_json::Value]) -> serde_json::Value {
 }
 
 fn coding_agent_semantic_status(steps: &[serde_json::Value]) -> &'static str {
-    if steps
+    if steps.iter().any(|step| {
+        matches!(
+            step.get("status").and_then(serde_json::Value::as_str),
+            Some("blocked_or_failed" | "failed")
+        )
+    }) {
+        "blocked_exact_check"
+    } else if steps
         .iter()
         .any(|step| step.get("status").and_then(serde_json::Value::as_str) == Some("check_failed"))
     {
@@ -4538,7 +4597,9 @@ fn coding_agent_failure_taxonomy(report: &serde_json::Value) -> AiDENsRunFailure
     AiDENsRunFailureTaxonomyV1 {
         class: if failed_check {
             AiDENsRunFailureClassV1::ToolFailed
-        } else if side_effect_blocked || applied_patch {
+        } else if side_effect_blocked {
+            AiDENsRunFailureClassV1::OperatorAbstained
+        } else if applied_patch {
             AiDENsRunFailureClassV1::None
         } else {
             AiDENsRunFailureClassV1::OperatorAbstained
@@ -4552,8 +4613,8 @@ fn coding_agent_failure_taxonomy(report: &serde_json::Value) -> AiDENsRunFailure
         } else {
             vec!["no-side-effect-tool-executed".into()]
         },
-        degraded: failed_check,
-        blocked: false,
+        degraded: failed_check || side_effect_blocked,
+        blocked: side_effect_blocked,
     }
 }
 

@@ -181,6 +181,7 @@ dependencies = [
  "libc",
  "sandbox-workspace",
  "serde",
+ "serde_json",
  "tempfile",
  "thiserror",
  "tokio",

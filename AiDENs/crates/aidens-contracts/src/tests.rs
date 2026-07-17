@@ -70,6 +70,37 @@ fn task2_material_bound_bundle_id_changes_when_owner_lineage_changes() {
 }
 
 #[test]
+fn task2_material_bound_bundle_rejects_duplicate_required_owner_roles() {
+    let fixture = include_str!("../../../tests/fixtures/p26/aidens_run_bundle_v3.json");
+    let fixture: AiDENsRunBundleV3 = serde_json::from_str(fixture).unwrap();
+    let mut owners = task2_owner_backpointers();
+    owners.push(owners[0].clone());
+
+    let error = AiDENsRunBundleV3::new_material_bound(
+        "duplicate-owner-rejection",
+        fixture.run_id,
+        fixture.profile,
+        fixture.canonical_execution_context,
+        fixture.event_log,
+        fixture.budget,
+        fixture.support,
+        fixture.support_labels,
+        fixture.replay,
+        fixture.failure,
+        fixture.attempt_family_id,
+        fixture.attempt_id,
+        fixture.trial_id,
+        fixture.agent_spec_digest,
+        owners,
+    )
+    .unwrap_err();
+
+    assert!(error
+        .iter()
+        .any(|reason| reason == "required-owner-reference-duplicate:task"));
+}
+
+#[test]
 fn task2_display_ids_are_rejected_from_all_durable_identity_surfaces() {
     let mut bundle = task2_material_bundle("display-id-rejection");
     bundle.bundle_id = display_only_unstable_id("task2");

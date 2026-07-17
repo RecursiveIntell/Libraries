@@ -1342,27 +1342,31 @@ sandbox_root = "{}"
             && step["status"] == "blocked_or_failed"
             && step["approval_request"].is_object()
     }));
-    assert_eq!(report["semantic_status"], "exact_check");
+    assert_eq!(report["semantic_status"], "blocked_exact_check");
     assert!(report["receipt_chain"].as_array().unwrap().len() >= 7);
     assert_eq!(
         report["v11a_evidence"]["completion_gate"]["status"],
-        "complete"
+        "blocked_or_degraded"
     );
     assert_eq!(
         report["v11a_evidence"]["completion_gate"]["material_done"],
-        true
-    );
-    assert_eq!(
-        report["v11a_evidence"]["completion_gate"]["proof_debt_blocks"],
         false
     );
     assert_eq!(
+        report["v11a_evidence"]["completion_gate"]["proof_debt_blocks"],
+        true
+    );
+    assert_eq!(
         report["v11a_evidence"]["artifact_envelope"]["lifecycle_state"],
-        "verified"
+        "quarantined"
     );
     assert_eq!(
         report["v11a_evidence"]["execution_context"]["provider_route"],
         "local-tools-only"
+    );
+    assert_eq!(
+        report["v11a_evidence"]["execution_context"]["completion_state"],
+        "partial"
     );
     assert_eq!(
         report["v11a_evidence"]["operator_contract"]["operator_id"],
@@ -1384,7 +1388,7 @@ sandbox_root = "{}"
     );
     assert_eq!(
         report["v11a_evidence"]["semantic_state"]["exactness"],
-        "exact"
+        "degraded"
     );
     assert_eq!(
         report["v11a_evidence"]["view_disclosure"]["support_label"],
@@ -1399,7 +1403,12 @@ sandbox_root = "{}"
             .unwrap();
     assert_eq!(bundle["schema"], "AiDENsRunBundleV2");
     assert_eq!(bundle["support"]["support_tier"], "supported-local");
-    assert_eq!(bundle["failure"]["class"], "none");
+    assert_ne!(bundle["failure"]["class"], "none");
+    assert_eq!(bundle["failure"]["blocked"], true);
+    assert_ne!(
+        bundle["canonical_execution_context"]["dispatch_outcome"],
+        "succeeded"
+    );
     assert!(bundle["tool_receipts"].as_array().unwrap().len() >= 7);
 
     let inspected =
@@ -1441,7 +1450,7 @@ fn run_coding_agent_records_failed_checks_with_admin_permit() {
         &std::fs::read_to_string(out.join("coding-agent-report.json")).unwrap(),
     )
     .unwrap();
-    assert_eq!(report["semantic_status"], "degraded_exact_check");
+    assert_eq!(report["semantic_status"], "blocked_exact_check");
     assert!(report["steps"].as_array().unwrap().iter().any(|step| {
         step["label"] == "run_checks_permit_gate" && step["status"] == "check_failed"
     }));
